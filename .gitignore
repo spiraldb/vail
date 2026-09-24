@@ -1,0 +1,22 @@
+# Build outputs and dependency environments (at any depth).
+target/
+.venv/
+venv/
+node_modules/
+dist/
+build/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.py[cod]
+*.so
+*.dylib
+*.dll
+*.egg-info/
+.DS_Store
+# Local credentials/configuration; checked-in example files remain allowed.
+.env
+.env.*
+!.env.example
+!.env.sample

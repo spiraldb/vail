@@ -1,0 +1,81 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+[build-system]
+build-backend = "maturin"
+requires = ["maturin>=1.9.4,<2.0"]
+
+[project]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Rust",
+]
+dynamic = ["version"]
+license = { file = "LICENSE" }
+name = "pyiceberg-core"
+readme = "project-description.md"
+requires-python = ">=3.10,<4"
+
+[tool.maturin]
+include = [
+  { path = "LICENSE", format = [
+    "sdist",
+    "wheel",
+  ] },
+  { path = "NOTICE", format = [
+    "sdist",
+    "wheel",
+  ] },
+]
+module-name = "pyiceberg_core.pyiceberg_core_rust"
+profile = "release"
+python-source = "python"
+# Optimize for small binary size (https://github.com/apache/iceberg-rust/pull/1841)
+config = [
+  "profile.release.lto=\"thin\"",
+  "profile.release.codegen-units=1",
+  "profile.release.opt-level=\"z\"",
+  "profile.release.strip=true",
+]
+
+[tool.ruff.lint]
+ignore = ["F403", "F405"]
+
+[tool.pytest.ini_options]
+filterwarnings = ["error"]
+
+[dependency-groups]
+dev = [
+  "maturin>=1.9.4,<2.0",
+  "pytest>=8.3.2",
+  # Set a PyIceberg lower bound; otherwise the resolver may select the
+  # unrelated 0.0.2 stub.
+  # Install PyArrow directly instead of using pyiceberg[pyarrow]: that extra
+  # depends on the published pyiceberg-core, which conflicts with this local build.
+  "pyiceberg>=0.11",
+  "pyarrow>=17",
+  "fastavro>=1.11.1",
+]

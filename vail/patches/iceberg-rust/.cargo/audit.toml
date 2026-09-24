@@ -1,0 +1,40 @@
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied.  See the License for the
+# specific language governing permissions and limitations
+# under the License.
+
+[advisories]
+ignore = [
+  # rsa
+  # Marvin Attack: potential key recovery through timing sidechannels
+  # Issues: https://github.com/apache/iceberg-rust/issues/221
+  "RUSTSEC-2023-0071",
+  # `paste` is unmaintained; consider using an alternative
+  #
+  # Introduced by hive_metastore, tracked at https://github.com/cloudwego/pilota/issues/293
+  "RUSTSEC-2024-0436",
+  # `quick-xml` < 0.41.0 has quadratic duplicate-attribute validation and
+  # unbounded namespace-declaration allocation (parser DoS).
+  #
+  # It is transitive through object_store 0.13.2 (DataFusion 53 / Parquet 58),
+  # OpenDAL 0.57.0, and reqsign-aws-v4 3.0.0. Their released compatible
+  # versions cannot select the fixed quick-xml >=0.41.0 release.
+  #
+  # Per SECURITY-THREAT-MODEL.md, malformed-input parser CPU/memory DoS is
+  # hardening rather than an Iceberg Rust trust-boundary vulnerability. Remove
+  # once the transitive dependency set permits quick-xml >=0.41.0.
+  "RUSTSEC-2026-0194",
+  "RUSTSEC-2026-0195",
+]

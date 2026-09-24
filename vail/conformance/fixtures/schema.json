@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vail.dev/conformance/fixture-v1.schema.json",
+  "title": "Vail Table conformance fixture v1",
+  "type": "object",
+  "required": ["protocol", "id", "baseline", "tables", "steps", "expectations"],
+  "properties": {
+    "protocol": {"const": "vail-conformance/1"},
+    "id": {"type": "string", "minLength": 1},
+    "baseline": {
+      "type": "object",
+      "required": ["hail_commit", "provenance"],
+      "properties": {
+        "hail_commit": {"type": "string"},
+        "provenance": {"enum": ["source-derived-not-oracle-captured", "oracle-captured"]}
+      },
+      "additionalProperties": false
+    },
+    "tables": {
+      "type": "object",
+      "additionalProperties": {"$ref": "#/$defs/table"}
+    },
+    "steps": {"type": "array", "items": {"$ref": "#/$defs/step"}},
+    "expectations": {"type": "array", "items": {"$ref": "#/$defs/expectation"}}
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "type": {
+      "oneOf": [
+        {"enum": ["bool", "int32", "int64", "float32", "float64", "string"]},
+        {"type": "object", "required": ["struct"], "properties": {"struct": {"type": "array", "items": {"$ref": "#/$defs/field"}}}, "additionalProperties": false},
+        {"type": "object", "required": ["array"], "properties": {"array": {"$ref": "#/$defs/type"}}, "additionalProperties": false}
+      ]
+    },
+    "field": {
+      "type": "object",
+      "required": ["name", "type", "nullable"],
+      "properties": {
+        "name": {"type": "string"},
+        "type": {"$ref": "#/$defs/type"},
+        "nullable": {"type": "boolean", "description": "Fixture input constraint used to validate missing values; Hail tstruct does not expose Arrow requiredness. Native adapters may conservatively map fields to nullable Arrow columns."}
+      },
+      "additionalProperties": false
+    },
+    "table": {
+      "type": "object",
+      "required": ["schema", "key", "rows", "globals"],
+      "properties": {
+        "schema": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+        "key": {"type": "array", "items": {"type": "string"}},
+        "rows": {"type": "array", "items": {"type": "object"}},
+        "globals": {"type": "object"},
+        "global_schema": {"type": "array", "items": {"$ref": "#/$defs/field"}},
+        "n_partitions": {"type": ["integer", "null"], "minimum": 1}
+      },
+      "additionalProperties": false
+    },
+    "step": {
+      "type": "object",
+      "required": ["id", "op"],
+      "properties": {
+        "id": {"type": "string"},
+        "op": {"enum": ["key_by", "order_by", "head", "take", "collect", "count", "get_globals", "annotate_globals", "source_mismatch", "join"]},
+        "table": {"type": "string"},
+        "result": {"type": "string"},
+        "fields": {"type": "array", "items": {"type": "string"}},
+        "sort": {"type": "array", "items": {"type": "object", "required": ["field", "direction"], "properties": {"field": {"type": "string"}, "direction": {"enum": ["asc", "desc"]}}, "additionalProperties": false}},
+        "n": {"type": "integer", "minimum": 0},
+        "other": {"type": "string"},
+        "how": {"enum": ["inner", "left", "right", "outer"]},
+        "capability": {"enum": ["oracle-and-native", "oracle-only-until-native-op"]}
+      },
+      "additionalProperties": false
+    },
+    "expectation": {
+      "type": "object",
+      "required": ["step", "mode", "expected"],
+      "properties": {
+        "step": {"type": "string"},
+        "path": {"type": "string"},
+        "mode": {"enum": ["ordered", "bag", "ordered_with_ties", "error"]},
+        "tie_fields": {"type": "array", "items": {"type": "string"}},
+        "expected": {},
+        "capability": {"enum": ["oracle-and-native", "oracle-only-until-native-op"]}
+      },
+      "additionalProperties": false
+    }
+  }
+}

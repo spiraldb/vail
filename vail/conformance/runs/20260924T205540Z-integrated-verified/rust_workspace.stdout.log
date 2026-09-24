@@ -1,0 +1,55 @@
+
+running 11 tests
+test tests::invalid_inputs_fail_before_execution ... ok
+test expressions::tests::source_validation_and_float_special_values ... ok
+test expressions::tests::json_lowering_chained_numeric_and_kleene ... ok
+test expressions::tests::array_ir_rejects_bad_types_and_handles_zero_rows ... ok
+test expressions::tests::struct_parent_nulls_array_literals_and_zero_fields ... ok
+test expressions::tests::lazy_if_else_and_missing_condition ... ok
+test tests::empty_and_duplicate_keys_are_handled ... ok
+test tests::interleaved_partitions_merge_in_global_order ... ok
+test tests::descending_nulls_last_and_limit_apply_after_merge ... ok
+test tests::compound_mixed_directions_ignore_input_partition_layout ... ok
+test tests::caller_memory_limit_spills_local_sort ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test fragment_index::tests::hail_filtered_boundaries_are_candidate_only ... ok
+test fragment_index::tests::empty_unbounded_and_reversed_queries ... ok
+test fragment_index::tests::hail_indexed_read_boundary_shapes_retain_touching_duplicates ... ok
+test fragment_index::tests::compound_mixed_direction_missing_and_ascii_are_lexicographic ... ok
+test fragment_index::tests::missing_position_is_independent_of_descending_value_direction ... ok
+test fragment_index::tests::same_start_sorts_point_run_before_wider_run_regardless_of_name ... ok
+test fragment_index::tests::rejects_interior_overlap_duplicate_identity_and_invalid_keys ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 7 tests
+test local_paths_reject_encoding_the_iceberg_fileio_cannot_roundtrip ... ok
+test empty_snapshot_preserves_globals_without_data_files ... ok
+test pr_iceberg_reader_preserves_single_file_multisplit_sequence ... ok
+test ordered_execution_survives_vortex_iceberg_snapshot_and_fresh_read ... ok
+test vortex_file_is_committed_and_reopened_from_iceberg_metadata ... ok
+test stale_initial_writer_cannot_append_under_old_descriptor ... ok
+test ordered_snapshot_reads_three_real_vortex_files_in_key_order ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,27 @@
+{
+  "protocol": "vail-conformance/1",
+  "id": "duplicate_keys",
+  "baseline": {"hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1", "provenance": "source-derived-not-oracle-captured"},
+  "tables": {
+    "t": {
+      "schema": [
+        {"name": "k", "type": "int32", "nullable": false},
+        {"name": "v", "type": "string", "nullable": false}
+      ],
+      "key": [],
+      "rows": [{"k": 1, "v": "a"}, {"k": 1, "v": "b"}, {"k": 2, "v": "c"}, {"k": 1, "v": "a"}],
+      "globals": {},
+      "n_partitions": 1
+    }
+  },
+  "steps": [
+    {"id": "keyed", "op": "key_by", "table": "t", "result": "keyed", "fields": ["k"]},
+    {"id": "rows", "op": "collect", "table": "keyed"},
+    {"id": "count", "op": "count", "table": "keyed"}
+  ],
+  "expectations": [
+    {"step": "rows", "mode": "ordered_with_ties", "tie_fields": ["k"], "path": "rows", "expected": [{"k": 1, "v": "a"}, {"k": 1, "v": "b"}, {"k": 1, "v": "a"}, {"k": 2, "v": "c"}], "capability": "oracle-and-native"},
+    {"step": "rows", "mode": "ordered", "path": "key", "expected": ["k"], "capability": "oracle-and-native"},
+    {"step": "count", "mode": "ordered", "path": "value", "expected": 4, "capability": "oracle-and-native"}
+  ]
+}

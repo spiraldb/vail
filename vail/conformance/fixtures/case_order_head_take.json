@@ -1,0 +1,27 @@
+{
+  "protocol": "vail-conformance/1",
+  "id": "order_head_take",
+  "baseline": {"hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1", "provenance": "source-derived-not-oracle-captured"},
+  "tables": {
+    "t": {
+      "schema": [
+        {"name": "id", "type": "int32", "nullable": false},
+        {"name": "score", "type": "int32", "nullable": false}
+      ],
+      "key": [],
+      "rows": [{"id": 0, "score": 30}, {"id": 1, "score": 10}, {"id": 2, "score": 40}, {"id": 3, "score": 20}],
+      "globals": {},
+      "n_partitions": 1
+    }
+  },
+  "steps": [
+    {"id": "sorted", "op": "order_by", "table": "t", "result": "sorted", "sort": [{"field": "score", "direction": "asc"}, {"field": "id", "direction": "asc"}]},
+    {"id": "head", "op": "head", "table": "sorted", "result": "first_two", "n": 2},
+    {"id": "head_rows", "op": "collect", "table": "first_two"},
+    {"id": "take", "op": "take", "table": "sorted", "n": 3}
+  ],
+  "expectations": [
+    {"step": "head_rows", "mode": "ordered", "path": "rows", "expected": [{"id": 1, "score": 10}, {"id": 3, "score": 20}], "capability": "oracle-and-native"},
+    {"step": "take", "mode": "ordered", "path": "rows", "expected": [{"id": 1, "score": 10}, {"id": 3, "score": 20}, {"id": 0, "score": 30}], "capability": "oracle-and-native"}
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "protocol": "vail-conformance/1",
+  "id": "key_order_nulls",
+  "baseline": {"hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1", "provenance": "source-derived-not-oracle-captured"},
+  "tables": {
+    "t": {
+      "schema": [
+        {"name": "k", "type": "int32", "nullable": true},
+        {"name": "label", "type": "string", "nullable": false}
+      ],
+      "key": [],
+      "rows": [
+        {"k": 3, "label": "three"},
+        {"k": {"$missing": true}, "label": "missing"},
+        {"k": -1, "label": "minus"},
+        {"k": 2, "label": "two"}
+      ],
+      "globals": {},
+      "n_partitions": 1
+    }
+  },
+  "steps": [
+    {"id": "key_asc", "op": "key_by", "table": "t", "result": "asc", "fields": ["k"]},
+    {"id": "asc_rows", "op": "collect", "table": "asc"},
+    {"id": "desc_order", "op": "order_by", "table": "asc", "result": "desc", "sort": [{"field": "k", "direction": "desc"}]},
+    {"id": "desc_rows", "op": "collect", "table": "desc"}
+  ],
+  "expectations": [
+    {"step": "asc_rows", "mode": "ordered", "path": "rows", "expected": [
+      {"k": -1, "label": "minus"}, {"k": 2, "label": "two"}, {"k": 3, "label": "three"}, {"k": {"$missing": true}, "label": "missing"}
+    ], "capability": "oracle-and-native"},
+    {"step": "desc_rows", "mode": "ordered", "path": "rows", "expected": [
+      {"k": 3, "label": "three"}, {"k": 2, "label": "two"}, {"k": -1, "label": "minus"}, {"k": {"$missing": true}, "label": "missing"}
+    ], "capability": "oracle-and-native"},
+    {"step": "desc_rows", "mode": "ordered", "path": "key", "expected": [], "capability": "oracle-and-native"}
+  ]
+}

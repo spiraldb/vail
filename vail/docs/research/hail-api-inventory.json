@@ -1,0 +1,456 @@
+{
+  "source": "../hail/hail/python/hail/table.py",
+  "classes": {
+    "GroupedTable": {
+      "source_line": 181,
+      "public_api": [
+        {
+          "name": "partition_hint",
+          "kind": "method",
+          "signature": "(self, n: int) -> 'GroupedTable'",
+          "source_line": 197,
+          "doc_first_line": "Set the target number of partitions for aggregation."
+        },
+        {
+          "name": "aggregate",
+          "kind": "method",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 253,
+          "doc_first_line": "Aggregate by group, used after :meth:`.Table.group_by`."
+        }
+      ]
+    },
+    "Table": {
+      "source_line": 304,
+      "public_api": [
+        {
+          "name": "__getitem__",
+          "kind": "method",
+          "signature": "(self, item)",
+          "source_line": 423,
+          "doc_first_line": ""
+        },
+        {
+          "name": "key",
+          "kind": "property",
+          "signature": "",
+          "source_line": 437,
+          "doc_first_line": "Row key struct."
+        },
+        {
+          "name": "n_partitions",
+          "kind": "method",
+          "signature": "(self)",
+          "source_line": 464,
+          "doc_first_line": "Returns the number of partitions in the table."
+        },
+        {
+          "name": "count",
+          "kind": "method",
+          "signature": "(self)",
+          "source_line": 498,
+          "doc_first_line": "Count the number of rows in the table."
+        },
+        {
+          "name": "parallelize",
+          "kind": "method",
+          "signature": "(cls, rows, schema=None, key=None, n_partitions=None, *, partial_type=None, globals=None) -> 'Table'",
+          "source_line": 549,
+          "doc_first_line": "Parallelize a local array of structs into a distributed table."
+        },
+        {
+          "name": "key_by",
+          "kind": "method",
+          "signature": "(self, *keys, **named_keys) -> 'Table'",
+          "source_line": 750,
+          "doc_first_line": "Key table by a new set of fields."
+        },
+        {
+          "name": "annotate_globals",
+          "kind": "method",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 936,
+          "doc_first_line": "Add new global fields."
+        },
+        {
+          "name": "select_globals",
+          "kind": "method",
+          "signature": "(self, *exprs, **named_exprs) -> 'Table'",
+          "source_line": 980,
+          "doc_first_line": "Select existing global fields or create new fields by name, dropping the rest."
+        },
+        {
+          "name": "transmute_globals",
+          "kind": "method",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 1061,
+          "doc_first_line": "Similar to :meth:`.Table.annotate_globals`, but drops referenced fields."
+        },
+        {
+          "name": "transmute",
+          "kind": "method",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 1120,
+          "doc_first_line": "Add new fields and drop fields referenced."
+        },
+        {
+          "name": "annotate",
+          "kind": "method",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 1224,
+          "doc_first_line": "Add new fields."
+        },
+        {
+          "name": "filter",
+          "kind": "method",
+          "signature": "(self, expr, keep: bool=True) -> 'Table'",
+          "source_line": 1376,
+          "doc_first_line": "Filter rows conditional on the value of each row's fields."
+        },
+        {
+          "name": "select",
+          "kind": "method",
+          "signature": "(self, *exprs, **named_exprs) -> 'Table'",
+          "source_line": 1570,
+          "doc_first_line": "Select existing fields or create new fields by name, dropping the rest."
+        },
+        {
+          "name": "drop",
+          "kind": "method",
+          "signature": "(self, *exprs) -> 'Table'",
+          "source_line": 1659,
+          "doc_first_line": "Drop fields from the table."
+        },
+        {
+          "name": "export",
+          "kind": "method",
+          "signature": "(self, output, types_file=None, header=True, parallel=None, delimiter='\\t')",
+          "source_line": 1732,
+          "doc_first_line": "Export to a text file."
+        },
+        {
+          "name": "group_by",
+          "kind": "method",
+          "signature": "(self, *exprs, **named_exprs) -> 'GroupedTable'",
+          "source_line": 1783,
+          "doc_first_line": "Group by a new key for use with :meth:`.GroupedTable.aggregate`."
+        },
+        {
+          "name": "aggregate",
+          "kind": "method",
+          "signature": "(self, expr, _localize=True)",
+          "source_line": 1879,
+          "doc_first_line": "Aggregate over rows into a local value."
+        },
+        {
+          "name": "checkpoint",
+          "kind": "method",
+          "signature": "(self, output: str, overwrite: bool=False, stage_locally: bool=False, _codec_spec: Optional[str]=None, _read_if_exists: bool=False, _intervals=None, _filter_intervals=False) -> 'Table'",
+          "source_line": 1924,
+          "doc_first_line": "Checkpoint the table to disk by writing and reading."
+        },
+        {
+          "name": "write",
+          "kind": "method",
+          "signature": "(self, output: str, overwrite=False, stage_locally: bool=False, _codec_spec: Optional[str]=None)",
+          "source_line": 1981,
+          "doc_first_line": "Write to disk."
+        },
+        {
+          "name": "write_many",
+          "kind": "method",
+          "signature": "(self, output: str, fields: Sequence[str], *, overwrite: bool=False, stage_locally: bool=False, _codec_spec: Optional[str]=None)",
+          "source_line": 2011,
+          "doc_first_line": "Write fields to distinct tables."
+        },
+        {
+          "name": "show",
+          "kind": "method",
+          "signature": "(self, n=None, width=None, truncate=None, types=True, handler=None, n_rows=None)",
+          "source_line": 2329,
+          "doc_first_line": "Print the first few rows of the table to the console."
+        },
+        {
+          "name": "index",
+          "kind": "method",
+          "signature": "(self, *exprs, all_matches=False) -> 'Expression'",
+          "source_line": 2377,
+          "doc_first_line": "Expose the row values as if looked up in a dictionary, indexing"
+        },
+        {
+          "name": "index_globals",
+          "kind": "method",
+          "signature": "(self) -> 'StructExpression'",
+          "source_line": 2686,
+          "doc_first_line": "Return this table's global variables for use in another"
+        },
+        {
+          "name": "cache",
+          "kind": "method",
+          "signature": "(self) -> 'Table'",
+          "source_line": 2703,
+          "doc_first_line": "Persist this table in memory."
+        },
+        {
+          "name": "persist",
+          "kind": "method",
+          "signature": "(self, storage_level='MEMORY_AND_DISK') -> 'Table'",
+          "source_line": 2725,
+          "doc_first_line": "Persist this table in memory or on disk."
+        },
+        {
+          "name": "unpersist",
+          "kind": "method",
+          "signature": "(self) -> 'Table'",
+          "source_line": 2762,
+          "doc_first_line": "Unpersists this table from memory/disk."
+        },
+        {
+          "name": "collect",
+          "kind": "method",
+          "signature": "(self) -> List[hl.Struct]",
+          "source_line": 2779,
+          "doc_first_line": ""
+        },
+        {
+          "name": "collect",
+          "kind": "method",
+          "signature": "(self, _localize=False) -> ArrayExpression",
+          "source_line": 2782,
+          "doc_first_line": ""
+        },
+        {
+          "name": "collect",
+          "kind": "method",
+          "signature": "(self, _localize=True, *, _timed=False)",
+          "source_line": 2785,
+          "doc_first_line": "Collect the rows of the table into a local list."
+        },
+        {
+          "name": "describe",
+          "kind": "method",
+          "signature": "(self, handler=print, *, widget=False)",
+          "source_line": 2820,
+          "doc_first_line": "Print information about the fields in the table."
+        },
+        {
+          "name": "add_index",
+          "kind": "method",
+          "signature": "(self, name='idx') -> 'Table'",
+          "source_line": 2870,
+          "doc_first_line": "Add the integer index of each row as a new row field."
+        },
+        {
+          "name": "union",
+          "kind": "method",
+          "signature": "(self, *tables, unify: bool=False) -> 'Table'",
+          "source_line": 2916,
+          "doc_first_line": "Union the rows of multiple tables."
+        },
+        {
+          "name": "take",
+          "kind": "method",
+          "signature": "(self, n, _localize=True)",
+          "source_line": 2994,
+          "doc_first_line": "Collect the first `n` rows of the table into a local list."
+        },
+        {
+          "name": "head",
+          "kind": "method",
+          "signature": "(self, n) -> 'Table'",
+          "source_line": 3030,
+          "doc_first_line": "Subset table to first `n` rows."
+        },
+        {
+          "name": "tail",
+          "kind": "method",
+          "signature": "(self, n) -> 'Table'",
+          "source_line": 3069,
+          "doc_first_line": "Subset table to last `n` rows."
+        },
+        {
+          "name": "sample",
+          "kind": "method",
+          "signature": "(self, p, seed=None) -> 'Table'",
+          "source_line": 3100,
+          "doc_first_line": "Downsample the table by keeping each row with probability ``p``."
+        },
+        {
+          "name": "repartition",
+          "kind": "method",
+          "signature": "(self, n, shuffle=True) -> 'Table'",
+          "source_line": 3159,
+          "doc_first_line": "Change the number of partitions."
+        },
+        {
+          "name": "naive_coalesce",
+          "kind": "method",
+          "signature": "(self, max_partitions: int) -> 'Table'",
+          "source_line": 3229,
+          "doc_first_line": "Naively decrease the number of partitions."
+        },
+        {
+          "name": "semi_join",
+          "kind": "method",
+          "signature": "(self, other: 'Table') -> 'Table'",
+          "source_line": 3260,
+          "doc_first_line": "Filters the table to rows whose key appears in `other`."
+        },
+        {
+          "name": "anti_join",
+          "kind": "method",
+          "signature": "(self, other: 'Table') -> 'Table'",
+          "source_line": 3346,
+          "doc_first_line": "Filters the table to rows whose key does not appear in `other`."
+        },
+        {
+          "name": "join",
+          "kind": "method",
+          "signature": "(self, right: 'Table', how='inner', _mangle: Callable[[str, int], str]=lambda s, i: f'{s}_{i}', _join_key: Optional[int]=None) -> 'Table'",
+          "source_line": 3397,
+          "doc_first_line": "Join two tables together."
+        },
+        {
+          "name": "all",
+          "kind": "method",
+          "signature": "(self, expr)",
+          "source_line": 3491,
+          "doc_first_line": "Evaluate whether a boolean expression is true for all rows."
+        },
+        {
+          "name": "any",
+          "kind": "method",
+          "signature": "(self, expr)",
+          "source_line": 3513,
+          "doc_first_line": "Evaluate whether a Boolean expression is true for at least one row."
+        },
+        {
+          "name": "rename",
+          "kind": "method",
+          "signature": "(self, mapping) -> 'Table'",
+          "source_line": 3537,
+          "doc_first_line": "Rename fields of the table."
+        },
+        {
+          "name": "expand_types",
+          "kind": "method",
+          "signature": "(self) -> 'Table'",
+          "source_line": 3588,
+          "doc_first_line": "Expand complex types into structs and arrays."
+        },
+        {
+          "name": "flatten",
+          "kind": "method",
+          "signature": "(self) -> 'Table'",
+          "source_line": 3641,
+          "doc_first_line": "Flatten nested structs."
+        },
+        {
+          "name": "order_by",
+          "kind": "method",
+          "signature": "(self, *exprs) -> 'Table'",
+          "source_line": 3706,
+          "doc_first_line": "Sort by the specified fields, defaulting to ascending order. Will unkey the table if it is keyed."
+        },
+        {
+          "name": "explode",
+          "kind": "method",
+          "signature": "(self, field, name=None) -> 'Table'",
+          "source_line": 3800,
+          "doc_first_line": "Explode rows along a field of type array or set, copying the entire row for each element."
+        },
+        {
+          "name": "to_matrix_table",
+          "kind": "method",
+          "signature": "(self, row_key, col_key, row_fields=[], col_fields=[], n_partitions=None) -> 'hl.MatrixTable'",
+          "source_line": 3921,
+          "doc_first_line": "Construct a matrix table from a table in coordinate representation."
+        },
+        {
+          "name": "to_matrix_table_row_major",
+          "kind": "method",
+          "signature": "(self, columns, entry_field_name=None, col_field_name='col')",
+          "source_line": 4048,
+          "doc_first_line": "Construct a matrix table from a table in row major representation. Each element in `columns`"
+        },
+        {
+          "name": "globals",
+          "kind": "property",
+          "signature": "",
+          "source_line": 4148,
+          "doc_first_line": "Returns a struct expression including all global fields."
+        },
+        {
+          "name": "row",
+          "kind": "property",
+          "signature": "",
+          "source_line": 4171,
+          "doc_first_line": "Returns a struct expression of all row-indexed fields, including keys."
+        },
+        {
+          "name": "row_value",
+          "kind": "property",
+          "signature": "",
+          "source_line": 4194,
+          "doc_first_line": "Returns a struct expression including all non-key row-indexed fields."
+        },
+        {
+          "name": "from_spark",
+          "kind": "method",
+          "signature": "(df, key=[]) -> 'Table'",
+          "source_line": 4218,
+          "doc_first_line": "Convert PySpark SQL DataFrame to a table."
+        },
+        {
+          "name": "to_spark",
+          "kind": "method",
+          "signature": "(self, flatten=True)",
+          "source_line": 4261,
+          "doc_first_line": "Converts this table to a Spark DataFrame."
+        },
+        {
+          "name": "to_pandas",
+          "kind": "method",
+          "signature": "(self, flatten=True, types={})",
+          "source_line": 4280,
+          "doc_first_line": "Converts this table to a Pandas DataFrame."
+        },
+        {
+          "name": "from_pandas",
+          "kind": "method",
+          "signature": "(df, key=[]) -> 'Table'",
+          "source_line": 4326,
+          "doc_first_line": "Create table from Pandas DataFrame"
+        },
+        {
+          "name": "collect_by_key",
+          "kind": "method",
+          "signature": "(self, name: str='values') -> 'Table'",
+          "source_line": 4458,
+          "doc_first_line": "Collect values for each unique key into an array."
+        },
+        {
+          "name": "distinct",
+          "kind": "method",
+          "signature": "(self) -> 'Table'",
+          "source_line": 4516,
+          "doc_first_line": "Deduplicate keys, keeping exactly one row for each unique key."
+        },
+        {
+          "name": "summarize",
+          "kind": "method",
+          "signature": "(self, handler=None)",
+          "source_line": 4566,
+          "doc_first_line": "Compute and print summary information about the fields in the table."
+        },
+        {
+          "name": "multi_way_zip_join",
+          "kind": "method",
+          "signature": "(tables, data_field_name, global_field_name) -> 'Table'",
+          "source_line": 4586,
+          "doc_first_line": "Combine many tables in a zip join"
+        }
+      ]
+    }
+  }
+}

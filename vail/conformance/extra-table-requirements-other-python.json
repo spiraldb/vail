@@ -1,0 +1,1287 @@
+{
+  "schema_version": 1,
+  "method": "Source-reviewed remaining Python Table candidates outside MatrixTable, VDS, plot, and ggplot test trees; requirements identify concrete APIs, formats, algorithms, and observed assertions without execution claims.",
+  "tests": [
+    {
+      "source": "hail/python/test/hail/backend/test_service_backend.py",
+      "line": 70,
+      "test_id": "test_big_worker_has_big_memory",
+      "implementation_requirement": "ServiceBackend must pass configured 8 worker cores and highmem memory through job configuration when range_table(10)._force_count executes.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071"
+    },
+    {
+      "source": "hail/python/test/hail/backend/test_service_backend.py",
+      "line": 85,
+      "test_id": "test_regions",
+      "implementation_requirement": "ServiceBackend must send the configured GCP/Azure region list to the driver job triggered by range_table._force_count, then permit restoring the old region setting.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071"
+    },
+    {
+      "source": "hail/python/test/hail/backend/test_service_backend.py",
+      "line": 107,
+      "test_id": "test_driver_and_worker_job_groups",
+      "implementation_requirement": "Executing a two-partition range table must create a named action job group containing one driver job and worker stage groups with expected ancestry and attributes.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071"
+    },
+    {
+      "source": "hail/python/test/hail/backend/test_service_backend.py",
+      "line": 139,
+      "test_id": "test_attach_to_existing_batch",
+      "implementation_requirement": "Batch backend initialization with an existing batch_id must attach the range_table execution jobs to that same batch and expose its ID and nonzero job count.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "954d506403c194301dbc828354a94793b17a1cecbb8b67c802e5cd8f6d426071"
+    },
+    {
+      "source": "hail/python/test/hail/backend/test_spark_backend.py",
+      "line": 46,
+      "test_id": "test_init_with_existing_spark_context",
+      "implementation_requirement": "SparkBackend must accept an externally owned SparkContext, execute range_table._force_count, and leave that context running after hl.stop.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "f8698df6467e5e5d2c105e2f7a4cff5d8625d8370c7933efd8183071663f604d"
+    },
+    {
+      "source": "hail/python/test/hail/experimental/test_annotation_db.py",
+      "line": 53,
+      "test_id": "test_uniqueness",
+      "implementation_requirement": "Annotation DB must look up genomic_range_table rows and expose a unique dataset as struct annotation and nonunique dataset as array of struct annotations.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "df7178da808086227d4cd413ea5b06bf392107f9b034bec834215848fd04a270"
+    },
+    {
+      "source": "hail/python/test/hail/experimental/test_experimental.py",
+      "line": 111,
+      "test_id": "test_plot_roc_curve",
+      "implementation_requirement": "plot_roc_curve must consume a Table of random scores and boolean TP/FP labels, returning its plot and AUCs for three score fields.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "source": "hail/python/test/hail/experimental/test_experimental.py",
+      "line": 117,
+      "test_id": "test_import_keyby_count_ldsc_lowered_shuffle",
+      "implementation_requirement": "Import LD-score and sum-stat TSVs keyed by SNP; indexed join, annotate locus/alleles, rekey, and count through lowered shuffle without serialization failure.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "source": "hail/python/test/hail/experimental/test_experimental.py",
+      "line": 195,
+      "test_id": "test_ld_score_regression_1",
+      "implementation_requirement": "Union LD-score Tables, convert to phenotype MatrixTable, run block jackknife ld_score_regression, and verify the returned result Table against expected coefficients and errors.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "source": "hail/python/test/hail/experimental/test_experimental.py",
+      "line": 298,
+      "test_id": "test_sparse_split_haploid",
+      "implementation_requirement": "Unlocalize entries from a keyed Table with global columns, sparse-split haploid multiallelic calls, and compare resulting MatrixTable rows/entries with expected LA/LGT/LPL.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "source": "hail/python/test/hail/experimental/test_experimental.py",
+      "line": 374,
+      "test_id": "test_pc_project",
+      "implementation_requirement": "Join PCA loadings Table to MatrixTable row allele frequencies, project calls with pc_project, and return one result Table row for each of 100 samples.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "source": "hail/python/test/hail/experimental/test_experimental.py",
+      "line": 404,
+      "test_id": "test_mt_full_outer_join_self",
+      "implementation_requirement": "full_outer_join_mt on the same VCF MatrixTable must preserve matched column, row, and entry counts through left/right fields.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "cd5046190036c2127e2811ce7deafba9f9f78824879130188ec4411596a1ae43"
+    },
+    {
+      "source": "hail/python/test/hail/fs/test_worker_driver_fs.py",
+      "line": 18,
+      "test_id": "test_requester_pays_no_settings",
+      "implementation_requirement": "GCS requester-pays import_table must fail with no billing project configured.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "source": "hail/python/test/hail/fs/test_worker_driver_fs.py",
+      "line": 26,
+      "test_id": "test_requester_pays_write_no_settings",
+      "implementation_requirement": "GCS requester-pays range_table.write must fail with no billing project configured, including worker-side access.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "source": "hail/python/test/hail/fs/test_worker_driver_fs.py",
+      "line": 38,
+      "test_id": "test_requester_pays_write_with_project",
+      "implementation_requirement": "GCS requester-pays range_table.write must succeed with the authorized project and allow cleanup.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "source": "hail/python/test/hail/fs/test_worker_driver_fs.py",
+      "line": 60,
+      "test_id": "test_requester_pays_with_project",
+      "implementation_requirement": "GCS requester-pays import_table without header must read the single hello row when a billing project is configured.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "source": "hail/python/test/hail/fs/test_worker_driver_fs.py",
+      "line": 69,
+      "test_id": "test_requester_pays_no_project",
+      "implementation_requirement": "GCS requester-pays import_table must reject a billing-project configuration scoped to a different bucket.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "source": "hail/python/test/hail/fs/test_worker_driver_fs.py",
+      "line": 86,
+      "test_id": "test_requester_pays_with_project_more_than_one_partition",
+      "implementation_requirement": "GCS requester-pays import_table must read ordered lines across at least eight partitions under authorized billing, without seeking beyond stream end.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "source": "hail/python/test/hail/fs/test_worker_driver_fs.py",
+      "line": 119,
+      "test_id": "test_requester_pays_with_project_more_than_one_partition_no_project",
+      "implementation_requirement": "GCS requester-pays import_table with min_partitions=8 must reject an unauthorized bucket-specific billing configuration.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "58c49538baa0ed0babf5b68e7ad3ac8a8536037bc24c1a8a6d2c5e821908b402"
+    },
+    {
+      "source": "hail/python/test/hail/genetics/test_reference_genome.py",
+      "line": 46,
+      "test_id": "test_reference_genome_sequence",
+      "implementation_requirement": "Load a custom reference from FASTA/FAI; import a TSV and use Table.all with get_sequence(contig,pos) to match bases, plus locus sequence lookup.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "34d620e1a7c784ae63e540216e37b3a6e384514021a33dc285696b3b26594ec4"
+    },
+    {
+      "source": "hail/python/test/hail/genetics/test_reference_genome.py",
+      "line": 77,
+      "test_id": "test_reference_genome_liftover",
+      "implementation_requirement": "Register reciprocal GRCh37/GRCh38 chain files and liftover VCF loci through a MatrixTable rows Table, preserving loci and missing semantics.",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "source_sha256": "34d620e1a7c784ae63e540216e37b3a6e384514021a33dc285696b3b26594ec4"
+    },
+    {
+      "source": "hail/python/test/hail/genetics/test_reference_genome.py",
+      "line": 174,
+      "test_id": "test_read_custom_reference_genome",
+      "implementation_requirement": "read_table of a native Table carrying custom reference metadata must register three reference genomes and preserve a 14-row count.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "34d620e1a7c784ae63e540216e37b3a6e384514021a33dc285696b3b26594ec4"
+    },
+    {
+      "source": "hail/python/test/hail/genetics/test_reference_genome.py",
+      "line": 205,
+      "test_id": "test_custom_reference_read_write",
+      "implementation_requirement": "Write/read a keyed range Table with custom-reference locus values and retain schema, key, globals, and rows under _same.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "34d620e1a7c784ae63e540216e37b3a6e384514021a33dc285696b3b26594ec4"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 130,
+      "test_id": "test_from_entry_expr_options",
+      "implementation_requirement": "BlockMatrix.from_entry_expr must apply optional missing-value mean imputation, centering, and normalization to MatrixTable entries and match NumPy arrays.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 146,
+      "test_id": "test_from_entry_expr_raises_when_values_missing",
+      "implementation_requirement": "BlockMatrix.from_entry_expr without imputation must reject a missing MatrixTable entry value.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 284,
+      "test_id": "test_to_table",
+      "implementation_requirement": "BlockMatrix.to_table_row_major must emit keyed row_idx and float64 entries arrays matching a parallelized Table, across requested partition and block-size options.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 319,
+      "test_id": "test_to_matrix_table_0",
+      "implementation_requirement": "BlockMatrix.to_matrix_table_row_major must generate expected row/column keys and float64 entries for a 2 by 5 array.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1013,
+      "test_id": "test_block_matrix_entries",
+      "implementation_requirement": "BlockMatrix.entries must return a three-field keyed Table (i,j,entry) with all 15 floating elements and _same semantics.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1029,
+      "test_id": "test_from_entry_expr_filtered",
+      "implementation_requirement": "A fully filtered MatrixTable entry with mean imputation must yield a NaN in the BlockMatrix entries Table.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1115,
+      "test_id": "test_locus_windows_4",
+      "implementation_requirement": "locus_windows on a keyed locus Table must return exact start/stop windows for repeated loci and contig boundaries at radius 1.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1145,
+      "test_id": "test_locus_windows_5",
+      "implementation_requirement": "locus_windows with row-indexed centimorgan coordinate must return exact start/stop windows at radius 1.0.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1152,
+      "test_id": "test_locus_windows_6",
+      "implementation_requirement": "locus_windows must reject loci reordered out of ascending genomic order.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1158,
+      "test_id": "test_locus_windows_7",
+      "implementation_requirement": "locus_windows must reject a coord_expr indexed by a different range_table source.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1169,
+      "test_id": "test_locus_windows_9",
+      "implementation_requirement": "locus_windows must reject an unindexed constant coord_expr with no Table source.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1175,
+      "test_id": "test_locus_windows_10",
+      "implementation_requirement": "locus_windows must require row-indexed locus and coordinate expressions, rejecting globals.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1185,
+      "test_id": "test_locus_windows_11",
+      "implementation_requirement": "locus_windows must raise a user error on missing row locus, with or without coord_expr.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/linalg/test_linalg.py",
+      "line": 1198,
+      "test_id": "test_locus_windows_12",
+      "implementation_requirement": "locus_windows must raise on a missing row coordinate expression.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "adf79e863f221dd5faa198b87ae13fac8c5b1f1e08a533290557e96d42477033"
+    },
+    {
+      "source": "hail/python/test/hail/methods/relatedness/test_pc_relate.py",
+      "line": 7,
+      "test_id": "test_pc_relate_against_R_truth",
+      "implementation_requirement": "pc_relate on VCF calls must return a keyed pairwise kinship/IBD Table whose kin, ibd0, ibd1, and ibd2 fields match imported R truth within test tolerances.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "cfb84ab1d70fc00203afdf473eca5110a0cb8c929a1743af73b76945c547c671"
+    },
+    {
+      "source": "hail/python/test/hail/methods/relatedness/test_pc_relate.py",
+      "line": 32,
+      "test_id": "test_pc_relate_simple_example",
+      "implementation_requirement": "pc_relate with explicit sample scores must compute expected six pairwise kinship and IBD structs from synthetic genotypes.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "cfb84ab1d70fc00203afdf473eca5110a0cb8c929a1743af73b76945c547c671"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_family_methods.py",
+      "line": 11,
+      "test_id": "test_trio_matrix_1",
+      "implementation_requirement": "import_fam/Pedigree and trio_matrix must align pedigree trios with VCF samples; indexed joins to father/mother Tables and genotype comparisons must agree.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_family_methods.py",
+      "line": 255,
+      "test_id": "test_tdt",
+      "implementation_requirement": "transmission_disequilibrium_test on split multiallelic VCF and pedigree must emit expected T, U, chi_sq, and p_value rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_family_methods.py",
+      "line": 290,
+      "test_id": "test_de_novo",
+      "implementation_requirement": "de_novo on pedigree-tagged VCF must emit expected proband variants, classifications, and posterior probabilities after Table joins.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "0354d750647d2ed5c759a97c1d6a82c2fe328f707e1634c2dbb54ab617fc20cd"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 70,
+      "test_id": "test_undeclared_info",
+      "implementation_requirement": "VCF import must preserve declared INFO fields and ignore undeclared INFO values/flags; Table rows INFO is defined.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 81,
+      "test_id": "test_can_import_bad_number_flag",
+      "implementation_requirement": "VCF import must tolerate malformed Number metadata for a flag field and count its rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 104,
+      "test_id": "test_find_replace",
+      "implementation_requirement": "VCF import find_replace regex must rewrite RSID columns to missing before parsing; row aggregation confirms all rsid values missing.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 109,
+      "test_id": "test_haploid",
+      "implementation_requirement": "VCF import must parse haploid and diploid GT, AD, GQ into entry rows equal to an explicit keyed Table.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 126,
+      "test_id": "test_call_fields",
+      "implementation_requirement": "VCF import must parse multiple call-typed FORMAT fields, including missing and haploid calls, into entry rows equal to keyed Table truth.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 167,
+      "test_id": "test_import_vcf",
+      "implementation_requirement": "VCF import with GRCh38 and contig recoding must produce chr22 loci after split_multi_hts, with reference-aware locus dtype.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 191,
+      "test_id": "test_import_vcf_flags_are_defined",
+      "implementation_requirement": "VCF INFO Flag fields NEGATIVE_TRAIN_SITE, POSITIVE_TRAIN_SITE, DB, DS must be defined booleans in every imported row.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 232,
+      "test_id": "test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements",
+      "implementation_requirement": "VCF INFO array parser with array_elements_required=False must preserve interior missing elements and wholly missing fields with exact row schema.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 266,
+      "test_id": "test_import_vcf_missing_format_field_elements",
+      "implementation_requirement": "VCF FORMAT array parser with array_elements_required=False must preserve interior missing AD/PL elements across haploid/diploid entries.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 410,
+      "test_id": "test_export_sites_only_from_table",
+      "implementation_requirement": "export_vcf must accept a sites-only Table from MatrixTable.rows; reimport must reconstruct a no-entry/no-column MatrixTable equivalent to source.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 508,
+      "test_id": "test_tabix_export",
+      "implementation_requirement": "export_vcf(tabix=True) must write bgzip VCF plus tabix index; its reimport through MatrixVCFReader with explicit genomic partitions must equal ordinary import and filter_intervals must report exact intersected partition counts.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 522,
+      "test_id": "test_import_gvcfs",
+      "implementation_requirement": "VCF import via MatrixVCFReader with explicit three genomic partition intervals must equal ordinary import; filter_intervals must preserve content while reporting one, two, or three intersected partitions at exact boundaries.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 574,
+      "test_id": "test_haploid_combiner_ok",
+      "implementation_requirement": "gVCF combiner transform must retain haploid versus diploid GT semantics when localizing entries and combining reference data.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 819,
+      "test_id": "test_vcf_different_info_errors",
+      "implementation_requirement": "Multi-file VCF import must report mismatched INFO fields with the specified fatal error on row evaluation.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 874,
+      "test_id": "test_import_plink_a1_major",
+      "implementation_requirement": "PLINK export/import with a2_reference true/false must swap allele orientation consistently with variant_qc AC/AF through rsid-keyed Table join.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 926,
+      "test_id": "test_import_plink_contig_recoding_w_reference",
+      "implementation_requirement": "PLINK import must recode chr22 to GRCh37 contig 22, preserve locus type, and row count after VCF export.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1048,
+      "test_id": "test_export_plink_default_arguments",
+      "implementation_requirement": "export_plink default .fam/.bim output must encode family/sample/sex/phenotype and variant fields; import_table verifies column values.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1074,
+      "test_id": "test_export_plink_non_default_arguments",
+      "implementation_requirement": "export_plink custom FAM expressions must emit requested IDs, parents, sex, and binary phenotype encodings.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1092,
+      "test_id": "test_export_plink_quantitative_phenotype",
+      "implementation_requirement": "export_plink float phenotype must emit quantitative values in .fam, distinct from missing and default codes.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1110,
+      "test_id": "test_export_plink_non_default_bim_arguments",
+      "implementation_requirement": "export_plink custom varid and centimorgan position must appear in .bim as hello and 100.0.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1162,
+      "test_id": "test_export_plink_struct_locus",
+      "implementation_requirement": "PLINK export/import must round-trip rows keyed by unreferenced struct locus plus alleles, with calls and sample keys.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1248,
+      "test_id": "test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci",
+      "implementation_requirement": "BGEN import without decoding entries must skip invalid loci and count three valid rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1256,
+      "test_id": "test_import_bgen_errors_with_invalid_loci",
+      "implementation_requirement": "index_bgen must reject invalid loci; import_bgen without a valid index must fail on row count.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1285,
+      "test_id": "test_import_bgen_dosage_and_gp_dosage_function_agree",
+      "implementation_requirement": "BGEN dosage and GP entry fields must agree with gp_dosage computation or both be missing across entries.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1317,
+      "test_id": "test_import_bgen_variant_filtering_from_literals",
+      "implementation_requirement": "BGEN variants filter given literal locus/alleles structs must return exactly requested existing variants and preserve duplicates.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1362,
+      "test_id": "test_import_bgen_locus_filtering_from_Struct_object",
+      "implementation_requirement": "BGEN variants filter by Struct(locus) must return both duplicate rows at position 10000.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1376,
+      "test_id": "test_import_bgen_locus_filtering_from_struct_expression",
+      "implementation_requirement": "BGEN variants filter by Locus objects must return both duplicate rows at position 10000.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1418,
+      "test_id": "test_import_bgen_variant_filtering_from_table",
+      "implementation_requirement": "BGEN variants filter supplied as its own rows Table must preserve all 199 variants, 500 samples, and row content.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1432,
+      "test_id": "test_import_bgen_locus_filtering_from_table",
+      "implementation_requirement": "BGEN variants filter supplied as keyed locus Table must return both duplicate rows at position 10000.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1681,
+      "test_id": "test_import_gen",
+      "implementation_requirement": "GEN/sample import with contig recoding 01 to 1 must yield 199 GRCh37 locus rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1908,
+      "test_id": "test_import_matrix_table_1",
+      "implementation_requirement": "import_matrix_table TSV must assign declared row-field types and row/column expression axes and execute count.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1940,
+      "test_id": "test_import_matrix_table_no_cols",
+      "implementation_requirement": "import_matrix_table of no-column TSV must produce zero columns and 231 rows matching import_table row schema/content.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 1957,
+      "test_id": "test_import_matrix_comment",
+      "implementation_requirement": "import_matrix_table comment prefixes # and % must skip matching lines and preserve un-commented matrix content.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2011,
+      "test_id": "test_devilish_nine_separated_eight_missing_file",
+      "implementation_requirement": "import_matrix_table with sep=9 and missing=8 must parse unusual header/row fields and missing entry values exactly, including blank-named key field.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2054,
+      "test_id": "test_long_parsing",
+      "implementation_requirement": "import_matrix_table must parse int64 row field and entry values, returning exact two entry structs.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2068,
+      "test_id": "test_import_matrix_table_round_trip",
+      "implementation_requirement": "Matrix entry expression export/import must round-trip keys, typed row fields, missing token, delimiter, and header options across partitions.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2137,
+      "test_id": "test_import_table_force_bgz",
+      "implementation_requirement": "import_table(force_bgz=True,impute=True) must read a BGZF file copied to .gz and recover a keyed range Table exactly.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2148,
+      "test_id": "test_import_table_empty",
+      "implementation_requirement": "import_table of a wholly empty TSV must raise ValueError with no-lines-after-filters and source path context on collect.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2159,
+      "test_id": "test_import_table_empty_with_header",
+      "implementation_requirement": "import_table of header-only TSV must produce an empty Table that collects to empty list.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2162,
+      "test_id": "test_glob",
+      "implementation_requirement": "import_table glob over split annotation TSVs must read all files for a 346-row count.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2166,
+      "test_id": "test_type_imputation",
+      "implementation_requirement": "import_table must infer int32, float64, bool, str under custom delimiter/missing token and honor explicit type overrides in schema.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2191,
+      "test_id": "test_import_export_identity",
+      "implementation_requirement": "import_table followed by Table.export must reproduce input TSV lines exactly.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2213,
+      "test_id": "test_source_file",
+      "implementation_requirement": "import_table(source_file_field) over glob must attach each row's originating file path in source field, preserving file order/index groups.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2226,
+      "test_id": "test_read_write_identity",
+      "implementation_requirement": "Table.write/read_table must round-trip unkeyed Table schema, globals, rows, and partition metadata under _same.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2232,
+      "test_id": "test_read_write_identity_keyed",
+      "implementation_requirement": "Table.write/read_table must round-trip small_dataset_1 after key_by() removes its key, preserving unkeyed schema, globals, and rows under _same.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2238,
+      "test_id": "test_import_same",
+      "implementation_requirement": "Two independent import_table calls on the same TSV must be _same.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2243,
+      "test_id": "test_error_with_context",
+      "implementation_requirement": "import_table must attach source/field context to invalid int32 parse and ragged row errors, surfacing HailUserError at count.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_impex.py",
+      "line": 2325,
+      "test_id": "test_matrix_and_table_read_intervals_with_hidden_key",
+      "implementation_requirement": "read_table(_intervals) must scan native keyed Table after dropping hidden suffix key fields and count interval-restricted rows without failure.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 29,
+      "test_id": "test_annotate_intervals_bed1",
+      "implementation_requirement": "import_bed intervals must support locus containment lookup to annotate VCF rows and match interval-list target assignments.",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 43,
+      "test_id": "test_annotate_intervals_bed2",
+      "implementation_requirement": "import_bed and import_locus_intervals must produce equivalent target annotations on MatrixTable rows through interval-indexed lookup.",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 67,
+      "test_id": "test_annotate_intervals_bed3",
+      "implementation_requirement": "import_bed with target field must annotate expected gene1/gene2 loci and leave others missing.",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 79,
+      "test_id": "test_maximal_independent_set",
+      "implementation_requirement": "maximal_independent_set must choose integer graph nodes with tie breaker, return keyed node:int64 Table, and reject mismatched endpoint type/source or scalar endpoints.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 94,
+      "test_id": "test_maximal_independent_set2",
+      "implementation_requirement": "maximal_independent_set on a parallelized edge Table must return an independent node set with node-only row schema and empty globals.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 107,
+      "test_id": "test_maximal_independent_set3",
+      "implementation_requirement": "maximal_independent_set must accept struct nodes and expression tie breaker preferring cases, returning case-node IDs.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 127,
+      "test_id": "test_maximal_independent_set_types",
+      "implementation_requirement": "maximal_independent_set must accept nested struct node identities with floating rank fields and execute count.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 133,
+      "test_id": "test_maximal_independent_set_on_floats",
+      "implementation_requirement": "maximal_independent_set must apply a float-field tie breaker to struct nodes and honor keep=False.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 139,
+      "test_id": "test_maximal_independent_set_string_node_names",
+      "implementation_requirement": "maximal_independent_set must support string nodes and keep=False, returning one endpoint per disconnected edge.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 175,
+      "test_id": "test_table_filter_intervals",
+      "implementation_requirement": "filter_intervals on VCF rows Table must retain three loci for a single interval or adjacent intervals, accepting Python and Hail arrays of locus intervals.",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 232,
+      "test_id": "test_lambda_gc",
+      "implementation_requirement": "lambda_gc must estimate genomic-control inflation from scan-generated uniform-like chi-square values, including a nonlinear transform.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 240,
+      "test_id": "test_lambda_gc_nans",
+      "implementation_requirement": "lambda_gc must exclude NaN expression values while estimating genomic-control inflation from scan counts.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_misc.py",
+      "line": 246,
+      "test_id": "test_segment_intervals",
+      "implementation_requirement": "segment_intervals on a keyed interval Table must split each interval at supplied points, preserve empty interval behavior, and return expected interval ordering.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "15f5276e43a19ec2cb8c8044d0ec8a19768bbc5b59dad1f85b9a00c33fee69e3"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 41,
+      "test_id": "test_sample_qc",
+      "implementation_requirement": "sample_qc on Table.to_matrix_table calls/GQ/DP must compute per-sample call, genotype, and depth/quality statistics including missing values and haploid calls.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 83,
+      "test_id": "test_variant_qc",
+      "implementation_requirement": "variant_qc on Table.to_matrix_table calls must compute row AC, AF, call rate, genotype counts, and HWE-related fields for multiallelic and missing genotypes.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 192,
+      "test_id": "test_concordance_n_discordant_2",
+      "implementation_requirement": "concordance between two MatrixTables built from parallelized entry Tables must count discordant genotype categories by shared locus/alleles and sample keys.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 338,
+      "test_id": "test_vep_grch37_consequence_true",
+      "implementation_requirement": "vep(csq=True) on GRCh37 VCF must produce CSQ arrays matching gnomAD INFO prefixes and global CSQ header text.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 361,
+      "test_id": "test_vep_grch38_consequence_true",
+      "implementation_requirement": "vep(csq=True) on GRCh38 VCF must produce CSQ arrays matching gnomAD INFO prefixes and global CSQ header text.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 386,
+      "test_id": "test_vep_grch37_consequence_false",
+      "implementation_requirement": "vep(csq=False) on GRCh37 VCF must produce structured annotation whose first row variant_class is SNV.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 400,
+      "test_id": "test_vep_grch38_consequence_false",
+      "implementation_requirement": "vep(csq=False) on GRCh38 VCF must produce structured annotation whose first row variant_class is SNV.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 414,
+      "test_id": "test_vep_grch37_against_dataproc",
+      "implementation_requirement": "vep on GRCh37 VCF rows must match expected Dataproc VEP annotation after normalizing the input field and comparing nested structs.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 468,
+      "test_id": "test_vep_grch38_against_dataproc",
+      "implementation_requirement": "vep on keyed GRCh38 locus/alleles Table must match imported Dataproc annotation after input-field normalization.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_qc.py",
+      "line": 522,
+      "test_id": "test_vep_grch38_with_large_positions",
+      "implementation_requirement": "vep on keyed GRCh38 Table must correctly annotate variants with large positions and match expected input normalization.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "f5615b2bbb76d91184f643a9e8f7420eb49083d753008a10a93f1bf09eb07895"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 10,
+      "test_id": "test_skat_negative_weights_errors",
+      "implementation_requirement": "Linear and logistic SKAT must reject negative variant weights during result Table evaluation.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 40,
+      "test_id": "test_logistic_skat_phenotypes_are_binary",
+      "implementation_requirement": "Logistic SKAT must reject a phenotype outside the binary 0/1 domain during result Table evaluation.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 69,
+      "test_id": "test_logistic_skat_no_weights_R_truth",
+      "implementation_requirement": "Logistic SKAT with unit weights must return Q statistic and Davies p-value matching R SKAT truth.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 124,
+      "test_id": "test_logistic_skat_R_truth",
+      "implementation_requirement": "Logistic SKAT with variant weights must return Q statistic and Davies p-value matching R SKAT truth.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 180,
+      "test_id": "test_logistic_skat_on_big_matrix",
+      "implementation_requirement": "Logistic SKAT over imported genotype matrix must match R truth for large-group Q and p-value.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 219,
+      "test_id": "test_linear_skat_no_weights_R_truth",
+      "implementation_requirement": "Linear SKAT with covariates and unit weights must match R truth Q and p-value.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 262,
+      "test_id": "test_linear_skat_R_truth",
+      "implementation_requirement": "Linear SKAT with covariates and weighted variants must match R truth Q and p-value.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 327,
+      "test_id": "test_linear_skat_on_big_matrix",
+      "implementation_requirement": "Linear SKAT over imported genotype matrix must match R truth Q and p-value for large-group data.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_skat.py",
+      "line": 443,
+      "test_id": "test_linear_skat_produces_same_results_as_old_scala_method",
+      "implementation_requirement": "Linear SKAT with VCF, sample covariates/phenotypes, interval-assigned gene groups, and locus weights must match legacy Scala result rows.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "122ec9388ac7fdf1c9bc44959da266a28c6cd944925953dc39d51895c1ea4168"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 22,
+      "test_id": "test_impute_sex_same_as_plink",
+      "implementation_requirement": "impute_sex on VCF calls must reproduce PLINK sex assignments and F-statistics after joining imported truth Table by sample.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 64,
+      "test_id": "test_linreg_basic",
+      "implementation_requirement": "linear_regression_rows on VCF dosages and joined phenotype/covariate Tables must match known beta, standard error, t-statistic, and p-values.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 95,
+      "test_id": "test_linreg_pass_through",
+      "implementation_requirement": "linear_regression_rows pass_through row fields must retain nested struct values exactly through keyed result Table lookup.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 135,
+      "test_id": "test_linreg_chained",
+      "implementation_requirement": "linear_regression_rows with multiple phenotypes/covariates must match chained single regressions, including missing phenotype masks and array result fields.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 223,
+      "test_id": "test_linear_regression_without_intercept",
+      "implementation_requirement": "linear_regression_rows without intercept must match expected coefficient statistics for VCF call counts.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 245,
+      "test_id": "test_linear_regression_with_cov",
+      "implementation_requirement": "linear_regression_rows with sample covariates from imported Tables must match expected coefficient and p-value rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 286,
+      "test_id": "test_linear_regression_pl",
+      "implementation_requirement": "linear_regression_rows on pl_dosage from VCF PL arrays must match known result rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 318,
+      "test_id": "test_linear_regression_with_dosage",
+      "implementation_requirement": "linear_regression_rows on gp_dosage from imported GEN must match known result rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 350,
+      "test_id": "test_linear_regression_equivalence_between_ds_and_gt",
+      "implementation_requirement": "linear_regression_rows using dosage versus GT allele counts must return nearly equal p-values, including NaN-aware comparison.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 366,
+      "test_id": "test_linear_regression_with_import_fam_boolean",
+      "implementation_requirement": "linear_regression_rows must consume boolean phenotype imported from FAM and match expected statistics.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 396,
+      "test_id": "test_linear_regression_with_import_fam_quant",
+      "implementation_requirement": "linear_regression_rows must consume quantitative phenotype imported from FAM and match expected statistics.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 426,
+      "test_id": "test_linear_regression_multi_pheno_same",
+      "implementation_requirement": "Multi-phenotype linear_regression_rows must equal separate per-phenotype runs, handling NaN values.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 553,
+      "test_id": "test_weighted_linear_regression",
+      "implementation_requirement": "_linear_regression_rows_nd weighted coefficients must agree with preweighted data and hl.agg.linreg, including NaN handling.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 610,
+      "test_id": "test_weighted_linear_regression__missing_weights_are_excluded",
+      "implementation_requirement": "_linear_regression_rows_nd must exclude samples with missing weights and agree with weighted hl.agg.linreg.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 719,
+      "test_id": "test_logistic_regression_wald_test",
+      "implementation_requirement": "logistic_regression_rows Wald test must match known beta, standard error, z-statistic, and p-value for VCF calls.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 758,
+      "test_id": "test_logistic_regression_wald_test_apply_multi_pheno",
+      "implementation_requirement": "Multi-phenotype logistic_regression_rows Wald results must match separate phenotype runs and output array fields.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 804,
+      "test_id": "test_logistic_regression_wald_test_multi_pheno_bgen_dosage",
+      "implementation_requirement": "Multi-phenotype logistic_regression_rows on BGEN dosage must match single-phenotype fits and expected statistics after sample Table joins.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 851,
+      "test_id": "test_logistic_regression_wald_test_pl",
+      "implementation_requirement": "logistic_regression_rows Wald test on pl_dosage from VCF PL must match known statistics.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 890,
+      "test_id": "test_logistic_regression_wald_dosage",
+      "implementation_requirement": "logistic_regression_rows Wald test on gp_dosage from GEN must match known statistics.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 940,
+      "test_id": "test_logistic_regression_lrt",
+      "implementation_requirement": "logistic_regression_rows likelihood-ratio test must match known chi-square and p-values for VCF calls.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 987,
+      "test_id": "test_logistic_regression_score",
+      "implementation_requirement": "logistic_regression_rows score test must match known chi-square and p-values for VCF calls.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1024,
+      "test_id": "test_logreg_pass_through",
+      "implementation_requirement": "logistic_regression_rows pass_through must preserve a nested row struct through keyed Table lookup.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1055,
+      "test_id": "test_poission_regression_wald_test",
+      "implementation_requirement": "poisson_regression_rows Wald test must match known beta, standard error, z-statistic, and p-value.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1115,
+      "test_id": "test_poisson_regression_lrt",
+      "implementation_requirement": "poisson_regression_rows likelihood-ratio test must match known chi-square and p-value.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1159,
+      "test_id": "test_poisson_regression_score_test",
+      "implementation_requirement": "poisson_regression_rows score test must match known chi-square and p-value.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1194,
+      "test_id": "test_poisson_pass_through",
+      "implementation_requirement": "poisson_regression_rows pass_through must preserve a nested row struct through keyed Table lookup.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1260,
+      "test_id": "test_row_correlation_vs_hardcode",
+      "implementation_requirement": "row_correlation on Table.to_matrix_table synthetic calls must match the hard-coded correlation matrix with missing genotypes.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1355,
+      "test_id": "test_split_multi_hts",
+      "implementation_requirement": "split_multi_hts on multiallelic VCF must produce expected biallelic rows/calls versus truth.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1365,
+      "test_id": "test_split_multi_table",
+      "implementation_requirement": "split_multi on VCF rows Table must produce the same biallelic row content as split_multi_hts on MatrixTable.",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1381,
+      "test_id": "test_split_multi_shuffle",
+      "implementation_requirement": "split_multi on unsorted keyed Table with permit_shuffle=True must reorder alleles A/C, A/G, A/T and agree with MatrixTable splitting.",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1410,
+      "test_id": "test_ld_prune",
+      "implementation_requirement": "ld_prune must emit variant Table whose retained loci satisfy genotype-correlation threshold and expected count after split_multi_hts.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1466,
+      "test_id": "test_ld_prune_maf",
+      "implementation_requirement": "ld_prune must apply minor-allele-frequency filter alongside r2 pruning to simulated variants and match expected retained count.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1499,
+      "test_id": "test_balding_nichols_model",
+      "implementation_requirement": "balding_nichols_model must generate expected row/column counts, allele frequencies, and genotype statistics for fixed randomness.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1637,
+      "test_id": "test_de_novo",
+      "implementation_requirement": "de_novo on VCF calls/pedigree must emit a variant/sample Table whose classifications and posterior values match imported truth.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/methods/test_statgen.py",
+      "line": 1883,
+      "test_id": "test_split_multi_pl_haploid",
+      "implementation_requirement": "split_multi_hts on a Table of haploid multiallelic calls must downcode GT and PL correctly and return expected row structs.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2"
+    },
+    {
+      "source": "hail/python/test/hail/test_call_caching.py",
+      "line": 7,
+      "test_id": "test_execution_cache_creation",
+      "implementation_requirement": "With use_fast_restarts=1 and a configured cachedir, executing an annotated range Table must create a nonempty execution-cache folder in backend FS.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "9fdd51b8e2b02b2f3e42ff06e89d0936b295d9d5b5b6bf2ed55ac4aa0a9f0e6b"
+    },
+    {
+      "source": "hail/python/test/hail/test_exceptions_from_workers_have_stack_traces.py",
+      "line": 12,
+      "test_id": "test_exceptions_from_workers_have_stack_traces",
+      "implementation_requirement": "A divide-by-zero in a randomly annotated ten-partition Table must surface a worker-side FatalError with Java floorDiv and BackendUtils stack frames.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "186488030c37db6bf8960d57e045c8fec42e81bf1ed97d1102856fb603cac5da"
+    },
+    {
+      "source": "hail/python/test/hail/utils/test_utils.py",
+      "line": 274,
+      "test_id": "test_expr_exception_results_in_hail_user_error",
+      "implementation_requirement": "Out-of-bounds array indexing in a Table.filter expression must surface HailUserError upon count, not an unclassified backend failure.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "eef2abe8b3f71158d12050447c8511466836bc949a699b11054cc86bdb65fc2e"
+    }
+  ],
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1"
+}

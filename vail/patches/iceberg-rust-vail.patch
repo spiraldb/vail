@@ -1,0 +1,110 @@
+--- a/crates/iceberg/Cargo.toml
++++ b/crates/iceberg/Cargo.toml
+@@ -16,6 +16,7 @@
+ # under the License.
+ 
+ [package]
++workspace = "../.."
+ edition = { workspace = true }
+ homepage = { workspace = true }
+ name = "iceberg"
+--- a/crates/iceberg/src/catalog/mod.rs
++++ b/crates/iceberg/src/catalog/mod.rs
+@@ -32,7 +32,7 @@
+ 
+ use _serde::{deserialize_snapshot, serialize_snapshot};
+ use async_trait::async_trait;
+-pub use memory::MemoryCatalog;
++pub use memory::{MemoryCatalog, MemoryCatalogBuilder};
+ pub use metadata_location::*;
+ #[cfg(test)]
+ use mockall::automock;
+--- a/crates/iceberg/src/transaction/append.rs
++++ b/crates/iceberg/src/transaction/append.rs
+@@ -28,12 +28,15 @@
+     DefaultManifestProcess, SnapshotProduceOperation, SnapshotProducer,
+ };
+ use crate::transaction::{ActionCommit, TransactionAction};
++use crate::{Error, ErrorKind};
+ 
+ /// FastAppendAction is a transaction action for fast append data files to the table.
+ pub struct FastAppendAction {
+     check_duplicate: bool,
+     // below are properties used to create SnapshotProducer when commit
+     commit_uuid: Option<Uuid>,
++    snapshot_id: Option<i64>,
++    require_empty_table: bool,
+     snapshot_properties: HashMap<String, String>,
+     added_data_files: Vec<DataFile>,
+ }
+@@ -43,6 +46,8 @@
+         Self {
+             check_duplicate: true,
+             commit_uuid: None,
++            snapshot_id: None,
++            require_empty_table: false,
+             snapshot_properties: HashMap::default(),
+             added_data_files: vec![],
+         }
+@@ -63,6 +68,18 @@
+     /// Set commit UUID for the snapshot.
+     pub fn set_commit_uuid(mut self, commit_uuid: Uuid) -> Self {
+         self.commit_uuid = Some(commit_uuid);
++        self
++    }
++
++    /// Reserve a snapshot ID so a Vail descriptor can be written before commit.
++    pub fn with_snapshot_id(mut self, snapshot_id: i64) -> Self {
++        self.snapshot_id = Some(snapshot_id);
++        self
++    }
++
++    /// Reject rebasing an initial descriptor onto a nonempty table.
++    pub fn require_empty_table(mut self) -> Self {
++        self.require_empty_table = true;
+         self
+     }
+ 
+@@ -88,12 +105,22 @@
+ #[async_trait]
+ impl TransactionAction for FastAppendAction {
+     async fn commit(self: Arc<Self>, table: &Table) -> Result<ActionCommit> {
++        if self.require_empty_table && table.metadata().current_snapshot().is_some() {
++            return Err(Error::new(
++                ErrorKind::DataInvalid,
++                "Initial Vail append cannot rebase onto a nonempty table",
++            ));
++        }
+         let snapshot_producer = SnapshotProducer::new(
+             table,
+             self.commit_uuid.unwrap_or_else(Uuid::now_v7),
+             self.snapshot_properties.clone(),
+             self.dedupe_added_files(),
+         );
++        let snapshot_producer = match self.snapshot_id {
++            Some(id) => snapshot_producer.with_snapshot_id(id)?,
++            None => snapshot_producer,
++        };
+ 
+         // validate added files
+         snapshot_producer.validate_added_data_files()?;
+--- a/crates/iceberg/src/transaction/snapshot.rs
++++ b/crates/iceberg/src/transaction/snapshot.rs
+@@ -136,6 +136,17 @@
+         }
+     }
+ 
++    pub(crate) fn with_snapshot_id(mut self, snapshot_id: i64) -> Result<Self> {
++        if snapshot_id <= 0 || self.table.metadata().snapshot_by_id(snapshot_id).is_some() {
++            return Err(Error::new(
++                ErrorKind::DataInvalid,
++                "Snapshot ID must be positive and unused",
++            ));
++        }
++        self.snapshot_id = snapshot_id;
++        Ok(self)
++    }
++
+     pub(crate) fn validate_added_data_files(&self) -> Result<()> {
+         for data_file in &self.added_data_files {
+             if data_file.content_type() != crate::spec::DataContentType::Data {

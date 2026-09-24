@@ -1,0 +1,1124 @@
+{
+  "excludes": "Rows already covered by conformance/extra-table-requirements-scala.json. Candidate universe is every Scala inventory row whose disposition is not outside_scope.",
+  "methodology": "Source-reviewed coverage overlay for every Scala candidate not already in extra-table-requirements-scala.json. Requirements were derived from the test body and Table IR operations, memo/prune expected field dependencies, providers and helper contracts. Shared scalar expression tests are explicitly classified as dependencies rather than direct Table API tests. These are requirements, not test execution results.",
+  "schema_version": 1,
+  "source_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "summary": {
+    "candidate_rows": 215,
+    "prior_rows": 77,
+    "remaining_rows": 138,
+    "scope_counts": {
+      "backend_specific": 1,
+      "mixed_matrix_or_blockmatrix_api": 12,
+      "shared_table_expression": 60,
+      "table_ir_backend_semantics": 65
+    }
+  },
+  "tests": [
+    {
+      "implementation_requirement": "Implement the Table/aggregator lowering exercised by testTakeBy; preserve aggregation scope, init/update/combine behavior, empty/all-missing results, and typed result shape stated by the body.",
+      "line": 354,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/Aggregators2Suite.scala",
+      "test_id": "testTakeBy",
+      "source_sha256": "1318787a11477b529058bec519f80b398ce9ae27a85704caaf7d183c11d9fcb1"
+    },
+    {
+      "implementation_requirement": "Mixed MatrixTable case: lower MatrixMapCols with nested let-bound row/column references and a filtered Sum aggregation, then collect the MatrixColsTable result without changing source axes.",
+      "line": 1019,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/Aggregators2Suite.scala",
+      "test_id": "testLoweringMatrixMapColsWithAggFilterAndLets",
+      "source_sha256": "1318787a11477b529058bec519f80b398ce9ae27a85704caaf7d183c11d9fcb1"
+    },
+    {
+      "implementation_requirement": "Aggregate every element of an array-valued field across Table rows; return one Sum per array index in index order.",
+      "line": 1307,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/AggregatorsSuite.scala",
+      "test_id": "testArrayElementsAggregator",
+      "source_sha256": "97a8f108c716b10ca001935810fd47abcbd2d4cf44fbc92ad2fcfdbff1005349"
+    },
+    {
+      "implementation_requirement": "For empty filtered Table input, distinguish unknown output length (missing result), explicit length one (single zero), and length derived from globals (one zero per declared element).",
+      "line": 1320,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/AggregatorsSuite.scala",
+      "test_id": "testArrayElementsAggregatorEmpty",
+      "source_sha256": "97a8f108c716b10ca001935810fd47abcbd2d4cf44fbc92ad2fcfdbff1005349"
+    },
+    {
+      "implementation_requirement": "Run a Fold aggregator over TableRange idx values through relational lowering and preserve its sequential accumulator result (4950).",
+      "line": 1367,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/AggregatorsSuite.scala",
+      "test_id": "testFoldAgg",
+      "source_sha256": "97a8f108c716b10ca001935810fd47abcbd2d4cf44fbc92ad2fcfdbff1005349"
+    },
+    {
+      "implementation_requirement": "Resolve a global-derived let binding used as the count bound for Take inside TableAggregate; return the first five row indices in order.",
+      "line": 1415,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/AggregatorsSuite.scala",
+      "test_id": "testLetBoundInitOpArg",
+      "source_sha256": "97a8f108c716b10ca001935810fd47abcbd2d4cf44fbc92ad2fcfdbff1005349"
+    },
+    {
+      "implementation_requirement": "Evaluate TableCount(TableRange) for empty and nonempty inputs, returning exact Int64 counts under interpreted and unoptimized strategies.",
+      "line": 3217,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testTableCount",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Evaluate TableGetGlobals after TableMapGlobals and return the exact typed global struct, including when the input has zero rows.",
+      "line": 3223,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testTableGetGlobals",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Aggregate a TableRange with the Count aggregator and return a scalar struct with an Int64 count.",
+      "line": 3234,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testTableAggregate",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Round-trip every provider-supplied TableIR through sexpr serialization and IRParser.parse_table_ir; preserve the structurally equal typed TableIR.",
+      "line": 3956,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testTableIRParser",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Resolve a JavaTable cache reference during TableIR parsing and return an equal but separately deserialized TableRange node.",
+      "line": 4005,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testCachedTableIR",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Preserve global values and field order when reading globals through TableJoin, TableMapGlobals and TableRename; do not drop or duplicate globals during simplification.",
+      "line": 4021,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testTableGetGlobalsSimplifyRules",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Evaluate nested aggregator bindings inside TableAggregate with Max and Sum, respecting binding scope and returning the exact scalar result.",
+      "line": 4058,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testAggLet",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Bind a relational array once and expose it as TableParallelize input; TableAggregate Count must see the bound row once.",
+      "line": 4080,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testRelationalLetTable",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Mixed boundary case: preserve relational-let binding through Table-to-Matrix conversion and MatrixAggregate; this exercises MatrixTable integration as well as Table IR.",
+      "line": 4099,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testRelationalLetMatrixTable",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Serialize/deserialize the provider set of TableToTableFunction and TableToValueFunction objects through the relational-function registry; preserve each concrete function payload. The same provider also includes Matrix and BlockMatrix functions, so this is a mixed API boundary.",
+      "line": 4180,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IRSuite.scala",
+      "test_id": "testRelationalFunctionsSerialize",
+      "source_sha256": "8c5efab6167a8234c0e56c7ab9e2dbaa89bbce4cddd7868fa89ff9fb1dfccd8b"
+    },
+    {
+      "implementation_requirement": "Lift literals through nested TableGetGlobals/TableMapGlobals rewrites without changing TableCount, global shape, or literal identity.",
+      "line": 17,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/LiftLiteralsSuite.scala",
+      "test_id": "testNestedGlobalsRewrite",
+      "source_sha256": "cd431748774773e5927d2e63006691d041fc1da8141c62a0ffe0d73fc424f7c3"
+    },
+    {
+      "implementation_requirement": "Mixed MatrixTable boundary: write/read Matrix IR and preserve its rows-table representation and collected row values; TableCollect/TableKeyBy nodes are exercised inside Matrix serialization.",
+      "line": 30,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/MatrixIRSuite.scala",
+      "test_id": "testMatrixWriteRead",
+      "source_sha256": "cde0c9db6dc100779acfcb776140192ae9b31bb34061cace3fbbe3451cffae57"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableJoin must preserve each side\u2019s requested output fields, join key prefixes and only the left/right input fields needed for those outputs; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields NO_KEY, row.1, row.1_, row.2, row.2_, row.3_, row.4.",
+      "line": 353,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableJoinMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableLeftJoinRightDistinct must retain left-side key/output dependencies and only materialize the right-side value field when requested; the memo key must distinguish requested output fields and child requirements. The body checks row.1, row.4, and row.foo while the right child contributes no fields.",
+      "line": 397,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableLeftJoinRightDistinctMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableIntervalJoin must retain left key and required interval/right payload fields; when output omits right payload, rebuild can eliminate the join; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields row.1, row.4, row.foo.",
+      "line": 411,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableIntervalJoinMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableMultiWayZipJoin must propagate requested nested data and globals to every child, preserve input order in the zipped tuple, and avoid unrelated fields. The body requests row.data.2 and global.gbls.g1 and expects row.2/global.g1 from each input.",
+      "line": 425,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableMultiWayZipJoinMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableExplode must retain the exploded path and parent fields required by the output row type; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields row.2.",
+      "line": 436,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableExplodeMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableFilter must retain predicate dependencies even when absent from output fields, and preserve a literal-false predicate\u2019s child dependencies; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields row.1, row.2, row.3.",
+      "line": 441,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableFilterMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableKeyBy must retain requested key fields plus requested output fields; honor `isSorted` and `NO_KEY` requirements separately; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields NO_KEY, row.1, row.2.",
+      "line": 454,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableKeyByMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableMapRows must retain row/global/key references used by the new-row expression and type-check the rebuilt expression against the pruned child; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields NO_KEY, row.1, row.2, row.foo.",
+      "line": 467,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableMapRowsMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableMapGlobals must retain only referenced child globals and type-check the new-global expression against the pruned child; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields global.foo, global.g1.",
+      "line": 483,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableMapGlobalsMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableKeyByAndAggregate must retain aggregation, key and new-global expression dependencies; handle outputs where key fields are requested or omitted; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields NO_KEY, row.2, row.3, row.foo.",
+      "line": 519,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableKeyByAndAggregateMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableAggregateByKey must retain requested output/key fields and aggregator input fields, with correctly typed aggregate child expressions; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields row.3, row.5.",
+      "line": 540,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableAggregateByKeyMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableUnion must rebuild every child with a common unified row schema while retaining only requested output fields and referenced globals; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields global.g1, row.1.",
+      "line": 555,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableUnionMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableOrderBy must retain every sort-key field even when it is not in requested output; do not retain unnecessary row fields; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields NO_KEY, row.2, row.2.2A.",
+      "line": 562,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableOrderByMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "Mixed MatrixTable conversion/pruning case: preserve source-axis and requested-field dependencies through TableLiteral, including the MatrixTable-to-Table boundary.",
+      "line": 683,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testMatrixAnnotateRowsTableMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableCount must produce TInt64 and drop row dependencies while preserving the table input contract required by the count node; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields NO_KEY.",
+      "line": 1205,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableCountMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableGetGlobals must retain requested global fields only and discard irrelevant row/key data; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields NO_KEY, global.g1.",
+      "line": 1208,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableGetGlobalsMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableCollect must retain requested row and global fields, return the expected rows/global struct, and remove key metadata from the materialized value; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields global.g2, row.3.",
+      "line": 1215,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableCollectMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableHead must retain requested row/global fields, drop key metadata, and preserve the TableHead limit; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields global.g1, row.3.",
+      "line": 1222,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableHeadMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableTail must retain requested row/global fields, drop key metadata, and preserve the TableTail limit; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields global.g1, row.3.",
+      "line": 1229,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableTailMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableToValueApply must preserve the full table type required by ForceCountTable and return its scalar result type; its memo key must distinguish requested output fields and child requirements.",
+      "line": 1236,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableToValueApplyMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields memoization for TableAggregate must retain aggregator row/global references, type-check the aggregator in its relational environment, and prune unrelated input fields; its memo key must distinguish requested output fields and child requirements. The body asserts exact dependency fields global.g1.",
+      "line": 1250,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableAggregateMemo",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableFilter with retain predicate dependencies even when absent from output fields, and preserve a literal-false predicate\u2019s child dependencies; preserve validity/type-checking of the rebuilt node and remove the operator only when the body proves its output has no dependency on it. The body asserts exact dependency fields row.2, row.3.",
+      "line": 1273,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableFilterRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableMapRows with retain row/global/key references used by the new-row expression and type-check the rebuilt expression against the pruned child; preserve validity/type-checking of the rebuilt node and remove the operator only when the body proves its output has no dependency on it. The body asserts exact dependency fields NO_KEY, global.g1, row.2, row.3, row.foo.",
+      "line": 1285,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableMapRowsRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableMapGlobals with retain only referenced child globals and type-check the new-global expression against the pruned child; preserve validity/type-checking of the rebuilt node and remove the operator only when the body proves its output has no dependency on it. The body asserts exact dependency fields global.foo, global.g1.",
+      "line": 1316,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableMapGlobalsRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableLeftJoinRightDistinct with its key dependencies and preserve its left input; when output omits the joined value field, the body specifically requires the join to be elided to the left TableKeyBy child.",
+      "line": 1329,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableLeftJoinRightDistinctRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableIntervalJoin with retain left key and required interval/right payload fields; when output omits right payload, rebuild can eliminate the join; preserve validity/type-checking of the rebuilt node and remove the operator only when the body proves its output has no dependency on it. The body asserts exact dependency fields row.1, row.4.",
+      "line": 1342,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableIntervalJoinRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableUnion by pruning every child while unifying child row types and preserving the requested output field. The body builds children with differing row schemas, then requires equal rebuilt child row types and a union type containing row.foo and global.g1.",
+      "line": 1355,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableUnionRebuildUnifiesRowTypes",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableMultiWayZipJoin with all child row schemas unified to the requested nested data fields and required globals. The body requires each rebuilt child to have the same pruned type containing row.2 and global.g1.",
+      "line": 1379,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableMultiWayZipJoinRebuildUnifiesRowTypes",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "Mixed MatrixTable conversion/pruning case: preserve source-axis and requested-field dependencies through TableLiteral, including the MatrixTable-to-Table boundary.",
+      "line": 1600,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testMatrixAnnotateRowsTableRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableAggregate with retain aggregator row/global references, type-check the aggregator in its relational environment, and prune unrelated input fields; preserve validity/type-checking of the rebuilt node and remove the operator only when the body proves its output has no dependency on it. The body asserts exact dependency fields row.2.",
+      "line": 1952,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableAggregateRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild TableCollect with retain requested row and global fields, return the expected rows/global struct, and remove key metadata from the materialized value; preserve validity/type-checking of the rebuilt node and remove the operator only when the body proves its output has no dependency on it.",
+      "line": 1964,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testTableCollectRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "PruneDeadFields must rebuild a RelationalLetTable binding used by TableMapGlobals: prune the bound value from {a: int32} to an empty struct when the table output requests no globals, and substitute that pruned relational reference into newGlobals while retaining the table rows and key.",
+      "line": 2004,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/PruneSuite.scala",
+      "test_id": "testPipelineLetTableRebuild",
+      "source_sha256": "7ed308bc338af3eaa718f5fbb8875e289d6dab324f7bf69673e903fd76450cb7"
+    },
+    {
+      "implementation_requirement": "Validate virtual row/global types of every TableIR requiredness provider against its corresponding physical PType/EmitType; keep this shared type-analysis contract separate from table execution.",
+      "line": 636,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/RequirednessSuite.scala",
+      "test_id": "testDataProviders",
+      "source_sha256": "84f7f9536c944c41e1d2bc795baf9b42bf411171164791e65f8d4bd0c6956017"
+    },
+    {
+      "implementation_requirement": "Infer requiredness for each supplied TableIR across row and global fields and match canonical physical requiredness types exactly.",
+      "line": 692,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/RequirednessSuite.scala",
+      "test_id": "testTableRequiredness",
+      "source_sha256": "84f7f9536c944c41e1d2bc795baf9b42bf411171164791e65f8d4bd0c6956017"
+    },
+    {
+      "implementation_requirement": "Write a nested optional/missing Table, then have the native reader derive row/global requiredness for requested projected TableTypes and agree with Requiredness analysis.",
+      "line": 706,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/RequirednessSuite.scala",
+      "test_id": "testTableReader",
+      "source_sha256": "84f7f9536c944c41e1d2bc795baf9b42bf411171164791e65f8d4bd0c6956017"
+    },
+    {
+      "implementation_requirement": "Track distinct-key proofs through a TableRange, filter and distinct plan; prove uniqueness only after TableDistinct, not from filtering alone.",
+      "line": 11,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/DistinctlyKeyedSuite.scala",
+      "test_id": "distinctlyKeyedRangeTableBase",
+      "source_sha256": "06d00b259a3b40d938e49e12fb1ef5e4de3406dac6cd7001e45db80e9369f1e7"
+    },
+    {
+      "implementation_requirement": "Write/read a table with key metadata and verify distinct-key analysis for the read TableKeyBy plan, preserving the reader-provided key proof.",
+      "line": 27,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/DistinctlyKeyedSuite.scala",
+      "test_id": "readTableKeyByDistinctlyKeyedAnalysis",
+      "source_sha256": "06d00b259a3b40d938e49e12fb1ef5e4de3406dac6cd7001e45db80e9369f1e7"
+    },
+    {
+      "implementation_requirement": "Do not infer a distinct-key parent for TableUnion/Explode when one parent lacks a proof; propagate only valid parent guarantees.",
+      "line": 61,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/DistinctlyKeyedSuite.scala",
+      "test_id": "nonDistinctlyKeyedParent",
+      "source_sha256": "06d00b259a3b40d938e49e12fb1ef5e4de3406dac6cd7001e45db80e9369f1e7"
+    },
+    {
+      "implementation_requirement": "Propagate distinct-key guarantees through TableUnion/Explode when every parent is proven distinct on the relevant key.",
+      "line": 83,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/DistinctlyKeyedSuite.scala",
+      "test_id": "distinctlyKeyedParent",
+      "source_sha256": "06d00b259a3b40d938e49e12fb1ef5e4de3406dac6cd7001e45db80e9369f1e7"
+    },
+    {
+      "implementation_requirement": "Infer distinct-key status for a TableIR parent through TableFilter/TableDistinct while preserving the key proof across collection.",
+      "line": 102,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/DistinctlyKeyedSuite.scala",
+      "test_id": "iRparent",
+      "source_sha256": "06d00b259a3b40d938e49e12fb1ef5e4de3406dac6cd7001e45db80e9369f1e7"
+    },
+    {
+      "implementation_requirement": "Extract key intervals from is-missing predicates and their complements, preserving NA residual behavior and exact endpoint inclusion.",
+      "line": 126,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testIsNA",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Translate key comparisons against literals into true/false/NA interval sets while preserving unmatched residual predicates.",
+      "line": 142,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testKeyComparison",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Translate literal interval containment predicates over key expressions into equivalent interval bounds with endpoint semantics intact.",
+      "line": 251,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testLiteralContains",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Translate interval containment for struct/composite keys using key-prefix projection and preserve literal endpoint structure.",
+      "line": 309,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testLiteralContainsStruct",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Translate predicates comparing key values with interval expressions into exact interval filters and residual conditions.",
+      "line": 390,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testIntervalContains",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Handle interval containment against composite struct keys, preserving prefix and endpoint behavior.",
+      "line": 415,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testIntervalContainsStruct",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Extract locus-contig comparisons using reference-genome contig ordering, including true, false and missing outcomes.",
+      "line": 474,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testLocusContigComparison",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Extract within-contig locus-position comparisons into correct key intervals while respecting contig and position order.",
+      "line": 511,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testLocusPositionComparison",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Extract locus contig membership/containment predicates with reference genome ordering and residual evaluation.",
+      "line": 653,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testLocusContigContains",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Fold interval-list predicates into a normalized set of key intervals while preserving list membership and inclusivity.",
+      "line": 768,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testIntervalListFold",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Combine disjunctive key predicates into a union of intervals and retain any non-extractable residual disjunction.",
+      "line": 840,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testDisjunction",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Combine conjunctive key predicates by intersecting extracted intervals and preserve residual conjunction semantics.",
+      "line": 915,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testConjunction",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Preserve missing-value coalesce behavior when extracting intervals; a missing key/predicate must not become an ordinary true match.",
+      "line": 972,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testCoalesce",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Extract intervals from conditional predicates only when branch interval/residual composition preserves the original branch semantics.",
+      "line": 1008,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testIf",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Extract intervals from switch branches while respecting branch labels, missingness and residual expressions.",
+      "line": 1041,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testSwitch",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Visit relational TableAggregate/TableRange descendants when extracting safe interval constraints, without crossing incompatible source bindings.",
+      "line": 1095,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testRelationalChildren",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "End-to-end TableFilter expression extraction into TableFilterIntervals must preserve the original filter result and residual predicate.",
+      "line": 1112,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ExtractIntervalFiltersSuite.scala",
+      "test_id": "testIntegration",
+      "source_sha256": "20dd0d0022a574acc0a2b934e0b65d317cd1754be4b89b5a22f800c48fc80149"
+    },
+    {
+      "implementation_requirement": "Do not fold or duplicate random Block nodes in a way that changes evaluation identity or random-number behavior.",
+      "line": 15,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/FoldConstantsSuite.scala",
+      "test_id": "testRandomBlocksFolding",
+      "source_sha256": "d2243d563c569e15bd6847618ccd0f462c1014cf910075bcf3c00d1f759dd6bb"
+    },
+    {
+      "implementation_requirement": "Preserve error-catching boundaries while folding constants; errors must remain caught at the same IR node and not escape or disappear.",
+      "line": 25,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/FoldConstantsSuite.scala",
+      "test_id": "testErrorCatching",
+      "source_sha256": "d2243d563c569e15bd6847618ccd0f462c1014cf910075bcf3c00d1f759dd6bb"
+    },
+    {
+      "implementation_requirement": "Do not constant-fold aggregate nodes across their aggregation scope or initialization/update boundaries.",
+      "line": 38,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/FoldConstantsSuite.scala",
+      "test_id": "testAggNodesDoNotFold",
+      "source_sha256": "d2243d563c569e15bd6847618ccd0f462c1014cf910075bcf3c00d1f759dd6bb"
+    },
+    {
+      "implementation_requirement": "Do not fold expressions whose result depends on free or bound references even when adjacent operands are constants.",
+      "line": 50,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/FoldConstantsSuite.scala",
+      "test_id": "testReferencesDoNotFold",
+      "source_sha256": "d2243d563c569e15bd6847618ccd0f462c1014cf910075bcf3c00d1f759dd6bb"
+    },
+    {
+      "implementation_requirement": "Validate the supplied non-forwarding, forwarding, non-evaluating and aggregate-let provider trees; provider shapes must exercise their intended binding scopes.",
+      "line": 91,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "assertDataProvidersWork",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Forward Lets through an aggregate Block binding in dependency order while preserving alpha-equivalent aggregate scope.",
+      "line": 98,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testBlock",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Do not forward evaluation bindings through array/stream callbacks, nested aggregation, scans, or constructors whose callback scope observes the original binding; alpha-normalized IR remains unchanged.",
+      "line": 110,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testNonForwardingOps",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Do not substitute bindings into NDArray callbacks or tail-recursive control flow that is not evaluated in ordinary lexical scope; keep the required Block.",
+      "line": 118,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testNonForwardingNonEvalOps",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Do not forward an AggLet through array-per-element or explode aggregation scopes; preserve binding boundaries and result typing.",
+      "line": 124,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testNonForwardingAggOps",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Forward safe single-use constants through structs, tuples, conditionals, arithmetic and simple streams; remove redundant Block while preserving evaluation.",
+      "line": 130,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testForwardingOps",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Forward safe AggLet bindings through aggregate filters and simple aggregators without changing aggregate scope.",
+      "line": 137,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testForwardingAggOps",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Remove unused and single-use trivial Lets, forward literal bindings without evaluating operations, and cascade nested bindings without changing IR meaning.",
+      "line": 203,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testTrivialCases",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Forward a let within a Sum aggregator while preserving row-source binding and successful type checking.",
+      "line": 215,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testAggregators",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Preserve nested shadowing and independent deep-copied references when forwarding Lets; both original and rewritten IR must type-check.",
+      "line": 224,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testNestedBindingOverwrites",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Keep nested array aggregations scoped when forwarding would capture or overwrite outer no-op binding values; preserve type validity.",
+      "line": 234,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/ForwardLetsSuite.scala",
+      "test_id": "testLetsDoNotForwardInsideArrayAggWithNoOps",
+      "source_sha256": "6fe49290535c5cbd6fc6acf917416b9cb6ec0b1e818152b631e4c146d8697ae6"
+    },
+    {
+      "implementation_requirement": "Simplify TableGetGlobals over TableMultiWayZipJoin without changing the per-input global tuple order or row/global field names.",
+      "line": 61,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testTableMultiWayZipJoinGlobalsRewrite",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify constant row predicates through TableFilter/TableOrderBy while preserving the order/repartitioning contract consumed by later aggregation.",
+      "line": 70,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testRepartitionableMapUpdatesForUpstreamOptimizations",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify nested InsertFields and redundant field selections while preserving field order, overwritten values, and references to pre-existing fields.",
+      "line": 86,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testInsertFieldsRewriteRules",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Remove InsertFields operations that do not change the struct value or field layout.",
+      "line": 144,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testInsertFieldsNoOp",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Do not eliminate or reorder an InsertFields when the inserted field name may be selected from the original struct.",
+      "line": 150,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testInsertFieldsWhereFieldBeingInsertedCouldBeSelected",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Combine InsertFields and SelectFields rewrites while preserving exactly the requested field order and computed field values.",
+      "line": 162,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testInsertSelectRewriteRules",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Rewrite set/array containment expressions only when membership semantics and missingness are preserved.",
+      "line": 176,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testContainsRewrites",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify TableCount after mapping a singleton set and exploding it; retain cardinality one, including the TableExplode row semantics.",
+      "line": 196,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testTableCountExplodeSetRewrite",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "The parameterized scalar-IR rewrite must flatten nested InsertFields and preserve explicit field order, replacement precedence, and sharing of repeated expressions; its inputs and expected IR come from the method parameter provider, so those concrete cases define the exact rewrite constraints.",
+      "line": 304,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testNestedInsertsSimplify",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Remove stream aggregation wrappers only when the body contains no aggregate operation; preserve true aggregators and unbound references.",
+      "line": 307,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testArrayAggNoAggRewrites",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Remove scan aggregation wrappers only when no scan op is present; retain scan and nested aggregate scopes otherwise.",
+      "line": 330,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testArrayAggScanNoAggRewrites",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Rewrite ArrayLen(TableCollect(table).rows) to TableCount while keeping the result TInt32 and exact evaluation result.",
+      "line": 350,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testArrayLenCollectToTableCount",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Do not rewrite MatrixColsTable(MatrixMapCols(...)) through an aggregate let when that changes column/row source binding or evaluation scope.",
+      "line": 359,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testMatrixColsTableMatrixMapColsWithAggLetDoesNotSimplify",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Matrix-only optimizer case: rewrite MatrixFilterCols(MatrixMapEntries(mt, newEntries), colPred) to MatrixMapEntries(MatrixFilterCols(mt, colPred), newEntries), preserving the entry mapping and the column predicate over the original column struct.",
+      "line": 376,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testFilterColsPushesThroughMapEntries",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Matrix-only optimizer case: commute MatrixFilterCols past MatrixFilterEntries, preserving both predicates and their axes: the column predicate filters columns and the entry predicate continues filtering entries of the column-filtered matrix.",
+      "line": 390,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testFilterColsPushesThroughFilterEntries",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Push a predicate through TableParallelize literal rows, type-check the rewritten IR, and eliminate TableFilter when the literal data can be filtered directly.",
+      "line": 413,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testFilterParallelize",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Apply stream identity, range, map/filter/fold and length simplifications without changing lazy stream evaluation or element order.",
+      "line": 617,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testStreamSimplifications",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify nested conditional expressions without changing branch evaluation or missingness.",
+      "line": 643,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testIfCaseOfCase",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Reduce take on a constant stream to the exact bounded prefix, including limits below and above stream length.",
+      "line": 662,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testTakeOfConstantStream",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Reduce drop on a constant stream to the exact suffix and handle limits outside its length.",
+      "line": 670,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testDropOfConstantStream",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Eliminate stream-valued nodes when computing length and return the correct scalar length expression.",
+      "line": 685,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testStreamLenSimplifications",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Fuse nested TableHead operators to the smaller limit, including both nesting orders and preserving the filtered child.",
+      "line": 692,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testTableHeadFusion",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Fuse nested TableTail operators to the smaller limit, including both nesting orders and preserving the filtered child.",
+      "line": 702,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testTableTailFusion",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Push TableTail through row/global maps and shuffle repartition where semantics commute; keep it after scan-bearing row maps because those scans observe rows the tail would remove.",
+      "line": 741,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testTableTailPushThrough",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Combine nested keep=false TableFilterIntervals on the same key without losing either interval or changing complement semantics.",
+      "line": 744,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testNestedFilterIntervals",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Push TableFilterIntervals into native TableRead and zipped MatrixTable row readers; intersect successive interval lists with exact endpoint flags and preserve reader type/options.",
+      "line": 757,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testSimplifyReadFilterIntervals",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Disabled regression target: simplify interval filtering after a computed key to a row filter only when the interval predicate can be translated without changing endpoint or key semantics.",
+      "line": 831,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testFilterIntervalsKeyByToFilter",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Apply boolean unary identities without changing missing boolean behavior.",
+      "line": 863,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testUnaryBooleanSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Push unary primitive operations into conditional branches only when type and branch semantics remain equivalent.",
+      "line": 886,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testUnaryPrimOpPushesThroughIf",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Fold integral unary identities with the same width, signedness, overflow and error behavior.",
+      "line": 906,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testUnaryIntegralSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Fold integral binary identities without changing width-specific overflow or division errors.",
+      "line": 984,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testBinaryIntegralSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Apply floating-point identities only when NaN, infinity, signed zero and evaluation order are preserved.",
+      "line": 1024,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testBinaryFloatingSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Mixed BlockMatrix API case: simplify BlockMatrix IR while preserving its block shape, dimensions and storage operations.",
+      "line": 1052,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testBlockMatrixSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify switch expressions while preserving label dispatch, fallthrough behavior and missing-value semantics.",
+      "line": 1079,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testTestSwitchSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify constant/identical conditional branches without evaluating an unselected branch.",
+      "line": 1107,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testIfSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Apply three-valued boolean conjunction identities, preserving missing-value truth tables.",
+      "line": 1140,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testLandSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Apply three-valued boolean disjunction identities, preserving missing-value truth tables.",
+      "line": 1167,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testLorSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify coalesce chains while preserving the first-defined value and evaluation order.",
+      "line": 1186,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testCoalesceSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify missingness checks only when requiredness proves the result; preserve optional values.",
+      "line": 1226,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testIsNASimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Normalize constant array slices with correct negative/boundary index and result ordering semantics.",
+      "line": 1266,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testArraySliceSimplification",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Simplify struct construction and projection while retaining field names/order and expression types.",
+      "line": 1299,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testMakeStruct",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Remove redundant casts and compose safe casts without changing target type or cast errors.",
+      "line": 1314,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/SimplifySuite.scala",
+      "test_id": "testCastSimplify",
+      "source_sha256": "006af47d27fa7df3b862c15328ff51c15708bb7392bf352855729bae096aae7b"
+    },
+    {
+      "implementation_requirement": "Enforce unique binders across nested evaluation, stream, aggregation, TableMapRows and MatrixMapEntries scopes, including legal rebinding across distinct scopes.",
+      "line": 139,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/invariant/InvariantSuite.scala",
+      "test_id": "testUniquelyNamed",
+      "source_sha256": "55b4e0cc2f2637528735ef08b97dfa0980e29dc9469f9d44fdf4346ca3f3bac1"
+    },
+    {
+      "implementation_requirement": "Reject shared IR nodes where strict invariants require tree ownership, while preserving explicit memoization behavior.",
+      "line": 145,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/invariant/InvariantSuite.scala",
+      "test_id": "testNoSharedNodes",
+      "source_sha256": "55b4e0cc2f2637528735ef08b97dfa0980e29dc9469f9d44fdf4346ca3f3bac1"
+    },
+    {
+      "implementation_requirement": "Allow the tested no-op IR shape when strict invariants are disabled; do not impose strict Table-specific invariants on general IR.",
+      "line": 152,
+      "reviewed_scope": "shared_table_expression",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/invariant/InvariantSuite.scala",
+      "test_id": "testNoOpWithoutStrictInvariants",
+      "source_sha256": "55b4e0cc2f2637528735ef08b97dfa0980e29dc9469f9d44fdf4346ca3f3bac1"
+    },
+    {
+      "implementation_requirement": "Mixed BlockMatrix-to-Table API case: preserve block-grid selection and row materialization for testEntriesTable; BlockMatrix-specific scheduling/storage remains outside the standalone Table API.",
+      "line": 824,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/linalg/BlockMatrixSuite.scala",
+      "test_id": "testEntriesTable",
+      "source_sha256": "e0cf2e43ab27b322f74ae415e5ce8ba9f33078d3a4ef62f1f9bd9081d93d9f0d"
+    },
+    {
+      "implementation_requirement": "Mixed BlockMatrix-to-Table API case: preserve block-grid selection and row materialization for testEntriesTableWhenKeepingOnlySomeBlocks; BlockMatrix-specific scheduling/storage remains outside the standalone Table API.",
+      "line": 847,
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source": "hail/hail/test/src/is/hail/linalg/BlockMatrixSuite.scala",
+      "test_id": "testEntriesTableWhenKeepingOnlySomeBlocks",
+      "source_sha256": "e0cf2e43ab27b322f74ae415e5ce8ba9f33078d3a4ef62f1f9bd9081d93d9f0d"
+    },
+    {
+      "implementation_requirement": "Backend-specific service job execution: build and execute the TableStage-backed JVM job through BatchClient, preserve stage serialization/worker invocation, and surface job completion or failure through the backend contract.",
+      "line": 155,
+      "reviewed_scope": "backend_specific",
+      "source": "hail/hail/test/src/is/hail/services/BatchClientSuite.scala",
+      "test_id": "testJvmJob",
+      "source_sha256": "9951a9a848042217cc106fd2aa21b9bf4a4c96f5755a6f7f5c593145553e4a50"
+    }
+  ],
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1"
+}

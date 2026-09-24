@@ -1,0 +1,1223 @@
+{
+  "source_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "scope": "AST-only inventory; does not import Hail. Direct Table/GroupedTable declarations plus BaseTable inherited methods/protocols, Table constructors/factory, read_table and range_table.",
+  "limitations": [
+    "Direct AST ir.* references are listed; transitive helper, expression, aggregator, and backend dependencies are explicitly unknown.",
+    "Overload declarations are retained as separate signatures when present.",
+    "Dynamic fields produced at runtime are not statically enumerated; BaseTable field lookup/set/delete behavior is represented by protocol methods.",
+    "This inventory is not a claim of executable or complete compatibility."
+  ],
+  "classes": {
+    "Table": {
+      "source_line": 304,
+      "members": [
+        {
+          "name": "_from_java",
+          "kind": "method",
+          "role": "private-factory",
+          "signature": "(table_type, ir_id)",
+          "source_line": 392,
+          "doc_first_line": "",
+          "decorators": [
+            "staticmethod"
+          ],
+          "direct_ir_dependencies": [
+            "JavaTable"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "__init__",
+          "kind": "method",
+          "role": "constructor",
+          "signature": "(self, tir)",
+          "source_line": 395,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "__getitem__",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, item)",
+          "source_line": 423,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "key",
+          "kind": "property",
+          "role": "direct",
+          "signature": "(self) -> StructExpression",
+          "source_line": 437,
+          "doc_first_line": "Row key struct.",
+          "decorators": [
+            "property"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "n_partitions",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self)",
+          "source_line": 464,
+          "doc_first_line": "Returns the number of partitions in the table.",
+          "decorators": [],
+          "direct_ir_dependencies": [
+            "TableToValueApply"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "count",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self)",
+          "source_line": 498,
+          "doc_first_line": "Count the number of rows in the table.",
+          "decorators": [],
+          "direct_ir_dependencies": [
+            "TableCount"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "parallelize",
+          "kind": "method",
+          "role": "constructor",
+          "signature": "(cls, rows, schema=None, key=None, n_partitions=None, *, partial_type=None, globals=None) -> 'Table'",
+          "source_line": 549,
+          "doc_first_line": "Parallelize a local array of structs into a distributed table.",
+          "decorators": [
+            "classmethod",
+            "typecheck_method(rows=anytype, schema=nullable(hail_type), key=table_key_type, n_partitions=nullable(int), partial_type=nullable(dict), globals=nullable(expr_struct()))"
+          ],
+          "direct_ir_dependencies": [
+            "MakeStruct",
+            "TableParallelize"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "key_by",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, *keys, **named_keys) -> 'Table'",
+          "source_line": 750,
+          "doc_first_line": "Key table by a new set of fields.",
+          "decorators": [
+            "typecheck_method(keys=oneof(str, expr_any), named_keys=expr_any)"
+          ],
+          "direct_ir_dependencies": [
+            "TableKeyBy",
+            "TableMapRows"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "annotate_globals",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 936,
+          "doc_first_line": "Add new global fields.",
+          "decorators": [
+            "typecheck_method(named_exprs=expr_any)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "select_globals",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, *exprs, **named_exprs) -> 'Table'",
+          "source_line": 980,
+          "doc_first_line": "Select existing global fields or create new fields by name, dropping the rest.",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "transmute_globals",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 1061,
+          "doc_first_line": "Similar to :meth:`.Table.annotate_globals`, but drops referenced fields.",
+          "decorators": [
+            "typecheck_method(named_exprs=expr_any)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "transmute",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 1120,
+          "doc_first_line": "Add new fields and drop fields referenced.",
+          "decorators": [
+            "typecheck_method(named_exprs=expr_any)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "annotate",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 1224,
+          "doc_first_line": "Add new fields.",
+          "decorators": [
+            "typecheck_method(named_exprs=expr_any)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "filter",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, expr, keep: bool=True) -> 'Table'",
+          "source_line": 1376,
+          "doc_first_line": "Filter rows conditional on the value of each row's fields.",
+          "decorators": [
+            "typecheck_method(expr=expr_bool, keep=bool)"
+          ],
+          "direct_ir_dependencies": [
+            "TableFilter",
+            "filter_predicate_with_keep"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "select",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, *exprs, **named_exprs) -> 'Table'",
+          "source_line": 1570,
+          "doc_first_line": "Select existing fields or create new fields by name, dropping the rest.",
+          "decorators": [
+            "typecheck_method(exprs=oneof(Expression, str), named_exprs=anytype)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "drop",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, *exprs) -> 'Table'",
+          "source_line": 1659,
+          "doc_first_line": "Drop fields from the table.",
+          "decorators": [
+            "typecheck_method(exprs=oneof(str, Expression))"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "export",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, output, types_file=None, header=True, parallel=None, delimiter='\\t')",
+          "source_line": 1732,
+          "doc_first_line": "Export to a text file.",
+          "decorators": [
+            "typecheck_method(output=str, types_file=nullable(str), header=bool, parallel=nullable(ir.ExportType.checker), delimiter=str)"
+          ],
+          "direct_ir_dependencies": [
+            "ExportType",
+            "TableTextWriter",
+            "TableWrite"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "group_by",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, *exprs, **named_exprs) -> 'GroupedTable'",
+          "source_line": 1783,
+          "doc_first_line": "Group by a new key for use with :meth:`.GroupedTable.aggregate`.",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "aggregate",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, expr, _localize=True)",
+          "source_line": 1879,
+          "doc_first_line": "Aggregate over rows into a local value.",
+          "decorators": [
+            "typecheck_method(expr=expr_any, _localize=bool)"
+          ],
+          "direct_ir_dependencies": [
+            "TableAggregate"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "checkpoint",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, output: str, overwrite: bool=False, stage_locally: bool=False, _codec_spec: Optional[str]=None, _read_if_exists: bool=False, _intervals=None, _filter_intervals=False) -> 'Table'",
+          "source_line": 1924,
+          "doc_first_line": "Checkpoint the table to disk by writing and reading.",
+          "decorators": [
+            "typecheck_method(output=str, overwrite=bool, stage_locally=bool, _codec_spec=nullable(str), _read_if_exists=bool, _intervals=nullable(sequenceof(anytype)), _filter_intervals=bool)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "write",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, output: str, overwrite=False, stage_locally: bool=False, _codec_spec: Optional[str]=None)",
+          "source_line": 1981,
+          "doc_first_line": "Write to disk.",
+          "decorators": [
+            "typecheck_method(output=str, overwrite=bool, stage_locally=bool, _codec_spec=nullable(str))"
+          ],
+          "direct_ir_dependencies": [
+            "TableNativeWriter",
+            "TableWrite"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "write_many",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, output: str, fields: Sequence[str], *, overwrite: bool=False, stage_locally: bool=False, _codec_spec: Optional[str]=None)",
+          "source_line": 2011,
+          "doc_first_line": "Write fields to distinct tables.",
+          "decorators": [
+            "typecheck_method(output=str, fields=sequenceof(str), overwrite=bool, stage_locally=bool, _codec_spec=nullable(str))"
+          ],
+          "direct_ir_dependencies": [
+            "TableNativeFanoutWriter",
+            "TableWrite"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "show",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, n=None, width=None, truncate=None, types=True, handler=None, n_rows=None)",
+          "source_line": 2329,
+          "doc_first_line": "Print the first few rows of the table to the console.",
+          "decorators": [
+            "typecheck_method(n=nullable(int), width=nullable(int), truncate=nullable(int), types=bool, handler=nullable(anyfunc), n_rows=nullable(int))"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "index",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, *exprs, all_matches=False) -> 'Expression'",
+          "source_line": 2377,
+          "doc_first_line": "Expose the row values as if looked up in a dictionary, indexing",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "index_globals",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self) -> 'StructExpression'",
+          "source_line": 2686,
+          "doc_first_line": "Return this table's global variables for use in another",
+          "decorators": [],
+          "direct_ir_dependencies": [
+            "TableGetGlobals"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "cache",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self) -> 'Table'",
+          "source_line": 2703,
+          "doc_first_line": "Persist this table in memory.",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "persist",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, storage_level='MEMORY_AND_DISK') -> 'Table'",
+          "source_line": 2725,
+          "doc_first_line": "Persist this table in memory or on disk.",
+          "decorators": [
+            "typecheck_method(storage_level=storage_level)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "unpersist",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self) -> 'Table'",
+          "source_line": 2762,
+          "doc_first_line": "Unpersists this table from memory/disk.",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "collect",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self) -> List[hl.Struct]",
+          "source_line": 2779,
+          "doc_first_line": "",
+          "decorators": [
+            "overload"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "collect",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, _localize=False) -> ArrayExpression",
+          "source_line": 2782,
+          "doc_first_line": "",
+          "decorators": [
+            "overload"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "collect",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, _localize=True, *, _timed=False)",
+          "source_line": 2785,
+          "doc_first_line": "Collect the rows of the table into a local list.",
+          "decorators": [
+            "typecheck_method(_localize=bool, _timed=bool)"
+          ],
+          "direct_ir_dependencies": [
+            "GetField",
+            "TableCollect"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "describe",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, handler=print, *, widget=False)",
+          "source_line": 2820,
+          "doc_first_line": "Print information about the fields in the table.",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "add_index",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, name='idx') -> 'Table'",
+          "source_line": 2870,
+          "doc_first_line": "Add the integer index of each row as a new row field.",
+          "decorators": [
+            "typecheck_method(name=str)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "union",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, *tables, unify: bool=False) -> 'Table'",
+          "source_line": 2916,
+          "doc_first_line": "Union the rows of multiple tables.",
+          "decorators": [
+            "typecheck_method(tables=table_type, unify=bool)"
+          ],
+          "direct_ir_dependencies": [
+            "TableUnion"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "take",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, n, _localize=True)",
+          "source_line": 2994,
+          "doc_first_line": "Collect the first `n` rows of the table into a local list.",
+          "decorators": [
+            "typecheck_method(n=int, _localize=bool)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "head",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, n) -> 'Table'",
+          "source_line": 3030,
+          "doc_first_line": "Subset table to first `n` rows.",
+          "decorators": [
+            "typecheck_method(n=int)"
+          ],
+          "direct_ir_dependencies": [
+            "TableHead"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "tail",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, n) -> 'Table'",
+          "source_line": 3069,
+          "doc_first_line": "Subset table to last `n` rows.",
+          "decorators": [
+            "typecheck_method(n=int)"
+          ],
+          "direct_ir_dependencies": [
+            "TableTail"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "sample",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, p, seed=None) -> 'Table'",
+          "source_line": 3100,
+          "doc_first_line": "Downsample the table by keeping each row with probability ``p``.",
+          "decorators": [
+            "typecheck_method(p=numeric, seed=nullable(int))"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "repartition",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, n, shuffle=True) -> 'Table'",
+          "source_line": 3159,
+          "doc_first_line": "Change the number of partitions.",
+          "decorators": [
+            "typecheck_method(n=int, shuffle=bool)"
+          ],
+          "direct_ir_dependencies": [
+            "RepartitionStrategy",
+            "TableRepartition"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "naive_coalesce",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, max_partitions: int) -> 'Table'",
+          "source_line": 3229,
+          "doc_first_line": "Naively decrease the number of partitions.",
+          "decorators": [
+            "typecheck_method(max_partitions=int)"
+          ],
+          "direct_ir_dependencies": [
+            "RepartitionStrategy",
+            "TableRepartition"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "semi_join",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, other: 'Table') -> 'Table'",
+          "source_line": 3260,
+          "doc_first_line": "Filters the table to rows whose key appears in `other`.",
+          "decorators": [
+            "typecheck_method(other=table_type)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "anti_join",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, other: 'Table') -> 'Table'",
+          "source_line": 3346,
+          "doc_first_line": "Filters the table to rows whose key does not appear in `other`.",
+          "decorators": [
+            "typecheck_method(other=table_type)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "join",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, right: 'Table', how='inner', _mangle: Callable[[str, int], str]=lambda s, i: f'{s}_{i}', _join_key: Optional[int]=None) -> 'Table'",
+          "source_line": 3397,
+          "doc_first_line": "Join two tables together.",
+          "decorators": [
+            "typecheck_method(right=table_type, how=enumeration('inner', 'outer', 'left', 'right'), _mangle=anyfunc, _join_key=nullable(int))"
+          ],
+          "direct_ir_dependencies": [
+            "TableJoin"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "all",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, expr)",
+          "source_line": 3491,
+          "doc_first_line": "Evaluate whether a boolean expression is true for all rows.",
+          "decorators": [
+            "typecheck_method(expr=BooleanExpression)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "any",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, expr)",
+          "source_line": 3513,
+          "doc_first_line": "Evaluate whether a Boolean expression is true for at least one row.",
+          "decorators": [
+            "typecheck_method(expr=BooleanExpression)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "rename",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, mapping) -> 'Table'",
+          "source_line": 3537,
+          "doc_first_line": "Rename fields of the table.",
+          "decorators": [
+            "typecheck_method(mapping=dictof(str, str))"
+          ],
+          "direct_ir_dependencies": [
+            "TableRename"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "expand_types",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self) -> 'Table'",
+          "source_line": 3588,
+          "doc_first_line": "Expand complex types into structs and arrays.",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "flatten",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self) -> 'Table'",
+          "source_line": 3641,
+          "doc_first_line": "Flatten nested structs.",
+          "decorators": [],
+          "direct_ir_dependencies": [
+            "TableMapRows"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "order_by",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, *exprs) -> 'Table'",
+          "source_line": 3706,
+          "doc_first_line": "Sort by the specified fields, defaulting to ascending order. Will unkey the table if it is keyed.",
+          "decorators": [
+            "typecheck_method(exprs=oneof(str, Expression, Ascending, Descending))"
+          ],
+          "direct_ir_dependencies": [
+            "TableOrderBy"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "explode",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, field, name=None) -> 'Table'",
+          "source_line": 3800,
+          "doc_first_line": "Explode rows along a field of type array or set, copying the entire row for each element.",
+          "decorators": [
+            "typecheck_method(field=oneof(str, Expression), name=nullable(str))"
+          ],
+          "direct_ir_dependencies": [
+            "GetField",
+            "TableExplode"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "to_matrix_table",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, row_key, col_key, row_fields=[], col_fields=[], n_partitions=None) -> 'hl.MatrixTable'",
+          "source_line": 3921,
+          "doc_first_line": "Construct a matrix table from a table in coordinate representation.",
+          "decorators": [
+            "typecheck_method(row_key=sequenceof(str), col_key=sequenceof(str), row_fields=sequenceof(str), col_fields=sequenceof(str), n_partitions=nullable(int))"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "to_matrix_table_row_major",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, columns, entry_field_name=None, col_field_name='col')",
+          "source_line": 4048,
+          "doc_first_line": "Construct a matrix table from a table in row major representation. Each element in `columns`",
+          "decorators": [
+            "typecheck_method(columns=sequenceof(str), entry_field_name=nullable(str), col_field_name=str)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "globals",
+          "kind": "property",
+          "role": "direct",
+          "signature": "(self) -> 'StructExpression'",
+          "source_line": 4148,
+          "doc_first_line": "Returns a struct expression including all global fields.",
+          "decorators": [
+            "property"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "row",
+          "kind": "property",
+          "role": "direct",
+          "signature": "(self) -> 'StructExpression'",
+          "source_line": 4171,
+          "doc_first_line": "Returns a struct expression of all row-indexed fields, including keys.",
+          "decorators": [
+            "property"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "row_value",
+          "kind": "property",
+          "role": "direct",
+          "signature": "(self) -> 'StructExpression'",
+          "source_line": 4194,
+          "doc_first_line": "Returns a struct expression including all non-key row-indexed fields.",
+          "decorators": [
+            "property"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "from_spark",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(df, key=[]) -> 'Table'",
+          "source_line": 4218,
+          "doc_first_line": "Convert PySpark SQL DataFrame to a table.",
+          "decorators": [
+            "staticmethod",
+            "typecheck(df=pyspark.sql.DataFrame, key=table_key_type)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "to_spark",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, flatten=True)",
+          "source_line": 4261,
+          "doc_first_line": "Converts this table to a Spark DataFrame.",
+          "decorators": [
+            "typecheck_method(flatten=bool)"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "to_pandas",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, flatten=True, types={})",
+          "source_line": 4280,
+          "doc_first_line": "Converts this table to a Pandas DataFrame.",
+          "decorators": [
+            "typecheck_method(flatten=bool, types=dictof(oneof(str, hail_type), str))"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "from_pandas",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(df, key=[]) -> 'Table'",
+          "source_line": 4326,
+          "doc_first_line": "Create table from Pandas DataFrame",
+          "decorators": [
+            "staticmethod",
+            "typecheck(df=pandas.DataFrame, key=oneof(str, sequenceof(str)))"
+          ],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "collect_by_key",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, name: str='values') -> 'Table'",
+          "source_line": 4458,
+          "doc_first_line": "Collect values for each unique key into an array.",
+          "decorators": [],
+          "direct_ir_dependencies": [
+            "TableAggregateByKey"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "distinct",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self) -> 'Table'",
+          "source_line": 4516,
+          "doc_first_line": "Deduplicate keys, keeping exactly one row for each unique key.",
+          "decorators": [],
+          "direct_ir_dependencies": [
+            "TableDistinct"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "summarize",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, handler=None)",
+          "source_line": 4566,
+          "doc_first_line": "Compute and print summary information about the fields in the table.",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "multi_way_zip_join",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(tables, data_field_name, global_field_name) -> 'Table'",
+          "source_line": 4586,
+          "doc_first_line": "Combine many tables in a zip join",
+          "decorators": [
+            "staticmethod",
+            "typecheck(tables=sequenceof(table_type), data_field_name=str, global_field_name=str)"
+          ],
+          "direct_ir_dependencies": [
+            "TableMultiWayZipJoin"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        }
+      ],
+      "bases": [
+        "BaseTable"
+      ]
+    },
+    "GroupedTable": {
+      "source_line": 181,
+      "members": [
+        {
+          "name": "__init__",
+          "kind": "method",
+          "role": "constructor",
+          "signature": "(self, parent: 'Table', key_expr)",
+          "source_line": 188,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "partition_hint",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, n: int) -> 'GroupedTable'",
+          "source_line": 197,
+          "doc_first_line": "Set the target number of partitions for aggregation.",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        },
+        {
+          "name": "aggregate",
+          "kind": "method",
+          "role": "direct",
+          "signature": "(self, **named_exprs) -> 'Table'",
+          "source_line": 253,
+          "doc_first_line": "Aggregate by group, used after :meth:`.Table.group_by`.",
+          "decorators": [
+            "typecheck_method(named_exprs=expr_any)"
+          ],
+          "direct_ir_dependencies": [
+            "TableKeyByAndAggregate"
+          ],
+          "ir_mapping_status": "direct-ir-reference-found",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py"
+        }
+      ],
+      "bases": [
+        "BaseTable"
+      ]
+    },
+    "BaseTable": {
+      "source_line": 122,
+      "members": [
+        {
+          "name": "__init__",
+          "kind": "method",
+          "role": "base-constructor",
+          "signature": "(self)",
+          "source_line": 129,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py",
+          "inherited_by": []
+        },
+        {
+          "name": "_set_field",
+          "kind": "method",
+          "role": "inherited-support",
+          "signature": "(self, key, value)",
+          "source_line": 135,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py",
+          "inherited_by": [
+            "Table",
+            "GroupedTable"
+          ]
+        },
+        {
+          "name": "_get_field",
+          "kind": "method",
+          "role": "inherited-support",
+          "signature": "(self, item) -> Expression",
+          "source_line": 152,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py",
+          "inherited_by": [
+            "Table",
+            "GroupedTable"
+          ]
+        },
+        {
+          "name": "__iter__",
+          "kind": "method",
+          "role": "inherited-protocol",
+          "signature": "(self)",
+          "source_line": 158,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py",
+          "inherited_by": [
+            "Table",
+            "GroupedTable"
+          ]
+        },
+        {
+          "name": "__delattr__",
+          "kind": "method",
+          "role": "inherited-protocol",
+          "signature": "(self, item)",
+          "source_line": 161,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py",
+          "inherited_by": [
+            "Table",
+            "GroupedTable"
+          ]
+        },
+        {
+          "name": "__setattr__",
+          "kind": "method",
+          "role": "inherited-protocol",
+          "signature": "(self, key, value)",
+          "source_line": 165,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py",
+          "inherited_by": [
+            "Table",
+            "GroupedTable"
+          ]
+        },
+        {
+          "name": "__getattr__",
+          "kind": "method",
+          "role": "inherited-protocol",
+          "signature": "(self, item)",
+          "source_line": 170,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py",
+          "inherited_by": [
+            "Table",
+            "GroupedTable"
+          ]
+        },
+        {
+          "name": "_copy_fields_from",
+          "kind": "method",
+          "role": "inherited-support",
+          "signature": "(self, other: 'BaseTable')",
+          "source_line": 176,
+          "doc_first_line": "",
+          "decorators": [],
+          "direct_ir_dependencies": [],
+          "ir_mapping_status": "unknown-no-direct-ir-reference",
+          "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+          "source": "hail/table.py",
+          "inherited_by": [
+            "Table",
+            "GroupedTable"
+          ]
+        }
+      ],
+      "bases": []
+    }
+  },
+  "standalone": [
+    {
+      "name": "read_table",
+      "kind": "method",
+      "role": "reader-constructor",
+      "signature": "(path, *, _intervals=None, _filter_intervals=False, _n_partitions=None, _assert_type=None, _load_refs=True, _create_row_uids=False) -> Table",
+      "source_line": 3272,
+      "doc_first_line": "Read in a :class:`.Table` written with :meth:`.Table.write`.",
+      "decorators": [
+        "typecheck(path=str, _intervals=nullable(sequenceof(anytype)), _filter_intervals=bool, _n_partitions=nullable(int), _assert_type=nullable(ttable), _load_refs=bool, _create_row_uids=bool)"
+      ],
+      "direct_ir_dependencies": [
+        "TableNativeReader",
+        "TableRead"
+      ],
+      "ir_mapping_status": "direct-ir-reference-found",
+      "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+      "source": "hail/methods/impex.py"
+    },
+    {
+      "name": "range_table",
+      "kind": "method",
+      "role": "constructor-helper",
+      "signature": "(n, n_partitions=None) -> 'hail.Table'",
+      "source_line": 83,
+      "doc_first_line": "Construct a table with the row index and no other fields.",
+      "decorators": [
+        "typecheck(n=int, n_partitions=nullable(int))"
+      ],
+      "direct_ir_dependencies": [],
+      "ir_mapping_status": "unknown-no-direct-ir-reference",
+      "transitive_ir_dependencies": "unknown: helper calls and expression/aggregator expansion were not resolved",
+      "source": "hail/utils/misc.py"
+    }
+  ]
+}

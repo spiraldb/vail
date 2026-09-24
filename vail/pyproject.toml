@@ -1,0 +1,21 @@
+[build-system]
+requires = ["maturin>=1.9,<2"]
+build-backend = "maturin"
+
+[project]
+name = "vail"
+version = "0.1.0a1"
+description = "Experimental embedded Rust Hail Table engine"
+requires-python = ">=3.11"
+
+[dependency-groups]
+dev = [
+    "maturin==1.15.0",
+    "pytest>=9.1.1",
+]
+
+[tool.maturin]
+manifest-path = "crates/vail-python/Cargo.toml"
+python-source = "python"
+module-name = "vail._native"
+features = ["pyo3/extension-module"]

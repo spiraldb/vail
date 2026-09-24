@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "reviewed_scope_values": [
+    "table_only",
+    "shared_table_expression",
+    "mixed_matrix_or_blockmatrix_api",
+    "table_behavior_with_matrix_fixture",
+    "backend_specific",
+    "outside_table_api"
+  ],
+  "reviewed_test_count": 31,
+  "tests": [
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_full_key.py",
+      "test_id": "test_ht_eq",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Given the MatrixTable-derived rows Table, compare a compound locus/alleles key to a probe variant, retain key-based filtering and partition pruning, and collect the exact matching nested variant row including arrays, sets, missing values, and nested info fields.",
+      "line": 12,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_full_key.py::test_ht_eq@12",
+      "source_sha256": "7b071f5dbedfd12b465203dbf347cf372c288d493dd5da25393906d39d8ebbb0"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_key_prefix.py",
+      "test_id": "test_ht_lt",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, filter by locus < a probe Locus, preserve the expected partition pruning (15 partitions below/equal, 6 above/greater), and return the expected 245 rows from count().",
+      "line": 44,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_key_prefix.py::test_ht_lt@44",
+      "source_sha256": "5a392cc232186a42beb608312916ee497181b285b70a46c5186986adddff9a6c"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_key_prefix.py",
+      "test_id": "test_ht_le",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, filter by locus <= a probe Locus, preserve the expected partition pruning (15 partitions below/equal, 6 above/greater), and return the expected 246 rows from count().",
+      "line": 50,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_key_prefix.py::test_ht_le@50",
+      "source_sha256": "5a392cc232186a42beb608312916ee497181b285b70a46c5186986adddff9a6c"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_key_prefix.py",
+      "test_id": "test_ht_eq",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, compare a locus field with a Locus probe using equality; filter to one partition and collect the exact nested variant row with locus and complete nested info schema.",
+      "line": 56,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_key_prefix.py::test_ht_eq@56",
+      "source_sha256": "5a392cc232186a42beb608312916ee497181b285b70a46c5186986adddff9a6c"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_key_prefix.py",
+      "test_id": "test_ht_ge",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, filter by locus >= a probe Locus, preserve the expected partition pruning (15 partitions below/equal, 6 above/greater), and return the expected 101 rows from count().",
+      "line": 102,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_key_prefix.py::test_ht_ge@102",
+      "source_sha256": "5a392cc232186a42beb608312916ee497181b285b70a46c5186986adddff9a6c"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_key_prefix.py",
+      "test_id": "test_ht_gt",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, filter by locus > a probe Locus, preserve the expected partition pruning (15 partitions below/equal, 6 above/greater), and return the expected 100 rows from count().",
+      "line": 108,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_key_prefix.py::test_ht_gt@108",
+      "source_sha256": "5a392cc232186a42beb608312916ee497181b285b70a46c5186986adddff9a6c"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_key_prefix.py",
+      "test_id": "test_ht_ge_with_bindings",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Bind the Table row and locus fields to local expression variables, combine locus >= probe with hl.is_defined(locus), and preserve 6-partition pruning and 101-row count.",
+      "line": 114,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_key_prefix.py::test_ht_ge_with_bindings@114",
+      "source_sha256": "5a392cc232186a42beb608312916ee497181b285b70a46c5186986adddff9a6c"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_locus_position.py",
+      "test_id": "test_ht_lt",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, compare locus.position < an integer constant, retain expected partition pruning (15 partitions below/equal, 6 above/greater), and return 245 rows from count().",
+      "line": 36,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_locus_position.py::test_ht_lt@36",
+      "source_sha256": "eeb299e3b67c4767cff6a0eba5b6611e57c8c565918912d6b4fbb6ae0d9d10fe"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_locus_position.py",
+      "test_id": "test_ht_le",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, compare locus.position <= an integer constant, retain expected partition pruning (15 partitions below/equal, 6 above/greater), and return 246 rows from count().",
+      "line": 42,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_locus_position.py::test_ht_le@42",
+      "source_sha256": "eeb299e3b67c4767cff6a0eba5b6611e57c8c565918912d6b4fbb6ae0d9d10fe"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_locus_position.py",
+      "test_id": "test_ht_eq",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, compare the integer locus.position field to the integer probe, filter to one partition and collect the exact nested variant row.",
+      "line": 48,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_locus_position.py::test_ht_eq@48",
+      "source_sha256": "eeb299e3b67c4767cff6a0eba5b6611e57c8c565918912d6b4fbb6ae0d9d10fe"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_locus_position.py",
+      "test_id": "test_ht_ge",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, compare locus.position >= an integer constant, retain expected partition pruning (15 partitions below/equal, 6 above/greater), and return 101 rows from count().",
+      "line": 94,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_locus_position.py::test_ht_ge@94",
+      "source_sha256": "eeb299e3b67c4767cff6a0eba5b6611e57c8c565918912d6b4fbb6ae0d9d10fe"
+    },
+    {
+      "source": "hail/python/test/hail/extract_intervals/test_locus_position.py",
+      "test_id": "test_ht_gt",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "On the MatrixTable-derived rows Table, compare locus.position > an integer constant, retain expected partition pruning (15 partitions below/equal, 6 above/greater), and return 100 rows from count().",
+      "line": 100,
+      "inventory_id": "py:hail/python/test/hail/extract_intervals/test_locus_position.py::test_ht_gt@100",
+      "source_sha256": "eeb299e3b67c4767cff6a0eba5b6611e57c8c565918912d6b4fbb6ae0d9d10fe"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_ir_value_type",
+      "reviewed_scope": "backend_specific",
+      "implementation_requirement": "For each of 81 value IR fixtures spanning ordinary expressions, table IRs, MatrixTable IRs, and BlockMatrix IRs, ask the backend for its value type after binding free variables to missing values, and assert it equals the IR\u2019s declared type.",
+      "line": 191,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_ir_value_type@191",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_ir_copies",
+      "reviewed_scope": "backend_specific",
+      "implementation_requirement": "For each of 81 value IR fixtures, copy the node with its children and preserve structural equality and hash; fixture contains value, Table, MatrixTable, and BlockMatrix IR families.",
+      "line": 203,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_ir_copies@203",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_table_ir_table_type",
+      "reviewed_scope": "backend_specific",
+      "implementation_requirement": "For each of 28 table IR fixture nodes (including TableRead and constructed table operations), ask Env.backend().table_type and assert exact equality with the node\u2019s declared TableType; this is a backend IR typing contract.",
+      "line": 309,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_table_ir_table_type@309",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_table_ir_highly_nested",
+      "reviewed_scope": "backend_specific",
+      "implementation_requirement": "Build a TableRange with 250 successive annotate operations adding fields and stringify its table IR without recursion/stack failure; the asserted behavior is IR rendering depth.",
+      "line": 314,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_table_ir_highly_nested@314",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_matrix_ir_matrix_type",
+      "reviewed_scope": "backend_specific",
+      "implementation_requirement": "For each Matrix IR fixture, ask Env.backend().matrix_type and assert equality with the Matrix IR\u2019s declared type; this is a Matrix IR backend contract, not Table API behavior.",
+      "line": 411,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_matrix_ir_matrix_type@411",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_value_same_after_parsing",
+      "reviewed_scope": "shared_table_expression",
+      "implementation_requirement": "Embed literal values of multiple Hail types as fields in TableMapGlobals(TableRange), wrap as a Table, evaluate index_globals for all values, and preserve literal encoding/decoding through the table globals path.",
+      "line": 524,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_value_same_after_parsing@524",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_agg_cse",
+      "reviewed_scope": "backend_specific",
+      "implementation_requirement": "Construct TableAggregate IR with repeated aggregate and row expressions, then require CSERenderer to emit the expected common-subexpression-eliminated IR text, including aggregation scope/bindings.",
+      "line": 634,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_agg_cse@634",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_refs",
+      "reviewed_scope": "backend_specific",
+      "implementation_requirement": "Construct TableMapRows IR over TableRange with repeated row-field references, then require CSERenderer to emit the expected row-bound IR text and field access structure.",
+      "line": 683,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_refs@683",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_ir.py",
+      "test_id": "test_decoding_multiple_dicts",
+      "reviewed_scope": "shared_table_expression",
+      "implementation_requirement": "Build a Table expression with array and mapping literals, nested lambda map and struct construction, select it into a result field, and collect successfully with both independent dictionaries decoded correctly.",
+      "line": 747,
+      "inventory_id": "py:hail/python/test/hail/test_ir.py::test_decoding_multiple_dicts@747",
+      "source_sha256": "fccd84d9020c67357fbc01ad2d0a8c51f13c64bf60783aee8c226a0047a0dfb1"
+    },
+    {
+      "source": "hail/python/test/hail/test_randomness.py",
+      "test_id": "test_table_explode",
+      "reviewed_scope": "shared_table_expression",
+      "implementation_requirement": "After resetting global randomness, generate a deterministic random integer array per range_table row, explode it, and preserve deterministic row order and exact collected rows including expansion cardinality.",
+      "line": 7,
+      "inventory_id": "py:hail/python/test/hail/test_randomness.py::test_table_explode@7",
+      "source_sha256": "e60f2da1887e6c6276b2295968d76211e418be16628b1c670beb496add8d1501"
+    },
+    {
+      "source": "hail/python/test/hail/test_randomness.py",
+      "test_id": "test_table_key_by",
+      "reviewed_scope": "shared_table_expression",
+      "implementation_requirement": "After resetting global randomness, annotate a range_table with deterministic random integers, key by that field, and collect rows in key order with duplicate keys and stable associated row values.",
+      "line": 33,
+      "inventory_id": "py:hail/python/test/hail/test_randomness.py::test_table_key_by@33",
+      "source_sha256": "e60f2da1887e6c6276b2295968d76211e418be16628b1c670beb496add8d1501"
+    },
+    {
+      "source": "hail/python/test/hail/test_randomness.py",
+      "test_id": "test_table_annotate",
+      "reviewed_scope": "shared_table_expression",
+      "implementation_requirement": "After resetting global randomness, evaluate a random integer annotation followed by a dependent arithmetic annotation and collect exact deterministic values for both fields.",
+      "line": 49,
+      "inventory_id": "py:hail/python/test/hail/test_randomness.py::test_table_annotate@49",
+      "source_sha256": "e60f2da1887e6c6276b2295968d76211e418be16628b1c670beb496add8d1501"
+    },
+    {
+      "source": "hail/python/test/hail/test_randomness.py",
+      "test_id": "test_matrix_table_entries",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "After resetting global randomness, annotate MatrixTable entries with deterministic random integers, convert entries() to a Table, collect row/column keys plus entry values in matrix order, and match the full expected matrix-shaped row set.",
+      "line": 65,
+      "inventory_id": "py:hail/python/test/hail/test_randomness.py::test_matrix_table_entries@65",
+      "source_sha256": "e60f2da1887e6c6276b2295968d76211e418be16628b1c670beb496add8d1501"
+    },
+    {
+      "source": "hail/python/test/hail/test_randomness.py",
+      "test_id": "test_table_filter",
+      "reviewed_scope": "shared_table_expression",
+      "implementation_requirement": "After resetting global randomness, annotate a range_table with deterministic random integers, filter through a row expression, and collect exactly the matching rows in source order.",
+      "line": 85,
+      "inventory_id": "py:hail/python/test/hail/test_randomness.py::test_table_filter@85",
+      "source_sha256": "e60f2da1887e6c6276b2295968d76211e418be16628b1c670beb496add8d1501"
+    },
+    {
+      "source": "hail/python/test/hail/test_randomness.py",
+      "test_id": "test_table_key_by_aggregate",
+      "reviewed_scope": "shared_table_expression",
+      "implementation_requirement": "After resetting global randomness, annotate deterministic random values, group by the value and aggregate count, then collect groups in key order with the expected output key/schema and counts.",
+      "line": 95,
+      "inventory_id": "py:hail/python/test/hail/test_randomness.py::test_table_key_by_aggregate@95",
+      "source_sha256": "e60f2da1887e6c6276b2295968d76211e418be16628b1c670beb496add8d1501"
+    },
+    {
+      "source": "hail/python/test/hail/utils/test_genomic_range_table.py",
+      "test_id": "test_genomic_range_table_grch38",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Construct a 10-row genomic_range_table for reference genome GRCh38, with locus rows ordered at positions 1 through 10 on contig chr1; collect and compare the exact rows, including reference-genome identity.",
+      "line": 4,
+      "inventory_id": "py:hail/python/test/hail/utils/test_genomic_range_table.py::test_genomic_range_table_grch38@4",
+      "source_sha256": "25980c68671885539a1ec28e7cd7e77b851649af06af3b697e07a311c6965333"
+    },
+    {
+      "source": "hail/python/test/hail/utils/test_genomic_range_table.py",
+      "test_id": "test_genomic_range_table_grch37",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Construct a 10-row genomic_range_table for reference genome GRCh37, with locus rows ordered at positions 1 through 10 on contig 1; collect and compare the exact rows, including reference-genome identity.",
+      "line": 10,
+      "inventory_id": "py:hail/python/test/hail/utils/test_genomic_range_table.py::test_genomic_range_table_grch37@10",
+      "source_sha256": "25980c68671885539a1ec28e7cd7e77b851649af06af3b697e07a311c6965333"
+    },
+    {
+      "source": "hail/python/test/hail/utils/test_genomic_range_table.py",
+      "test_id": "test_genomic_range_table_canfam3",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Construct a 10-row genomic_range_table for reference genome CanFam3, with locus rows ordered at positions 1 through 10 on contig chr1; collect and compare the exact rows, including reference-genome identity.",
+      "line": 16,
+      "inventory_id": "py:hail/python/test/hail/utils/test_genomic_range_table.py::test_genomic_range_table_canfam3@16",
+      "source_sha256": "25980c68671885539a1ec28e7cd7e77b851649af06af3b697e07a311c6965333"
+    },
+    {
+      "source": "hail/python/test/hail/utils/test_genomic_range_table.py",
+      "test_id": "test_genomic_range_table_grcm38",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Construct a 10-row genomic_range_table for reference genome GRCm38, with locus rows ordered at positions 1 through 10 on contig 1; collect and compare the exact rows, including reference-genome identity.",
+      "line": 22,
+      "inventory_id": "py:hail/python/test/hail/utils/test_genomic_range_table.py::test_genomic_range_table_grcm38@22",
+      "source_sha256": "25980c68671885539a1ec28e7cd7e77b851649af06af3b697e07a311c6965333"
+    }
+  ],
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1"
+}

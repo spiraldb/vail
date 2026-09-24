@@ -1,0 +1,1111 @@
+{
+  "schema_version": 1,
+  "reviewed_test_count": 138,
+  "tests": [
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 28,
+      "test_id": "test_geom_point_line_text_col_area",
+      "implementation_requirement": "Compile point, line, text, column, and area geoms over a Table with computed fields, cartesian bounds, labels, and title to Plotly.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 48,
+      "test_id": "test_manhattan_plot",
+      "implementation_requirement": "Render a ggplot scatter Manhattan chart from a MatrixTable rows Table with locus x and -log10(p) y, preserving chromosome tick labels 1\u201322, X, Y.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 83,
+      "test_id": "test_histogram",
+      "implementation_requirement": "Grouped histogram must produce five traces and exact bin centers for stack/identity and dodge positions.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 102,
+      "test_id": "test_separate_traces_per_group",
+      "implementation_requirement": "A bar geom with 30 distinct Table groups must create 30 Plotly traces.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 108,
+      "test_id": "test_geom_ribbon",
+      "implementation_requirement": "Compile a ribbon geom using Table expressions as x, ymin, and ymax.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 114,
+      "test_id": "test_default_scale_no_repeat_colors",
+      "implementation_requirement": "A discrete color scale over 20 Table groups must assign 20 distinct colors.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 125,
+      "test_id": "test_scale_color_manual",
+      "implementation_requirement": "Manual color scale must use precisely the supplied red and blue colors across grouped points.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 139,
+      "test_id": "test_weighted_bar",
+      "implementation_requirement": "Weighted geom_bar over indexed Table arrays must produce bar heights [8,9,5,6].",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/ggplot/test_ggplot.py",
+      "line": 151,
+      "test_id": "test_faceting",
+      "implementation_requirement": "facet_wrap on a Table group field must produce two Plotly facet annotations.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "ecdf9f63e680379a6bf4c2ae48a1704d55f497b57313bf1b4ecdfdfe49ecff05"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_file_formats.py",
+      "line": 109,
+      "test_id": "test_backward_compatability_ht",
+      "implementation_requirement": "Deferred by user direction: this test reads 56 legacy Hail Table resources and compares projected all-values data. It is not a requirement for the current Vortex/Iceberg implementation; legacy-format decoding will be addressed later.",
+      "reviewed_scope": "legacy_format_deferred",
+      "source_sha256": "7789445d5357d009c6a0873d1acf421ed9d618bac46109b554be473c42f24fbf"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_grouped_matrix_table.py",
+      "line": 156,
+      "test_id": "test_joins_work_correctly",
+      "implementation_requirement": "Grouped row/column aggregations may index sibling MatrixTable row/column/entry data and must match explicit expected keyed Table results, including globals and aggregation expression scope.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "0882fd3a39ae3eaa514721903ce676d4d7992b5eddd78a6517d69643dc630504"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_grouped_matrix_table.py",
+      "line": 211,
+      "test_id": "test_group_rows_by_aggregate",
+      "implementation_requirement": "Grouped rows must support sequential row/entry aggregations, fixed-index references to a sibling MatrixTable, result() materialization, and exact rows/entries Table schema and values.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "0882fd3a39ae3eaa514721903ce676d4d7992b5eddd78a6517d69643dc630504"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_grouped_matrix_table.py",
+      "line": 255,
+      "test_id": "test_group_cols_by_aggregate",
+      "implementation_requirement": "Grouped columns must support sequential column/entry aggregations, fixed-index references to sibling MatrixTable entries, result() materialization, and exact rows/entries Table schema and values.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "0882fd3a39ae3eaa514721903ce676d4d7992b5eddd78a6517d69643dc630504"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 70,
+      "test_id": "test_annotate_globals",
+      "implementation_requirement": "Check globals literal values through both MatrixTable.annotate_globals and Table.annotate_globals: integers, NaN/infinities, floats, and nested arrays/structs must evaluate to their typed Python values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 90,
+      "test_id": "test_head_no_empty_partitions",
+      "implementation_requirement": "For an in-memory and re-read 10x10 MatrixTable, head(1) and head(100) must produce correct row counts via count_rows and forced row count.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 103,
+      "test_id": "test_head_empty_partitions_at_front",
+      "implementation_requirement": "After filtering away the first half of a 20-row MatrixTable with empty leading partitions, write/read then head(1/100) must report 1/10 rows.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 117,
+      "test_id": "test_head_rows_and_cols",
+      "implementation_requirement": "MatrixTable.head(1, 2) must retain one row and two columns.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 121,
+      "test_id": "test_head_rows",
+      "implementation_requirement": "MatrixTable.head(1, None) must retain one row and all ten columns.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 125,
+      "test_id": "test_head_cols",
+      "implementation_requirement": "MatrixTable.head(None, 1) must retain all ten rows and one column.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 130,
+      "test_id": "test_tail_no_empty_partitions",
+      "implementation_requirement": "For an in-memory and re-read 10x10 MatrixTable, tail(1) and tail(100) must produce correct row counts via count_rows and forced row count.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 143,
+      "test_id": "test_tail_empty_partitions_at_front",
+      "implementation_requirement": "After filtering away the first half of a 20-row MatrixTable with empty leading partitions, write/read then tail(1/100) must report 1/10 rows.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 156,
+      "test_id": "test_tail_cols",
+      "implementation_requirement": "MatrixTable.tail must independently honor row and column limits: (1,2), (1,None), (None,1) give dimensions (1,2), (1,10), (10,1).",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 162,
+      "test_id": "test_tail_entries",
+      "implementation_requirement": "After removing the final column, tail(n,m).entries() must collect the exact Cartesian suffix row/column coordinates for row-only, column-only, and combined limits.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 177,
+      "test_id": "test_tail_scan",
+      "implementation_requirement": "Row and column scan counts must stay attached to the expected suffix when taking a 10x11 MatrixTable tail; entries aggregate to coordinates (i,j) with i=20..29, j=29..39.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 227,
+      "test_id": "test_aggregate_cols_order",
+      "implementation_requirement": "aggregate_cols(collect(col_idx)) must follow original column order before keying (after choose_cols: [0,1,2]) and chosen physical order once col keys are removed ([2,1,0]).",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 257,
+      "test_id": "test_aggregate_rows_bn_counter",
+      "implementation_requirement": "On rows() of a Balding-Nichols MatrixTable, Table.aggregate(counter(locus.in_x_nonpar())) must count Boolean locus classes.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 301,
+      "test_id": "test_select_entries",
+      "implementation_requirement": "Selecting nested entry fields must project them into top-level fields; a derived bc expression must equal the previously computed foo in entries().",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 310,
+      "test_id": "test_select_cols",
+      "implementation_requirement": "Column annotation aggregations over entry fields, row/column indices and globals must produce the asserted col struct for column 3.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 378,
+      "test_id": "test_aggregate_cols_by",
+      "implementation_requirement": "Grouping columns by a Boolean group and aggregating entries must produce exact row/group sum values, retain globals, and key the result by row_idx and group.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 411,
+      "test_id": "test_aggregate_rows_by",
+      "implementation_requirement": "Grouping rows by a Boolean group and aggregating entries must produce exact column/group sums, retain globals, and key by group and col_idx.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 434,
+      "test_id": "test_collect_cols_by_key",
+      "implementation_requirement": "collect_cols_by_key must collect exploded column values into ordered arrays and carry entry values into corresponding arrays for every row/column pair.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 495,
+      "test_id": "test_semi_anti_join_rows",
+      "implementation_requirement": "MatrixTable row semi/anti joins against compatible single- and compound-key Tables must retain/remove expected rows; incompatible or empty Table keys raise the asserted ValueError.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 518,
+      "test_id": "test_semi_anti_join_cols",
+      "implementation_requirement": "MatrixTable column semi/anti joins against compatible single- and compound-key Tables must retain/remove expected columns; incompatible or empty Table keys raise ValueError.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 541,
+      "test_id": "test_joins",
+      "implementation_requirement": "MatrixTable row/column indexing from derived row and column Tables must annotate matching values and support tuple keys, string casts, and all-row/all-column checks.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 559,
+      "test_id": "test_joins_with_key_structs",
+      "implementation_requirement": "Rows/cols Table indexing by expanded key fields must match indexing by the key struct; MatrixTable index_rows/index_cols and entry lookup must agree on equivalent key forms.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 584,
+      "test_id": "test_table_product_join",
+      "implementation_requirement": "A MatrixTable row lookup into a keyed Table with all_matches=True must return all preceding index values for each row.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 703,
+      "test_id": "test_union_rows_different_col_schema",
+      "implementation_requirement": "union_rows must accept differing column schemas and globals and concatenate row counts to 20.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 712,
+      "test_id": "test_index",
+      "implementation_requirement": "Adding row and column indices to an imported MatrixTable must assign consecutive indices in the materialized rows() and cols() Tables while retaining requested partition count.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 758,
+      "test_id": "test_computed_key_join_1",
+      "implementation_requirement": "Annotating MatrixTable rows from Table lookup by a computed integer key must return values matching locus-position parity.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 770,
+      "test_id": "test_computed_key_join_multiple_keys",
+      "implementation_requirement": "Table indexing by two computed MatrixTable row keys must return the value encoding parity of locus position and DP; assert across rows().",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 787,
+      "test_id": "test_computed_key_join_duplicate_row_keys",
+      "implementation_requirement": "After exploding a duplicate row-key component, keyed Table lookup must yield the mapped value for the matching key and missing values for other keys.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 802,
+      "test_id": "test_interval_join",
+      "implementation_requirement": "Matrix row keys indexing a Table keyed by integer intervals must attach the containing interval row or missing result according to half-open interval boundaries.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 816,
+      "test_id": "test_interval_product_join",
+      "implementation_requirement": "Interval Table lookup with all_matches=True must return each matching interval value, sorted, with exact match count determined by distance to the nearest ten boundary.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 834,
+      "test_id": "test_entry_join_self",
+      "implementation_requirement": "MatrixTable entry self-indexing by row/column keys must preserve entry dtype and reproduce every entry value after column reordering.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 845,
+      "test_id": "test_entry_join_const",
+      "implementation_requirement": "Entry lookup in a one-cell MatrixTable must broadcast its foo value to every entry indexed by computed row/column keys.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 856,
+      "test_id": "test_entry_join_missingness",
+      "implementation_requirement": "Entry lookup from a filtered MatrixTable must produce defined scaled values only at retained even row/even column coordinates and missing elsewhere.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 871,
+      "test_id": "test_entries_table_length_and_fields",
+      "implementation_requirement": "MatrixTable.entries() must expose row/column keys and annotated entry fields for all 100 cells with x=row_idx+col_idx.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 878,
+      "test_id": "test_entries_table_no_keys",
+      "implementation_requirement": "entries() must preserve documented row-major ordering under original, no-column-key, no-row-key, and no-row-key-only variants.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 894,
+      "test_id": "test_entries_table_without_of_order_row_key_fields",
+      "implementation_requirement": "Entries materialization must work when the row key field order differs from the selected row field order.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 900,
+      "test_id": "test_filter_cols_required_entries",
+      "implementation_requirement": "After filtering a 10-column MatrixTable to three columns, entries().collect() must return 30 cells.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 918,
+      "test_id": "test_field_groups",
+      "implementation_requirement": "Converting row, column, and entry structs to fields through rows(), cols(), and entries() must preserve equality of nested/original fields, including missing GT.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 948,
+      "test_id": "test_from_rows_table",
+      "implementation_requirement": "MatrixTable.from_rows_table must reconstruct the row-only equivalent of the source MatrixTable after globals, entries, and columns are removed.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 960,
+      "test_id": "test_read_stored_cols",
+      "implementation_requirement": "After MatrixTable write, its stored cols Table must equal mt.cols() after dropping its key.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 968,
+      "test_id": "test_read_stored_rows",
+      "implementation_requirement": "After MatrixTable write, its stored rows Table must equal mt.rows() including a global annotation.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 976,
+      "test_id": "test_read_stored_globals",
+      "implementation_requirement": "After MatrixTable write, its stored globals Table must equal mt.globals_table() including mixed-typed globals.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 984,
+      "test_id": "test_indexed_read",
+      "implementation_requirement": "MatrixTable read with two adjacent row intervals must preserve interval partition selection (2 partitions by default, 3 with filtering) and match equivalent row filtering.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1010,
+      "test_id": "test_indexed_read_vcf",
+      "implementation_requirement": "Imported VCF MatrixTable written/re-read with two locus intervals must select two partitions and equal filtering the source by the same disjoint locus ranges.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1032,
+      "test_id": "test_interval_filter_partitions",
+      "implementation_requirement": "Indexed MatrixTable reads with several intervals contained within the same or multiple source partitions must retain exactly one or three partitions.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1073,
+      "test_id": "test_codecs_table",
+      "implementation_requirement": "For every backend-supported codec, write/read the rows() Table from an imported MatrixTable and preserve Table equality.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1084,
+      "test_id": "test_fix3307_read_mt_wrong",
+      "implementation_requirement": "After split_multi_hts and MatrixTable write/read, the stored rows Table, source rows(), and restored rows() must be equal.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1117,
+      "test_id": "test_range",
+      "implementation_requirement": "range_matrix_table(100,10) must have exact row/column counts; entries().add_index() must assign index equal to 10*row_idx+col_idx.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1124,
+      "test_id": "test_filter_entries",
+      "implementation_requirement": "After adding row/column annotations then filtering entries by (row*col)%4, every materialized entry must satisfy the predicate.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1133,
+      "test_id": "test_filter_na",
+      "implementation_requirement": "A missing Boolean filter removes all rows, columns, or entries in the corresponding MatrixTable axis.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1197,
+      "test_id": "test_to_table_on_entries_method",
+      "implementation_requirement": "entries() must order entry field collects by sorted row and column keys, and take(1) must return the first value.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1202,
+      "test_id": "test_to_table_on_rows_method",
+      "implementation_requirement": "rows() must order rows by row key while preserving original row_idx field values, for collect and take.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1208,
+      "test_id": "test_order_by",
+      "implementation_requirement": "Table.order_by accepts a string or asc field and sorts ascending; desc sorts descending.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1214,
+      "test_id": "test_order_by_complex_exprs",
+      "implementation_requirement": "Table.order_by must sort using a computed negative key expression.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1218,
+      "test_id": "test_order_by_intervals",
+      "implementation_requirement": "Table.order_by on interval fields must use interval ordering including endpoint inclusion/exclusion distinctions.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1237,
+      "test_id": "test_range_matrix_table",
+      "implementation_requirement": "range_matrix_table must produce empty globals/entries, typed row/col index schemas and default row/column keys; rows() and cols() collect consecutive indices.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1257,
+      "test_id": "test_make_table",
+      "implementation_requirement": "MatrixTable.make_table must flatten entry fields into column-named fields, retain row key and produce exact Table rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1293,
+      "test_id": "test_make_table_row_equivalence",
+      "implementation_requirement": "make_table must retain the source rows Table when row fields and random entry fields are present and flattened into columns.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1324,
+      "test_id": "test_agg_explode",
+      "implementation_requirement": "Table.aggregate with agg.explode over arrays must collect present elements from nonempty, empty, missing arrays and missing elements while ignoring empty/missing arrays.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1334,
+      "test_id": "test_agg_call_stats",
+      "implementation_requirement": "Table.aggregate(call_stats) must be callable over phased, unphased, haploid, and missing calls and produce the assigned AC/AF/AN/homozygote-count values; note the test passes the actual Table as assertTrue's condition and the expected Table only as its message, so it does not compare the values.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1348,
+      "test_id": "test_hardy_weinberg_test",
+      "implementation_requirement": "MatrixTable row HWE aggregation, for one- and two-sided tests, must match expected heterozygote frequencies/p-values for five variants and return p=0.5 with NaN frequency for a monomorphic row.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1392,
+      "test_id": "test_hw_func_and_agg_agree",
+      "implementation_requirement": "The scalar hardy_weinberg_test function must equal the MatrixTable row aggregation for the same call_stats-derived counts in both one- and two-sided modes.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1430,
+      "test_id": "test_write_no_parts",
+      "implementation_requirement": "Writing a zero-row MatrixTable with no row partitions and reading it with rows dropped must preserve MatrixTable equality.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1437,
+      "test_id": "test_nulls_in_distinct_joins_1",
+      "implementation_requirement": "Matrix row distinct-join semantics must preserve matching nonmissing keys and emit missing joined fields for null keys in exact row order.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1482,
+      "test_id": "test_row_joins_into_table_1",
+      "implementation_requirement": "Table.index with a MatrixTable row key, one key field, nonkey fields, and a point interval key must return exact rows and reject incompatible compound-key arity.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1510,
+      "test_id": "test_row_joins_into_table_2",
+      "implementation_requirement": "For compound row keys, Table.index must accept matching component arguments, reject incomplete/incompatible key forms, and distinguish point intervals from interval keys over structs.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1549,
+      "test_id": "test_refs_with_process_joins",
+      "implementation_requirement": "Matrix entry expressions may combine literals with joined column, row, and entry lookups and lazily selected globals/row/col/entry structs; the resulting MatrixTable count must execute.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1656,
+      "test_id": "test_localize_entries_with_both_none_is_rows_table",
+      "implementation_requirement": "localize_entries(None,None) must produce a Table equal to rows(), dropping entry and column-localized fields.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1669,
+      "test_id": "test_localize_entries_with_none_entries_changes_no_rows",
+      "implementation_requirement": "When entry array localization is disabled, localize_entries must retain globals/rows exactly after selecting globals.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1676,
+      "test_id": "test_localize_entries_creates_arrays_of_entries_and_array_of_cols",
+      "implementation_requirement": "localize_entries must pack per-row entry arrays and the columns array into the exact Table schema, row names, values, and globals.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1686,
+      "test_id": "test_multi_write",
+      "implementation_requirement": "Writing the same MatrixTable three times via experimental.write_matrix_tables must return paths whose re-read MatrixTables all equal the input.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1780,
+      "test_id": "test_partitioned_write",
+      "implementation_requirement": "MatrixTable.write(_partitions=intervals) must write exactly the requested row partitions, preserve MatrixTable equality, and support intervals outside data and disjoint subsets.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1783,
+      "test_id": "test_parts",
+      "implementation_requirement": "The nested partition-write helper must construct interval specs, write/read MatrixTables, assert partition count equals interval count, and preserve the expected full or filtered MatrixTable.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1804,
+      "test_id": "test_partitioned_write_coerce",
+      "implementation_requirement": "Partitioned MatrixTable writes must coerce locus intervals, retain only covered rows, use one output partition, and equal filter_intervals.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1817,
+      "test_id": "test_overwrite",
+      "implementation_requirement": "MatrixTable.write must fail on an existing path by default and succeed when overwrite=True.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1831,
+      "test_id": "test_legacy_files_with_required_globals",
+      "implementation_requirement": "Legacy required-globals Table and MatrixTable resources must be readable and force-countable.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1835,
+      "test_id": "test_matrix_native_write_range",
+      "implementation_requirement": "Native MatrixTable write/read of a range dataset must preserve exact MatrixTable equality.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1857,
+      "test_id": "test_filtered_entries_group_rows_by",
+      "implementation_requirement": "Grouping rows after filtering out every entry must still produce one grouped row and an entries Table row with a zero count.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1863,
+      "test_id": "test_filtered_entries_group_cols_by",
+      "implementation_requirement": "Grouping columns after filtering out every entry must still produce one grouped column and an entries Table row with a zero count.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1881,
+      "test_id": "test_filter_locus_position_collect_returns_data",
+      "implementation_requirement": "Table filtering by a locus.position expression must return the expected row with GRCh37 locus contig and position.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1889,
+      "test_id": "test_lower_row_agg_init_arg",
+      "implementation_requirement": "After variant-QC filtering and sampling a MatrixTable, row semi-join and HWE PCA must execute on the selected genotype data.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1899,
+      "test_id": "test_keys_before_scans",
+      "implementation_requirement": "A row scan collected after changing row keys must follow the prior reversed-key order; re-keying back must preserve expected per-row prefixes.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1910,
+      "test_id": "test_read_write_all_types",
+      "implementation_requirement": "The all-values MatrixTable helper fixture must survive MatrixTable native write/read with exact schema and data equality.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1924,
+      "test_id": "test_read_partitions",
+      "implementation_requirement": "Reading a 3-partition MatrixTable with _n_partitions=10 must expose ten output partitions.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 1931,
+      "test_id": "test_filter_against_invalid_contig",
+      "implementation_requirement": "Filtering generated MatrixTable loci to a contig absent from the reference genome must return zero rows.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2003,
+      "test_id": "test_matrix_randomness_filter_rows_with_cond_randomness",
+      "implementation_requirement": "MatrixFilterRows with a random condition must materialize without consumer randomness and preserve globally unique random IDs at row/column/entry scopes.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2086,
+      "test_id": "test_matrix_randomness_filter_entries_with_cond_randomness",
+      "implementation_requirement": "MatrixFilterEntries with a random condition must materialize entries and maintain globally unique random IDs across all scopes.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2142,
+      "test_id": "test_matrix_randomness_map_globals_with_body_randomness",
+      "implementation_requirement": "MatrixMapGlobals with random global value must execute entries and keep random IDs unique across scopes.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2150,
+      "test_id": "test_matrix_randomness_map_globals_without_body_randomness",
+      "implementation_requirement": "MatrixMapGlobals without randomness must preserve unique IDs across all scopes and expose the expected IR node.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2157,
+      "test_id": "test_matrix_randomness_filter_cols_with_cond_randomness",
+      "implementation_requirement": "MatrixFilterCols with a random condition must execute entries and preserve unique random IDs across scopes.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2235,
+      "test_id": "test_matrix_randomness_repartition",
+      "implementation_requirement": "MatrixRepartition must appear in the IR when lowering is supported and preserve globally unique random IDs.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2261,
+      "test_id": "test_matrix_randomness_rows_head",
+      "implementation_requirement": "MatrixRowsHead must appear in IR for a row head and preserve random ID uniqueness.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2268,
+      "test_id": "test_matrix_randomness_cols_head",
+      "implementation_requirement": "MatrixColsHead must appear in IR for a column head and preserve random ID uniqueness.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2275,
+      "test_id": "test_matrix_randomness_rows_tail",
+      "implementation_requirement": "MatrixRowsTail must appear in IR for a row tail and preserve random ID uniqueness.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2282,
+      "test_id": "test_matrix_randomness_cols_tail",
+      "implementation_requirement": "MatrixColsTail must appear in IR for a column tail and preserve random ID uniqueness.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2297,
+      "test_id": "test_matrix_randomness_cast_table_to_matrix",
+      "implementation_requirement": "Unlocalizing a Table with entry/global arrays into a MatrixTable must create CastTableToMatrix IR and preserve unique random IDs.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2306,
+      "test_id": "test_matrix_randomness_annotate_rows_table",
+      "implementation_requirement": "Annotating MatrixTable rows from a keyed Table with duplicate interval-like row keys must create MatrixAnnotateRowsTable IR and retain globally unique random IDs.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2316,
+      "test_id": "test_matrix_randomness_annotate_cols_table",
+      "implementation_requirement": "Annotating MatrixTable columns from a keyed Table must create MatrixAnnotateColsTable IR and retain globally unique random IDs.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2333,
+      "test_id": "test_matrix_randomness_rename",
+      "implementation_requirement": "MatrixTable.rename must produce MatrixRename IR and preserve globally unique random IDs.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2348,
+      "test_id": "test_upcast_tuples",
+      "implementation_requirement": "Tuple-valued column annotations must remain indexable after explode and drop; cols().collect() must execute.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2357,
+      "test_id": "test_sample_entries",
+      "implementation_requirement": "Sampling the MatrixTable.entries() Table at fraction 0.5 must be executable and force-countable.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table.py",
+      "line": 2364,
+      "test_id": "test_struct_of_arrays_encoding",
+      "implementation_requirement": "Checkpointing random and numeric entry fields with unstable struct-of-arrays encoding must write EStructOfArrays metadata and re-read equal to the standard encoding.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59"
+    },
+    {
+      "source": "hail/python/test/hail/matrixtable/test_matrix_table_from_parts.py",
+      "line": 108,
+      "test_id": "test_rectangular_matrices",
+      "implementation_requirement": "MatrixTable.from_parts with 2x1 nested entry arrays, after row/column selections, must emit exactly two entries with correct row_idx, col_idx and values.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "066d372ecc060b1bc56fd0843bfe009ece2c0f7959763aefd62c4a94f70fd064"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 8,
+      "test_id": "test_cdf",
+      "implementation_requirement": "Plot a Table field\u2019s empirical CDF. The test asserts that plotting executes without error.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 13,
+      "test_id": "test_histogram",
+      "implementation_requirement": "Grouped histogram must produce five traces and exact bin centers for stack/identity and dodge positions.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 19,
+      "test_id": "test_pdf",
+      "implementation_requirement": "Plot the estimated density of a Table field. The test asserts that plotting executes without error.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 24,
+      "test_id": "test_smoothed_pdf",
+      "implementation_requirement": "Plot the smoothed density of a Table field. The test asserts that plotting executes without error.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 29,
+      "test_id": "test_cumulative_histogram",
+      "implementation_requirement": "Plot cumulative Table-field histograms with explicit and automatic bins. The test asserts that plotting executes without error.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 35,
+      "test_id": "test_histogram2d",
+      "implementation_requirement": "Plot a 2D histogram of Table field idx against idx squared. The test asserts that plotting executes without error.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 40,
+      "test_id": "test_scatter",
+      "implementation_requirement": "Plot Table field idx against its square. The test asserts that plotting executes without error.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 45,
+      "test_id": "test_joint_plot",
+      "implementation_requirement": "Render a joint plot for two Table expressions. The test asserts that plotting executes without error.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 50,
+      "test_id": "test_qq",
+      "implementation_requirement": "Render a QQ plot of the Table expression idx/100. The test asserts that plotting executes without error.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 55,
+      "test_id": "test_manhattan",
+      "implementation_requirement": "Build a Manhattan plot from an indexed Table derived from a Balding-Nichols MatrixTable and preserve canonical GRCh37 chromosome tick labels 1\u201322, X, Y.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/plot/test_plot.py",
+      "line": 70,
+      "test_id": "test_plots_deprecated_collect_all",
+      "implementation_requirement": "For Manhattan/scatter/joint/QQ functions over an indexed MatrixTable rows Table, collect_all=True and n_divisions=0 must raise ValueError; n_divisions=None emits no warning unless collect_all=True, which warns with the plot name.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "94eb692505952aa0f6538019b147daa64f5d89a9de334e820d6cfa72dcf667d7"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 176,
+      "test_id": "test_segment_intervals",
+      "implementation_requirement": "Segment reference blocks by a keyed interval Table across chr22; write/re-read as MatrixTable, verify every segment\u2019s END stays inside its interval, and preserve per-sample covered bases.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 212,
+      "test_id": "test_interval_coverage",
+      "implementation_requirement": "Given a Table of two parsed locus intervals and GQ/DP thresholds, VDS interval_coverage must produce asserted interval sizes, threshold counts/fractions, and DP sums; mean_dp values are calculated for comparison with pytest.approx but that comparison result is not asserted.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 329,
+      "test_id": "test_impute_sex_chr_ploidy_from_interval_coverage",
+      "implementation_requirement": "Convert a Table of sample/interval/depth rows into a MatrixTable and infer autosomal/X/Y mean depth and ploidy for XX and XY samples using normalization contig 20.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 493,
+      "test_id": "test_impute_sex_chromosome_ploidy_1",
+      "implementation_requirement": "From synthetic reference/empty-variant MatrixTables built from Table data, infer XX/XY sex-chromosome ploidies from GRCh37 calling intervals using normalization contig 22.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 516,
+      "test_id": "test_impute_sex_chromosome_ploidy_2",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Build reference and variant MatrixTables through Table-to-Matrix fixtures, then impute sample sex-chromosome ploidy from VariantDataset depth over disjoint autosomal/X/Y intervals with use_variant_dataset=True. Collect exact Table rows for sample_xx (autosomal/X/Y depth 5/5/0 and X/Y ploidy 2/0) and sample_xy (5/3/2 and 1.2/0.8); this requires VDS and Matrix algorithms beyond the Table engine.",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 553,
+      "test_id": "test_filter_intervals_segment_table",
+      "implementation_requirement": "VDS interval filtering must accept an interval-keyed Table with split_reference_blocks=True and match list-based filtering in dense form, with both reference and variant loci in range.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 580,
+      "test_id": "test_filter_intervals_default_table",
+      "implementation_requirement": "Default VDS interval filtering must accept an interval-keyed Table, match list-based filtering after densification, and restrict variant loci to the requested interval.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 622,
+      "test_id": "test_to_dense_mt",
+      "implementation_requirement": "Densify a filtered chr22 VDS to MatrixTable while preserving variant rows and recoverable entries; assert exact reference-block missingness and LGT/LA/GQ/DP values for listed sample/locus pairs.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 675,
+      "test_id": "test_to_dense_mt_haploid",
+      "implementation_requirement": "When reference blocks contain haploid calls, densification must preserve variant rows, recoverable entries, missingness and expected haploid versus diploid LGT values at listed chr22 sample/locus pairs.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 717,
+      "test_id": "test_merge_reference_blocks",
+      "implementation_requirement": "Merge reference blocks using GQ equality and configured LEN/MIN_DP/N_BLOCKS reducers; preserve sample QC coverage bins and total block count/base count, then split_multi must rename GT/LGT fields as expected.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    },
+    {
+      "source": "hail/python/test/hail/vds/test_vds.py",
+      "line": 895,
+      "test_id": "test_filter_intervals_table",
+      "implementation_requirement": "VDS interval filtering from an interval-keyed Table built from the first ten variant rows must retain exactly those variant rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "85187ed96f924fac2041e53e5abc640f009914ae34bf454bfd3b8e258d2e06a5"
+    }
+  ],
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1"
+}

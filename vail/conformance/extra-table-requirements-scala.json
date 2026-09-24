@@ -1,0 +1,633 @@
+{
+  "methodology": "Source-reviewed implementation requirements for the scoped Scala table IR, generator, RVD ordering, interval and backend partitioning tests. These are requirements, not execution/pass claims. Parameterized provider behavior is noted in prose when static provider values were inspected.",
+  "schema_version": 1,
+  "source_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "summary": {
+    "IntervalSuite.scala": 1,
+    "LowerDistributedSortSuite.scala": 2,
+    "PartitioningSuite.scala": 1,
+    "RVDPartitionerSuite.scala": 9,
+    "TableGenSuite.scala": 13,
+    "TableIRSuite.scala": 51,
+    "total": 77
+  },
+  "tests": [
+    {
+      "implementation_requirement": "Lower the partitioner interval-range lookup for sorted non-overlapping intervals; return half-open index ranges for full, prefix, equal-boundary, and disjoint queries.",
+      "line": 258,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/IntervalSuite.scala",
+      "test_id": "testsortedNonOverlappingPartitionIntervalsEqualRange",
+      "source_sha256": "838810634c03b4616989389537e36f3a9d140bad4d0f2a9ea36e0d2d7e940011"
+    },
+    {
+      "implementation_requirement": "Evaluate TableRange rows with different partition counts; TableCount must return exact Long counts and compose correctly in a scalar addition.",
+      "line": 34,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testRangeCount",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "ForceCountTable must fully evaluate a very large lazy TableRange and return its exact count under interpreter execution.",
+      "line": 43,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testForceCount",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Write and read a TableRange through the native table writer/reader; preserve row order, generated UIDs, globals, and dropRows behavior.",
+      "line": 50,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testRangeRead",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Read a native keyed table resource and return the exact row count without materializing a Python-facing Table.",
+      "line": 74,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testCountRead",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Collect TableRange rows in order with empty globals, and collect a mapped row field with its original value.",
+      "line": 80,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testRangeCollect",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Allow a TableCollect result to be embedded in mapped rows and collect the nested row-array structure without changing row order.",
+      "line": 89,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testNestedRangeCollect",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Implement ordered exclusive prefix Sum over range rows: each output row receives the sum of preceding idx values, beginning at zero.",
+      "line": 111,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testRangeSum",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Map a global expression containing collected table rows, then expose it through TableGetGlobals with exact row/global nesting.",
+      "line": 128,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testGetGlobals",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Preserve mapped globals across row mapping and collection; make the same global value readable both on every row and in collected globals.",
+      "line": 137,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testCollectGlobals",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Explode array-valued row fields into one row per element; support nested struct/field paths and retain parent-row order.",
+      "line": 156,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testRangeExplode",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Filter rows using a predicate that reads a table global derived from collected rows; preserve surviving row order and globals.",
+      "line": 183,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testFilter",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Filter keyed rows by a list of intervals with keep and complement modes, inclusive/exclusive endpoints, empty interval lists, and overlapping intervals.",
+      "line": 203,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testFilterIntervals",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Map rows by inserting typed string and tuple literals while preserving existing row fields and globals.",
+      "line": 273,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableMapWithLiterals",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Implement IRScanCount as an exclusive ordered per-row index across the distributed table, including partition boundaries.",
+      "line": 291,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testScanCountBehavesLikeIndex",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Implement IRScanCollect as an exclusive prefix array of preceding row values, matching range(index) across partitions.",
+      "line": 308,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testScanCollectBehavesLikeRange",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Implement all supplied join kinds over keyed tables with varying left/right partition counts and projected fields; preserve expected outer-join rows, key semantics, and right-field renaming.",
+      "line": 562,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableJoin",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Union keyed input tables across every left/right partition-count pair and preserve the exact concatenated multiset and output schema.",
+      "line": 623,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableUnion",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Multi-way zip-join keyed inputs into grouped row arrays, preserving source-table order and producing the expected globals array.",
+      "line": 652,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableMultiWayZipJoin",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Join imported VCF rows to native MatrixTable row data on a two-field key; preserve importer partitioner correctness and exact matching count.",
+      "line": 682,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableJoinOfImport",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Read overlapping native key partitions with an interval predicate; interval pruning changes logical partition count while ForceCount still returns all expected matching rows.",
+      "line": 696,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testNativeReaderWithOverlappingPartitions",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Honor a key schema shorter than physical row storage when applying TableDistinct; do not treat suffix fields as part of key equality.",
+      "line": 715,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableKeyBy",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Lower TableKeyBy over parallelized rows, establish the requested key, and preserve every input row.",
+      "line": 738,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableKeyByLowering",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Construct tables from typed row/global literals and preserve exact rows and globals for input sizes spanning empty/small through uneven batches.",
+      "line": 753,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableParallelize",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Count the rows of a typed parallelized Table while ignoring global values.",
+      "line": 776,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableParallelizeCount",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Take the first n rows for n below, equal to, and beyond table size across multiple logical partition counts; preserve input order and globals.",
+      "line": 797,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableHead",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Take the last n rows for n below, equal to, and beyond table size across multiple logical partition counts; preserve suffix order and globals.",
+      "line": 828,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableTail",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Execute a lowered keyed left join between differently sized range tables and preserve correct cardinality while releasing shuffle/region resources.",
+      "line": 864,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testShuffleAndJoinDoesntMemoryLeak",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Rename row and global fields together, update expression references to the renamed schema, and preserve row/global values.",
+      "line": 880,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableRename",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Map table globals and make the mapped global available to row expressions while preserving all rows.",
+      "line": 923,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableMapGlobals",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Write a TableRange through the native writer and validate the resulting native table can be consumed with expected type/data metadata.",
+      "line": 956,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableWrite",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Persist keyed-table distinctness metadata accurately so the native reader can trust or reject key uniqueness claims.",
+      "line": 968,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testWriteKeyDistinctness",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Preserve logical partition counts when a TableRead drops row payloads but retains table metadata.",
+      "line": 1018,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testPartitionCountsWithDropRows",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Evaluate a collect aggregation inside a row scan inside TableMapRows; maintain per-row scan scope and expected collected values.",
+      "line": 1028,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testScanInAggInMapRows",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Support nested scans with aggregations inside mapped rows, preserving both outer and inner prefix state.",
+      "line": 1058,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testScanInAggInScanInMapRows",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Combine tree aggregation with a scan embedded in mapped rows while matching sequential prefix results.",
+      "line": 1092,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTreeAggScanInMapRows",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Group keyed rows by key and compute grouped aggregation, preserving output key/schema and ordered collected results.",
+      "line": 1107,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableAggregateByKey",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Distinct keyed rows after native read and return exact key-unique row count.",
+      "line": 1130,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableDistinct",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Sort range rows in descending order and collect them in sorted order; remove implicit key assumptions when explicit order is applied.",
+      "line": 1148,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testRangeOrderByDescending",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Implement left join with distinct right-side semantics over range tables, including missing right matches and output row cardinality.",
+      "line": 1157,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableLeftJoinRightDistinctRangeTables",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Evaluate nested stream construction and stream-to-table mapping while preserving key/value correspondence across rows.",
+      "line": 1177,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testNestedStreamInTable",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Left-join same-key parallelized tables under right-distinct semantics and return correct row count.",
+      "line": 1223,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableLeftJoinRightDistinctParallelizeSameKey",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Left-join tables where the right key extends the left key; match by key prefix and preserve distinct-right semantics.",
+      "line": 1239,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableLeftJoinRightDistinctParallelizePrefixKey",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Join a keyed table to a right table whose key contains intervals; match left keys by interval containment with endpoint inclusivity.",
+      "line": 1257,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableIntervalJoin",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Apply keying and keyed aggregation to native-read rows while preserving grouped key fields and aggregate results.",
+      "line": 1316,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableKeyByAndAggregate",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Implement grouped collect and ordered take aggregators with the specified element order and per-group result schema.",
+      "line": 1396,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableAggregateCollectAndTake",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Execute ndarray multiplication/addition through a table aggregation and return the exact aggregated ndarray value.",
+      "line": 1421,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testNDArrayMultiplyAddAggregator",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Compute an ordered exclusive prefix collect scan and return all prefix arrays with exact element ordering.",
+      "line": 1449,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableScanCollect",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Collect parallelized table rows after the reported regression path and preserve the expected row ordering and values.",
+      "line": 1476,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testIssue9016",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Read zipped native table fragments with a prefix key, aggregate rows, and preserve prefix matching and row alignment.",
+      "line": 1497,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableNativeZippedReaderWithPrefixKey",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Run table map-partitions over keyed range input while preserving row/global values and the partition-local contract.",
+      "line": 1524,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testTableMapPartitions",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Estimate repartition costs from table partition metadata without executing or changing table row semantics.",
+      "line": 1591,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/TableIRSuite.scala",
+      "test_id": "testRepartitionCostEstimate",
+      "source_sha256": "4943c8bee5b626e8863481568d5b5f8ac310576061b80397f98bf07bdac69acf"
+    },
+    {
+      "implementation_requirement": "Choose sample-derived split bounds from sampled rows for ascending composite keys, preserve partition-local ordering, and report whether the samples suffice.",
+      "line": 27,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/LowerDistributedSortSuite.scala",
+      "test_id": "testSamplePartition",
+      "source_sha256": "6f024a7a27c101f964750ca21da79ed1614291bf233bcba66515fc623ec39193"
+    },
+    {
+      "implementation_requirement": "Lower distributed sorts for eight provider cases covering empty/non-empty tables, computed and constant keys, multi-key ordering, and ascending/descending directions; output must match comparator-sorted collected rows.",
+      "line": 117,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/lowering/LowerDistributedSortSuite.scala",
+      "test_id": "testDistributedSort",
+      "source_sha256": "6f024a7a27c101f964750ca21da79ed1614291bf233bcba66515fc623ec39193"
+    },
+    {
+      "implementation_requirement": "Reject TableGen construction when context values have the wrong physical type, with the expected validation error.",
+      "line": 28,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testWithInvalidContextsType",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Reject TableGen construction when globals do not conform to the declared global physical type.",
+      "line": 39,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testWithInvalidGlobalsType",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Reject a TableGen body whose stream type is incompatible with the declared table row type.",
+      "line": 55,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testWithInvalidBodyType",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Reject TableGen when individual body stream elements have an invalid row element type.",
+      "line": 65,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testWithInvalidBodyElementType",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Reject a partitioner whose key type differs from the table key type.",
+      "line": 80,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testWithInvalidPartitionerKeyType",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Reject a partitioner key longer than the declared table key instead of accepting inconsistent key metadata.",
+      "line": 91,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testWithTooLongPartitionerKeyType",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Propagate requiredness through TableGen contexts, globals, row body and partitioner metadata consistently.",
+      "line": 102,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testRequiredness",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Lower TableGen into executable distributed table stages and preserve generated rows and schema.",
+      "line": 110,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testLowering",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Require exactly one TableGen context per logical input partition and report mismatches.",
+      "line": 116,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testNumberOfContextsMatchesPartitions",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Generate rows into the correct key ranges/partitions and preserve declared key ordering.",
+      "line": 130,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testRowsAreCorrectlyKeyed",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Prune unused row fields from TableGen inputs without changing the required output schema or values.",
+      "line": 152,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testPruneNoUnusedFields",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Prune unused globals through TableGen and aggregation while retaining referenced global values only.",
+      "line": 159,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testPruneGlobals",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Prune unused TableGen context fields and preserve the context fields required by generated rows.",
+      "line": 179,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/expr/ir/table/TableGenSuite.scala",
+      "test_id": "testPruneContexts",
+      "source_sha256": "377c93a532e32563bb28581e31e51585c8fdc354997635b523ed00690b440262"
+    },
+    {
+      "implementation_requirement": "Extend partition range bounds to a longer composite key by filling truncated suffixes with correct inclusive/exclusive endpoint flags and removing empty ranges.",
+      "line": 31,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testExtendKey",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Compute lowerBound and upperBound for keys at, between, and outside partition boundaries, including equality at half-open boundaries.",
+      "line": 50,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testGetPartitionWithPartitionKeys",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Compare query keys longer than the partition key using only the keyed prefix and return conservative lower/upper partition bounds.",
+      "line": 70,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testGetPartitionWithLargerKeys",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Resolve shorter prefix keys to all potentially matching partitions using lower/upper bound semantics.",
+      "line": 85,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testGetPartitionPKWithSmallerKeys",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Select partitions intersecting key intervals with inclusivity, prefix endpoints, and empty-range handling.",
+      "line": 96,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testGetPartitionRange",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Return a safe exact partition range only when key lookup is contained by one unambiguous partition; otherwise return empty.",
+      "line": 111,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testGetSafePartitionKeyRange",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Generate partition bounds for longer and truncated keys, normalize adjacent endpoint flags, and honor allowed overlap for each prefix length.",
+      "line": 117,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testGenerateDisjoint",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Normalize empty-key partition ranges to one canonical all-key interval, including zero and repeated empty intervals.",
+      "line": 158,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testGenerateEmptyKey",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Intersect sorted partition interval sets with exact inclusive/exclusive boundaries and preserve all non-empty intersections.",
+      "line": 172,
+      "reviewed_scope": "table_ir_backend_semantics",
+      "source": "hail/hail/test/src/is/hail/rvd/RVDPartitionerSuite.scala",
+      "test_id": "testIntersect",
+      "source_sha256": "28509c37089ac75b12eba8de03a9ab809c1cf0dcdb28f2bf9212e56d3b9be38f"
+    },
+    {
+      "implementation_requirement": "Handle an empty keyed TableLiteral as input to MatrixAnnotateRowsTable without failing during the Spark-backed shuffle; this is a Matrix/backend integration boundary, not a standalone Table API test.",
+      "line": 15,
+      "reviewed_scope": "backend_specific",
+      "source": "hail/hail/test/src/is/hail/variant/vsm/PartitioningSuite.scala",
+      "test_id": "testShuffleOnEmptyRDD",
+      "source_sha256": "0161353d67539c3fe24d7692147356cc72241d4754e092d10e4791b119f904f7"
+    }
+  ],
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1"
+}

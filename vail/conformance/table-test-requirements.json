@@ -1,0 +1,1719 @@
+{
+  "schema_version": 1,
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "method": "Source-reviewed assertion requirements for every definition in the two dedicated Table suites. Requirements describe the complete test behavior; execution evidence separately determines remaining work. General shared helpers/types and fixtures are still dependencies.",
+  "tests": [
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_large_number_of_fields",
+      "line": 1758,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Support at least 1,000 annotated fields through count/write/read with the upstream five-second operation limits; avoid quadratic schema work."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_import_many_fields",
+      "line": 1768,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Parse the many-column text fixture within the upstream five-second construction limit."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_segfault",
+      "line": 1772,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Join array-valued duplicate keys, filter the result to empty and collect safely without invalid memory access."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_maybe_flexindex_table_by_expr_direct_match",
+      "line": 1782,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Resolve matching scalar/struct key expressions for Table and Matrix sources; return None for incompatible types. Mixed Matrix boundary."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_maybe_flexindex_table_by_expr_prefix_match",
+      "line": 1801,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Accept compatible tuple/struct key prefixes and reject incompatible leading types, across Table and Matrix sources."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_maybe_flexindex_table_by_expr_direct_interval_match",
+      "line": 1820,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Resolve point expressions against an interval key and reject type mismatches; includes Matrix row sources."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_maybe_flexindex_table_by_expr_prefix_interval_match",
+      "line": 1840,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Resolve compatible leading point fields against interval keys, including Matrix compound row keys; reject mismatched prefixes."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_can_process_wide_tables",
+      "line": 1862,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Import/write/read 256-3,072-column Tables, add a field and collect rows into globals; preserve the upstream strict xfail mark on width 3,072."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_with_key_prefix",
+      "line": 1903,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Lookup by the first field of a compound left key, preserve the two left partitions and annotate every row correctly."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_distinct_preserves_count",
+      "line": 1914,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Single-match indexing preserves left duplicate multiplicity/order, matches seven rows in this fixture and handles an empty right Table."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_write_table_containing_ndarray",
+      "line": 1934,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Persist/reopen variable-length ndarray row values and compare them structurally."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_group_within_partitions",
+      "line": 1944,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Group consecutive rows into bounded arrays without crossing logical partitions, including partial final groups, prior filters and custom output names."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_group_within_partitions_after_explode",
+      "line": 1979,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Retain partition-local grouping semantics after row multiplication by explode."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_group_within_partitions_after_import_vcf",
+      "line": 1987,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Group and collect VCF-derived genomic rows without storage lifetime failures; fixture requires Matrix/VCF conversion."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_range_annotate_range",
+      "line": 1995,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Index a shorter range from a longer one; propagate nullable right-side fields without incorrect requiredness assumptions."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_read_write_all_types",
+      "line": 2003,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Persist/reopen the complete all-values fixture, including nested and genomic types, globals and missing values."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_map_partitions_flatmap",
+      "line": 2010,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Expose typed row streams per partition and flatmap them to multiple rows while preserving the key and local sequence."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_map_partitions_errors",
+      "line": 2016,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Require a stream<struct> return and preserved key fields, raising the specified TypeError/ValueError."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_map_partitions_indexed",
+      "line": 2024,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Apply stream materialization after an indexed interval read and unkeying; return exactly rows 11 through 54."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_keys_before_scans",
+      "line": 2032,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Evaluate exclusive scan.collect in the then-current key order; later rekeying must preserve the earlier scan results."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_lowered_persist",
+      "line": 2045,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Persist an embedded/lowered plan and correctly evaluate both full count and a later filter."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_lowered_shuffle",
+      "line": 2053,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Sort a lowered plan on a computed descending key and let agg.take consume that order."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_read_partitions",
+      "line": 2059,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Repartition a persisted range into ten logical partitions at read time using key-boundary planning."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_read_partitions_with_missing_key",
+      "line": 2066,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Do not split a single all-missing key into ten requested partitions; one distinct key produces one logical partition."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_empty_tree_aggregate",
+      "line": 2073,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Finalize counter aggregation on a fully filtered persisted input as an empty dictionary."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_interval_filter_partitions",
+      "line": 2081,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Multiple disjoint query intervals in the same source partition count as one retained partition; intervals spanning three source partitions retain three."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_grouped_flatmap_streams",
+      "line": 2108,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Support partition-stream grouped/flatmap/map composition after annotation on VCF-derived genomic rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_head_and_tail",
+      "line": 2128,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Apply head/tail and count/_force_count across range, parallelize, cache and checkpoint inputs, 3/11 requested partitions and all boundary sizes; 160 combinations."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_to_pandas",
+      "line": 2146,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Export nullable int/string dtypes and nested Struct objects with flatten=False."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_to_pandas_types_type_to_type",
+      "line": 2164,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Apply a Hail-type-to-pandas-dtype override recursively to flattened fields while retaining string/object defaults."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_to_pandas_types_column_to_type",
+      "line": 2174,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Apply a column-name dtype override only to the specified flattened column."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_to_pandas_flatten",
+      "line": 2184,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Flatten nested structs into dotted pandas columns while leaving arrays as object values."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_to_pandas_null_ints",
+      "line": 2201,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Preserve missing values with pandas nullable Int32/Int64/Float32/Float64/boolean/string dtypes."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_to_pandas_nd_array",
+      "line": 2227,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Export ndarray values as NumPy arrays in pandas object columns."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_literal_of_numpy_int64",
+      "line": 2243,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Infer and evaluate literal arrays of NumPy int64 values returned through pandas conversion."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_literal_of_numpy_int32",
+      "line": 2249,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Infer and evaluate literal arrays of NumPy int32 values returned through pandas conversion."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_literal_of_pandas_NA_and_numpy_int64",
+      "line": 2255,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Infer missing pandas NA alongside NumPy int64 elements without losing integer type."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_literal_of_pandas_NA_and_numpy_int32",
+      "line": 2263,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Infer missing pandas NA alongside NumPy int32 elements without losing integer type."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_write_many",
+      "line": 2272,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Write one keyed child Table per selected field and reopen each with exactly the key plus that field."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_indexed_read_boundaries",
+      "line": 2304,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Use persisted index boundaries correctly across five branching factors, removed boundary rows and inclusive/exclusive endpoint combinations; return 141-144 and 152."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_range_table",
+      "line": 2331,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableRange semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_range_matrix_rows_table",
+      "line": 2337,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Implement MatrixRowsTable semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_join",
+      "line": 2344,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableJoin semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_left_join_right_distinct",
+      "line": 2354,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableLeftJoinRightDistinct semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_interval_join",
+      "line": 2364,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableIntervalJoin semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_union",
+      "line": 2376,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableUnion semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_map_globals_with_body_randomness",
+      "line": 2385,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableMapGlobals semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. Evaluate randomness in the named body/condition/aggregate/scan scope. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_map_globals_without_body_randomness",
+      "line": 2393,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableMapGlobals semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_explode",
+      "line": 2400,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableExplode semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_key_by",
+      "line": 2408,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableKeyBy semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_map_rows_with_body_randomness",
+      "line": 2415,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableMapRows semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. Evaluate randomness in the named body/condition/aggregate/scan scope. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_map_rows_with_scan_randomness",
+      "line": 2423,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableMapRows semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. Evaluate randomness in the named body/condition/aggregate/scan scope. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_map_rows_without_body_randomness",
+      "line": 2430,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableMapRows semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_map_partitions",
+      "line": 2437,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableMapPartitions semantics with Hail-compatible row/partition random identity propagation; execute the random input and mapped row values even without a downstream random consumer. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_read",
+      "line": 2445,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableRead semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_matrix_entries_table",
+      "line": 2454,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Implement MatrixEntriesTable semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_filter_with_cond_randomness",
+      "line": 2461,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableFilter semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. Evaluate randomness in the named body/condition/aggregate/scan scope. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_filter_without_cond_randomness",
+      "line": 2469,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableFilter semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+      "line": 2476,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableKeyByAndAggregate semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. Evaluate randomness in the named body/condition/aggregate/scan scope. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+      "line": 2484,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableKeyByAndAggregate semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. Evaluate randomness in the named body/condition/aggregate/scan scope. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+      "line": 2492,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableKeyByAndAggregate semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_aggregate_by_key",
+      "line": 2499,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableAggregateByKey semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_matrix_cols_table",
+      "line": 2507,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Implement MatrixColsTable semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_parallelize_with_body_randomness",
+      "line": 2514,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableParallelize semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. Evaluate randomness in the named body/condition/aggregate/scan scope. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_parallelize_without_body_randomness",
+      "line": 2521,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableParallelize semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_head",
+      "line": 2527,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableHead semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_tail",
+      "line": 2534,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableTail semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_order_by",
+      "line": 2541,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableOrderBy semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_distinct",
+      "line": 2548,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableDistinct semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_repartition",
+      "line": 2556,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableRepartition semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_cast_matrix_to_table",
+      "line": 2565,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Implement CastMatrixToTable semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_rename",
+      "line": 2572,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableRename semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_multi_way_zip_join",
+      "line": 2579,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableMultiWayZipJoin semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_filter_intervals",
+      "line": 2591,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableFilterIntervals semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_block_matrix_to_table",
+      "line": 2599,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Implement BlockMatrixToTable semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_randomness_table_gen",
+      "line": 2606,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement TableGen semantics with Hail-compatible row/partition random identity propagation; the downstream rand_int64/collect_as_set/count check requires one unique identity per output row. The exact _tir node-class assertion needs a Hail IR compatibility adapter or an explicitly recorded native-plan translation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_order_by_desc",
+      "line": 2617,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Execute a 10,000-row computed descending sort across ten source partitions without changing count."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_query_table_errors",
+      "line": 2632,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Validate point/interval key types, reject empty struct queries and reject too many key fields with the specified ValueError messages."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_query_table",
+      "line": 2684,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return an evaluable ordered array from persisted point or interval queries, handling absent/out-of-range points, scalar/struct endpoints and inclusivity."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_query_table_randomness",
+      "line": 2688,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Assign distinct random row identities when concatenating results from two persisted interval queries before array aggregation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_query_table_compound_key",
+      "line": 2713,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Support scalar/struct prefix queries and lexicographic full-compound-key interval bounds."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_query_table_interval_key",
+      "line": 2736,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Distinguish exact interval-valued key lookup from an interval over interval-valued keys, including reversed/empty queries."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_large_number_of_partitions",
+      "line": 2741,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Collect a 1,500-row range represented by 1,500 logical partitions within the upstream timeout."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_range_table_biggest_int",
+      "line": 2746,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Produce a lazy int32 range up to 2^31-1 rows and aggregate its cast int64 sum without eager whole-range allocation or overflow."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_group_by_aggregate_doesnt_clobber_global_field",
+      "line": 2755,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Reject grouped aggregation output fields that collide with existing globals using ExpressionException."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_annotate",
+      "line": 31,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Evaluate arithmetic/comparison/boolean expressions and nested array map, flatmap, slice, filter and reductions; infer set literals and propagate missing nested values; preserve no-op annotation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_aggregate1",
+      "line": 136,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement sum/count/collect, filtered aggregators and explode-mean over row arrays, with structured aggregate results."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_aggregate2",
+      "line": 162,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement grouped min/max/sum/product/count/count_where/fraction/stats/take-by, nested collection and missing explode; genomic Call, Hardy-Weinberg, inbreeding and call_stats kernels."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_aggregate_ir",
+      "line": 220,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Evaluate globals both inside and outside filtered sum aggregators; aggregate constants and typed missing values without an aggregator."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_java_array_string_encoding",
+      "line": 240,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Cast integers to strings, split into arrays, persist and force-read array<string> without encoding corruption."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_to_matrix_table",
+      "line": 247,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Matrix/Table roundtrip with row, column and entry annotations; reconstruct and reorder columns. Explicit Matrix interoperability test."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_to_matrix_table_row_major",
+      "line": 261,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Convert scalar or struct-valued Table columns into Matrix entries and back; reject mixed types, naming conflicts and empty entry-field lists."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_group_by_field_lifetimes",
+      "line": 290,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Keep references to the input row alive when a computed group key shadows its name; collect_as_set and all over grouped results."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_group_aggregate_by_key",
+      "line": 295,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Aggregate counts correctly for interleaved and contiguous keys with a small aggregation buffer, across ten partitions."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_aggregate_by_key_partitioning",
+      "line": 303,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Group duplicate string keys across partitions and compute floating-point means with exact output schema."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_group_aggregate_na",
+      "line": 315,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Treat missing keys as an aggregation group and preserve missing-last order in both shuffled and persisted sorted aggregation."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_filter",
+      "line": 327,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Evaluate row predicates, boolean conjunction/disjunction and literal True while preserving matching rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_filter_missing",
+      "line": 343,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "A missing boolean predicate removes the row."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_transmute",
+      "line": 348,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Remove referenced top-level fields after computing an expression through a nested struct; preserve other fields and propagate missingness."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_transmute_globals",
+      "line": 372,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Compute a global expression and remove consumed global fields while preserving remaining field order/types."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_transmute_key",
+      "line": 376,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Transmute retains consumed key fields while keyed; the same consumed field disappears after unkeying."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_select",
+      "line": 382,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Support field expressions, named computed projections, struct expansion and zero-field rows; retain keys first and preserve schema order."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_errors",
+      "line": 418,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Reject attribute assignment to a Table with NotImplementedError; fixture additionally requires Call and explicit schema construction."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_scan_filter",
+      "line": 434,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Compute exclusive scan.count before filtering and carry the prefix across ten partitions; the surviving final row has prefix 9."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_scan_tail",
+      "line": 440,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Compute exclusive scan.count before tail and preserve original prefixes 70 through 99 across partitions."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_semi_anti_join",
+      "line": 446,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement semi/anti joins using compatible key prefixes; reject longer right keys and keyless right tables with matching errors."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_indirected_joins",
+      "line": 469,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Resolve four nested Table index expressions and materialize their dependencies in aggregation scope."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_matrix_join_combinations",
+      "line": 487,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Support Table/Matrix row indexing and Table lookup from Matrix column expressions; requires VCF and Matrix interoperability."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_index_globals",
+      "line": 503,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return a typed, evaluable global struct from index_globals."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_interval_join",
+      "line": 507,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Index an interval-keyed Table by point/struct key with endpoint semantics and missing results for unmatched rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_interval_filter_unordered",
+      "line": 520,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Normalize unordered interval lists and compose interval filters correctly without duplicating rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_interval_product_join",
+      "line": 555,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return all overlapping interval matches, with array mapping/sorting and correct overlapping-boundary behavior."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_interval_product_join_long_key",
+      "line": 572,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Persist a compound interval key, shorten it to the interval prefix, and return all matching rows with original values."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_with_empty",
+      "line": 594,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Build a valid index expression against a zero-row keyed right Table; unmatched values are missing."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_with_key",
+      "line": 599,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Index with the left key struct and evaluate all over the resulting annotated field."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_product_join",
+      "line": 604,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Support duplicate right keys and all_matches=True, retaining each right match and its expected order."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_multiple_entry_joins",
+      "line": 612,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "matrix_only_in_table_suite",
+      "implementation_requirement": "Repeated Matrix entry indexing in select_entries; this assertion exercises Matrix APIs and is outside Table-only execution."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_multi_way_zip_join",
+      "line": 619,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Zip keyed inputs into arrays of optional row structs, retaining input positions, missing members and outer key union; avoid field collisions and preserve count after projection."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_multi_way_zip_join_globals",
+      "line": 657,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Collect each input's globals in input order, including missing global values."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_multi_way_zip_join_key_downcast",
+      "line": 665,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Zip Tables keyed by a shortened genomic locus prefix; fixture requires VCF/Matrix rows and reference-aware loci."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_multi_way_zip_join_key_downcast2",
+      "line": 672,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Count the union of two shortened locus-keyed VCF Tables without losing or duplicating shared loci."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245",
+      "line": 685,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Write a multi-way zip join of highly skewed 100-versus-1-partition genomic inputs without a partition-boundary failure."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_index_maintains_count",
+      "line": 702,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Ordinary Table indexing chooses at most one right match per left row even when right keys have duplicates."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_index_keyless_table",
+      "line": 717,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Reject indexing a keyless Table with ExpressionException and the empty-key diagnostic."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_aggregation_with_no_aggregators",
+      "line": 722,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Emit one row per group even when aggregate has no value expressions."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_drop",
+      "line": 726,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Drop row fields by name or field reference, support no-op and zero-field projections, and maintain key restrictions and metadata."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_weird_names",
+      "line": 744,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Accept whitespace, punctuation, dollar signs, backticks and Unicode field names across row/global projection, explode, drop and grouping."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_sample",
+      "line": 762,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement Hail-compatible seeded Bernoulli sampling; seed 0 and probability .25 retain exactly four of these sixteen rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_from_spark_works",
+      "line": 768,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "spark_interop",
+      "implementation_requirement": "Convert a Spark DataFrame's values and schema into a Table; explicit Spark interoperability boundary."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_from_pandas_works",
+      "line": 777,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Import pandas columns with Hail-compatible inferred types and key ordering; compare to typed struct-expression construction."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_from_pandas_objects",
+      "line": 787,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Infer nested arrays, dictionaries and NumPy ndarrays from pandas object columns and preserve their values."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_from_pandas_missing_and_nans",
+      "line": 809,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Convert nullable pandas integers/strings to missing values while preserving floating NaN as NaN, distinct from missing."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_from_pandas_mismatched_object_rows",
+      "line": 828,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Reject a pandas object column mixing arrays and sets with ExpressionException and the type-inference diagnostic."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_parallelize_infer_types",
+      "line": 835,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Infer nested dict/struct/array/tuple/ndarray, floating, Call and locus types from Python rows and expression values consistently."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_parallelize_partial_infer_types",
+      "line": 890,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Apply partial_type constraints while inferring remaining nested dictionaries, sets, arrays and structs."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_parallelize_error_both_schema_partial_type_defined",
+      "line": 905,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Validate mutually exclusive schema and partial_type before parsing schema or other constructor options; raise ValueError with the expected message."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_rename",
+      "line": 913,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Rename row/global/key fields together, update expression source indices, and reject collisions, duplicate destinations and unknown fields."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_distinct",
+      "line": 940,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Keep one row per key across partitions; collect_by_key yields one value and agrees with the distinct-key count."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_group_by_key",
+      "line": 966,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Collect every value per duplicate key; explode/transmute must reconstruct the original multiset of rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_str_annotation_regression",
+      "line": 990,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Safely select a string from an array and retain its storage lifetime through forced execution."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_range_table",
+      "line": 995,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Expose ordered int32 idx rows, idx key, empty row-value/global schemas and requested logical partitions."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_range_table_zero",
+      "line": 1004,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Construct an empty range with typed idx; forced count and field collect return zero and an empty list."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_issue_3654",
+      "line": 1009,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Aggregate arrays elementwise with array_sum and apply elementwise array division to the aggregate result."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_explode_key_error",
+      "line": 1014,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Reject exploding a key field even when its type is an array."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_explode_on_set",
+      "line": 1020,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Explode a set into rows, preserving the other fields and producing each distinct set element once."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_explode_nested",
+      "line": 1029,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Explode a nested array field, dropping missing parent/array rows and replacing the nested field with each element."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_value_error",
+      "line": 1035,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Reject the name argument when exploding a nested field, with ValueError."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_export",
+      "line": 1041,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Export ordered fields with a tab-separated header, values and final newline through the filesystem API."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_export_delim",
+      "line": 1049,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Honor a custom export delimiter while preserving header and row field order."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_export_parallel_manifest",
+      "line": 1057,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Write ordered shard manifests for separate_header and header_per_shard modes; import the manifest's shards without losing order or headers."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_write_stage_locally",
+      "line": 1078,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Stage native Table output locally, commit it and reopen an equivalent Table through the Python API."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_write_no_parts",
+      "line": 1085,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Checkpoint, read and rewrite a fully filtered empty Table with correct schema and empty snapshot handling."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_min_partitions",
+      "line": 1092,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Honor min_partitions=50 during text import, including small input files."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_read_back_same_as_exported",
+      "line": 1095,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Text-export/import every supported Hail value type, restore the key and compare values using absolute numeric tolerance."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_indexed_read_1",
+      "line": 1102,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Read adjacent [150,250) and [250,500) key intervals as two logical partitions, with exact counts, ordered rows and row UID support; recreate the equivalent fixture in the new format; legacy decoding is deferred."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_indexed_read_2",
+      "line": 1117,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Filter existing source partitions by adjacent half-open key intervals, retaining three intersecting partitions and exact rows; recreate the equivalent fixture in the new format; legacy decoding is deferred."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_indexed_read_3",
+      "line": 1131,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Read adjacent (150,250] and (250,500] intervals as two logical partitions with exact endpoint/count behavior and row UIDs; recreate the equivalent fixture in the new format; legacy decoding is deferred."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_indexed_read_4",
+      "line": 1146,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Filter existing source partitions by adjacent left-open/right-closed intervals and retain the three intersecting partitions; recreate the equivalent fixture in the new format; legacy decoding is deferred."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_order_by_parsing",
+      "line": 1160,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Resolve order_by field names containing spaces without expression-parser ambiguity."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_take_order",
+      "line": 1163,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Evaluate a computed negative key and take rows in its ascending key order across source partitions."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_filter_partitions",
+      "line": 1169,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Select or exclude partition IDs/ranges, update partition counts, preserve each selected partition's rows and reconstruct the input by union."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_localize_entries",
+      "line": 1181,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Convert Matrix entries to arrays of row structs and columns to globals, matching an explicitly constructed nested Table."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_localize_self_join",
+      "line": 1191,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "implementation_requirement": "Outer self-join localized Matrix entries and match the equivalent nested Table's schema and rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_union",
+      "line": 1202,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Union keyed ranges in key order; unkeyed union concatenates logical partitions and preserves their total count."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_nested_union_100",
+      "line": 1226,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Handle a 100-input union with randomness preventing count folding; forced and ordinary counts both equal input count times multiplicity."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_nested_union_200",
+      "line": 1230,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Handle a 200-input union without compiler recursion/stack failure; upstream marks this case xfail, which must remain visible."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_union_unify",
+      "line": 1233,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Unify differing row schemas, widen numeric types, insert missing fields, preserve field order and keyed duplicate-row ordering asserted here."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_table_order_by_head_rewrite",
+      "line": 1255,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Sort on a computed reverse field and ensure both field take and collect reflect the sorted sequence."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_order_by_expr",
+      "line": 1262,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Sort ascending/descending by an array-element expression while preserving random expression values across repeated actions and take."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_null_joins",
+      "line": 1278,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement all four join kinds with compound keys: missing key components do not match; preserve unmatched rows and the asserted missing-last output ordering."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_null_joins_2",
+      "line": 1334,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Apply nonmatching missing-prefix semantics with varying second key components; retain all unmatched null rows without over-constraining their unspecified outer-join tie order."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_joins_one_null",
+      "line": 1397,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement left/right/inner/outer joins when only the right side has missing keys; preserve the exact nonmissing and unmatched rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_types_ht1_is_what_we_expect",
+      "line": 1461,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Compute/explode a keyed range into the left duplicate-key fixture with expected multiplicities 1, 2 and 3."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_types_ht2_is_what_we_expect",
+      "line": 1465,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Compute/explode a keyed range into the right duplicate-key fixture with expected multiplicities 2, 3 and 4."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_types_left",
+      "line": 1469,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Left join multiplies duplicate-key matches (2x2 and 3x3) and retains the unmatched left row."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_types_right",
+      "line": 1474,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Right join multiplies duplicate-key matches and retains the four unmatched right rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_types_inner",
+      "line": 1479,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Inner join emits each Cartesian product of duplicate-key groups, with counts 4 and 9."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_types_outer",
+      "line": 1484,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Outer join combines duplicate-key Cartesian products and unmatched groups from both sides in key order."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_partitioning_rewrite",
+      "line": 1489,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Head/tail must preserve the same per-row random values as full collection; rewrites cannot reseed/reassign row identities."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_flatten",
+      "line": 1495,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Flatten a struct key into dotted row fields, remove the logical key as Hail does and preserve row values/order."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_expand_types",
+      "line": 1502,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Expand genomic locus values to contig/position structs, remove the logical key as required and preserve values."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_expand_types_ordering",
+      "line": 1509,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Expanding types preserves established row ordering even when logical key metadata changes."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_expand_types_on_all_types",
+      "line": 1514,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Expand every supported Hail type in the all-values fixture without invalid schema or expression construction."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_mangling",
+      "line": 1518,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Mangle colliding row and global fields with deterministic suffixes while retaining the shared key."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_join_with_filter_intervals",
+      "line": 1525,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Persist duplicate-key inputs, join and filter a key interval without dropping multiplicative matches; the selected key has four rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_key_by_aggregate_rewriting",
+      "line": 1541,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Preserve grouped-key cardinality when optimizing group_by/aggregate/count."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_field_method_assignment",
+      "line": 1546,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Permit fields named sample and _row through indexed field access without overwriting methods/internal state."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_refs_with_process_joins",
+      "line": 1553,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Resolve self-index joins together with literals and conditional whole-row/global structs without stale source references."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_aggregate_localize_false",
+      "line": 1562,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return an aggregate expression from _localize=False and reuse it in native row annotation without Python materialization."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_collect_localize_false",
+      "line": 1567,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return an evaluable array-of-row expression from collect(_localize=False), equivalent to local collection."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_take_localize_false",
+      "line": 1571,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return an evaluable truncated row-array expression from take(_localize=False)."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_expr_collect_localize_false",
+      "line": 1575,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return an evaluable field-array expression from expression.collect(_localize=False)."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_expr_collect",
+      "line": 1579,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Collect globals once and rows/keys/fields/computed expressions in established key order, with correct result shapes."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_expr_take_localize_false",
+      "line": 1602,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Support expression.take with both localized Python values and an evaluable array expression."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_empty_show",
+      "line": 1606,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Render a typed empty Table after filtering without failure."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_no_row_fields_show",
+      "line": 1609,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Render a zero-column Table while preserving its row count."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_same_equal",
+      "line": 1612,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement _same over Table schemas, keys, globals and row values; identical ranges compare true."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_same_within_tolerance",
+      "line": 1616,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Apply Hail's default numeric tolerance when comparing floating-point row values."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_same_different_type",
+      "line": 1622,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return false for differing global schemas, row schemas or key metadata."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_same_different_global",
+      "line": 1634,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return false for equal global types with different global values."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_same_different_rows",
+      "line": 1639,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Return false for different row values or row counts."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_rvd_key_write",
+      "line": 1648,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Persist the full physical compound key and safely shorten it for subsequent prefix indexing."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_show_long_field_names",
+      "line": 1657,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Render very long column names without layout or execution failure."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_show__various_types",
+      "line": 1660,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Match exact show(handler=str) output, line wrapping, numeric formatting and nested array/set/dict/tuple rendering."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_import_filter_replace",
+      "line": 1704,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Apply line filtering and regex find/replace during text import, including Hail replacement capture syntax."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_import_multiple_missing",
+      "line": 1717,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Treat any configured missing token as missing during headerless text import."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_unicode_ordering",
+      "line": 1722,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Sort string arrays using Hail-compatible Unicode comparison; e precedes accented e."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_physical_key_truncation",
+      "line": 1728,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "implementation_requirement": "Write/read a shortened genomic key after VCF row conversion and allow key-only projection without physical-key corruption."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_repartition_empty_key",
+      "line": 1734,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Coalesce and nonshuffling repartition an unkeyed Table while preserving rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_read_with_partitions",
+      "line": 1740,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Reopen a persisted ordered range using fifty logical partitions and preserve all 444 rows."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_table.py",
+      "test_id": "test_path_collision_error",
+      "line": 1748,
+      "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Detect output paths also used by the input plan and raise the expected FatalError before destructive overwrite."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_grouped_table.py",
+      "test_id": "test_aggregate_by",
+      "line": 10,
+      "source_sha256": "ec00e2581166bf7c6c1250f9f37a857cf0551410b8208d45b23bcb8e95c2be02",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Group on a boolean expression, combine sum/max with globals before and after aggregation, preserve result schema/globals, and reject aggregate fields that collide with the group key."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_grouped_table.py",
+      "test_id": "test_aggregate_by_with_joins",
+      "line": 30,
+      "source_sha256": "ec00e2581166bf7c6c1250f9f37a857cf0551410b8208d45b23bcb8e95c2be02",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Resolve Table index expressions inside group keys and aggregate bodies, sharing their dependencies while preserving global scope and exact sum/max results."
+    },
+    {
+      "source": "hail/python/test/hail/table/test_grouped_table.py",
+      "test_id": "test_issue_2446_takeby",
+      "line": 52,
+      "source_sha256": "ec00e2581166bf7c6c1250f9f37a857cf0551410b8208d45b23bcb8e95c2be02",
+      "reviewed_scope": "table_only",
+      "implementation_requirement": "Implement grouped agg.take with an ordering expression, returning the three smallest values in order."
+    }
+  ]
+}

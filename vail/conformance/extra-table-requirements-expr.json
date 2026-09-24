@@ -1,0 +1,807 @@
+{
+  "schema_version": 1,
+  "method": "Source-reviewed requirements for current inventory candidates in five Hail expression test modules; descriptions cover original body behavior, not pass status.",
+  "tests": [
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 47,
+      "test_id": "test_key_by_random",
+      "implementation_requirement": "Evaluate a random floating key once per row during rekeying and force execution without losing any of the ten rows.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 53,
+      "test_id": "test_seeded_same",
+      "implementation_requirement": "Reuse one random expression identically in two annotated fields while a separately constructed random expression differs, for both uniform and integer generators.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 54,
+      "test_id": "test_random_function",
+      "implementation_requirement": "Nested helper exercised by test_seeded_same: shared random expression x/y must agree per row while independently created z differs under aggregate-all checks; this is not an independently collected pytest case.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 98,
+      "test_id": "test_seeded_sampling",
+      "implementation_requirement": "Keep random filter decisions stable across repeated collections and seven reciprocal Table lookups, even when the two range sources have different partition counts.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 112,
+      "test_id": "test_order_by_head_optimization_with_randomness",
+      "implementation_requirement": "Sort by a computed random row field and take five rows matching a full collected sort; top-k rewrite must reuse the same random values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 117,
+      "test_id": "test_operators",
+      "implementation_requirement": "Evaluate the arithmetic, comparison, logical, string and array-index expressions annotated onto a three-row primitive Table, including missing propagation, and match every expected result field.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 256,
+      "test_id": "test_array_slicing",
+      "implementation_requirement": "Apply Python-compatible array slicing in row annotations and local eval for positive/negative indices and steps, omitted bounds and out-of-range bounds.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 308,
+      "test_id": "test_dict_methods",
+      "implementation_requirement": "Evaluate dictionary key lookup, containment and key/value/item collection expressions when projected into a Table row.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 352,
+      "test_id": "test_numeric_conversion",
+      "implementation_requirement": "Infer mixed numeric array element types and promote int32/int64/float values consistently after explicit int64 row-field conversion.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 375,
+      "test_id": "test_genetics_constructors",
+      "implementation_requirement": "Construct and type-check parsed Locus values and locus intervals in a Table row, distinguishing the default and custom reference genomes.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 494,
+      "test_id": "test_aggregators",
+      "implementation_requirement": "Implement count, count_where, filtered count, array_sum, mean, fraction and aggregate expression composition, including typed missing array elements and constants.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 536,
+      "test_id": "test_agg_nesting",
+      "implementation_requirement": "Use a nonlocalized aggregate count inside filtered, exploded, grouped and array aggregators with the asserted 10/100 cardinalities.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 552,
+      "test_id": "test_counter_ordering",
+      "implementation_requirement": "Aggregate a counter keyed by a computed reverse index and support lookup of the count for key 10.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 556,
+      "test_id": "test_counter",
+      "implementation_requirement": "Count nullable string and array-valued keys, preserve missing as a counter key, and apply floating weights including zero-weight rows.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 575,
+      "test_id": "test_aggfold_agg",
+      "implementation_requirement": "Fold row values across five Table partitions with struct sum/product, missing propagation, numeric widening and combiner-scope validation; also fold Matrix rows and columns.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 616,
+      "test_id": "test_aggfold_scan",
+      "implementation_requirement": "Produce exclusive fold-scan prefixes across five Table partitions and the equivalent Matrix row scan, including a count-like scan over rows.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 648,
+      "test_id": "test_agg_filter",
+      "implementation_requirement": "Run nested aggregate filters with collect, explode, group_by and post-aggregate operations while filtering the intended row/element scope.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 709,
+      "test_id": "test_densify_table",
+      "implementation_requirement": "Densify sparse array annotations with an exclusive scan across 33 partitions so each row contains values from prior indices only.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 722,
+      "test_id": "test_agg_array_empty",
+      "implementation_requirement": "Return missing from array_agg over a filtered zero-row Table.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 726,
+      "test_id": "test_agg_array_non_trivial_post_op",
+      "implementation_requirement": "Compose array_agg sums with a nested filtered sum in the post-aggregation expression and produce both asserted array elements.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 733,
+      "test_id": "test_agg_array_agg_empty_partitions",
+      "implementation_requirement": "Combine array_agg through an empty source partition after filtering, retaining all ten per-position sums.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 739,
+      "test_id": "test_agg_array_agg_sum_vs_sum",
+      "implementation_requirement": "Make position-wise array_agg sum agree with array_sum over random Boolean arrays generated per row.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 743,
+      "test_id": "test_agg_array_agg_errors",
+      "implementation_requirement": "Raise the expected fatal error when array_agg encounters row arrays of inconsistent lengths.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 749,
+      "test_id": "test_agg_array_explode",
+      "implementation_requirement": "Compose aggregate explode with array_agg sum/count in both nesting orders and preserve expected element totals.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 766,
+      "test_id": "test_agg_array_filter",
+      "implementation_requirement": "Apply row-level and element-level filters on either side of array_agg, yielding matching sum and count results.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 781,
+      "test_id": "test_agg_array_group_by",
+      "implementation_requirement": "Compose group_by and array_agg in both nesting orders while preserving parity-group sums and counts.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 798,
+      "test_id": "test_agg_array_nested",
+      "implementation_requirement": "Aggregate three nested array dimensions without collapsing their shape, yielding [[[45]]].",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 807,
+      "test_id": "test_agg_array_take",
+      "implementation_requirement": "Take the first two values independently at each position of a two-element row array aggregation.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 812,
+      "test_id": "test_agg_array_init_op",
+      "implementation_requirement": "Initialize call_stats inside array_agg from Table globals and compute per-position allele counts, frequencies and homozygote counts.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 820,
+      "test_id": "test_agg_collect_all_types_runs",
+      "implementation_requirement": "Compile and execute aggregate collect for Boolean-derived numeric, string, Call, struct, tuple, array, set, dict and interval values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 839,
+      "test_id": "test_agg_explode",
+      "implementation_requirement": "Explode conditional row arrays inside aggregate collect/count/group_by and apply post-aggregate expressions without changing element scope.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 902,
+      "test_id": "test_agg_group_by_1",
+      "implementation_requirement": "Group aggregate collections, sets and counts by computed parity keys, preserving each group value and missing/empty behavior.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 945,
+      "test_id": "test_agg_group_by_2",
+      "implementation_requirement": "Group Call-based inbreeding aggregations by nullable cohort/population keys and preserve called/homozygote counts.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 991,
+      "test_id": "test_agg_group_by_on_call",
+      "implementation_requirement": "Use a Call value as an aggregate group key and sum ten row values into that key.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 997,
+      "test_id": "test_aggregators_with_randomness",
+      "implementation_requirement": "Evaluate one random filter predicate consistently for collect and sum in the same aggregate result.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1004,
+      "test_id": "test_aggregator_scope",
+      "implementation_requirement": "Reject invalid row references after nested aggregate boundaries while accepting legal filter, explode and group_by aggregate expressions.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1049,
+      "test_id": "test_aggregator_bindings",
+      "implementation_requirement": "Enforce bind expression aggregation/scan scope errors and permit explicitly scoped agg/scan binds with asserted prefix and collected values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1088,
+      "test_id": "test_scan",
+      "implementation_requirement": "Compute exclusive scan count, conditional count, array_sum, mean/fraction and mixed expressions over ordered Table rows with exact prefix values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1118,
+      "test_id": "test_scan_filter",
+      "implementation_requirement": "Apply nested scan filters to prior rows only, including collect/post-operation composition and changing predicate truth by row.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1141,
+      "test_id": "test_scan_explode",
+      "implementation_requirement": "Expand multiple values per row in an exclusive scan while keeping row-local post-operation values and cumulative order.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1178,
+      "test_id": "test_scan_group_by",
+      "implementation_requirement": "Maintain ordered per-key scan state with group_by and collect/count, exposing only prior-row groups at each row.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1212,
+      "test_id": "test_scan_array_agg",
+      "implementation_requirement": "Compute position-wise scan array_agg over prior rows; first row has empty state and later rows have the asserted counts.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1218,
+      "test_id": "test_aggregators_max_min",
+      "implementation_requirement": "Apply min/max across int32, int64, float32 and float64 row fields, including missing values and typed output.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1235,
+      "test_id": "test_aggregators_sum_product",
+      "implementation_requirement": "Apply sum/product to int32, int64, float32 and float64 row fields, returning asserted totals and empty/missing-input identities of 0 and 1.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1263,
+      "test_id": "test_aggregators_hist",
+      "implementation_requirement": "Bucket a Table expression into exact histogram edges/frequencies and count below/above-range values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1270,
+      "test_id": "test_aggregators_hist_neg0",
+      "implementation_requirement": "Place negative floating zero in the zero histogram bin while preserving exact edge and out-of-range counts.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1279,
+      "test_id": "test_aggregators_hist_nan",
+      "implementation_requirement": "Ignore NaN observations in histogram bins and below/above-range counts.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1286,
+      "test_id": "test_aggregator_cse",
+      "implementation_requirement": "Reuse one aggregate-count expression across full and filtered Table aggregation without sharing state incorrectly; also check Matrix row aggregate/scan common subexpressions.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1311,
+      "test_id": "test_aggregators_linreg",
+      "implementation_requirement": "Compute linear regression aggregates over nullable response/predictor rows and return the asserted coefficients and diagnostics.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1371,
+      "test_id": "test_linreg_no_data",
+      "implementation_requirement": "For a zero-row Table, return linreg n=0 with all remaining result fields missing.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1380,
+      "test_id": "test_aggregator_downsample",
+      "implementation_requirement": "Downsample paired numeric points with two labels per row into the expected spatial bins and labels.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1409,
+      "test_id": "test_downsample_aggregator_on_empty_table",
+      "implementation_requirement": "Return an empty downsample result after filtering every Table row.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1421,
+      "test_id": "test_aggregator_info_score",
+      "implementation_requirement": "Compute info_score from imported GEN Matrix GP entries, join the resulting row Table to an imported truth Table, and reject score/count mismatches.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1449,
+      "test_id": "test_aggregator_info_score_works_with_bgen_import",
+      "implementation_requirement": "Compute info_score from BGEN Matrix GP entries and access its score and included count through the resulting rows Table.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1456,
+      "test_id": "test_aggregator_group_by_sorts_result",
+      "implementation_requirement": "Return group_by aggregate map entries in sorted key order despite insertion order differing in the input Table.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1472,
+      "test_id": "test_agg_corr",
+      "implementation_requirement": "Compute correlation over randomly missing paired values in nested per-row arrays, respecting pairwise missingness.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1492,
+      "test_id": "test_joins_inside_aggregators",
+      "implementation_requirement": "Resolve a keyed Table lookup inside count_where aggregate scope, counting all ten defined matches.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1667,
+      "test_id": "test_aggregator_any_and_all",
+      "implementation_requirement": "Implement three-valued any/all for true, false and missing Boolean row values, including mixed sequences and cached Table input.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1697,
+      "test_id": "test_agg_prev_nonnull",
+      "implementation_requirement": "Track the previous defined whole-row value across eight partitions, skipping missing rows and preserving the expected prior index.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1712,
+      "test_id": "test_agg_table_take",
+      "implementation_requirement": "Aggregate take returns the first two equal string row values in collection order.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1716,
+      "test_id": "test_agg_take_by",
+      "implementation_requirement": "Implement ordered take with descending and stable tied order across three partitions, including compound arrays and multiple take expressions.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 1736,
+      "test_id": "test_agg_minmax",
+      "implementation_requirement": "Ignore NaN and missing float observations when computing aggregate min/max, retaining the sole finite value.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 2985,
+      "test_id": "test_export_genetic_data",
+      "implementation_requirement": "Export a Matrix entry expression, re-import as MatrixTable and compare Matrix values; no Table API assertion is made.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3134,
+      "test_id": "test_initop_table",
+      "implementation_requirement": "Initialize call_stats from Table globals and aggregate five diploid heterozygous Calls into exact allele counts/frequencies.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3143,
+      "test_id": "test_initop_matrix_table",
+      "implementation_requirement": "Initialize call_stats from Matrix row, column, entry and global scopes, then inspect derived rows/cols/entries Tables.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3171,
+      "test_id": "test_initop_table_aggregate_by_key",
+      "implementation_requirement": "Initialize grouped Table call_stats from globals and partition Calls by a computed Boolean key.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3189,
+      "test_id": "test_initop_matrix_aggregate_cols_by_key_entries",
+      "implementation_requirement": "Aggregate Matrix entries by grouped columns using globally initialized call_stats and inspect resulting entries Table.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3214,
+      "test_id": "test_initop_matrix_aggregate_cols_by_key_cols",
+      "implementation_requirement": "Aggregate Matrix column annotations by grouped columns using call_stats and inspect resulting cols Table.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3241,
+      "test_id": "test_initop_matrix_aggregate_rows_by_key_entries",
+      "implementation_requirement": "Aggregate Matrix entries by grouped rows using globally initialized call_stats and inspect resulting entries Table.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3268,
+      "test_id": "test_initop_matrix_aggregate_rows_by_key_rows",
+      "implementation_requirement": "Aggregate Matrix row annotations by grouped rows using call_stats and inspect resulting rows Table.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3296,
+      "test_id": "test_call_stats_init",
+      "implementation_requirement": "Initialize call_stats with a literal allele count over three generated diploid Calls and return AC=[3,3].",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3663,
+      "test_id": "test_hardy_weinberg_agg_1",
+      "implementation_requirement": "Aggregate one- and two-sided Hardy-Weinberg tests over Matrix entries with haploid/missing Calls and inspect row Table p-values and NaN frequencies.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3712,
+      "test_id": "test_hardy_weinberg_agg_2",
+      "implementation_requirement": "Aggregate one- and two-sided Hardy-Weinberg tests over Table Calls including haploid and missing genotypes, preserving p-value and NaN output.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3752,
+      "test_id": "test_inbreeding_aggregator",
+      "implementation_requirement": "Compute inbreeding from Table Call/frequency pairs, skipping missing Calls and preserving observed homozygote and called counts.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 3869,
+      "test_id": "test_issue3729",
+      "implementation_requirement": "Evaluate a row-dependent array fold inside conditional annotation across three partitions without execution failure.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4006,
+      "test_id": "test_prev_non_null",
+      "implementation_requirement": "Return the final previous-nonnull aggregate value from a one-row Table.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4012,
+      "test_id": "test_summarize_runs",
+      "implementation_requirement": "Run summarize on a MatrixTable, its entries Table and an entry expression covering primitive, collection, struct, locus and Call types without error.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4128,
+      "test_id": "test_expr_persist",
+      "implementation_requirement": "Persist a nonlocalized aggregate count value so overwriting the backing Table path changes later reads but not the persisted expression result.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4209,
+      "test_id": "test_approx_cdf",
+      "implementation_requirement": "Execute approx_cdf on int32, int64, float32 and float64 Table fields without type or runtime errors.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4250,
+      "test_id": "test_approx_cdf_all_missing",
+      "implementation_requirement": "Execute approximate quantiles over an all-missing typed Table field without failure.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4262,
+      "test_id": "test_approx_quantiles",
+      "implementation_requirement": "Execute approx_quantiles and approx_median for scalar and vector quantile inputs over range Table values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4270,
+      "test_id": "test_error_from_cdf",
+      "implementation_requirement": "Evaluate error_from_cdf on an aggregate approximate CDF in scalar and all-quantiles modes.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4301,
+      "test_id": "test_export_entry",
+      "implementation_requirement": "Export and re-import a Matrix entry expression with configurable delimiter, header and missing token, then compare Matrix values; no Table API assertion is made.",
+      "reviewed_scope": "outside_table_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4327,
+      "test_id": "test_stream_randomness",
+      "implementation_requirement": "Preserve unique random IDs and IR-node shape through stream map/filter/flatmap/fold/scan/aggregate plus Table aggregate/explode and Matrix operations.",
+      "reviewed_scope": "mixed_matrix_or_blockmatrix_api",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4520,
+      "test_id": "test_reservoir_sampling_pointer_type",
+      "implementation_requirement": "Reservoir-sample 1,000 stringified row indices from 100,000 rows while preserving string data through pointer-backed aggregation.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_expr.py",
+      "line": 4525,
+      "test_id": "test_reservoir_sampling",
+      "implementation_requirement": "Reservoir-sample several requested sizes from a generated Table and keep sample means within four standard deviations of the full-data mean.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "00ee0d8eb2f419bacb7e910da6423f98551e393a771327a300451a41db303209"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_functions.py",
+      "line": 38,
+      "test_id": "test_pgenchisq",
+      "implementation_requirement": "Import typed generalized-chi-square fixture rows, add a one-based row index, compute pgenchisq and check value, fault, convergence and iteration count per row.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "c7ed38dd4aacb20472e5364a3ebe9ca4428eee9278faea3ca6eacfe6654ace21"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1001,
+      "test_id": "test_ndarrays_transmute_ops",
+      "implementation_requirement": "Multiply row-derived one-element ndarrays during transmute and collect ten scalar squared values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1152,
+      "test_id": "test_vstack_2",
+      "implementation_requirement": "Stack row-annotated ndarrays vertically for two-dimensional, one-dimensional and empty-array inputs, matching NumPy shapes and values.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1175,
+      "test_id": "test_hstack",
+      "implementation_requirement": "Stack row-annotated ndarrays horizontally for one/two-dimensional and zero-width inputs; agree with local Hail and NumPy evaluation.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1197,
+      "test_id": "test_agg_ndarray_sum_empty",
+      "implementation_requirement": "Return missing from ndarray_sum on an empty Table.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1202,
+      "test_id": "test_agg_ndarray_sum_0_to_10",
+      "implementation_requirement": "Sum scalar ndarrays from indices 0 through 9 into a zero-dimensional ndarray containing 45.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1208,
+      "test_id": "test_agg_ndarray_sum_ones_1d",
+      "implementation_requirement": "Sum twenty length-seven all-ones ndarrays elementwise into seven values of 20.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1213,
+      "test_id": "test_agg_ndarray_sum_ones_2d",
+      "implementation_requirement": "Sum one hundred 2-by-3 all-ones ndarrays elementwise into values of 100.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1218,
+      "test_id": "test_agg_ndarray_sum_with_transposes",
+      "implementation_requirement": "Sum alternating 4-by-4 arrays and transposes across rows with correct element positions.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1226,
+      "test_id": "test_agg_ndarray_mismatched_dims_raises_fatal_error",
+      "implementation_requirement": "Raise FatalError when ndarray_sum combines per-row arrays with incompatible lengths.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_ndarrays.py",
+      "line": 1290,
+      "test_id": "test_ndarray_indices_aggregations",
+      "implementation_requirement": "Accept row/global-sourced ndarray solve, triangular solve, SVD, inverse and concatenation expressions during Table annotation planning without source-index errors; no action assertion occurs.",
+      "reviewed_scope": "shared_table_expression",
+      "source_sha256": "de71d795cb4f302ae9adc158f632ff96a56fbed6b7dfac32e239761a54f9182a"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_show.py",
+      "line": 34,
+      "test_id": "test_show_rows_table",
+      "implementation_requirement": "Show a Matrix-derived rows Table field and a computed multiple of that field without display failure.",
+      "reviewed_scope": "table_behavior_with_matrix_fixture",
+      "source_sha256": "358676a166d6bd8642f64f5eb2f0a3a3695163821a74395312afa26927be59d6"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_show.py",
+      "line": 40,
+      "test_id": "test_show_negative",
+      "implementation_requirement": "Reject a negative row count passed to Table.show.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "358676a166d6bd8642f64f5eb2f0a3a3695163821a74395312afa26927be59d6"
+    },
+    {
+      "source": "hail/python/test/hail/expr/test_types.py",
+      "line": 110,
+      "test_id": "test_nested_type_to_spark",
+      "implementation_requirement": "Convert a range Table containing dictionary-of-tuple row values to Spark without a nested type conversion exception.",
+      "reviewed_scope": "table_only",
+      "source_sha256": "07c1f5d12ee8e7f1ad23cf55f796d4050df8bb1d2dcf75eaf87eb506959a5133"
+    }
+  ],
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1"
+}

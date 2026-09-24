@@ -1,0 +1,7 @@
+{
+  "command": "uv run --no-sync python scripts/run_all_tests.py --label integrated-verified",
+  "runner_exit_code": 1,
+  "exit_code_basis": "run_all_tests.py returns 1 for failed assertions, infrastructure failures, or integrity failures; one upstream assertion failure is recorded.",
+  "summary": "summary.json",
+  "summary_written_before_exit": true
+}
