@@ -11,6 +11,7 @@ from .types import (
     encode_value,
     infer_type,
     tarray,
+    tset,
     tbool,
     tfloat32,
     tfloat64,
@@ -23,12 +24,16 @@ from .types import (
 )
 
 
+class ExpressionException(ValueError):
+    """An expression references an incompatible source or index scope."""
+
+
 def _merge_sources(left, right):
     if left is None:
         return right
     if right is None or left is right:
         return left
-    raise ValueError("expression source mismatch: fields belong to different Tables")
+    raise ExpressionException("expression source mismatch: fields belong to different Tables")
 
 
 def as_expr(value):
@@ -39,10 +44,49 @@ def as_expr(value):
     return literal(value)
 
 
+class _IR(dict):
+    """Wire IR with native singleton references retained outside its JSON payload."""
+    def __init__(self, value, references):
+        super().__init__(value)
+        self.references = dict(references)
+
+
+def _references(ir):
+    result = {}
+    if isinstance(ir, _IR):
+        result.update(ir.references)
+    elif isinstance(ir, dict):
+        if ir.get("op") != "literal":
+            for value in ir.values():
+                result.update(_references(value))
+    elif isinstance(ir, list):
+        for value in ir:
+            result.update(_references(value))
+    return result
+
+
+def _global_bindings(expressions):
+    bindings = {}
+    for expr in expressions:
+        bindings.update(expr._global_refs)
+    return list(bindings.items())
+
+
+def _external_globals(native, dtype):
+    from uuid import uuid4
+    reference = uuid4().hex
+    return Expression(dtype, None, _IR(
+        {"op": "external_global", "reference": reference, "dtype": type_to_wire(dtype)},
+        {reference: native},
+    ))
+
+
 class Expression:
-    __slots__ = ("dtype", "source", "_ir_json", "_selection_name", "_top_level_name")
+    __slots__ = ("dtype", "source", "_ir_json", "_selection_name", "_top_level_name", "_global_refs")
 
     def __init__(self, dtype, source, ir, *, selection_name=None, top_level_name=None):
+        from types import MappingProxyType
+        object.__setattr__(self, "_global_refs", MappingProxyType(_references(ir)))
         object.__setattr__(self, "dtype", dtype)
         object.__setattr__(self, "source", source)
         object.__setattr__(self, "_ir_json", json.dumps(ir, separators=(",", ":")))
@@ -55,7 +99,7 @@ class Expression:
     @property
     def _ir(self):
         # Return a fresh tree so callers cannot mutate an expression behind its type/source.
-        return json.loads(self._ir_json)
+        return _IR(json.loads(self._ir_json), self._global_refs)
 
     def to_ir(self):
         return self._ir
@@ -180,6 +224,41 @@ class Expression:
             },
         )
 
+    def _array_map(self, f):
+        if not callable(f):
+            raise TypeError("array.map requires a callable")
+        import uuid
+        parameter = uuid.uuid4().hex
+        variable = Expression(self.dtype.element_type, self.source,
+                              {"op": "lambda_variable", "name": parameter})
+        body = as_expr(f(variable))
+        return Expression(tarray(body.dtype), _merge_sources(self.source, body.source),
+                          {"op": "array_map", "value": self.to_ir(),
+                           "parameter": parameter, "body": body.to_ir()})
+
+    def _array_flatmap(self, f):
+        if not callable(f):
+            raise TypeError("array.flatmap requires a callable")
+        mapped = self._array_map(f)
+        if not isinstance(mapped.dtype.element_type, tarray):
+            raise TypeError("array.flatmap requires the callback to return an array expression")
+        return Expression(mapped.dtype.element_type, mapped.source,
+                          {"op": "array_flatten", "value": mapped.to_ir()})
+
+    def _array_filter(self, f):
+        if not callable(f):
+            raise TypeError("array.filter requires a callable")
+        import uuid
+        parameter = uuid.uuid4().hex
+        variable = Expression(self.dtype.element_type, self.source,
+                              {"op": "lambda_variable", "name": parameter})
+        predicate = as_expr(f(variable))
+        if predicate.dtype != tbool:
+            raise TypeError(f"array.filter predicate must be bool, got {predicate.dtype}")
+        return Expression(self.dtype, _merge_sources(self.source, predicate.source),
+                          {"op": "array_filter", "value": self.to_ir(),
+                           "parameter": parameter, "predicate": predicate.to_ir()})
+
     def _array_length(self):
         if not isinstance(self.dtype, tarray):
             raise TypeError("length requires an array expression")
@@ -207,6 +286,12 @@ class Expression:
         dtype = object.__getattribute__(self, "dtype")
         if isinstance(dtype, tstruct) and name in dtype:
             return self[name]
+        if name == "flatmap" and isinstance(dtype, tarray):
+            return object.__getattribute__(self, "_array_flatmap")
+        if name == "filter" and isinstance(dtype, tarray):
+            return object.__getattribute__(self, "_array_filter")
+        if name == "map" and isinstance(dtype, tarray):
+            return object.__getattribute__(self, "_array_map")
         if name == "length" and isinstance(dtype, tarray):
             return object.__getattribute__(self, "_array_length")
         raise AttributeError(name)
@@ -238,7 +323,7 @@ class Expression:
         if self._ir.get("op") == "column":
             values = json.loads(self.source._native.collect_field_json(self._ir["name"]))
         else:
-            projected = self.source._native.project_json(json.dumps([["__vail_collect", self.to_ir()]]))
+            projected = self.source._native.key_by([]).project_json(json.dumps([["__vail_collect", self.to_ir()]]), _global_bindings([self]))
             values = json.loads(projected.collect_field_json("__vail_collect"))
         return [decode_value(value, self.dtype) for value in values]
 
@@ -246,8 +331,8 @@ class Expression:
 class Field(Expression):
     __slots__ = ("name",)
 
-    def __init__(self, source, name, dtype):
-        super().__init__(dtype, source, {"op": "column", "name": name}, selection_name=name, top_level_name=name)
+    def __init__(self, source, name, dtype, *, scope="column"):
+        super().__init__(dtype, source, {"op": scope, "name": name}, selection_name=name, top_level_name=name)
         object.__setattr__(self, "name", name)
 
 
@@ -402,7 +487,7 @@ def is_missing(value):
 
 
 def _valid_type(dtype):
-    return dtype in (tint32, tint64, tfloat32, tfloat64, tbool, tstr) or isinstance(dtype, (tstruct, tarray))
+    return dtype in (tint32, tint64, tfloat32, tfloat64, tbool, tstr) or isinstance(dtype, (tstruct, tarray, tset))
 
 
 def _require_numeric(dtype, operation):
@@ -431,7 +516,7 @@ def _numeric_result_type(left, right, operator):
 
 def _check_comparable(left, right, operator):
     if left == right:
-        if isinstance(left, (tstruct, tarray)) and operator not in ("eq", "ne"):
+        if isinstance(left, (tstruct, tarray, tset)) and operator not in ("eq", "ne"):
             raise TypeError(f"{operator} does not support {left}")
         return
     if left in (tint32, tint64, tfloat32, tfloat64) and right in (tint32, tint64, tfloat32, tfloat64):

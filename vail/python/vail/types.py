@@ -33,6 +33,21 @@ class tarray:
         return f"tarray({self.element_type!r})"
 
 
+@dataclass(frozen=True)
+class tset:
+    element_type: object
+
+    def __post_init__(self):
+        if not is_type(self.element_type):
+            raise TypeError("tset requires a Vail type")
+
+    def __str__(self):
+        return f"set<{self.element_type}>"
+
+    def __repr__(self):
+        return f"tset({self.element_type!r})"
+
+
 tint32 = _PrimitiveType("int32")
 tint64 = _PrimitiveType("int64")
 tfloat32 = _PrimitiveType("float32")
@@ -101,7 +116,7 @@ class Struct(Mapping):
 
 
 def is_type(value):
-    return value in (tint32, tint64, tfloat32, tfloat64, tbool, tstr) or isinstance(value, (tstruct, tarray))
+    return value in (tint32, tint64, tfloat32, tfloat64, tbool, tstr) or isinstance(value, (tstruct, tarray, tset))
 
 
 def dtype(type_string):
@@ -139,6 +154,8 @@ def _parse_type(text):
         return aliases[text]
     if text.startswith("array<") and text.endswith(">"):
         return tarray(_parse_type(text[6:-1].strip()))
+    if text.startswith("set<") and text.endswith(">"):
+        return tset(_parse_type(text[4:-1].strip()))
     if text.startswith("struct{") and text.endswith("}"):
         fields = {}
         for decl in _split_type_fields(text[7:-1]):
@@ -165,6 +182,8 @@ def type_to_wire(dtype):
         return dtype.name
     if isinstance(dtype, tarray):
         return {"array": type_to_wire(dtype.element_type)}
+    if isinstance(dtype, tset):
+        return {"set": type_to_wire(dtype.element_type)}
     if isinstance(dtype, tstruct):
         return {"struct": [[name, type_to_wire(field_type)] for name, field_type in dtype.items()]}
     raise TypeError(f"not a Vail type: {dtype!r}")
@@ -179,6 +198,8 @@ def type_from_wire(value):
             raise ValueError(f"unknown Vail type: {value}") from None
     if isinstance(value, dict) and set(value) == {"array"}:
         return tarray(type_from_wire(value["array"]))
+    if isinstance(value, dict) and set(value) == {"set"}:
+        return tset(type_from_wire(value["set"]))
     if isinstance(value, dict) and set(value) == {"struct"}:
         return tstruct(**{name: type_from_wire(field_type) for name, field_type in value["struct"]})
     raise ValueError(f"invalid Vail type encoding: {value!r}")
@@ -215,6 +236,18 @@ def infer_type(value):
             if dtype is None:
                 raise TypeError("array elements have incompatible types")
         return tarray(dtype)
+    if isinstance(value, (set, frozenset)):
+        if not value:
+            raise ValueError("cannot infer a set element type from an empty set")
+        types = [infer_type(x) for x in value if x is not None]
+        if not types:
+            raise ValueError("cannot infer a set element type from only missing values")
+        element = types[0]
+        for other in types[1:]:
+            element = unify_types(element, other)
+            if element is None:
+                raise TypeError("set elements have incompatible types")
+        return tset(element)
     if isinstance(value, tuple):
         raise TypeError("tuple literals require a tuple type, which is not supported")
     raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
@@ -235,6 +268,9 @@ def unify_types(left, right):
     if isinstance(left, tarray) and isinstance(right, tarray):
         element = unify_types(left.element_type, right.element_type)
         return None if element is None else tarray(element)
+    if isinstance(left, tset) and isinstance(right, tset):
+        element = unify_types(left.element_type, right.element_type)
+        return None if element is None else tset(element)
     return None
 
 
@@ -244,6 +280,10 @@ def encode_value(value):
     if isinstance(value, Mapping):
         return {name: encode_value(item) for name, item in value.items()}
     if isinstance(value, (list, tuple)):
+        return [encode_value(item) for item in value]
+    if isinstance(value, (set, frozenset)):
+        # Preserve the elements for native typed canonicalization. A generic
+        # JSON codec cannot sort all Vail values with their type's semantics.
         return [encode_value(item) for item in value]
     if isinstance(value, float) and not math.isfinite(value):
         return {"$float": "nan" if math.isnan(value) else ("inf" if value > 0 else "-inf")}
@@ -259,8 +299,33 @@ def decode_value(value, dtype=None):
         return Struct(**{name: decode_value(value.get(name), field_type) for name, field_type in dtype.items()})
     if isinstance(dtype, tarray) and isinstance(value, list):
         return [decode_value(item, dtype.element_type) for item in value]
+    if isinstance(dtype, tset) and isinstance(value, list):
+        items = [_decode_set_element(item, dtype.element_type) for item in value]
+        try:
+            return set(items)
+        except TypeError as exc:
+            raise NotImplementedError(
+                f"cannot localize set elements of type {dtype.element_type} as hashable Python values"
+            ) from exc
     if isinstance(value, dict):
         return Struct(**{name: decode_value(item) for name, item in value.items()})
     if isinstance(value, list):
         return [decode_value(item) for item in value]
     return value
+
+
+def _decode_set_element(value, dtype):
+    """Decode a set member into a hashable Python value where supported."""
+    if isinstance(dtype, tset):
+        if value is None:
+            return None
+        if not isinstance(value, list):
+            return decode_value(value, dtype)
+        return frozenset(_decode_set_element(item, dtype.element_type) for item in value)
+    # Arrays and structs normally localize to lists and Struct objects. Neither
+    # is hashable, so preserve the Vail type but fail clearly at this boundary.
+    if isinstance(dtype, (tarray, tstruct)):
+        raise NotImplementedError(
+            f"cannot localize set elements of type {dtype} as hashable Python values"
+        )
+    return decode_value(value, dtype)

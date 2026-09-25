@@ -26,7 +26,7 @@ cargo run -p vail-storage --example local_roundtrip --locked -- write /tmp/vail-
 cargo run -p vail-storage --example local_roundtrip --locked -- read '<metadata-uri>'
 ```
 
-Use a fresh directory for each initial write. Vortex compilation requires `flatc` on `PATH`.
+Use a fresh directory for each initial write. The pinned Vortex 0.86.1 crates ship generated FlatBuffers Rust code, so the normal Vail build does not require `flatc`. Building the separate Vortex source submodule regenerates that code and requires the FlatBuffers compiler, selected through `FLATC` or `PATH`.
 
 ```python
 import vail as hl
@@ -41,15 +41,29 @@ assert [row.position for row in t.take(3)] == [10, 20, 30]
 assert list(t.order_by(hl.desc("position")).key) == []
 ```
 
-The Python slice supports primitive numeric, Boolean and string values, nested structs and arrays, typed row projections (`select`, `annotate`, `transmute`), filtering and collection expressions. Python builds a typed expression IR; native Rust lowers it to DataFusion physical expressions. Array construction and length reuse DataFusion functions; indexing, slicing and reductions adapt Hail's bounds, missingness and numeric semantics. Higher-order collection lambdas, sets, globals and aggregations remain incomplete. Sort keys currently restrict strings to ASCII until Hail's full Unicode comparison is verified.
+The Python slice supports primitive numeric, Boolean and string values, nested structs and arrays, typed row projections (`select`, `annotate`, `transmute`), filtering and collection expressions. Python builds typed TableIR and expression IR; Rust lowers the complete supported graph to DataFusion physical plans. Array construction and length reuse DataFusion functions; indexing, slicing and reductions adapt Hail's bounds, missingness and numeric semantics. Globals support annotate/select/transmute, row expression references, cross-table `index_globals()`, `hl.eval`, and Arrow persistence. Higher-order collection lambdas, sets, and general aggregations remain incomplete. Sort keys currently restrict strings to ASCII until Hail's full Unicode comparison is verified.
 
-`parallelize`, `range_table`, field collection, `key_by`, `order_by`, `head`, `tail`, `take`, `collect`, `count`, `_force_count` and `n_partitions` execute through the native bridge. `range_table` constructs Arrow batches in Rust using Hail's range partition rules; it still materializes the input.
+`Table._same` checks logical schemas, keys, globals, row sequence, and duplicate
+multiplicity with Hail's recursive value similarity rules. Row comparison uses a
+DataFusion full outer merge join on row ordinals, a comparison expression, and a
+limit on mismatches. Globals are a typed singleton relation, bound to row expressions
+through DataFusion cross joins and persisted as a checksummed Arrow IPC file.
 
-The native execution API sorts Arrow partitions with DataFusion `SortExec` and `SortPreservingMergeExec`. It accepts a host-supplied task context and memory pool; tests force sort spill. Input batches and collected results are still materialized in memory. Arbitrary-plan ordering proof propagation, lazy scans, full Hail comparators and aggregators, and full frontend reuse remain work in the plan.
+The Python Table wraps a shared Rust TableIR DAG. `parallelize` retains Arrow input
+buffers; `range_table` stores bounds. Transformations build nodes, and actions lower
+them to fresh DataFusion plans. Projections, filters, limits, sorts, forced counts,
+and equality execute through DataFusion. Hail-specific sources and bounded tail
+are DataFusion extension nodes. See [TableIR](docs/TABLE_IR.md) for details and limits.
+
+Explicit sorting streams its input into DataFusion SortExec; it no longer collects
+input in Rust first. Tests verify spill under a bounded host-supplied memory pool.
+The embedded plan currently uses one ordered physical stream while preserving Hail
+logical partition identity. Parallel execution, distributed sorting, full Hail
+comparators, and optimizer integration remain future work.
 
 The storage API handles local, unpartitioned initial snapshots with Vortex data files, Iceberg Avro manifests, and an immutable descriptor bound to a reserved snapshot ID. A persisted primitive-key interval index certifies file order and resolves live Iceberg tasks for ordered multi-file reads. Tests reopen a snapshot containing three real Vortex files. Reads perform no row sorting; missing or invalid required ordering metadata is rejected. Range planning currently enumerates all manifest tasks before pruning data files.
 
-Storage is not yet exposed as Python `Table.write`/`read_table`; overwrite, general appends, schema evolution and cloud catalogs remain unsupported. The public prototype accepts and returns materialized Arrow batches. See [the storage crate](crates/vail-storage/README.md), [upstream PR pin](patches/README.md), and [fragment-scan design](docs/research/ordered-fragment-scan.md).
+Python `Table.write`/`read_table` use local Viceberg directories with atomic overwrite publication. Read construction resolves metadata only; its lazy source streams data when an action executes. General appends, schema evolution and cloud catalogs remain unsupported. See [the storage crate](crates/vail-storage/README.md), [upstream PR pin](patches/README.md), and [fragment-scan design](docs/research/ordered-fragment-scan.md).
 
 ## Checks
 
@@ -85,3 +99,30 @@ The first oracle attempt was unavailable: the pinned Hail checkout lacks generat
 - [Pinned source revisions](upstreams.lock.json).
 
 The first implementation wave is in progress. The work queue keeps unimplemented methods and scope boundaries visible; completed primitive examples are not claims of complete Table compatibility.
+
+### Python table persistence
+
+`table.write(path)` and `vail.read_table(path)` use local Viceberg directories.
+They preserve row types, keys, row order, and logical partition boundaries,
+including empty partitions and zero-column rows. The writer rolls Vortex files
+at a 64 MiB Arrow buffer target or 1,048,576 rows, and at partition boundaries.
+Keyed files have a certified interval index; reads follow it without a whole-table
+sort. Unkeyed files carry an explicit persisted sequence to preserve row order.
+
+`write(path, overwrite=True)` publishes a completed immutable generation through
+an atomic `_vail_table.json` replacement. Previous generations remain on disk;
+garbage collection is not implemented. Paths embedded in Iceberg metadata are
+absolute, so moving a directory is not supported. Concurrent writers fail while
+the directory's `.write.lock` is held; a process crash may leave a stale lock.
+
+This API currently supports local paths and `file://` URIs without spaces or
+non-ASCII characters. Certified keys support integers, booleans, and ASCII
+strings. Legacy `.ht` input, custom codecs, staging, and the
+private `read_table` options are not implemented and are rejected explicitly.
+Tables hold an immutable Rust TableIR DAG, including a snapshot-pinned read
+source and typed scalar expression IR. Construction reads schema/snapshot metadata
+only; data files open when an action pulls batches. MapRows and Filter process
+batches incrementally; Head stops upstream reads once satisfied. Collect localizes
+its result and Tail retains a bounded suffix. Write consumes the execution stream
+with bounded file buffers and backpressure; explicit sorting is a DataFusion operator
+which can spill under a configured memory limit. Each action executes afresh; TableIR has no result cache.

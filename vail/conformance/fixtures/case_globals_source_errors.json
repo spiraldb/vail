@@ -1,33 +1,115 @@
 {
   "protocol": "vail-conformance/1",
   "id": "globals_source_errors",
-  "baseline": {"hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1", "provenance": "source-derived-not-oracle-captured"},
+  "baseline": {
+    "hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+    "provenance": "source-derived-not-oracle-captured"
+  },
   "tables": {
     "left": {
-      "schema": [{"name": "x", "type": "int32", "nullable": false}],
+      "schema": [
+        {
+          "name": "x",
+          "type": "int32",
+          "nullable": false
+        }
+      ],
       "key": [],
-      "rows": [{"x": 4}, {"x": 9}],
-      "globals": {"offset": 7},
-      "global_schema": [{"name": "offset", "type": "int32", "nullable": false}],
+      "rows": [
+        {
+          "x": 4
+        },
+        {
+          "x": 9
+        }
+      ],
+      "globals": {
+        "offset": 7
+      },
+      "global_schema": [
+        {
+          "name": "offset",
+          "type": "int32",
+          "nullable": false
+        }
+      ],
       "n_partitions": 1
     },
     "right": {
-      "schema": [{"name": "y", "type": "int32", "nullable": false}],
+      "schema": [
+        {
+          "name": "y",
+          "type": "int32",
+          "nullable": false
+        }
+      ],
       "key": [],
-      "rows": [{"y": 2}],
+      "rows": [
+        {
+          "y": 2
+        }
+      ],
       "globals": {},
       "n_partitions": 1
     }
   },
   "steps": [
-    {"id": "read_globals", "op": "get_globals", "table": "left", "capability": "oracle-only-until-native-op"},
-    {"id": "global_values", "op": "annotate_globals", "table": "left", "result": "projected", "fields": ["offset"], "capability": "oracle-only-until-native-op"},
-    {"id": "projected_rows", "op": "collect", "table": "projected", "capability": "oracle-only-until-native-op"},
-    {"id": "source_mismatch", "op": "source_mismatch", "table": "left", "other": "right", "capability": "oracle-only-until-native-op"}
+    {
+      "id": "read_globals",
+      "op": "get_globals",
+      "table": "left"
+    },
+    {
+      "id": "global_values",
+      "op": "annotate_globals",
+      "table": "left",
+      "result": "projected",
+      "fields": [
+        "offset"
+      ]
+    },
+    {
+      "id": "projected_rows",
+      "op": "collect",
+      "table": "projected"
+    },
+    {
+      "id": "source_mismatch",
+      "op": "source_mismatch",
+      "table": "left",
+      "other": "right"
+    }
   ],
   "expectations": [
-    {"step": "read_globals", "mode": "ordered", "expected": {"offset": 7}, "capability": "oracle-only-until-native-op"},
-    {"step": "projected_rows", "mode": "ordered", "path": "rows", "expected": [{"x": 4, "offset": 7}, {"x": 9, "offset": 7}], "capability": "oracle-only-until-native-op"},
-    {"step": "source_mismatch", "mode": "error", "expected": {"category": "source_mismatch", "class_contains": "ExpressionException"}, "capability": "oracle-only-until-native-op"}
+    {
+      "step": "read_globals",
+      "mode": "ordered",
+      "expected": {
+        "offset": 7
+      }
+    },
+    {
+      "step": "projected_rows",
+      "mode": "ordered",
+      "path": "rows",
+      "expected": [
+        {
+          "x": 4,
+          "global_offset": 7
+        },
+        {
+          "x": 9,
+          "global_offset": 7
+        }
+      ]
+    },
+    {
+      "step": "source_mismatch",
+      "mode": "error",
+      "expected": {
+        "category": "source_mismatch",
+        "class_contains": "ExpressionException"
+      }
+    }
   ]
 }

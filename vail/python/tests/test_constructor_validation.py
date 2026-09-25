@@ -13,7 +13,7 @@ def test_parallelize_rejects_schema_and_partial_type_together():
 
 
 def test_parallelize_partial_type_alone_remains_unsupported():
-    with pytest.raises(NotImplementedError, match="partial_type and globals"):
+    with pytest.raises(NotImplementedError, match="partial_type"):
         hl.Table.parallelize([{"a": 1}], partial_type={"a": hl.tint32})
 
 
@@ -22,9 +22,10 @@ def test_parallelize_malformed_schema_alone_keeps_schema_validation():
         hl.Table.parallelize([{"a": 1}], schema="array<struct{a: int}>")
 
 
-def test_parallelize_globals_remain_unsupported():
-    with pytest.raises(NotImplementedError, match="partial_type and globals"):
-        hl.Table.parallelize([{"a": 1}], schema=hl.tstruct(a=hl.tint32), globals={})
+def test_parallelize_accepts_empty_globals():
+    table = hl.Table.parallelize([{"a": 1}], schema=hl.tstruct(a=hl.tint32), globals={})
+    assert hl.eval(table.globals) == hl.Struct()
+    assert table.collect() == [hl.Struct(a=1)]
 
 
 def test_parallelize_valid_primitive_schema_still_works():

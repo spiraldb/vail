@@ -40,22 +40,34 @@ def run_fixture(fixture):
     types = {"int32": hl.tint32, "int64": hl.tint64, "bool": hl.tbool, "string": hl.tstr}
     tables = {}
     for name, source in fixture["tables"].items():
-        if source.get("globals"):
-            return encode_outcome(fixture["id"], [], status="unsupported", diagnostic="native globals not implemented")
         try:
             schema = hl.tstruct(**{field["name"]: types[field["type"]] for field in source["schema"]})
         except (KeyError, TypeError):
             return encode_outcome(fixture["id"], [], status="unsupported", diagnostic="unsupported native fixture type")
+        global_values = _input(decode_value(source.get("globals", {})))
+        for field in source.get("global_schema", []):
+            global_values[field["name"]] = hl.literal(global_values[field["name"]], types[field["type"]])
         tables[name] = hl.Table.parallelize(
             _input(decode_value(source["rows"])), schema=schema,
             key=source["key"], n_partitions=source.get("n_partitions", 1),
+            globals=global_values,
         )
     outcomes = []
     for step in fixture["steps"]:
         try:
             table = tables[step["table"]]
             op = step["op"]
-            if op == "key_by":
+            if op == "get_globals":
+                outcomes.append({"id": step["id"], "value": encode_value(_output(hl.eval(table.globals)))})
+                continue
+            elif op == "annotate_globals":
+                result = table.annotate(**{"global_" + name: table.globals[name] for name in step["fields"]})
+            elif op == "source_mismatch":
+                other = tables[step["other"]]
+                table.annotate(_vail_bad_source=other[next(iter(other.row))])
+                outcomes.append({"id": step["id"], "value": {}})
+                continue
+            elif op == "key_by":
                 result = table.key_by(*step["fields"])
             elif op == "order_by":
                 result = table.order_by(*[
@@ -78,7 +90,7 @@ def run_fixture(fixture):
             tables[step["result"]] = result
             outcomes.append({"id": step["id"], "value": {"key": list(result.key)}})
         except Exception as error:
-            outcomes.append({"id": step["id"], "error": {"category": "execution", "class": type(error).__name__, "message": str(error)}})
+            outcomes.append({"id": step["id"], "error": {"category": "source_mismatch" if "source mismatch" in str(error) else "execution", "class": type(error).__name__, "message": str(error)}})
     return encode_outcome(fixture["id"], outcomes)
 
 

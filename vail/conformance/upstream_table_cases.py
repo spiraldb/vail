@@ -34,6 +34,11 @@ ROW_EXPRESSION_CASES = (
     ("Tests", "test_transmute_key"),
     ("Tests", "test_transmute"),
     ("Tests", "test_select"),
+    ("Tests", "test_transmute_globals"),
+    ("Tests", "test_index_globals"),
+    ("Tests", "test_same_different_global"),
+    ("Tests", "test_same_different_type"),
+    ("Tests", "test_same_different_rows"),
 )
 
 

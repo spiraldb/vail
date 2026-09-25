@@ -84,7 +84,7 @@ impl OrderRequirement {
         &self.keys
     }
 
-    fn physical_ordering(&self, schema: &SchemaRef) -> Result<LexOrdering, OrderError> {
+    pub fn physical_ordering(&self, schema: &SchemaRef) -> Result<LexOrdering, OrderError> {
         let mut sort_exprs = Vec::with_capacity(self.keys.len());
         for key in &self.keys {
             let index = schema.index_of(&key.column).map_err(|_| {

@@ -1,0 +1,28 @@
+[package]
+name = "vail-table"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[dependencies]
+datafusion-functions-aggregate = "=55.0.0"
+datafusion-common.workspace = true
+datafusion-physical-expr.workspace = true
+datafusion-expr.workspace = true
+datafusion-datasource.workspace = true
+datafusion-execution.workspace = true
+datafusion-physical-plan.workspace = true
+arrow-array.workspace = true
+arrow-schema.workspace = true
+arrow-select.workspace = true
+async-stream = "0.3"
+futures.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+vail-execution = { path = "../vail-execution" }
+vail-storage = { path = "../vail-storage" }
+
+[dev-dependencies]
+tokio.workspace = true
+tempfile = "3"

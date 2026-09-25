@@ -54,6 +54,7 @@ pub enum Type {
     Primitive(PrimitiveType),
     Struct { r#struct: Vec<(String, Type)> },
     Array { array: Box<Type> },
+    Set { set: Box<Type> },
 }
 
 impl Type {
@@ -82,6 +83,13 @@ impl Type {
                         .into(),
                 )
             }
+            // Use the list element field name, not metadata: DataFusion's
+            // scalar/cross-join paths retain names but can drop field metadata.
+            Self::Set { set } => DataType::List(Arc::new(Field::new(
+                "__vail_set_item",
+                set.to_arrow()?,
+                true,
+            ))),
             Self::Array { array } => {
                 DataType::List(Arc::new(Field::new("item", array.to_arrow()?, true)))
             }
@@ -101,6 +109,9 @@ impl Type {
                     .iter()
                     .map(|f| Ok((f.name().clone(), Self::from_arrow(f.data_type())?)))
                     .collect::<Result<Vec<_>, ExprError>>()?,
+            },
+            DataType::List(field) if field.name() == "__vail_set_item" => Self::Set {
+                set: Box::new(Self::from_arrow(field.data_type())?),
             },
             DataType::List(field) => Self::Array {
                 array: Box::new(Self::from_arrow(field.data_type())?),
@@ -154,6 +165,26 @@ pub enum ArrayReduction {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "op", rename_all = "snake_case")]
 pub enum Expr {
+    LambdaVariable {
+        name: String,
+    },
+    ArrayMap {
+        value: Box<Expr>,
+        parameter: String,
+        body: Box<Expr>,
+    },
+    ArrayFilter {
+        value: Box<Expr>,
+        parameter: String,
+        predicate: Box<Expr>,
+    },
+    ExternalGlobal {
+        reference: String,
+        dtype: Type,
+    },
+    Global {
+        name: String,
+    },
     Column {
         name: String,
     },
@@ -192,6 +223,9 @@ pub enum Expr {
     Array {
         element_type: Type,
         elements: Vec<Expr>,
+    },
+    ArrayFlatten {
+        value: Box<Expr>,
     },
     ArrayLength {
         value: Box<Expr>,
@@ -265,8 +299,144 @@ fn field_type(fields: &[(String, Type)], name: &str) -> Result<Type, ExprError> 
         .ok_or_else(|| ExprError::Invalid(format!("struct field {name:?} is absent")))
 }
 impl Expr {
-    pub fn dtype(&self, schema: &Schema) -> Result<Type, ExprError> {
+    /// Visit typed expression nodes, never literal payloads or type metadata.
+    pub fn visit(&self, f: &mut impl FnMut(&Expr)) {
+        f(self);
         match self {
+            Self::LambdaVariable { .. }
+            | Self::ExternalGlobal { .. }
+            | Self::Global { .. }
+            | Self::Column { .. }
+            | Self::Literal { .. } => (),
+            Self::ArrayMap { value, body, .. } => {
+                value.visit(f);
+                body.visit(f);
+            }
+            Self::ArrayFilter {
+                value, predicate, ..
+            } => {
+                value.visit(f);
+                predicate.visit(f);
+            }
+            Self::Binary { left, right, .. } => {
+                left.visit(f);
+                right.visit(f);
+            }
+            Self::Unary { value, .. }
+            | Self::Cast { value, .. }
+            | Self::GetField { value, .. }
+            | Self::IsMissing { value }
+            | Self::ArrayFlatten { value }
+            | Self::ArrayLength { value }
+            | Self::ArrayReduce { value, .. } => value.visit(f),
+            Self::Struct { fields } => {
+                for (_, expr) in fields {
+                    expr.visit(f);
+                }
+            }
+            Self::IfElse {
+                condition,
+                consequent,
+                alternate,
+            } => {
+                condition.visit(f);
+                consequent.visit(f);
+                alternate.visit(f);
+            }
+            Self::Array { elements, .. } => {
+                for expr in elements {
+                    expr.visit(f);
+                }
+            }
+            Self::ArrayIndex { value, index } => {
+                value.visit(f);
+                index.visit(f);
+            }
+            Self::ArraySlice {
+                value,
+                start,
+                stop,
+                step,
+            } => {
+                value.visit(f);
+                for expr in [start, stop, step].into_iter().flatten() {
+                    expr.visit(f);
+                }
+            }
+        }
+    }
+
+    pub fn dtype(&self, schema: &Schema) -> Result<Type, ExprError> {
+        self.dtype_with_globals(schema, &Schema::empty())
+    }
+
+    pub fn dtype_with_globals(&self, schema: &Schema, globals: &Schema) -> Result<Type, ExprError> {
+        self.dtype_scoped(schema, globals, &[])
+    }
+
+    fn dtype_scoped(
+        &self,
+        schema: &Schema,
+        globals: &Schema,
+        scope: &[(String, Type, usize)],
+    ) -> Result<Type, ExprError> {
+        match self {
+            Self::LambdaVariable { name } => scope
+                .iter()
+                .rev()
+                .find(|(n, _, _)| n == name)
+                .map(|(_, ty, _)| ty.clone())
+                .ok_or_else(|| ExprError::Invalid(format!("unbound lambda variable {name:?}"))),
+            Self::ArrayMap {
+                value,
+                parameter,
+                body,
+            } => {
+                let Type::Array { array } = value.dtype_scoped(schema, globals, scope)? else {
+                    return Err(ExprError::Invalid("array map requires array".into()));
+                };
+                if scope.iter().any(|(name, _, _)| name == parameter) {
+                    return Err(ExprError::Invalid(
+                        "duplicate lambda parameter identity".into(),
+                    ));
+                }
+                let mut nested = scope.to_vec();
+                nested.push((parameter.clone(), *array, schema.fields().len()));
+                Ok(Type::Array {
+                    array: Box::new(body.dtype_scoped(schema, globals, &nested)?),
+                })
+            }
+            Self::ArrayFilter {
+                value,
+                parameter,
+                predicate,
+            } => {
+                let Type::Array { array } = value.dtype_scoped(schema, globals, scope)? else {
+                    return Err(ExprError::Invalid("array filter requires array".into()));
+                };
+                if scope.iter().any(|(name, _, _)| name == parameter) {
+                    return Err(ExprError::Invalid(
+                        "duplicate lambda parameter identity".into(),
+                    ));
+                }
+                let mut nested = scope.to_vec();
+                nested.push((parameter.clone(), *array, schema.fields().len()));
+                let predicate_type = predicate.dtype_scoped(schema, globals, &nested)?;
+                if predicate_type != Type::Primitive(PrimitiveType::Bool) {
+                    return Err(ExprError::Invalid(format!(
+                        "array filter predicate requires bool, got {predicate_type:?}"
+                    )));
+                }
+                Ok(value.dtype_scoped(schema, globals, scope)?)
+            }
+
+            Self::ExternalGlobal { dtype, .. } => Ok(dtype.clone()),
+            Self::Global { name } => {
+                let i = globals
+                    .index_of(name)
+                    .map_err(|_| ExprError::Invalid(format!("global field {name:?} is absent")))?;
+                Type::from_arrow(globals.field(i).data_type())
+            }
             Self::Column { name } => {
                 let i = schema
                     .index_of(name)
@@ -283,7 +453,7 @@ impl Expr {
             } => {
                 element_type.to_arrow()?;
                 for element in elements {
-                    let actual = element.dtype(schema)?;
+                    let actual = element.dtype_scoped(schema, globals, scope)?;
                     if actual != *element_type {
                         return Err(ExprError::Invalid(format!(
                             "array element has type {actual:?}, expected {element_type:?}"
@@ -294,14 +464,23 @@ impl Expr {
                     array: Box::new(element_type.clone()),
                 })
             }
+            Self::ArrayFlatten { value } => match value.dtype_scoped(schema, globals, scope)? {
+                Type::Array { array } if matches!(*array, Type::Array { .. }) => Ok(*array),
+                _ => Err(ExprError::Invalid(
+                    "array flatten requires an array of arrays".into(),
+                )),
+            },
             Self::ArrayLength { value } => {
-                if !matches!(value.dtype(schema)?, Type::Array { .. }) {
+                if !matches!(
+                    value.dtype_scoped(schema, globals, scope)?,
+                    Type::Array { .. }
+                ) {
                     return Err(ExprError::Invalid("array length requires array".into()));
                 }
                 Ok(Type::Primitive(PrimitiveType::Int32))
             }
             Self::ArrayIndex { value, index } => {
-                let element = match value.dtype(schema)? {
+                let element = match value.dtype_scoped(schema, globals, scope)? {
                     Type::Array { array } => *array,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -309,7 +488,9 @@ impl Expr {
                         )));
                     }
                 };
-                if index.dtype(schema)? != Type::Primitive(PrimitiveType::Int32) {
+                if index.dtype_scoped(schema, globals, scope)?
+                    != Type::Primitive(PrimitiveType::Int32)
+                {
                     return Err(ExprError::Invalid("array index requires int32".into()));
                 }
                 Ok(element)
@@ -320,7 +501,7 @@ impl Expr {
                 stop,
                 step,
             } => {
-                let array = match value.dtype(schema)? {
+                let array = match value.dtype_scoped(schema, globals, scope)? {
                     t @ Type::Array { .. } => t,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -329,7 +510,9 @@ impl Expr {
                     }
                 };
                 for endpoint in [start, stop, step].into_iter().flatten() {
-                    if endpoint.dtype(schema)? != Type::Primitive(PrimitiveType::Int32) {
+                    if endpoint.dtype_scoped(schema, globals, scope)?
+                        != Type::Primitive(PrimitiveType::Int32)
+                    {
                         return Err(ExprError::Invalid(
                             "array slice endpoints and step require int32".into(),
                         ));
@@ -338,7 +521,7 @@ impl Expr {
                 Ok(array)
             }
             Self::ArrayReduce { value, .. } => {
-                let element = match value.dtype(schema)? {
+                let element = match value.dtype_scoped(schema, globals, scope)? {
                     Type::Array { array } => *array,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -354,11 +537,11 @@ impl Expr {
                 Ok(element)
             }
             Self::Cast { dtype, value } => {
-                value.dtype(schema)?;
+                value.dtype_scoped(schema, globals, scope)?;
                 dtype.to_arrow()?;
                 Ok(dtype.clone())
             }
-            Self::GetField { value, name } => match value.dtype(schema)? {
+            Self::GetField { value, name } => match value.dtype_scoped(schema, globals, scope)? {
                 Type::Struct { r#struct: fields } => field_type(&fields, name),
                 other => Err(ExprError::Invalid(format!(
                     "get_field requires struct, got {other:?}"
@@ -373,16 +556,16 @@ impl Expr {
                             "duplicate struct field {name:?}"
                         )));
                     }
-                    typed.push((name.clone(), expr.dtype(schema)?));
+                    typed.push((name.clone(), expr.dtype_scoped(schema, globals, scope)?));
                 }
                 Ok(Type::Struct { r#struct: typed })
             }
             Self::IsMissing { value } => {
-                value.dtype(schema)?;
+                value.dtype_scoped(schema, globals, scope)?;
                 Ok(Type::Primitive(PrimitiveType::Bool))
             }
             Self::Unary { operator, value } => {
-                let t = value.dtype(schema)?;
+                let t = value.dtype_scoped(schema, globals, scope)?;
                 match operator {
                     UnaryOperator::Not => ensure_bool(&t, "not")?,
                     _ if !numeric(&t) => {
@@ -399,8 +582,8 @@ impl Expr {
                 left,
                 right,
             } => {
-                let a = left.dtype(schema)?;
-                let b = right.dtype(schema)?;
+                let a = left.dtype_scoped(schema, globals, scope)?;
+                let b = right.dtype_scoped(schema, globals, scope)?;
                 match operator {
                     BinaryOperator::And | BinaryOperator::Or => {
                         ensure_bool(&a, "boolean operator")?;
@@ -463,9 +646,12 @@ impl Expr {
                 consequent,
                 alternate,
             } => {
-                ensure_bool(&condition.dtype(schema)?, "if_else condition")?;
-                let a = consequent.dtype(schema)?;
-                let b = alternate.dtype(schema)?;
+                ensure_bool(
+                    &condition.dtype_scoped(schema, globals, scope)?,
+                    "if_else condition",
+                )?;
+                let a = consequent.dtype_scoped(schema, globals, scope)?;
+                let b = alternate.dtype_scoped(schema, globals, scope)?;
                 if a == b { Ok(a) } else { promote(&a, &b) }
             }
         }
@@ -515,7 +701,7 @@ fn validate_literal(value: &Value, dtype: &Type) -> Result<(), ExprError> {
                 validate_literal(&obj[n], t)?;
             }
         }
-        Type::Array { array } => {
+        Type::Array { array } | Type::Set { set: array } => {
             let items = value
                 .as_array()
                 .ok_or_else(|| ExprError::Invalid("array literal requires JSON array".into()))?;
@@ -526,6 +712,86 @@ fn validate_literal(value: &Value, dtype: &Type) -> Result<(), ExprError> {
     }
     Ok(())
 }
+/// Canonical set ingestion: normalize nested values, then sort and deduplicate
+/// using the declared element type (including float32 rounding and missingness).
+/// The canonical order lets the existing recursive equality compare sets.
+pub fn canonical_set_elements(value: &Value, element_type: &Type) -> Result<Vec<Value>, ExprError> {
+    let items = value
+        .as_array()
+        .ok_or_else(|| ExprError::Invalid("set requires a JSON array".into()))?;
+    let mut items = items
+        .iter()
+        .map(|v| canonical_literal(v, element_type))
+        .collect::<Result<Vec<_>, _>>()?;
+    items.sort_by(|a, b| compare_literal(a, b, element_type));
+    items.dedup_by(|a, b| compare_literal(a, b, element_type).is_eq());
+    Ok(items)
+}
+
+fn canonical_literal(value: &Value, dtype: &Type) -> Result<Value, ExprError> {
+    validate_literal(value, dtype)?;
+    if value.is_null() {
+        return Ok(Value::Null);
+    }
+    Ok(match dtype {
+        Type::Set { set } => Value::Array(canonical_set_elements(value, set)?),
+        Type::Array { array } => Value::Array(
+            value
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|v| canonical_literal(v, array))
+                .collect::<Result<_, _>>()?,
+        ),
+        Type::Struct { r#struct: fields } => Value::Object(
+            fields
+                .iter()
+                .map(|(name, ty)| Ok((name.clone(), canonical_literal(&value[name], ty)?)))
+                .collect::<Result<_, ExprError>>()?,
+        ),
+        _ => value.clone(),
+    })
+}
+
+fn compare_literal(a: &Value, b: &Value, dtype: &Type) -> std::cmp::Ordering {
+    use std::cmp::Ordering;
+    if a.is_null() || b.is_null() {
+        return a.is_null().cmp(&b.is_null());
+    }
+    match dtype {
+        Type::Primitive(PrimitiveType::Int32 | PrimitiveType::Int64) => a.as_i64().cmp(&b.as_i64()),
+        Type::Primitive(PrimitiveType::Bool) => a.as_bool().cmp(&b.as_bool()),
+        Type::Primitive(PrimitiveType::Str) => a.as_str().cmp(&b.as_str()),
+        Type::Primitive(PrimitiveType::Float32 | PrimitiveType::Float64) => {
+            let mut a = float_json(a).expect("validated float");
+            let mut b = float_json(b).expect("validated float");
+            if matches!(dtype, Type::Primitive(PrimitiveType::Float32)) {
+                a = (a as f32) as f64;
+                b = (b as f32) as f64;
+            }
+            if a.is_nan() || b.is_nan() {
+                a.is_nan().cmp(&b.is_nan())
+            } else {
+                a.partial_cmp(&b).unwrap()
+            }
+        }
+        Type::Array { array } | Type::Set { set: array } => {
+            let a = a.as_array().unwrap();
+            let b = b.as_array().unwrap();
+            a.iter()
+                .zip(b)
+                .map(|(a, b)| compare_literal(a, b, array))
+                .find(|o| !o.is_eq())
+                .unwrap_or_else(|| a.len().cmp(&b.len()))
+        }
+        Type::Struct { r#struct: fields } => fields
+            .iter()
+            .map(|(name, ty)| compare_literal(&a[name], &b[name], ty))
+            .find(|o| !o.is_eq())
+            .unwrap_or(Ordering::Equal),
+    }
+}
+
 fn float_json(v: &Value) -> Result<f64, ExprError> {
     if let Some(n) = v.as_f64() {
         return Ok(n);
@@ -578,17 +844,19 @@ fn literal_array(v: &Value, t: &Type, len: usize) -> Result<ArrayRef, ExprError>
                 })
                 .collect::<Result<Vec<_>, ExprError>>()?;
             if values.is_empty() {
-                Arc::new(StructArray::new(
-                    Vec::<Arc<Field>>::new().into(),
-                    Vec::new(),
-                    Some(NullBuffer::new_valid(len)),
-                ))
+                Arc::new(StructArray::new_empty_fields(len, None))
             } else {
                 Arc::new(StructArray::from(values))
             }
         }
-        Type::Array { array } => {
-            let items = v.as_array().unwrap();
+        Type::Array { array } | Type::Set { set: array } => {
+            let canonical;
+            let items = if matches!(t, Type::Set { .. }) {
+                canonical = canonical_set_elements(v, array)?;
+                &canonical
+            } else {
+                v.as_array().unwrap()
+            };
             let n = items
                 .len()
                 .checked_mul(len)
@@ -611,7 +879,10 @@ fn literal_array(v: &Value, t: &Type, len: usize) -> Result<ArrayRef, ExprError>
             };
             let offsets = OffsetBuffer::from_lengths(std::iter::repeat_n(items.len(), len));
             Arc::new(ListArray::new(
-                Arc::new(Field::new("item", array.to_arrow()?, true)),
+                match &dt {
+                    DataType::List(field) => field.clone(),
+                    _ => unreachable!(),
+                },
                 offsets,
                 child,
                 None,
@@ -625,6 +896,14 @@ pub fn validate_projection(
     schema: &Schema,
     fields: &[(String, Expr)],
 ) -> Result<SchemaRef, ExprError> {
+    validate_projection_with_globals(schema, &Schema::empty(), fields)
+}
+
+pub fn validate_projection_with_globals(
+    schema: &Schema,
+    globals: &Schema,
+    fields: &[(String, Expr)],
+) -> Result<SchemaRef, ExprError> {
     let mut names = HashSet::new();
     let mut output = Vec::with_capacity(fields.len());
     for (name, expr) in fields {
@@ -633,7 +912,11 @@ pub fn validate_projection(
                 "duplicate projection field {name:?}"
             )));
         }
-        output.push(Field::new(name, expr.dtype(schema)?.to_arrow()?, true));
+        output.push(Field::new(
+            name,
+            expr.dtype_with_globals(schema, globals)?.to_arrow()?,
+            true,
+        ));
     }
     Ok(Arc::new(Schema::new(output)))
 }
@@ -761,6 +1044,14 @@ fn custom_numeric(
     Ok(ScalarValue::iter_to_array(values.into_iter())?)
 }
 fn scalar_at(a: &ArrayRef, i: usize) -> Result<ScalarValue, ExprError> {
+    // DF's list scalar builder drops item-field metadata. Slice the original
+    // nested array so set types survive scalar literals and singleton globals.
+    if let Some(list) = a.as_any().downcast_ref::<ListArray>() {
+        return Ok(ScalarValue::List(Arc::new(list.slice(i, 1))));
+    }
+    if let Some(value) = a.as_any().downcast_ref::<StructArray>() {
+        return Ok(ScalarValue::Struct(Arc::new(value.slice(i, 1))));
+    }
     Ok(ScalarValue::try_from_array(a.as_ref(), i)?)
 }
 
@@ -1075,6 +1366,8 @@ enum HailKind {
     Numeric(BinaryOperator),
     GetField(String),
     Struct(Vec<String>),
+    // DF flatten ignores inner validity. Compact null lists before flattening.
+    CompactInnerNullLists,
     ArrayIndex,
     ArraySlice { start: bool, stop: bool, step: bool },
     ArrayReduce(ArrayReduction, bool),
@@ -1176,14 +1469,19 @@ impl PhysicalExpr for HailPhysicalExpr {
                         })
                         .collect::<Vec<_>>();
                     if fields.is_empty() {
-                        Ok(Arc::new(StructArray::new(
-                            Vec::<Arc<Field>>::new().into(),
-                            Vec::new(),
-                            Some(NullBuffer::new_valid(len)),
-                        )))
+                        Ok(Arc::new(StructArray::new_empty_fields(len, None)))
                     } else {
                         Ok(Arc::new(StructArray::from(fields)))
                     }
+                }
+                HailKind::CompactInnerNullLists => {
+                    let outer = args[0]
+                        .as_any()
+                        .downcast_ref::<ListArray>()
+                        .ok_or_else(|| ExprError::Invalid("expected nested list".into()))?;
+                    let (field, offsets, values, nulls) = outer.clone().into_parts();
+                    let values = datafusion_common::utils::remove_list_null_values(&values)?;
+                    Ok(Arc::new(ListArray::try_new(field, offsets, values, nulls)?) as ArrayRef)
                 }
                 HailKind::ArrayIndex => array_index(&args[0], &args[1], &self.dtype),
                 HailKind::ArraySlice { start, stop, step } => {
@@ -1218,8 +1516,162 @@ fn lower_cast(
 /// Lower the complete typed IR to a DataFusion physical-expression tree.
 /// The source schema is fixed at this compilation boundary.
 pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
-    let dtype = expr.dtype(schema)?.to_arrow()?;
+    let globals = RecordBatch::try_new_with_options(
+        Arc::new(Schema::empty()),
+        vec![],
+        &RecordBatchOptions::new().with_row_count(Some(1)),
+    )?;
+    lower_with_globals(expr, schema, &globals)
+}
+
+/// Bind global references to columns of a singleton relation joined to the rows.
+pub fn lower_with_global_columns(
+    expr: &Expr,
+    schema: &Schema,
+    globals: &Schema,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    lower_with_bindings(expr, schema, globals, &std::collections::BTreeMap::new())
+}
+
+/// External globals are bound by native IR identity, not by user field name.
+pub fn lower_with_bindings(
+    expr: &Expr,
+    schema: &Schema,
+    globals: &Schema,
+    external: &std::collections::BTreeMap<String, usize>,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    lower_bound(expr, schema, GlobalBinding::Columns(globals, external))
+}
+
+pub fn lower_with_globals(
+    expr: &Expr,
+    schema: &Schema,
+    globals: &RecordBatch,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    if globals.num_rows() != 1 {
+        return Err(ExprError::Invalid(
+            "globals must have exactly one row".into(),
+        ));
+    }
+    lower_bound(expr, schema, GlobalBinding::Values(globals))
+}
+
+#[derive(Clone, Copy)]
+enum GlobalBinding<'a> {
+    Values(&'a RecordBatch),
+    Columns(&'a Schema, &'a std::collections::BTreeMap<String, usize>),
+}
+impl GlobalBinding<'_> {
+    fn schema(&self) -> &Schema {
+        match self {
+            Self::Values(batch) => batch.schema_ref(),
+            Self::Columns(schema, _) => schema,
+        }
+    }
+}
+fn lower_bound(
+    expr: &Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    lower_scoped(expr, schema, globals, &[])
+}
+
+fn lower_array_lambda(
+    value: &Expr,
+    parameter: &str,
+    callback: &Expr,
+    filter: bool,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let input = lower_scoped(value, schema, globals, scope)?;
+    let Type::Array { array } = value.dtype_scoped(schema, globals.schema(), scope)? else {
+        unreachable!("array lambda typing validates its input")
+    };
+    let mut fields = schema.fields().to_vec();
+    fields.push(Arc::new(Field::new(parameter, array.to_arrow()?, true)));
+    let nested_schema = Schema::new(fields);
+    let mut nested = scope.to_vec();
+    nested.push((parameter.to_owned(), *array, schema.fields().len()));
+    let callback = lower_scoped(callback, &nested_schema, globals, &nested)?;
+    let lambda = Arc::new(datafusion_physical_expr::expressions::LambdaExpr::try_new(
+        vec![parameter.to_owned()],
+        callback,
+    )?);
+    let function = if filter {
+        datafusion_functions_nested::array_filter::array_filter_higher_order_function()
+    } else {
+        datafusion_functions_nested::array_transform::array_transform_higher_order_function()
+    };
+    Ok(Arc::new(
+        datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr::try_new_with_schema(
+            function,
+            vec![input, lambda],
+            schema,
+            Arc::new(ConfigOptions::default()),
+        )?,
+    ))
+}
+
+fn lower_scoped(
+    expr: &Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let dtype = expr
+        .dtype_scoped(schema, globals.schema(), scope)?
+        .to_arrow()?;
     Ok(match expr {
+        Expr::LambdaVariable { name } => {
+            let (_, ty, index) = scope
+                .iter()
+                .rev()
+                .find(|(n, _, _)| n == name)
+                .ok_or_else(|| ExprError::Invalid(format!("unbound lambda variable {name:?}")))?;
+            Arc::new(datafusion_physical_expr::expressions::LambdaVariable::new(
+                *index,
+                Arc::new(Field::new(name, ty.to_arrow()?, true)),
+            ))
+        }
+        Expr::ArrayMap {
+            value,
+            parameter,
+            body,
+        } => lower_array_lambda(value, parameter, body, false, schema, globals, scope)?,
+        Expr::ArrayFilter {
+            value,
+            parameter,
+            predicate,
+        } => lower_array_lambda(value, parameter, predicate, true, schema, globals, scope)?,
+
+        Expr::ExternalGlobal { reference, dtype } => {
+            let GlobalBinding::Columns(_, bindings) = globals else {
+                return Err(ExprError::Invalid(
+                    "external globals require a relational binding".into(),
+                ));
+            };
+            let index = *bindings
+                .get(reference)
+                .ok_or_else(|| ExprError::Invalid("unbound external globals".into()))?;
+            let field = schema
+                .fields()
+                .get(index)
+                .ok_or_else(|| ExprError::Invalid("external global column is absent".into()))?;
+            if Type::from_arrow(field.data_type())? != *dtype {
+                return Err(ExprError::Invalid("external globals type mismatch".into()));
+            }
+            Arc::new(Column::new(field.name(), index))
+        }
+        Expr::Global { name } => match globals {
+            GlobalBinding::Values(batch) => {
+                let index = batch.schema().index_of(name)?;
+                Arc::new(Literal::new(scalar_at(batch.column(index), 0)?))
+            }
+            GlobalBinding::Columns(_, _) => Arc::new(Column::new(name, schema.index_of(name)?)),
+        },
         Expr::Column { name } => Arc::new(Column::new(
             name,
             schema
@@ -1228,12 +1680,16 @@ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, Expr
         )),
         Expr::Literal { dtype, value } => {
             let one = literal_array(value, dtype, 1)?;
-            Arc::new(Literal::new(ScalarValue::try_from_array(one.as_ref(), 0)?))
+            Arc::new(Literal::new(scalar_at(&one, 0)?))
         }
-        Expr::Cast { dtype, value } => {
-            lower_cast(lower(value, schema)?, schema, &dtype.to_arrow()?)?
-        }
-        Expr::IsMissing { value } => Arc::new(IsNullExpr::new(lower(value, schema)?)),
+        Expr::Cast { dtype, value } => lower_cast(
+            lower_scoped(value, schema, globals, scope)?,
+            schema,
+            &dtype.to_arrow()?,
+        )?,
+        Expr::IsMissing { value } => Arc::new(IsNullExpr::new(lower_scoped(
+            value, schema, globals, scope,
+        )?)),
         Expr::Array {
             element_type,
             elements,
@@ -1243,11 +1699,11 @@ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, Expr
                     array: Box::new(element_type.clone()),
                 };
                 let a = literal_array(&json!([]), &ty, 1)?;
-                Arc::new(Literal::new(ScalarValue::try_from_array(a.as_ref(), 0)?))
+                Arc::new(Literal::new(scalar_at(&a, 0)?))
             } else {
                 let children = elements
                     .iter()
-                    .map(|e| lower(e, schema))
+                    .map(|e| lower_scoped(e, schema, globals, scope))
                     .collect::<Result<Vec<_>, _>>()?;
                 Arc::new(ScalarFunctionExpr::try_new(
                     datafusion_functions_nested::make_array::make_array_udf(),
@@ -1257,8 +1713,19 @@ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, Expr
                 )?)
             }
         }
+        Expr::ArrayFlatten { value } => {
+            let child = lower_scoped(value, schema, globals, scope)?;
+            let input_type = child.data_type(schema)?;
+            let normalized = custom(HailKind::CompactInnerNullLists, vec![child], input_type);
+            Arc::new(ScalarFunctionExpr::try_new(
+                datafusion_functions_nested::flatten::flatten_udf(),
+                vec![normalized],
+                schema,
+                Arc::new(ConfigOptions::default()),
+            )?)
+        }
         Expr::ArrayLength { value } => {
-            let child = lower(value, schema)?;
+            let child = lower_scoped(value, schema, globals, scope)?;
             let udf = Arc::new(ScalarFunctionExpr::try_new(
                 datafusion_functions_nested::length::array_length_udf(),
                 vec![child],
@@ -1269,7 +1736,10 @@ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, Expr
         }
         Expr::ArrayIndex { value, index } => custom(
             HailKind::ArrayIndex,
-            vec![lower(value, schema)?, lower(index, schema)?],
+            vec![
+                lower_scoped(value, schema, globals, scope)?,
+                lower_scoped(index, schema, globals, scope)?,
+            ],
             dtype,
         ),
         Expr::ArraySlice {
@@ -1278,9 +1748,9 @@ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, Expr
             stop,
             step,
         } => {
-            let mut args = vec![lower(value, schema)?];
+            let mut args = vec![lower_scoped(value, schema, globals, scope)?];
             for e in [start, stop, step].into_iter().flatten() {
-                args.push(lower(e, schema)?);
+                args.push(lower_scoped(e, schema, globals, scope)?);
             }
             custom(
                 HailKind::ArraySlice {
@@ -1298,24 +1768,24 @@ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, Expr
             value,
         } => custom(
             HailKind::ArrayReduce(*operation, *filter_missing),
-            vec![lower(value, schema)?],
+            vec![lower_scoped(value, schema, globals, scope)?],
             dtype,
         ),
         Expr::GetField { value, name } => custom(
             HailKind::GetField(name.clone()),
-            vec![lower(value, schema)?],
+            vec![lower_scoped(value, schema, globals, scope)?],
             dtype,
         ),
         Expr::Struct { fields } => custom(
             HailKind::Struct(fields.iter().map(|(n, _)| n.clone()).collect()),
             fields
                 .iter()
-                .map(|(_, e)| lower(e, schema))
+                .map(|(_, e)| lower_scoped(e, schema, globals, scope))
                 .collect::<Result<Vec<_>, _>>()?,
             dtype,
         ),
         Expr::Unary { operator, value } => {
-            let child = lower(value, schema)?;
+            let child = lower_scoped(value, schema, globals, scope)?;
             match operator {
                 UnaryOperator::Pos => child,
                 UnaryOperator::Neg => Arc::new(NegativeExpr::new(child)),
@@ -1327,10 +1797,10 @@ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, Expr
             left,
             right,
         } => {
-            let lt = left.dtype(schema)?;
-            let rt = right.dtype(schema)?;
-            let mut l = lower(left, schema)?;
-            let mut r = lower(right, schema)?;
+            let lt = left.dtype_scoped(schema, globals.schema(), scope)?;
+            let rt = right.dtype_scoped(schema, globals.schema(), scope)?;
+            let mut l = lower_scoped(left, schema, globals, scope)?;
+            let mut r = lower_scoped(right, schema, globals, scope)?;
             match operator {
                 BinaryOperator::And | BinaryOperator::Or => binary(
                     l,
@@ -1380,9 +1850,17 @@ pub fn lower(expr: &Expr, schema: &Schema) -> Result<Arc<dyn PhysicalExpr>, Expr
             consequent,
             alternate,
         } => {
-            let cond = lower(condition, schema)?;
-            let yes = lower_cast(lower(consequent, schema)?, schema, &dtype)?;
-            let no = lower_cast(lower(alternate, schema)?, schema, &dtype)?;
+            let cond = lower_scoped(condition, schema, globals, scope)?;
+            let yes = lower_cast(
+                lower_scoped(consequent, schema, globals, scope)?,
+                schema,
+                &dtype,
+            )?;
+            let no = lower_cast(
+                lower_scoped(alternate, schema, globals, scope)?,
+                schema,
+                &dtype,
+            )?;
             let missing: Arc<dyn PhysicalExpr> =
                 Arc::new(Literal::new(ScalarValue::try_from(&dtype)?));
             let is_null: Arc<dyn PhysicalExpr> = Arc::new(IsNullExpr::new(cond.clone()));
@@ -1403,10 +1881,22 @@ pub struct CompiledProjection {
 }
 impl CompiledProjection {
     pub fn new(source: &Schema, fields: &[(String, Expr)]) -> Result<Self, ExprError> {
-        let schema = validate_projection(source, fields)?;
+        let globals = RecordBatch::try_new_with_options(
+            Arc::new(Schema::empty()),
+            vec![],
+            &RecordBatchOptions::new().with_row_count(Some(1)),
+        )?;
+        Self::new_with_globals(source, fields, &globals)
+    }
+    pub fn new_with_globals(
+        source: &Schema,
+        fields: &[(String, Expr)],
+        globals: &RecordBatch,
+    ) -> Result<Self, ExprError> {
+        let schema = validate_projection_with_globals(source, globals.schema_ref(), fields)?;
         let expressions = fields
             .iter()
-            .map(|(_, e)| lower(e, source))
+            .map(|(_, e)| lower_with_globals(e, source, globals))
             .collect::<Result<Vec<_>, _>>()?;
         Ok(Self {
             source_schema: Arc::new(source.clone()),
@@ -1611,6 +2101,44 @@ mod tests {
                 .project_batch(&bad)
                 .is_err()
         );
+    }
+
+    #[test]
+    fn flatten_skips_hidden_values_under_null_inner_lists() {
+        // Arrow permits nonempty value spans under null lists. Those values
+        // must not appear when Hail skips a missing callback result.
+        let inner = ListArray::new(
+            Arc::new(Field::new("item", DataType::Int32, true)),
+            OffsetBuffer::new(vec![0_i32, 1, 3, 4].into()),
+            Arc::new(Int32Array::from(vec![Some(1), Some(99), Some(98), None])),
+            Some(NullBuffer::from(vec![true, false, true])),
+        );
+        let outer = ListArray::new(
+            Arc::new(Field::new("item", inner.data_type().clone(), true)),
+            OffsetBuffer::new(vec![0_i32, 1, 3].into()),
+            Arc::new(inner),
+            None,
+        );
+        // Also exercise a nonzero outer offset, as can occur in DF batches.
+        let outer = outer.slice(1, 1);
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "a",
+            outer.data_type().clone(),
+            true,
+        )]));
+        let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(outer)]).unwrap();
+        let expression = Expr::ArrayFlatten {
+            value: Box::new(Expr::Column { name: "a".into() }),
+        };
+        let result = lower(&expression, &schema)
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(1)
+            .unwrap();
+        let list = result.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(list.value_length(0), 1);
+        assert!(list.value(0).is_null(0));
     }
 
     #[test]

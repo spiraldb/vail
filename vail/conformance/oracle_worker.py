@@ -109,7 +109,7 @@ def execute_fixture(hl, fixture):
                 continue
             if op == "annotate_globals":
                 table = tables[step["table"]]
-                fields = {name: table.globals[name] for name in step["fields"]}
+                fields = {"global_" + name: table.globals[name] for name in step["fields"]}
                 tables[step["result"]] = table.annotate(**fields)
                 outcomes.append({"id": step_id, "value": {"key": list(tables[step["result"]].key)}})
                 continue

@@ -9,11 +9,15 @@ from __future__ import annotations
 import builtins
 from collections.abc import Mapping
 import json
+import os
 import re
 
 from ._native import NativeSession
 from .expressions import (
     Expression,
+    ExpressionException,
+    _external_globals,
+    _global_bindings,
     Field as _Field,
     StructExpression as _StructExpression,
     array,
@@ -42,6 +46,7 @@ from .types import (
     encode_value,
     infer_type,
     tarray,
+    tset,
     tbool,
     tfloat,
     tfloat32,
@@ -124,6 +129,11 @@ def _check_value(value, dtype, name):
             raise TypeError(f"field {name!r} requires {dtype}")
         for item in value:
             _check_value(item, dtype.element_type, name)
+    elif isinstance(dtype, tset):
+        if not isinstance(value, (set, frozenset)):
+            raise TypeError(f"field {name!r} requires {dtype}")
+        for item in value:
+            _check_value(item, dtype.element_type, name)
     elif isinstance(dtype, tstruct):
         if not isinstance(value, Mapping):
             raise TypeError(f"field {name!r} requires {dtype}")
@@ -161,6 +171,9 @@ class Table:
         object.__setattr__(self, "_native", native)
         object.__setattr__(self, "_schema", schema)
         object.__setattr__(self, "_keys", tuple(keys))
+        object.__setattr__(self, "_global_schema", tstruct(**{
+            name: type_from_wire(ty) for name, ty in json.loads(native.global_schema_json())
+        }))
 
     def __setattr__(self, name, value):
         raise TypeError("Table is immutable")
@@ -172,8 +185,8 @@ class Table:
     def parallelize(cls, rows, schema=None, key=None, n_partitions=None, *, partial_type=None, globals=None):
         if schema is not None and partial_type is not None:
             raise ValueError("define either schema or partial type, not both.")
-        if partial_type is not None or globals is not None:
-            raise NotImplementedError("partial_type and globals are not implemented in this initial slice")
+        if partial_type is not None:
+            raise NotImplementedError("partial_type is not implemented in this initial slice")
         rows = list(rows)
         if any(not isinstance(row, Mapping) for row in rows):
             raise TypeError("rows must be dictionaries or Struct values")
@@ -202,6 +215,8 @@ class Table:
             n_partitions,
         )
         table = cls(native, schema)
+        if globals is not None:
+            table = table.annotate_globals(**globals)
         if key is not None:
             table = table.key_by(*( [key] if isinstance(key, str) else key ))
         return table
@@ -209,11 +224,13 @@ class Table:
     def __getitem__(self, item):
         if not isinstance(item, builtins.str):
             raise NotImplementedError("keyed lookup is not implemented in this initial slice")
-        return _Field(self, item, self._schema[item])
+        if item in self._schema:
+            return _Field(self, item, self._schema[item])
+        return _Field(self, item, self._global_schema[item], scope="global")
 
     def __getattr__(self, name):
         schema = self.__dict__.get("_schema")
-        if schema is not None and name in schema:
+        if schema is not None and (name in schema or name in self._global_schema):
             return self[name]
         raise AttributeError(name)
 
@@ -236,12 +253,52 @@ class Table:
 
     @property
     def globals(self):
-        return _StructExpression({}, self)
+        return _StructExpression({name: self[name] for name in self._global_schema}, self)
+
+    def index_globals(self):
+        """Return a lazy, unindexed reference to this table's globals."""
+        return _external_globals(self._native.globals_ref(), self._global_schema)
+
+    def _project_globals(self, fields):
+        for name, expr in fields:
+            if not isinstance(name, builtins.str) or not name:
+                raise ValueError("global field names must be non-empty strings")
+            if expr.source is not None and expr.source is not self:
+                raise ExpressionException("expression source mismatch: global belongs to a different Table")
+            if _referenced_columns(expr.to_ir()):
+                raise ExpressionException("global expressions cannot reference table rows")
+        native = self._native.project_globals_json(json.dumps([[name, expr.to_ir()] for name, expr in fields]),
+                                                   _global_bindings(expr for _, expr in fields))
+        return Table(native, self._schema, self._keys)
+
+    def annotate_globals(self, **named_exprs):
+        expressions = {name: as_expr(value) for name, value in named_exprs.items()}
+        fields = [(name, expressions.pop(name, self[name])) for name in self._global_schema]
+        return self._project_globals(fields + list(expressions.items()))
+
+    def select_globals(self, *exprs, **named_exprs):
+        fields = []
+        for value in exprs:
+            expr = self[value] if isinstance(value, builtins.str) else value
+            if not isinstance(expr, Expression) or expr._selection_name is None:
+                raise ValueError("positional selection requires a global field reference")
+            fields.append((expr._selection_name, expr))
+        fields.extend((name, as_expr(value)) for name, value in named_exprs.items())
+        return self._project_globals(fields)
+
+    def transmute_globals(self, **named_exprs):
+        expressions = {name: as_expr(value) for name, value in named_exprs.items()}
+        referenced = set()
+        for expr in expressions.values():
+            referenced.update(_referenced_columns(expr.to_ir(), "global"))
+        fields = [(name, expressions.pop(name, self[name])) for name in self._global_schema
+                  if name not in referenced or name in expressions]
+        return self._project_globals(fields + list(expressions.items()))
 
     def _field_name(self, field):
         if isinstance(field, Expression):
             if field.source is not self:
-                raise ValueError("expression source mismatch: field belongs to a different Table")
+                raise ExpressionException("expression source mismatch: field belongs to a different Table")
             if field._selection_name is None:
                 raise ValueError("positional selection requires a source field reference")
             return field._selection_name
@@ -251,9 +308,17 @@ class Table:
             raise KeyError(field)
         return field
 
+    def write(self, output, overwrite=False, stage_locally=False, _codec_spec=None):
+        """Atomically publish a local Viceberg snapshot; retain old generations on overwrite."""
+        if not isinstance(overwrite, builtins.bool) or not isinstance(stage_locally, builtins.bool):
+            raise TypeError("overwrite and stage_locally must be bool")
+        if stage_locally or _codec_spec is not None:
+            raise NotImplementedError("staging and custom codecs are not supported")
+        self._native.write(os.fspath(output), overwrite)
+
     def _project(self, projections, keys=None):
         projections_json = json.dumps([[name, expr.to_ir()] for name, expr in projections])
-        native = self._native.project_json(projections_json)
+        native = self._native.project_json(projections_json, _global_bindings(expr for _, expr in projections))
         schema = {
             name: field_type
             for name, field_type in (
@@ -275,7 +340,7 @@ class Table:
         for name, value in named_exprs.items():
             expr = as_expr(value)
             if expr.source is not None and expr.source is not self:
-                raise ValueError("expression source mismatch: field belongs to a different Table")
+                raise ExpressionException("expression source mismatch: field belongs to a different Table")
             expressions[name] = expr
         projections = []
         for name in self._schema:
@@ -302,7 +367,7 @@ class Table:
                 raise ValueError(f"cannot overwrite key field {name!r} with select")
             expr = as_expr(value)
             if expr.source is not None and expr.source is not self:
-                raise ValueError("expression source mismatch: field belongs to a different Table")
+                raise ExpressionException("expression source mismatch: field belongs to a different Table")
             named.append((name, expr))
         names = list(self._keys) + [name for name, _ in positional] + [name for name, _ in named]
         if len(set(names)) != len(names):
@@ -323,7 +388,7 @@ class Table:
                 raise ValueError(f"cannot overwrite key field {name!r} with transmute")
             expr = as_expr(value)
             if expr.source is not None and expr.source is not self:
-                raise ValueError("expression source mismatch: field belongs to a different Table")
+                raise ExpressionException("expression source mismatch: field belongs to a different Table")
             expressions[name] = expr
 
         referenced = set()
@@ -345,7 +410,7 @@ class Table:
         names = [self._field_name(key) for key in keys]
         if len(set(names)) != len(names):
             raise ValueError("duplicate key fields")
-        native = self._native.order_by([(name, False) for name in names])
+        native = self._native.key_by(names)
         return Table(native, self._schema, names)
 
     def order_by(self, *exprs):
@@ -360,10 +425,10 @@ class Table:
             raise TypeError("keep must be a bool")
         expr = as_expr(expr)
         if expr.source is not None and expr.source is not self:
-            raise ValueError("expression source mismatch: field belongs to a different Table")
+            raise ExpressionException("expression source mismatch: field belongs to a different Table")
         if expr.dtype != tbool:
             raise TypeError(f"filter predicate must be bool, got {expr.dtype}")
-        native = self._native.filter_json(json.dumps(expr.to_ir()), keep)
+        native = self._native.filter_json(json.dumps(expr.to_ir()), keep, _global_bindings([expr]))
         return Table(native, self._schema, self._keys)
 
     def head(self, n):
@@ -385,6 +450,24 @@ class Table:
             Struct(**{name: decode_value(value, self._schema[name]) for name, value in zip(names, row)})
             for row in json.loads(self._native.collect_json())
         ]
+
+    def _same(self, other, tolerance=1e-6, absolute=False, reorder_fields=False):
+        """Compare schemas, keys and rows using Hail's value similarity rules.
+
+        This is an action over both lazy tables. Duplicate-key values retain
+        their sequence and multiplicity; field reordering applies only at the
+        top level, for both row fields and globals.
+        """
+        if not isinstance(other, Table):
+            raise TypeError("other must be a Table")
+        if tolerance is not None and not isinstance(tolerance, (builtins.int, builtins.float)):
+            raise TypeError("tolerance must be numeric or None")
+        if type(absolute) is not builtins.bool or type(reorder_fields) is not builtins.bool:
+            raise TypeError("absolute and reorder_fields must be bool")
+        same, diagnostic = self._native.same(other._native, tolerance, absolute, reorder_fields)
+        if diagnostic is not None:
+            print(diagnostic)
+        return same
 
     def count(self):
         return self._native.count()
@@ -408,15 +491,39 @@ def range_table(n, n_partitions=None):
 from . import utils  # noqa: E402
 
 
-def _referenced_columns(node):
+def _referenced_columns(node, scope="column"):
     if isinstance(node, dict):
-        result = {node["name"]} if node.get("op") == "column" else set()
+        # Literal payloads are user data, even if they contain keys named op/name.
+        if node.get("op") == "literal":
+            return set()
+        result = {node["name"]} if node.get("op") == scope else set()
         for value in node.values():
-            result.update(_referenced_columns(value))
+            result.update(_referenced_columns(value, scope))
         return result
     if isinstance(node, list):
         result = set()
         for value in node:
-            result.update(_referenced_columns(value))
+            result.update(_referenced_columns(value, scope))
         return result
     return set()
+
+
+def read_table(path, *, _intervals=None, _filter_intervals=False, _n_partitions=None,
+               _assert_type=None, _load_refs=True, _create_row_uids=False):
+    """Read a local Viceberg snapshot in certified file order, without sorting."""
+    if (_intervals is not None or _filter_intervals or _n_partitions is not None
+            or _assert_type is not None or not _load_refs or _create_row_uids):
+        raise NotImplementedError("custom read_table options are not yet supported")
+    native, keys = _native_session().read_table(os.fspath(path))
+    schema = tstruct(**{name: type_from_wire(dtype) for name, dtype in json.loads(native.schema_json())})
+    return Table(native, schema, tuple(keys))
+
+
+def eval(expression):
+    """Evaluate an unindexed expression, including a table's globals."""
+    expr = as_expr(expression)
+    if _referenced_columns(expr.to_ir()):
+        raise ValueError("eval cannot evaluate row-indexed expressions")
+    table = expr.source if expr.source is not None else utils.range_table(0)
+    value = json.loads(table._native.eval_global_json(json.dumps(expr.to_ir()), _global_bindings([expr])))
+    return decode_value(value, expr.dtype)

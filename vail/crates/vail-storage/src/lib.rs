@@ -5,6 +5,8 @@
 //! Vortex file writing and reading are delegated to the pinned Iceberg PR.
 
 pub mod fragment_index;
+pub mod globals;
+pub mod local_table;
 
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
@@ -38,6 +40,10 @@ const PROP_INDEX_SHA256: &str = "vail.index.sha256";
 
 #[derive(Debug, thiserror::Error)]
 pub enum StorageError {
+    #[error("input stream failed: {0}")]
+    Input(String),
+    #[error("input execution failed: {0}")]
+    Execution(#[source] Box<dyn std::error::Error + Send + Sync>),
     #[error("unsupported storage state: {0}")]
     Unsupported(String),
     #[error("invalid Vail descriptor or snapshot: {0}")]
@@ -92,6 +98,10 @@ pub struct SnapshotDescriptor {
     pub live_files_sha256: String,
     /// Optional proof, never inferred from Iceberg's per-file sort ID.
     pub ordered_runs: Option<Vec<OrderedRun>>,
+    /// Explicit arrival order for unkeyed multi-file snapshots, protected by the
+    /// descriptor hash. Iceberg manifest enumeration is not an ordering proof.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub file_sequence: Option<Vec<String>>,
     #[serde(default)]
     pub index_path: Option<String>,
     #[serde(default)]
@@ -140,6 +150,34 @@ async fn write_initial_files(
     semantics: VailSemantics,
     key_fields: Option<Vec<KeyField>>,
 ) -> Result<Table> {
+    write_initial_file_stream(
+        catalog,
+        table,
+        futures::stream::iter(files.into_iter().map(Ok)).boxed(),
+        semantics,
+        key_fields,
+    )
+    .await
+}
+
+/// Consume and close one bounded file buffer before polling the next. Only file
+/// identities, intervals and Iceberg metadata accumulate across the snapshot.
+async fn write_initial_file_stream(
+    catalog: &dyn Catalog,
+    table: &Table,
+    mut files: futures::stream::BoxStream<'_, Result<Vec<RecordBatch>>>,
+    semantics: VailSemantics,
+    key_fields: Option<Vec<KeyField>>,
+) -> Result<Table> {
+    if let Some(fields) = &key_fields {
+        if semantics.comparator_version != PRIMITIVE_COMPARATOR_V1
+            || fields.iter().map(|f| f.field_id).collect::<Vec<_>>() != semantics.key_field_ids
+        {
+            return Err(StorageError::Invalid(
+                "ordered writer key binding differs from semantics".into(),
+            ));
+        }
+    }
     if table.metadata().current_snapshot().is_some() {
         return Err(StorageError::Unsupported(
             "initial write requires a table without a snapshot".into(),
@@ -183,35 +221,6 @@ async fn write_initial_files(
     }
 
     let arrow_schema = schema_to_arrow_schema(table.metadata().current_schema())?;
-    for batch in files.iter().flatten() {
-        if batch.num_columns() != arrow_schema.fields().len() {
-            return Err(StorageError::Invalid(
-                "batch column count differs from table schema".into(),
-            ));
-        }
-        for ((column, input_field), field) in batch
-            .columns()
-            .iter()
-            .zip(batch.schema().fields().iter())
-            .zip(arrow_schema.fields())
-        {
-            if input_field.name() != field.name()
-                || input_field.is_nullable() != field.is_nullable()
-                || column.data_type() != field.data_type()
-            {
-                return Err(StorageError::Invalid(format!(
-                    "batch field name, requiredness, or type differs from Iceberg field {}",
-                    field.name()
-                )));
-            }
-            if !field.is_nullable() && column.null_count() != 0 {
-                return Err(StorageError::Invalid(format!(
-                    "required Iceberg field {} contains nulls",
-                    field.name()
-                )));
-            }
-        }
-    }
 
     let snapshot_id = reserve_snapshot_id(table);
     let mut data_files = Vec::new();
@@ -225,10 +234,40 @@ async fn write_initial_files(
         live_files_sha256: "0".repeat(64),
         key_fields,
     });
-    for batches in files
-        .into_iter()
-        .filter(|file| file.iter().any(|batch| batch.num_rows() > 0))
-    {
+    while let Some(batches) = files.try_next().await? {
+        if !batches.iter().any(|b| b.num_rows() > 0) {
+            continue;
+        }
+        for batch in &batches {
+            if batch.num_columns() != arrow_schema.fields().len() {
+                return Err(StorageError::Invalid(
+                    "batch column count differs from table schema".into(),
+                ));
+            }
+            for ((column, input_field), field) in batch
+                .columns()
+                .iter()
+                .zip(batch.schema().fields().iter())
+                .zip(arrow_schema.fields())
+            {
+                if input_field.name() != field.name()
+                    || input_field.is_nullable() != field.is_nullable()
+                    || column.data_type() != field.data_type()
+                {
+                    return Err(StorageError::Invalid(format!(
+                        "batch field name, requiredness, or type differs from Iceberg field {}",
+                        field.name()
+                    )));
+                }
+                if !field.is_nullable() && column.null_count() != 0 {
+                    return Err(StorageError::Invalid(format!(
+                        "required Iceberg field {} contains nulls",
+                        field.name()
+                    )));
+                }
+            }
+        }
+
         let endpoints = if let Some(binding) = &binding {
             let field_ids = table
                 .metadata()
@@ -244,7 +283,11 @@ async fn write_initial_files(
         };
         let data_path = local_path(table.metadata().location())?
             .join("data")
-            .join(format!("{snapshot_id}-{}.vortex", Uuid::now_v7()));
+            .join(format!(
+                "{snapshot_id}-{:020}-{}.vortex",
+                identities.len(),
+                Uuid::now_v7()
+            ));
         std::fs::create_dir_all(
             data_path
                 .parent()
@@ -311,6 +354,11 @@ async fn write_initial_files(
         write_immutable(&path, &bytes)?;
         index_pointer = Some((file_uri(&path)?, sha256_hex(&bytes)));
     }
+    let file_sequence = if index_pointer.is_none() && semantics.key_field_ids.is_empty() {
+        Some(identities.iter().map(|f| f.path.clone()).collect())
+    } else {
+        None
+    };
     let descriptor = SnapshotDescriptor {
         format_version: FORMAT_VERSION,
         table_uuid: table.metadata().uuid(),
@@ -320,6 +368,7 @@ async fn write_initial_files(
         live_files_sha256,
         files: identities,
         ordered_runs: None,
+        file_sequence,
         index_path: index_pointer.as_ref().map(|(path, _)| path.clone()),
         index_sha256: index_pointer.as_ref().map(|(_, hash)| hash.clone()),
     };
@@ -358,8 +407,7 @@ async fn write_initial_files(
 
 /// Read a pinned Iceberg snapshot by planning its actual manifest entries.
 /// The descriptor and every data file are checked before rows are returned.
-/// This reader never sorts rows; the current zero-or-one-file slice preserves
-/// the file's physical sequence under pinned Vortex 0.86.1.
+/// This reader follows the certified fragment index and never sorts rows.
 pub async fn read_snapshot(
     table: &Table,
     snapshot_id: i64,
@@ -377,11 +425,8 @@ pub async fn read_snapshot_range(
     read_snapshot_with_range(table, snapshot_id, Some(query)).await
 }
 
-async fn read_snapshot_with_range(
-    table: &Table,
-    snapshot_id: i64,
-    query: Option<&QueryInterval>,
-) -> Result<(Vec<RecordBatch>, SnapshotDescriptor)> {
+/// Inspect immutable snapshot semantics without opening any data files.
+pub fn snapshot_descriptor(table: &Table, snapshot_id: i64) -> Result<SnapshotDescriptor> {
     let snapshot = table
         .metadata()
         .snapshot_by_id(snapshot_id)
@@ -422,6 +467,46 @@ async fn read_snapshot_with_range(
             "legacy ordered runs are not supported".into(),
         ));
     }
+    if let Some(sequence) = &descriptor.file_sequence {
+        if !descriptor.semantics.key_field_ids.is_empty()
+            || descriptor.index_path.is_some()
+            || sequence
+                != &descriptor
+                    .files
+                    .iter()
+                    .map(|f| f.path.clone())
+                    .collect::<Vec<_>>()
+        {
+            return Err(StorageError::Invalid(
+                "invalid unkeyed file sequence".into(),
+            ));
+        }
+    }
+    Ok(descriptor)
+}
+
+async fn read_snapshot_with_range(
+    table: &Table,
+    snapshot_id: i64,
+    query: Option<&QueryInterval>,
+) -> Result<(Vec<RecordBatch>, SnapshotDescriptor)> {
+    let (stream, descriptor) = stream_snapshot(table, snapshot_id, query).await?;
+    Ok((stream.try_collect().await?, descriptor))
+}
+
+/// Plan metadata now; open and verify each data file only when the stream pulls it.
+/// Dropping the stream (for example after Head) leaves later files unopened.
+pub async fn stream_snapshot(
+    table: &Table,
+    snapshot_id: i64,
+    query: Option<&QueryInterval>,
+) -> Result<(
+    futures::stream::BoxStream<'static, Result<RecordBatch>>,
+    SnapshotDescriptor,
+)> {
+    let descriptor = snapshot_descriptor(table, snapshot_id)?;
+    let snapshot = table.metadata().snapshot_by_id(snapshot_id).unwrap();
+    let props = &snapshot.summary().additional_properties;
     let snapshot_schema = snapshot.schema(table.metadata())?;
     let mut key_ids = HashSet::new();
     for id in &descriptor.semantics.key_field_ids {
@@ -486,7 +571,12 @@ async fn read_snapshot_with_range(
             }
             Some(stored)
         }
-        (None, None) if descriptor.files.len() <= 1 && query.is_none() => None,
+        (None, None)
+            if query.is_none()
+                && (descriptor.files.len() <= 1 || descriptor.file_sequence.is_some()) =>
+        {
+            None
+        }
         (None, None) => {
             return Err(StorageError::Invalid(
                 "ordered fragment index missing".into(),
@@ -591,16 +681,7 @@ async fn read_snapshot_with_range(
                 "non-Vortex, deleted, split, or mismatched data file".into(),
             ));
         }
-        let path = local_path(&identity.path)?;
-        if std::fs::metadata(&path)?.len() != task.file_size_in_bytes() {
-            return Err(StorageError::Invalid("Vortex file size mismatch".into()));
-        }
-        if sha256_file(&path)? != identity.sha256 {
-            return Err(StorageError::Invalid(
-                "Vortex file checksum mismatch".into(),
-            ));
-        }
-        checked_tasks.push(task);
+        checked_tasks.push((task, (**identity).clone()));
     }
     // All unselected live files still need their task identity checked against
     // the index; only their bytes are spared by a range query.
@@ -618,45 +699,45 @@ async fn read_snapshot_with_range(
             }
         }
     }
-    let checked_row_count: u64 = checked_tasks
+    let table = table.clone();
+    let query = query.cloned();
+    let schema = schema_to_arrow_schema(&snapshot_schema)?;
+    let field_ids = snapshot_schema
+        .as_struct()
+        .fields()
         .iter()
-        .map(|task| task.record_count().unwrap_or(0))
-        .sum();
-    let tasks = futures::stream::iter(checked_tasks.into_iter().map(Ok)).boxed();
-    let result = table
-        .reader_builder()
-        .with_data_file_concurrency_limit(1)
-        .build()
-        .read(tasks)?
-        .stream()
-        .try_collect::<Vec<_>>()
-        .await?;
-    let expected_rows: u64 = checked_row_count;
-    let decoded_rows: u64 = result.iter().map(|batch| batch.num_rows() as u64).sum();
-    if decoded_rows != expected_rows {
-        return Err(StorageError::Invalid(
-            "decoded Vortex row count mismatch".into(),
-        ));
+        .map(|f| f.id)
+        .collect::<Vec<_>>();
+    let stream = async_stream::try_stream! {
+        for (task, identity) in checked_tasks {
+            let path = local_path(&identity.path)?;
+            if std::fs::metadata(&path)?.len() != task.file_size_in_bytes() {
+                Err(StorageError::Invalid("Vortex file size mismatch".into()))?;
+            }
+            if sha256_file(&path)? != identity.sha256 {
+                Err(StorageError::Invalid("Vortex file checksum mismatch".into()))?;
+            }
+            let tasks = futures::stream::iter(vec![Ok(task)]).boxed();
+            let mut batches = table.reader_builder().with_data_file_concurrency_limit(1)
+                .build().read(tasks)?.stream();
+            let mut decoded_rows = 0u64;
+            while let Some(batch) = batches.try_next().await? {
+                decoded_rows += batch.num_rows() as u64;
+                if decoded_rows > identity.row_count {
+                    Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?;
+                }
+                let batch = if let (Some(index), Some(query)) = (&index, &query) {
+                    filter_batch_range(&batch, &schema, &field_ids, index.binding(), query)?
+                } else { batch };
+                if batch.num_rows() > 0 { yield batch; }
+            }
+            if decoded_rows != identity.row_count {
+                Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?;
+            }
+        }
     }
-    let result = if let (Some(index), Some(query)) = (&index, query) {
-        let schema = schema_to_arrow_schema(&snapshot_schema)?;
-        let field_ids = snapshot_schema
-            .as_struct()
-            .fields()
-            .iter()
-            .map(|field| field.id)
-            .collect::<Vec<_>>();
-        result
-            .into_iter()
-            .map(|batch| filter_batch_range(&batch, &schema, &field_ids, index.binding(), query))
-            .collect::<Result<Vec<_>>>()?
-            .into_iter()
-            .filter(|batch| batch.num_rows() > 0)
-            .collect()
-    } else {
-        result
-    };
-    Ok((result, descriptor))
+    .boxed();
+    Ok((stream, descriptor))
 }
 
 pub async fn read_current(table: &Table) -> Result<(Vec<RecordBatch>, SnapshotDescriptor)> {

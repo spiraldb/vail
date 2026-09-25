@@ -10,19 +10,62 @@ use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
     RecordBatch, RecordBatchOptions, StringArray, StringViewArray, StructArray,
 };
-use arrow_schema::{DataType, Field, Schema, SchemaRef};
-use arrow_select::filter::filter_record_batch;
+use arrow_schema::{DataType, Field, Schema};
+use futures::TryStreamExt;
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 use serde_json::Value;
 use tokio::runtime::{Builder, Runtime};
-use vail_execution::expressions::{
-    CompiledProjection, Expr, PrimitiveType, Type, lower, validate_projection,
-};
-use vail_execution::{OrderKey, OrderRequirement, OrderedSession};
+use vail_execution::expressions::{Expr, Type};
+use vail_table::{TableError, TableIR, TableRef};
 
 fn value_error(error: impl std::fmt::Display) -> PyErr {
     PyValueError::new_err(error.to_string())
+}
+
+fn table_error(error: TableError) -> PyErr {
+    use pyo3::exceptions::PyNotImplementedError;
+    use vail_storage::StorageError;
+    let mut current: &(dyn std::error::Error + 'static) = &error;
+    loop {
+        if let Some(table) = current.downcast_ref::<TableError>() {
+            match table {
+                TableError::Storage(storage) => {
+                    current = storage;
+                    continue;
+                }
+                TableError::Invalid(_) | TableError::Arrow(_) => return value_error(table),
+                TableError::Expression(expr) => {
+                    return match expr {
+                        vail_execution::expressions::ExprError::DataFusion(_) => {
+                            PyRuntimeError::new_err(expr.to_string())
+                        }
+                        _ => value_error(expr),
+                    };
+                }
+                _ => (),
+            }
+        }
+        if let Some(storage) = current.downcast_ref::<StorageError>() {
+            match storage {
+                StorageError::Io(io) => {
+                    return std::io::Error::new(io.kind(), io.to_string()).into();
+                }
+                StorageError::Invalid(_) | StorageError::Json(_) => return value_error(storage),
+                StorageError::Unsupported(_) => {
+                    return PyNotImplementedError::new_err(storage.to_string());
+                }
+                _ => (),
+            }
+        }
+        if let Some(io) = current.downcast_ref::<std::io::Error>() {
+            return std::io::Error::new(io.kind(), io.to_string()).into();
+        }
+        match current.source() {
+            Some(source) => current = source,
+            None => return PyRuntimeError::new_err(error.to_string()),
+        }
+    }
 }
 
 #[pyclass]
@@ -42,6 +85,20 @@ impl NativeSession {
         Ok(Self {
             runtime: Arc::new(runtime),
         })
+    }
+
+    fn read_table(&self, py: Python<'_>, path: String) -> PyResult<(NativeTable, Vec<String>)> {
+        let ir = py
+            .detach(|| self.runtime.block_on(TableIR::read(&path)))
+            .map_err(table_error)?;
+        let keys = ir.keys().to_vec();
+        Ok((
+            NativeTable {
+                runtime: self.runtime.clone(),
+                ir,
+            },
+            keys,
+        ))
     }
 
     fn parallelize(
@@ -71,59 +128,27 @@ impl NativeSession {
         if rows.iter().any(|row| row.len() != fields.len()) {
             return Err(value_error("row width does not match schema"));
         }
-        let mut partitions = Vec::with_capacity(n_partitions);
-        for partition in 0..n_partitions {
-            let start = rows.len() * partition / n_partitions;
-            let end = rows.len() * (partition + 1) / n_partitions;
-            let part = &rows[start..end];
-            let columns = schema
-                .fields()
-                .iter()
-                .enumerate()
-                .map(|(index, field)| build_column(field.data_type(), part, index))
-                .collect::<PyResult<Vec<_>>>()?;
-            let options = RecordBatchOptions::new().with_row_count(Some(part.len()));
-            let batch = RecordBatch::try_new_with_options(schema.clone(), columns, &options)
-                .map_err(value_error)?;
-            partitions.push(vec![batch]);
-        }
+        let columns = schema
+            .fields()
+            .iter()
+            .enumerate()
+            .map(|(index, field)| build_column(field.data_type(), &rows, index))
+            .collect::<PyResult<Vec<_>>>()?;
+        let options = RecordBatchOptions::new().with_row_count(Some(rows.len()));
+        let batch =
+            RecordBatch::try_new_with_options(schema, columns, &options).map_err(value_error)?;
+        let ir = TableIR::parallelize(batch, n_partitions).map_err(table_error)?;
         Ok(NativeTable {
             runtime: self.runtime.clone(),
-            source_schema: schema.clone(),
-            schema,
-            partitions: Arc::new(partitions),
-            operations: Vec::new(),
-            row_count: Some(rows.len()),
+            ir,
         })
     }
 
     fn range_table(&self, n: usize, n_partitions: usize) -> PyResult<NativeTable> {
-        if n_partitions == 0 {
-            return Err(value_error("n_partitions must be positive"));
-        }
-        if n > i32::MAX as usize {
-            return Err(value_error("range_table supports n up to 2**31 - 1"));
-        }
-        let effective = n.min(n_partitions).max(1);
-        let schema = Arc::new(Schema::new(vec![Field::new("idx", DataType::Int32, false)]));
-        let mut partitions = Vec::with_capacity(effective);
-        let mut start = 0;
-        for partition in 0..effective {
-            let length = n / effective + usize::from(partition < n % effective);
-            let end = start + length;
-            let values = Int32Array::from_iter_values((start..end).map(|idx| idx as i32));
-            let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(values)])
-                .map_err(value_error)?;
-            partitions.push(vec![batch]);
-            start = end;
-        }
+        let ir = TableIR::range(n, n_partitions).map_err(table_error)?;
         Ok(NativeTable {
             runtime: self.runtime.clone(),
-            source_schema: schema.clone(),
-            schema,
-            partitions: Arc::new(partitions),
-            operations: Vec::new(),
-            row_count: Some(n),
+            ir,
         })
     }
 }
@@ -208,7 +233,17 @@ fn append_value(builder: &mut dyn ArrayBuilder, dtype: &DataType, value: &Value)
             if value.is_null() {
                 builder.append(false);
             } else {
-                for element in value.as_array().ok_or_else(invalid)? {
+                let canonical;
+                let elements = if let Type::Set { set } =
+                    Type::from_arrow(dtype).map_err(value_error)?
+                {
+                    canonical = vail_execution::expressions::canonical_set_elements(value, &set)
+                        .map_err(value_error)?;
+                    &canonical
+                } else {
+                    value.as_array().ok_or_else(invalid)?
+                };
+                for element in elements {
                     append_value(builder.values().as_mut(), field.data_type(), element)?;
                 }
                 builder.append(true);
@@ -219,274 +254,246 @@ fn append_value(builder: &mut dyn ArrayBuilder, dtype: &DataType, value: &Value)
     Ok(())
 }
 
-#[derive(Clone)]
-enum Operation {
-    Order(Vec<(String, bool)>),
-    Head(usize),
-    Tail(usize),
-    Filter(Expr, bool),
-    Project(Vec<(String, Expr)>),
+/// A native, immutable reference to a singleton IR. It owns no table row source.
+#[pyclass(frozen)]
+struct NativeGlobals {
+    ir: vail_table::globals::GlobalsRef,
+}
+
+fn global_bindings(
+    references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
+) -> PyResult<vail_table::globals::GlobalBindings> {
+    let mut bindings = vail_table::globals::GlobalBindings::new();
+    for (name, target) in references.unwrap_or_default() {
+        if bindings.insert(name, target.ir.clone()).is_some() {
+            return Err(value_error("duplicate external global binding"));
+        }
+    }
+    Ok(bindings)
 }
 
 #[pyclass(skip_from_py_object)]
 #[derive(Clone)]
 struct NativeTable {
     runtime: Arc<Runtime>,
-    schema: SchemaRef,
-    source_schema: SchemaRef,
-    partitions: Arc<Vec<Vec<RecordBatch>>>,
-    operations: Vec<Operation>,
-    row_count: Option<usize>,
+    ir: TableRef,
 }
 
 #[pymethods]
 impl NativeTable {
-    fn filter_json(&self, expression_json: &str, keep: bool) -> PyResult<Self> {
-        let expression: Expr = serde_json::from_str(expression_json).map_err(value_error)?;
-        let dtype = expression
-            .dtype(self.schema.as_ref())
-            .map_err(value_error)?;
-        if dtype != Type::Primitive(PrimitiveType::Bool) {
-            return Err(value_error(format!(
-                "filter predicate must be bool, got {dtype:?}"
-            )));
-        }
-        let mut next = self.clone();
-        next.operations.push(Operation::Filter(expression, keep));
-        next.row_count = None;
-        Ok(next)
+    #[pyo3(signature = (other, tolerance, absolute, reorder_fields))]
+    fn same(
+        &self,
+        py: Python<'_>,
+        other: &NativeTable,
+        tolerance: Option<f64>,
+        absolute: bool,
+        reorder_fields: bool,
+    ) -> PyResult<(bool, Option<String>)> {
+        let result = py
+            .detach(|| {
+                self.runtime.block_on(self.ir.same(
+                    &other.ir,
+                    vail_table::comparison::SameOptions {
+                        tolerance,
+                        absolute,
+                        reorder_fields,
+                    },
+                ))
+            })
+            .map_err(table_error)?;
+        Ok((result.is_same, result.diagnostic))
     }
-
-    fn project_json(&self, projections_json: &str) -> PyResult<Self> {
+    fn write(&self, py: Python<'_>, path: String, overwrite: bool) -> PyResult<()> {
+        py.detach(|| self.runtime.block_on(self.ir.write(&path, overwrite)))
+            .map_err(table_error)
+    }
+    #[pyo3(signature = (expression_json, keep, references=None))]
+    fn filter_json(
+        &self,
+        expression_json: &str,
+        keep: bool,
+        references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
+    ) -> PyResult<Self> {
+        let expression: Expr = serde_json::from_str(expression_json).map_err(value_error)?;
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self
+                .ir
+                .filter_bound(expression, keep, global_bindings(references)?)
+                .map_err(table_error)?,
+        })
+    }
+    #[pyo3(signature = (projections_json, references=None))]
+    fn project_json(
+        &self,
+        projections_json: &str,
+        references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
+    ) -> PyResult<Self> {
         let projections: Vec<(String, Expr)> =
             serde_json::from_str(projections_json).map_err(value_error)?;
-        let schema =
-            validate_projection(self.schema.as_ref(), &projections).map_err(value_error)?;
-        let mut next = self.clone();
-        next.schema = schema;
-        next.operations.push(Operation::Project(projections));
-        Ok(next)
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self
+                .ir
+                .map_rows_bound(projections, global_bindings(references)?)
+                .map_err(table_error)?,
+        })
     }
-
+    fn global_schema_json(&self) -> PyResult<String> {
+        serde_json::to_string(&self.ir.globals().logical_type().map_err(table_error)?)
+            .map_err(value_error)
+    }
+    fn globals_ref(&self) -> NativeGlobals {
+        NativeGlobals {
+            ir: self.ir.globals().clone(),
+        }
+    }
+    #[pyo3(signature = (fields, references=None))]
+    fn project_globals_json(
+        &self,
+        fields: &str,
+        references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
+    ) -> PyResult<Self> {
+        let fields = serde_json::from_str(fields).map_err(value_error)?;
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self
+                .ir
+                .map_globals_bound(fields, global_bindings(references)?)
+                .map_err(table_error)?,
+        })
+    }
+    #[pyo3(signature = (expression, references=None))]
+    fn eval_global_json(
+        &self,
+        py: Python<'_>,
+        expression: &str,
+        references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
+    ) -> PyResult<String> {
+        let expression = serde_json::from_str(expression).map_err(value_error)?;
+        let globals = self
+            .ir
+            .globals()
+            .map_bound(
+                vec![("value".into(), expression)],
+                global_bindings(references)?,
+            )
+            .map_err(table_error)?;
+        let batch = py
+            .detach(|| self.runtime.block_on(globals.evaluate()))
+            .map_err(table_error)?;
+        serde_json::to_string(&array_value(batch.column(0), 0).map_err(value_error)?)
+            .map_err(value_error)
+    }
     fn schema_json(&self) -> PyResult<String> {
-        let fields = self
-            .schema
-            .fields()
-            .iter()
-            .map(|field| Type::from_arrow(field.data_type()).map(|dtype| (field.name(), dtype)))
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(value_error)?;
-        serde_json::to_string(&fields).map_err(value_error)
+        serde_json::to_string(&self.ir.row_type().map_err(table_error)?).map_err(value_error)
     }
-
+    #[pyo3(signature = (other, tolerance=Some(1e-6), absolute=false, reorder_fields=false))]
+    fn same_physical_plan(
+        &self,
+        other: &Self,
+        tolerance: Option<f64>,
+        absolute: bool,
+        reorder_fields: bool,
+    ) -> PyResult<String> {
+        self.ir
+            .same_physical_plan(
+                &other.ir,
+                vail_table::comparison::SameOptions {
+                    tolerance,
+                    absolute,
+                    reorder_fields,
+                },
+            )
+            .map_err(table_error)
+    }
+    fn physical_plan(&self) -> PyResult<String> {
+        self.ir.physical_plan().map_err(table_error)
+    }
+    fn ir_json(&self) -> PyResult<String> {
+        serde_json::to_string(&self.ir.explain()).map_err(value_error)
+    }
+    fn key_by(&self, keys: Vec<String>) -> PyResult<Self> {
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self.ir.key_by(keys).map_err(table_error)?,
+        })
+    }
     fn order_by(&self, keys: Vec<(String, bool)>) -> PyResult<Self> {
-        for (name, _) in &keys {
-            self.schema.index_of(name).map_err(value_error)?;
-        }
-        let mut next = self.clone();
-        if !keys.is_empty() {
-            next.operations.push(Operation::Order(keys));
-        }
-        Ok(next)
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self.ir.order_by(keys).map_err(table_error)?,
+        })
     }
-
     fn head(&self, n: usize) -> Self {
-        let mut next = self.clone();
-        next.operations.push(Operation::Head(n));
-        next.row_count = next.row_count.map(|count| count.min(n));
-        next
+        Self {
+            runtime: self.runtime.clone(),
+            ir: self.ir.head(n),
+        }
     }
-
     fn tail(&self, n: usize) -> Self {
-        let mut next = self.clone();
-        next.operations.push(Operation::Tail(n));
-        next.row_count = next.row_count.map(|count| count.min(n));
-        next
+        Self {
+            runtime: self.runtime.clone(),
+            ir: self.ir.tail(n),
+        }
     }
-
     fn count(&self, py: Python<'_>) -> PyResult<usize> {
-        match self.row_count {
+        match self.ir.known_count() {
             Some(count) => Ok(count),
             None => self.force_count(py),
         }
     }
-
     fn force_count(&self, py: Python<'_>) -> PyResult<usize> {
-        let table = self.clone();
-        py.detach(move || table.runtime.block_on(table.evaluate_partitions()))
-            .map(|parts| parts.iter().flatten().map(RecordBatch::num_rows).sum())
-            .map_err(PyRuntimeError::new_err)
+        py.detach(|| self.runtime.block_on(self.ir.count()))
+            .map_err(table_error)
     }
-
     fn n_partitions(&self, py: Python<'_>) -> PyResult<usize> {
-        let table = self.clone();
-        py.detach(move || table.runtime.block_on(table.evaluate_partitions()))
-            .map(|parts| parts.len())
-            .map_err(PyRuntimeError::new_err)
+        py.detach(|| self.runtime.block_on(self.ir.n_partitions()))
+            .map_err(table_error)
     }
-
     fn collect_json(&self, py: Python<'_>) -> PyResult<String> {
-        let table = self.clone();
-        py.detach(move || table.runtime.block_on(table.evaluate()))
-            .map_err(PyRuntimeError::new_err)
+        py.detach(|| self.runtime.block_on(self.evaluate()))
     }
-
     fn collect_field_json(&self, py: Python<'_>, name: &str) -> PyResult<String> {
-        let index = self.schema.index_of(name).map_err(value_error)?;
-        let table = self.clone();
-        py.detach(move || table.runtime.block_on(table.evaluate_field(index)))
-            .map_err(PyRuntimeError::new_err)
+        let index = self.ir.schema().index_of(name).map_err(value_error)?;
+        py.detach(|| self.runtime.block_on(self.evaluate_field(index)))
     }
 }
 
 impl NativeTable {
-    async fn evaluate_partitions(&self) -> Result<Vec<Vec<RecordBatch>>, String> {
-        let mut partitions = self.partitions.as_ref().clone();
-        let mut schema = self.source_schema.clone();
-        let session = OrderedSession::default();
-        for operation in &self.operations {
-            match operation {
-                Operation::Order(keys) => {
-                    let requirement = OrderRequirement::new(
-                        keys.iter()
-                            .map(|(name, descending)| {
-                                OrderKey::new(name.clone(), *descending, true)
-                            })
-                            .collect(),
-                    )
-                    .map_err(|e| e.to_string())?;
-                    let batches = session
-                        .collect(&partitions, schema.clone(), &requirement, None)
-                        .await
-                        .map_err(|e| e.to_string())?;
-                    partitions = vec![batches];
-                }
-                Operation::Head(n) => {
-                    let mut remaining = *n;
-                    let mut prefix = Vec::new();
-                    for partition in partitions {
-                        if remaining == 0 {
-                            break;
-                        }
-                        let mut retained = Vec::new();
-                        for batch in partition {
-                            let length = remaining.min(batch.num_rows());
-                            if length > 0 {
-                                retained.push(batch.slice(0, length));
-                                remaining -= length;
-                            }
-                        }
-                        if !retained.is_empty() {
-                            prefix.push(retained);
-                        }
-                    }
-                    partitions = prefix;
-                }
-                Operation::Tail(n) => {
-                    let mut remaining = *n;
-                    let mut suffix = Vec::new();
-                    for partition in partitions.into_iter().rev() {
-                        if remaining == 0 {
-                            break;
-                        }
-                        let mut retained = Vec::new();
-                        for batch in partition.into_iter().rev() {
-                            let length = remaining.min(batch.num_rows());
-                            if length > 0 {
-                                retained.push(batch.slice(batch.num_rows() - length, length));
-                                remaining -= length;
-                            }
-                        }
-                        if !retained.is_empty() {
-                            retained.reverse();
-                            suffix.push(retained);
-                        }
-                    }
-                    suffix.reverse();
-                    partitions = suffix;
-                }
-                Operation::Filter(expression, keep) => {
-                    let compiled = lower(expression, schema.as_ref()).map_err(|e| e.to_string())?;
-                    partitions = partitions
-                        .iter()
-                        .map(|partition| {
-                            partition
-                                .iter()
-                                .map(|batch| {
-                                    let result = compiled
-                                        .evaluate(batch)
-                                        .and_then(|value| value.into_array(batch.num_rows()))
-                                        .map_err(|e| e.to_string())?;
-                                    let values = result
-                                        .as_any()
-                                        .downcast_ref::<BooleanArray>()
-                                        .ok_or_else(|| {
-                                            "compiled filter expression did not produce bool"
-                                                .to_string()
-                                        })?;
-                                    if *keep {
-                                        filter_record_batch(batch, values)
-                                            .map_err(|e| e.to_string())
-                                    } else {
-                                        let mask =
-                                            BooleanArray::from_iter((0..values.len()).map(|row| {
-                                                values.is_valid(row).then_some(!values.value(row))
-                                            }));
-                                        filter_record_batch(batch, &mask).map_err(|e| e.to_string())
-                                    }
-                                })
-                                .collect::<Result<Vec<_>, _>>()
-                        })
-                        .collect::<Result<Vec<_>, _>>()?;
-                }
-                Operation::Project(projections) => {
-                    let compiled = CompiledProjection::new(schema.as_ref(), projections)
-                        .map_err(|e| e.to_string())?;
-                    let output_schema = compiled.schema().clone();
-                    partitions = partitions
-                        .iter()
-                        .map(|partition| {
-                            partition
-                                .iter()
-                                .map(|batch| {
-                                    compiled.project_batch(batch).map_err(|e| e.to_string())
-                                })
-                                .collect::<Result<Vec<_>, _>>()
-                        })
-                        .collect::<Result<Vec<_>, _>>()?;
-                    schema = output_schema;
-                }
-            }
-        }
-        Ok(partitions)
-    }
-
-    async fn evaluate(&self) -> Result<String, String> {
-        let partitions = self.evaluate_partitions().await?;
+    async fn evaluate(&self) -> PyResult<String> {
+        let mut input = self.ir.execute();
         let mut rows = Vec::new();
-        for batch in partitions.iter().flatten() {
-            for row in 0..batch.num_rows() {
-                let values = batch
-                    .columns()
-                    .iter()
-                    .map(|array| array_value(array, row))
-                    .collect::<Result<Vec<_>, String>>()?;
-                rows.push(values);
+        while let Some(event) = input.try_next().await.map_err(table_error)? {
+            if let vail_table::PartitionEvent::Batch(batch) = event {
+                for row in 0..batch.num_rows() {
+                    let values = batch
+                        .columns()
+                        .iter()
+                        .map(|array| array_value(array, row))
+                        .collect::<Result<Vec<_>, String>>()
+                        .map_err(PyRuntimeError::new_err)?;
+                    rows.push(values);
+                }
             }
         }
-        serde_json::to_string(&rows).map_err(|e| e.to_string())
+        serde_json::to_string(&rows).map_err(value_error)
     }
 
-    async fn evaluate_field(&self, index: usize) -> Result<String, String> {
-        let partitions = self.evaluate_partitions().await?;
+    async fn evaluate_field(&self, index: usize) -> PyResult<String> {
+        let mut input = self.ir.execute();
         let mut values = Vec::new();
-        for batch in partitions.iter().flatten() {
-            let array = batch.column(index);
-            for row in 0..batch.num_rows() {
-                values.push(array_value(array, row)?);
+        while let Some(event) = input.try_next().await.map_err(table_error)? {
+            if let vail_table::PartitionEvent::Batch(batch) = event {
+                for row in 0..batch.num_rows() {
+                    values.push(
+                        array_value(batch.column(index), row).map_err(PyRuntimeError::new_err)?,
+                    );
+                }
             }
         }
-        serde_json::to_string(&values).map_err(|e| e.to_string())
+        serde_json::to_string(&values).map_err(value_error)
     }
 }
 
@@ -583,5 +590,6 @@ fn encode_float(value: f64) -> Value {
 fn _native(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<NativeSession>()?;
     module.add_class::<NativeTable>()?;
+    module.add_class::<NativeGlobals>()?;
     Ok(())
 }

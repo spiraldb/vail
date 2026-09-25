@@ -34,10 +34,13 @@ class NativeConformanceTests(unittest.TestCase):
         self.assertEqual(len(lines), 1)
         self.assertEqual(check_outcome(fixture, loads_wire(lines[0]), backend="native"), [])
 
-    def test_unsupported_globals_are_not_counted_as_pass(self):
+    def test_globals_and_source_scope_fixture(self):
         fixture = load_fixture(ROOT / "conformance/fixtures/case_globals_source_errors.json")
         outcome = run_fixture(fixture)
-        self.assertEqual(outcome["status"], "unsupported")
+        self.assertEqual(outcome["status"], "ok")
+        self.assertEqual(check_outcome(fixture, outcome, backend="native"), [])
+        # An unsupported response must still never be accepted as compatibility.
+        outcome["status"] = "unsupported"
         with self.assertRaises(AssertionError):
             check_outcome(fixture, outcome, backend="native")
 

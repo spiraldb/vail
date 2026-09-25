@@ -5,6 +5,10 @@ edition = "2024"
 publish = false
 
 [dependencies]
+arrow-ipc = "=59.2.0"
+async-stream = "0.3"
+arrow-cast = "=59.2.0"
+tempfile = "3"
 arrow-array = "=59.2.0"
 arrow-schema = "=59.2.0"
 futures = "0.3"
@@ -18,5 +22,4 @@ uuid = { version = "1", features = ["v7"] }
 vortex = { version = "=0.86.1", features = ["tokio"] }
 
 [dev-dependencies]
-tempfile = "3"
 vail-execution = { path = "../vail-execution" }
