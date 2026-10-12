@@ -55,6 +55,15 @@ def empty_set(element_type):
     return literal(builtins.set(), tset(element_type))
 
 
+def empty_array(element_type):
+    """Construct a defined empty array with the specified element type."""
+    from .types import dtype
+
+    if isinstance(element_type, builtins.str):
+        element_type = dtype(element_type)
+    return literal([], tarray(element_type))
+
+
 def dict_(collection):
     if isinstance(collection, builtins.dict):
         from .expressions import array

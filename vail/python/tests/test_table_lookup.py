@@ -251,3 +251,28 @@ def test_product_lookup_key_only_payload_empty_right_and_duplicates():
     empty = keys.filter(False)
     result = points.annotate(hits=empty.index(points.idx, all_matches=True))
     assert [r.hits for r in result.collect()] == [[], [], []]
+
+
+def test_interval_all_matches_preserves_empty_structs_in_left_and_right():
+    table = hl.range_table(50).annotate(
+        cells=hl.array([hl.struct(id=0, present=True, value=hl.struct())])
+    )
+    intervals = hl.range_table(25)
+    intervals = intervals.key_by(interval=hl.interval(
+        1 + (intervals.idx // 5) * 10 + intervals.idx % 5,
+        (1 + intervals.idx // 5) * 10 - intervals.idx % 5,
+    ))
+    intervals = intervals.annotate(i=intervals.idx % 5, empty=hl.struct())
+    table = table.annotate(matches=intervals.index(table.key, all_matches=True))
+    rows = table.collect()
+    assert len(rows) == 50
+    for row in rows:
+        assert row.cells == [hl.Struct(id=0, present=True, value=hl.Struct())]
+        assert sorted(match.i for match in row.matches) == list(range(min(row.idx % 10, 10 - row.idx % 10)))
+        assert all(match.empty == hl.Struct() for match in row.matches)
+    dropped = table.drop('cells')
+    assert dropped.all(
+        hl.sorted(dropped.matches.map(lambda x: x.i))
+        == hl.range(0, hl.min(dropped.idx % 10, 10 - dropped.idx % 10))
+    )
+    assert table.collect() == rows

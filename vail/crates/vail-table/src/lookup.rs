@@ -538,7 +538,7 @@ fn join_partition(
             )?)
         };
         let collected = AggregateExprBuilder::new(
-            datafusion_functions_aggregate::array_agg::array_agg_udaf(),
+            vail_execution::collect_aggregate::collect_udf(&row.data_type(&input_schema)?),
             vec![row],
         )
         .order_by(vec![PhysicalSortExpr::new(
@@ -550,14 +550,18 @@ fn join_partition(
         .build()?;
         let mut aggregates = Vec::new();
         for (i, source) in left_value_names.iter().enumerate() {
+            let value = column(&joined, input_schema.index_of(source)?);
+            // All matches repeat the same left value. Keep one Arrow value
+            // without first_value's scalar compaction of nested empty structs.
             let aggregate = AggregateExprBuilder::new(
-                datafusion_functions_aggregate::first_last::first_value_udaf(),
-                vec![column(&joined, input_schema.index_of(source)?)],
+                vail_execution::advanced_collection_aggregates::make_udaf(
+                    "take",
+                    &value.data_type(&input_schema)?,
+                    &serde_json::json!({"n": 1}),
+                )?
+                .ok_or_else(|| TableError::Invalid("take aggregate unavailable".into()))?,
+                vec![value],
             )
-            .order_by(vec![PhysicalSortExpr::new(
-                column(&joined, right_ord_idx),
-                SortOptions::default(),
-            )])
             .schema(input_schema.clone())
             .alias(format!("__vail_left_value_{i}"))
             .build()?;
@@ -596,10 +600,18 @@ fn join_partition(
             .enumerate()
         {
             projection.push((
-                column(
-                    &grouped,
-                    schema.index_of(&format!("__vail_left_value_{i}"))?,
-                ),
+                vail_execution::expressions::lower(
+                    &Expr::ArrayIndex {
+                        value: Box::new(Expr::Column {
+                            name: format!("__vail_left_value_{i}"),
+                        }),
+                        index: Box::new(Expr::Literal {
+                            value: serde_json::json!(0),
+                            dtype: Type::Primitive(vail_execution::expressions::PrimitiveType::Int32),
+                        }),
+                    },
+                    &schema,
+                )?,
                 field_name.clone(),
             ));
         }

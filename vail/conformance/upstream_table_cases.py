@@ -74,7 +74,7 @@ def run(hail_root: Path):
     path = hail_root / SOURCE
     source_bytes = path.read_bytes()
     tree = ast.parse(source_bytes, filename=str(path))
-    namespace = {"hl": vail, "agg": vail.agg, "ExpressionException": vail.ExpressionException, "pytest": pytest, "__name__": "vail_upstream_test_bodies"}
+    namespace = {"hl": vail, "agg": vail.agg, "Env": vail.utils.Env, "ExpressionException": vail.ExpressionException, "pytest": pytest, "__name__": "vail_upstream_test_bodies"}
     namespace["resource"] = lambda filename: str(hail_root / "hail/hail/test/resources" / filename)
     helper_path = hail_root / "hail/python/test/hail/helpers.py"
     extract(ast.parse(helper_path.read_text()), None, "convert_struct_to_dict", str(helper_path), namespace)

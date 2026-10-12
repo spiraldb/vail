@@ -86,7 +86,7 @@ from . import agg
 from . import scan
 from .text import import_lines, import_table, read_csv, read_json
 from .lookups import index as _index_table, resolve as _resolve_lookups
-from .collections import set_ as set, dict_ as dict, empty_set, empty_dict, length as len
+from .collections import set_ as set, dict_ as dict, empty_set, empty_array, empty_dict, length as len
 from .strings import delimit, reverse_complement, unsupported as _unsupported_string
 parse_int32 = _unsupported_string('Java int32 parsing')
 parse_int64 = _unsupported_string('Java int64 parsing')

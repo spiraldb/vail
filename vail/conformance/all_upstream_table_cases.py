@@ -60,7 +60,7 @@ def worker(test_id, output):
             return str(Path(tmp) / (prefix + next(tempfile._get_candidate_names())
                        + ('.' + extension if extension else '')))
 
-        ns = dict(hl=hl, agg=hl.agg, ExpressionException=hl.ExpressionException,
+        ns = dict(hl=hl, agg=hl.agg, Env=hl.utils.Env, ExpressionException=hl.ExpressionException,
                   pytest=pytest, unittest=unittest, np=np, pd=pd, os=os, timer=timer,
                   new_temp_file=new_temp_file,
                   resource=lambda name: str(ROOT.parent / 'hail/hail/hail/test/resources' / name),
