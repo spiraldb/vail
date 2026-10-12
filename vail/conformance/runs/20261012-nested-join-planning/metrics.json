@@ -1,0 +1,16 @@
+{
+  "before": {
+    "two_joins_8_rows_4_partitions_seconds": 4.289,
+    "three_joins_4_rows_2_partitions_timeout_seconds": 30
+  },
+  "after": {
+    "two_joins_8_rows_4_partitions_seconds": 0.145,
+    "three_joins_4_rows_2_partitions_seconds": 0.314
+  },
+  "validation": {
+    "python_passed": 698,
+    "python_skipped": 1,
+    "subtests_passed": 19,
+    "table_rust_passed": 50
+  }
+}

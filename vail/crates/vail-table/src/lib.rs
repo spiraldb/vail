@@ -1060,6 +1060,10 @@ impl TableIR {
         ))
     }
     pub fn key_by(self: &Arc<Self>, keys: Vec<String>) -> Result<TableRef> {
+        // A keyed Table already guarantees this ordering and partition layout.
+        if keys == self.keys {
+            return Ok(self.clone());
+        }
         for name in &keys {
             self.schema.index_of(name)?;
         }

@@ -10,7 +10,17 @@ Canonical comparison keys are shared with sorting, grouping, and fragment indexi
 
 Semi and anti joins preserve the original left partition layout and prune right candidates using the same bounds. Ordinary and multi-way zip joins use the new interval layout. The output within an interval is sorted by the complete output key and stable source ordinals; ordinary join input streams already have key order and do not need a fresh sort before merging.
 
-Repeated physical plans use DataFusion’s `reset_plan_states` API to obtain independent execution state. This matters for shuffle operators whose output channels can be consumed only once; deferred adapters also reset the prepared plans they contain.
+Repeated physical plans use DataFusion's operator `reset_state` API to obtain
+independent execution state. Vail memoizes the walk by physical-plan identity,
+preserving shared inputs within a replay instead of expanding the DAG into a
+tree. Separate replay calls use separate caches. Wrappers with exposed children
+reset only their own state; the walk resets those children. Opaque deferred
+adapters also reset the prepared plans they contain. This matters for shuffle
+operators whose output channels can be consumed only once.
+
+Rekeying to the identical key is a no-op: the input already guarantees that
+order. It retains the existing interval partitions rather than inserting a
+global sort and repartition between nested joins. Changing the key still sorts.
 
 A later planning phase can propagate output intervals toward the readers, allowing source files to be sliced to the chosen join partitioning. The current implementation intentionally permits repeated evaluation of original partitions instead.
 

@@ -29,6 +29,40 @@ pub struct PreparedTable {
     pub counts: Vec<Option<usize>>,
     pub schema: SchemaRef,
 }
+/// Reset DataFusion operator state once per node, preserving shared plan inputs.
+/// Interval partitions can reference one physical DAG through several views.
+/// DataFusion's tree reset expands such shared inputs into independent trees.
+/// Each call uses its own cache, so distinct interval evaluations stay independent.
+pub(crate) fn reset_plan_states(plan: PhysicalPlan) -> datafusion_common::Result<PhysicalPlan> {
+    fn reset(
+        plan: PhysicalPlan,
+        memo: &mut std::collections::HashMap<usize, PhysicalPlan>,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        let id = Arc::as_ptr(&plan) as *const () as usize;
+        if let Some(reset) = memo.get(&id) {
+            return Ok(reset.clone());
+        }
+        let children = plan
+            .children()
+            .into_iter()
+            .cloned()
+            .map(|child| reset(child, memo))
+            .collect::<datafusion_common::Result<Vec<_>>>()?;
+        // Resetting changes execution state, not child schemas or ordering.
+        let fresh = plan
+            .replace_children(
+                children,
+                datafusion_physical_plan::ReplaceChildrenOptions::new(
+                    datafusion_physical_plan::ChildrenPropertiesMode::Keep,
+                ),
+            )?
+            .reset_state()?;
+        memo.insert(id, fresh.clone());
+        Ok(fresh)
+    }
+    reset(plan, &mut std::collections::HashMap::new())
+}
+
 fn required_ordering(input: &PhysicalPlan) -> Option<OrderingRequirements> {
     input
         .output_ordering()
@@ -131,8 +165,9 @@ impl ExecutionPlan for ExpressionSourceExec {
         )))
     }
     fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
+        // Only reset local state; the tree traversal resets the exposed input.
         Ok(Arc::new(Self::new(
-            datafusion_physical_plan::execution_plan::reset_plan_states(self.input.clone())?,
+            self.input.clone(),
             self.table.clone(),
             self.n_partitions,
         )))
@@ -327,8 +362,8 @@ impl ExecutionPlan for ProtectedRangeRepartitionExec {
         )?))
     }
     fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
-        let input =
-            datafusion_physical_plan::execution_plan::reset_plan_states(self.input.clone())?;
+        // The DataFusion tree traversal has already reset the exposed child.
+        let input = self.input.clone();
         Ok(Arc::new(Self::new(input, self.range.clone())?))
     }
     fn execute(
@@ -397,10 +432,7 @@ impl ExecutionPlan for ProtectedExec {
         }))
     }
     fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
-        Ok(Arc::new(Self::new(
-            datafusion_physical_plan::execution_plan::reset_plan_states(self.input.clone())?,
-            self.label,
-        )))
+        Ok(Arc::new(Self::new(self.input.clone(), self.label)))
     }
     fn execute(
         &self,
@@ -706,7 +738,7 @@ impl ExecutionPlan for DeferredOrderedExec {
                 n_partitions,
                 partition_counts,
             } => self.table.replacing_node(TableNode::Prepared {
-                rows: datafusion_physical_plan::execution_plan::reset_plan_states(rows.clone())?,
+                rows: crate::partitioned::reset_plan_states(rows.clone())?,
                 count: *count,
                 n_partitions: *n_partitions,
                 partition_counts: partition_counts.clone(),
@@ -777,7 +809,7 @@ pub(crate) fn prepare_legacy(table: TableRef) -> BoxFuture<'static, Result<Prepa
             TableNode::Prepared {rows,count,n_partitions,partition_counts}=> {
                 let actual=rows.properties().output_partitioning().partition_count();
                 if actual!=*n_partitions{return Err(TableError::Invalid(format!("prepared leaf has {actual} physical partitions, expected {n_partitions}")));}
-                let fresh=datafusion_physical_plan::execution_plan::reset_plan_states(rows.clone())?;
+                let fresh=crate::partitioned::reset_plan_states(rows.clone())?;
                 let parts=(0..actual).map(|p|Arc::new(PartitionViewExec::new(fresh.clone(),p)) as PhysicalPlan).collect();
                 let counts=partition_counts.as_ref().filter(|counts|counts.len()==actual)
                     .map(|counts|counts.iter().copied().map(Some).collect())
@@ -1151,7 +1183,7 @@ impl ExecutionPlan for OutputPartitionExec {
     }
     fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
         Ok(Arc::new(Self::new(
-            datafusion_physical_plan::execution_plan::reset_plan_states(self.input.clone())?,
+            crate::partitioned::reset_plan_states(self.input.clone())?,
             self.partition,
         )))
     }
@@ -1204,6 +1236,7 @@ mod expression_source_tests {
     struct CountingExec {
         input: PhysicalPlan,
         count: Arc<AtomicUsize>,
+        resets: Arc<AtomicUsize>,
     }
     impl DisplayAs for CountingExec {
         fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1235,7 +1268,12 @@ mod expression_source_tests {
             Ok(Arc::new(Self {
                 input: children[0].clone(),
                 count: self.count.clone(),
+                resets: self.resets.clone(),
             }))
+        }
+        fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
+            self.resets.fetch_add(1, Ordering::SeqCst);
+            Ok(self)
         }
         fn execute(
             &self,
@@ -1278,9 +1316,11 @@ mod expression_source_tests {
         let batch = RecordBatch::try_new(batch_schema.clone(), vec![Arc::new(list)]).unwrap();
         let memory = MemorySourceConfig::try_new_exec(&[vec![batch]], batch_schema, None).unwrap();
         let count = Arc::new(AtomicUsize::new(0));
+        let resets = Arc::new(AtomicUsize::new(0));
         let input: PhysicalPlan = Arc::new(CountingExec {
             input: memory,
             count: count.clone(),
+            resets: resets.clone(),
         });
         let source = expression_source_plan(input, table, 3);
         let batches = collect(source.clone(), Arc::new(TaskContext::default()))
@@ -1289,10 +1329,57 @@ mod expression_source_tests {
         assert_eq!(batches.iter().map(RecordBatch::num_rows).sum::<usize>(), 4);
         assert_eq!(count.load(Ordering::SeqCst), 1);
         let reset = reset_plan_states(source).unwrap();
+        assert_eq!(resets.load(Ordering::SeqCst), 1);
         let batches = collect(reset, Arc::new(TaskContext::default()))
             .await
             .unwrap();
         assert_eq!(batches.iter().map(RecordBatch::num_rows).sum::<usize>(), 4);
         assert_eq!(count.load(Ordering::SeqCst), 2);
     }
+    #[test]
+    fn exposed_children_are_reset_once_through_nested_ordering_wrappers() {
+        let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, false)]));
+        let memory = MemorySourceConfig::try_new_exec(&[vec![]], schema, None).unwrap();
+        let resets = Arc::new(AtomicUsize::new(0));
+        let mut input: PhysicalPlan = Arc::new(CountingExec {
+            input: memory,
+            count: Arc::new(AtomicUsize::new(0)),
+            resets: resets.clone(),
+        });
+        for _ in 0..12 {
+            input = Arc::new(ProtectedExec::new(input, "NestedOrder"));
+            let range = RangePartitioning::try_new(
+                LexOrdering::new(vec![PhysicalSortExpr::new(
+                    column(&input, 0),
+                    SortOptions::default(),
+                )])
+                .unwrap(),
+                vec![],
+            )
+            .unwrap();
+            input = Arc::new(ProtectedRangeRepartitionExec::new(input, range).unwrap());
+        }
+        reset_plan_states(input).unwrap();
+        assert_eq!(resets.load(Ordering::SeqCst), 1);
+    }
+
+    #[test]
+    fn replay_preserves_shared_physical_inputs_without_sharing_across_actions() {
+        let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, false)]));
+        let memory = MemorySourceConfig::try_new_exec(&[vec![]], schema.clone(), None).unwrap();
+        let resets = Arc::new(AtomicUsize::new(0));
+        let input: PhysicalPlan = Arc::new(CountingExec {
+            input: memory,
+            count: Arc::new(AtomicUsize::new(0)),
+            resets: resets.clone(),
+        });
+        let dag: PhysicalPlan = Arc::new(OrderedConcatExec::new(vec![input.clone(), input], schema));
+        let first = super::reset_plan_states(dag.clone()).unwrap();
+        assert_eq!(resets.load(Ordering::SeqCst), 1);
+        assert!(Arc::ptr_eq(first.children()[0], first.children()[1]));
+        let second = super::reset_plan_states(dag).unwrap();
+        assert_eq!(resets.load(Ordering::SeqCst), 2);
+        assert!(!Arc::ptr_eq(first.children()[0], second.children()[0]));
+    }
+
 }

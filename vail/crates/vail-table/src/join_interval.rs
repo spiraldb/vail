@@ -395,9 +395,7 @@ async fn scan_bounds(prepared: &PreparedTable, keys: &[String]) -> Result<Vec<Op
 }
 
 fn reset(plan: PhysicalPlan) -> Result<PhysicalPlan> {
-    Ok(datafusion_physical_plan::execution_plan::reset_plan_states(
-        plan,
-    )?)
+    Ok(crate::partitioned::reset_plan_states(plan)?)
 }
 
 fn key_expression(input: &PhysicalPlan, keys: &[String]) -> Result<Arc<dyn PhysicalExpr>> {

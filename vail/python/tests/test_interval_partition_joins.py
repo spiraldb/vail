@@ -234,3 +234,38 @@ def test_empty_interval_joins_keep_an_executable_empty_result(tmp_path):
     zipped = hl.Table.multi_way_zip_join([empty, empty], "data", "g")
     assert zipped.n_partitions() == 1
     assert zipped.collect() == []
+
+
+def test_nested_join_after_changing_sort_key_replays_correctly():
+    left = hl.Table.parallelize(
+        [{"k": i, "c": 3 - i, "a": i} for i in range(4)], key="k", n_partitions=2)
+    right = hl.Table.parallelize(
+        [{"k": i, "b": i + 10} for i in range(4)], key="k", n_partitions=2)
+    third = hl.Table.parallelize(
+        [{"c": i, "z": i + 20} for i in range(4)], key="c", n_partitions=2)
+    result = left.join(right).key_by("c").join(third).key_by("k")
+    expected = [(i, 3 - i, i, i + 10, 23 - i) for i in range(4)]
+    for _ in range(2):
+        assert [(r.k, r.c, r.a, r.b, r.z) for r in result.collect()] == expected
+
+
+def test_join_chain_keeps_existing_key_order_without_another_sort():
+    result = hl.Table.parallelize(
+        [{"k": i, "v0": i} for i in range(4)], key="k", n_partitions=2)
+    for index in range(1, 4):
+        right = hl.Table.parallelize(
+            [{"k": i, f"v{index}": i + index} for i in range(4)], key="k", n_partitions=2)
+        result = result.join(right).key_by("k")
+    expected = [(i, i, i + 1, i + 2, i + 3) for i in range(4)]
+    assert [(r.k, r.v0, r.v1, r.v2, r.v3) for r in result.collect()] == expected
+
+
+def test_rekeying_to_identical_keys_preserves_interval_partition_contents():
+    left = hl.range_table(8, n_partitions=2)
+    right = hl.range_table(8, n_partitions=2)
+    joined = left.join(right)
+    identical = joined.key_by("idx")
+    assert identical.n_partitions() == joined.n_partitions()
+    for partition in range(joined.n_partitions()):
+        expected = joined._filter_partitions([partition]).collect()
+        assert identical._filter_partitions([partition]).collect() == expected
