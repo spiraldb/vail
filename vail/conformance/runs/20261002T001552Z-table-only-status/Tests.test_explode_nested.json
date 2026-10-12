@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'case'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1031, in test_explode_nested\n    t = t.annotate(foo=hl.case().when(t.idx == 1, hl.struct(bar=[1, 2, 3])).or_missing())\n                       ^^^^^^^\nAttributeError: module 'vail' has no attribute 'case'. Did you mean: 'cast'?\n"
+  }
+]

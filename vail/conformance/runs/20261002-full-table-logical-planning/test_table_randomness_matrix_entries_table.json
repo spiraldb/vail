@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail.utils' has no attribute 'range_matrix_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2455, in test_table_randomness_matrix_entries_table\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail.utils' has no attribute 'range_matrix_table'\n"
+  }
+]

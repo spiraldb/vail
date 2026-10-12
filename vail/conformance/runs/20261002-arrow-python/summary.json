@@ -1,0 +1,109 @@
+{
+  "python_suite": {
+    "passed": 606,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "upstream_pandas_bodies": {
+    "test_to_pandas_flatten": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "test_to_pandas_types_column_to_type": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "test_to_pandas": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "test_to_pandas_null_ints": [
+      {
+        "parameters": {},
+        "status": "failed",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'or_missing'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2204, in test_to_pandas_null_ints\n    missing_int32=hl.or_missing(ht.idx == 0, ht.idx),\n                  ^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'or_missing'. Did you mean: 'is_missing'?\n"
+      }
+    ],
+    "Tests.test_from_pandas_works": [
+      {
+        "parameters": {},
+        "status": "failed",
+        "phase": "body",
+        "error_type": "TypeError",
+        "error": "cannot infer a Vail type for Expression",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 783, in test_from_pandas_works\n    t2 = hl.Table.parallelize(d2, key='a')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 294, in parallelize\n    schema = tstruct(**{name: _infer_type([row[name] for row in rows]) for name in names})\n                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 145, in _infer_type\n    result = infer_type(present[0])\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/types.py\", line 459, in infer_type\n    raise TypeError(f\"cannot infer a Vail type for {type(value).__name__}\")\nTypeError: cannot infer a Vail type for Expression\n"
+      }
+    ],
+    "Tests.test_from_pandas_missing_and_nans": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "test_to_pandas_types_type_to_type": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "test_to_pandas_nd_array": [
+      {
+        "parameters": {},
+        "status": "failed",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail.nd' has no attribute 'arange'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2231, in test_to_pandas_nd_array\n    ht = ht.annotate(nd=hl.nd.arange(3))\n                        ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'arange'\n"
+      }
+    ],
+    "Tests.test_from_pandas_objects": [
+      {
+        "parameters": {},
+        "status": "failed",
+        "phase": "body",
+        "error_type": "TypeError",
+        "error": "cannot infer a Vail type for Expression",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 805, in test_from_pandas_objects\n    t2 = hl.Table.parallelize(d2)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 294, in parallelize\n    schema = tstruct(**{name: _infer_type([row[name] for row in rows]) for name in names})\n                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 145, in _infer_type\n    result = infer_type(present[0])\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/types.py\", line 459, in infer_type\n    raise TypeError(f\"cannot infer a Vail type for {type(value).__name__}\")\nTypeError: cannot infer a Vail type for Expression\n"
+      }
+    ],
+    "test_literal_of_numpy_int64": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_from_pandas_mismatched_object_rows": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ]
+  },
+  "new_passing_definitions": [
+    "test_to_pandas_flatten",
+    "test_to_pandas_types_column_to_type",
+    "test_to_pandas",
+    "Tests.test_from_pandas_missing_and_nans",
+    "test_to_pandas_types_type_to_type",
+    "test_literal_of_numpy_int64",
+    "Tests.test_from_pandas_mismatched_object_rows"
+  ],
+  "limitations": "Original assertion bodies run against Vail with the existing extraction harness; no Hail-runtime differential comparison. Four bodies fail before completing owing to expression-valued parallelize, or_missing, or nd.arange. Remaining JSON literal and interval-data boundaries are documented in ARROW_PYTHON_BRIDGE.md.",
+  "source_sha256": {
+    "crates/vail-python/src/lib.rs": "82897d87acca2deba75b7e09d641c04941568b8cec1eca34c74a9d419dde82c8",
+    "python/vail/arrow.py": "13ae98bc288acf55826dd37d614b9780840afe43649f1f86c15f1f1134690710",
+    "python/vail/__init__.py": "0f523be16dbd77622206e0995e9e5dbff3ed90eee0e284e4dfab4681a5cb10d3",
+    "python/vail/text.py": "328141ac1a66de87553dbb1607f4bdf712c39697790dadeaad1943aff963e189",
+    "python/tests/test_arrow_bridge.py": "7492a2dc624b0ed4f8478882a09e5e32704325b36c93c5aaa290dec867be2dc8",
+    "python/tests/test_pandas.py": "11736c81e49869b6b919cb89242e89e1680e8458d92beb177f9b90240d6068d1"
+  }
+}

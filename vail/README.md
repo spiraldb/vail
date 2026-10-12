@@ -2,6 +2,8 @@
 
 Vail is an early embedded Rust implementation of the Hail Table API, using **DataFusion, Arrow, Vortex, and Embedded execution (DAVE)**, with a Python frontend.
 
+Vail's original code is licensed under [MIT](LICENSE). Upstream dependencies and vendored third-party code retain their own licenses and notices.
+
 The target is Hail Table operation and semantic parity, with Vortex-backed Iceberg storage replacing Hail's native table format. Vortex file-format support comes from [apache/iceberg-rust PR #2835](https://github.com/apache/iceberg-rust/pull/2835), pinned to `0252fe9174aa3062da51328c444a765aa7de2dae`. Vail uses that implementation's reader and writer; it does not maintain a separate Vortex integration in Iceberg. The PR remains an upstream preview, so this does not imply compatibility with arbitrary Iceberg readers.
 
 The first implementation includes a native ordered-collection API, a Python Table slice backed by that Rust code, Vortex files written and read through PR #2835's Iceberg integration, and a typed conformance harness. **This is a partial prototype, not full Hail Table parity.**
@@ -61,9 +63,17 @@ The embedded plan currently uses one ordered physical stream while preserving Ha
 logical partition identity. Parallel execution, distributed sorting, full Hail
 comparators, and optimizer integration remain future work.
 
+Keyed joins construct independent output partitions from overlapping original key intervals and execute DataFusion sort-merge joins within each interval. See [Interval partition joins](docs/INTERVAL_PARTITION_JOINS.md).
+
 The storage API handles local, unpartitioned initial snapshots with Vortex data files, Iceberg Avro manifests, and an immutable descriptor bound to a reserved snapshot ID. A persisted primitive-key interval index certifies file order and resolves live Iceberg tasks for ordered multi-file reads. Tests reopen a snapshot containing three real Vortex files. Reads perform no row sorting; missing or invalid required ordering metadata is rejected. Range planning currently enumerates all manifest tasks before pruning data files.
 
 Python `Table.write`/`read_table` use local Viceberg directories with atomic overwrite publication. Read construction resolves metadata only; its lazy source streams data when an action executes. General appends, schema evolution and cloud catalogs remain unsupported. See [the storage crate](crates/vail-storage/README.md), [upstream PR pin](patches/README.md), and [fragment-scan design](docs/research/ordered-fragment-scan.md).
+
+Text interoperability includes lazy `import_lines`, delimited `import_table`,
+`read_csv`, and newline-delimited `read_json`, plus streaming `Table.export`,
+`export_csv`, and `export_json` actions through DataFusion scans and sinks.
+See [Text import and export](docs/TEXT_IMPORT_EXPORT.md) for supported options
+and explicit limitations, including Hail float and nested text rendering.
 
 ## Checks
 

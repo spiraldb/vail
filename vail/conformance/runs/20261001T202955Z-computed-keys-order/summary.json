@@ -1,0 +1,9 @@
+{
+  "command": "uv run --no-sync python -m pytest python/tests conformance/test_harness.py -q",
+  "passed": 365,
+  "skipped": 1,
+  "subtests_passed": 19,
+  "failed": 0,
+  "new_regression_tests": 6,
+  "implementation": "Lazy TableMapRows projections plus existing DataFusion key and sort lowering"
+}

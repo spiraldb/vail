@@ -64,19 +64,22 @@ def send_fixtures(command: list[str], env: dict[str, str], fixtures: list[dict[s
         raise SystemExit(f"worker timed out after {timeout:g}s: {command!r}") from exc
     if completed.returncode != 0:
         raise SystemExit(f"worker exited {completed.returncode}:\n{completed.stderr}")
-    lines = [line for line in completed.stdout.splitlines() if line.strip()]
-    if len(lines) != len(fixtures):
-        raise SystemExit(
-            f"worker protocol mismatch: expected {len(fixtures)} JSON lines, got {len(lines)}; "
-            f"stderr={completed.stderr!r}, stdout={completed.stdout[:400]!r}"
-        )
     outcomes = []
-    for line in lines:
+    for line in completed.stdout.splitlines():
+        if not line.strip() or not line.lstrip().startswith("{"):
+            continue  # Spark can print startup diagnostics to stdout.
         try:
             outcome = loads_wire(line)
         except Exception as exc:
             raise SystemExit(f"worker emitted invalid JSON line: {line[:300]!r}") from exc
+        if outcome.get("protocol") != PROTOCOL:
+            raise SystemExit(f"worker emitted an unexpected JSON line: {line[:300]!r}")
         outcomes.append(outcome)
+    if len(outcomes) != len(fixtures):
+        raise SystemExit(
+            f"worker protocol mismatch: expected {len(fixtures)} responses, got {len(outcomes)}; "
+            f"stderr={completed.stderr!r}, stdout={completed.stdout[:400]!r}"
+        )
     return outcomes
 
 

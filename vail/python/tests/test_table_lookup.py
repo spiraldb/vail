@@ -1,0 +1,211 @@
+import json
+import pytest
+import vail as hl
+
+
+def people(rows=None):
+    return hl.Table.parallelize(
+        rows if rows is not None else [{'person_id': 1, 'age': 30}, {'person_id': 2, 'age': None}],
+        schema=hl.tstruct(person_id=hl.tint32, age=hl.tint32), key='person_id',
+    )
+
+
+def visits():
+    return hl.Table.parallelize(
+        [{'person_id': person_id, 'visit': i} for i, person_id in enumerate([2, 1, 9, None, 1])],
+        schema=hl.tstruct(person_id=hl.tint32, visit=hl.tint32), n_partitions=3,
+    )
+
+
+def test_lookup_example_missing_rows_and_missing_values():
+    target, source = people(), visits()
+    lookup = target[source.person_id]
+    assert lookup.dtype == hl.tstruct(age=hl.tint32)
+    result = source.annotate(age=lookup.age, person=lookup, absent=hl.is_missing(lookup))
+    assert [(row.age, row.person, row.absent) for row in result.collect()] == [
+        (None, hl.Struct(age=None), False), (30, hl.Struct(age=30), False),
+        (None, None, True), (None, None, True), (30, hl.Struct(age=30), False),
+    ]
+    assert result.n_partitions() == source.n_partitions()
+    assert result.count() == source.count()
+    assert set(result.row.dtype) == {'person_id', 'visit', 'age', 'person', 'absent'}
+    assert json.loads(result._native.ir_json())['child']['node'] == 'TableLookup'
+
+
+def test_duplicate_target_keys_never_multiply_source_rows():
+    target = people([{'person_id': 1, 'age': 30}, {'person_id': 1, 'age': 31}, {'person_id': None, 'age': 90}])
+    source = visits()
+    rows = source.annotate(person=target[source.person_id]).collect()
+    assert len(rows) == 5
+    assert [row.visit for row in rows] == list(range(5))
+    assert rows[1].person.age in (30, 31)
+    assert rows[4].person.age in (30, 31)
+    assert rows[3].person is None
+
+
+def test_composite_lookup_tuple_struct_and_index_method():
+    target = hl.Table.parallelize(
+        [{'a': 1, 'b': 'x', 'value': 7}, {'a': 2, 'b': None, 'value': 8}],
+        schema=hl.tstruct(a=hl.tint32, b=hl.tstr, value=hl.tint32), key=('a', 'b'),
+    )
+    source = hl.Table.parallelize(
+        [{'x': 1, 'y': 'x'}, {'x': 2, 'y': None}], schema=hl.tstruct(x=hl.tint32, y=hl.tstr),
+    )
+    for expression in (
+        target[source.x, source.y], target.index(source.x, source.y),
+        target[hl.struct(first=source.x, second=source.y)],
+        target[hl.as_expr((source.x, source.y))],
+    ):
+        assert [row.match for row in source.annotate(match=expression).collect()] == [hl.Struct(value=7), None]
+
+
+def test_lookup_in_projection_filter_computed_keys_and_aggregation():
+    target, source = people(), visits()
+    match = target[source.person_id]
+    assert [row.age for row in source.select(age=match.age).collect()] == [None, 30, None, None, 30]
+    assert [row.visit for row in source.filter(match.age > 20).collect()] == [1, 4]
+    assert set(source.filter(match.age > 20).row.dtype) == set(source.row.dtype)
+    assert source.aggregate(hl.agg.sum(match.age)) == 60
+    grouped = source.group_by(age=match.age).aggregate(n=hl.agg.count()).collect()
+    assert {(row.age, row.n) for row in grouped} == {(30, 2), (None, 3)}
+    assert [row.age for row in source.key_by(age=match.age).collect()] == [30, 30, None, None, None]
+    assert [row.visit for row in source.order_by(match.age).collect()] == [1, 4, 0, 2, 3]
+
+
+def test_nested_lookups_and_captured_globals():
+    first = hl.Table.parallelize([{'id': 1, 'other': 10}], key='id')
+    second = hl.Table.parallelize([{'id': 11, 'value': 42}], key='id').annotate_globals(offset=1)
+    source = hl.range_table(2).annotate_globals(bias=1)
+    result = source.annotate(value=second[first[source.idx + source.bias].other + second.index_globals().offset].value)
+    assert [row.value for row in result.collect()] == [42, None]
+    assert hl.eval(result.bias) == 1
+    assert set(result.globals.dtype) == {'bias'}
+
+
+@pytest.mark.parametrize('key_type, values', [
+    (hl.tstruct(x=hl.tint32), [hl.Struct(x=None), hl.Struct(x=1), None]),
+    (hl.tarray(hl.tint32), [[1, None], [], None]),
+    (hl.tset(hl.tint32), [{1, 2}, set(), None]),
+    (hl.tdict(hl.tstr, hl.tint32), [{'x': None}, {}, None]),
+    (hl.ttuple(hl.tint32, hl.tstr), [(1, None), (2, 'x'), None]),
+    (hl.tinterval(hl.tint32), [hl.Interval(1, 4), hl.Interval(5, 6), None]),
+    (hl.tcall, [hl.Call((0, 1)), hl.Call((1, 1)), None]),
+    (hl.tlocus('GRCh37'), [hl.Locus('1', 1, hl.get_reference('GRCh37')), hl.Locus('2', 2, hl.get_reference('GRCh37')), None]),
+])
+def test_lookup_uses_shared_nested_key_equality(key_type, values):
+    target = hl.Table.parallelize(
+        [{'key': key, 'value': i} for i, key in enumerate(values)],
+        schema=hl.tstruct(key=key_type, value=hl.tint32), key='key',
+    )
+    source = hl.Table.parallelize([{'probe': key} for key in values], schema=hl.tstruct(probe=key_type))
+    assert [row.value for row in source.annotate(value=target[source.probe].value).collect()] == [0, 1, None]
+
+
+def test_lookup_empty_target_and_key_only_target():
+    source = visits()
+    assert all(row.person is None for row in source.annotate(person=people([])[source.person_id]).collect())
+    target = people().select()
+    rows = source.annotate(person=target[source.person_id]).collect()
+    assert [hl.Struct() if row.person is not None else None for row in rows] == [hl.Struct(), hl.Struct(), None, None, hl.Struct()]
+
+
+def test_lookup_float_keys_use_ieee_total_order_identity():
+    import struct
+
+    nan = struct.unpack('>d', bytes.fromhex('7ff8000000000001'))[0]
+    other_nan = struct.unpack('>d', bytes.fromhex('7ff8000000000002'))[0]
+    keys = [0.0, -0.0, nan, other_nan]
+    target = hl.Table.parallelize(
+        [{'key': key, 'value': i} for i, key in enumerate(keys)],
+        schema=hl.tstruct(key=hl.tfloat64, value=hl.tint32), key='key',
+    )
+    source = hl.Table.parallelize([{'probe': key} for key in keys], schema=hl.tstruct(probe=hl.tfloat64))
+    assert [row.value for row in source.annotate(value=target[source.probe].value).collect()] == [0, 1, 2, 3]
+
+
+def test_dictionary_lookup_matches_independently_of_entry_order():
+    dtype = hl.tdict(hl.tstr, hl.tint32)
+    target = hl.Table.parallelize([{'key': {'a': 1, 'b': 2}, 'value': 3}],
+                                  schema=hl.tstruct(key=dtype, value=hl.tint32), key='key')
+    source = hl.Table.parallelize([{'probe': {'b': 2, 'a': 1}}], schema=hl.tstruct(probe=dtype))
+    assert source.annotate(value=target[source.probe].value).collect()[0].value == 3
+
+
+def test_lookup_reads_multiple_files_lazily_and_writes_without_private_fields(tmp_path):
+    target = people([{'person_id': i, 'age': i + 20} for i in range(9)]).repartition(3)
+    path = tmp_path / 'people'
+    target.write(path)
+    files = list(path.rglob('*.vortex'))
+    assert len(files) >= 2
+    loaded = hl.read_table(path)
+    source = visits()
+    moved = files[0].with_suffix('.hidden')
+    files[0].rename(moved)
+    try:
+        result = source.annotate(age=loaded[source.person_id].age)
+        assert result.n_partitions() == source.n_partitions()
+        with pytest.raises((ValueError, RuntimeError, FileNotFoundError)):
+            result.collect()
+    finally:
+        moved.rename(files[0])
+    assert [row.age for row in result.collect()] == [22, 21, None, None, 21]
+    output = tmp_path / 'visits'
+    result.write(output)
+    restored = hl.read_table(output)
+    assert restored.row.dtype == result.row.dtype
+    assert restored.collect() == result.collect()
+
+
+def test_lookup_rejects_invalid_keys_and_scalar_indexing():
+    target, source = people(), visits()
+    with pytest.raises(TypeError):
+        target[source.person_id, source.visit]
+    with pytest.raises(TypeError):
+        target[hl.str(source.person_id)]
+    with pytest.raises(hl.ExpressionException, match='scalar'):
+        target[hl.literal(1)]
+    with pytest.raises(ValueError, match='unkeyed'):
+        visits()[source.person_id]
+    with pytest.raises(hl.ExpressionException, match='source mismatch'):
+        source.annotate(age=target[visits().person_id].age)
+
+
+def test_interval_lookup_overlaps_boundaries_and_missing_probes():
+    points = hl.Table.parallelize(
+        [{'point': p} for p in [0, 1, 2, 3, 4, 5, None]],
+        schema=hl.tstruct(point=hl.tint32), n_partitions=3,
+    )
+    regions = hl.Table.parallelize([
+        {'region': hl.Interval(1, 4, True, False), 'label': 'a'},
+        {'region': hl.Interval(2, 5, False, True), 'label': 'b'},
+    ], key='region', n_partitions=2)
+    single = points.annotate(hit=regions[points.point])
+    rows = single.collect()
+    assert len(rows) == 7
+    assert single.n_partitions() == 3
+    assert [r.hit is None for r in rows] == [True, False, False, False, False, False, True]
+    assert rows[3].hit.label in ('a', 'b')
+    multiple = points.annotate(hits=regions.index(points.point, all_matches=True))
+    assert multiple.n_partitions() == 3
+    assert [[h.label for h in r.hits] for r in multiple.collect()] == [
+        [], ['a'], ['a'], ['a', 'b'], ['b'], ['b'], [],
+    ]
+
+
+def test_interval_lookup_accepts_struct_valued_points():
+    points = hl.range_table(5)
+    intervals = hl.range_table(1).key_by(
+        interval=hl.interval(hl.struct(x=hl.literal(1)), hl.struct(x=hl.literal(3)))
+    )
+    result = points.annotate(hit=intervals.index(hl.struct(x=points.idx)))
+    assert [None if row.hit is None else row.hit.idx for row in result.collect()] == [None, 0, 0, None, None]
+
+
+def test_product_lookup_key_only_payload_empty_right_and_duplicates():
+    points = hl.range_table(3, n_partitions=2)
+    keys = hl.Table.parallelize([{'k': 1}, {'k': 1}], key='k')
+    result = points.annotate(hits=keys.index(points.idx, all_matches=True))
+    assert [len(r.hits) for r in result.collect()] == [0, 2, 0]
+    empty = keys.filter(False)
+    result = points.annotate(hits=empty.index(points.idx, all_matches=True))
+    assert [r.hits for r in result.collect()] == [[], [], []]

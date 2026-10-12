@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "'builtins.NativeSession' object has no attribute 'scalar_arrow'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 873, in test_table_parallelize_infer_types\n    table = hl.Table.parallelize(data, key='idx')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-20261002T145639Z/vail/__init__.py\", line 299, in parallelize\n    expression = input_expression(rows, tarray(schema))\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-20261002T145639Z/vail/inputs.py\", line 67, in input_expression\n    return array([input_expression(item, dtype.element_type) for item in value])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-20261002T145639Z/vail/inputs.py\", line 65, in input_expression\n    return struct(**{name: input_expression(value[name], ty) for name, ty in dtype.items()})\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-20261002T145639Z/vail/inputs.py\", line 61, in input_expression\n    return arrow_literal(value, dtype)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-20261002T145639Z/vail/inputs.py\", line 51, in arrow_literal\n    native = _native_session().scalar_arrow(rows_to_ipc([{'value': value}], schema))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'builtins.NativeSession' object has no attribute 'scalar_arrow'\n"
+  }
+]

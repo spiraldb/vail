@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use arrow_array::{Array, Int32Array, RecordBatch};
+use arrow_array::{Array, BooleanArray, Float64Array, Int32Array, RecordBatch, StructArray};
 use arrow_schema::{DataType, Field, Schema};
 use futures::TryStreamExt;
 use iceberg::arrow::arrow_schema_to_schema_auto_assign_ids;
@@ -14,10 +14,11 @@ use serde_json::json;
 use vail_execution::{OrderKey, OrderRequirement, ordered_collect};
 use vail_storage::fragment_index::{
     Endpoint, KeyField, KeyType, KeyValue, PRIMITIVE_COMPARATOR_V1, QueryInterval,
+    TOTAL_ORDER_COMPARATOR_V3,
 };
 use vail_storage::{
-    StorageError, VailSemantics, read_current, read_snapshot_range, write_initial_ordered_files,
-    write_initial_table,
+    StorageError, VailSemantics, read_current, read_snapshot_range, stream_snapshot_intervals,
+    write_initial_ordered_files, write_initial_table,
 };
 
 #[tokio::test]
@@ -139,12 +140,330 @@ async fn ordered_snapshot_reads_three_real_vortex_files_in_key_order() {
         .unwrap();
     assert_eq!(values(range), vec![2, 2, 2, 3, 4]);
 
+    let intervals = [
+        QueryInterval {
+            lower: Some(Endpoint {
+                key: vec![KeyValue::Int32(1)],
+                inclusive: true,
+            }),
+            upper: Some(Endpoint {
+                key: vec![KeyValue::Int32(1)],
+                inclusive: true,
+            }),
+        },
+        QueryInterval {
+            lower: Some(Endpoint {
+                key: vec![KeyValue::Int32(4)],
+                inclusive: true,
+            }),
+            upper: Some(Endpoint {
+                key: vec![KeyValue::Int32(4)],
+                inclusive: true,
+            }),
+        },
+    ];
+    // The file with [5, 6] is outside both intervals. Corrupting its bytes
+    // proves interval planning validates snapshot metadata without opening an
+    // unselected data file. Selected files are returned whole, without residual
+    // filtering, and retain their input-sequence row offsets.
+    std::fs::write(
+        descriptor.files[0].path.strip_prefix("file://").unwrap(),
+        b"unread",
+    )
+    .unwrap();
+    let (mut stream, _) = stream_snapshot_intervals(&reopened, snapshot_id, &intervals)
+        .await
+        .unwrap();
+    let mut selected = Vec::new();
+    while let Some((offset, batch)) = stream.try_next().await.unwrap() {
+        selected.push((offset, batch));
+    }
+    assert_eq!(
+        selected
+            .iter()
+            .map(|(offset, _)| *offset)
+            .collect::<Vec<_>>(),
+        vec![2, 5]
+    );
+    assert_eq!(
+        values(selected.into_iter().map(|(_, batch)| batch).collect()),
+        vec![1, 2, 2, 2, 3, 4, 5]
+    );
+
     let index_path = descriptor.index_path.unwrap();
     std::fs::write(index_path.strip_prefix("file://").unwrap(), b"corrupt").unwrap();
     assert!(matches!(
         read_current(&reopened).await,
         Err(StorageError::Invalid(_))
     ));
+}
+
+#[tokio::test]
+async fn canonical_float_bounds_select_across_two_vortex_files() {
+    let dir = tempfile::tempdir().unwrap();
+    let location = format!("file://{}", dir.path().join("table").display());
+    let warehouse = format!("file://{}", dir.path().join("warehouse").display());
+    let catalog = MemoryCatalogBuilder::default()
+        .with_storage_factory(Arc::new(LocalFsStorageFactory))
+        .load("local", HashMap::from([("warehouse".into(), warehouse)]))
+        .await
+        .unwrap();
+    let namespace = NamespaceIdent::new("test".into());
+    catalog
+        .create_namespace(&namespace, HashMap::new())
+        .await
+        .unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Float64, true)]));
+    let table = catalog
+        .create_table(
+            &namespace,
+            TableCreation::builder()
+                .name("floats".into())
+                .location(location)
+                .schema(arrow_schema_to_schema_auto_assign_ids(&schema).unwrap())
+                .build(),
+        )
+        .await
+        .unwrap();
+    let batch = |values: Vec<Option<f64>>| {
+        RecordBatch::try_new(schema.clone(), vec![Arc::new(Float64Array::from(values))]).unwrap()
+    };
+    let files = vec![
+        vec![batch(vec![
+            Some(f64::from_bits(0xfff8_0000_0000_0001)),
+            Some(-0.0),
+        ])],
+        vec![batch(vec![
+            Some(0.0),
+            Some(f64::from_bits(0x7ff8_0000_0000_0001)),
+            Some(f64::from_bits(0x7ff8_0000_0000_0002)),
+            None,
+        ])],
+    ];
+    let semantics = VailSemantics {
+        row_type: json!([["x", "float64"]]),
+        global_type: json!({}),
+        globals: json!({}),
+        key_field_ids: vec![1],
+        comparator_version: TOTAL_ORDER_COMPARATOR_V3.into(),
+        reference_genomes: json!({}),
+    };
+    let key_fields = vec![KeyField {
+        field_id: 1,
+        data_type: KeyType::Canonical(json!("float64")),
+        descending: false,
+        nulls_last: true,
+    }];
+    let committed = write_initial_ordered_files(&catalog, &table, files, semantics, key_fields)
+        .await
+        .unwrap();
+    let reopened = StaticTable::from_metadata_file(
+        committed.metadata_location().unwrap(),
+        TableIdent::new(namespace, "floats".into()),
+        FileIO::new_with_fs(),
+    )
+    .await
+    .unwrap()
+    .into_table();
+    let id = reopened.metadata().current_snapshot_id().unwrap();
+    let key = |value| {
+        KeyValue::Canonical(
+            vail_ordering::encode_value(&Float64Array::from(vec![Some(value)]), 0).unwrap(),
+        )
+    };
+    let query = QueryInterval {
+        lower: Some(Endpoint {
+            key: vec![key(0.0)],
+            inclusive: true,
+        }),
+        upper: Some(Endpoint {
+            key: vec![key(f64::from_bits(0x7ff8_0000_0000_0001))],
+            inclusive: true,
+        }),
+    };
+    let (range, descriptor) = read_snapshot_range(&reopened, id, &query).await.unwrap();
+    assert_eq!(descriptor.files.len(), 2);
+    let values = range
+        .iter()
+        .flat_map(|batch| {
+            let values = batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap();
+            values.iter().collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(values.len(), 2);
+    assert_eq!(values[0], Some(0.0));
+    assert_eq!(values[1].unwrap().to_bits(), 0x7ff8_0000_0000_0001);
+    // A negative NaN sorts before finite values and selects only the first file.
+    let negative = key(f64::from_bits(0xfff8_0000_0000_0001));
+    let query = QueryInterval {
+        lower: Some(Endpoint {
+            key: vec![negative.clone()],
+            inclusive: true,
+        }),
+        upper: Some(Endpoint {
+            key: vec![negative],
+            inclusive: true,
+        }),
+    };
+    let (range, _) = read_snapshot_range(&reopened, id, &query).await.unwrap();
+    assert_eq!(range.iter().map(RecordBatch::num_rows).sum::<usize>(), 1);
+    assert_eq!(
+        range[0]
+            .column(0)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap()
+            .value(0)
+            .to_bits(),
+        0xfff8_0000_0000_0001
+    );
+}
+
+#[tokio::test]
+async fn interval_bounds_select_across_two_vortex_files() {
+    let dir = tempfile::tempdir().unwrap();
+    let catalog = MemoryCatalogBuilder::default()
+        .with_storage_factory(Arc::new(LocalFsStorageFactory))
+        .load(
+            "local",
+            HashMap::from([(
+                "warehouse".into(),
+                format!("file://{}", dir.path().join("warehouse").display()),
+            )]),
+        )
+        .await
+        .unwrap();
+    let namespace = NamespaceIdent::new("test".into());
+    catalog
+        .create_namespace(&namespace, HashMap::new())
+        .await
+        .unwrap();
+    let logical = json!({"interval":"int32"});
+    let dtype = serde_json::from_value::<vail_execution::expressions::Type>(logical.clone())
+        .unwrap()
+        .to_arrow()
+        .unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "region",
+        dtype.clone(),
+        false,
+    )]));
+    let table = catalog
+        .create_table(
+            &namespace,
+            TableCreation::builder()
+                .name("intervals".into())
+                .location(format!("file://{}", dir.path().join("table").display()))
+                .schema(arrow_schema_to_schema_auto_assign_ids(&schema).unwrap())
+                .build(),
+        )
+        .await
+        .unwrap();
+    let DataType::Struct(fields) = dtype else {
+        unreachable!()
+    };
+    // The split falls between [1,3] and (1,3), whose order depends on
+    // inclusivity rather than the raw Arrow struct child order.
+    let intervals = StructArray::new(
+        fields,
+        vec![
+            Arc::new(Int32Array::from(vec![1, 1, 1, 2])),
+            Arc::new(Int32Array::from(vec![3, 3, 3, 4])),
+            Arc::new(BooleanArray::from(vec![true, true, false, true])),
+            Arc::new(BooleanArray::from(vec![false, true, false, false])),
+        ],
+        None,
+    );
+    let batch = RecordBatch::try_new(schema, vec![Arc::new(intervals.clone())]).unwrap();
+    let batch = vail_storage::local_table::normalize(
+        &batch,
+        Arc::new(
+            iceberg::arrow::schema_to_arrow_schema(table.metadata().current_schema()).unwrap(),
+        ),
+    )
+    .unwrap();
+    let semantics = VailSemantics {
+        row_type: json!([["region", logical]]),
+        global_type: json!({}),
+        globals: json!({}),
+        key_field_ids: vec![1],
+        comparator_version: TOTAL_ORDER_COMPARATOR_V3.into(),
+        reference_genomes: json!({}),
+    };
+    let key_fields = vec![KeyField {
+        field_id: 1,
+        data_type: KeyType::Canonical(logical.clone()),
+        descending: false,
+        nulls_last: true,
+    }];
+    let committed = write_initial_ordered_files(
+        &catalog,
+        &table,
+        vec![vec![batch.slice(0, 2)], vec![batch.slice(2, 2)]],
+        semantics,
+        key_fields,
+    )
+    .await
+    .unwrap();
+    let reopened = StaticTable::from_metadata_file(
+        committed.metadata_location().unwrap(),
+        TableIdent::new(namespace, "intervals".into()),
+        FileIO::new_with_fs(),
+    )
+    .await
+    .unwrap()
+    .into_table();
+    let key = |row| {
+        vec![KeyValue::Canonical(
+            vail_ordering::encode_typed_value(&intervals, row, Some(&logical)).unwrap(),
+        )]
+    };
+    let query = QueryInterval {
+        lower: Some(Endpoint {
+            key: key(1),
+            inclusive: true,
+        }),
+        upper: Some(Endpoint {
+            key: key(2),
+            inclusive: true,
+        }),
+    };
+    let (range, descriptor) = read_snapshot_range(
+        &reopened,
+        reopened.metadata().current_snapshot_id().unwrap(),
+        &query,
+    )
+    .await
+    .unwrap();
+    assert_eq!(descriptor.files.len(), 2);
+    let flags = range
+        .iter()
+        .flat_map(|batch| {
+            let values = batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<StructArray>()
+                .unwrap();
+            let starts = values
+                .column(2)
+                .as_any()
+                .downcast_ref::<BooleanArray>()
+                .unwrap();
+            let ends = values
+                .column(3)
+                .as_any()
+                .downcast_ref::<BooleanArray>()
+                .unwrap();
+            (0..batch.num_rows())
+                .map(|row| (starts.value(row), ends.value(row)))
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(flags, vec![(true, true), (false, false)]);
 }
 
 #[tokio::test]

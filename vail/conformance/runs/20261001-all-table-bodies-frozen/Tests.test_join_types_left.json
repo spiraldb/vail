@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'range'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1470, in test_join_types_left\n    ht1, ht2 = self.get_test_join_types_hts()\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1454, in get_test_join_types_hts\n    ht1 = ht1.annotate(L_DUP=hl.range(ht1.idx)).explode('L_DUP')\n                             ^^^^^^^^\nAttributeError: module 'vail' has no attribute 'range'\n"
+  }
+]

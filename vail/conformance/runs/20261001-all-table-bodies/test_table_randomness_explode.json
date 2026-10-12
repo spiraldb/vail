@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'range'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2402, in test_table_randomness_explode\n    t = t.annotate(s=hl.struct(a=hl.range(t.idx)))\n                                 ^^^^^^^^\nAttributeError: module 'vail' has no attribute 'range'\n"
+  }
+]

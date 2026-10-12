@@ -1,0 +1,16 @@
+{
+  "python_suite": {
+    "passed": 613,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "upstream_body": "Tests.test_explode_nested",
+  "upstream_body_status": "passed",
+  "execution": "Branches lower to DataFusion CaseExpr; typed runtime failure uses the existing Vail physical expression adapter only for the error branch.",
+  "limitations": "or_error raises Python RuntimeError, not Hail JVM HailUserError; the message is preserved. Original table test body extracted by the existing harness.",
+  "source_sha256": {
+    "python/vail/expressions.py": "c0af5c20736b15eb380d4ebd8c93d4357a9f744047b0e12a8aad4d1fd2cde180",
+    "crates/vail-execution/src/expressions.rs": "0da59731f41d570fda8ebb9aa357a7f3a526fdacb013b2b308b02450f645a428",
+    "python/tests/test_case.py": "da207fbfedf27c676130d86387b2a0813f922c0ae6f71a6a5b9f9e59f3a24151"
+  }
+}

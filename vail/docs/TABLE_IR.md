@@ -6,9 +6,12 @@ Read construction loads snapshot metadata, while Parallelize owns the caller's
 initial Arrow buffers. Range stores bounds. Python builds scalar expression IR;
 Rust checks row/global scope, names, types, and key preservation.
 
-Every supported TableIR node lowers to a DataFusion physical execution plan in
-`crates/vail-table/src/plan.rs`. There is no separate TableIR interpreter. This is
-physical-plan lowering; a DataFusion logical optimizer pipeline is not yet wired in.
+An action lowers TableIR into one DataFusion logical tree, runs the logical
+optimizer, and lowers that optimized tree with DataFusion's physical planner.
+Ordinary transformations remain standard logical operators. Vail logical
+extensions retain partition and ordering semantics while receiving already planned
+children. See [Logical query planning](LOGICAL_QUERY_PLANNING.md). There is no
+separate TableIR row interpreter; the table below describes resulting execution operators.
 
 | TableIR / action | DataFusion execution |
 | --- | --- |
@@ -20,6 +23,8 @@ physical-plan lowering; a DataFusion logical optimizer pipeline is not yet wired
 | MapGlobals | ProjectionExec on the separate singleton globals plan |
 | TableGetGlobals / index_globals | Native GlobalsIR reference bound by singleton CrossJoinExec |
 | KeyBy / OrderBy | SortExec over its upstream plan, with stable ordinal tie breaking |
+| Join / SemiJoin / AntiJoin | HashJoinExec on canonical keys, followed by SortExec; semi/anti plans execute separately per left partition |
+| MultiWayZipJoin | WindowAggExec and FilterExec choose duplicate representatives; full HashJoinExec combines inputs, then SortExec and ProjectionExec build ordered nullable row-value arrays |
 | Head | GlobalLimitExec; zero rows lower directly to EmptyExec |
 | Tail | OrderedTailExec extension retaining only the requested suffix |
 | Forced count | AggregateExec with DataFusion's count aggregate |
@@ -30,15 +35,37 @@ Hail-specific scalar rules (numeric overflow, array bounds, missingness, recursi
 value similarity) are physical expressions, not Python row callbacks. Array
 construction and length use DataFusion's existing nested functions.
 
-## Ordering and logical partitions
+Python `key_by` accepts named computed keys and positional nested field
+references. It unkeys before a simultaneous `TableMapRows` projection, then
+applies `TableKeyBy`; expressions read the original row even when a key field
+is replaced. `order_by` accepts arbitrary row expressions, including `asc` and
+`desc`. It projects collision-free temporary sort fields, uses `TableOrderBy`,
+and removes those fields with another projection. Both paths stay lazy and use
+DataFusion `ProjectionExec` and `SortExec` with the shared canonical ordering.
+As in Hail, complex positional `key_by` expressions require a keyword name;
+scalar-only and global-only expressions are not valid `order_by` arguments.
 
-The embedded implementation currently has one ordered DataFusion physical stream.
-A private UInt64 column carries Hail logical partition identity through relational
-operators. The action adapter removes it and emits partition boundaries for the
-storage writer, including empty partitions where Hail preserves them. It checks
-that a plan has not reordered those identities. Head/Tail retain only observed,
-nonempty logical partitions. Explicit sorting produces one logical partition.
-Physical parallelism and a distributed sort remain future work.
+## Ordering and execution partitions
+
+At action time, `partitioned::prepare` lowers the immutable TableIR into a set
+of independently executable DataFusion child plans. `TablePartitionsExec`
+advertises their actual output partition count. Its `execute(p, context)` starts
+only child `p`; partition identity does not depend on a column in the row schema.
+Range sources generate the requested slice, parallelized sources slice shared
+Arrow input, and Viceberg sources open only files belonging to that partition.
+
+Narrow transformations lower separately over each child. Partition filtering
+selects child plans, and coalescing concatenates adjacent children in order.
+Shuffle uses DataFusion `RepartitionExec` with canonical range keys and
+`SortExec` to preserve stable order inside each output partition. Planning may
+read keys/counts to choose boundaries; it retains bounded metadata rather than
+all rows. Global operations explicitly concatenate or redistribute inputs.
+An internal temporary column used by a few relational operators is removed
+before returning rows; it does not define engine partitions.
+
+Actions consume partitions in their logical order and pass explicit partition
+boundary events to the writer, including empty partitions. A distributed
+execution scheduler and distributed sorting remain future work.
 
 VicebergScanExec advertises the certified key order to DataFusion. It follows the
 Iceberg manifest entries and Vail fragment interval certificate, opening files as
@@ -188,3 +215,16 @@ logical type descriptor preserves sets across storage's physical list schema.
 Python localizes sets and nested sets (frozensets when used as members). Sets
 whose members are arrays or structs currently raise an explicit unsupported
 localization error; general set operations remain future work.
+
+
+## Expression-valued parallelize
+
+`Table.parallelize` accepts an unindexed `array<struct>` expression, a sequence of struct expressions, and Python rows containing nested expressions. The Python frontend merges row types without evaluating expressions, captures table globals as native singleton references, and lifts concrete values and literal IR leaves into Arrow-backed globals. The expression wire payload contains operators and types, not literal data.
+
+Rust retains a `TableParallelizeExpression` node. At an action, DataFusion evaluates the singleton array expression once. Its Arrow result is retained as the partition context; DataFusion `UnnestExec` and projections expose row fields. Independent `GlobalLimitExec` plans cover consecutive ranges with boundaries `floor(p * row_count / n_partitions)`, preserving input order and empty partitions. This reuses the computed Arrow array across partitions, rather than rerunning the source expression for each partition.
+
+Row-indexed expressions and unevaluated aggregator expressions are rejected. Lazy scalar aggregate results, including `collect(_localize=False)`, are accepted. A missing input array errors at execution. Missing whole struct rows are explicitly unsupported: Hail can return these as `None`, while Vail's current row representation cannot preserve their validity separately from an all-null struct. Missing fields inside a present struct are supported.
+
+## Public interval filtering
+
+`filter_intervals` accepts first-key or struct-prefix intervals and evaluates an unindexed interval-array argument as Hail does. Dataset execution remains lazy. Direct reads with `keep=True` build `TableReadIntervals`, retaining Arrow-backed scalar boundaries and selecting source partitions using certified file bounds. Exact membership uses DataFusion predicates. Other tables and `keep=False` build a `TableFilter` predicate from interval containment expressions and an OR union. These preserve key order but currently do not push intervals through transformations. The native interval input is Arrow IPC; plan diagnostics report interval counts without serializing boundary data.

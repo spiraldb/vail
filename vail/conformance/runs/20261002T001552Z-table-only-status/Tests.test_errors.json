@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "TypeError",
+    "error": "Table is immutable",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 432, in test_errors\n    self.assertRaises(NotImplementedError, f)\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 778, in assertRaises\n    return context.handle('assertRaises', args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 238, in handle\n    callable_obj(*args, **kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 430, in f\n    kt.a = 5\n    ^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 242, in __setattr__\n    raise TypeError(\"Table is immutable\")\nTypeError: Table is immutable\n"
+  }
+]

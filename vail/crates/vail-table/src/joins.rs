@@ -1,0 +1,508 @@
+//! Table joins use DataFusion's join operators and Vail's shared key encoding.
+//! Missing top-level key components never match, even though canonical ordering
+//! assigns them a position. Nested missing values remain part of a present key.
+use crate::{
+    Result, ScalarIR, TableError, TableIR, TableJoinKind, TableNode, TableRef,
+    globals::{GlobalBindings, GlobalsIR, GlobalsRef},
+    plan::{self, PartitionLayout, PhysicalPlan, TablePlan, column},
+};
+use arrow_schema::Schema;
+use datafusion_common::{NullEquality, ScalarValue};
+use datafusion_expr::JoinType;
+use datafusion_physical_expr::{
+    PhysicalExpr,
+    expressions::{CaseExpr, IsNullExpr, Literal},
+};
+use datafusion_physical_plan::{joins::SortMergeJoinExec, projection::ProjectionExec};
+use std::sync::Arc;
+use vail_execution::expressions::Type;
+
+impl TableIR {
+    pub fn join(
+        self: &Arc<Self>,
+        right: TableRef,
+        kind: TableJoinKind,
+        join_key: usize,
+    ) -> Result<TableRef> {
+        let join_key = join_key.min(self.keys().len().max(right.keys().len()));
+        let semi = matches!(kind, TableJoinKind::Semi | TableJoinKind::Anti);
+        if join_key > self.keys().len() || join_key > right.keys().len() {
+            return Err(TableError::Invalid(
+                "join key exceeds input key length".into(),
+            ));
+        }
+        if semi && (join_key == 0 || join_key != right.keys().len()) {
+            return Err(TableError::Invalid(
+                "membership join requires the entire nonempty right key".into(),
+            ));
+        }
+        for (left, right_key) in self.keys()[..join_key]
+            .iter()
+            .zip(&right.keys()[..join_key])
+        {
+            if Type::from_arrow(self.schema().field_with_name(left)?.data_type())?
+                != Type::from_arrow(right.schema().field_with_name(right_key)?.data_type())?
+            {
+                return Err(TableError::Invalid("join key type mismatch".into()));
+            }
+        }
+        let (schema, keys, globals) = if semi {
+            (
+                self.schema().clone(),
+                self.keys().to_vec(),
+                self.globals().clone(),
+            )
+        } else {
+            let prefix = &self.keys()[..join_key];
+            let mut fields = prefix
+                .iter()
+                .map(|name| {
+                    self.schema()
+                        .field_with_name(name)
+                        .map(|field| field.clone().with_nullable(true))
+                })
+                .collect::<std::result::Result<Vec<_>, _>>()?;
+            fields.extend(
+                self.schema()
+                    .fields()
+                    .iter()
+                    .filter(|f| !prefix.contains(f.name()))
+                    .map(|f| f.as_ref().clone().with_nullable(true)),
+            );
+            let right_prefix = &right.keys()[..join_key];
+            for field in right
+                .schema()
+                .fields()
+                .iter()
+                .filter(|f| !right_prefix.contains(f.name()))
+            {
+                if fields.iter().any(|f| f.name() == field.name()) {
+                    return Err(TableError::Invalid(format!(
+                        "join row field collision: {}",
+                        field.name()
+                    )));
+                }
+                fields.push(field.as_ref().clone().with_nullable(true));
+            }
+            let mut keys = self.keys().to_vec();
+            keys.extend_from_slice(&right.keys()[join_key..]);
+            (
+                Arc::new(Schema::new(fields)),
+                keys,
+                combined_globals(self.globals(), right.globals())?,
+            )
+        };
+        for field in schema.fields() {
+            if globals.schema().index_of(field.name()).is_ok() {
+                return Err(TableError::Invalid(format!(
+                    "join row/global field collision: {}",
+                    field.name()
+                )));
+            }
+        }
+        Ok(Self::new(
+            schema,
+            keys,
+            globals,
+            TableNode::Join {
+                left: self.clone(),
+                right,
+                kind,
+                join_key,
+            },
+        ))
+    }
+
+    pub fn multi_way_zip_join(
+        tables: Vec<TableRef>,
+        data_field_name: String,
+        global_field_name: String,
+    ) -> Result<TableRef> {
+        let first = tables.first().ok_or_else(|| {
+            TableError::Invalid("multi_way_zip_join requires at least one table".into())
+        })?;
+        for table in &tables {
+            if table.keys() != first.keys()
+                || logical_fields(table.schema())? != logical_fields(first.schema())?
+                || logical_fields(table.globals().schema())?
+                    != logical_fields(first.globals().schema())?
+            {
+                return Err(TableError::Invalid(
+                    "multi_way_zip_join requires identical key, row and global types".into(),
+                ));
+            }
+        }
+        if data_field_name.is_empty()
+            || global_field_name.is_empty()
+            || first.keys().contains(&data_field_name)
+            || first.keys().contains(&global_field_name)
+            || data_field_name == global_field_name
+        {
+            return Err(TableError::Invalid(
+                "invalid or colliding zip join output field names".into(),
+            ));
+        }
+        let value_type = Type::Struct {
+            r#struct: logical_fields(first.schema())?
+                .into_iter()
+                .filter(|(name, _)| !first.keys().contains(name))
+                .collect(),
+        };
+        let mut fields = first
+            .keys()
+            .iter()
+            .map(|name| first.schema().field_with_name(name).cloned())
+            .collect::<std::result::Result<Vec<_>, _>>()?;
+        fields.push(arrow_schema::Field::new(
+            &data_field_name,
+            Type::Array {
+                array: Box::new(value_type),
+            }
+            .to_arrow()?,
+            true,
+        ));
+        let globals_type = Type::Struct {
+            r#struct: logical_fields(first.globals().schema())?,
+        };
+        let mut bindings = GlobalBindings::new();
+        let mut elements = Vec::with_capacity(tables.len());
+        for (i, table) in tables.iter().enumerate() {
+            let reference = format!("zip_globals_{i}");
+            bindings.insert(reference.clone(), table.globals().clone());
+            elements.push(ScalarIR::ExternalGlobal {
+                reference,
+                dtype: globals_type.clone(),
+            });
+        }
+        let globals = GlobalsIR::empty().map_bound(
+            vec![(
+                global_field_name,
+                ScalarIR::Array {
+                    element_type: globals_type,
+                    elements,
+                },
+            )],
+            bindings,
+        )?;
+        Ok(Self::new(
+            Arc::new(Schema::new(fields)),
+            first.keys().to_vec(),
+            globals,
+            TableNode::MultiWayZipJoin {
+                tables,
+                data_field_name,
+            },
+        ))
+    }
+}
+fn logical_fields(schema: &Schema) -> Result<Vec<(String, Type)>> {
+    schema
+        .fields()
+        .iter()
+        .map(|f| Ok((f.name().clone(), Type::from_arrow(f.data_type())?)))
+        .collect()
+}
+fn combined_globals(left: &GlobalsRef, right: &GlobalsRef) -> Result<GlobalsRef> {
+    let mut fields = left
+        .schema()
+        .fields()
+        .iter()
+        .map(|f| {
+            (
+                f.name().clone(),
+                ScalarIR::Global {
+                    name: f.name().clone(),
+                },
+            )
+        })
+        .collect::<Vec<_>>();
+    let dtype = Type::Struct {
+        r#struct: logical_fields(right.schema())?,
+    };
+    for field in right.schema().fields() {
+        if left.schema().index_of(field.name()).is_ok() {
+            return Err(TableError::Invalid(format!(
+                "join global field collision: {}",
+                field.name()
+            )));
+        }
+        fields.push((
+            field.name().clone(),
+            ScalarIR::GetField {
+                value: Box::new(ScalarIR::ExternalGlobal {
+                    reference: "right_join_globals".into(),
+                    dtype: dtype.clone(),
+                }),
+                name: field.name().clone(),
+            },
+        ));
+    }
+    let mut bindings = GlobalBindings::new();
+    bindings.insert("right_join_globals".into(), right.clone());
+    left.map_bound(fields, bindings)
+}
+fn match_key(input: &PhysicalPlan, name: &str) -> Result<Arc<dyn PhysicalExpr>> {
+    let value = column(input, input.schema().index_of(name)?);
+    Ok(Arc::new(CaseExpr::try_new(
+        None,
+        vec![(
+            Arc::new(IsNullExpr::new(value.clone())),
+            Arc::new(Literal::new(ScalarValue::Binary(None))),
+        )],
+        Some(vail_execution::ordering::canonical_key(value)),
+    )?))
+}
+fn prefer_left(
+    left: Arc<dyn PhysicalExpr>,
+    right: Arc<dyn PhysicalExpr>,
+    absent: Arc<dyn PhysicalExpr>,
+) -> Result<Arc<dyn PhysicalExpr>> {
+    Ok(Arc::new(CaseExpr::try_new(
+        None,
+        vec![(absent, right)],
+        Some(left),
+    )?))
+}
+/// Attach the ordering guaranteed by a keyed TableIR (including interval
+/// clipping). This adapter does not read, sort, or repartition its input.
+#[derive(Debug)]
+struct JoinOrderingExec {
+    input: PhysicalPlan,
+    ordering: datafusion_physical_expr::LexOrdering,
+    properties: Arc<datafusion_physical_plan::PlanProperties>,
+}
+impl JoinOrderingExec {
+    fn new(input: PhysicalPlan, ordering: datafusion_physical_expr::LexOrdering) -> PhysicalPlan {
+        let mut properties = (**input.properties()).clone();
+        properties.eq_properties.add_ordering(ordering.clone());
+        properties.set_eq_properties(properties.eq_properties.clone());
+        Arc::new(Self {
+            input,
+            ordering,
+            properties: Arc::new(properties),
+        })
+    }
+}
+impl datafusion_physical_plan::DisplayAs for JoinOrderingExec {
+    fn fmt_as(
+        &self,
+        _: datafusion_physical_plan::DisplayFormatType,
+        f: &mut std::fmt::Formatter<'_>,
+    ) -> std::fmt::Result {
+        write!(f, "JoinKeyOrderingExec")
+    }
+}
+impl datafusion_physical_plan::ExecutionPlan for JoinOrderingExec {
+    fn name(&self) -> &'static str {
+        "JoinKeyOrderingExec"
+    }
+    fn properties(&self) -> &Arc<datafusion_physical_plan::PlanProperties> {
+        &self.properties
+    }
+    fn children(&self) -> Vec<&PhysicalPlan> {
+        vec![&self.input]
+    }
+    fn apply_expressions(
+        &self,
+        visitor: &mut dyn FnMut(
+            &Arc<dyn PhysicalExpr>,
+        ) -> datafusion_common::Result<
+            datafusion_common::tree_node::TreeNodeRecursion,
+        >,
+    ) -> datafusion_common::Result<datafusion_common::tree_node::TreeNodeRecursion> {
+        for key in &self.ordering {
+            let result = visitor(&key.expr)?;
+            if result == datafusion_common::tree_node::TreeNodeRecursion::Stop {
+                return Ok(result);
+            }
+        }
+        Ok(datafusion_common::tree_node::TreeNodeRecursion::Continue)
+    }
+    fn maintains_input_order(&self) -> Vec<bool> {
+        vec![true]
+    }
+    fn with_new_children(
+        self: Arc<Self>,
+        children: Vec<PhysicalPlan>,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        if children.len() != 1 {
+            return Err(datafusion_common::DataFusionError::Plan(
+                "join ordering requires one child".into(),
+            ));
+        }
+        Ok(Self::new(children[0].clone(), self.ordering.clone()))
+    }
+    fn execute(
+        &self,
+        partition: usize,
+        context: Arc<datafusion_execution::TaskContext>,
+    ) -> datafusion_common::Result<datafusion_physical_plan::SendableRecordBatchStream> {
+        self.input.execute(partition, context)
+    }
+}
+
+pub(crate) fn lower(
+    output: &TableRef,
+    left: &TableRef,
+    right: &TableRef,
+    kind: TableJoinKind,
+    join_key: usize,
+) -> Result<TablePlan> {
+    let left_plan = plan::ordinal(crate::partitioned::deferred_ordered(left.clone())?.rows);
+    let right_plan = plan::ordinal(crate::partitioned::deferred_ordered(right.clone())?.rows);
+    let left_width = left_plan.schema().fields().len();
+    let right_width = right_plan.schema().fields().len();
+    let left_ordinal = left_width - 1;
+    let right_ordinal = right_width - 1;
+    let on = if join_key == 0 {
+        let key: Arc<dyn PhysicalExpr> = Arc::new(Literal::new(ScalarValue::Int32(Some(0))));
+        vec![(key.clone(), key)]
+    } else {
+        left.keys()[..join_key]
+            .iter()
+            .zip(&right.keys()[..join_key])
+            .map(|(l, r)| Ok((match_key(&left_plan, l)?, match_key(&right_plan, r)?)))
+            .collect::<Result<Vec<_>>>()?
+    };
+    let join_type = match kind {
+        TableJoinKind::Inner => JoinType::Inner,
+        TableJoinKind::Left => JoinType::Left,
+        TableJoinKind::Right => JoinType::Right,
+        TableJoinKind::Outer => JoinType::Full,
+        TableJoinKind::Semi => JoinType::LeftSemi,
+        TableJoinKind::Anti => JoinType::LeftAnti,
+    };
+    // Canonical match keys preserve nested values and IEEE total ordering.
+    let options = arrow_schema::SortOptions {
+        descending: false,
+        nulls_first: false,
+    };
+    let ordered_input = |input: PhysicalPlan, keys: Vec<Arc<dyn PhysicalExpr>>| -> PhysicalPlan {
+        let ordering = datafusion_physical_expr::LexOrdering::new(
+            keys.into_iter()
+                .map(|expr| datafusion_physical_expr::PhysicalSortExpr::new(expr, options))
+                .collect::<Vec<_>>(),
+        )
+        .expect("join always has at least one match key");
+        JoinOrderingExec::new(input, ordering)
+    };
+    let left_plan = ordered_input(left_plan, on.iter().map(|(left, _)| left.clone()).collect());
+    let right_plan = ordered_input(
+        right_plan,
+        on.iter().map(|(_, right)| right.clone()).collect(),
+    );
+    let sort_options = vec![options; on.len()];
+    let joined: PhysicalPlan = Arc::new(SortMergeJoinExec::try_new(
+        left_plan,
+        right_plan,
+        on,
+        None,
+        join_type,
+        sort_options,
+        NullEquality::NullEqualsNothing,
+    )?);
+    let semi = matches!(kind, TableJoinKind::Semi | TableJoinKind::Anti);
+    let mut fields = Vec::new();
+    for field in output.schema().fields() {
+        let name = field.name();
+        let expr = if let Ok(index) = left.schema().index_of(name) {
+            let left_value = column(&joined, index);
+            if !semi {
+                if let Some(key_pos) = left.keys()[..join_key].iter().position(|k| k == name) {
+                    let right_index = right.schema().index_of(&right.keys()[key_pos])?;
+                    prefer_left(
+                        left_value,
+                        column(&joined, left_width + right_index),
+                        Arc::new(IsNullExpr::new(column(&joined, left_ordinal))),
+                    )?
+                } else {
+                    left_value
+                }
+            } else {
+                left_value
+            }
+        } else {
+            column(&joined, left_width + right.schema().index_of(name)?)
+        };
+        fields.push((expr, name.clone()));
+    }
+    // Stable side ordinals are used only to define output order within key ties.
+    let left_order = plan::private_name(
+        output.schema(),
+        output.globals().schema(),
+        "__vail_join_left_ordinal",
+    );
+    let right_order = plan::private_name(
+        output.schema(),
+        output.globals().schema(),
+        "__vail_join_right_ordinal",
+    );
+    fields.push((column(&joined, left_ordinal), left_order.clone()));
+    if !semi {
+        fields.push((
+            column(&joined, left_width + right_ordinal),
+            right_order.clone(),
+        ));
+    }
+    fields.push((
+        Arc::new(Literal::new(ScalarValue::UInt64(Some(0)))),
+        plan::private_name(
+            output.schema(),
+            output.globals().schema(),
+            "__vail_partition",
+        ),
+    ));
+    let projected: PhysicalPlan = Arc::new(ProjectionExec::try_new(fields, joined)?);
+    let mut ordering = if output.keys().is_empty() {
+        Vec::new()
+    } else {
+        vail_execution::OrderRequirement::new(
+            output
+                .keys()
+                .iter()
+                .map(|name| vail_execution::OrderKey::new(name, false, true))
+                .collect(),
+        )?
+        .physical_ordering(&projected.schema())?
+        .into_iter()
+        .collect::<Vec<_>>()
+    };
+    let options = arrow_schema::SortOptions {
+        descending: false,
+        nulls_first: false,
+    };
+    ordering.push(datafusion_physical_expr::PhysicalSortExpr::new(
+        column(&projected, projected.schema().index_of(&left_order)?),
+        options,
+    ));
+    if !semi {
+        ordering.push(datafusion_physical_expr::PhysicalSortExpr::new(
+            column(&projected, projected.schema().index_of(&right_order)?),
+            options,
+        ));
+    }
+    let sorted: PhysicalPlan = Arc::new(datafusion_physical_plan::sorts::sort::SortExec::new(
+        datafusion_physical_expr::LexOrdering::new(ordering)
+            .expect("join ordinal ordering is nonempty"),
+        projected,
+    ));
+    let mut fields = output
+        .schema()
+        .fields()
+        .iter()
+        .enumerate()
+        .map(|(i, f)| (column(&sorted, i), f.name().clone()))
+        .collect::<Vec<_>>();
+    fields.push((
+        Arc::new(Literal::new(ScalarValue::UInt64(Some(0)))),
+        plan::private_name(
+            output.schema(),
+            output.globals().schema(),
+            "__vail_partition",
+        ),
+    ));
+    Ok(TablePlan {
+        rows: Arc::new(ProjectionExec::try_new(fields, sorted)?),
+        layout: PartitionLayout::Fixed(1),
+    })
+}

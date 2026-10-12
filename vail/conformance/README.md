@@ -7,12 +7,14 @@ The harness compares a pinned Hail process and a native worker in separate subpr
 From the `vail` project directory:
 
 ```sh
-python3.11 -m unittest conformance.test_harness -v
+.venv/bin/python -m unittest conformance.test_harness -v
 .venv/bin/python -m conformance.run --backend native --command '.venv/bin/python -m scripts.native_conformance_worker'
-VAIL_HAIL_PYTHON=/path/to/pinned-hail-python python3.11 -m conformance.run --backend oracle
+VAIL_HAIL_PYTHON=/path/to/python-3.12-or-later .venv/bin/python -m conformance.run --backend oracle
 ```
 
 `--backend oracle` uses `VAIL_HAIL_PYTHON` when set, otherwise the current Python interpreter, and adds the checked-out Hail Python source to `PYTHONPATH`. The Hail source checkout must be built and have its runtime Python dependencies/JARs available. Oracle initialization failure is reported as `UNAVAILABLE` and fails the command. It never promotes source-derived fixture expectations to captured oracle results.
+
+Run `bash scripts/bootstrap_hail_oracle.sh` to build the pinned Hail checkout with Mill, fetch its JDK 21, generate the Python version metadata, copy the Spark JAR, and install Hail's dependencies in an isolated Python 3.12 environment. The script prints the environment variables for the oracle command. The harness ignores Spark's plain-text stdout diagnostics and accepts only conformance-protocol JSON responses.
 
 A native `UNSUPPORTED` fixture is reported separately and exits with status 2; it is not counted as passed. A failed assertion or unavailable oracle exits with status 1. The optional `--write-outcomes PATH` stores raw worker responses.
 
@@ -37,6 +39,8 @@ Baseline source is Hail commit `e10cc355bc8cd0de9c5f29d5182d31527898bae1`. The g
 Native run (2026-09-24) used the repository `.venv` Python 3.12 worker `scripts.native_conformance_worker`: key/null order, duplicate-key bag/order, and sorted head/take passed. The globals/source-error fixture returned `UNSUPPORTED: native globals not implemented`; the runner counted one unsupported fixture and exited 2. This is visible coverage status, not a parity pass.
 
 Oracle attempt ran `VAIL_HAIL_PYTHON=/private/tmp/vail-hail-oracle/bin/python python3.11 -m conformance.run --backend oracle conformance/fixtures/case_key_order_nulls.json`; `/private/tmp/vail-hail-oracle` was an isolated uv-created Python 3.12 environment with the Hail source tree added to `PYTHONPATH`. It failed during Hail initialization with `ModuleNotFoundError: No module named 'hailtop.version'`. The checked-out source lacks generated `hailtop/version.py` and `hail-all-spark.jar`; that isolated environment also has no `pyspark`, `numpy`, `pandas`, `avro`, or `deprecated` modules. No Spark/JVM packages were installed, and no result is marked oracle-captured.
+
+On 2026-09-28, the pinned Hail commit was built with Mill and run with Spark 4.1.2 and Python 3.12. The oracle passed all four current fixtures: `duplicate_keys`, `globals_source_errors`, `key_order_nulls`, and `order_head_take`. The earlier `UNAVAILABLE` result was a missing local build/runtime setup. The baseline provenance fields remain source-derived until expected values are explicitly reviewed and updated.
 
 ## Original upstream test bodies
 

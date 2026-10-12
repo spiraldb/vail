@@ -1,0 +1,18 @@
+{
+  "vortex_version": "0.86.1",
+  "rust_audit_tests": {
+    "passed": 11,
+    "failed": 0
+  },
+  "semantics_changed": false,
+  "provider_implemented": false,
+  "critical_finding": "Iceberg metrics pruning omits a positive-NaN Vortex file for x > +infinity although Vortex row comparison matches.",
+  "limitations": "Differential tests cover selected canonical and compressed cases; no exhaustive encoding/layout, mixed-width promotion, or end-to-end query optimizer coverage. Valid locus alignment was source-inspected.",
+  "source_sha256": {
+    "Cargo.lock": "193b2214940a7debcc905668e9a7d465fc0a6f4f02336c33887dbc6325c9841d",
+    "crates/vail-storage/tests/vortex_comparison_audit.rs": "7c3d5527b17dc1dd30676e7ae64e10f5cc0041f63f4c5fdd306cc768a501299b",
+    "crates/vail-ordering/src/lib.rs": "9578f86c8d3e9c9c75e329de5f8d756bc957979315e014f094007c63e65cfdaf",
+    "patches/iceberg-rust/crates/iceberg/src/arrow/reader/vortex.rs": "94c6126ed03f886755580092b0268ad31df65a00470acc2ddabf528de8c0227b",
+    "patches/iceberg-rust/crates/iceberg/src/expr/visitors/inclusive_metrics_evaluator.rs": "055c08568c403e60f661211885ad8b879baa702e8f67f5224bb85f5275ea2d16"
+  }
+}

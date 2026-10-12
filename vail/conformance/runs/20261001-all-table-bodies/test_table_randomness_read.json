@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "blocked",
+    "phase": "body",
+    "error_type": "NameError",
+    "error": "name 'ir' is not defined",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2450, in test_table_randomness_read\n    assert_contains_node(t, ir.TableRead)\n                            ^^\nNameError: name 'ir' is not defined\n"
+  }
+]

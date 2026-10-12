@@ -1,0 +1,35 @@
+[
+  {
+    "parameters": {
+      "query": "50",
+      "expected": "[Struct(idx=50, idx2=10, s='50')]"
+    },
+    "status": "blocked",
+    "phase": "fixture",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'str'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 126, in worker\n    kwargs[name] = fixture(name)\n                   ^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 116, in fixture\n    fixture_cache[name] = factory(**{n: fixture(n) for n in inspect.signature(factory).parameters})\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2701, in compound_key_table\n    ht.annotate(idx2=ht.idx % 20, s=hl.str(ht.idx)).key_by('idx', 'idx2').write(path)\n                                    ^^^^^^\nAttributeError: module 'vail' has no attribute 'str'. Did you mean: 'tstr'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.StructExpression object at 0x109005960>",
+      "expected": "[Struct(idx=50, idx2=10, s='50')]"
+    },
+    "status": "blocked",
+    "phase": "fixture",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'str'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 126, in worker\n    kwargs[name] = fixture(name)\n                   ^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 116, in fixture\n    fixture_cache[name] = factory(**{n: fixture(n) for n in inspect.signature(factory).parameters})\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2701, in compound_key_table\n    ht.annotate(idx2=ht.idx % 20, s=hl.str(ht.idx)).key_by('idx', 'idx2').write(path)\n                                    ^^^^^^\nAttributeError: module 'vail' has no attribute 'str'. Did you mean: 'tstr'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10a89d490>",
+      "expected": "[]"
+    },
+    "status": "blocked",
+    "phase": "fixture",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'str'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 126, in worker\n    kwargs[name] = fixture(name)\n                   ^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 116, in fixture\n    fixture_cache[name] = factory(**{n: fixture(n) for n in inspect.signature(factory).parameters})\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2701, in compound_key_table\n    ht.annotate(idx2=ht.idx % 20, s=hl.str(ht.idx)).key_by('idx', 'idx2').write(path)\n                                    ^^^^^^\nAttributeError: module 'vail' has no attribute 'str'. Did you mean: 'tstr'?\n"
+  }
+]

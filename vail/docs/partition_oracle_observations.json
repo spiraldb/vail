@@ -1,0 +1,120 @@
+{
+  "oracle": {
+    "hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+    "python": "3.12",
+    "spark": "4.1.2",
+    "java": "OpenJDK 21",
+    "master": "local[2]",
+    "date": "2026-10-01",
+    "backend_note": "Spark backend reported requires_lowering=false. Simplify.scala:1821 rewrites TableRepartition(TableRange(n, _), target, strategy) to TableRange(n, target), discarding strategy."
+  },
+  "cases": {
+    "range10_n4_naive_coalesce": {
+      "input_partition_count": 4,
+      "input_rows": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "raw_ir_before_action_template": "(TableRepartition target 2 (TableRange 10 4))",
+      "optimizer_source": "hail/hail/hail/src/is/hail/expr/ir/lowering/Simplify.scala:1821 matches strategy-agnostically and replaces this with (TableRange 10 target).",
+      "targets": {
+        "2": {"reported_partition_count": 2, "partition_rows": [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]},
+        "4": {"reported_partition_count": 4, "partition_rows": [[0, 1, 2], [3, 4, 5], [6, 7], [8, 9]]},
+        "5": {"reported_partition_count": 5, "partition_rows": [[0, 1], [2, 3], [4, 5], [6, 7], [8, 9]]},
+        "9": {"reported_partition_count": 9, "partition_rows": [[0, 1], [2], [3], [4], [5], [6], [7], [8], [9]]}
+      },
+      "cause": "TableRange simplification discards NAIVE_COALESCE and requests the target partition count."
+    },
+    "parallelized_unkeyed_n4_naive_coalesce": {
+      "input_partition_count": 4,
+      "input_rows": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "targets": {
+        "2": {"reported_partition_count": 2, "partition_rows": [[0, 1, 2, 3, 4], [5, 6, 7, 8, 9]]},
+        "4": {"reported_partition_count": 4, "partition_rows_unchanged": true},
+        "5": {"reported_partition_count": 4, "partition_rows_unchanged": true},
+        "9": {"reported_partition_count": 4, "partition_rows_unchanged": true}
+      },
+      "confirms_documented_max_cap_when_TableRange_rewrite_does_not_apply": true
+    },
+    "range10_n4_repartition": {
+      "input_partition_count": 4,
+      "shuffle_true_7": {"reported_partition_count": 7, "rows": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]},
+      "shuffle_false_2": {"reported_partition_count": 2, "rows": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]},
+      "shuffle_false_5": {"reported_partition_count": 5, "rows": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]},
+      "shuffle_false_5_note": "This input is TableRange, so Simplify.scala:1821 replaces it with TableRange(10,5)."
+    },
+    "parallelized_unkeyed_repartition_shuffle_false_5": {
+      "input_partition_count": 4,
+      "reported_partition_count": 4,
+      "rows": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "requires_lowering": false
+    },
+    "filter_partitions": {
+      "input_partition_count": 4,
+      "parts": [3, 0, 3],
+      "keep": true,
+      "reported_partition_count": 2,
+      "rows_in_output_order": [0, 1, 2, 8, 9],
+      "duplicate_ids_duplicate_rows": false,
+      "out_of_bounds_keep_error": "FatalError: HailException: _filter_partitions: no partition with index 4 (num partitions = 4)",
+      "out_of_bounds_exclude_error": "FatalError: HailException: _filter_partitions: no partition with index 4 (num partitions = 4)"
+    },
+    "filter_validation_edge_cases": {
+      "empty_keep": {"reported_partition_count": 0, "rows": []},
+      "range_0_to_3_keep": {"reported_partition_count": 3, "rows": [0, 1, 2, 3, 4, 5, 6, 7]},
+      "duplicate_id_keep": {"parts": [1, 1], "reported_partition_count": 1, "rows": [3, 4, 5]}
+    },
+    "empty_keyed_shuffle": {
+      "input": "hl.utils.range_table(0, n_partitions=4)",
+      "shuffle_targets": {
+        "1": {"reported_partition_count": 1, "rows": []},
+        "4": {"reported_partition_count": 1, "rows": []}
+      }
+    },
+    "calculate_new_partitions_range10_n4_request2": {
+      "ranges": [
+        {"start": [0], "end": [5], "includes_start": true, "includes_end": false},
+        {"start": [5], "end": [9], "includes_start": true, "includes_end": true}
+      ]
+    },
+    "calculate_new_partitions_duplicates": {
+      "rows": [{"k": 1, "v": 0}, {"k": 1, "v": 1}, {"k": 1, "v": 2}, {"k": 1, "v": 3}, {"k": 1, "v": 4}, {"k": 2, "v": 5}],
+      "reported_partition_count": 2,
+      "request": 10,
+      "ranges": [
+        {"start": [1], "end": [2], "includes_start": true, "includes_end": true},
+        {"start": [2], "end": [2], "includes_start": true, "includes_end": true}
+      ],
+      "repartition_10_reported_partition_count": 2,
+      "repartition_10_rows_preserve_multiplicity_and_order": true
+    },
+    "calculate_new_partitions_empty_keyed_range": {
+      "input": "hl.utils.range_table(0, n_partitions=4)",
+      "request": 2,
+      "returned_value": [],
+      "note": "The value is a Python list; hl.eval([]) fails expression typechecking."
+    },
+    "group_within_partitions": {
+      "input_rows": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+      "input_partition_count": 4,
+      "group_size": 3,
+      "output_partition_count": 4,
+      "groups_with_first_row_as_output_key": [
+        {"key": 0, "rows": [0, 1, 2]},
+        {"key": 3, "rows": [3, 4, 5]},
+        {"key": 6, "rows": [6, 7]},
+        {"key": 8, "rows": [8, 9]}
+      ],
+      "zero_group_size_error_on_evaluation": "HailException: stream grouped: non-positive size: 0"
+    },
+    "grouped_partition_hint": {
+      "distinct_group_keys": 2,
+      "runs": {
+        "default": {"reported_partition_count": 2, "rows": [{"k": 0, "n": 4}, {"k": 1, "n": 4}]},
+        "hint_1": {"reported_partition_count": 2, "rows": [{"k": 0, "n": 4}, {"k": 1, "n": 4}]},
+        "hint_7": {"reported_partition_count": 2, "rows": [{"k": 0, "n": 4}, {"k": 1, "n": 4}]}
+      }
+    },
+    "repartition_invalid_targets": {
+      "target_0": "FatalError: IllegalArgumentException: requirement failed",
+      "target_negative_1": "FatalError: IllegalArgumentException: requirement failed"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "python_passed": 537,
+  "python_skipped": 1,
+  "python_subtests_passed": 19,
+  "new_python_cases": 20,
+  "rust_passed": 64,
+  "new_rust_cases": 2,
+  "failures": 0,
+  "hail_oracle": "captured from pinned checkout; see docs/research/string-operations-hail-oracle.json",
+  "execution": "DataFusion built-in scalar functions, CASE, casts and binary expressions; no new string evaluator",
+  "unsupported": [
+    "General UTF-16 indexing/slicing/reversal and bounded find",
+    "General Java regex, captures, replacement templates, dynamic patterns, zero-width split/replacement, split limits",
+    "Dynamic translation dictionaries and multi-character translations",
+    "Hail numeric parsing grammar",
+    "Java formatting, typed JSON, hamming, entropy and non-string delimit"
+  ],
+  "case_conversion_limit": "Full JVM locale and Unicode-version parity not established"
+}

@@ -1,7 +1,6 @@
-//! A narrow, checked ordering boundary for embedded Arrow partitions.
+//! Canonical Hail key ordering for embedded Arrow partitions.
 //!
-//! This crate currently accepts Arrow's ordering for primitive integer, Boolean,
-//! and ASCII string keys. It does not claim the full Hail comparator contract.
+//! Ordering expressions use the same byte encoding as keyed storage metadata.
 //! It always sorts the provided in-memory partitions before merging them. It
 //! does not yet propagate an order proof through arbitrary DataFusion plans or
 //! provide a streaming storage scan; the caller's memory limit applies to the
@@ -10,19 +9,29 @@
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use arrow_array::{LargeStringArray, RecordBatch, StringArray};
+use arrow_array::RecordBatch;
+#[cfg(test)]
+use arrow_array::StringArray;
 use arrow_schema::{DataType, SchemaRef, SortOptions};
 use datafusion_common::DataFusionError;
 use datafusion_datasource::memory::MemorySourceConfig;
 use datafusion_execution::TaskContext;
-use datafusion_physical_expr::expressions::Column;
+use datafusion_physical_expr::expressions::{Column, IsNullExpr};
 use datafusion_physical_expr::{LexOrdering, PhysicalSortExpr};
 use datafusion_physical_plan::execution_plan::{ExecutionPlan, ExecutionPlanProperties, collect};
 use datafusion_physical_plan::sorts::sort::SortExec;
 use datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeExec;
 use thiserror::Error;
 
+mod aggregate_identity;
+pub mod aggregates;
+pub mod collect_aggregate;
+pub mod csv_line;
 pub mod expressions;
+pub mod logical_expr;
+pub mod ordering;
+pub mod reference;
+pub mod scan_state;
 
 #[derive(Debug, Error)]
 pub enum OrderError {
@@ -102,10 +111,17 @@ impl OrderRequirement {
             }
             let column = Arc::new(Column::new(&key.column, index));
             sort_exprs.push(PhysicalSortExpr::new(
-                column,
+                Arc::new(IsNullExpr::new(column.clone())),
+                SortOptions {
+                    descending: !key.nulls_last,
+                    nulls_first: false,
+                },
+            ));
+            sort_exprs.push(PhysicalSortExpr::new(
+                ordering::canonical_key(column),
                 SortOptions {
                     descending: key.descending,
-                    nulls_first: !key.nulls_last,
+                    nulls_first: false,
                 },
             ));
         }
@@ -116,20 +132,7 @@ impl OrderRequirement {
 }
 
 fn supports_arrow_comparator(data_type: &DataType) -> bool {
-    matches!(
-        data_type,
-        DataType::Boolean
-            | DataType::Int8
-            | DataType::Int16
-            | DataType::Int32
-            | DataType::Int64
-            | DataType::UInt8
-            | DataType::UInt16
-            | DataType::UInt32
-            | DataType::UInt64
-            | DataType::Utf8
-            | DataType::LargeUtf8
-    )
+    vail_ordering::supports(data_type)
 }
 
 /// A reusable execution context for ordered collection.
@@ -180,32 +183,6 @@ pub fn plan_ordered_collect(
                 return Err(OrderError::InvalidInput(format!(
                     "partition {partition_index} batch {batch_index} schema differs from the declared schema"
                 )));
-            }
-            for key in requirement.keys() {
-                let index = schema.index_of(&key.column).map_err(|_| {
-                    OrderError::InvalidRequirement(format!(
-                        "sort column {:?} is absent from the input schema",
-                        key.column
-                    ))
-                })?;
-                let array = batch.column(index);
-                let ascii = match schema.field(index).data_type() {
-                    DataType::Utf8 => array
-                        .as_any()
-                        .downcast_ref::<StringArray>()
-                        .is_some_and(|values| values.iter().flatten().all(str::is_ascii)),
-                    DataType::LargeUtf8 => array
-                        .as_any()
-                        .downcast_ref::<LargeStringArray>()
-                        .is_some_and(|values| values.iter().flatten().all(str::is_ascii)),
-                    _ => true,
-                };
-                if !ascii {
-                    return Err(OrderError::InvalidInput(format!(
-                        "partition {partition_index} batch {batch_index} sort column {:?} contains non-ASCII data; Hail string collation is not implemented",
-                        key.column
-                    )));
-                }
             }
         }
     }
@@ -542,7 +519,7 @@ mod tests {
             vec![Arc::new(Float64Array::from(vec![1.0]))],
         )
         .unwrap();
-        assert!(plan_ordered_collect(&[vec![float_batch]], float_schema, &order, None).is_err());
+        assert!(plan_ordered_collect(&[vec![float_batch]], float_schema, &order, None).is_ok());
         let string_schema: SchemaRef =
             Arc::new(Schema::new(vec![Field::new("k", DataType::Utf8, false)]));
         let string_batch = RecordBatch::try_new(
@@ -550,6 +527,13 @@ mod tests {
             vec![Arc::new(StringArray::from(vec!["é"]))],
         )
         .unwrap();
-        assert!(plan_ordered_collect(&[vec![string_batch]], string_schema, &order, None).is_err());
+        assert!(plan_ordered_collect(&[vec![string_batch]], string_schema, &order, None).is_ok());
     }
 }
+
+pub mod advanced_collection_aggregates;
+pub mod advanced_genomic_aggregates;
+pub mod advanced_numeric_aggregates;
+pub mod array_length_aggregate;
+
+pub mod fold_aggregate;

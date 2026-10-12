@@ -33,7 +33,8 @@ def test_row_expressions_bind_globals_through_datafusion():
     assert hl.eval(filtered.tail(1).order_by('y').globals) == hl.eval(t.globals)
     plan = mapped._native.physical_plan()
     assert 'ProjectionExec' in plan and 'CrossJoinExec' in plan and 'RangeExec' in plan
-    assert 'FilterExec' in filtered._native.physical_plan()
+    # DataFusion may fuse the predicate into the singleton globals join.
+    assert 'Filter:' in filtered._native.logical_plan() or 'filter=' in filtered._native.physical_plan()
 
 
 def test_global_updates_are_lazy_and_scoped_to_each_ir_node():
@@ -271,9 +272,9 @@ def test_native_rejects_missing_duplicate_and_mistyped_global_references():
     wire = expression.to_ir()
     references = list(wire.references.items())
     with pytest.raises(ValueError, match='unbound'):
-        native.eval_global_json(json.dumps(wire))
+        native.eval_global_arrow(json.dumps(wire))
     with pytest.raises(ValueError, match='duplicate'):
-        native.eval_global_json(json.dumps(wire), references + references)
+        native.eval_global_arrow(json.dumps(wire), references + references)
     wire['dtype'] = 'int32'
     with pytest.raises(ValueError, match='type mismatch'):
-        native.eval_global_json(json.dumps(wire), references)
+        native.eval_global_arrow(json.dumps(wire), references)

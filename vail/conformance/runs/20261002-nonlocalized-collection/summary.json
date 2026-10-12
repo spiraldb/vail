@@ -1,0 +1,113 @@
+{
+  "apis": [
+    "Table.collect",
+    "Table.take",
+    "Expression.collect",
+    "Expression.take"
+  ],
+  "execution": "Lazy GlobalsIR aggregation lowered to DataFusion; evaluating or embedding the resulting expression executes the source.",
+  "local_python": {
+    "passed": 597,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "rust_collect_tests_passed": 4,
+  "upstream_original_bodies": {
+    "Tests.test_table_order_by_head_rewrite": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_take_localize_false": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_expr_collect": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_expr_collect_localize_false": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_expr_take_localize_false": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_collect_localize_false": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_aggregate_localize_false": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_take_order": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ]
+  },
+  "new_complete_passing_definitions": [
+    "Tests.test_table_order_by_head_rewrite",
+    "Tests.test_take_localize_false",
+    "Tests.test_expr_collect",
+    "Tests.test_expr_collect_localize_false",
+    "Tests.test_expr_take_localize_false",
+    "Tests.test_collect_localize_false"
+  ],
+  "source_sha256": {
+    "python/vail/__init__.py": "824f525c8716802c87c55387b199fed8f9fd9bef3259e9b4b0b613219dd09201",
+    "python/vail/expressions.py": "148aa1380cb570bc429c16534327fcb6bafdad63be6288aa4215254d38129c55",
+    "crates/vail-execution/src/collect_aggregate.rs": "6a7f110b6c3bad8b5b8acfd17f49f6260bf97ead39b4b90deed3e862467e1744",
+    "python/tests/test_nonlocalized_collection.py": "8058b8d6511a8835d1ce94b88d3cbe0953af7f8f4ee88e05f5e4df884ba2c5db"
+  },
+  "limitations": "Upstream bodies are extracted by the existing harness, not a full Hail runtime differential run. Wide-table variants are reported separately.",
+  "wide_table_body_cases": [
+    {
+      "parameters": {
+        "width": "256"
+      },
+      "status": "passed"
+    },
+    {
+      "parameters": {
+        "width": "512"
+      },
+      "status": "passed"
+    },
+    {
+      "parameters": {
+        "width": "1024"
+      },
+      "status": "passed"
+    },
+    {
+      "parameters": {
+        "width": "2048"
+      },
+      "status": "passed"
+    },
+    {
+      "parameters": {
+        "width": "3072"
+      },
+      "status": "passed"
+    }
+  ],
+  "wide_table_limitations": "Widths 256, 512, 1024, 2048, and 3072 pass the extracted assertion body. The harness omits the upstream strict xfail decorator at width 3072; these results are excluded from the newly confirmed definition count."
+}

@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'str'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 449, in test_semi_anti_join\n    ht_2k = ht.key_by(k1=ht.idx, k2=hl.str(ht.idx * 2))\n                                    ^^^^^^\nAttributeError: module 'vail' has no attribute 'str'. Did you mean: 'tstr'?\n"
+  }
+]

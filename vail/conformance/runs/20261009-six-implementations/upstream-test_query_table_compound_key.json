@@ -1,0 +1,23 @@
+[
+  {
+    "parameters": {
+      "query": "50",
+      "expected": "[Struct(idx=50, idx2=10, s='50')]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.StructExpression object at 0x127d8d2a0>",
+      "expected": "[Struct(idx=50, idx2=10, s='50')]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x127d91600>",
+      "expected": "[]"
+    },
+    "status": "passed"
+  }
+]

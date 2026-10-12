@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "TypeError",
+    "error": "unhashable type: 'StructExpression'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1667, in test_show__various_types\n    x5={hl.struct(foo=5): 'bar'},\n       ^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unhashable type: 'StructExpression'\n"
+  }
+]

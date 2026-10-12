@@ -1,0 +1,52 @@
+[
+  {
+    "parameters": {
+      "branching_factor": "2"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute '_with_flags'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+  },
+  {
+    "parameters": {
+      "branching_factor": "3"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute '_with_flags'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+  },
+  {
+    "parameters": {
+      "branching_factor": "5"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute '_with_flags'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+  },
+  {
+    "parameters": {
+      "branching_factor": "7"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute '_with_flags'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+  },
+  {
+    "parameters": {
+      "branching_factor": "121"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute '_with_flags'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+  }
+]

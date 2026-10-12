@@ -1,0 +1,205 @@
+Categorization by first observed obstacle; each unsuccessful definition appears once.
+A later obstacle may remain after the first is fixed.
+
+Expression constructors, operators and type inference: 39 definitions
+
+  Tests.test_java_array_string_encoding [failed]: AttributeError: module 'vail' has no attribute 'str'
+  Tests.test_group_by_field_lifetimes [failed]: AttributeError: all
+  Tests.test_group_aggregate_na [failed]: AttributeError: module 'vail' has no attribute 'or_missing'
+  Tests.test_semi_anti_join [failed]: AttributeError: module 'vail' has no attribute 'str'
+  Tests.test_interval_filter_unordered [failed]: AttributeError: module 'vail' has no attribute 'filter_intervals'
+  Tests.test_join_with_empty [failed]: AttributeError: module 'vail' has no attribute 'is_defined'
+  Tests.test_join_with_key [failed]: AttributeError: all
+  Tests.test_product_join [failed]: AttributeError: module 'vail' has no attribute 'range'
+  Tests.test_table_parallelize_infer_types [failed]: AttributeError: module 'vail' has no attribute 'locus'
+  Tests.test_table_parallelize_partial_infer_types [failed]: NotImplementedError: partial_type is not implemented in this initial slice
+  Tests.test_issue_3654 [failed]: TypeError: arithmetic requires a numeric expression
+  Tests.test_explode_on_set [failed]: AttributeError: module 'vail' has no attribute 'set'
+  Tests.test_explode_nested [failed]: AttributeError: module 'vail' has no attribute 'case'
+  Tests.test_read_back_same_as_exported [failed]: AttributeError: module 'vail' has no attribute 'set'
+  Tests.test_order_by_expr [failed]: AttributeError: module 'vail' has no attribute 'range'
+  Tests.test_join_types_ht1_is_what_we_expect [failed]: AttributeError: module 'vail' has no attribute 'range'
+  Tests.test_join_types_ht2_is_what_we_expect [failed]: AttributeError: module 'vail' has no attribute 'range'
+  Tests.test_join_types_left [failed]: AttributeError: module 'vail' has no attribute 'range'
+  Tests.test_join_types_right [failed]: AttributeError: module 'vail' has no attribute 'range'
+  Tests.test_join_types_inner [failed]: AttributeError: module 'vail' has no attribute 'range'
+  Tests.test_join_types_outer [failed]: AttributeError: module 'vail' has no attribute 'range'
+  Tests.test_expand_types [failed]: AttributeError: module 'vail' has no attribute 'locus'
+  Tests.test_expand_types_on_all_types [failed]: AttributeError: module 'vail' has no attribute 'set'
+  Tests.test_show__various_types [failed]: TypeError: unhashable type: 'StructExpression'
+  Tests.test_unicode_ordering [failed]: AttributeError: module 'vail' has no attribute 'sorted'
+  test_join_distinct_preserves_count [failed]: TypeError: cannot infer a Vail type for Expression
+  test_write_table_containing_ndarray [failed]: AttributeError: module 'vail.nd' has no attribute 'arange'
+  test_group_within_partitions_after_explode [failed]: AttributeError: module 'vail' has no attribute 'range'
+  test_read_write_all_types [failed]: AttributeError: module 'vail' has no attribute 'set'
+  test_to_pandas [failed]: AttributeError: module 'vail' has no attribute 'range'
+  test_to_pandas_types_type_to_type [failed]: AttributeError: module 'vail' has no attribute 'range'
+  test_to_pandas_types_column_to_type [failed]: AttributeError: module 'vail' has no attribute 'range'
+  test_to_pandas_flatten [failed]: AttributeError: module 'vail' has no attribute 'range'
+  test_to_pandas_null_ints [failed]: AttributeError: module 'vail' has no attribute 'or_missing'
+  test_to_pandas_nd_array [failed]: AttributeError: module 'vail.nd' has no attribute 'arange'
+  test_write_many [failed]: AttributeError: module 'vail' has no attribute 'str'
+  test_table_randomness_explode [failed]: AttributeError: module 'vail' has no attribute 'range'
+  test_table_randomness_parallelize_without_body_randomness [failed]: TypeError: only struct expressions can be expanded as mappings
+  test_table_randomness_filter_intervals [failed]: AttributeError: module 'vail' has no attribute 'filter_intervals'
+
+Harness and Hail backend/IR dependencies: 18 definitions
+
+  Tests.test_from_spark_works [blocked]: NameError: name 'Env' is not defined
+  test_literal_of_pandas_NA_and_numpy_int64 [failed]: ModuleNotFoundError: No module named 'hail'
+  test_literal_of_pandas_NA_and_numpy_int32 [failed]: ModuleNotFoundError: No module named 'hail'
+  test_table_randomness_range_table [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_join [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_union [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_map_globals_without_body_randomness [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_key_by [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_map_rows_without_body_randomness [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_read [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_filter_without_cond_randomness [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_key_by_and_aggregate_without_body_randomness [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_head [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_tail [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_order_by [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_distinct [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_rename [blocked]: NameError: name 'ir' is not defined
+  test_table_randomness_multi_way_zip_join [blocked]: NameError: name 'ir' is not defined
+
+VCF, MatrixTable and BlockMatrix support: 17 definitions
+
+  Tests.test_to_matrix_table [failed]: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+  Tests.test_to_matrix_table_row_major [failed]: AttributeError: to_matrix_table_row_major
+  Tests.test_table_matrix_join_combinations [failed]: AttributeError: module 'vail' has no attribute 'import_vcf'
+  Tests.test_multiple_entry_joins [failed]: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+  Tests.test_multi_way_zip_join_key_downcast [failed]: AttributeError: module 'vail' has no attribute 'import_vcf'
+  Tests.test_multi_way_zip_join_key_downcast2 [failed]: AttributeError: module 'vail' has no attribute 'import_vcf'
+  Tests.test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245 [failed]: AttributeError: module 'vail' has no attribute 'import_vcf'
+  Tests.test_localize_entries [failed]: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+  Tests.test_localize_self_join [failed]: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+  Tests.test_physical_key_truncation [failed]: AttributeError: module 'vail' has no attribute 'import_vcf'
+  test_group_within_partitions_after_import_vcf [failed]: AttributeError: module 'vail' has no attribute 'import_vcf'
+  test_grouped_flatmap_streams [failed]: AttributeError: module 'vail' has no attribute 'import_vcf'
+  test_table_randomness_range_matrix_rows_table [failed]: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+  test_table_randomness_matrix_entries_table [failed]: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+  test_table_randomness_matrix_cols_table [failed]: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+  test_table_randomness_cast_matrix_to_table [failed]: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+  test_table_randomness_block_matrix_to_table [failed]: AttributeError: module 'vail' has no attribute 'linalg'
+
+Randomness, sampling and scans: 15 definitions
+
+  Tests.test_scan_filter [failed]: AttributeError: module 'vail' has no attribute 'scan'
+  Tests.test_scan_tail [failed]: AttributeError: module 'vail' has no attribute 'scan'
+  Tests.test_sample [failed]: AttributeError: sample
+  Tests.test_nested_union_100 [failed]: AttributeError: module 'vail' has no attribute 'rand_bool'
+  Tests.test_nested_union_200 [failed]: AttributeError: module 'vail' has no attribute 'rand_bool'
+  Tests.test_partitioning_rewrite [failed]: AttributeError: module 'vail' has no attribute 'rand_unif'
+  test_keys_before_scans [failed]: AttributeError: module 'vail' has no attribute 'scan'
+  test_table_randomness_map_globals_with_body_randomness [failed]: AttributeError: module 'vail' has no attribute 'rand_int64'
+  test_table_randomness_map_rows_with_body_randomness [failed]: AttributeError: module 'vail' has no attribute 'rand_int64'
+  test_table_randomness_map_rows_with_scan_randomness [failed]: AttributeError: module 'vail' has no attribute 'scan'
+  test_table_randomness_map_partitions [failed]: AttributeError: module 'vail' has no attribute 'rand_int64'
+  test_table_randomness_filter_with_cond_randomness [failed]: AttributeError: module 'vail' has no attribute 'rand_int64'
+  test_table_randomness_key_by_and_aggregate_with_body_randomness [failed]: AttributeError: module 'vail' has no attribute 'rand_int64'
+  test_table_randomness_key_by_and_aggregate_with_agg_randomness [failed]: AttributeError: module 'vail' has no attribute 'rand_int64'
+  test_table_randomness_parallelize_with_body_randomness [failed]: AttributeError: module 'vail' has no attribute 'rand_int64'
+
+Text I/O, storage options and temp-directory helper: 15 definitions
+
+  Tests.test_interval_product_join_long_key [failed]: AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+  Tests.test_export [failed]: AttributeError: export
+  Tests.test_export_delim [failed]: AttributeError: export
+  Tests.test_write_stage_locally [failed]: NotImplementedError: staging and custom codecs are not supported
+  Tests.test_min_partitions [failed]: AttributeError: module 'vail' has no attribute 'import_table'
+  Tests.test_indexed_read_1 [failed]: NotImplementedError: custom read_table options are not yet supported
+  Tests.test_indexed_read_2 [failed]: NotImplementedError: custom read_table options are not yet supported
+  Tests.test_indexed_read_3 [failed]: NotImplementedError: custom read_table options are not yet supported
+  Tests.test_indexed_read_4 [failed]: NotImplementedError: custom read_table options are not yet supported
+  Tests.test_rvd_key_write [failed]: AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+  Tests.test_import_filter_replace [failed]: AttributeError: module 'vail' has no attribute 'import_table'
+  Tests.test_import_multiple_missing [failed]: AttributeError: module 'vail' has no attribute 'import_table'
+  test_large_number_of_fields [failed]: AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+  test_import_many_fields [failed]: AttributeError: module 'vail' has no attribute 'import_table'
+  test_can_process_wide_tables [failed]: AttributeError: module 'vail' has no attribute 'import_table'
+
+Keyed lookup and interval/expression indexing: 13 definitions
+
+  Tests.test_indirected_joins [failed]: NotImplementedError: keyed lookup is not implemented in this initial slice
+  Tests.test_interval_join [failed]: AttributeError: index
+  Tests.test_interval_product_join [failed]: AttributeError: index
+  Tests.test_index_maintains_count [failed]: NotImplementedError: keyed lookup is not implemented in this initial slice
+  Tests.test_refs_with_process_joins [failed]: NotImplementedError: keyed lookup is not implemented in this initial slice
+  test_maybe_flexindex_table_by_expr_direct_match [failed]: AttributeError: _maybe_flexindex_table_by_expr
+  test_maybe_flexindex_table_by_expr_prefix_match [failed]: AttributeError: _maybe_flexindex_table_by_expr
+  test_maybe_flexindex_table_by_expr_direct_interval_match [failed]: AttributeError: _maybe_flexindex_table_by_expr
+  test_maybe_flexindex_table_by_expr_prefix_interval_match [failed]: AttributeError: _maybe_flexindex_table_by_expr
+  test_join_with_key_prefix [failed]: NotImplementedError: keyed lookup is not implemented in this initial slice
+  test_range_annotate_range [failed]: NotImplementedError: keyed lookup is not implemented in this initial slice
+  test_table_randomness_left_join_right_distinct [failed]: NotImplementedError: keyed lookup is not implemented in this initial slice
+  test_table_randomness_interval_join [failed]: NotImplementedError: keyed lookup is not implemented in this initial slice
+
+Expression collection, non-localized results and display: 8 definitions
+
+  Tests.test_table_order_by_head_rewrite [failed]: AttributeError: take
+  Tests.test_collect_localize_false [failed]: NotImplementedError: non-localized expressions are not implemented in this initial slice
+  Tests.test_take_localize_false [failed]: NotImplementedError: non-localized expressions are not implemented in this initial slice
+  Tests.test_expr_collect_localize_false [failed]: TypeError: Expression.collect() got an unexpected keyword argument '_localize'
+  Tests.test_expr_take_localize_false [failed]: AttributeError: take
+  Tests.test_empty_show [failed]: AttributeError: show
+  Tests.test_no_row_fields_show [failed]: AttributeError: show
+  Tests.test_show_long_field_names [failed]: AttributeError: show
+
+Observed behavior/exception mismatches: 6 definitions
+
+  Tests.test_errors [failed]: TypeError: Table is immutable
+  Tests.test_union [failed]: AssertionError: 
+  Tests.test_expr_collect [failed]: AssertionError: 
+  Tests.test_read_with_partitions [failed]: AssertionError: 
+  test_map_partitions_errors [failed]: AssertionError: Regex pattern did not match.
+  Expected regex: 'expected return type expression of type stream<struct>'
+  Actual message: 'Table._map_partitions callback must return a stream expression'
+  test_read_partitions [failed]: AssertionError: 
+
+Backend flags, exception classes and internal metadata: 6 definitions
+
+  Tests.test_index_keyless_table [failed]: AttributeError: module 'vail' has no attribute 'expr'
+  Tests.test_rename [failed]: AttributeError: _indices
+  Tests.test_export_parallel_manifest [failed]: AttributeError: module 'vail' has no attribute 'current_backend'
+  Tests.test_path_collision_error [failed]: AttributeError: module 'vail.utils' has no attribute 'FatalError'
+  test_indexed_read_boundaries [failed]: AttributeError: module 'vail' has no attribute '_with_flags'
+  test_table_randomness_repartition [failed]: AttributeError: module 'vail' has no attribute 'current_backend'
+
+Pandas conversion: 6 definitions
+
+  Tests.test_from_pandas_works [failed]: AttributeError: type object 'Table' has no attribute 'from_pandas'
+  Tests.test_from_pandas_objects [failed]: AttributeError: type object 'Table' has no attribute 'from_pandas'
+  Tests.test_from_pandas_missing_and_nans [failed]: AttributeError: type object 'Table' has no attribute 'from_pandas'
+  Tests.test_from_pandas_mismatched_object_rows [failed]: AttributeError: type object 'Table' has no attribute 'from_pandas'
+  test_literal_of_numpy_int64 [failed]: AttributeError: to_pandas
+  test_literal_of_numpy_int32 [failed]: AttributeError: to_pandas
+
+Grouped collection, tuning and Table generation: 5 definitions
+
+  Tests.test_group_aggregate_by_key [failed]: AttributeError: 'GroupedTable' object has no attribute '_set_buffer_size'
+  Tests.test_distinct [failed]: AttributeError: collect_by_key
+  Tests.test_group_by_key [failed]: AttributeError: collect_by_key
+  test_table_randomness_aggregate_by_key [failed]: AttributeError: collect_by_key
+  test_table_randomness_table_gen [failed]: AttributeError: type object 'Table' has no attribute '_generate'
+
+Query-table fixtures and query API: 5 definitions
+
+  test_query_table_errors [blocked]: AttributeError: module 'vail' has no attribute 'str'
+  test_query_table [blocked]: AttributeError: module 'vail' has no attribute 'str'
+  test_query_table_randomness [blocked]: AttributeError: module 'vail' has no attribute 'str'
+  test_query_table_compound_key [blocked]: AttributeError: module 'vail' has no attribute 'str'
+  test_query_table_interval_key [failed]: AttributeError: module 'vail' has no attribute 'query_table'
+
+Cache, persist and checkpoint: 4 definitions
+
+  Tests.test_write_no_parts [failed]: AttributeError: checkpoint
+  test_lowered_persist [failed]: AttributeError: persist
+  test_empty_tree_aggregate [failed]: AttributeError: checkpoint
+  test_table_head_and_tail [failed]: AttributeError: cache
+
+Scale/performance timeout: 1 definitions
+
+  test_range_table_biggest_int [blocked]: : worker exceeded 30.0s
+

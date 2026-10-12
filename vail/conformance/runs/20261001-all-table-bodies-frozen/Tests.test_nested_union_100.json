@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'rand_bool'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1227, in test_nested_union_100\n    self.nested_union(10, 100)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1219, in nested_union\n    t = t.filter(hl.rand_bool(1))  # prevent count optimization\n                 ^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'rand_bool'\n"
+  }
+]

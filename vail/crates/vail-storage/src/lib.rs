@@ -10,12 +10,14 @@ pub mod local_table;
 
 use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
+use std::ops::Range;
 use std::path::{Path, PathBuf};
 
 use arrow_array::{Array, BooleanArray, Int32Array, Int64Array, RecordBatch, StringArray};
 use fragment_index::{
     CompositeKey, FragmentIdentity, FragmentIndex, FragmentInterval, IndexBinding, KeyField,
-    KeyType, KeyValue, PRIMITIVE_COMPARATOR_V1, QueryInterval, compare_keys,
+    KeyType, KeyValue, PRIMITIVE_COMPARATOR_V1, QueryInterval, TOTAL_ORDER_COMPARATOR_V3,
+    compare_keys,
 };
 use futures::{StreamExt, TryStreamExt};
 use iceberg::Catalog;
@@ -129,12 +131,14 @@ pub async fn write_initial_ordered_files(
     semantics: VailSemantics,
     key_fields: Vec<KeyField>,
 ) -> Result<Table> {
-    if semantics.comparator_version != PRIMITIVE_COMPARATOR_V1
-        || key_fields
-            .iter()
-            .map(|field| field.field_id)
-            .collect::<Vec<_>>()
-            != semantics.key_field_ids
+    if !matches!(
+        semantics.comparator_version.as_str(),
+        PRIMITIVE_COMPARATOR_V1 | TOTAL_ORDER_COMPARATOR_V3
+    ) || key_fields
+        .iter()
+        .map(|field| field.field_id)
+        .collect::<Vec<_>>()
+        != semantics.key_field_ids
     {
         return Err(StorageError::Invalid(
             "ordered writer key binding differs from semantics".into(),
@@ -170,8 +174,10 @@ async fn write_initial_file_stream(
     key_fields: Option<Vec<KeyField>>,
 ) -> Result<Table> {
     if let Some(fields) = &key_fields {
-        if semantics.comparator_version != PRIMITIVE_COMPARATOR_V1
-            || fields.iter().map(|f| f.field_id).collect::<Vec<_>>() != semantics.key_field_ids
+        if !matches!(
+            semantics.comparator_version.as_str(),
+            PRIMITIVE_COMPARATOR_V1 | TOTAL_ORDER_COMPARATOR_V3
+        ) || fields.iter().map(|f| f.field_id).collect::<Vec<_>>() != semantics.key_field_ids
         {
             return Err(StorageError::Invalid(
                 "ordered writer key binding differs from semantics".into(),
@@ -448,6 +454,14 @@ pub fn snapshot_descriptor(table: &Table, snapshot_id: i64) -> Result<SnapshotDe
         return Err(StorageError::Invalid("descriptor checksum mismatch".into()));
     }
     let descriptor: SnapshotDescriptor = serde_json::from_slice(&descriptor_bytes)?;
+    if descriptor.semantics.comparator_version == fragment_index::HAIL_COMPARATOR_V2
+        && !descriptor.semantics.key_field_ids.is_empty()
+    {
+        return Err(StorageError::Unsupported(
+            "snapshot uses the retired Hail key comparator; rewrite with the IEEE total-order comparator".into(),
+        ));
+    }
+
     if descriptor.format_version != FORMAT_VERSION
         || descriptor.snapshot_id != snapshot_id
         || descriptor.table_uuid != table.metadata().uuid()
@@ -504,7 +518,96 @@ pub async fn stream_snapshot(
     futures::stream::BoxStream<'static, Result<RecordBatch>>,
     SnapshotDescriptor,
 )> {
+    let (stream, descriptor, _) = stream_snapshot_internal(
+        table,
+        snapshot_id,
+        query.map(std::slice::from_ref),
+        true,
+        None,
+    )
+    .await?;
+    Ok((stream.map_ok(|(_, batch)| batch).boxed(), descriptor))
+}
+
+/// Stream unfiltered batches from the union of fragments that may intersect
+/// any requested interval. Each batch is paired with its zero-based row offset
+/// in the descriptor's original file sequence. The index orders the selected
+/// files, while offsets retain the original logical row sequence for callers
+/// that reconstruct partition boundaries. Data files are opened lazily and
+/// every fragment in the snapshot is still validated against snapshot metadata.
+pub async fn stream_snapshot_intervals(
+    table: &Table,
+    snapshot_id: i64,
+    queries: &[QueryInterval],
+) -> Result<(
+    futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
+    SnapshotDescriptor,
+)> {
+    let (stream, descriptor, _) =
+        stream_snapshot_internal(table, snapshot_id, Some(queries), false, None).await?;
+    Ok((stream, descriptor))
+}
+
+/// Return original row ranges of the candidate files selected by an interval
+/// query. This performs the same descriptor, manifest, and index binding
+/// validation as the streaming reader but does not open or decode data files.
+pub async fn snapshot_interval_row_ranges(
+    table: &Table,
+    snapshot_id: i64,
+    queries: &[QueryInterval],
+) -> Result<(Vec<Range<u64>>, SnapshotDescriptor)> {
+    let (stream, descriptor, ranges) =
+        stream_snapshot_internal(table, snapshot_id, Some(queries), false, None).await?;
+    drop(stream);
+    Ok((ranges, descriptor))
+}
+
+/// Stream only physical data files overlapping an original snapshot row range.
+/// File selection uses descriptor row counts and order, so it also works for
+/// unkeyed snapshots. Returned offsets are original snapshot row offsets; the
+/// caller can slice boundary batches to the requested half-open range.
+pub async fn stream_snapshot_rows(
+    table: &Table,
+    snapshot_id: i64,
+    rows: Range<u64>,
+) -> Result<(
+    futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
+    SnapshotDescriptor,
+)> {
+    if rows.start > rows.end {
+        return Err(StorageError::Invalid(
+            "snapshot row range start exceeds end".into(),
+        ));
+    }
+    let (stream, descriptor, _) =
+        stream_snapshot_internal(table, snapshot_id, None, false, Some(rows)).await?;
+    Ok((stream, descriptor))
+}
+
+async fn stream_snapshot_internal(
+    table: &Table,
+    snapshot_id: i64,
+    queries: Option<&[QueryInterval]>,
+    residual_filter: bool,
+    row_range: Option<Range<u64>>,
+) -> Result<(
+    futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
+    SnapshotDescriptor,
+    Vec<Range<u64>>,
+)> {
     let descriptor = snapshot_descriptor(table, snapshot_id)?;
+    let total_rows = descriptor.files.iter().try_fold(0u64, |total, file| {
+        total
+            .checked_add(file.row_count)
+            .ok_or_else(|| StorageError::Invalid("snapshot row count overflow".into()))
+    })?;
+    if let Some(rows) = &row_range {
+        if rows.end > total_rows {
+            return Err(StorageError::Invalid(
+                "snapshot row range exceeds row count".into(),
+            ));
+        }
+    }
     let snapshot = table.metadata().snapshot_by_id(snapshot_id).unwrap();
     let props = &snapshot.summary().additional_properties;
     let snapshot_schema = snapshot.schema(table.metadata())?;
@@ -560,6 +663,29 @@ pub async fn stream_snapshot(
                     "fragment index binding mismatch".into(),
                 ));
             }
+            if binding.comparator_version == TOTAL_ORDER_COMPARATOR_V3 {
+                for key in &binding.key_fields {
+                    let name = snapshot_schema
+                        .as_struct()
+                        .fields()
+                        .iter()
+                        .find(|field| field.id == key.field_id)
+                        .map(|field| field.name.as_str())
+                        .ok_or_else(|| StorageError::Invalid("unknown key field ID".into()))?;
+                    let logical_type = descriptor
+                        .semantics
+                        .row_type
+                        .as_array()
+                        .and_then(|fields| fields.iter().find(|field| field[0] == name))
+                        .map(|field| field[1].clone())
+                        .ok_or_else(|| StorageError::Invalid("missing logical key type".into()))?;
+                    if key.data_type != KeyType::Canonical(logical_type) {
+                        return Err(StorageError::Invalid(
+                            "fragment key type differs from logical schema".into(),
+                        ));
+                    }
+                }
+            }
             let rebuilt = FragmentIndex::new(binding.clone(), stored.fragments().to_vec())
                 .map_err(|e| StorageError::Invalid(e.to_string()))?;
             if rebuilt.fragments() != stored.fragments()
@@ -572,7 +698,7 @@ pub async fn stream_snapshot(
             Some(stored)
         }
         (None, None)
-            if query.is_none()
+            if queries.is_none()
                 && (descriptor.files.len() <= 1 || descriptor.file_sequence.is_some()) =>
         {
             None
@@ -633,10 +759,38 @@ pub async fn stream_snapshot(
         .drain(..)
         .map(|task| (task.data_file_path().to_owned(), task))
         .collect();
-    let selected = if let Some(index) = &index {
-        let leaves = index
-            .select(index.binding(), query.unwrap_or(&QueryInterval::default()))
-            .map_err(|e| StorageError::Invalid(e.to_string()))?;
+    let selected = if let Some(rows) = &row_range {
+        let mut file_end = 0u64;
+        descriptor
+            .files
+            .iter()
+            .filter_map(|file| {
+                let file_start = file_end;
+                file_end += file.row_count;
+                (file_start < rows.end && rows.start < file_end).then_some(file.path.as_str())
+            })
+            .collect::<Vec<_>>()
+    } else if let Some(index) = &index {
+        let leaves = if let Some(queries) = queries {
+            let mut selected_paths = HashSet::new();
+            for query in queries {
+                for leaf in index
+                    .select(index.binding(), query)
+                    .map_err(|e| StorageError::Invalid(e.to_string()))?
+                {
+                    selected_paths.insert(leaf.identity.file_path.as_str());
+                }
+            }
+            index
+                .fragments()
+                .iter()
+                .filter(|leaf| selected_paths.contains(leaf.identity.file_path.as_str()))
+                .collect::<Vec<_>>()
+        } else {
+            index
+                .select(index.binding(), &QueryInterval::default())
+                .map_err(|e| StorageError::Invalid(e.to_string()))?
+        };
         let indexed_paths: HashSet<_> = index
             .fragments()
             .iter()
@@ -663,6 +817,19 @@ pub async fn stream_snapshot(
             .map(|file| file.path.as_str())
             .collect::<Vec<_>>()
     };
+    let selected_paths: HashSet<_> = selected.iter().copied().collect();
+    let mut file_end = 0u64;
+    let selected_row_ranges = descriptor
+        .files
+        .iter()
+        .filter_map(|file| {
+            let start = file_end;
+            file_end += file.row_count;
+            selected_paths
+                .contains(file.path.as_str())
+                .then_some(start..file_end)
+        })
+        .collect::<Vec<_>>();
     let mut checked_tasks = Vec::with_capacity(selected.len());
     for path in selected {
         let identity = identity_by_path
@@ -700,7 +867,22 @@ pub async fn stream_snapshot(
         }
     }
     let table = table.clone();
-    let query = query.cloned();
+    let queries = queries.map(<[QueryInterval]>::to_vec);
+    let residual_filter = if residual_filter {
+        queries
+            .as_ref()
+            .and_then(|queries| (queries.len() == 1).then(|| queries[0].clone()))
+    } else {
+        None
+    };
+    let mut original_offsets = HashMap::with_capacity(descriptor.files.len());
+    let mut next_offset = 0u64;
+    for file in &descriptor.files {
+        original_offsets.insert(file.path.clone(), next_offset);
+        next_offset = next_offset
+            .checked_add(file.row_count)
+            .ok_or_else(|| StorageError::Invalid("snapshot row offset overflow".into()))?;
+    }
     let schema = schema_to_arrow_schema(&snapshot_schema)?;
     let field_ids = snapshot_schema
         .as_struct()
@@ -710,6 +892,8 @@ pub async fn stream_snapshot(
         .collect::<Vec<_>>();
     let stream = async_stream::try_stream! {
         for (task, identity) in checked_tasks {
+            let file_offset = *original_offsets.get(&identity.path)
+                .ok_or_else(|| StorageError::Invalid("missing original file offset".into()))?;
             let path = local_path(&identity.path)?;
             if std::fs::metadata(&path)?.len() != task.file_size_in_bytes() {
                 Err(StorageError::Invalid("Vortex file size mismatch".into()))?;
@@ -722,14 +906,17 @@ pub async fn stream_snapshot(
                 .build().read(tasks)?.stream();
             let mut decoded_rows = 0u64;
             while let Some(batch) = batches.try_next().await? {
+                let batch_offset = file_offset
+                    .checked_add(decoded_rows)
+                    .ok_or_else(|| StorageError::Invalid("batch row offset overflow".into()))?;
                 decoded_rows += batch.num_rows() as u64;
                 if decoded_rows > identity.row_count {
                     Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?;
                 }
-                let batch = if let (Some(index), Some(query)) = (&index, &query) {
+                let batch = if let (Some(index), Some(query)) = (&index, &residual_filter) {
                     filter_batch_range(&batch, &schema, &field_ids, index.binding(), query)?
                 } else { batch };
-                if batch.num_rows() > 0 { yield batch; }
+                if batch.num_rows() > 0 { yield (batch_offset, batch); }
             }
             if decoded_rows != identity.row_count {
                 Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?;
@@ -737,7 +924,7 @@ pub async fn stream_snapshot(
         }
     }
     .boxed();
-    Ok((stream, descriptor))
+    Ok((stream, descriptor, selected_row_ranges))
 }
 
 pub async fn read_current(table: &Table) -> Result<(Vec<RecordBatch>, SnapshotDescriptor)> {
@@ -771,7 +958,7 @@ fn key_for_row(
             if column.is_null(row) {
                 return Ok(KeyValue::Missing);
             }
-            let value = match field.data_type {
+            let value = match &field.data_type {
                 KeyType::Int32 => KeyValue::Int32(
                     column
                         .as_any()
@@ -804,6 +991,10 @@ fn key_for_row(
                     }
                     KeyValue::AsciiString(value.to_owned())
                 }
+                KeyType::Canonical(logical_type) => KeyValue::Canonical(
+                    vail_ordering::encode_typed_value(column.as_ref(), row, Some(logical_type))
+                        .map_err(|e| StorageError::Invalid(e.to_string()))?,
+                ),
             };
             Ok(value)
         })

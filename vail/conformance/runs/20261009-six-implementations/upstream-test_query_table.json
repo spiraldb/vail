@@ -1,0 +1,79 @@
+[
+  {
+    "parameters": {
+      "query": "50",
+      "expected": "[Struct(idx=50, s='50')]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.StructExpression object at 0x10f8a52a0>",
+      "expected": "[Struct(idx=50, s='50')]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "55",
+      "expected": "[]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "5",
+      "expected": "[]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "-1",
+      "expected": "[]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "205",
+      "expected": "[]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f8a9480>",
+      "expected": "[Struct(idx=30, s='30'), Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60')]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f8a9360>",
+      "expected": "[]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f8a9180>",
+      "expected": "[]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f8a9540>",
+      "expected": "[Struct(idx=30, s='30'), Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60')]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f8a95a0>",
+      "expected": "[Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60'), Struct(idx=70, s='70'), Struct(idx=80, s='80')]"
+    },
+    "status": "passed"
+  }
+]

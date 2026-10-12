@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "to_matrix_table_row_major",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 264, in test_to_matrix_table_row_major\n    mt = t.to_matrix_table_row_major(['bar', 'baz'], 'entry', 'col')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-20261002T145639Z/vail/__init__.py\", line 367, in __getattr__\n    raise AttributeError(name)\nAttributeError: to_matrix_table_row_major\n"
+  }
+]

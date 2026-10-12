@@ -21,7 +21,7 @@ class _NativeTableSpy:
             if name == "project_json":
                 self._calls.append((name, args, kwargs))
             result = value(*args, **kwargs)
-            if hasattr(result, "collect_json"):
+            if hasattr(result, "collect_arrow"):
                 return _NativeTableSpy(result, self._calls)
             return result
 
@@ -35,7 +35,7 @@ class _NativeSessionSpy:
 
     def __getattr__(self, name):
         value = getattr(self._native, name)
-        if name != "parallelize":
+        if name != "parallelize_arrow":
             return value
 
         def parallelize(*args, **kwargs):

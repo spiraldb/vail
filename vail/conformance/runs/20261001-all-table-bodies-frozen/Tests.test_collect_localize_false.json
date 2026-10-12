@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "non-localized expressions are not implemented in this initial slice",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1569, in test_collect_localize_false\n    assert hl.eval(ht.collect(_localize=False)) == ht.collect()\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-snapshot/vail/__init__.py\", line 834, in collect\n    raise NotImplementedError(\"non-localized expressions are not implemented in this initial slice\")\nNotImplementedError: non-localized expressions are not implemented in this initial slice\n"
+  }
+]

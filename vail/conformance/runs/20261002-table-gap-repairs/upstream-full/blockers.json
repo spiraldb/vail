@@ -1,0 +1,99 @@
+{
+  "Python compatibility helpers / exception parity": [
+    "Tests.test_group_aggregate_by_key",
+    "Tests.test_errors",
+    "Tests.test_interval_product_join_long_key",
+    "Tests.test_index_keyless_table",
+    "Tests.test_rename",
+    "Tests.test_export",
+    "Tests.test_export_delim",
+    "Tests.test_export_parallel_manifest",
+    "Tests.test_rvd_key_write",
+    "Tests.test_path_collision_error",
+    "test_large_number_of_fields",
+    "test_map_partitions_errors",
+    "test_literal_of_pandas_NA_and_numpy_int64",
+    "test_literal_of_pandas_NA_and_numpy_int32",
+    "test_write_many",
+    "test_indexed_read_boundaries",
+    "test_table_randomness_repartition"
+  ],
+  "Ordered scans": [
+    "Tests.test_scan_filter",
+    "Tests.test_scan_tail",
+    "test_keys_before_scans",
+    "test_table_randomness_map_rows_with_scan_randomness"
+  ],
+  "Seeded randomness / sampling / table generation": [
+    "Tests.test_sample",
+    "Tests.test_nested_union_100",
+    "Tests.test_nested_union_200",
+    "Tests.test_order_by_expr",
+    "Tests.test_partitioning_rewrite",
+    "test_table_randomness_map_globals_with_body_randomness",
+    "test_table_randomness_map_rows_with_body_randomness",
+    "test_table_randomness_map_partitions",
+    "test_table_randomness_filter_with_cond_randomness",
+    "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+    "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+    "test_table_randomness_parallelize_with_body_randomness",
+    "test_table_randomness_table_gen"
+  ],
+  "Expression construction / typing": [
+    "Tests.test_table_parallelize_partial_infer_types",
+    "Tests.test_issue_3654",
+    "Tests.test_expand_types_on_all_types",
+    "Tests.test_show__various_types",
+    "test_read_write_all_types",
+    "test_table_randomness_filter_intervals"
+  ],
+  "Unsupported write flags / regex import": [
+    "Tests.test_write_stage_locally",
+    "Tests.test_import_filter_replace"
+  ],
+  "Unavailable legacy indexed-read fixtures": [
+    "Tests.test_indexed_read_1",
+    "Tests.test_indexed_read_2",
+    "Tests.test_indexed_read_3",
+    "Tests.test_indexed_read_4"
+  ],
+  "Display": [
+    "Tests.test_empty_show",
+    "Tests.test_no_row_fields_show",
+    "Tests.test_show_long_field_names"
+  ],
+  "Cache / persist": [
+    "test_lowered_persist",
+    "test_table_head_and_tail"
+  ],
+  "Internal Hail IR assertions / timeout": [
+    "test_table_randomness_range_table",
+    "test_table_randomness_join",
+    "test_table_randomness_left_join_right_distinct",
+    "test_table_randomness_interval_join",
+    "test_table_randomness_union",
+    "test_table_randomness_map_globals_without_body_randomness",
+    "test_table_randomness_explode",
+    "test_table_randomness_key_by",
+    "test_table_randomness_map_rows_without_body_randomness",
+    "test_table_randomness_read",
+    "test_table_randomness_filter_without_cond_randomness",
+    "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+    "test_table_randomness_aggregate_by_key",
+    "test_table_randomness_parallelize_without_body_randomness",
+    "test_table_randomness_head",
+    "test_table_randomness_tail",
+    "test_table_randomness_order_by",
+    "test_table_randomness_distinct",
+    "test_table_randomness_rename",
+    "test_table_randomness_multi_way_zip_join",
+    "test_range_table_biggest_int"
+  ],
+  "Stored-table query expressions": [
+    "test_query_table_errors",
+    "test_query_table",
+    "test_query_table_randomness",
+    "test_query_table_compound_key",
+    "test_query_table_interval_key"
+  ]
+}

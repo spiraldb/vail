@@ -1,0 +1,978 @@
+{
+  "Expression constructors, operators and type inference": [
+    {
+      "test_id": "Tests.test_java_array_string_encoding",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'str'"
+    },
+    {
+      "test_id": "Tests.test_group_by_field_lifetimes",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "all"
+    },
+    {
+      "test_id": "Tests.test_group_aggregate_na",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'or_missing'"
+    },
+    {
+      "test_id": "Tests.test_semi_anti_join",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'str'"
+    },
+    {
+      "test_id": "Tests.test_interval_filter_unordered",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'filter_intervals'"
+    },
+    {
+      "test_id": "Tests.test_join_with_empty",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'is_defined'"
+    },
+    {
+      "test_id": "Tests.test_join_with_key",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "all"
+    },
+    {
+      "test_id": "Tests.test_product_join",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "Tests.test_table_parallelize_infer_types",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'locus'"
+    },
+    {
+      "test_id": "Tests.test_table_parallelize_partial_infer_types",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "partial_type is not implemented in this initial slice"
+    },
+    {
+      "test_id": "Tests.test_issue_3654",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error": "arithmetic requires a numeric expression"
+    },
+    {
+      "test_id": "Tests.test_explode_on_set",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'set'"
+    },
+    {
+      "test_id": "Tests.test_explode_nested",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'case'"
+    },
+    {
+      "test_id": "Tests.test_read_back_same_as_exported",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'set'"
+    },
+    {
+      "test_id": "Tests.test_order_by_expr",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "Tests.test_join_types_ht1_is_what_we_expect",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "Tests.test_join_types_ht2_is_what_we_expect",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "Tests.test_join_types_left",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "Tests.test_join_types_right",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "Tests.test_join_types_inner",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "Tests.test_join_types_outer",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "Tests.test_expand_types",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'locus'"
+    },
+    {
+      "test_id": "Tests.test_expand_types_on_all_types",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'set'"
+    },
+    {
+      "test_id": "Tests.test_show__various_types",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error": "unhashable type: 'StructExpression'"
+    },
+    {
+      "test_id": "Tests.test_unicode_ordering",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'sorted'"
+    },
+    {
+      "test_id": "test_join_distinct_preserves_count",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error": "cannot infer a Vail type for Expression"
+    },
+    {
+      "test_id": "test_write_table_containing_ndarray",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'arange'"
+    },
+    {
+      "test_id": "test_group_within_partitions_after_explode",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "test_read_write_all_types",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'set'"
+    },
+    {
+      "test_id": "test_to_pandas",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "test_to_pandas_types_type_to_type",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "test_to_pandas_types_column_to_type",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "test_to_pandas_flatten",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "test_to_pandas_null_ints",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'or_missing'"
+    },
+    {
+      "test_id": "test_to_pandas_nd_array",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'arange'"
+    },
+    {
+      "test_id": "test_write_many",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'str'"
+    },
+    {
+      "test_id": "test_table_randomness_explode",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'range'"
+    },
+    {
+      "test_id": "test_table_randomness_parallelize_without_body_randomness",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error": "only struct expressions can be expanded as mappings"
+    },
+    {
+      "test_id": "test_table_randomness_filter_intervals",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'filter_intervals'"
+    }
+  ],
+  "VCF, MatrixTable and BlockMatrix support": [
+    {
+      "test_id": "Tests.test_to_matrix_table",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'range_matrix_table'"
+    },
+    {
+      "test_id": "Tests.test_to_matrix_table_row_major",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "to_matrix_table_row_major"
+    },
+    {
+      "test_id": "Tests.test_table_matrix_join_combinations",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_vcf'"
+    },
+    {
+      "test_id": "Tests.test_multiple_entry_joins",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'range_matrix_table'"
+    },
+    {
+      "test_id": "Tests.test_multi_way_zip_join_key_downcast",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_vcf'"
+    },
+    {
+      "test_id": "Tests.test_multi_way_zip_join_key_downcast2",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_vcf'"
+    },
+    {
+      "test_id": "Tests.test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_vcf'"
+    },
+    {
+      "test_id": "Tests.test_localize_entries",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'range_matrix_table'"
+    },
+    {
+      "test_id": "Tests.test_localize_self_join",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'range_matrix_table'"
+    },
+    {
+      "test_id": "Tests.test_physical_key_truncation",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_vcf'"
+    },
+    {
+      "test_id": "test_group_within_partitions_after_import_vcf",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_vcf'"
+    },
+    {
+      "test_id": "test_grouped_flatmap_streams",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_vcf'"
+    },
+    {
+      "test_id": "test_table_randomness_range_matrix_rows_table",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'range_matrix_table'"
+    },
+    {
+      "test_id": "test_table_randomness_matrix_entries_table",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'range_matrix_table'"
+    },
+    {
+      "test_id": "test_table_randomness_matrix_cols_table",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'range_matrix_table'"
+    },
+    {
+      "test_id": "test_table_randomness_cast_matrix_to_table",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'range_matrix_table'"
+    },
+    {
+      "test_id": "test_table_randomness_block_matrix_to_table",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'linalg'"
+    }
+  ],
+  "Grouped collection, tuning and Table generation": [
+    {
+      "test_id": "Tests.test_group_aggregate_by_key",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "'GroupedTable' object has no attribute '_set_buffer_size'"
+    },
+    {
+      "test_id": "Tests.test_distinct",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "collect_by_key"
+    },
+    {
+      "test_id": "Tests.test_group_by_key",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "collect_by_key"
+    },
+    {
+      "test_id": "test_table_randomness_aggregate_by_key",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "collect_by_key"
+    },
+    {
+      "test_id": "test_table_randomness_table_gen",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "type object 'Table' has no attribute '_generate'"
+    }
+  ],
+  "Observed behavior/exception mismatches": [
+    {
+      "test_id": "Tests.test_errors",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error": "Table is immutable"
+    },
+    {
+      "test_id": "Tests.test_union",
+      "status": "failed",
+      "error_type": "AssertionError",
+      "error": ""
+    },
+    {
+      "test_id": "Tests.test_expr_collect",
+      "status": "failed",
+      "error_type": "AssertionError",
+      "error": ""
+    },
+    {
+      "test_id": "Tests.test_read_with_partitions",
+      "status": "failed",
+      "error_type": "AssertionError",
+      "error": ""
+    },
+    {
+      "test_id": "test_map_partitions_errors",
+      "status": "failed",
+      "error_type": "AssertionError",
+      "error": "Regex pattern did not match.\n  Expected regex: 'expected return type expression of type stream<struct>'\n  Actual message: 'Table._map_partitions callback must return a stream expression'"
+    },
+    {
+      "test_id": "test_read_partitions",
+      "status": "failed",
+      "error_type": "AssertionError",
+      "error": ""
+    }
+  ],
+  "Randomness, sampling and scans": [
+    {
+      "test_id": "Tests.test_scan_filter",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'scan'"
+    },
+    {
+      "test_id": "Tests.test_scan_tail",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'scan'"
+    },
+    {
+      "test_id": "Tests.test_sample",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "sample"
+    },
+    {
+      "test_id": "Tests.test_nested_union_100",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_bool'"
+    },
+    {
+      "test_id": "Tests.test_nested_union_200",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_bool'"
+    },
+    {
+      "test_id": "Tests.test_partitioning_rewrite",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_unif'"
+    },
+    {
+      "test_id": "test_keys_before_scans",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'scan'"
+    },
+    {
+      "test_id": "test_table_randomness_map_globals_with_body_randomness",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_int64'"
+    },
+    {
+      "test_id": "test_table_randomness_map_rows_with_body_randomness",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_int64'"
+    },
+    {
+      "test_id": "test_table_randomness_map_rows_with_scan_randomness",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'scan'"
+    },
+    {
+      "test_id": "test_table_randomness_map_partitions",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_int64'"
+    },
+    {
+      "test_id": "test_table_randomness_filter_with_cond_randomness",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_int64'"
+    },
+    {
+      "test_id": "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_int64'"
+    },
+    {
+      "test_id": "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_int64'"
+    },
+    {
+      "test_id": "test_table_randomness_parallelize_with_body_randomness",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rand_int64'"
+    }
+  ],
+  "Keyed lookup and interval/expression indexing": [
+    {
+      "test_id": "Tests.test_indirected_joins",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "keyed lookup is not implemented in this initial slice"
+    },
+    {
+      "test_id": "Tests.test_interval_join",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "index"
+    },
+    {
+      "test_id": "Tests.test_interval_product_join",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "index"
+    },
+    {
+      "test_id": "Tests.test_index_maintains_count",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "keyed lookup is not implemented in this initial slice"
+    },
+    {
+      "test_id": "Tests.test_refs_with_process_joins",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "keyed lookup is not implemented in this initial slice"
+    },
+    {
+      "test_id": "test_maybe_flexindex_table_by_expr_direct_match",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "_maybe_flexindex_table_by_expr"
+    },
+    {
+      "test_id": "test_maybe_flexindex_table_by_expr_prefix_match",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "_maybe_flexindex_table_by_expr"
+    },
+    {
+      "test_id": "test_maybe_flexindex_table_by_expr_direct_interval_match",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "_maybe_flexindex_table_by_expr"
+    },
+    {
+      "test_id": "test_maybe_flexindex_table_by_expr_prefix_interval_match",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "_maybe_flexindex_table_by_expr"
+    },
+    {
+      "test_id": "test_join_with_key_prefix",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "keyed lookup is not implemented in this initial slice"
+    },
+    {
+      "test_id": "test_range_annotate_range",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "keyed lookup is not implemented in this initial slice"
+    },
+    {
+      "test_id": "test_table_randomness_left_join_right_distinct",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "keyed lookup is not implemented in this initial slice"
+    },
+    {
+      "test_id": "test_table_randomness_interval_join",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "keyed lookup is not implemented in this initial slice"
+    }
+  ],
+  "Text I/O, storage options and temp-directory helper": [
+    {
+      "test_id": "Tests.test_interval_product_join_long_key",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'TemporaryDirectory'"
+    },
+    {
+      "test_id": "Tests.test_export",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "export"
+    },
+    {
+      "test_id": "Tests.test_export_delim",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "export"
+    },
+    {
+      "test_id": "Tests.test_write_stage_locally",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "staging and custom codecs are not supported"
+    },
+    {
+      "test_id": "Tests.test_min_partitions",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_table'"
+    },
+    {
+      "test_id": "Tests.test_indexed_read_1",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "custom read_table options are not yet supported"
+    },
+    {
+      "test_id": "Tests.test_indexed_read_2",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "custom read_table options are not yet supported"
+    },
+    {
+      "test_id": "Tests.test_indexed_read_3",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "custom read_table options are not yet supported"
+    },
+    {
+      "test_id": "Tests.test_indexed_read_4",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "custom read_table options are not yet supported"
+    },
+    {
+      "test_id": "Tests.test_rvd_key_write",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'TemporaryDirectory'"
+    },
+    {
+      "test_id": "Tests.test_import_filter_replace",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_table'"
+    },
+    {
+      "test_id": "Tests.test_import_multiple_missing",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_table'"
+    },
+    {
+      "test_id": "test_large_number_of_fields",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'TemporaryDirectory'"
+    },
+    {
+      "test_id": "test_import_many_fields",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_table'"
+    },
+    {
+      "test_id": "test_can_process_wide_tables",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_table'"
+    }
+  ],
+  "Backend flags, exception classes and internal metadata": [
+    {
+      "test_id": "Tests.test_index_keyless_table",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'expr'"
+    },
+    {
+      "test_id": "Tests.test_rename",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "_indices"
+    },
+    {
+      "test_id": "Tests.test_export_parallel_manifest",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'current_backend'"
+    },
+    {
+      "test_id": "Tests.test_path_collision_error",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'FatalError'"
+    },
+    {
+      "test_id": "test_indexed_read_boundaries",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute '_with_flags'"
+    },
+    {
+      "test_id": "test_table_randomness_repartition",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'current_backend'"
+    }
+  ],
+  "Harness and Hail backend/IR dependencies": [
+    {
+      "test_id": "Tests.test_from_spark_works",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'Env' is not defined"
+    },
+    {
+      "test_id": "test_literal_of_pandas_NA_and_numpy_int64",
+      "status": "failed",
+      "error_type": "ModuleNotFoundError",
+      "error": "No module named 'hail'"
+    },
+    {
+      "test_id": "test_literal_of_pandas_NA_and_numpy_int32",
+      "status": "failed",
+      "error_type": "ModuleNotFoundError",
+      "error": "No module named 'hail'"
+    },
+    {
+      "test_id": "test_table_randomness_range_table",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_join",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_union",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_map_globals_without_body_randomness",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_key_by",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_map_rows_without_body_randomness",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_read",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_filter_without_cond_randomness",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_head",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_tail",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_order_by",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_distinct",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_rename",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    },
+    {
+      "test_id": "test_table_randomness_multi_way_zip_join",
+      "status": "blocked",
+      "error_type": "NameError",
+      "error": "name 'ir' is not defined"
+    }
+  ],
+  "Pandas conversion": [
+    {
+      "test_id": "Tests.test_from_pandas_works",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "type object 'Table' has no attribute 'from_pandas'"
+    },
+    {
+      "test_id": "Tests.test_from_pandas_objects",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "type object 'Table' has no attribute 'from_pandas'"
+    },
+    {
+      "test_id": "Tests.test_from_pandas_missing_and_nans",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "type object 'Table' has no attribute 'from_pandas'"
+    },
+    {
+      "test_id": "Tests.test_from_pandas_mismatched_object_rows",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "type object 'Table' has no attribute 'from_pandas'"
+    },
+    {
+      "test_id": "test_literal_of_numpy_int64",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "to_pandas"
+    },
+    {
+      "test_id": "test_literal_of_numpy_int32",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "to_pandas"
+    }
+  ],
+  "Cache, persist and checkpoint": [
+    {
+      "test_id": "Tests.test_write_no_parts",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "checkpoint"
+    },
+    {
+      "test_id": "test_lowered_persist",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "persist"
+    },
+    {
+      "test_id": "test_empty_tree_aggregate",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "checkpoint"
+    },
+    {
+      "test_id": "test_table_head_and_tail",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "cache"
+    }
+  ],
+  "Expression collection, non-localized results and display": [
+    {
+      "test_id": "Tests.test_table_order_by_head_rewrite",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "take"
+    },
+    {
+      "test_id": "Tests.test_collect_localize_false",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "non-localized expressions are not implemented in this initial slice"
+    },
+    {
+      "test_id": "Tests.test_take_localize_false",
+      "status": "failed",
+      "error_type": "NotImplementedError",
+      "error": "non-localized expressions are not implemented in this initial slice"
+    },
+    {
+      "test_id": "Tests.test_expr_collect_localize_false",
+      "status": "failed",
+      "error_type": "TypeError",
+      "error": "Expression.collect() got an unexpected keyword argument '_localize'"
+    },
+    {
+      "test_id": "Tests.test_expr_take_localize_false",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "take"
+    },
+    {
+      "test_id": "Tests.test_empty_show",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "show"
+    },
+    {
+      "test_id": "Tests.test_no_row_fields_show",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "show"
+    },
+    {
+      "test_id": "Tests.test_show_long_field_names",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "show"
+    }
+  ],
+  "Query-table fixtures and query API": [
+    {
+      "test_id": "test_query_table_errors",
+      "status": "blocked",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'str'"
+    },
+    {
+      "test_id": "test_query_table",
+      "status": "blocked",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'str'"
+    },
+    {
+      "test_id": "test_query_table_randomness",
+      "status": "blocked",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'str'"
+    },
+    {
+      "test_id": "test_query_table_compound_key",
+      "status": "blocked",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'str'"
+    },
+    {
+      "test_id": "test_query_table_interval_key",
+      "status": "failed",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'query_table'"
+    }
+  ],
+  "Scale/performance timeout": [
+    {
+      "test_id": "test_range_table_biggest_int",
+      "status": "blocked",
+      "error_type": "",
+      "error": "worker exceeded 30.0s"
+    }
+  ]
+}

@@ -1,0 +1,276 @@
+{
+  "runner_version": 3,
+  "label": "globals-datafusion",
+  "started_at_utc": "2026-09-25T16:29:55.460617+00:00",
+  "finished_at_utc": "2026-09-25T16:31:53.174085+00:00",
+  "project_root": "/Users/danielking/projects/vail/vail",
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "platform": "darwin",
+  "source_drift": {
+    "detected": false,
+    "paths": []
+  },
+  "extension_fingerprints": {
+    "at_start": {
+      "path": "/Users/danielking/projects/vail/vail/python/vail/_native.abi3.so",
+      "sha256": "56d70c35f89e7b8a201145815daabd7f480360018497ad8c706513ef5f2a272b"
+    },
+    "after_build": {
+      "path": "/Users/danielking/projects/vail/vail/python/vail/_native.abi3.so",
+      "sha256": "530e0acd845638eee7ed303fa902deb96a2c804156a3acd2fa22179218ca64d8"
+    },
+    "at_end": {
+      "path": "/Users/danielking/projects/vail/vail/python/vail/_native.abi3.so",
+      "sha256": "530e0acd845638eee7ed303fa902deb96a2c804156a3acd2fa22179218ca64d8"
+    },
+    "changed_during_suites": false
+  },
+  "suites": [
+    {
+      "name": "runner_self_tests",
+      "command": [
+        "uv",
+        "run",
+        "--no-sync",
+        "python",
+        "scripts/run_all_tests.py",
+        "--self-test"
+      ],
+      "cwd": "/Users/danielking/projects/vail/vail",
+      "environment": {},
+      "exit_code": 0,
+      "duration_seconds": 0.285,
+      "stdout_log": "runner_self_tests.stdout.log",
+      "stderr_log": "runner_self_tests.stderr.log",
+      "classification": {
+        "result": "passed",
+        "counts": {
+          "passed_tests": 9,
+          "passed_subtests": 0,
+          "passed_cases": 0,
+          "failed_assertions": 0,
+          "unsupported": 0,
+          "unavailable": 0,
+          "blocked": 0,
+          "infra_failures": 0
+        }
+      }
+    },
+    {
+      "name": "build_extension",
+      "command": [
+        "uv",
+        "run",
+        "--no-sync",
+        "maturin",
+        "develop",
+        "--locked"
+      ],
+      "cwd": "/Users/danielking/projects/vail/vail",
+      "environment": {
+        "CARGO_TARGET_DIR": "target/integration"
+      },
+      "exit_code": 0,
+      "duration_seconds": 17.721,
+      "stdout_log": "build_extension.stdout.log",
+      "stderr_log": "build_extension.stderr.log",
+      "classification": {
+        "result": "passed",
+        "counts": {
+          "passed_tests": 0,
+          "passed_subtests": 0,
+          "passed_cases": 0,
+          "failed_assertions": 0,
+          "unsupported": 0,
+          "unavailable": 0,
+          "blocked": 0,
+          "infra_failures": 0
+        }
+      }
+    },
+    {
+      "name": "rust_workspace",
+      "command": [
+        "cargo",
+        "test",
+        "--workspace",
+        "--all-targets",
+        "--locked"
+      ],
+      "cwd": "/Users/danielking/projects/vail/vail",
+      "environment": {
+        "CARGO_TARGET_DIR": "target/integration"
+      },
+      "exit_code": 0,
+      "duration_seconds": 89.902,
+      "stdout_log": "rust_workspace.stdout.log",
+      "stderr_log": "rust_workspace.stderr.log",
+      "classification": {
+        "result": "passed",
+        "counts": {
+          "passed_tests": 40,
+          "passed_subtests": 0,
+          "passed_cases": 0,
+          "failed_assertions": 0,
+          "unsupported": 0,
+          "unavailable": 0,
+          "blocked": 0,
+          "infra_failures": 0
+        }
+      }
+    },
+    {
+      "name": "python_tests",
+      "command": [
+        "uv",
+        "run",
+        "--no-sync",
+        "python",
+        "-m",
+        "pytest",
+        "python/tests",
+        "conformance/test_harness.py",
+        "-q"
+      ],
+      "cwd": "/Users/danielking/projects/vail/vail",
+      "environment": {},
+      "exit_code": 0,
+      "duration_seconds": 7.041,
+      "stdout_log": "python_tests.stdout.log",
+      "stderr_log": "python_tests.stderr.log",
+      "classification": {
+        "result": "passed",
+        "counts": {
+          "passed_tests": 114,
+          "passed_subtests": 19,
+          "passed_cases": 0,
+          "failed_assertions": 0,
+          "unsupported": 0,
+          "unavailable": 0,
+          "blocked": 0,
+          "infra_failures": 0
+        }
+      }
+    },
+    {
+      "name": "native_conformance",
+      "command": [
+        "uv",
+        "run",
+        "--no-sync",
+        "python",
+        "-m",
+        "conformance.run",
+        "--backend",
+        "native",
+        "--command",
+        "uv run --no-sync python -m scripts.native_conformance_worker",
+        "--write-outcomes",
+        "/Users/danielking/projects/vail/vail/conformance/runs/20260925T162955Z-globals-datafusion/native-outcomes.json"
+      ],
+      "cwd": "/Users/danielking/projects/vail/vail",
+      "environment": {},
+      "exit_code": 0,
+      "duration_seconds": 0.164,
+      "stdout_log": "native_conformance.stdout.log",
+      "stderr_log": "native_conformance.stderr.log",
+      "classification": {
+        "result": "passed",
+        "counts": {
+          "passed_tests": 0,
+          "passed_subtests": 0,
+          "passed_cases": 4,
+          "failed_assertions": 0,
+          "unsupported": 0,
+          "unavailable": 0,
+          "blocked": 0,
+          "infra_failures": 0
+        }
+      }
+    },
+    {
+      "name": "upstream_table_cases",
+      "command": [
+        "uv",
+        "run",
+        "--no-sync",
+        "python",
+        "-m",
+        "conformance.upstream_table_cases",
+        "--output",
+        "/Users/danielking/projects/vail/vail/conformance/runs/20260925T162955Z-globals-datafusion/upstream-table-results.json"
+      ],
+      "cwd": "/Users/danielking/projects/vail/vail",
+      "environment": {},
+      "exit_code": 1,
+      "duration_seconds": 0.316,
+      "stdout_log": "upstream_table_cases.stdout.log",
+      "stderr_log": "upstream_table_cases.stderr.log",
+      "classification": {
+        "result": "failed",
+        "counts": {
+          "passed_tests": 0,
+          "passed_subtests": 0,
+          "passed_cases": 93,
+          "failed_assertions": 1,
+          "unsupported": 0,
+          "unavailable": 0,
+          "blocked": 0,
+          "infra_failures": 0
+        }
+      }
+    },
+    {
+      "name": "hail_oracle",
+      "command": [
+        "uv",
+        "run",
+        "--no-sync",
+        "python",
+        "-m",
+        "conformance.run",
+        "--backend",
+        "oracle",
+        "--write-outcomes",
+        "/Users/danielking/projects/vail/vail/conformance/runs/20260925T162955Z-globals-datafusion/oracle-outcomes.json"
+      ],
+      "cwd": "/Users/danielking/projects/vail/vail",
+      "environment": {},
+      "exit_code": 1,
+      "duration_seconds": 0.109,
+      "stdout_log": "hail_oracle.stdout.log",
+      "stderr_log": "hail_oracle.stderr.log",
+      "classification": {
+        "result": "unavailable",
+        "counts": {
+          "passed_tests": 0,
+          "passed_subtests": 0,
+          "passed_cases": 0,
+          "failed_assertions": 0,
+          "unsupported": 0,
+          "unavailable": 4,
+          "blocked": 0,
+          "infra_failures": 0
+        }
+      }
+    }
+  ],
+  "totals": {
+    "passed_tests": 163,
+    "passed_subtests": 19,
+    "passed_cases": 97,
+    "failed_assertions": 1,
+    "unsupported": 0,
+    "unavailable": 4,
+    "blocked": 0,
+    "infra_failures": 0
+  },
+  "integrity_failure": false,
+  "notes": [
+    "Only the Vail workspace crates and Vail-owned Python/conformance tests are included; cloned upstream ecosystems are not recursively tested.",
+    "Hail oracle unavailable fixtures are separate from passes and assertion failures.",
+    "The complete Hail test universe is inventoried but not executed here.",
+    "Native conformance expectations are source-derived; its fixture passes do not prove Hail parity.",
+    "Unsupported fixture results are not counted as passing assertions."
+  ]
+}

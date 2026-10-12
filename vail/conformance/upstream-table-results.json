@@ -4,27 +4,68 @@
   "source": "hail/python/test/hail/table/test_table.py",
   "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
   "vail_source_sha256": {
-    "Cargo.lock": "ee13d149fc42773fc2a86447055124be3a8392e42ce519a75af99d45d1a404e4",
-    "conformance/upstream_table_cases.py": "2980303934b6eed079583825ed3fb6756c44c07c5025989d3784aa4811839e55",
-    "crates/vail-execution/src/expressions.rs": "30e609bd96b6f2a40c37811c982a5396bc33d8426485bc808039cce9fead89a9",
-    "crates/vail-execution/src/lib.rs": "28af1f7fcd507bd5a3f516d252d7afbb1545197402a9c777707fe7f29f31811a",
-    "crates/vail-python/src/lib.rs": "6a1062e53897c99d6e200ffb5c1aabae1132e951363742e5190143ab42b226a1",
-    "python/vail/__init__.py": "2d735d272a77fd8451351be5318d5cbaf5366b41b6bc66388c55c3a8e15dfebd",
-    "python/vail/expressions.py": "5e615d4191d6893eeb442605b0130d16b851843e4835088c2f37ddf77a7e93e2",
-    "python/vail/types.py": "34800fd0cc852d4ef24afa1933e67f8c4b6f004df2d5f6784808a39511746c30",
-    "python/vail/utils.py": "8993f67cc109e51ff3a3124be3cb57cfa64b0f987b0f71235afbcf8fd61cddf3"
+    "Cargo.lock": "3e40464ff681369e38a8a86501c9fd45ff3faa7bf127c6aa0b8a761dc8dd6219",
+    "conformance/upstream_table_cases.py": "6e5f8e61428a50114e29bcc81a7e89b43abe0e199a04c8f3c2444015295fcee2",
+    "crates/vail-execution/src/advanced_collection_aggregates.rs": "21f3d2257ac3d4e8de4f31050c4882180782c8b3c170d88d6ba66d82ff7b42de",
+    "crates/vail-execution/src/advanced_genomic_aggregates.rs": "1822a3cc2a7579223880d1ab771038965643e9ef4bfe8d24f9bdc04916128d75",
+    "crates/vail-execution/src/advanced_numeric_aggregates.rs": "f323726270eca8170f35beafa4b762154f6757e7d09b27bd5ba9062335c3f02d",
+    "crates/vail-execution/src/aggregates.rs": "b6be0b0aa77866df7114a8ecfc3503926d29319dbd754090944f47a4142f0ad1",
+    "crates/vail-execution/src/array_length_aggregate.rs": "956fb9250734e3d6281b9e7ab806d7d22928dec7004c5a2ba40709d8422c846e",
+    "crates/vail-execution/src/collect_aggregate.rs": "dee441de925b3f75e12aa66afc67ecc4eff7a4f4fa61a8269c9d0c8a88d5af42",
+    "crates/vail-execution/src/csv_line.rs": "1173aebca4e31521fcf1381a25185ad13f01caa3e5a4adb4be518b2597efbd72",
+    "crates/vail-execution/src/expressions.rs": "414a853d7ef7f864b7476572436e849af03ae4150c6ee9b081014507b5130fef",
+    "crates/vail-execution/src/fold_aggregate.rs": "52f493091795b84f2b364821ff7a98811fe80a58805bc5fab5badcca0fe8cf63",
+    "crates/vail-execution/src/lib.rs": "54dc1d7a01e1ece98f25ea2d534342cba3e5be20376418bb592c6b45b1b3bd5e",
+    "crates/vail-execution/src/ordering.rs": "b56c5cfac6255793aa1e4c4a441d93ff6270fb2a8b78a5f0d579c44414ef5fbd",
+    "crates/vail-execution/src/reference.rs": "b28bfb3fa90b095e5b98146933b80c1ba4d4320aeea5edb5664301e5af6874f6",
+    "crates/vail-python/src/lib.rs": "5db2e29a616961f1693a758395c7dfd119283a25b86a0f81f5b09a66e62df609",
+    "crates/vail-table/src/aggregation.rs": "781000d680680a80e8313d7d1370c6b45153f74b613f2674e74282b98fdd889c",
+    "crates/vail-table/src/comparison.rs": "2ba3e5119e878e93659b5826528f93478078bc83bf55ae288a824095da4e51c1",
+    "crates/vail-table/src/globals.rs": "22b959bc543e1deae314818a8d068eb07acbf4f964b2058b7cf8bd80385124dc",
+    "crates/vail-table/src/initialized_aggregate.rs": "6a0130b9b4e8b50809b30abc8a70e85576b866aa7e17da70a0e7a6007d55d6f8",
+    "crates/vail-table/src/interval_read.rs": "11c4cae7870297ee2f16699687b5cd3f64c1096539f0321cc1ac3f54316acb0f",
+    "crates/vail-table/src/joins.rs": "a1615baed24d23eaf5210266371ca05652408f6bc1e675970d9dbe573b3c13db",
+    "crates/vail-table/src/lib.rs": "cfa94e720f2582a232cc87e06d94f30b3ceb8cfbec25b2bca0e6b25dde61ff7f",
+    "crates/vail-table/src/line_source.rs": "db575dc1b7afdbec081c89d1ad2d676b22a36d782ab9133fdbbc23987546477c",
+    "crates/vail-table/src/lookup.rs": "1f5a4434c03afc75724cdd367c4a5835af26cf68b5cd3706a6ca69a62c720b2e",
+    "crates/vail-table/src/partition_grouping.rs": "9af3bb580c9cca25944b783b40372c2093694395bca178469b95f87eeb56cc5d",
+    "crates/vail-table/src/partition_map.rs": "7a8e38df67a923599ba7cc69d2d7b998f1ba4011eccb76e49c09ba8442aaf3f4",
+    "crates/vail-table/src/partitioned.rs": "6613c878877f4b74cc9972a19c6bada0e16c6fbb612c75360ab094e69a5dde25",
+    "crates/vail-table/src/partitioning.rs": "4e4029ed60c31d0bc8b53f359cabd5f19aa5ee337457147513d1bfa8baec7090",
+    "crates/vail-table/src/plan.rs": "861ca146eaf74795a2c4650e8f651d4154587e450db687d9c18f4536f38d3840",
+    "crates/vail-table/src/text_export.rs": "6bed06a71777a50168193561a0cf73b8dcdc44ac91aa42f858648215d2ade1e8",
+    "crates/vail-table/src/text_schema.rs": "db02b765b289799de9f0cac83c4ff6d25db3cde83d2b95662619c1a05b9dbd21",
+    "crates/vail-table/src/zip_join.rs": "0af38dbc0237b7bb76ccbdf759ca1355fe3d853f64eebe9b8f72efb81762182a",
+    "python/vail/__init__.py": "182c90cc439f33c1f413bad872c785cd568db41a851f1b9c958daf241ea9acfc",
+    "python/vail/agg.py": "a4d757fb3ce7213b7ee7c7a46a21f75f25e58ef3971a90c8dfe5a29087226410",
+    "python/vail/agg_collections.py": "04f1c2b16b416d9ff9561c5214e29f40a88fd30589c2932a086b9f163e35f352",
+    "python/vail/agg_fold.py": "03fbdd3ae1aa8b5bce1b406da9487ed8fa985535c6cf2de2e24d8b62747a0a1c",
+    "python/vail/agg_genomics.py": "dd4f52a5a8442a57e9931beee1568a909d207412f722308dceba769ef3674ec5",
+    "python/vail/agg_numeric.py": "bf8ece015ea40d8ce594e7ebf1c90d1eaddaafb64a963934267f4030dbe09530",
+    "python/vail/collections.py": "cb7c7a19bc118bbb457881bdffda9be81eaf9b00434f9e53feee7355b13a5683",
+    "python/vail/expressions.py": "cb5fb0427aef90ddc0a70479702d6acf89b164d26b6a36c45337992036d90557",
+    "python/vail/lookups.py": "d22928b2170266bf05c291092c1561bd6c9463485705419174226fa999475ed2",
+    "python/vail/nd.py": "e909ed073398b29ca31573673c77a13f477a26eb321150c7025ea585ce3abeb7",
+    "python/vail/reference_genome.py": "99e113de00f8af1d04521d49885b4bd510968cc025b08bea06fb752a6d503dc1",
+    "python/vail/streams.py": "2f65cae1f76235a6c07034785307f574c45d884a2b455971fce650b537b12ae9",
+    "python/vail/strings.py": "cb5b3232e44ad71881a21de618f2fd6ed7a4caa477ec18de8df5021e51f003d0",
+    "python/vail/text.py": "2b7f7e5eee52df698bd0cb1fb7054110b32bac54c29ef413992b72caac7b0e45",
+    "python/vail/types.py": "3a6eba2762d02ce5e8dc1853975d5261205e20c1585110928d18332f5d2f28e6",
+    "python/vail/utils.py": "1f66e5cf90420303a577ca08d2506bf276d2db402c4981007748f4fec828855e"
   },
   "mode": "original-test-bodies-against-vail",
   "limitations": [
     "Not a Hail oracle run or full upstream pytest collection.",
     "Original assertions and test bodies execute unchanged; decorators, imports and Hail initialization fixtures are omitted.",
     "Only rt/par variants of test_table_head_and_tail are run; its 80 cache/checkpoint variants remain untested.",
-    "These results cover 11 test definitions and 90 concrete cases, not the complete Hail Table suite.",
-    "The expression cases include unchanged filter, missing-filter, annotate, transmute, keyed-transmute and select bodies."
+    "These results cover 24 test definitions and 103 concrete cases, not the complete Hail Table suite.",
+    "The expression cases include unchanged filter, missing-filter, annotate, transmute, keyed-transmute and select bodies.",
+    "The aggregation cases include unchanged total Table.aggregate, global-field, and _localize=False bodies.",
+    "Text cases use unchanged min_partitions and multiple-missing-marker bodies and checked-out Hail resource files."
   ],
   "summary": {
-    "passed": 89,
-    "failed": 1
+    "passed": 103,
+    "failed": 0
   },
   "outcomes": [
     {
@@ -74,9 +115,7 @@
       "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_annotate",
       "source_line": 31,
       "parameters": {},
-      "status": "failed",
-      "error_type": "AttributeError",
-      "error": "_same"
+      "status": "passed"
     },
     {
       "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute_key",
@@ -96,6 +135,97 @@
       "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_select",
       "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_select",
       "source_line": 382,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute_globals",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute_globals",
+      "source_line": 372,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_index_globals",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_index_globals",
+      "source_line": 503,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_global",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_global",
+      "source_line": 1634,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_type",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_type",
+      "source_line": 1622,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_rows",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_rows",
+      "source_line": 1639,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate1",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate1",
+      "source_line": 136,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_ir",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_ir",
+      "source_line": 220,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_localize_false",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_localize_false",
+      "source_line": 1562,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_by_key_partitioning",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_by_key_partitioning",
+      "source_line": 303,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregation_with_no_aggregators",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregation_with_no_aggregators",
+      "source_line": 722,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_group_by_aggregate_doesnt_clobber_global_field",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_group_by_aggregate_doesnt_clobber_global_field",
+      "source_line": 2755,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_min_partitions",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_min_partitions",
+      "source_line": 1092,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_import_multiple_missing",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_import_multiple_missing",
+      "source_line": 1717,
       "parameters": {},
       "status": "passed"
     },

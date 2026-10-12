@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "_maybe_flexindex_table_by_expr",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1824, in test_maybe_flexindex_table_by_expr_direct_interval_match\n    match_key = t1._maybe_flexindex_table_by_expr(t2.key)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 263, in __getattr__\n    raise AttributeError(name)\nAttributeError: _maybe_flexindex_table_by_expr\n"
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "python": {
+    "command": "uv run --no-sync python -m pytest python/tests conformance/test_harness.py -q",
+    "passed": 384,
+    "skipped": 1,
+    "subtests_passed": 19,
+    "failed": 0
+  },
+  "rust": {
+    "command": "cargo test --manifest-path vail/Cargo.toml -p vail-table -p vail-storage -p vail-execution -p vail-ordering",
+    "passed": 81,
+    "failed": 0
+  },
+  "new_join_tests": {
+    "python": 19,
+    "rust": 2
+  },
+  "oracle": "../../../docs/research/table-joins-hail-oracle.json",
+  "scope": "join inner/left/right/outer, semi_join, anti_join, multi_way_zip_join; Table.index/interval indexing remain separate future work",
+  "native_conformance": {
+    "passed": 4,
+    "unsupported": 0,
+    "failed": 0,
+    "outcomes": "native-outcomes.json"
+  }
+}

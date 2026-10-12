@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "blocked",
+    "phase": "body",
+    "error_type": "NameError",
+    "error": "name 'timer' is not defined",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1769, in test_import_many_fields\n    assert_time(lambda: hl.import_table(resource('many_cols.txt')), 5)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/helpers.py\", line 90, in assert_time\n    start = timer()\n            ^^^^^\nNameError: name 'timer' is not defined. Did you mean: 'iter'?\n"
+  }
+]

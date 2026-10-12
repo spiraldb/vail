@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "take",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1604, in test_expr_take_localize_false\n    assert hl.eval(ht.idx.take(3, _localize=False)) == ht.idx.take(3)\n                   ^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-snapshot/vail/expressions.py\", line 399, in __getattr__\n    raise AttributeError(name)\nAttributeError: take\n"
+  }
+]

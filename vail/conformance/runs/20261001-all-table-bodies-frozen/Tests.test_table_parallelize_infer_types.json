@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'locus'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 845, in test_table_parallelize_infer_types\n    j = hl.array([hl.locus('20', 17434581), hl.locus('19', 15434581)])\n                  ^^^^^^^^\nAttributeError: module 'vail' has no attribute 'locus'. Did you mean: 'Locus'?\n"
+  }
+]

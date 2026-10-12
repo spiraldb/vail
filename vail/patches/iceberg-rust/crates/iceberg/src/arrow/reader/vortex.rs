@@ -1035,15 +1035,18 @@ mod tests {
         )
         .with_precision_and_scale(9, 2)
         .unwrap();
-        RecordBatch::try_new(test_arrow_schema(), vec![
-            Arc::new(Int64Array::from(ids)),
-            Arc::new(StringArray::from(names)),
-            Arc::new(Float64Array::from(scores)),
-            Arc::new(TimestampMicrosecondArray::from(timestamps)),
-            Arc::new(Date32Array::from(dates)),
-            Arc::new(info),
-            Arc::new(prices),
-        ])
+        RecordBatch::try_new(
+            test_arrow_schema(),
+            vec![
+                Arc::new(Int64Array::from(ids)),
+                Arc::new(StringArray::from(names)),
+                Arc::new(Float64Array::from(scores)),
+                Arc::new(TimestampMicrosecondArray::from(timestamps)),
+                Arc::new(Date32Array::from(dates)),
+                Arc::new(info),
+                Arc::new(prices),
+            ],
+        )
         .unwrap()
     }
 
@@ -1183,13 +1186,16 @@ mod tests {
                     .collect::<Vec<_>>()
             })
             .collect();
-        assert_eq!(names, vec![
-            Some("a".to_string()),
-            Some("b".to_string()),
-            None,
-            Some("d".to_string()),
-            Some("e".to_string())
-        ]);
+        assert_eq!(
+            names,
+            vec![
+                Some("a".to_string()),
+                Some("b".to_string()),
+                None,
+                Some("d".to_string()),
+                Some("e".to_string())
+            ]
+        );
     }
 
     #[tokio::test]
@@ -1293,10 +1299,13 @@ mod tests {
                 )]),
             ),
         ]));
-        let batch = RecordBatch::try_new(schema.clone(), vec![
-            Arc::new(StringArray::from(vec![data_file_path; positions.len()])),
-            Arc::new(Int64Array::from(positions.to_vec())),
-        ])
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![
+                Arc::new(StringArray::from(vec![data_file_path; positions.len()])),
+                Arc::new(Int64Array::from(positions.to_vec())),
+            ],
+        )
         .unwrap();
         let file = std::fs::File::create(path).unwrap();
         let mut writer = parquet::arrow::ArrowWriter::try_new(file, schema, None).unwrap();
@@ -1313,9 +1322,10 @@ mod tests {
                 )]),
             ),
         ]));
-        let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(Int64Array::from(
-            ids_to_delete.to_vec(),
-        ))])
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![Arc::new(Int64Array::from(ids_to_delete.to_vec()))],
+        )
         .unwrap();
         let file = std::fs::File::create(path).unwrap();
         let mut writer = parquet::arrow::ArrowWriter::try_new(file, schema, None).unwrap();
@@ -1372,9 +1382,16 @@ mod tests {
         // Delete row ordinals 0 and 3 (ids 1 and 4).
         write_positional_delete_file(&delete_path, &file_path, &[0, 3]);
 
-        let task = test_scan_task_filtered(&file_path, test_schema(), file_size, None, vec![
-            delete_file_entry(&delete_path, DataContentType::PositionDeletes),
-        ]);
+        let task = test_scan_task_filtered(
+            &file_path,
+            test_schema(),
+            file_size,
+            None,
+            vec![delete_file_entry(
+                &delete_path,
+                DataContentType::PositionDeletes,
+            )],
+        );
 
         let reader = ArrowReaderBuilder::new(file_io, Runtime::current()).build();
         assert_eq!(collect_ids(&reader, task).await, vec![2, 3, 5]);
@@ -1391,9 +1408,16 @@ mod tests {
 
         write_equality_delete_file(&delete_path, &[2, 5]);
 
-        let task = test_scan_task_filtered(&file_path, test_schema(), file_size, None, vec![
-            delete_file_entry(&delete_path, DataContentType::EqualityDeletes),
-        ]);
+        let task = test_scan_task_filtered(
+            &file_path,
+            test_schema(),
+            file_size,
+            None,
+            vec![delete_file_entry(
+                &delete_path,
+                DataContentType::EqualityDeletes,
+            )],
+        );
 
         let reader = ArrowReaderBuilder::new(file_io, Runtime::current()).build();
         assert_eq!(collect_ids(&reader, task).await, vec![1, 3, 4]);
@@ -1635,9 +1659,10 @@ mod tests {
         };
         assert_eq!(longs(RESERVED_COL_NAME_POS), vec![1, 2, 4]);
         assert_eq!(longs(RESERVED_COL_NAME_ROW_ID), vec![101, 102, 104]);
-        assert_eq!(longs(RESERVED_COL_NAME_LAST_UPDATED_SEQUENCE_NUMBER), vec![
-            7, 7, 7
-        ]);
+        assert_eq!(
+            longs(RESERVED_COL_NAME_LAST_UPDATED_SEQUENCE_NUMBER),
+            vec![7, 7, 7]
+        );
         for batch in batches {
             assert_eq!(batch.num_columns(), 5);
             let paths = arrow_cast::cast(
@@ -1757,10 +1782,13 @@ mod tests {
         let path = tmp.path().join("data.vortex").to_str().unwrap().to_string();
         let io = FileIO::new_with_fs();
         let file = write_test_file(&path, &io).await;
-        for ids in [vec![], vec![
-            RESERVED_FIELD_ID_ROW_ID,
-            RESERVED_FIELD_ID_LAST_UPDATED_SEQUENCE_NUMBER,
-        ]] {
+        for ids in [
+            vec![],
+            vec![
+                RESERVED_FIELD_ID_ROW_ID,
+                RESERVED_FIELD_ID_LAST_UPDATED_SEQUENCE_NUMBER,
+            ],
+        ] {
             let task = FileScanTask::builder()
                 .with_file_size_in_bytes(file.file_size_in_bytes())
                 .with_start(0)
@@ -2364,11 +2392,13 @@ mod tests {
                     "1".to_string(),
                 )]),
             );
-            let batch =
-                RecordBatch::try_new(Arc::new(ArrowSchema::new(vec![field])), vec![Arc::new(
-                    arrow_array::BinaryArray::from(vec![b"abc".as_slice()]),
-                )])
-                .unwrap();
+            let batch = RecordBatch::try_new(
+                Arc::new(ArrowSchema::new(vec![field])),
+                vec![Arc::new(arrow_array::BinaryArray::from(vec![
+                    b"abc".as_slice(),
+                ]))],
+            )
+            .unwrap();
             assert_eq!(
                 crate::arrow::evolve_nested_fields(batch, &schema, &VortexSession::default())
                     .unwrap_err()
@@ -2418,11 +2448,14 @@ mod tests {
                 .build()
                 .unwrap(),
         );
-        let batch = RecordBatch::try_new(Arc::new(schema.as_ref().try_into().unwrap()), vec![
-            Arc::new(Int64Array::from(vec![1, 2, 3])),
-            Arc::new(Int64Array::from(vec![Some(50), None, Some(70)])),
-            Arc::new(Int64Array::from(vec![Some(2), None, Some(3)])),
-        ])
+        let batch = RecordBatch::try_new(
+            Arc::new(schema.as_ref().try_into().unwrap()),
+            vec![
+                Arc::new(Int64Array::from(vec![1, 2, 3])),
+                Arc::new(Int64Array::from(vec![Some(50), None, Some(70)])),
+                Arc::new(Int64Array::from(vec![Some(2), None, Some(3)])),
+            ],
+        )
         .unwrap();
         let file = write_batch_file(&path, &io, schema.clone(), &batch).await;
         let task = FileScanTask::builder()
@@ -2558,9 +2591,10 @@ mod tests {
                 .build()
                 .unwrap(),
         );
-        let batch = RecordBatch::try_new(Arc::new(old_schema.as_ref().try_into().unwrap()), vec![
-            Arc::new(arrow_array::Int32Array::from(vec![1, 2, 3])),
-        ])
+        let batch = RecordBatch::try_new(
+            Arc::new(old_schema.as_ref().try_into().unwrap()),
+            vec![Arc::new(arrow_array::Int32Array::from(vec![1, 2, 3]))],
+        )
         .unwrap();
         let file = write_batch_file(&path, &io, old_schema, &batch).await;
         let schema = Arc::new(

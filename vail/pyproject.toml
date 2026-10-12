@@ -6,11 +6,18 @@ build-backend = "maturin"
 name = "vail"
 version = "0.1.0a1"
 description = "Experimental embedded Rust Hail Table engine"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
+dependencies = ["numpy>=2.0", "pyarrow>=20"]
+
+[project.optional-dependencies]
+pandas = ["pandas>=2.0"]
 
 [dependency-groups]
 dev = [
     "maturin==1.15.0",
+    "pandas>=2.0",
     "pytest>=9.1.1",
 ]
 
@@ -19,3 +26,4 @@ manifest-path = "crates/vail-python/Cargo.toml"
 python-source = "python"
 module-name = "vail._native"
 features = ["pyo3/extension-module"]
+include = ["LICENSE", "python/vail/reference_data/*.json"]

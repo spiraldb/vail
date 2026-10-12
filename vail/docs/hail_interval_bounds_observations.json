@@ -1,0 +1,664 @@
+{
+  "all_missing_key": {
+    "calc0": {
+      "bounds": []
+    },
+    "calc1": {
+      "bounds": [
+        {
+          "end": {
+            "k": null
+          },
+          "includes_end": true,
+          "includes_start": true,
+          "start": {
+            "k": null
+          }
+        }
+      ]
+    },
+    "input": {
+      "n_partitions": 1,
+      "partition_rows": [
+        [
+          {
+            "k": null,
+            "v": 0
+          },
+          {
+            "k": null,
+            "v": 1
+          }
+        ],
+        [
+          {
+            "k": null,
+            "v": 2
+          },
+          {
+            "k": null,
+            "v": 3
+          }
+        ],
+        [
+          {
+            "k": null,
+            "v": 4
+          },
+          {
+            "k": null,
+            "v": 5
+          }
+        ]
+      ],
+      "rows": [
+        {
+          "k": null,
+          "v": 0
+        },
+        {
+          "k": null,
+          "v": 1
+        },
+        {
+          "k": null,
+          "v": 2
+        },
+        {
+          "k": null,
+          "v": 3
+        },
+        {
+          "k": null,
+          "v": 4
+        },
+        {
+          "k": null,
+          "v": 5
+        }
+      ]
+    }
+  },
+  "duplicates": {
+    "calc10_repeated": [
+      {
+        "bounds": [
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 1
+            }
+          },
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 2
+            }
+          }
+        ]
+      },
+      {
+        "bounds": [
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 1
+            }
+          },
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 2
+            }
+          }
+        ]
+      },
+      {
+        "bounds": [
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 1
+            }
+          },
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 2
+            }
+          }
+        ]
+      },
+      {
+        "bounds": [
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 1
+            }
+          },
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 2
+            }
+          }
+        ]
+      },
+      {
+        "bounds": [
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 1
+            }
+          },
+          {
+            "end": {
+              "k": 2
+            },
+            "includes_end": true,
+            "includes_start": true,
+            "start": {
+              "k": 2
+            }
+          }
+        ]
+      }
+    ],
+    "calc2": {
+      "bounds": [
+        {
+          "end": {
+            "k": 2
+          },
+          "includes_end": true,
+          "includes_start": true,
+          "start": {
+            "k": 1
+          }
+        },
+        {
+          "end": {
+            "k": 2
+          },
+          "includes_end": true,
+          "includes_start": true,
+          "start": {
+            "k": 2
+          }
+        }
+      ]
+    },
+    "filter_explicit_calculated_intervals": {
+      "n_partitions": 2,
+      "partition_rows": [
+        [
+          {
+            "k": 1,
+            "v": 0
+          },
+          {
+            "k": 1,
+            "v": 1
+          },
+          {
+            "k": 1,
+            "v": 2
+          },
+          {
+            "k": 1,
+            "v": 3
+          },
+          {
+            "k": 1,
+            "v": 4
+          }
+        ],
+        [
+          {
+            "k": 2,
+            "v": 5
+          }
+        ]
+      ],
+      "rows": [
+        {
+          "k": 1,
+          "v": 0
+        },
+        {
+          "k": 1,
+          "v": 1
+        },
+        {
+          "k": 1,
+          "v": 2
+        },
+        {
+          "k": 1,
+          "v": 3
+        },
+        {
+          "k": 1,
+          "v": 4
+        },
+        {
+          "k": 2,
+          "v": 5
+        }
+      ]
+    },
+    "input": {
+      "n_partitions": 2,
+      "partition_rows": [
+        [
+          {
+            "k": 1,
+            "v": 0
+          },
+          {
+            "k": 1,
+            "v": 1
+          }
+        ],
+        [
+          {
+            "k": 1,
+            "v": 2
+          },
+          {
+            "k": 1,
+            "v": 3
+          }
+        ],
+        [
+          {
+            "k": 1,
+            "v": 4
+          },
+          {
+            "k": 2,
+            "v": 5
+          }
+        ]
+      ],
+      "rows": [
+        {
+          "k": 1,
+          "v": 0
+        },
+        {
+          "k": 1,
+          "v": 1
+        },
+        {
+          "k": 1,
+          "v": 2
+        },
+        {
+          "k": 1,
+          "v": 3
+        },
+        {
+          "k": 1,
+          "v": 4
+        },
+        {
+          "k": 2,
+          "v": 5
+        }
+      ]
+    },
+    "read_explicit_calculated_intervals": {
+      "n_partitions": 1,
+      "partition_rows": [
+        [
+          {
+            "k": 1,
+            "v": 0
+          },
+          {
+            "k": 1,
+            "v": 1
+          },
+          {
+            "k": 1,
+            "v": 2
+          },
+          {
+            "k": 1,
+            "v": 3
+          },
+          {
+            "k": 1,
+            "v": 4
+          },
+          {
+            "k": 2,
+            "v": 5
+          }
+        ]
+      ],
+      "rows": [
+        {
+          "k": 1,
+          "v": 0
+        },
+        {
+          "k": 1,
+          "v": 1
+        },
+        {
+          "k": 1,
+          "v": 2
+        },
+        {
+          "k": 1,
+          "v": 3
+        },
+        {
+          "k": 1,
+          "v": 4
+        },
+        {
+          "k": 2,
+          "v": 5
+        }
+      ]
+    },
+    "read_n_partitions": {
+      "1": {
+        "n_partitions": 1,
+        "partition_rows": [
+          [
+            {
+              "k": 1,
+              "v": 0
+            },
+            {
+              "k": 1,
+              "v": 1
+            },
+            {
+              "k": 1,
+              "v": 2
+            },
+            {
+              "k": 1,
+              "v": 3
+            },
+            {
+              "k": 1,
+              "v": 4
+            },
+            {
+              "k": 2,
+              "v": 5
+            }
+          ]
+        ],
+        "rows": [
+          {
+            "k": 1,
+            "v": 0
+          },
+          {
+            "k": 1,
+            "v": 1
+          },
+          {
+            "k": 1,
+            "v": 2
+          },
+          {
+            "k": 1,
+            "v": 3
+          },
+          {
+            "k": 1,
+            "v": 4
+          },
+          {
+            "k": 2,
+            "v": 5
+          }
+        ]
+      },
+      "10": {
+        "n_partitions": 1,
+        "partition_rows": [
+          [
+            {
+              "k": 1,
+              "v": 0
+            },
+            {
+              "k": 1,
+              "v": 1
+            },
+            {
+              "k": 1,
+              "v": 2
+            },
+            {
+              "k": 1,
+              "v": 3
+            },
+            {
+              "k": 1,
+              "v": 4
+            },
+            {
+              "k": 2,
+              "v": 5
+            }
+          ]
+        ],
+        "rows": [
+          {
+            "k": 1,
+            "v": 0
+          },
+          {
+            "k": 1,
+            "v": 1
+          },
+          {
+            "k": 1,
+            "v": 2
+          },
+          {
+            "k": 1,
+            "v": 3
+          },
+          {
+            "k": 1,
+            "v": 4
+          },
+          {
+            "k": 2,
+            "v": 5
+          }
+        ]
+      },
+      "2": {
+        "n_partitions": 1,
+        "partition_rows": [
+          [
+            {
+              "k": 1,
+              "v": 0
+            },
+            {
+              "k": 1,
+              "v": 1
+            },
+            {
+              "k": 1,
+              "v": 2
+            },
+            {
+              "k": 1,
+              "v": 3
+            },
+            {
+              "k": 1,
+              "v": 4
+            },
+            {
+              "k": 2,
+              "v": 5
+            }
+          ]
+        ],
+        "rows": [
+          {
+            "k": 1,
+            "v": 0
+          },
+          {
+            "k": 1,
+            "v": 1
+          },
+          {
+            "k": 1,
+            "v": 2
+          },
+          {
+            "k": 1,
+            "v": 3
+          },
+          {
+            "k": 1,
+            "v": 4
+          },
+          {
+            "k": 2,
+            "v": 5
+          }
+        ]
+      }
+    }
+  },
+  "oracle": {
+    "date": "2026-10-01",
+    "hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1"
+  },
+  "single_key": {
+    "calc0": {
+      "bounds": []
+    },
+    "calc1": {
+      "bounds": [
+        {
+          "end": {
+            "k": 1
+          },
+          "includes_end": true,
+          "includes_start": true,
+          "start": {
+            "k": 1
+          }
+        }
+      ]
+    },
+    "input": {
+      "n_partitions": 1,
+      "partition_rows": [
+        [
+          {
+            "k": 1,
+            "v": 0
+          },
+          {
+            "k": 1,
+            "v": 1
+          }
+        ],
+        [
+          {
+            "k": 1,
+            "v": 2
+          },
+          {
+            "k": 1,
+            "v": 3
+          }
+        ],
+        [
+          {
+            "k": 1,
+            "v": 4
+          },
+          {
+            "k": 1,
+            "v": 5
+          }
+        ]
+      ],
+      "rows": [
+        {
+          "k": 1,
+          "v": 0
+        },
+        {
+          "k": 1,
+          "v": 1
+        },
+        {
+          "k": 1,
+          "v": 2
+        },
+        {
+          "k": 1,
+          "v": 3
+        },
+        {
+          "k": 1,
+          "v": 4
+        },
+        {
+          "k": 1,
+          "v": 5
+        }
+      ]
+    }
+  }
+}

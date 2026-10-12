@@ -1,0 +1,17 @@
+{
+  "python_passed": 500,
+  "python_skipped": 1,
+  "python_subtests_passed": 19,
+  "new_python_cases": 27,
+  "rust_passed": 60,
+  "new_rust_cases": 4,
+  "failures": 0,
+  "unsupported": [
+    "Strict dictionary indexing absent-key errors",
+    "Expression-valued dictionary construction with missing and duplicate keys",
+    "Set deduplication with floats, nested sets/dictionaries or ndarrays",
+    "Arbitrary set fold and per-row group_by",
+    "Exact integer and float32 set sum/product"
+  ],
+  "execution": "DataFusion scalar and higher-order expressions; existing shared key comparator; no new collection evaluator"
+}

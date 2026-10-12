@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "TypeError",
+    "error": "cannot infer a Vail type for Expression",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1917, in test_join_distinct_preserves_count\n    left_table = hl.Table.parallelize([hl.struct(i=i) for i in left_pos], key='i')\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 262, in parallelize\n    schema = tstruct(**{name: _infer_type([row[name] for row in rows]) for name in names})\n                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 145, in _infer_type\n    result = infer_type(present[0])\n             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/types.py\", line 459, in infer_type\n    raise TypeError(f\"cannot infer a Vail type for {type(value).__name__}\")\nTypeError: cannot infer a Vail type for Expression\n"
+  }
+]

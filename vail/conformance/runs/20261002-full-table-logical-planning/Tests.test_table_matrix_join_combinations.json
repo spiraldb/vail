@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'import_vcf'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 488, in test_table_matrix_join_combinations\n    m = hl.import_vcf(resource('sample.vcf'))\n        ^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'import_vcf'\n"
+  }
+]

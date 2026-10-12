@@ -1,0 +1,32 @@
+{
+  "label": "partition-frontend",
+  "started_at_utc": "2026-10-01T19:44:24Z",
+  "results": {
+    "python_tests": {
+      "command": "uv run --no-sync python -m pytest python/tests conformance/test_harness.py -q",
+      "passed": 359,
+      "skipped": 1,
+      "subtests_passed": 19,
+      "failed": 0,
+      "result": "passed"
+    },
+    "native_conformance": {
+      "command": "uv run --no-sync python -m conformance.run --backend native --command 'uv run --no-sync python -m scripts.native_conformance_worker' --write-outcomes conformance/runs/20261001T194424Z-partition-frontend/native-outcomes.json",
+      "fixtures_passed": 4,
+      "unsupported": 0,
+      "failed": 0,
+      "outcomes": "native-outcomes.json"
+    },
+    "focused_partition_stream_tests": {
+      "command": "uv run --no-sync python -m pytest python/tests/test_partition_operations.py python/tests/test_map_partitions_streams.py -q",
+      "passed": 18,
+      "failed": 0,
+      "result": "passed after final maturin rebuild"
+    },
+    "zero_partition_bounds": {
+      "behavior": "Python and native calculate_new_partitions(0) both return an empty list",
+      "verified_by": "test_calculate_new_partitions_zero_returns_empty_list"
+    }
+  },
+  "updated_at_utc": "2026-10-01T19:52:27Z"
+}

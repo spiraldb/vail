@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "TypeError",
+    "error": "only struct expressions can be expanded as mappings",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2522, in test_table_randomness_parallelize_without_body_randomness\n    t = hl.Table.parallelize(hl.array([1, 2, 3]).map(lambda x: hl.struct(x=x)))\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 218, in parallelize\n    rows = list(rows)\n           ^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/expressions.py\", line 403, in __iter__\n    raise TypeError(\"only struct expressions can be expanded as mappings\")\nTypeError: only struct expressions can be expanded as mappings\n"
+  }
+]

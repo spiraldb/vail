@@ -1,0 +1,52 @@
+[
+  {
+    "parameters": {
+      "width": "256"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "non-localized expressions are not implemented in this initial slice",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1869, in test_can_process_wide_tables\n    ht.annotate_globals(g=ht.collect(_localize=False))._force_count()\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 895, in collect\n    raise NotImplementedError(\"non-localized expressions are not implemented in this initial slice\")\nNotImplementedError: non-localized expressions are not implemented in this initial slice\n"
+  },
+  {
+    "parameters": {
+      "width": "512"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "non-localized expressions are not implemented in this initial slice",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1869, in test_can_process_wide_tables\n    ht.annotate_globals(g=ht.collect(_localize=False))._force_count()\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 895, in collect\n    raise NotImplementedError(\"non-localized expressions are not implemented in this initial slice\")\nNotImplementedError: non-localized expressions are not implemented in this initial slice\n"
+  },
+  {
+    "parameters": {
+      "width": "1024"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "non-localized expressions are not implemented in this initial slice",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1869, in test_can_process_wide_tables\n    ht.annotate_globals(g=ht.collect(_localize=False))._force_count()\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 895, in collect\n    raise NotImplementedError(\"non-localized expressions are not implemented in this initial slice\")\nNotImplementedError: non-localized expressions are not implemented in this initial slice\n"
+  },
+  {
+    "parameters": {
+      "width": "2048"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "non-localized expressions are not implemented in this initial slice",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1869, in test_can_process_wide_tables\n    ht.annotate_globals(g=ht.collect(_localize=False))._force_count()\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 895, in collect\n    raise NotImplementedError(\"non-localized expressions are not implemented in this initial slice\")\nNotImplementedError: non-localized expressions are not implemented in this initial slice\n"
+  },
+  {
+    "parameters": {
+      "width": "3072"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "non-localized expressions are not implemented in this initial slice",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1869, in test_can_process_wide_tables\n    ht.annotate_globals(g=ht.collect(_localize=False))._force_count()\n                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 895, in collect\n    raise NotImplementedError(\"non-localized expressions are not implemented in this initial slice\")\nNotImplementedError: non-localized expressions are not implemented in this initial slice\n"
+  }
+]

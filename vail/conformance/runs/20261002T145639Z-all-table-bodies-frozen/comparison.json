@@ -1,0 +1,310 @@
+{
+  "previous_summary": {
+    "passed": 53,
+    "failed": 137,
+    "blocked": 21
+  },
+  "current_summary": {
+    "passed": 96,
+    "failed": 95,
+    "blocked": 20
+  },
+  "newly_passing": [
+    "Tests.test_java_array_string_encoding",
+    "Tests.test_group_by_field_lifetimes",
+    "Tests.test_group_aggregate_na",
+    "Tests.test_semi_anti_join",
+    "Tests.test_indirected_joins",
+    "Tests.test_join_with_empty",
+    "Tests.test_join_with_key",
+    "Tests.test_index_maintains_count",
+    "Tests.test_from_pandas_missing_and_nans",
+    "Tests.test_from_pandas_mismatched_object_rows",
+    "Tests.test_distinct",
+    "Tests.test_group_by_key",
+    "Tests.test_explode_on_set",
+    "Tests.test_explode_nested",
+    "Tests.test_write_no_parts",
+    "Tests.test_min_partitions",
+    "Tests.test_table_order_by_head_rewrite",
+    "Tests.test_join_types_ht1_is_what_we_expect",
+    "Tests.test_join_types_ht2_is_what_we_expect",
+    "Tests.test_join_types_left",
+    "Tests.test_join_types_right",
+    "Tests.test_join_types_inner",
+    "Tests.test_join_types_outer",
+    "Tests.test_expand_types",
+    "Tests.test_refs_with_process_joins",
+    "Tests.test_collect_localize_false",
+    "Tests.test_take_localize_false",
+    "Tests.test_expr_collect_localize_false",
+    "Tests.test_expr_collect",
+    "Tests.test_expr_take_localize_false",
+    "Tests.test_import_multiple_missing",
+    "test_import_many_fields",
+    "test_can_process_wide_tables",
+    "test_group_within_partitions_after_explode",
+    "test_range_annotate_range",
+    "test_empty_tree_aggregate",
+    "test_to_pandas",
+    "test_to_pandas_types_type_to_type",
+    "test_to_pandas_types_column_to_type",
+    "test_to_pandas_flatten",
+    "test_to_pandas_null_ints",
+    "test_literal_of_numpy_int64",
+    "test_literal_of_numpy_int32"
+  ],
+  "previously_passing_now_unsuccessful": [],
+  "changes": [
+    {
+      "test_id": "Tests.test_java_array_string_encoding",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_group_by_field_lifetimes",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_group_aggregate_na",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_semi_anti_join",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_indirected_joins",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_join_with_empty",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_join_with_key",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_index_maintains_count",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_from_pandas_missing_and_nans",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_from_pandas_mismatched_object_rows",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_distinct",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_group_by_key",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_explode_on_set",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_explode_nested",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_write_no_parts",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_min_partitions",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_table_order_by_head_rewrite",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_join_types_ht1_is_what_we_expect",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_join_types_ht2_is_what_we_expect",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_join_types_left",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_join_types_right",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_join_types_inner",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_join_types_outer",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_expand_types",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_refs_with_process_joins",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_collect_localize_false",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_take_localize_false",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_expr_collect_localize_false",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_expr_collect",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_expr_take_localize_false",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "Tests.test_import_multiple_missing",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_import_many_fields",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_can_process_wide_tables",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_group_within_partitions_after_explode",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_range_annotate_range",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_empty_tree_aggregate",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_to_pandas",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_to_pandas_types_type_to_type",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_to_pandas_types_column_to_type",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_to_pandas_flatten",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_to_pandas_null_ints",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_literal_of_numpy_int64",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_literal_of_numpy_int32",
+      "before": "failed",
+      "after": "passed"
+    },
+    {
+      "test_id": "test_table_randomness_left_join_right_distinct",
+      "before": "failed",
+      "after": "blocked"
+    },
+    {
+      "test_id": "test_table_randomness_explode",
+      "before": "failed",
+      "after": "blocked"
+    },
+    {
+      "test_id": "test_table_randomness_aggregate_by_key",
+      "before": "failed",
+      "after": "blocked"
+    },
+    {
+      "test_id": "test_query_table_errors",
+      "before": "blocked",
+      "after": "failed"
+    },
+    {
+      "test_id": "test_query_table",
+      "before": "blocked",
+      "after": "failed"
+    },
+    {
+      "test_id": "test_query_table_randomness",
+      "before": "blocked",
+      "after": "failed"
+    },
+    {
+      "test_id": "test_query_table_compound_key",
+      "before": "blocked",
+      "after": "failed"
+    }
+  ]
+}

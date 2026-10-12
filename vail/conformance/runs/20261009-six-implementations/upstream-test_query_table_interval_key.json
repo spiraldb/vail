@@ -1,0 +1,30 @@
+[
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x1356a53c0>",
+      "expected": "[Struct(idx=20, interval=Interval(start=20, end=70, includes_start=True, includes_end=False, point_type=int32))]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x1356a52a0>",
+      "expected": "[]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.StructExpression object at 0x1356a12a0>",
+      "expected": "[]"
+    },
+    "status": "passed"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x1356a5600>",
+      "expected": "[Struct(idx=20, interval=Interval(start=20, end=70, includes_start=True, includes_end=False, point_type=int32))]"
+    },
+    "status": "passed"
+  }
+]

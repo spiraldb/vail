@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "partial_type is not implemented in this initial slice",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 899, in test_table_parallelize_partial_infer_types\n    table = hl.Table.parallelize(data, partial_type=partial_type, key='idx')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 255, in parallelize\n    raise NotImplementedError(\"partial_type is not implemented in this initial slice\")\nNotImplementedError: partial_type is not implemented in this initial slice\n"
+  }
+]

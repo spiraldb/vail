@@ -1530,10 +1530,13 @@ fn test_datum_to_decimal_narrows_precision_when_scale_matches() {
 
     let converted = datum.to(&target_type).unwrap();
 
-    assert_eq!(converted.data_type(), &PrimitiveType::Decimal {
-        precision: 9,
-        scale: 2,
-    });
+    assert_eq!(
+        converted.data_type(),
+        &PrimitiveType::Decimal {
+            precision: 9,
+            scale: 2,
+        }
+    );
     assert_eq!(converted.literal(), &PrimitiveLiteral::Int128(12345));
 }
 
@@ -1547,10 +1550,13 @@ fn test_datum_to_decimal_widens_precision_when_scale_matches() {
 
     let converted = datum.to(&target_type).unwrap();
 
-    assert_eq!(converted.data_type(), &PrimitiveType::Decimal {
-        precision: 38,
-        scale: 2,
-    });
+    assert_eq!(
+        converted.data_type(),
+        &PrimitiveType::Decimal {
+            precision: 38,
+            scale: 2,
+        }
+    );
     assert_eq!(converted.literal(), &PrimitiveLiteral::Int128(12345));
 }
 
@@ -1564,10 +1570,13 @@ fn test_datum_to_decimal_accepts_zero_mantissa() {
 
     let converted = datum.to(&target_type).unwrap();
 
-    assert_eq!(converted.data_type(), &PrimitiveType::Decimal {
-        precision: 1,
-        scale: 0,
-    });
+    assert_eq!(
+        converted.data_type(),
+        &PrimitiveType::Decimal {
+            precision: 1,
+            scale: 0,
+        }
+    );
     assert_eq!(converted.literal(), &PrimitiveLiteral::Int128(0));
 }
 
@@ -1581,10 +1590,13 @@ fn test_datum_to_decimal_accepts_negative_mantissa() {
 
     let converted = datum.to(&target_type).unwrap();
 
-    assert_eq!(converted.data_type(), &PrimitiveType::Decimal {
-        precision: 2,
-        scale: 1,
-    });
+    assert_eq!(
+        converted.data_type(),
+        &PrimitiveType::Decimal {
+            precision: 2,
+            scale: 1,
+        }
+    );
     assert_eq!(converted.literal(), &PrimitiveLiteral::Int128(-15));
 }
 
@@ -1626,10 +1638,13 @@ fn test_datum_to_decimal_accepts_single_digit_mantissa_for_precision_one() {
 
     let converted = datum.to(&target_type).unwrap();
 
-    assert_eq!(converted.data_type(), &PrimitiveType::Decimal {
-        precision: 1,
-        scale: 1,
-    });
+    assert_eq!(
+        converted.data_type(),
+        &PrimitiveType::Decimal {
+            precision: 1,
+            scale: 1,
+        }
+    );
     assert_eq!(converted.literal(), &PrimitiveLiteral::Int128(5));
 }
 
@@ -1645,10 +1660,13 @@ fn test_datum_decimal_with_precision_rejects_value_that_exceeds_digit_precision(
 fn test_datum_decimal_with_precision_accepts_value_that_fits_digit_precision() {
     let datum = Datum::decimal_with_precision(decimal_from_i128_with_scale(5, 1), 1).unwrap();
 
-    assert_eq!(datum.data_type(), &PrimitiveType::Decimal {
-        precision: 1,
-        scale: 1,
-    });
+    assert_eq!(
+        datum.data_type(),
+        &PrimitiveType::Decimal {
+            precision: 1,
+            scale: 1,
+        }
+    );
     assert_eq!(datum.literal(), &PrimitiveLiteral::Int128(5));
 }
 

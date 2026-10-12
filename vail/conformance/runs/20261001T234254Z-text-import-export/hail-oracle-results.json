@@ -1,0 +1,76 @@
+{
+  "lines_physical": [
+    "a,\"b\"",
+    "",
+    "last"
+  ],
+  "file_name_physical": "file:<fixture>/physical",
+  "lines_tail_cr": [
+    "last"
+  ],
+  "file_name_tail_cr": "file:<fixture>/tail_cr",
+  "lines_cr_only": [
+    "a",
+    "b"
+  ],
+  "file_name_cr_only": "file:<fixture>/cr_only",
+  "lines_empty": [],
+  "lines_nul": [
+    "a\u0000b"
+  ],
+  "file_name_nul": "file:<fixture>/nul",
+  "unquoted": [
+    {
+      "id": "1",
+      "note": "\"literal\""
+    },
+    {
+      "id": "2",
+      "note": ""
+    },
+    {
+      "id": "3",
+      "note": null
+    }
+  ],
+  "valid_quoted": [
+    {
+      "id": "1",
+      "note": "a,b"
+    },
+    {
+      "id": "2",
+      "note": ""
+    }
+  ],
+  "quoted": {
+    "error": "HailUserError"
+  },
+  "unterminated_quote": {
+    "error": "HailUserError"
+  },
+  "duplicate_header": [
+    {
+      "a": "1",
+      "a_1": "2",
+      "a_1_1": "3"
+    }
+  ],
+  "too_few": {
+    "error": "HailUserError"
+  },
+  "blank_line": {
+    "error": "HailUserError"
+  },
+  "no_header": [
+    {
+      "f0": "A",
+      "f1": "b"
+    },
+    {
+      "f0": "c",
+      "f1": "d"
+    }
+  ],
+  "export": "i\tf\tb\ts\n1\t1.0000e+00\ttrue\tNA\n"
+}

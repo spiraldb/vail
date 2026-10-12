@@ -1,0 +1,53 @@
+{
+  "source": "/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_grouped_table.py",
+  "source_sha256": "ec00e2581166bf7c6c1250f9f37a857cf0551410b8208d45b23bcb8e95c2be02",
+  "mode": "all-original-test-bodies-against-vail",
+  "timeout_seconds": 60.0,
+  "limitations": "Attempt every upstream Table test body, with isolated subprocesses.\n\nImports and decorators are omitted. Original functions, class helpers, assertions,\nparameter values and local data fixtures are preserved. Hail initialization is\nomitted, and temporary-file/resource helpers are supplied by this harness.\n",
+  "elapsed_seconds": 1.1508369445800781,
+  "definitions_summary": {
+    "passed": 3,
+    "failed": 0,
+    "blocked": 0
+  },
+  "cases_summary": {
+    "passed": 3,
+    "failed": 0,
+    "blocked": 0
+  },
+  "results": [
+    {
+      "test_id": "GroupedTableTests.test_aggregate_by",
+      "source_line": 10,
+      "status": "passed",
+      "cases": [
+        {
+          "parameters": {},
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "test_id": "GroupedTableTests.test_aggregate_by_with_joins",
+      "source_line": 30,
+      "status": "passed",
+      "cases": [
+        {
+          "parameters": {},
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "test_id": "GroupedTableTests.test_issue_2446_takeby",
+      "source_line": 52,
+      "status": "passed",
+      "cases": [
+        {
+          "parameters": {},
+          "status": "passed"
+        }
+      ]
+    }
+  ]
+}

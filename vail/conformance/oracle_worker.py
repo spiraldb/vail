@@ -4,7 +4,7 @@ from __future__ import annotations
 import sys
 from typing import Any
 
-from .codec import MISSING, encode_value
+from .codec import MISSING, decode_value, encode_value
 from .protocol import PROTOCOL, dumps_wire, encode_outcome, loads_wire
 
 
@@ -62,11 +62,11 @@ def python_value(value):
 
 
 def build_table(hl, spec):
-    rows = [make_struct(hl, row) for row in spec["rows"]]
+    rows = [make_struct(hl, decode_value(row)) for row in spec["rows"]]
     schema = hail_struct_type(hl, spec["schema"])
     kwargs = {"schema": schema, "key": [], "n_partitions": spec.get("n_partitions")}
     if spec.get("globals"):
-        kwargs["globals"] = make_struct(hl, spec["globals"])
+        kwargs["globals"] = make_struct(hl, decode_value(spec["globals"]))
     table = hl.Table.parallelize(rows, **kwargs)
     if spec.get("key"):
         table = table.key_by(*spec["key"])

@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "Java regular-expression semantics differ from DataFusion; only literal patterns are supported",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1715, in test_import_filter_replace\n    assert_filter_equals(None, (r'\\((\\w+)\\)', '$1'), ['(Foo,Bar)', 'Baz,Qux('])\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1707, in assert_filter_equals\n    hl.import_table(resource('filter_replace.txt'), filter=filter, find_replace=find_replace)[\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/text.py\", line 160, in import_table\n    table = table.annotate(text=table.text.replace(*find_replace))\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/expressions.py\", line 522, in <lambda>\n    return lambda *args, **kwargs: methods[name](self, *args, **kwargs)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/strings.py\", line 149, in replace\n    pattern = _literal_regex(pattern)\n              ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/strings.py\", line 135, in _literal_regex\n    raise NotImplementedError('Java regular-expression semantics differ from DataFusion; only literal patterns are supported')\nNotImplementedError: Java regular-expression semantics differ from DataFusion; only literal patterns are supported\n"
+  }
+]

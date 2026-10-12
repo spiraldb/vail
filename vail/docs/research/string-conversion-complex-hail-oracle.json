@@ -1,0 +1,42 @@
+[
+  {
+    "name": "interval_array",
+    "value": "[[1,2]-[3,4])"
+  },
+  {
+    "name": "interval_struct",
+    "value": "[{x: 1, y: a}-{x: 2, y: b})"
+  },
+  {
+    "name": "interval_tuple",
+    "value": "[(1, a)-(2, b))"
+  },
+  {
+    "name": "interval_set",
+    "value": "[Set(1, 2)-Set(3, 4))"
+  },
+  {
+    "name": "interval_dict",
+    "value": "[Map(1 -> a)-Map(2 -> b))"
+  },
+  {
+    "name": "interval_call",
+    "value": "[12-20)"
+  },
+  {
+    "name": "interval_ndarray",
+    "value": "[UnsafeNDArray of shape (2) with elements ArraySeq(1, 2)-UnsafeNDArray of shape (2) with elements ArraySeq(3, 4))"
+  },
+  {
+    "name": "interval_interval",
+    "value": "[[1-2)-[3-4))"
+  },
+  {
+    "name": "ndarray_scalar",
+    "value": "ndarray{shape=(), data=1.0}"
+  },
+  {
+    "name": "ndarray_empty",
+    "value": "ndarray{shape=(0), data=[]}"
+  }
+]

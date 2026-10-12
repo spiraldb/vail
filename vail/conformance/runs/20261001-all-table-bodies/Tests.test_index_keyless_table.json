@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'expr'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 719, in test_index_keyless_table\n    with self.assertRaisesRegex(hl.expr.ExpressionException, \"Table key: *<<<empty key>>>\"):\n                                ^^^^^^^\nAttributeError: module 'vail' has no attribute 'expr'\n"
+  }
+]

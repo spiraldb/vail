@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AssertionError",
+    "error": "Regex pattern did not match.\n  Expected regex: 'expected return type expression of type stream<struct>'\n  Actual message: 'Table._map_partitions callback must return a stream expression'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2018, in test_map_partitions_errors\n    with pytest.raises(TypeError, match='expected return type expression of type stream<struct>'):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/.venv/lib/python3.12/site-packages/_pytest/raises.py\", line 711, in __exit__\n    raise AssertionError(self._fail_reason) from None\nAssertionError: Regex pattern did not match.\n  Expected regex: 'expected return type expression of type stream<struct>'\n  Actual message: 'Table._map_partitions callback must return a stream expression'\n"
+  }
+]

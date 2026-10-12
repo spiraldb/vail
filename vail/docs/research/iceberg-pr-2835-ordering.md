@@ -1,5 +1,10 @@
 # Ordering review: iceberg-rust PR #2835
 
+Current update (2026-09-28): the bounded one-file description below records
+the initial integration. Vail now writes and reads multiple certified Vortex
+files in index order, with canonical Hail key version 2 for new local tables.
+See [ordered-fragment-scan.md](ordered-fragment-scan.md) for the current bounds.
+
 Inspected [apache/iceberg-rust at `0252fe9174aa3062da51328c444a765aa7de2dae`](https://github.com/apache/iceberg-rust/commit/0252fe9174aa3062da51328c444a765aa7de2dae) and its published Vortex dependency at [tag `0.86.1`, commit `d1fe2dc46d2b947a2304122d0d0423332fcb77a3`](https://github.com/vortex-data/vortex/tree/d1fe2dc46d2b947a2304122d0d0423332fcb77a3). The `ordered: true` default and ordered `buffered` path were also checked in the locally downloaded crates.io sources at `/Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/vortex-layout-0.86.1/src/scan/scan_builder.rs` lines 89–105 and 446–455; `vortex-file-0.86.1/src/file.rs` lines 215–221 has the same constructor call. Vail's lockfile resolves these registry versions. These findings concern that pinned implementation, not Vortex develop.
 
 ## What order the APIs deliver

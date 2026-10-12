@@ -4,17 +4,29 @@
 //! independently observable without allowing a parallel coalescer to reorder them.
 use crate::globals::GlobalBindings;
 use crate::{PartitionEvent, Result, TableError, TableIR, TableNode, order_requirement};
-use arrow_array::{Array, Int32Array, RecordBatch, StringArray, UInt64Array};
+use arrow_array::{Array, Int32Array, RecordBatch, UInt64Array};
 use arrow_schema::{DataType, Field, Schema, SchemaRef, SortOptions};
-use datafusion_common::{DataFusionError, ScalarValue, tree_node::TreeNodeRecursion};
+use datafusion_common::{
+    DataFusionError, NullHandling, ScalarValue, UnnestOptions, config::ConfigOptions,
+    tree_node::TreeNodeRecursion,
+};
+use datafusion_datasource::{
+    PartitionedFile, file_scan_config::FileScanConfigBuilder, source::DataSourceExec,
+};
+use datafusion_datasource_csv::source::CsvSource;
+use datafusion_datasource_json::source::JsonSource;
 use datafusion_execution::TaskContext;
+use datafusion_execution::object_store::ObjectStoreUrl;
+use datafusion_expr::Operator;
 use datafusion_physical_expr::{
     EquivalenceProperties, LexOrdering, PhysicalExpr, PhysicalSortExpr,
-    expressions::{Column, Literal, NotExpr},
+    expressions::{BinaryExpr, Column, Literal, NotExpr},
 };
 use datafusion_physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, PlanProperties,
     SendableRecordBatchStream,
+    aggregates::{AggregateExec, AggregateMode, PhysicalGroupBy},
+    coalesce_partitions::CoalescePartitionsExec,
     empty::EmptyExec,
     execution_plan::{Boundedness, EmissionType},
     filter::FilterExec,
@@ -23,8 +35,10 @@ use datafusion_physical_plan::{
     projection::ProjectionExec,
     sorts::sort::SortExec,
     stream::RecordBatchStreamAdapter,
+    union::UnionExec,
+    unnest::{ListUnnest, UnnestExec},
 };
-use futures::{StreamExt, TryStreamExt};
+use futures::TryStreamExt;
 use std::{collections::VecDeque, fmt, sync::Arc};
 use vail_execution::expressions::{Expr, lower_with_bindings, lower_with_global_columns};
 use vail_storage::local_table::{LocalRead, normalize};
@@ -45,7 +59,7 @@ pub(crate) fn properties(schema: SchemaRef, emission: EmissionType) -> Arc<PlanP
 pub(crate) fn column(plan: &PhysicalPlan, index: usize) -> Arc<dyn PhysicalExpr> {
     Arc::new(Column::new(plan.schema().field(index).name(), index))
 }
-fn private_name(schema: &Schema, globals: &Schema, base: &str) -> String {
+pub(crate) fn private_name(schema: &Schema, globals: &Schema, base: &str) -> String {
     let mut name = base.to_owned();
     while schema.index_of(&name).is_ok() || globals.index_of(&name).is_ok() {
         name.push('_');
@@ -88,6 +102,7 @@ fn tag(
 
 #[derive(Debug, Clone)]
 enum Source {
+    ReadPartition(Arc<LocalRead>, usize),
     Read(Arc<LocalRead>),
     Range {
         n: usize,
@@ -113,7 +128,7 @@ impl DisplayAs for SourceExec {
 impl ExecutionPlan for SourceExec {
     fn name(&self) -> &'static str {
         match self.source {
-            Source::Read(_) => "VicebergScanExec",
+            Source::Read(_) | Source::ReadPartition(_, _) => "VicebergScanExec",
             Source::Range { .. } => "RangeExec",
             Source::Globals(_) => "GlobalsScanExec",
             Source::Parallelize { .. } => "ParallelizeExec",
@@ -143,7 +158,7 @@ impl ExecutionPlan for SourceExec {
     fn execute(
         &self,
         partition: usize,
-        _: Arc<TaskContext>,
+        _context: Arc<TaskContext>,
     ) -> datafusion_common::Result<SendableRecordBatchStream> {
         if partition != 0 {
             return Err(DataFusionError::Execution(
@@ -158,6 +173,12 @@ impl ExecutionPlan for SourceExec {
             output_schema,
             async_stream::try_stream! {
                 match source {
+                    Source::ReadPartition(source, part) => {
+                        let mut input=source.partition_batches(part);
+                        while let Some(event)=input.try_next().await.map_err(external)? {
+                            if let PartitionEvent::Batch(batch)=event {let batch=normalize(&batch,row_schema.clone()).map_err(external)?;yield tag(batch,0,schema.clone())?;}
+                        }
+                    }
                     Source::Read(source) => {
                         let mut input = source.batches();
                         let mut current = 0usize;
@@ -202,6 +223,179 @@ impl ExecutionPlan for SourceExec {
         )))
     }
 }
+pub(crate) fn source_partition(table: &Arc<TableIR>, part: usize) -> Result<PhysicalPlan> {
+    let row_schema = table.schema().clone();
+    let name = private_name(&row_schema, table.globals().schema(), "__vail_partition");
+    let schema = with_partition(&row_schema, &name);
+    if let TableNode::TextRead {
+        paths,
+        format,
+        options_json,
+    } = table.node()
+    {
+        let path = paths
+            .get(part)
+            .ok_or_else(|| TableError::Invalid("text source partition out of range".into()))?;
+        let metadata = std::fs::metadata(path)
+            .map_err(|e| TableError::Invalid(format!("cannot stat text input {path:?}: {e}")))?;
+        let options: serde_json::Map<String, serde_json::Value> =
+            serde_json::from_str(options_json).map_err(|e| TableError::Invalid(e.to_string()))?;
+        let (file_schema, source): (SchemaRef, Arc<dyn datafusion_datasource::file::FileSource>) =
+            match format.as_str() {
+                "csv" => {
+                    let csv = crate::text_schema::csv_options(options)?;
+                    (
+                        row_schema.clone(),
+                        Arc::new(CsvSource::new(row_schema.clone()).with_csv_options(csv)),
+                    )
+                }
+                "json" | "ndjson" => {
+                    let json = crate::text_schema::json_options(options)?;
+                    let newline = json.newline_delimited;
+                    (
+                        row_schema.clone(),
+                        Arc::new(
+                            JsonSource::new(row_schema.clone()).with_newline_delimited(newline),
+                        ),
+                    )
+                }
+                "lines" => {
+                    let fields = vec![Arc::new(arrow_schema::Field::new(
+                        "text",
+                        DataType::Utf8,
+                        false,
+                    ))];
+                    let lines_schema = Arc::new(Schema::new(fields));
+                    (
+                        lines_schema.clone(),
+                        Arc::new(crate::line_source::LineSource::new()),
+                    )
+                }
+                _ => {
+                    return Err(TableError::Invalid(format!(
+                        "unsupported text format {format:?}"
+                    )));
+                }
+            };
+        let file_path = path.trim_start_matches('/');
+        let config = FileScanConfigBuilder::new(ObjectStoreUrl::local_filesystem(), source)
+            .with_file(PartitionedFile::new(file_path, metadata.len()))
+            .with_preserve_order(true)
+            .build();
+        let scan: PhysicalPlan = DataSourceExec::from_data_source(config);
+        let mut exprs = Vec::new();
+        if format == "lines" {
+            exprs.push((
+                Arc::new(Literal::new(ScalarValue::Utf8(Some(format!(
+                    "file:{path}"
+                ))))) as Arc<dyn PhysicalExpr>,
+                "file".to_owned(),
+            ));
+            exprs.push((
+                Arc::new(Column::new("text", 0)) as Arc<dyn PhysicalExpr>,
+                "text".to_owned(),
+            ));
+        } else {
+            for (index, field) in file_schema.fields().iter().enumerate() {
+                exprs.push((
+                    Arc::new(Column::new(field.name(), index)) as Arc<dyn PhysicalExpr>,
+                    field.name().clone(),
+                ));
+            }
+        }
+        exprs.push((
+            Arc::new(Literal::new(ScalarValue::UInt64(Some(part as u64)))) as Arc<dyn PhysicalExpr>,
+            name,
+        ));
+        return Ok(Arc::new(ProjectionExec::try_new(exprs, scan)?));
+    }
+    let source = match table.node() {
+        TableNode::Read { source } => Source::ReadPartition(source.clone(), part),
+        TableNode::Range { n, n_partitions } => {
+            let start = n / n_partitions * part + part.min(n % n_partitions);
+            let end = start + n / n_partitions + usize::from(part < n % n_partitions);
+            // Use a shared Arrow-free range context for this exact partition.
+            return Ok(Arc::new(RangePartitionExec {
+                start,
+                end,
+                cache: source_properties(schema, &["idx".into()])?,
+                row_schema,
+            }));
+        }
+        TableNode::Parallelize { rows, n_partitions } => {
+            let start = rows.num_rows() * part / n_partitions;
+            let end = rows.num_rows() * (part + 1) / n_partitions;
+            Source::Parallelize {
+                rows: rows.slice(start, end - start),
+                partitions: 1,
+            }
+        }
+        _ => return Err(TableError::Invalid("not a partitioned source".into())),
+    };
+    Ok(Arc::new(SourceExec {
+        source,
+        cache: source_properties(schema, table.keys())?,
+        row_schema,
+    }))
+}
+#[derive(Debug)]
+struct RangePartitionExec {
+    start: usize,
+    end: usize,
+    cache: Arc<PlanProperties>,
+    row_schema: SchemaRef,
+}
+impl DisplayAs for RangePartitionExec {
+    fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "RangeExec: [{}, {})", self.start, self.end)
+    }
+}
+impl ExecutionPlan for RangePartitionExec {
+    fn name(&self) -> &'static str {
+        "RangeExec"
+    }
+    fn properties(&self) -> &Arc<PlanProperties> {
+        &self.cache
+    }
+    fn children(&self) -> Vec<&PhysicalPlan> {
+        vec![]
+    }
+    fn apply_expressions(
+        &self,
+        _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
+    ) -> datafusion_common::Result<TreeNodeRecursion> {
+        Ok(TreeNodeRecursion::Continue)
+    }
+    fn with_new_children(
+        self: Arc<Self>,
+        children: Vec<PhysicalPlan>,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        if !children.is_empty() {
+            return Err(DataFusionError::Plan("range source has no children".into()));
+        }
+        Ok(self)
+    }
+    fn execute(
+        &self,
+        p: usize,
+        _: Arc<TaskContext>,
+    ) -> datafusion_common::Result<SendableRecordBatchStream> {
+        if p != 0 {
+            return Err(DataFusionError::Execution("invalid range partition".into()));
+        }
+        let (start, end, schema, row_schema) =
+            (self.start, self.end, self.schema(), self.row_schema.clone());
+        Ok(Box::pin(RecordBatchStreamAdapter::new(
+            schema.clone(),
+            async_stream::try_stream! {
+                for offset in (start..end).step_by(65536) {
+                    let batch=RecordBatch::try_new(row_schema.clone(),vec![Arc::new(Int32Array::from_iter_values((offset..end.min(offset+65536)).map(|i|i as i32)))])?;
+                    yield tag(batch,0,schema.clone())?;
+                }
+            },
+        )))
+    }
+}
 pub(crate) fn globals_scan(source: Arc<LocalRead>, schema: SchemaRef) -> PhysicalPlan {
     Arc::new(SourceExec {
         source: Source::Globals(source),
@@ -216,7 +410,6 @@ pub(crate) fn globals_scan(source: Arc<LocalRead>, schema: SchemaRef) -> Physica
 enum Unary {
     Tail(usize),
     Ordinal,
-    CheckAscii(Vec<usize>),
 }
 #[derive(Debug)]
 struct UnaryExec {
@@ -267,7 +460,6 @@ impl ExecutionPlan for UnaryExec {
         match self.kind {
             Unary::Tail(_) => "OrderedTailExec",
             Unary::Ordinal => "OrdinalExec",
-            Unary::CheckAscii(_) => "CheckKeyDomainExec",
         }
     }
     fn properties(&self) -> &Arc<PlanProperties> {
@@ -345,18 +537,6 @@ impl ExecutionPlan for UnaryExec {
                                 yield RecordBatch::try_new(schema.clone(), columns)?;
                             }
                         }
-                        Unary::CheckAscii(indices) => {
-                            while let Some(batch) = input.try_next().await? {
-                                for index in &indices {
-                                    if let Some(values) = batch.column(*index).as_any().downcast_ref::<StringArray>() {
-                                        if values.iter().flatten().any(|s| !s.is_ascii()) {
-                                            Err(DataFusionError::Execution("non-ASCII key data requires Hail string collation".into()))?;
-                                        }
-                                    }
-                                }
-                                yield batch;
-                            }
-                        }
                     }
                 }
             },
@@ -367,7 +547,7 @@ pub(crate) fn ordinal(input: PhysicalPlan) -> PhysicalPlan {
     UnaryExec::create(input, Unary::Ordinal)
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Debug)]
 pub enum PartitionLayout {
     Fixed(usize),
     Observed,
@@ -377,12 +557,63 @@ pub struct TablePlan {
     pub layout: PartitionLayout,
 }
 
+pub(crate) fn physical_schema(table: &Arc<TableIR>) -> SchemaRef {
+    with_partition(
+        table.schema(),
+        &private_name(table.schema(), table.globals().schema(), "__vail_partition"),
+    )
+}
+
+pub(crate) fn expression_array(
+    expression: &Expr,
+    bindings: &GlobalBindings,
+) -> Result<PhysicalPlan> {
+    let empty = crate::globals::GlobalsIR::empty().lower()?;
+    let (input, indices) = bind_external(empty, bindings)?;
+    let array_name = "__vail_expression_array";
+    let value = lower_with_bindings(expression, &input.schema(), &Schema::empty(), &indices)?;
+    Ok(Arc::new(ProjectionExec::try_new(
+        vec![(value, array_name.into())],
+        input,
+    )?))
+}
 pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
     let row_schema = table.schema().clone();
     let partition_name = private_name(&row_schema, table.globals().schema(), "__vail_partition");
     let schema = with_partition(&row_schema, &partition_name);
     let fixed = |n| PartitionLayout::Fixed(n);
     let result = match table.node() {
+        TableNode::Prepared {
+            rows, n_partitions, ..
+        } => TablePlan {
+            rows: rows.clone(),
+            layout: fixed(*n_partitions),
+        },
+        TableNode::IntervalRead { .. } => crate::partitioned::deferred_ordered(table.clone())?,
+        TableNode::Repartition { .. } | TableNode::FilterPartitions { .. } => {
+            crate::partitioned::deferred_ordered(table.clone())?
+        }
+        TableNode::GroupWithinPartitions { child, name, n } => {
+            crate::partition_grouping::lower_group_within(
+                lower(child)?,
+                child.schema().clone(),
+                child.keys(),
+                name,
+                *n,
+            )?
+        }
+        TableNode::MapPartitions {
+            child,
+            rows_name,
+            body,
+            bindings,
+        } => {
+            if matches!(child.node(), TableNode::Prepared { .. }) {
+                crate::partition_map::lower(lower(child)?, child, rows_name, body, bindings)?
+            } else {
+                crate::partitioned::deferred_ordered(table.clone())?
+            }
+        }
         TableNode::Read { source } => TablePlan {
             rows: Arc::new(SourceExec {
                 source: Source::Read(source.clone()),
@@ -391,6 +622,7 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             }),
             layout: fixed(source.partition_rows().len()),
         },
+        TableNode::TextRead { .. } => crate::partitioned::deferred_ordered(table.clone())?,
         TableNode::Range { n, n_partitions } => TablePlan {
             rows: Arc::new(SourceExec {
                 source: Source::Range {
@@ -413,6 +645,7 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             }),
             layout: fixed(*n_partitions),
         },
+        TableNode::Expression { .. } => crate::partitioned::deferred_ordered(table.clone())?,
         TableNode::MapGlobals { child } => lower(child)?,
         TableNode::MapRows {
             child,
@@ -477,6 +710,132 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
                 layout: input.layout,
             }
         }
+        TableNode::Explode { child, path } => {
+            let input = lower(child)?;
+            let mut rows = input.rows;
+            let (index, name) = if path.len() == 1 {
+                (rows.schema().index_of(&path[0])?, path[0].clone())
+            } else {
+                let name = private_name(&rows.schema(), child.globals().schema(), "__vail_explode");
+                let mut nested = crate::ScalarIR::Column {
+                    name: path[0].clone(),
+                };
+                for part in &path[1..] {
+                    nested = crate::ScalarIR::GetField {
+                        value: Box::new(nested),
+                        name: part.clone(),
+                    };
+                }
+                let value = lower_with_bindings(
+                    &nested,
+                    &rows.schema(),
+                    child.globals().schema(),
+                    &Default::default(),
+                )?;
+                let mut expressions = (0..rows.schema().fields().len())
+                    .map(|i| (column(&rows, i), rows.schema().field(i).name().clone()))
+                    .collect::<Vec<_>>();
+                expressions.push((value, name.clone()));
+                rows = Arc::new(ProjectionExec::try_new(expressions, rows)?);
+                (rows.schema().fields().len() - 1, name)
+            };
+            let item_type = match rows.schema().field(index).data_type() {
+                DataType::List(item) | DataType::LargeList(item) => item.data_type().clone(),
+                _ => return Err(TableError::Invalid("explode requires a list column".into())),
+            };
+            let mut fields = rows.schema().fields().to_vec();
+            fields[index] = Arc::new(Field::new(&name, item_type, true));
+            let unnested: PhysicalPlan = Arc::new(UnnestExec::new(
+                rows,
+                vec![ListUnnest {
+                    index_in_input_schema: index,
+                    depth: 1,
+                }],
+                vec![],
+                Arc::new(Schema::new(fields)),
+                UnnestOptions::new().with_null_handling(NullHandling::Drop),
+            )?);
+            if path.len() == 1 {
+                TablePlan {
+                    rows: unnested,
+                    layout: input.layout,
+                }
+            } else {
+                fn rebuild(
+                    dtype: &DataType,
+                    path: &[String],
+                    value: crate::ScalarIR,
+                    exploded: &str,
+                ) -> Result<crate::ScalarIR> {
+                    if path.is_empty() {
+                        return Ok(crate::ScalarIR::Column {
+                            name: exploded.into(),
+                        });
+                    }
+                    let DataType::Struct(fields) = dtype else {
+                        return Err(TableError::Invalid(
+                            "explode path passes through a non-struct".into(),
+                        ));
+                    };
+                    Ok(crate::ScalarIR::Struct {
+                        fields: fields
+                            .iter()
+                            .map(|field| {
+                                let field_value = if field.name() == &path[0] {
+                                    rebuild(
+                                        field.data_type(),
+                                        &path[1..],
+                                        crate::ScalarIR::GetField {
+                                            value: Box::new(value.clone()),
+                                            name: field.name().clone(),
+                                        },
+                                        exploded,
+                                    )?
+                                } else {
+                                    crate::ScalarIR::GetField {
+                                        value: Box::new(value.clone()),
+                                        name: field.name().clone(),
+                                    }
+                                };
+                                Ok((field.name().clone(), field_value))
+                            })
+                            .collect::<Result<Vec<_>>>()?,
+                    })
+                }
+                let root_index = child.schema().index_of(&path[0])?;
+                let root = rebuild(
+                    child.schema().field(root_index).data_type(),
+                    &path[1..],
+                    crate::ScalarIR::Column {
+                        name: path[0].clone(),
+                    },
+                    &name,
+                )?;
+                let mut expressions = (0..child.schema().fields().len())
+                    .map(|i| {
+                        if i == root_index {
+                            Ok((
+                                lower_with_bindings(
+                                    &root,
+                                    &unnested.schema(),
+                                    child.globals().schema(),
+                                    &Default::default(),
+                                )?,
+                                path[0].clone(),
+                            ))
+                        } else {
+                            Ok((column(&unnested, i), child.schema().field(i).name().clone()))
+                        }
+                    })
+                    .collect::<Result<Vec<_>>>()?;
+                let partition_index = child.schema().fields().len();
+                expressions.push((column(&unnested, partition_index), partition_name));
+                TablePlan {
+                    rows: Arc::new(ProjectionExec::try_new(expressions, unnested)?),
+                    layout: input.layout,
+                }
+            }
+        }
         TableNode::Head { n: 0, .. } | TableNode::Tail { n: 0, .. } => TablePlan {
             rows: Arc::new(EmptyExec::new(schema)),
             layout: PartitionLayout::Observed,
@@ -495,11 +854,278 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
                 layout: PartitionLayout::Observed,
             }
         }
+        TableNode::Union { children } => {
+            let mut offset = 0u64;
+            let mut plans = Vec::with_capacity(children.len());
+            let branch_name =
+                private_name(&row_schema, table.globals().schema(), "__vail_union_branch");
+            let ordinal_name = private_name(
+                &row_schema,
+                table.globals().schema(),
+                "__vail_union_ordinal",
+            );
+            let partition_name =
+                private_name(&row_schema, table.globals().schema(), "__vail_partition");
+            for (branch, child) in children.iter().enumerate() {
+                let lowered = lower(child)?;
+                let child_parts = child.known_n_partitions().unwrap_or(1);
+                let mut aligned = Vec::new();
+                for field in row_schema.fields() {
+                    let value: Arc<dyn PhysicalExpr> = match child.schema().index_of(field.name()) {
+                        Ok(index) => {
+                            let target =
+                                Arc::new(Field::new(field.name(), field.data_type().clone(), true));
+                            Arc::new(datafusion_physical_expr::expressions::CastExpr::new_with_target_field(
+                                column(&lowered.rows, index), target, None,
+                            ))
+                        }
+                        Err(_) => Arc::new(Literal::new(ScalarValue::try_from(field.data_type())?)),
+                    };
+                    aligned.push((value, field.name().clone()));
+                }
+                aligned.push((
+                    column(&lowered.rows, child.schema().fields().len()),
+                    partition_name.clone(),
+                ));
+                let aligned: PhysicalPlan =
+                    Arc::new(ProjectionExec::try_new(aligned, lowered.rows)?);
+                let numbered = ordinal(aligned);
+                let child_schema = numbered.schema();
+                let partition_index = row_schema.fields().len();
+                let ordinal_index = partition_index + 1;
+                let mut fields = (0..row_schema.fields().len())
+                    .map(|i| (column(&numbered, i), child_schema.field(i).name().clone()))
+                    .collect::<Vec<_>>();
+                let partition = if offset == 0 {
+                    column(&numbered, partition_index)
+                } else {
+                    Arc::new(BinaryExpr::new(
+                        column(&numbered, partition_index),
+                        Operator::Plus,
+                        Arc::new(Literal::new(ScalarValue::UInt64(Some(offset)))),
+                    ))
+                };
+                fields.push((partition, partition_name.clone()));
+                fields.push((
+                    Arc::new(Literal::new(ScalarValue::UInt64(Some(branch as u64)))),
+                    branch_name.clone(),
+                ));
+                fields.push((column(&numbered, ordinal_index), ordinal_name.clone()));
+                plans.push(Arc::new(ProjectionExec::try_new(fields, numbered)?) as PhysicalPlan);
+                offset = offset
+                    .checked_add(child_parts as u64)
+                    .ok_or_else(|| TableError::Invalid("union partition count overflow".into()))?;
+            }
+            let union: PhysicalPlan = UnionExec::try_new(plans)?;
+            let coalesced: PhysicalPlan = Arc::new(CoalescePartitionsExec::new(union));
+            let order_schema = coalesced.schema();
+            let mut ordering = vec![
+                PhysicalSortExpr::new(
+                    column(&coalesced, row_schema.fields().len() + 1),
+                    SortOptions::default(),
+                ),
+                PhysicalSortExpr::new(
+                    column(&coalesced, row_schema.fields().len() + 2),
+                    SortOptions::default(),
+                ),
+            ];
+            if !table.keys().is_empty() {
+                ordering = order_requirement(
+                    &table
+                        .keys()
+                        .iter()
+                        .map(|key| (key.clone(), false))
+                        .collect::<Vec<_>>(),
+                )?
+                .physical_ordering(&order_schema)?
+                .into_iter()
+                .collect();
+                ordering.push(PhysicalSortExpr::new(
+                    column(&coalesced, row_schema.fields().len() + 1),
+                    SortOptions::default(),
+                ));
+                ordering.push(PhysicalSortExpr::new(
+                    column(&coalesced, row_schema.fields().len() + 2),
+                    SortOptions::default(),
+                ));
+            }
+            let sorted: PhysicalPlan = Arc::new(SortExec::new(
+                LexOrdering::new(ordering).unwrap(),
+                coalesced,
+            ));
+            let mut fields = (0..row_schema.fields().len())
+                .map(|i| (column(&sorted, i), row_schema.field(i).name().clone()))
+                .collect::<Vec<_>>();
+            let partition = if table.keys().is_empty() {
+                column(&sorted, row_schema.fields().len())
+            } else {
+                Arc::new(Literal::new(ScalarValue::UInt64(Some(0))))
+            };
+            fields.push((partition, partition_name));
+            let union = Arc::new(ProjectionExec::try_new(fields, sorted)?);
+            let layout = children
+                .iter()
+                .map(|child| child.known_n_partitions())
+                .collect::<Option<Vec<_>>>()
+                .map(|parts| PartitionLayout::Fixed(parts.into_iter().sum()))
+                .unwrap_or(PartitionLayout::Observed);
+            TablePlan {
+                rows: union,
+                layout: if table.keys().is_empty() {
+                    layout
+                } else {
+                    PartitionLayout::Fixed(1)
+                },
+            }
+        }
+        TableNode::Distinct { child } => {
+            let input = lower(child)?.rows;
+            let input_schema = input.schema();
+            let group_names = if child.keys().is_empty() {
+                child
+                    .schema()
+                    .fields()
+                    .iter()
+                    .map(|f| f.name().clone())
+                    .collect::<Vec<_>>()
+            } else {
+                child.keys().to_vec()
+            };
+            let groups = if group_names.is_empty() {
+                vec![(
+                    Arc::new(Literal::new(ScalarValue::Boolean(Some(true))))
+                        as Arc<dyn PhysicalExpr>,
+                    "__vail_distinct_group".into(),
+                )]
+            } else {
+                group_names
+                    .iter()
+                    .map(|name| {
+                        Ok((
+                            vail_execution::ordering::canonical_key(column(
+                                &input,
+                                input_schema.index_of(name)?,
+                            )),
+                            name.clone(),
+                        ))
+                    })
+                    .collect::<Result<Vec<_>>>()?
+            };
+            let mut row_args = Vec::with_capacity(child.schema().fields().len() * 2);
+            for field in child.schema().fields() {
+                row_args.push(
+                    Arc::new(Literal::new(ScalarValue::Utf8(Some(field.name().clone()))))
+                        as Arc<dyn PhysicalExpr>,
+                );
+                row_args.push(column(&input, input_schema.index_of(field.name())?));
+            }
+            let row = Arc::new(datafusion_physical_expr::ScalarFunctionExpr::try_new(
+                datafusion_functions::core::named_struct(),
+                row_args,
+                &input_schema,
+                Arc::new(ConfigOptions::default()),
+            )?);
+            let representative = datafusion_physical_expr::aggregate::AggregateExprBuilder::new(
+                datafusion_functions_aggregate::any_value::any_value_udaf(),
+                vec![row],
+            )
+            .schema(input_schema.clone())
+            .alias("__vail_distinct_row")
+            .build()?;
+            let grouped: PhysicalPlan = Arc::new(AggregateExec::try_new(
+                AggregateMode::Single,
+                PhysicalGroupBy::new_single(groups),
+                vec![Arc::new(representative)],
+                vec![None],
+                input,
+                input_schema,
+            )?);
+            let row_index = group_names.len();
+            let row_column = column(&grouped, row_index);
+            let grouped_schema = grouped.schema();
+            let mut expressions: Vec<(Arc<dyn PhysicalExpr>, String)> =
+                Vec::with_capacity(child.schema().fields().len() + 1);
+            for field in child.schema().fields() {
+                let value = Arc::new(datafusion_physical_expr::ScalarFunctionExpr::try_new(
+                    datafusion_functions::core::get_field(),
+                    vec![
+                        row_column.clone(),
+                        Arc::new(Literal::new(ScalarValue::Utf8(Some(field.name().clone())))),
+                    ],
+                    &grouped_schema,
+                    Arc::new(ConfigOptions::default()),
+                )?);
+                expressions.push((value, field.name().clone()));
+            }
+            expressions.push((
+                Arc::new(Literal::new(ScalarValue::UInt64(Some(0)))),
+                partition_name,
+            ));
+            let plan = TablePlan {
+                rows: Arc::new(ProjectionExec::try_new(expressions, grouped)?),
+                layout: PartitionLayout::Fixed(1),
+            };
+            if table.keys().is_empty() {
+                plan
+            } else {
+                sort(
+                    plan,
+                    &table
+                        .keys()
+                        .iter()
+                        .map(|key| (key.clone(), false))
+                        .collect::<Vec<_>>(),
+                )?
+            }
+        }
         TableNode::KeyBy { child, keys } => sort(
             lower(child)?,
             &keys.iter().map(|k| (k.clone(), false)).collect::<Vec<_>>(),
         )?,
+        TableNode::Lookup { .. } => crate::partitioned::deferred_ordered(table.clone())?,
+        TableNode::Join {
+            left,
+            right,
+            kind,
+            join_key,
+        } => crate::joins::lower(table, left, right, *kind, *join_key)?,
+        TableNode::MultiWayZipJoin {
+            tables,
+            data_field_name,
+        } => crate::zip_join::lower(tables, table, data_field_name)?,
         TableNode::OrderBy { child, keys } => sort(lower(child)?, keys)?,
+        TableNode::Aggregate {
+            child,
+            keys,
+            fields,
+            bindings,
+        } => {
+            let grouped = crate::aggregation::lower_grouped(child, keys, fields, bindings)?;
+            let grouped_schema = grouped.schema();
+            let private = private_name(
+                &grouped_schema,
+                table.globals().schema(),
+                "__vail_partition",
+            );
+            let mut expressions = (0..grouped_schema.fields().len())
+                .map(|i| (column(&grouped, i), grouped_schema.field(i).name().clone()))
+                .collect::<Vec<_>>();
+            expressions.push((
+                Arc::new(Literal::new(ScalarValue::UInt64(Some(0)))),
+                private.clone(),
+            ));
+            let tagged: PhysicalPlan = Arc::new(ProjectionExec::try_new(expressions, grouped)?);
+            sort(
+                TablePlan {
+                    rows: tagged,
+                    layout: PartitionLayout::Fixed(1),
+                },
+                &keys
+                    .iter()
+                    .map(|(name, _)| (name.clone(), false))
+                    .collect::<Vec<_>>(),
+            )?
+        }
     };
     Ok(result)
 }
@@ -539,14 +1165,14 @@ pub(crate) fn bind_external(
     Ok((input, indices))
 }
 
-fn bind_globals(rows: PhysicalPlan, table: &Arc<TableIR>) -> Result<PhysicalPlan> {
+pub(crate) fn bind_globals(rows: PhysicalPlan, table: &Arc<TableIR>) -> Result<PhysicalPlan> {
     if table.globals().schema().fields().is_empty() {
         return Ok(rows);
     }
     // CrossJoin builds its left input: exactly one row, including for empty tables.
     Ok(Arc::new(CrossJoinExec::new(table.globals().lower()?, rows)))
 }
-fn sort(input: TablePlan, keys: &[(String, bool)]) -> Result<TablePlan> {
+pub(crate) fn sort(input: TablePlan, keys: &[(String, bool)]) -> Result<TablePlan> {
     if keys.is_empty() {
         return Ok(input);
     }
@@ -556,12 +1182,7 @@ fn sort(input: TablePlan, keys: &[(String, bool)]) -> Result<TablePlan> {
         .physical_ordering(&schema)?
         .into_iter()
         .collect::<Vec<_>>();
-    let indices = keys
-        .iter()
-        .map(|(name, _)| schema.index_of(name))
-        .collect::<std::result::Result<Vec<_>, _>>()?;
-    let checked = UnaryExec::create(input.rows, Unary::CheckAscii(indices));
-    let numbered = ordinal(checked);
+    let numbered = ordinal(input.rows);
     ordering.push(PhysicalSortExpr::new(
         column(&numbered, numbered.schema().fields().len() - 1),
         SortOptions::default(),
@@ -584,41 +1205,7 @@ fn sort(input: TablePlan, keys: &[(String, bool)]) -> Result<TablePlan> {
 /// Adapt completed DataFusion batches to the storage boundary's partition events.
 /// No TableIR operations are interpreted here.
 pub fn execute(table: &Arc<TableIR>) -> crate::BatchStream {
-    let table = table.clone();
-    async_stream::try_stream! {
-        let plan = lower(&table)?;
-        let mut input = plan.rows.execute(0, Arc::new(TaskContext::default()))?;
-        let mut next_partition = 0usize;
-        let mut previous = None;
-        while let Some(batch) = input.try_next().await? {
-            let ids = batch.column(batch.num_columns()-1).as_any().downcast_ref::<UInt64Array>()
-                .ok_or_else(|| TableError::Invalid("missing physical partition identity".into()))?;
-            let mut offset = 0;
-            while offset < batch.num_rows() {
-                let id = ids.value(offset) as usize;
-                if previous != Some(id) {
-                    if previous.is_some_and(|previous| id < previous) || matches!(plan.layout, PartitionLayout::Fixed(n) if id >= n) {
-                        Err(TableError::Invalid("DataFusion plan reordered logical partitions".into()))?;
-                    }
-                    match plan.layout {
-                        PartitionLayout::Fixed(_) => {
-                            while next_partition <= id { yield PartitionEvent::StartPartition; next_partition += 1; }
-                        }
-                        PartitionLayout::Observed => yield PartitionEvent::StartPartition,
-                    }
-                    previous = Some(id);
-                }
-                let mut end = offset+1;
-                while end < batch.num_rows() && ids.value(end) == id as u64 { end += 1; }
-                let piece = batch.slice(offset, end-offset).project(&(0..table.schema().fields().len()).collect::<Vec<_>>())?;
-                yield PartitionEvent::Batch(normalize(&piece, table.schema().clone())?);
-                offset = end;
-            }
-        }
-        if let PartitionLayout::Fixed(total) = plan.layout {
-            while next_partition < total { yield PartitionEvent::StartPartition; next_partition += 1; }
-        }
-    }.boxed()
+    crate::partitioned::execute(table)
 }
 
 /// Cardinality is a DataFusion aggregate, including forced counts of empty inputs.

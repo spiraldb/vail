@@ -1,0 +1,935 @@
+//! Hail-compatible genomic and ndarray aggregates. All states grow only with
+//! the number of alleles or the shape of one ndarray, never with row count.
+use crate::aggregate_identity::configured_udaf_name;
+use crate::expressions::ExprError;
+use arrow_array::{
+    Array, ArrayRef, Float32Array, Float64Array, Int32Array, Int64Array, ListArray, StructArray,
+};
+use arrow_buffer::OffsetBuffer;
+use arrow_schema::{DataType, Field};
+use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
+use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use statrs::function::gamma::ln_gamma;
+use std::sync::Arc;
+
+fn bad(s: impl Into<String>) -> DataFusionError {
+    DataFusionError::Execution(s.into())
+}
+fn invalid(s: impl Into<String>) -> ExprError {
+    ExprError::Invalid(s.into())
+}
+fn field(name: &str, ty: DataType) -> Arc<Field> {
+    Arc::new(Field::new(name, ty, true))
+}
+fn list_type(ty: DataType) -> DataType {
+    DataType::List(field("item", ty))
+}
+fn struct_type(fields: Vec<(&str, DataType)>) -> DataType {
+    DataType::Struct(
+        fields
+            .into_iter()
+            .map(|(n, t)| field(n, t))
+            .collect::<Vec<_>>()
+            .into(),
+    )
+}
+fn list(value: ArrayRef, item_type: DataType) -> ScalarValue {
+    ScalarValue::List(Arc::new(ListArray::new(
+        field("item", item_type),
+        OffsetBuffer::from_lengths([value.len()]),
+        value,
+        None,
+    )))
+}
+fn call_alleles(call: &StructArray, row: usize) -> DfResult<Option<Vec<i32>>> {
+    if call.is_null(row) {
+        return Ok(None);
+    }
+    let a = call
+        .column_by_name("__vail_call_alleles")
+        .ok_or_else(|| bad("Call missing alleles"))?
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .ok_or_else(|| bad("Call alleles must be a list"))?;
+    if a.is_null(row) {
+        return Ok(None);
+    }
+    let values = a.value(row);
+    let ints = values
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .ok_or_else(|| bad("Call alleles must be int32"))?;
+    let mut result = Vec::with_capacity(ints.len());
+    for i in 0..ints.len() {
+        if ints.is_null(i) || ints.value(i) < 0 {
+            return Err(bad("Call allele must be a nonnegative int32"));
+        }
+        result.push(ints.value(i));
+    }
+    Ok(Some(result))
+}
+fn call_input(t: &DataType) -> bool {
+    let DataType::Struct(fields) = t else {
+        return false;
+    };
+    fields
+        .iter()
+        .any(|f| f.name() == "__vail_call_alleles" && matches!(f.data_type(), DataType::List(_)))
+}
+fn packed<'a>(t: &'a DataType, name: &str) -> Result<&'a DataType, ExprError> {
+    let DataType::Struct(fs) = t else {
+        return Err(invalid("expected packed struct input"));
+    };
+    fs.iter()
+        .find(|f| f.name() == name)
+        .map(|f| f.data_type())
+        .ok_or_else(|| invalid(format!("missing {name}")))
+}
+fn packed_col<'a>(s: &'a StructArray, name: &str) -> DfResult<&'a ArrayRef> {
+    s.column_by_name(name)
+        .ok_or_else(|| bad(format!("missing {name}")))
+}
+fn scalar_struct(names: &[&str], v: Vec<ScalarValue>) -> DfResult<ScalarValue> {
+    let fields = names
+        .iter()
+        .zip(v.iter())
+        .map(|(name, value)| field(name, value.data_type()))
+        .collect::<Vec<_>>();
+    let columns = v
+        .into_iter()
+        .map(|value| value.to_array_of_size(1))
+        .collect::<DfResult<Vec<_>>>()?;
+    Ok(ScalarValue::Struct(Arc::new(StructArray::new(
+        fields.into(),
+        columns,
+        None,
+    ))))
+}
+
+pub fn make_udaf(
+    function: &str,
+    input_type: &DataType,
+    options: &serde_json::Value,
+) -> Result<Option<Arc<AggregateUDF>>, ExprError> {
+    let (output, state, kind) = match function {
+        "hardy_weinberg_test" => {
+            if !call_input(input_type) {
+                return Err(invalid("hardy_weinberg_test requires a Call"));
+            }
+            (
+                struct_type(vec![
+                    ("het_freq_hwe", DataType::Float64),
+                    ("p_value", DataType::Float64),
+                ]),
+                vec![DataType::Int64; 3],
+                Kind::Hwe(options["one_sided"].as_bool().unwrap_or(false)),
+            )
+        }
+        "inbreeding" => {
+            if !call_input(packed(input_type, "__vail_genomic_call")?)
+                || packed(input_type, "__vail_genomic_prior")? != &DataType::Float64
+            {
+                return Err(invalid("inbreeding requires Call and float64 prior"));
+            }
+            (
+                struct_type(vec![
+                    ("f_stat", DataType::Float64),
+                    ("n_called", DataType::Int64),
+                    ("expected_homs", DataType::Float64),
+                    ("observed_homs", DataType::Int64),
+                ]),
+                vec![DataType::Int64, DataType::Float64, DataType::Int64],
+                Kind::Inbreeding,
+            )
+        }
+        "call_stats" => {
+            if !call_input(packed(input_type, "__vail_genomic_call")?) {
+                return Err(invalid("call_stats requires Call"));
+            }
+            let alleles = packed(input_type, "__vail_genomic_alleles")?;
+            if !matches!(alleles, DataType::Int32 | DataType::List(_)) {
+                return Err(invalid(
+                    "call_stats requires int32 allele count or allele array",
+                ));
+            }
+            (
+                struct_type(vec![
+                    ("AC", list_type(DataType::Int32)),
+                    ("AF", list_type(DataType::Float64)),
+                    ("AN", DataType::Int32),
+                    ("homozygote_count", list_type(DataType::Int32)),
+                ]),
+                vec![
+                    DataType::Int64,
+                    list_type(DataType::Int64),
+                    list_type(DataType::Int64),
+                ],
+                Kind::CallStats(
+                    options
+                        .get("n_alleles")
+                        .and_then(serde_json::Value::as_u64)
+                        .filter(|n| *n <= i32::MAX as u64)
+                        .ok_or_else(|| {
+                            invalid("call_stats requires a nonnegative int32 n_alleles initializer")
+                        })? as usize,
+                ),
+            )
+        }
+        "info_score" => {
+            if !matches!(input_type,DataType::List(f) if matches!(f.data_type(),DataType::Float64|DataType::Float32))
+            {
+                return Err(invalid("info_score requires array<float>"));
+            }
+            (
+                struct_type(vec![
+                    ("score", DataType::Float64),
+                    ("n_included", DataType::Int32),
+                ]),
+                vec![
+                    DataType::Int64,
+                    DataType::Float64,
+                    DataType::Float64,
+                    DataType::Float64,
+                ],
+                Kind::Info,
+            )
+        }
+        "ndarray_sum" => {
+            let data = packed(input_type, "__vail_ndarray_data")?;
+            let shape = packed(input_type, "__vail_ndarray_shape")?;
+            if !matches!(data,DataType::List(f) if matches!(f.data_type(),DataType::Int32|DataType::Int64|DataType::Float32|DataType::Float64))
+                || !matches!(shape,DataType::List(f) if f.data_type()==&DataType::Int64)
+            {
+                return Err(invalid("ndarray_sum requires numeric ndarray struct"));
+            }
+            (
+                input_type.clone(),
+                vec![input_type.clone(), DataType::Boolean],
+                Kind::Ndarray,
+            )
+        }
+        _ => return Ok(None),
+    };
+    let ty = input_type.clone();
+    let udaf_name = configured_udaf_name(function, input_type, options);
+    let factory: datafusion_expr::AccumulatorFactoryFunction =
+        Arc::new(move |_| Ok(Box::new(GenomicAccumulator::new(kind, ty.clone()))));
+    Ok(Some(Arc::new(create_udaf(
+        &udaf_name,
+        vec![input_type.clone()],
+        Arc::new(output),
+        Volatility::Immutable,
+        factory,
+        Arc::new(state),
+    ))))
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Kind {
+    Hwe(bool),
+    Inbreeding,
+    CallStats(usize),
+    Info,
+    Ndarray,
+}
+#[derive(Debug)]
+struct GenomicAccumulator {
+    kind: Kind,
+    input_type: DataType,
+    ints: [i64; 3],
+    floats: [f64; 3],
+    ac: Vec<i64>,
+    hom: Vec<i64>,
+    shape: Option<Vec<i64>>,
+    ndarray_data: Option<ArrayRef>,
+}
+impl GenomicAccumulator {
+    fn new(kind: Kind, input_type: DataType) -> Self {
+        let n = match kind {
+            Kind::CallStats(n) => n,
+            _ => 0,
+        };
+        Self {
+            kind,
+            input_type,
+            ints: [0; 3],
+            floats: [0.; 3],
+            ac: vec![0; n],
+            hom: vec![0; n],
+            shape: None,
+            ndarray_data: None,
+        }
+    }
+    fn update_call_stats(&mut self, s: &StructArray) -> DfResult<()> {
+        let calls = packed_col(s, "__vail_genomic_call")?
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| bad("call_stats requires Call"))?;
+        let allele_counts = packed_col(s, "__vail_genomic_alleles")?;
+        for row in 0..s.len() {
+            if s.is_null(row) {
+                continue;
+            }
+            let n = match allele_counts.data_type() {
+                DataType::Int32 => {
+                    let a = allele_counts.as_any().downcast_ref::<Int32Array>().unwrap();
+                    if a.is_null(row) {
+                        continue;
+                    }
+                    a.value(row) as usize
+                }
+                DataType::List(_) => {
+                    let a = allele_counts.as_any().downcast_ref::<ListArray>().unwrap();
+                    if a.is_null(row) {
+                        continue;
+                    }
+                    a.value_length(row) as usize
+                }
+                _ => return Err(bad("invalid allele count type")),
+            };
+            if n > i32::MAX as usize {
+                return Err(bad("call_stats allele count exceeds int32"));
+            }
+            if n != self.ac.len() {
+                return Err(bad("call_stats allele count differs from initializer"));
+            }
+            let Some(call) = call_alleles(calls, row)? else {
+                continue;
+            };
+            for &allele in &call {
+                let index = allele as usize;
+                if index >= n {
+                    return Err(bad("call_stats allele index out of range"));
+                }
+                self.ac[index] = self.ac[index]
+                    .checked_add(1)
+                    .ok_or_else(|| bad("call_stats count overflow"))?;
+                self.ints[0] += 1;
+            }
+            if call.len() == 2 && call[0] == call[1] {
+                self.hom[call[0] as usize] += 1;
+            }
+        }
+        Ok(())
+    }
+    fn update_ndarray(&mut self, s: &StructArray) -> DfResult<()> {
+        let datas = packed_col(s, "__vail_ndarray_data")?
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| bad("ndarray data must be list"))?;
+        let shapes = packed_col(s, "__vail_ndarray_shape")?
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| bad("ndarray shape must be list"))?;
+        for row in 0..s.len() {
+            if s.is_null(row) {
+                continue;
+            }
+            if datas.is_null(row) || shapes.is_null(row) {
+                return Err(bad("ndarray missing data or shape"));
+            }
+            let shape_arr = shapes.value(row);
+            let shape_arr = shape_arr
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .ok_or_else(|| bad("ndarray shape must be int64"))?;
+            let mut shape = Vec::with_capacity(shape_arr.len());
+            let mut len = 1usize;
+            for i in 0..shape_arr.len() {
+                if shape_arr.is_null(i) || shape_arr.value(i) < 0 {
+                    return Err(bad("invalid ndarray dimension"));
+                }
+                let d = shape_arr.value(i);
+                len = len
+                    .checked_mul(d as usize)
+                    .ok_or_else(|| bad("ndarray shape overflow"))?;
+                shape.push(d);
+            }
+            let data = datas.value(row);
+            if data.len() != len {
+                return Err(bad("ndarray data length does not match shape"));
+            }
+            if let Some(existing) = &self.shape {
+                if *existing != shape {
+                    return Err(bad("ndarray_sum requires equal shapes"));
+                }
+            } else {
+                self.shape = Some(shape);
+            }
+            // Hail's aggregate treats a missing element as zero. Arrow's
+            // arithmetic propagates nulls, so fill them before using its
+            // typed wrapping-add kernel.
+            let data = zero_filled(data)?;
+            self.ndarray_data = Some(match self.ndarray_data.take() {
+                Some(total) => arrow_arith::numeric::add_wrapping(&total.as_ref(), &data.as_ref())?,
+                None => data,
+            });
+        }
+        Ok(())
+    }
+    fn ndarray_scalar(&self) -> DfResult<ScalarValue> {
+        let Some(shape) = &self.shape else {
+            return ScalarValue::try_from(&self.input_type);
+        };
+        let DataType::Struct(fields) = &self.input_type else {
+            unreachable!()
+        };
+        let DataType::List(item) = fields
+            .iter()
+            .find(|f| f.name() == "__vail_ndarray_data")
+            .unwrap()
+            .data_type()
+        else {
+            unreachable!()
+        };
+        let data = self
+            .ndarray_data
+            .as_ref()
+            .ok_or_else(|| bad("ndarray state missing data"))?
+            .clone();
+        // Preserve the exact item field names required by the ndarray codec.
+        let data_list = ScalarValue::List(Arc::new(ListArray::new(
+            item.clone(),
+            OffsetBuffer::from_lengths([data.len()]),
+            data,
+            None,
+        )));
+        let shape_item = match fields
+            .iter()
+            .find(|f| f.name() == "__vail_ndarray_shape")
+            .unwrap()
+            .data_type()
+        {
+            DataType::List(f) => f.clone(),
+            _ => unreachable!(),
+        };
+        let shape_data: ArrayRef = Arc::new(Int64Array::from(shape.clone()));
+        let shape_list = ScalarValue::List(Arc::new(ListArray::new(
+            shape_item,
+            OffsetBuffer::from_lengths([shape.len()]),
+            shape_data,
+            None,
+        )));
+        scalar_struct(
+            &["__vail_ndarray_data", "__vail_ndarray_shape"],
+            vec![data_list, shape_list],
+        )
+    }
+    fn result(&self) -> DfResult<ScalarValue> {
+        match self.kind {
+            Kind::Hwe(one_sided) => {
+                let (freq, p) = hwe(self.ints[0], self.ints[1], self.ints[2], one_sided);
+                scalar_struct(
+                    &["het_freq_hwe", "p_value"],
+                    vec![
+                        ScalarValue::Float64(Some(freq)),
+                        ScalarValue::Float64(Some(p)),
+                    ],
+                )
+            }
+            Kind::Inbreeding => {
+                let n = self.ints[0];
+                let e = self.floats[0];
+                let obs = self.ints[1];
+                scalar_struct(
+                    &["f_stat", "n_called", "expected_homs", "observed_homs"],
+                    vec![
+                        ScalarValue::Float64(Some((obs as f64 - e) / (n as f64 - e))),
+                        ScalarValue::Int64(Some(n)),
+                        ScalarValue::Float64(Some(e)),
+                        ScalarValue::Int64(Some(obs)),
+                    ],
+                )
+            }
+            Kind::CallStats(_) => {
+                let an = i32::try_from(self.ints[0]).map_err(|_| bad("call_stats AN overflow"))?;
+                let ac = self
+                    .ac
+                    .iter()
+                    .map(|x| i32::try_from(*x).map_err(|_| bad("call_stats AC overflow")))
+                    .collect::<DfResult<Vec<_>>>()?;
+                let hom = self
+                    .hom
+                    .iter()
+                    .map(|x| {
+                        i32::try_from(*x).map_err(|_| bad("call_stats homozygote count overflow"))
+                    })
+                    .collect::<DfResult<Vec<_>>>()?;
+                let af = self
+                    .ac
+                    .iter()
+                    .map(|x| *x as f64 / an as f64)
+                    .collect::<Vec<_>>();
+                scalar_struct(
+                    &["AC", "AF", "AN", "homozygote_count"],
+                    vec![
+                        list(Arc::new(Int32Array::from(ac)), DataType::Int32),
+                        if an == 0 {
+                            ScalarValue::try_from(&list_type(DataType::Float64))?
+                        } else {
+                            list(Arc::new(Float64Array::from(af)), DataType::Float64)
+                        },
+                        ScalarValue::Int32(Some(an)),
+                        list(Arc::new(Int32Array::from(hom)), DataType::Int32),
+                    ],
+                )
+            }
+            Kind::Info => {
+                let n = self.ints[0];
+                let theta = if self.floats[2] != 0. {
+                    self.floats[1] / self.floats[2]
+                } else {
+                    f64::NAN
+                };
+                let score = if n == 0 {
+                    None
+                } else if theta == 0. || theta == 1. {
+                    Some(1.)
+                } else {
+                    Some(1. - (self.floats[0] / n as f64) / (2. * theta * (1. - theta)))
+                };
+                scalar_struct(
+                    &["score", "n_included"],
+                    vec![
+                        ScalarValue::Float64(score),
+                        ScalarValue::Int32(Some(
+                            i32::try_from(n).map_err(|_| bad("info_score count overflow"))?,
+                        )),
+                    ],
+                )
+            }
+            Kind::Ndarray => self.ndarray_scalar(),
+        }
+    }
+}
+fn number(a: &dyn Array, i: usize) -> DfResult<f64> {
+    Ok(match a.data_type() {
+        DataType::Int32 => a.as_any().downcast_ref::<Int32Array>().unwrap().value(i) as f64,
+        DataType::Int64 => a.as_any().downcast_ref::<Int64Array>().unwrap().value(i) as f64,
+        DataType::Float32 => a.as_any().downcast_ref::<Float32Array>().unwrap().value(i) as f64,
+        DataType::Float64 => a.as_any().downcast_ref::<Float64Array>().unwrap().value(i),
+        t => return Err(bad(format!("expected numeric input, got {t:?}"))),
+    })
+}
+fn list_i64(v: &[i64]) -> ScalarValue {
+    list(Arc::new(Int64Array::from(v.to_vec())), DataType::Int64)
+}
+fn zero_filled(data: ArrayRef) -> DfResult<ArrayRef> {
+    if data.null_count() == 0 {
+        return Ok(data);
+    }
+    let len = data.len();
+    let zero: ArrayRef = match data.data_type() {
+        DataType::Int32 => Arc::new(Int32Array::from(vec![0; len])),
+        DataType::Int64 => Arc::new(Int64Array::from(vec![0; len])),
+        DataType::Float32 => Arc::new(Float32Array::from(vec![0.; len])),
+        DataType::Float64 => Arc::new(Float64Array::from(vec![0.; len])),
+        _ => return Err(bad("unsupported ndarray element type")),
+    };
+    let mask =
+        arrow_array::BooleanArray::from((0..len).map(|i| data.is_valid(i)).collect::<Vec<_>>());
+    Ok(arrow_select::zip::zip(
+        &mask,
+        &data.as_ref(),
+        &zero.as_ref(),
+    )?)
+}
+fn read_list_i64(a: &dyn Array, row: usize) -> DfResult<Vec<i64>> {
+    let l = a
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .ok_or_else(|| bad("state must be a list"))?;
+    if l.is_null(row) {
+        return Ok(vec![]);
+    }
+    let value = l.value(row);
+    let ints = value
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .ok_or_else(|| bad("state list must contain int64"))?;
+    Ok((0..ints.len()).map(|i| ints.value(i)).collect())
+}
+fn int_col(a: &dyn Array, row: usize) -> DfResult<i64> {
+    Ok(a.as_any()
+        .downcast_ref::<Int64Array>()
+        .ok_or_else(|| bad("state must be int64"))?
+        .value(row))
+}
+fn float_col(a: &dyn Array, row: usize) -> DfResult<f64> {
+    Ok(a.as_any()
+        .downcast_ref::<Float64Array>()
+        .ok_or_else(|| bad("state must be float64"))?
+        .value(row))
+}
+impl Accumulator for GenomicAccumulator {
+    fn update_batch(&mut self, v: &[ArrayRef]) -> DfResult<()> {
+        let [a] = v else {
+            return Err(bad("genomic aggregate expects one argument"));
+        };
+        match self.kind {
+            Kind::Hwe(_) => {
+                let s = a
+                    .as_any()
+                    .downcast_ref::<StructArray>()
+                    .ok_or_else(|| bad("HWE requires Call"))?;
+                for i in 0..s.len() {
+                    let Some(call) = call_alleles(s, i)? else {
+                        continue;
+                    };
+                    if call.len() != 2 {
+                        continue;
+                    }
+                    let n = call.iter().filter(|&&x| x > 0).count();
+                    self.ints[n] = self.ints[n]
+                        .checked_add(1)
+                        .ok_or_else(|| bad("HWE count overflow"))?;
+                }
+            }
+            Kind::Inbreeding => {
+                let s = a
+                    .as_any()
+                    .downcast_ref::<StructArray>()
+                    .ok_or_else(|| bad("inbreeding requires packed struct"))?;
+                let calls = packed_col(s, "__vail_genomic_call")?
+                    .as_any()
+                    .downcast_ref::<StructArray>()
+                    .ok_or_else(|| bad("inbreeding requires Call"))?;
+                let priors = packed_col(s, "__vail_genomic_prior")?
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .ok_or_else(|| bad("inbreeding prior must be float64"))?;
+                for i in 0..s.len() {
+                    if s.is_null(i) || priors.is_null(i) {
+                        continue;
+                    }
+                    let Some(call) = call_alleles(calls, i)? else {
+                        continue;
+                    };
+                    if call.len() != 2 || call.iter().any(|&x| x > 1) {
+                        return Err(bad(
+                            "'inbreeding' does not support non-diploid or multiallelic genotypes",
+                        ));
+                    }
+                    let p = priors.value(i);
+                    self.ints[0] += 1;
+                    self.floats[0] += 1. - 2. * p * (1. - p);
+                    if call[0] == call[1] {
+                        self.ints[1] += 1;
+                    }
+                }
+            }
+            Kind::CallStats(_) => self.update_call_stats(
+                a.as_any()
+                    .downcast_ref::<StructArray>()
+                    .ok_or_else(|| bad("call_stats requires packed struct"))?,
+            )?,
+            Kind::Info => {
+                let l = a
+                    .as_any()
+                    .downcast_ref::<ListArray>()
+                    .ok_or_else(|| bad("info_score requires array"))?;
+                for i in 0..l.len() {
+                    if l.is_null(i) {
+                        continue;
+                    }
+                    let gp = l.value(i);
+                    if gp.len() != 3 {
+                        return Err(bad(format!(
+                            "'info_score': expected 'gp' to have length 3, found {}",
+                            gp.len()
+                        )));
+                    }
+                    if (0..3).any(|j| gp.is_null(j)) {
+                        return Err(bad("'info_score': genotype probabilities must be defined"));
+                    }
+                    let g0 = number(gp.as_ref(), 0)?;
+                    let g1 = number(gp.as_ref(), 1)?;
+                    let g2 = number(gp.as_ref(), 2)?;
+                    let mean = g1 + 2. * g2;
+                    self.floats[0] += g1 + 4. * g2 - mean * mean;
+                    self.floats[1] += mean;
+                    self.floats[2] += g0 + g1 + g2;
+                    self.ints[0] += 1;
+                }
+            }
+            Kind::Ndarray => self.update_ndarray(
+                a.as_any()
+                    .downcast_ref::<StructArray>()
+                    .ok_or_else(|| bad("ndarray_sum requires ndarray struct"))?,
+            )?,
+        }
+        Ok(())
+    }
+    fn evaluate(&mut self) -> DfResult<ScalarValue> {
+        self.result()
+    }
+    fn size(&self) -> usize {
+        std::mem::size_of::<Self>()
+            + (self.ac.capacity()
+                + self.hom.capacity()
+                + self.shape.as_ref().map_or(0, Vec::capacity))
+                * 8
+            + self
+                .ndarray_data
+                .as_ref()
+                .map_or(0, |data| data.get_array_memory_size())
+    }
+    fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
+        Ok(match self.kind {
+            Kind::Hwe(_) => self
+                .ints
+                .iter()
+                .map(|x| ScalarValue::Int64(Some(*x)))
+                .collect(),
+            Kind::Inbreeding => vec![
+                ScalarValue::Int64(Some(self.ints[0])),
+                ScalarValue::Float64(Some(self.floats[0])),
+                ScalarValue::Int64(Some(self.ints[1])),
+            ],
+            Kind::CallStats(_) => vec![
+                ScalarValue::Int64(Some(self.ints[0])),
+                list_i64(&self.ac),
+                list_i64(&self.hom),
+            ],
+            Kind::Info => vec![
+                ScalarValue::Int64(Some(self.ints[0])),
+                ScalarValue::Float64(Some(self.floats[0])),
+                ScalarValue::Float64(Some(self.floats[1])),
+                ScalarValue::Float64(Some(self.floats[2])),
+            ],
+            Kind::Ndarray => vec![
+                self.ndarray_scalar()?,
+                ScalarValue::Boolean(Some(self.shape.is_some())),
+            ],
+        })
+    }
+    fn merge_batch(&mut self, s: &[ArrayRef]) -> DfResult<()> {
+        match self.kind {
+            Kind::Hwe(_) => {
+                if s.len() != 3 {
+                    return Err(bad("HWE state shape mismatch"));
+                }
+                for (j, a) in s.iter().enumerate() {
+                    for i in 0..a.len() {
+                        self.ints[j] += int_col(a.as_ref(), i)?
+                    }
+                }
+            }
+            Kind::Inbreeding => {
+                if s.len() != 3 {
+                    return Err(bad("inbreeding state shape mismatch"));
+                }
+                for i in 0..s[0].len() {
+                    self.ints[0] += int_col(s[0].as_ref(), i)?;
+                    self.floats[0] += float_col(s[1].as_ref(), i)?;
+                    self.ints[1] += int_col(s[2].as_ref(), i)?
+                }
+            }
+            Kind::CallStats(_) => {
+                if s.len() != 3 {
+                    return Err(bad("call_stats state shape mismatch"));
+                }
+                for i in 0..s[0].len() {
+                    let ac = read_list_i64(s[1].as_ref(), i)?;
+                    let hom = read_list_i64(s[2].as_ref(), i)?;
+                    if ac.len() != hom.len() {
+                        return Err(bad("call_stats state arrays differ in length"));
+                    }
+                    if self.ac.len() != ac.len() {
+                        return Err(bad("call_stats allele count differs between partitions"));
+                    }
+                    self.ints[0] += int_col(s[0].as_ref(), i)?;
+                    for j in 0..ac.len() {
+                        self.ac[j] += ac[j];
+                        self.hom[j] += hom[j]
+                    }
+                }
+            }
+            Kind::Info => {
+                if s.len() != 4 {
+                    return Err(bad("info_score state shape mismatch"));
+                }
+                for i in 0..s[0].len() {
+                    self.ints[0] += int_col(s[0].as_ref(), i)?;
+                    for j in 0..3 {
+                        self.floats[j] += float_col(s[j + 1].as_ref(), i)?
+                    }
+                }
+            }
+            Kind::Ndarray => {
+                if s.len() != 2 {
+                    return Err(bad("ndarray state shape mismatch"));
+                }
+                let flags = s[1]
+                    .as_any()
+                    .downcast_ref::<arrow_array::BooleanArray>()
+                    .ok_or_else(|| bad("ndarray state flag must be bool"))?;
+                let a = s[0]
+                    .as_any()
+                    .downcast_ref::<StructArray>()
+                    .ok_or_else(|| bad("ndarray state must be struct"))?;
+                for i in 0..a.len() {
+                    if !flags.value(i) {
+                        continue;
+                    }
+                    let row = arrow_select::take::take(a, &Int32Array::from(vec![i as i32]), None)?;
+                    self.update_ndarray(row.as_any().downcast_ref::<StructArray>().unwrap())?
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+// Levene-Haldane conditional distribution. Log gamma from statrs keeps the
+// normalization stable for large genotype counts; states remain three counters.
+fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64, f64) {
+    let n = hom_ref + het + hom_var;
+    if n == 0 {
+        return (f64::NAN, 0.5);
+    }
+    let minor = het + 2 * hom_ref.min(hom_var);
+    let major = 2 * n - minor;
+    let freq = (minor as f64 * major as f64) / (2 * n - 1) as f64 / n as f64;
+    let parity = minor % 2;
+    let mut probs = Vec::new();
+    let mut h = parity;
+    while h <= minor {
+        let x = (minor - h) / 2;
+        let y = (major - h) / 2;
+        let logp = (h as f64) * std::f64::consts::LN_2
+            - ln_gamma(h as f64 + 1.)
+            - ln_gamma(x as f64 + 1.)
+            - ln_gamma(y as f64 + 1.);
+        probs.push((h, logp));
+        h += 2;
+    }
+    let max = probs.iter().map(|x| x.1).fold(f64::NEG_INFINITY, f64::max);
+    let weights = probs
+        .iter()
+        .map(|x| (x.0, (x.1 - max).exp()))
+        .collect::<Vec<_>>();
+    let total: f64 = weights.iter().map(|x| x.1).sum();
+    let observed = weights.iter().find(|x| x.0 == het).map_or(0., |x| x.1);
+    let tail: f64 = weights
+        .iter()
+        .filter(|x| {
+            if one_sided {
+                x.0 > het
+            } else {
+                x.1 < observed * (1. - 1e-12)
+            }
+        })
+        .map(|x| x.1)
+        .sum();
+    let equal: f64 = if one_sided {
+        observed
+    } else {
+        weights
+            .iter()
+            .filter(|x| (x.1 - observed).abs() <= observed * 1e-12)
+            .map(|x| x.1)
+            .sum()
+    };
+    (freq, ((tail + 0.5 * equal) / total).min(1.))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn call_array(calls: Vec<Option<Vec<i32>>>) -> StructArray {
+        let alleles = ListArray::from_iter_primitive::<arrow_array::types::Int32Type, _, _>(
+            calls
+                .iter()
+                .map(|c| c.as_ref().map(|v| v.iter().map(|x| Some(*x)))),
+        );
+        StructArray::from(vec![
+            (
+                field("__vail_call_alleles", alleles.data_type().clone()),
+                Arc::new(alleles) as ArrayRef,
+            ),
+            (
+                field("__vail_call_phased", DataType::Boolean),
+                Arc::new(arrow_array::BooleanArray::from(vec![false; calls.len()])) as ArrayRef,
+            ),
+        ])
+    }
+
+    #[test]
+    fn call_stats_requires_initializer_and_never_infers_shape_from_rows() {
+        let call_type = call_array(vec![]).data_type().clone();
+        let packed_type = struct_type(vec![
+            ("__vail_genomic_call", call_type),
+            ("__vail_genomic_alleles", DataType::Int32),
+        ]);
+        for options in [
+            serde_json::json!({}),
+            serde_json::json!({"n_alleles": null}),
+            serde_json::json!({"n_alleles": -1}),
+        ] {
+            assert!(make_udaf("call_stats", &packed_type, &options).is_err());
+        }
+        assert!(
+            make_udaf(
+                "call_stats",
+                &packed_type,
+                &serde_json::json!({"n_alleles": 0})
+            )
+            .is_ok()
+        );
+
+        let calls = call_array(vec![None]);
+        let packed = StructArray::from(vec![
+            (
+                field("__vail_genomic_call", calls.data_type().clone()),
+                Arc::new(calls) as ArrayRef,
+            ),
+            (
+                field("__vail_genomic_alleles", DataType::Int32),
+                Arc::new(Int32Array::from(vec![2])) as ArrayRef,
+            ),
+        ]);
+        let mut accumulator =
+            GenomicAccumulator::new(Kind::CallStats(0), packed.data_type().clone());
+        assert!(
+            accumulator
+                .update_batch(&[Arc::new(packed)])
+                .unwrap_err()
+                .to_string()
+                .contains("differs from initializer")
+        );
+    }
+
+    #[test]
+    fn hwe_matches_hail_examples_and_mid_p() {
+        let (freq, p) = hwe(250, 500, 250, false);
+        assert!((freq - 0.5002501250625313).abs() < 1e-12);
+        assert!((p - 0.9747844394217698).abs() < 1e-10);
+        let (freq, p) = hwe(37, 200, 85, false);
+        assert!((freq - 0.48964964307448583).abs() < 1e-12);
+        assert!((p - 1.1337210383168987e-6).abs() < 1e-12);
+    }
+
+    #[test]
+    fn hwe_skips_non_diploid_and_merges_counts() {
+        let calls = call_array(vec![
+            Some(vec![0, 0]),
+            Some(vec![0, 1]),
+            Some(vec![1, 1]),
+            Some(vec![1]),
+            None,
+        ]);
+        let mut a = GenomicAccumulator::new(Kind::Hwe(false), calls.data_type().clone());
+        a.update_batch(&[Arc::new(calls)]).unwrap();
+        assert_eq!(a.ints, [1, 1, 1]);
+        let states = a.state().unwrap();
+        let arrays = states
+            .into_iter()
+            .map(|v| v.to_array_of_size(1).unwrap())
+            .collect::<Vec<_>>();
+        let mut b = GenomicAccumulator::new(Kind::Hwe(false), a.input_type.clone());
+        b.merge_batch(&arrays).unwrap();
+        assert_eq!(b.ints, [1, 1, 1]);
+    }
+}

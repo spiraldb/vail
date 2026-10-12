@@ -14,13 +14,16 @@ use uuid::Uuid;
 
 /// Comparator implemented by this bounded primitive-key planner.
 pub const PRIMITIVE_COMPARATOR_V1: &str = "vail-primitive-key-v1";
+pub const HAIL_COMPARATOR_V2: &str = "vail-hail-key-v2";
+pub const TOTAL_ORDER_COMPARATOR_V3: &str = "vail-total-order-key-v3";
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum KeyType {
     Int32,
     Int64,
     Bool,
     AsciiString,
+    Canonical(serde_json::Value),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -30,6 +33,7 @@ pub enum KeyValue {
     Int64(i64),
     Bool(bool),
     AsciiString(String),
+    Canonical(Vec<u8>),
 }
 
 pub type CompositeKey = Vec<KeyValue>;
@@ -197,7 +201,10 @@ fn validate_binding(binding: &IndexBinding) -> Result<()> {
     if binding.table_uuid.is_nil()
         || binding.snapshot_id <= 0
         || binding.schema_id < 0
-        || binding.comparator_version != PRIMITIVE_COMPARATOR_V1
+        || !matches!(
+            binding.comparator_version.as_str(),
+            PRIMITIVE_COMPARATOR_V1 | TOTAL_ORDER_COMPARATOR_V3
+        )
         || !is_sha256(&binding.live_files_sha256)
         || binding.key_fields.is_empty()
     {
@@ -206,16 +213,46 @@ fn validate_binding(binding: &IndexBinding) -> Result<()> {
         ));
     }
     let mut field_ids = HashSet::new();
-    if binding
-        .key_fields
-        .iter()
-        .any(|field| field.field_id <= 0 || !field_ids.insert(field.field_id))
-    {
+    if binding.key_fields.iter().any(|field| {
+        field.field_id <= 0
+            || !field_ids.insert(field.field_id)
+            || (binding.comparator_version == TOTAL_ORDER_COMPARATOR_V3)
+                != matches!(field.data_type, KeyType::Canonical(_))
+            || matches!(&field.data_type, KeyType::Canonical(logical) if !logical_type_is_certifiable(logical))
+    }) {
         return Err(IndexError::Invalid(
             "duplicate or invalid key field ID".into(),
         ));
     }
     Ok(())
+}
+
+fn logical_type_is_certifiable(logical: &serde_json::Value) -> bool {
+    if logical.get("locus").is_some() {
+        // Coordinate definitions are captured in the logical key type. The
+        // canonical encoder validates each coordinate and its contig ordinal.
+        return logical["locus"].is_object();
+    }
+    if let Some(point) = logical.get("interval") {
+        return logical_type_is_certifiable(point);
+    }
+    for key in ["array", "set"] {
+        if let Some(element) = logical.get(key) {
+            return logical_type_is_certifiable(element);
+        }
+    }
+    if let Some(fields) = logical.get("struct").or_else(|| logical.get("tuple")) {
+        return fields.as_array().is_some_and(|fields| {
+            fields.iter().all(|field| {
+                let ty = if field.is_array() { &field[1] } else { field };
+                logical_type_is_certifiable(ty)
+            })
+        });
+    }
+    if let Some(types) = logical.get("dict").and_then(serde_json::Value::as_array) {
+        return types.iter().all(logical_type_is_certifiable);
+    }
+    true
 }
 
 fn is_sha256(value: &str) -> bool {
@@ -230,12 +267,13 @@ fn validate_key(binding: &IndexBinding, key: &CompositeKey) -> Result<()> {
     }
     for (value, field) in key.iter().zip(&binding.key_fields) {
         let valid = matches!(
-            (value, field.data_type),
+            (value, &field.data_type),
             (KeyValue::Missing, _)
                 | (KeyValue::Int32(_), KeyType::Int32)
                 | (KeyValue::Int64(_), KeyType::Int64)
                 | (KeyValue::Bool(_), KeyType::Bool)
-        ) || matches!((value, field.data_type), (KeyValue::AsciiString(s), KeyType::AsciiString) if s.is_ascii());
+        ) || matches!((value, &field.data_type), (KeyValue::AsciiString(s), KeyType::AsciiString) if s.is_ascii())
+            || matches!((value, &field.data_type), (KeyValue::Canonical(bytes), KeyType::Canonical(_)) if binding.comparator_version == TOTAL_ORDER_COMPARATOR_V3 && bytes.first() == Some(&1));
         if !valid {
             return Err(IndexError::Invalid(format!(
                 "field {} has mismatched or non-ASCII key value",
@@ -246,11 +284,7 @@ fn validate_key(binding: &IndexBinding, key: &CompositeKey) -> Result<()> {
     Ok(())
 }
 
-pub(crate) fn compare_keys(
-    binding: &IndexBinding,
-    left: &CompositeKey,
-    right: &CompositeKey,
-) -> Ordering {
+pub fn compare_keys(binding: &IndexBinding, left: &CompositeKey, right: &CompositeKey) -> Ordering {
     for ((left, right), field) in left.iter().zip(right).zip(&binding.key_fields) {
         let ordering = match (left, right) {
             (KeyValue::Missing, KeyValue::Missing) => Ordering::Equal,
@@ -272,6 +306,9 @@ pub(crate) fn compare_keys(
             (KeyValue::Int64(a), KeyValue::Int64(b)) => directional(a.cmp(b), field.descending),
             (KeyValue::Bool(a), KeyValue::Bool(b)) => directional(a.cmp(b), field.descending),
             (KeyValue::AsciiString(a), KeyValue::AsciiString(b)) => {
+                directional(a.cmp(b), field.descending)
+            }
+            (KeyValue::Canonical(a), KeyValue::Canonical(b)) => {
                 directional(a.cmp(b), field.descending)
             }
             _ => unreachable!("keys were validated against the binding"),
@@ -325,6 +362,32 @@ mod tests {
             first_key: first,
             last_key: last,
         }
+    }
+
+    #[test]
+    fn retired_hail_comparator_is_not_a_total_order_certificate() {
+        let mut value = binding(vec![field(
+            1,
+            KeyType::Canonical(serde_json::json!("float64")),
+            false,
+        )]);
+        value.comparator_version = HAIL_COMPARATOR_V2.into();
+        assert!(FragmentIndex::new(value.clone(), vec![]).is_err());
+        value.comparator_version = TOTAL_ORDER_COMPARATOR_V3.into();
+        assert!(FragmentIndex::new(value, vec![]).is_ok());
+    }
+
+    #[test]
+    fn canonical_storage_certification_rejects_unimplemented_loci() {
+        assert!(!logical_type_is_certifiable(
+            &serde_json::json!({"locus":"GRCh37"})
+        ));
+        assert!(!logical_type_is_certifiable(
+            &serde_json::json!({"locus":"custom"})
+        ));
+        assert!(!logical_type_is_certifiable(&serde_json::json!({
+            "array":{"interval":{"locus":"custom"}}
+        })));
     }
 
     fn i32_key(value: i32) -> CompositeKey {

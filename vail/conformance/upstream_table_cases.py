@@ -40,6 +40,18 @@ ROW_EXPRESSION_CASES = (
     ("Tests", "test_same_different_type"),
     ("Tests", "test_same_different_rows"),
 )
+AGGREGATION_CASES = (
+    ("Tests", "test_aggregate1"),
+    ("Tests", "test_aggregate_ir"),
+    ("Tests", "test_aggregate_localize_false"),
+    ("Tests", "test_aggregate_by_key_partitioning"),
+    ("Tests", "test_aggregation_with_no_aggregators"),
+    (None, "test_group_by_aggregate_doesnt_clobber_global_field"),
+)
+TEXT_IMPORT_CASES = (
+    ("Tests", "test_min_partitions"),
+    ("Tests", "test_import_multiple_missing"),
+)
 
 
 def extract(tree, class_name, name, filename, namespace):
@@ -62,7 +74,8 @@ def run(hail_root: Path):
     path = hail_root / SOURCE
     source_bytes = path.read_bytes()
     tree = ast.parse(source_bytes, filename=str(path))
-    namespace = {"hl": vail, "pytest": pytest, "__name__": "vail_upstream_test_bodies"}
+    namespace = {"hl": vail, "agg": vail.agg, "ExpressionException": vail.ExpressionException, "pytest": pytest, "__name__": "vail_upstream_test_bodies"}
+    namespace["resource"] = lambda filename: str(hail_root / "hail/hail/test/resources" / filename)
     helper_path = hail_root / "hail/python/test/hail/helpers.py"
     extract(ast.parse(helper_path.read_text()), None, "convert_struct_to_dict", str(helper_path), namespace)
     outcomes = []
@@ -88,7 +101,7 @@ def run(hail_root: Path):
             outcome.update(status="failed", error_type=type(error).__name__, error=str(error))
         outcomes.append(outcome)
 
-    for class_name, name in (*SIMPLE, *ROW_EXPRESSION_CASES):
+    for class_name, name in (*SIMPLE, *ROW_EXPRESSION_CASES, *AGGREGATION_CASES, *TEXT_IMPORT_CASES):
         execute(class_name, name)
     names = ("table_name", "num_parts", "n", "truncator_name", "counter_name")
     for values in itertools.product(
@@ -105,7 +118,7 @@ def run(hail_root: Path):
     )
     source_files = sorted(set(source_files) | {
         path.relative_to(ROOT).as_posix()
-        for directory in ("python/vail", "crates/vail-execution/src", "crates/vail-python/src")
+        for directory in ("python/vail", "crates/vail-execution/src", "crates/vail-python/src", "crates/vail-table/src")
         for path in (ROOT / directory).rglob("*")
         if path.suffix in (".py", ".rs")
     })
@@ -124,6 +137,8 @@ def run(hail_root: Path):
             "Only rt/par variants of test_table_head_and_tail are run; its 80 cache/checkpoint variants remain untested.",
             f"These results cover {len({row['test_id'] for row in outcomes})} test definitions and {len(outcomes)} concrete cases, not the complete Hail Table suite.",
             "The expression cases include unchanged filter, missing-filter, annotate, transmute, keyed-transmute and select bodies.",
+            "The aggregation cases include unchanged total Table.aggregate, global-field, and _localize=False bodies.",
+            "Text cases use unchanged min_partitions and multiple-missing-marker bodies and checked-out Hail resource files.",
         ],
         "summary": {status: sum(row["status"] == status for row in outcomes)
                     for status in ("passed", "failed")},

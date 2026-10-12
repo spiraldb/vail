@@ -1,0 +1,23 @@
+{
+  "python_suite": {
+    "passed": 634,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "upstream_assertion_bodies": {
+    "Tests.test_interval_filter_unordered": "passed"
+  },
+  "confirmed_table_definitions": 97,
+  "total_table_definitions": 191,
+  "limitations": [
+    "Reader pushdown only for direct reads with full-key intervals; transformed tables and exclusion filters use DataFusion predicates.",
+    "Key-prefix read filters overselect fragments before exact DataFusion filtering."
+  ],
+  "source_sha256": {
+    "python/vail/__init__.py": "7f6c713917d90e4fb7decb24ddf17fd909ec1a0956057f15b39ae3f9819f63c1",
+    "python/vail/utils.py": "61a3576fd0b87b6d2c42e443725c1097fc07c4a122307cff47f26dd17085ea8d",
+    "python/tests/test_filter_intervals.py": "e936f0696215d84dcfc095ccf353e6555438e0658ea90ec3190527859ddb692a",
+    "crates/vail-python/src/lib.rs": "9610c0c9a782fcd6f947fac493bb23396e416e06d691effde6bbf832c83b42c6",
+    "crates/vail-table/src/lib.rs": "dcc47515ec8d1cf50206c793d830e2ef1704be4de93d9a8bcf6efdfa15585854"
+  }
+}

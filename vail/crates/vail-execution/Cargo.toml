@@ -6,7 +6,16 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
+datafusion-functions = { version = "=55.0.0", default-features = false, features = ["string_expressions", "unicode_expressions", "regex_expressions"] }
+ndhistogram = "=0.12.0"
+arrow-ord = "=59.2.0"
+arrow-arith = "=59.2.0"
+kll-rs = "=0.1.4"
+nalgebra = "=0.34.1"
+statrs = "=0.18.0"
+datafusion-functions-aggregate = "=55.0.0"
 arrow-array.workspace = true
+arrow-cast = "=59.2.0"
 arrow-buffer.workspace = true
 arrow-select.workspace = true
 arrow-schema.workspace = true
@@ -18,8 +27,12 @@ datafusion-execution.workspace = true
 datafusion-physical-expr.workspace = true
 datafusion-physical-plan.workspace = true
 thiserror.workspace = true
+vail-ordering = { path = "../vail-ordering" }
 serde.workspace = true
 serde_json.workspace = true
+bigdecimal = "=0.4.10"
+csv = "=1.4.0"
+regex = "=1.13.1"
 
 [dev-dependencies]
 tokio.workspace = true

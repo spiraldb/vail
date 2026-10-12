@@ -3,6 +3,7 @@ name = "vail-storage"
 version = "0.1.0"
 edition = "2024"
 publish = false
+license.workspace = true
 
 [dependencies]
 arrow-ipc = "=59.2.0"
@@ -19,6 +20,7 @@ sha2 = "0.10"
 thiserror = "2"
 tokio = { version = "1", features = ["fs", "rt", "macros"] }
 uuid = { version = "1", features = ["v7"] }
+vail-ordering = { path = "../vail-ordering" }
 vortex = { version = "=0.86.1", features = ["tokio"] }
 
 [dev-dependencies]

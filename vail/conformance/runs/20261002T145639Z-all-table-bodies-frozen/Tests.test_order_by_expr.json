@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'rand_unif'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1264, in test_order_by_expr\n    ht = ht.annotate(xs=hl.range(0, 1).map(lambda x: hl.int(hl.rand_unif(0, 100))))\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-20261002T145639Z/vail/expressions.py\", line 415, in _array_map\n    body = as_expr(f(variable))\n                   ^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1264, in <lambda>\n    ht = ht.annotate(xs=hl.range(0, 1).map(lambda x: hl.int(hl.rand_unif(0, 100))))\n                                                            ^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'rand_unif'\n"
+  }
+]

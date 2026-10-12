@@ -113,8 +113,8 @@ impl TableIR {
             global_pairs.push((i, j));
         }
         if options.tolerance.is_some() {
-            let left = self.globals().lower()?;
-            let right = other.globals().lower()?;
+            let left = crate::logical::physical_globals(self.globals()).await?;
+            let right = crate::logical::physical_globals(other.globals()).await?;
             let offset = left.schema().fields().len();
             let joined: PhysicalPlan = Arc::new(CrossJoinExec::new(left, right));
             let fields = global_pairs
@@ -125,7 +125,7 @@ impl TableIR {
                 return Ok(SameResult::different("globals differ"));
             }
         }
-        let plan = self.same_row_plan(other, options, &pairs)?;
+        let plan = self.same_row_plan(other, options, &pairs).await?;
         if has_rows(plan).await? {
             Ok(SameResult::different(
                 "row values, keys, or row counts differ",
@@ -135,14 +135,23 @@ impl TableIR {
         }
     }
 
-    fn same_row_plan(
+    async fn same_row_plan(
         self: &Arc<Self>,
         other: &Arc<Self>,
         options: SameOptions,
         pairs: &[(usize, usize)],
     ) -> Result<PhysicalPlan> {
-        let mut left = crate::plan::lower(self)?.rows;
-        let mut right = crate::plan::lower(other)?.rows;
+        crate::logical_same::plan(self, other, options, pairs).await
+    }
+
+    pub(crate) fn same_from_inputs(
+        self: &Arc<Self>,
+        other: &Arc<Self>,
+        options: SameOptions,
+        pairs: &[(usize, usize)],
+        mut left: PhysicalPlan,
+        mut right: PhysicalPlan,
+    ) -> Result<PhysicalPlan> {
         if options.tolerance.is_none() {
             // Only key-group presence matters for Hail's missing tolerance.
             // A constant GROUP BY key represents the sole unkeyed group and
@@ -216,7 +225,17 @@ impl TableIR {
             .enumerate()
             .map(|(i, f)| Ok((i, other.schema().index_of(f.name())?)))
             .collect::<Result<Vec<_>>>()?;
-        let plan = self.same_row_plan(other, options, &pairs)?;
+        let left = self.clone();
+        let right = other.clone();
+        let plan = std::thread::spawn(move || {
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .map_err(|e| TableError::Execution(e.to_string()))?;
+            runtime.block_on(left.same_row_plan(&right, options, &pairs))
+        })
+        .join()
+        .map_err(|_| TableError::Execution("same plan diagnostic panicked".into()))??;
         Ok(datafusion_physical_plan::displayable(plan.as_ref())
             .indent(true)
             .to_string())
@@ -245,7 +264,12 @@ fn distinct_keys(input: PhysicalPlan, keys: &[String]) -> Result<PhysicalPlan> {
         )]
     } else {
         keys.iter()
-            .map(|name| Ok((column(&input, schema.index_of(name)?), name.clone())))
+            .map(|name| {
+                Ok((
+                    vail_execution::ordering::canonical_key(column(&input, schema.index_of(name)?)),
+                    name.clone(),
+                ))
+            })
             .collect::<Result<Vec<_>>>()?
     };
     Ok(Arc::new(AggregateExec::try_new(
@@ -379,16 +403,24 @@ impl PhysicalExpr for DifferentExpr {
             if !different {
                 for (i, pair) in arrays[start..].chunks_exact(2).enumerate() {
                     let exact = i < self.exact_pairs;
-                    if !values_similar(
-                        pair[0].as_ref(),
-                        row,
-                        pair[1].as_ref(),
-                        row,
-                        if exact { 0.0 } else { self.tolerance },
-                        exact || self.absolute,
-                    )
-                    .map_err(|e| DataFusionError::External(Box::new(e)))?
-                    {
+                    let same = if exact {
+                        let left = vail_ordering::encode_value(pair[0].as_ref(), row)
+                            .map_err(|e| DataFusionError::Execution(e.to_string()))?;
+                        let right = vail_ordering::encode_value(pair[1].as_ref(), row)
+                            .map_err(|e| DataFusionError::Execution(e.to_string()))?;
+                        left == right
+                    } else {
+                        values_similar(
+                            pair[0].as_ref(),
+                            row,
+                            pair[1].as_ref(),
+                            row,
+                            self.tolerance,
+                            self.absolute,
+                        )
+                        .map_err(|e| DataFusionError::Execution(e.to_string()))?
+                    };
+                    if !same {
                         different = true;
                         break;
                     }

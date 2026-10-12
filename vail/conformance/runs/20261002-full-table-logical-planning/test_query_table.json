@@ -1,0 +1,123 @@
+[
+  {
+    "parameters": {
+      "query": "50",
+      "expected": "[Struct(idx=50, s='50')]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.StructExpression object at 0x10fa9cc10>",
+      "expected": "[Struct(idx=50, s='50')]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "55",
+      "expected": "[]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "5",
+      "expected": "[]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "-1",
+      "expected": "[]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "205",
+      "expected": "[]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f2dca60>",
+      "expected": "[Struct(idx=30, s='30'), Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60')]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f2dc940>",
+      "expected": "[]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f2dc760>",
+      "expected": "[]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f2dcb20>",
+      "expected": "[Struct(idx=30, s='30'), Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60')]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10f2dcb80>",
+      "expected": "[Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60'), Struct(idx=70, s='70'), Struct(idx=80, s='80')]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2685, in test_query_table\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  }
+]

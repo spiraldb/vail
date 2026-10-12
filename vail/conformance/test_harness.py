@@ -3,10 +3,14 @@ import math
 import tempfile
 import unittest
 from pathlib import Path
+from subprocess import CompletedProcess
+from unittest.mock import patch
 
 from conformance.codec import MISSING, decode_value, encode_value
 from conformance.compare import assert_bag_equal, assert_ordered_equal, assert_ordered_with_ties_equal
 from conformance.protocol import check_outcome, load_fixture
+from conformance.run import send_fixtures
+from conformance.oracle_worker import plain
 
 
 class TypedCodecTests(unittest.TestCase):
@@ -60,6 +64,20 @@ class ComparisonTests(unittest.TestCase):
 
 
 class FixtureProtocolTests(unittest.TestCase):
+    def test_oracle_decodes_missing_and_special_float_tags(self):
+        self.assertEqual(plain(decode_value({"x": {"$missing": True}})), {"x": None})
+        self.assertTrue(math.isnan(plain(decode_value({"$float64": "NaN"}))))
+
+    def test_spark_stdout_diagnostics_do_not_replace_oracle_responses(self):
+        response = {"protocol": "vail-conformance/1", "fixture_id": "x", "status": "ok", "steps": []}
+        completed = CompletedProcess(
+            args=["worker"], returncode=0,
+            stdout="Spark startup warning\n" + json.dumps(response) + "\n",
+            stderr="",
+        )
+        with patch("conformance.run.subprocess.run", return_value=completed):
+            self.assertEqual(send_fixtures(["worker"], {}, [{"id": "x"}], 1), [response])
+
     def test_fixture_files_validate_and_expect_source_not_oracle(self):
         fixture_dir = Path(__file__).parent / "fixtures"
         fixtures = sorted(fixture_dir.glob("case_*.json"))

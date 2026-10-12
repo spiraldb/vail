@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "type object 'Table' has no attribute 'from_pandas'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 799, in test_from_pandas_objects\n    t = hl.Table.from_pandas(df)\n        ^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'Table' has no attribute 'from_pandas'\n"
+  }
+]

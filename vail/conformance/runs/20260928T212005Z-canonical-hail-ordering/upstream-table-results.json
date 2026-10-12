@@ -1,0 +1,1233 @@
+{
+  "schema_version": 1,
+  "hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "source": "hail/python/test/hail/table/test_table.py",
+  "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+  "vail_source_sha256": {
+    "Cargo.lock": "1da32f8400b583cf9b5112730955dc008618f1b21acb8e958e79c33477a5c73c",
+    "conformance/upstream_table_cases.py": "9b46b1601a46e34db057d770fb4e89d42ffb6f435cb9bd24a39e3c14f22c87fb",
+    "crates/vail-execution/src/advanced_collection_aggregates.rs": "f27c1ff5c4f0b4f73d84b5141b276a51fcfb52a4703abcd33af51beba60bdd1b",
+    "crates/vail-execution/src/advanced_genomic_aggregates.rs": "1822a3cc2a7579223880d1ab771038965643e9ef4bfe8d24f9bdc04916128d75",
+    "crates/vail-execution/src/advanced_numeric_aggregates.rs": "8059b35409e877ed0d86d0dd927ae60e5e30ec5f967a16319bbfcb7581fa64b9",
+    "crates/vail-execution/src/aggregates.rs": "b6be0b0aa77866df7114a8ecfc3503926d29319dbd754090944f47a4142f0ad1",
+    "crates/vail-execution/src/array_length_aggregate.rs": "16121f59e6578a4ac617e200dfdf614b81da3f40791f23b29d185f231cc08d6c",
+    "crates/vail-execution/src/collect_aggregate.rs": "dee441de925b3f75e12aa66afc67ecc4eff7a4f4fa61a8269c9d0c8a88d5af42",
+    "crates/vail-execution/src/expressions.rs": "7f94ade4409a2eb355446a4c74a5f87b941c134fe8b69d9f1fc99f9770589552",
+    "crates/vail-execution/src/fold_aggregate.rs": "52f493091795b84f2b364821ff7a98811fe80a58805bc5fab5badcca0fe8cf63",
+    "crates/vail-execution/src/lib.rs": "c2925197638f8079655fd78def69c018d18c704ec41464c4df2ed691a48ff03c",
+    "crates/vail-execution/src/ordering.rs": "153f821cbf371f5faf652d2194cb6d6361304bfa9489203cb354020a50535acb",
+    "crates/vail-python/src/lib.rs": "b72c18c458deff711921294ee7d767b1e29ba5c9c2eda961b74808a84cb5e08f",
+    "python/vail/__init__.py": "9ef3f6bd5aa27bdbf549d532d30ac0f10dc3b28219bacc612c60bbc7b26076ba",
+    "python/vail/agg.py": "a4d757fb3ce7213b7ee7c7a46a21f75f25e58ef3971a90c8dfe5a29087226410",
+    "python/vail/agg_collections.py": "04f1c2b16b416d9ff9561c5214e29f40a88fd30589c2932a086b9f163e35f352",
+    "python/vail/agg_fold.py": "03fbdd3ae1aa8b5bce1b406da9487ed8fa985535c6cf2de2e24d8b62747a0a1c",
+    "python/vail/agg_genomics.py": "2f36a5a94f13037cb0b599a89d50be7344532bbe880ea2563c089abc758944d4",
+    "python/vail/agg_numeric.py": "628b9eb97085bd7af6af308ca892c464e1b17bdf7fd0987119959e6b5d2d2222",
+    "python/vail/expressions.py": "c85c21f78419255472bd8385162ea7170c20a7c8e7c58c965f6c0fe862bbd43b",
+    "python/vail/nd.py": "e909ed073398b29ca31573673c77a13f477a26eb321150c7025ea585ce3abeb7",
+    "python/vail/types.py": "24ec0a8e6f6a532e5447596d01588f967e214f24aed1e992a6c5a1f8f3987342",
+    "python/vail/utils.py": "1f66e5cf90420303a577ca08d2506bf276d2db402c4981007748f4fec828855e"
+  },
+  "mode": "original-test-bodies-against-vail",
+  "limitations": [
+    "Not a Hail oracle run or full upstream pytest collection.",
+    "Original assertions and test bodies execute unchanged; decorators, imports and Hail initialization fixtures are omitted.",
+    "Only rt/par variants of test_table_head_and_tail are run; its 80 cache/checkpoint variants remain untested.",
+    "These results cover 22 test definitions and 101 concrete cases, not the complete Hail Table suite.",
+    "The expression cases include unchanged filter, missing-filter, annotate, transmute, keyed-transmute and select bodies.",
+    "The aggregation cases include unchanged total Table.aggregate, global-field, and _localize=False bodies."
+  ],
+  "summary": {
+    "passed": 101,
+    "failed": 0
+  },
+  "outcomes": [
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_range_table",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_range_table",
+      "source_line": 995,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_range_table_zero",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_range_table_zero",
+      "source_line": 1004,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_table_parallelize_error_both_schema_partial_type_defined",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_table_parallelize_error_both_schema_partial_type_defined",
+      "source_line": 905,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_large_number_of_partitions",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_large_number_of_partitions",
+      "source_line": 2741,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_filter",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_filter",
+      "source_line": 327,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_filter_missing",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_filter_missing",
+      "source_line": 343,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_annotate",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_annotate",
+      "source_line": 31,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute_key",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute_key",
+      "source_line": 376,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute",
+      "source_line": 348,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_select",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_select",
+      "source_line": 382,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute_globals",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_transmute_globals",
+      "source_line": 372,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_index_globals",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_index_globals",
+      "source_line": 503,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_global",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_global",
+      "source_line": 1634,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_type",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_type",
+      "source_line": 1622,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_rows",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_same_different_rows",
+      "source_line": 1639,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate1",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate1",
+      "source_line": 136,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_ir",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_ir",
+      "source_line": 220,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_localize_false",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_localize_false",
+      "source_line": 1562,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_by_key_partitioning",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregate_by_key_partitioning",
+      "source_line": 303,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregation_with_no_aggregators",
+      "case_id": "hail/python/test/hail/table/test_table.py::Tests::test_aggregation_with_no_aggregators",
+      "source_line": 722,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_group_by_aggregate_doesnt_clobber_global_field",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_group_by_aggregate_doesnt_clobber_global_field",
+      "source_line": 2755,
+      "parameters": {},
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=10,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 10,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=10,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 10,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=10,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 10,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=10,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 10,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=9,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 9,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=9,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 9,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=9,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 9,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=9,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 9,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=11,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 11,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=11,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 11,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=11,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 11,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=11,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 11,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=0,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 0,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=0,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 0,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=0,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 0,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=0,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 0,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=7,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 7,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=7,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 7,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=7,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 7,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=3,n=7,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 3,
+        "n": 7,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=10,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 10,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=10,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 10,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=10,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 10,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=10,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 10,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=9,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 9,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=9,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 9,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=9,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 9,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=9,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 9,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=11,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 11,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=11,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 11,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=11,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 11,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=11,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 11,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=0,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 0,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=0,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 0,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=0,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 0,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=0,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 0,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=7,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 7,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=7,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 7,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=7,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 7,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=rt,num_parts=11,n=7,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "rt",
+        "num_parts": 11,
+        "n": 7,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=10,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 10,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=10,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 10,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=10,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 10,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=10,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 10,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=9,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 9,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=9,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 9,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=9,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 9,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=9,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 9,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=11,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 11,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=11,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 11,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=11,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 11,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=11,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 11,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=0,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 0,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=0,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 0,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=0,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 0,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=0,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 0,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=7,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 7,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=7,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 7,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=7,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 7,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=3,n=7,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 3,
+        "n": 7,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=10,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 10,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=10,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 10,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=10,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 10,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=10,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 10,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=9,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 9,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=9,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 9,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=9,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 9,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=9,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 9,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=11,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 11,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=11,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 11,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=11,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 11,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=11,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 11,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=0,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 0,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=0,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 0,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=0,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 0,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=0,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 0,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=7,truncator_name=head,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 7,
+        "truncator_name": "head",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=7,truncator_name=head,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 7,
+        "truncator_name": "head",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=7,truncator_name=tail,counter_name=count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 7,
+        "truncator_name": "tail",
+        "counter_name": "count"
+      },
+      "status": "passed"
+    },
+    {
+      "test_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail",
+      "case_id": "hail/python/test/hail/table/test_table.py::test_table_head_and_tail[table_name=par,num_parts=11,n=7,truncator_name=tail,counter_name=_force_count]",
+      "source_line": 2128,
+      "parameters": {
+        "table_name": "par",
+        "num_parts": 11,
+        "n": 7,
+        "truncator_name": "tail",
+        "counter_name": "_force_count"
+      },
+      "status": "passed"
+    }
+  ]
+}

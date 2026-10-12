@@ -1,0 +1,56 @@
+{
+  "timestamp_utc": "20261002T001145Z",
+  "python": {
+    "passed": 584,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "rust": {
+    "passed": 63,
+    "failed": 0
+  },
+  "upstream_hail": {
+    "passed": 103,
+    "failed": 0
+  },
+  "coverage": [
+    "independent interval output partitions",
+    "duplicate/prefix keys and missing values",
+    "all ordinary join modes",
+    "semi/anti pruning",
+    "multi-way zip interval execution",
+    "multi-file stored input joins",
+    "selected output executes after unrelated files removed",
+    "certified bounds remain readable after all data files removed",
+    "DataFusion shuffle state reset for repeated partition execution",
+    "empty ordinary and zip joins"
+  ],
+  "source_sha256": {
+    "crates/vail-table/src/joins.rs": "a29dabaf1256b2c459ca952d5ed050d8d4472010e51a2931309ffc89820290ac",
+    "crates/vail-table/src/join_interval.rs": "3b3f5b7d92d48465a8caec74ea812aa26e2214d880019e7d82d9b2af6cb0c31a",
+    "crates/vail-table/src/zip_join.rs": "228a62b4723370d9f938fa178ecb58ede0a94176a47b5908cf6b77d2fe72f5a3",
+    "crates/vail-table/src/partitioned.rs": "690645f5530369ed138ebfedd87ff22cf5c69b97e991dd42fe0d4be610866ea2",
+    "crates/vail-table/src/lib.rs": "b5d7c181a55ea00caf6827a81fc7156fbd435a6a4cb0b44dc8e4761bb6d01f50",
+    "crates/vail-storage/src/local_table.rs": "d55c1cb80f5137eb3afad35fcade8996284843a98d50e2af0e6dcf1c49c4f969",
+    "crates/vail-table/tests/joins.rs": "bda67ed7ad50e1abbd0c3fcbd45907091742fe89c362a1050a41cea4997aa4ab",
+    "python/tests/test_interval_partition_joins.py": "4e341b304055fbdc12a1822018c474198835c630b24a435a088b0e752f6ed165"
+  },
+  "native_extension_sha256": "a0a6fef50d8bac36fbd1f78f6f1766ea5aea87fc420876bf5ef6e2640a041bed",
+  "limitations": [
+    "Computed plans without inherited key bounds require a streaming endpoint discovery pass.",
+    "Reader slicing and backward partition propagation remain future planning work."
+  ],
+  "commands": [
+    "uv run --no-sync maturin develop",
+    "PYTHONPATH=. uv run --no-sync python -m pytest -q python/tests conformance/test_harness.py",
+    "cargo test -j 1 -p vail-table -p vail-storage",
+    "PYTHONPATH=. uv run --no-sync python conformance/upstream_table_cases.py"
+  ],
+  "focused_final_python": {
+    "passed": 6,
+    "coverage": "Includes persisted empty-table join and zip results."
+  },
+  "final_test_source_sha256": {
+    "python/tests/test_interval_partition_joins.py": "c35bbac5cdf1a0eebf371a93291793c72a7c5caf90396b7f6a7e874f77b65b1d"
+  }
+}

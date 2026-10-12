@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "TypeError",
+    "error": "arithmetic requires a numeric expression",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1012, in test_issue_3654\n    self.assertEqual(ht.aggregate(hl.agg.array_sum(ht.x) / [2, 2]), [5.0, 10.0])\n                                  ~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~\n  File \"/Users/danielking/projects/vail/vail/python/vail/expressions.py\", line 197, in __truediv__\n    def __truediv__(self, other): return self._binary(other, \"div\")\n                                         ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/expressions.py\", line 145, in _binary\n    result_type = _numeric_result_type(self.dtype, other.dtype, operator)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/expressions.py\", line 829, in _numeric_result_type\n    _require_numeric(left, \"arithmetic\")\n  File \"/Users/danielking/projects/vail/vail/python/vail/expressions.py\", line 821, in _require_numeric\n    raise TypeError(f\"{operation} requires a numeric expression\")\nTypeError: arithmetic requires a numeric expression\n"
+  }
+]

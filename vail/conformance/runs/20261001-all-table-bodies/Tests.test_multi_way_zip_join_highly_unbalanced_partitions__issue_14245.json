@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'import_vcf'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 695, in test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245\n    import_vcf(resource('gvcfs/HG00096.g.vcf.gz'), 100),\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 688, in import_vcf\n    hl.import_vcf(file, force_bgz=True, reference_genome='GRCh38', min_partitions=partitions)\n    ^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'import_vcf'\n"
+  }
+]

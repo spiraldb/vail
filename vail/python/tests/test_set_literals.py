@@ -106,5 +106,4 @@ def test_nested_set_localization_uses_hashable_frozensets():
 
 def test_set_type_keeps_array_element_logical_type():
     assert hl.tset(hl.tarray(hl.tint32)) == hl.tset(hl.tarray(hl.tint32))
-    with pytest.raises(NotImplementedError, match="cannot localize set elements"):
-        hl.decode_value([[1, 2]], hl.tset(hl.tarray(hl.tint32)))
+    assert hl.decode_value([[1, 2]], hl.tset(hl.tarray(hl.tint32))) == {(1, 2)}

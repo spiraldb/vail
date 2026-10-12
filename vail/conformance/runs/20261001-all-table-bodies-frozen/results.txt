@@ -1,0 +1,395 @@
+Original Hail Table test bodies against frozen Vail package
+
+{"passed": 53, "failed": 137, "blocked": 21}
+{"passed": 133, "failed": 227, "blocked": 33}
+
+Attempt every upstream Table test body, with isolated subprocesses.
+
+Imports and decorators are omitted. Original functions, class helpers, assertions,
+parameter values and local data fixtures are preserved. Hail initialization is
+omitted, and temporary-file/resource helpers are supplied by this harness.
+
+Expected-failure and backend markers are not applied. A definition passes only if every supplied parameter case passes. Each definition has a 30-second subprocess limit. Missing imported globals and fixture failures are blocked.
+
+
+PASSED
+
+Tests.test_annotate (upstream line 31; cases {'passed': 1})
+Tests.test_aggregate1 (upstream line 136; cases {'passed': 1})
+Tests.test_aggregate2 (upstream line 162; cases {'passed': 1})
+Tests.test_aggregate_ir (upstream line 220; cases {'passed': 1})
+Tests.test_aggregate_by_key_partitioning (upstream line 303; cases {'passed': 1})
+Tests.test_filter (upstream line 327; cases {'passed': 1})
+Tests.test_filter_missing (upstream line 343; cases {'passed': 1})
+Tests.test_transmute (upstream line 348; cases {'passed': 1})
+Tests.test_transmute_globals (upstream line 372; cases {'passed': 1})
+Tests.test_transmute_key (upstream line 376; cases {'passed': 1})
+Tests.test_select (upstream line 382; cases {'passed': 1})
+Tests.test_index_globals (upstream line 503; cases {'passed': 1})
+Tests.test_multi_way_zip_join (upstream line 619; cases {'passed': 1})
+Tests.test_multi_way_zip_join_globals (upstream line 657; cases {'passed': 1})
+Tests.test_aggregation_with_no_aggregators (upstream line 722; cases {'passed': 1})
+Tests.test_drop (upstream line 726; cases {'passed': 1})
+Tests.test_weird_names (upstream line 744; cases {'passed': 1})
+Tests.test_table_parallelize_error_both_schema_partial_type_defined (upstream line 905; cases {'passed': 1})
+Tests.test_str_annotation_regression (upstream line 990; cases {'passed': 1})
+Tests.test_range_table (upstream line 995; cases {'passed': 1})
+Tests.test_range_table_zero (upstream line 1004; cases {'passed': 1})
+Tests.test_explode_key_error (upstream line 1014; cases {'passed': 1})
+Tests.test_value_error (upstream line 1035; cases {'passed': 1})
+Tests.test_order_by_parsing (upstream line 1160; cases {'passed': 1})
+Tests.test_take_order (upstream line 1163; cases {'passed': 1})
+Tests.test_filter_partitions (upstream line 1169; cases {'passed': 1})
+Tests.test_union_unify (upstream line 1233; cases {'passed': 1})
+Tests.test_null_joins (upstream line 1278; cases {'passed': 1})
+Tests.test_null_joins_2 (upstream line 1334; cases {'passed': 1})
+Tests.test_joins_one_null (upstream line 1397; cases {'passed': 1})
+Tests.test_flatten (upstream line 1495; cases {'passed': 1})
+Tests.test_expand_types_ordering (upstream line 1509; cases {'passed': 1})
+Tests.test_join_mangling (upstream line 1518; cases {'passed': 1})
+Tests.test_join_with_filter_intervals (upstream line 1525; cases {'passed': 1})
+Tests.test_key_by_aggregate_rewriting (upstream line 1541; cases {'passed': 1})
+Tests.test_field_method_assignment (upstream line 1546; cases {'passed': 1})
+Tests.test_aggregate_localize_false (upstream line 1562; cases {'passed': 1})
+Tests.test_same_equal (upstream line 1612; cases {'passed': 1})
+Tests.test_same_within_tolerance (upstream line 1616; cases {'passed': 1})
+Tests.test_same_different_type (upstream line 1622; cases {'passed': 1})
+Tests.test_same_different_global (upstream line 1634; cases {'passed': 1})
+Tests.test_same_different_rows (upstream line 1639; cases {'passed': 1})
+Tests.test_repartition_empty_key (upstream line 1734; cases {'passed': 1})
+test_segfault (upstream line 1772; cases {'passed': 1})
+test_group_within_partitions (upstream line 1944; cases {'passed': 1})
+test_map_partitions_flatmap (upstream line 2010; cases {'passed': 1})
+test_map_partitions_indexed (upstream line 2024; cases {'passed': 1})
+test_lowered_shuffle (upstream line 2053; cases {'passed': 1})
+test_read_partitions_with_missing_key (upstream line 2066; cases {'passed': 1})
+test_interval_filter_partitions (upstream line 2081; cases {'passed': 1})
+test_order_by_desc (upstream line 2617; cases {'passed': 1})
+test_large_number_of_partitions (upstream line 2741; cases {'passed': 1})
+test_group_by_aggregate_doesnt_clobber_global_field (upstream line 2755; cases {'passed': 1})
+
+FAILED
+
+Tests.test_java_array_string_encoding (upstream line 240; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'str'
+Tests.test_to_matrix_table (upstream line 247; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+Tests.test_to_matrix_table_row_major (upstream line 261; cases {'failed': 1})
+  1x body: AttributeError: to_matrix_table_row_major
+Tests.test_group_by_field_lifetimes (upstream line 290; cases {'failed': 1})
+  1x body: AttributeError: all
+Tests.test_group_aggregate_by_key (upstream line 295; cases {'failed': 1})
+  1x body: AttributeError: 'GroupedTable' object has no attribute '_set_buffer_size'
+Tests.test_group_aggregate_na (upstream line 315; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'or_missing'
+Tests.test_errors (upstream line 418; cases {'failed': 1})
+  1x body: TypeError: Table is immutable
+Tests.test_scan_filter (upstream line 434; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'scan'
+Tests.test_scan_tail (upstream line 440; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'scan'
+Tests.test_semi_anti_join (upstream line 446; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'str'
+Tests.test_indirected_joins (upstream line 469; cases {'failed': 1})
+  1x body: NotImplementedError: keyed lookup is not implemented in this initial slice
+Tests.test_table_matrix_join_combinations (upstream line 487; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_vcf'
+Tests.test_interval_join (upstream line 507; cases {'failed': 1})
+  1x body: AttributeError: index
+Tests.test_interval_filter_unordered (upstream line 520; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'filter_intervals'
+Tests.test_interval_product_join (upstream line 555; cases {'failed': 1})
+  1x body: AttributeError: index
+Tests.test_interval_product_join_long_key (upstream line 572; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+Tests.test_join_with_empty (upstream line 594; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'is_defined'
+Tests.test_join_with_key (upstream line 599; cases {'failed': 1})
+  1x body: AttributeError: all
+Tests.test_product_join (upstream line 604; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+Tests.test_multiple_entry_joins (upstream line 612; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+Tests.test_multi_way_zip_join_key_downcast (upstream line 665; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_vcf'
+Tests.test_multi_way_zip_join_key_downcast2 (upstream line 672; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_vcf'
+Tests.test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245 (upstream line 685; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_vcf'
+Tests.test_index_maintains_count (upstream line 702; cases {'failed': 1})
+  1x body: NotImplementedError: keyed lookup is not implemented in this initial slice
+Tests.test_index_keyless_table (upstream line 717; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'expr'
+Tests.test_sample (upstream line 762; cases {'failed': 1})
+  1x body: AttributeError: sample
+Tests.test_from_pandas_works (upstream line 777; cases {'failed': 1})
+  1x body: AttributeError: type object 'Table' has no attribute 'from_pandas'
+Tests.test_from_pandas_objects (upstream line 787; cases {'failed': 1})
+  1x body: AttributeError: type object 'Table' has no attribute 'from_pandas'
+Tests.test_from_pandas_missing_and_nans (upstream line 809; cases {'failed': 1})
+  1x body: AttributeError: type object 'Table' has no attribute 'from_pandas'
+Tests.test_from_pandas_mismatched_object_rows (upstream line 828; cases {'failed': 1})
+  1x body: AttributeError: type object 'Table' has no attribute 'from_pandas'
+Tests.test_table_parallelize_infer_types (upstream line 835; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'locus'
+Tests.test_table_parallelize_partial_infer_types (upstream line 890; cases {'failed': 1})
+  1x body: NotImplementedError: partial_type is not implemented in this initial slice
+Tests.test_rename (upstream line 913; cases {'failed': 1})
+  1x body: AttributeError: _indices
+Tests.test_distinct (upstream line 940; cases {'failed': 1})
+  1x body: AttributeError: collect_by_key
+Tests.test_group_by_key (upstream line 966; cases {'failed': 1})
+  1x body: AttributeError: collect_by_key
+Tests.test_issue_3654 (upstream line 1009; cases {'failed': 1})
+  1x body: TypeError: arithmetic requires a numeric expression
+Tests.test_explode_on_set (upstream line 1020; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'set'
+Tests.test_explode_nested (upstream line 1029; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'case'
+Tests.test_export (upstream line 1041; cases {'failed': 1})
+  1x body: AttributeError: export
+Tests.test_export_delim (upstream line 1049; cases {'failed': 1})
+  1x body: AttributeError: export
+Tests.test_export_parallel_manifest (upstream line 1057; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'current_backend'
+Tests.test_write_stage_locally (upstream line 1078; cases {'failed': 1})
+  1x body: NotImplementedError: staging and custom codecs are not supported
+Tests.test_write_no_parts (upstream line 1085; cases {'failed': 1})
+  1x body: AttributeError: checkpoint
+Tests.test_min_partitions (upstream line 1092; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_table'
+Tests.test_read_back_same_as_exported (upstream line 1095; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'set'
+Tests.test_indexed_read_1 (upstream line 1102; cases {'failed': 1})
+  1x body: NotImplementedError: custom read_table options are not yet supported
+Tests.test_indexed_read_2 (upstream line 1117; cases {'failed': 1})
+  1x body: NotImplementedError: custom read_table options are not yet supported
+Tests.test_indexed_read_3 (upstream line 1131; cases {'failed': 1})
+  1x body: NotImplementedError: custom read_table options are not yet supported
+Tests.test_indexed_read_4 (upstream line 1146; cases {'failed': 1})
+  1x body: NotImplementedError: custom read_table options are not yet supported
+Tests.test_localize_entries (upstream line 1181; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+Tests.test_localize_self_join (upstream line 1191; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+Tests.test_union (upstream line 1202; cases {'failed': 1})
+  1x body: AssertionError: 
+Tests.test_nested_union_100 (upstream line 1226; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_bool'
+Tests.test_nested_union_200 (upstream line 1230; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_bool'
+Tests.test_table_order_by_head_rewrite (upstream line 1255; cases {'failed': 1})
+  1x body: AttributeError: take
+Tests.test_order_by_expr (upstream line 1262; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+Tests.test_join_types_ht1_is_what_we_expect (upstream line 1461; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+Tests.test_join_types_ht2_is_what_we_expect (upstream line 1465; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+Tests.test_join_types_left (upstream line 1469; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+Tests.test_join_types_right (upstream line 1474; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+Tests.test_join_types_inner (upstream line 1479; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+Tests.test_join_types_outer (upstream line 1484; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+Tests.test_partitioning_rewrite (upstream line 1489; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_unif'
+Tests.test_expand_types (upstream line 1502; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'locus'
+Tests.test_expand_types_on_all_types (upstream line 1514; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'set'
+Tests.test_refs_with_process_joins (upstream line 1553; cases {'failed': 1})
+  1x body: NotImplementedError: keyed lookup is not implemented in this initial slice
+Tests.test_collect_localize_false (upstream line 1567; cases {'failed': 1})
+  1x body: NotImplementedError: non-localized expressions are not implemented in this initial slice
+Tests.test_take_localize_false (upstream line 1571; cases {'failed': 1})
+  1x body: NotImplementedError: non-localized expressions are not implemented in this initial slice
+Tests.test_expr_collect_localize_false (upstream line 1575; cases {'failed': 1})
+  1x body: TypeError: Expression.collect() got an unexpected keyword argument '_localize'
+Tests.test_expr_collect (upstream line 1579; cases {'failed': 1})
+  1x body: AssertionError: 
+Tests.test_expr_take_localize_false (upstream line 1602; cases {'failed': 1})
+  1x body: AttributeError: take
+Tests.test_empty_show (upstream line 1606; cases {'failed': 1})
+  1x body: AttributeError: show
+Tests.test_no_row_fields_show (upstream line 1609; cases {'failed': 1})
+  1x body: AttributeError: show
+Tests.test_rvd_key_write (upstream line 1648; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+Tests.test_show_long_field_names (upstream line 1657; cases {'failed': 1})
+  1x body: AttributeError: show
+Tests.test_show__various_types (upstream line 1660; cases {'failed': 1})
+  1x body: TypeError: unhashable type: 'StructExpression'
+Tests.test_import_filter_replace (upstream line 1704; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_table'
+Tests.test_import_multiple_missing (upstream line 1717; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_table'
+Tests.test_unicode_ordering (upstream line 1722; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'sorted'
+Tests.test_physical_key_truncation (upstream line 1728; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_vcf'
+Tests.test_read_with_partitions (upstream line 1740; cases {'failed': 1})
+  1x body: AssertionError: 
+Tests.test_path_collision_error (upstream line 1748; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'FatalError'
+test_large_number_of_fields (upstream line 1758; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+test_import_many_fields (upstream line 1768; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_table'
+test_maybe_flexindex_table_by_expr_direct_match (upstream line 1782; cases {'failed': 1})
+  1x body: AttributeError: _maybe_flexindex_table_by_expr
+test_maybe_flexindex_table_by_expr_prefix_match (upstream line 1801; cases {'failed': 1})
+  1x body: AttributeError: _maybe_flexindex_table_by_expr
+test_maybe_flexindex_table_by_expr_direct_interval_match (upstream line 1820; cases {'failed': 1})
+  1x body: AttributeError: _maybe_flexindex_table_by_expr
+test_maybe_flexindex_table_by_expr_prefix_interval_match (upstream line 1840; cases {'failed': 1})
+  1x body: AttributeError: _maybe_flexindex_table_by_expr
+test_can_process_wide_tables (upstream line 1862; cases {'failed': 5})
+  5x body: AttributeError: module 'vail' has no attribute 'import_table'
+test_join_with_key_prefix (upstream line 1903; cases {'failed': 1})
+  1x body: NotImplementedError: keyed lookup is not implemented in this initial slice
+test_join_distinct_preserves_count (upstream line 1914; cases {'failed': 1})
+  1x body: TypeError: cannot infer a Vail type for Expression
+test_write_table_containing_ndarray (upstream line 1934; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.nd' has no attribute 'arange'
+test_group_within_partitions_after_explode (upstream line 1979; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+test_group_within_partitions_after_import_vcf (upstream line 1987; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_vcf'
+test_range_annotate_range (upstream line 1995; cases {'failed': 1})
+  1x body: NotImplementedError: keyed lookup is not implemented in this initial slice
+test_read_write_all_types (upstream line 2003; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'set'
+test_map_partitions_errors (upstream line 2016; cases {'failed': 1})
+  1x body: AssertionError: Regex pattern did not match.
+  Expected regex: 'expected return type expression of type stream<struct>'
+  Actual message: 'Table._map_partitions callback must return a stream expression'
+test_keys_before_scans (upstream line 2032; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'scan'
+test_lowered_persist (upstream line 2045; cases {'failed': 1})
+  1x body: AttributeError: persist
+test_read_partitions (upstream line 2059; cases {'failed': 1})
+  1x body: AssertionError: 
+test_empty_tree_aggregate (upstream line 2073; cases {'failed': 1})
+  1x body: AttributeError: checkpoint
+test_grouped_flatmap_streams (upstream line 2108; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'import_vcf'
+test_table_head_and_tail (upstream line 2128; cases {'passed': 80, 'failed': 80})
+  40x body: AttributeError: cache
+  40x body: AttributeError: checkpoint
+test_to_pandas (upstream line 2146; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+test_to_pandas_types_type_to_type (upstream line 2164; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+test_to_pandas_types_column_to_type (upstream line 2174; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+test_to_pandas_flatten (upstream line 2184; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+test_to_pandas_null_ints (upstream line 2201; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'or_missing'
+test_to_pandas_nd_array (upstream line 2227; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.nd' has no attribute 'arange'
+test_literal_of_numpy_int64 (upstream line 2243; cases {'failed': 1})
+  1x body: AttributeError: to_pandas
+test_literal_of_numpy_int32 (upstream line 2249; cases {'failed': 1})
+  1x body: AttributeError: to_pandas
+test_literal_of_pandas_NA_and_numpy_int64 (upstream line 2255; cases {'failed': 1})
+  1x body: ModuleNotFoundError: No module named 'hail'
+test_literal_of_pandas_NA_and_numpy_int32 (upstream line 2263; cases {'failed': 1})
+  1x body: ModuleNotFoundError: No module named 'hail'
+test_write_many (upstream line 2272; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'str'
+test_indexed_read_boundaries (upstream line 2304; cases {'failed': 5})
+  5x body: AttributeError: module 'vail' has no attribute '_with_flags'
+test_table_randomness_range_matrix_rows_table (upstream line 2337; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+test_table_randomness_left_join_right_distinct (upstream line 2354; cases {'failed': 1})
+  1x body: NotImplementedError: keyed lookup is not implemented in this initial slice
+test_table_randomness_interval_join (upstream line 2364; cases {'failed': 1})
+  1x body: NotImplementedError: keyed lookup is not implemented in this initial slice
+test_table_randomness_map_globals_with_body_randomness (upstream line 2385; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_int64'
+test_table_randomness_explode (upstream line 2400; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'range'
+test_table_randomness_map_rows_with_body_randomness (upstream line 2415; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_int64'
+test_table_randomness_map_rows_with_scan_randomness (upstream line 2423; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'scan'
+test_table_randomness_map_partitions (upstream line 2437; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_int64'
+test_table_randomness_matrix_entries_table (upstream line 2454; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+test_table_randomness_filter_with_cond_randomness (upstream line 2461; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_int64'
+test_table_randomness_key_by_and_aggregate_with_body_randomness (upstream line 2476; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_int64'
+test_table_randomness_key_by_and_aggregate_with_agg_randomness (upstream line 2484; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_int64'
+test_table_randomness_aggregate_by_key (upstream line 2499; cases {'failed': 1})
+  1x body: AttributeError: collect_by_key
+test_table_randomness_matrix_cols_table (upstream line 2507; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+test_table_randomness_parallelize_with_body_randomness (upstream line 2514; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'rand_int64'
+test_table_randomness_parallelize_without_body_randomness (upstream line 2521; cases {'failed': 1})
+  1x body: TypeError: only struct expressions can be expanded as mappings
+test_table_randomness_repartition (upstream line 2556; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'current_backend'
+test_table_randomness_cast_matrix_to_table (upstream line 2565; cases {'failed': 1})
+  1x body: AttributeError: module 'vail.utils' has no attribute 'range_matrix_table'
+test_table_randomness_filter_intervals (upstream line 2591; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'filter_intervals'
+test_table_randomness_block_matrix_to_table (upstream line 2599; cases {'failed': 1})
+  1x body: AttributeError: module 'vail' has no attribute 'linalg'
+test_table_randomness_table_gen (upstream line 2606; cases {'failed': 1})
+  1x body: AttributeError: type object 'Table' has no attribute '_generate'
+test_query_table_interval_key (upstream line 2736; cases {'failed': 4})
+  4x body: AttributeError: module 'vail' has no attribute 'query_table'
+
+BLOCKED
+
+Tests.test_from_spark_works (upstream line 768; cases {'blocked': 1})
+  1x body: NameError: name 'Env' is not defined
+test_table_randomness_range_table (upstream line 2331; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_join (upstream line 2344; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_union (upstream line 2376; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_map_globals_without_body_randomness (upstream line 2393; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_key_by (upstream line 2408; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_map_rows_without_body_randomness (upstream line 2430; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_read (upstream line 2445; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_filter_without_cond_randomness (upstream line 2469; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_key_by_and_aggregate_without_body_randomness (upstream line 2492; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_head (upstream line 2527; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_tail (upstream line 2534; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_order_by (upstream line 2541; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_distinct (upstream line 2548; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_rename (upstream line 2572; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_table_randomness_multi_way_zip_join (upstream line 2579; cases {'blocked': 1})
+  1x body: NameError: name 'ir' is not defined
+test_query_table_errors (upstream line 2632; cases {'blocked': 1})
+  1x fixture: AttributeError: module 'vail' has no attribute 'str'
+test_query_table (upstream line 2684; cases {'blocked': 11})
+  11x fixture: AttributeError: module 'vail' has no attribute 'str'
+test_query_table_randomness (upstream line 2688; cases {'blocked': 1})
+  1x fixture: AttributeError: module 'vail' has no attribute 'str'
+test_query_table_compound_key (upstream line 2713; cases {'blocked': 3})
+  3x fixture: AttributeError: module 'vail' has no attribute 'str'
+test_range_table_biggest_int (upstream line 2746; cases {'blocked': 1})
+  1x worker: : worker exceeded 30.0s
+

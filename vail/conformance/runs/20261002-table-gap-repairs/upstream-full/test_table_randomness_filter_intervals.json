@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "TypeError",
+    "error": "intervals cannot contain missing or non-Interval values",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2594, in test_table_randomness_filter_intervals\n    t = hl.filter_intervals(rt, intervals)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 1370, in filter_intervals\n    raise TypeError(\"intervals cannot contain missing or non-Interval values\")\nTypeError: intervals cannot contain missing or non-Interval values\n"
+  }
+]

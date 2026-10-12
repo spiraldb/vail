@@ -1,0 +1,28 @@
+{
+  "python": {
+    "passed": 592,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "focused_python": {
+    "passed": 8
+  },
+  "upstream_hail_bodies": {
+    "passed": 6,
+    "failed": 0
+  },
+  "source_sha256": {
+    "python/vail/__init__.py": "e796949d67387d5a8510a48bb135bc1624f30e8bb1e3d025c2732a7d6cb843d0",
+    "python/tests/test_table_convenience_methods.py": "63a223a95b85819ff7bf746cc1fc292b20e14a15702d53b58eed7887760f91d5"
+  },
+  "methods": [
+    "Table.all",
+    "Table.any",
+    "Table.collect_by_key",
+    "Table.checkpoint"
+  ],
+  "limitations": [
+    "checkpoint supports output and overwrite; non-default advanced flags raise NotImplementedError before writing."
+  ],
+  "native_execution": "Uses existing DataFusion aggregate plans and Viceberg storage; no native engine changes."
+}

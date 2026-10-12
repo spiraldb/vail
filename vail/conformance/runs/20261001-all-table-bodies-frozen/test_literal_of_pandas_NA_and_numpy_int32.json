@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "ModuleNotFoundError",
+    "error": "No module named 'hail'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2264, in test_literal_of_pandas_NA_and_numpy_int32\n    import hail as hl\nModuleNotFoundError: No module named 'hail'\n"
+  }
+]

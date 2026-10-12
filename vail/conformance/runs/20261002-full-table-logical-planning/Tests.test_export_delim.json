@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'hadoop_open'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1054, in test_export_delim\n    with hl.hadoop_open(tmp_file, 'r') as f_in:\n         ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'hadoop_open'\n"
+  }
+]

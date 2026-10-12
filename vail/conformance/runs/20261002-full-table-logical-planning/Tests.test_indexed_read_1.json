@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "custom read_table options are not yet supported",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1103, in test_indexed_read_1\n    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 1395, in read_table\n    raise NotImplementedError(\"custom read_table options are not yet supported\")\nNotImplementedError: custom read_table options are not yet supported\n"
+  }
+]

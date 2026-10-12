@@ -51,8 +51,15 @@ pub fn referenced_bindings<'a>(
 }
 
 #[derive(Debug)]
-enum Node {
+pub(crate) enum Node {
     Empty,
+    Prepared(crate::plan::PhysicalPlan),
+    ArrowLiteral(RecordBatch),
+    Aggregate {
+        table: crate::TableRef,
+        expression: Expr,
+        bindings: GlobalBindings,
+    },
     Read(Arc<LocalRead>),
     Map {
         child: GlobalsRef,
@@ -81,6 +88,63 @@ pub fn schema_from_wire(value: &Value) -> Result<SchemaRef> {
 }
 
 impl GlobalsIR {
+    /// Retain one Arrow row as a literal globals value. Arrow IPC is the wire
+    /// boundary; the native IR never serializes the contained values as JSON.
+    pub fn arrow_literal(batch: RecordBatch) -> Result<GlobalsRef> {
+        if batch.num_rows() != 1 {
+            return Err(TableError::Invalid(
+                "Arrow globals literal must contain exactly one row".into(),
+            ));
+        }
+        Ok(Arc::new(Self {
+            schema: batch.schema(),
+            node: Node::ArrowLiteral(batch),
+        }))
+    }
+    pub fn aggregate(
+        table: crate::TableRef,
+        expression: Expr,
+        bindings: GlobalBindings,
+    ) -> Result<GlobalsRef> {
+        let bindings = referenced_bindings([&expression], bindings)?;
+        // Keep schema derivation on the same logical tree used by execution.
+        // The legacy physical aggregate planner cannot consume a MapRows child
+        // whose expressions include scan windows.
+        let logical_schema = crate::logical::lower(&table)?;
+        let schema = match crate::logical_aggregation::lower_logical_total(
+            &table,
+            &expression,
+            &bindings,
+            logical_schema,
+        )? {
+            Some(plan) => Arc::new(plan.schema().as_arrow().clone()),
+            None => crate::aggregation::lower(&table, &expression, &bindings)?.schema(),
+        };
+        Ok(Arc::new(Self {
+            schema,
+            node: Node::Aggregate {
+                table,
+                expression,
+                bindings,
+            },
+        }))
+    }
+
+    pub fn physical_plan(self: &Arc<Self>) -> Result<String> {
+        let globals = self.clone();
+        std::thread::spawn(move || {
+            let runtime = tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+                .map_err(|e| TableError::Execution(e.to_string()))?;
+            let plan = runtime.block_on(crate::logical::physical_globals(&globals))?;
+            Ok(datafusion_physical_plan::displayable(plan.as_ref())
+                .indent(true)
+                .to_string())
+        })
+        .join()
+        .map_err(|_| TableError::Execution("globals plan diagnostic panicked".into()))?
+    }
     pub fn empty() -> GlobalsRef {
         Arc::new(Self {
             schema: Arc::new(Schema::empty()),
@@ -127,7 +191,14 @@ impl GlobalsIR {
     }
     pub fn explain(&self) -> Value {
         match &self.node {
+            Node::Aggregate {
+                table, expression, ..
+            } => json!({"node":"TableAggregate", "table":table.explain(), "expression":expression}),
+            Node::Prepared(_) => json!({"node":"GlobalsPrepared"}),
             Node::Empty => json!({"node":"GlobalsLiteral", "fields":[]}),
+            Node::ArrowLiteral(batch) => {
+                json!({"node":"GlobalsArrowLiteral", "fields":batch.num_columns()})
+            }
             Node::Read(source) => {
                 json!({"node":"GlobalsRead", "metadata":source.metadata_location()})
             }
@@ -141,10 +212,30 @@ impl GlobalsIR {
             }
         }
     }
+    pub(crate) fn prepared(plan: crate::plan::PhysicalPlan) -> GlobalsRef {
+        Arc::new(Self {
+            schema: plan.schema(),
+            node: Node::Prepared(plan),
+        })
+    }
+
+    pub(crate) fn node(&self) -> &Node {
+        &self.node
+    }
+
     pub fn lower(self: &Arc<Self>) -> Result<crate::plan::PhysicalPlan> {
         Ok(match &self.node {
+            Node::Aggregate {
+                table,
+                expression,
+                bindings,
+            } => crate::aggregation::lower(table, expression, bindings)?,
+            Node::Prepared(plan) => plan.clone(),
             Node::Empty => {
                 let batch = vail_storage::globals::empty()?;
+                MemorySourceConfig::try_new_exec(&[vec![batch.clone()]], batch.schema(), None)?
+            }
+            Node::ArrowLiteral(batch) => {
                 MemorySourceConfig::try_new_exec(&[vec![batch.clone()]], batch.schema(), None)?
             }
             Node::Read(source) => crate::plan::globals_scan(source.clone(), self.schema.clone()),
@@ -170,7 +261,11 @@ impl GlobalsIR {
     pub fn evaluate(self: &Arc<Self>) -> BoxFuture<'static, Result<RecordBatch>> {
         let globals = self.clone();
         async move {
-            let mut batches = collect(globals.lower()?, Arc::new(TaskContext::default())).await?;
+            let mut batches = collect(
+                crate::logical::physical_globals(&globals).await?,
+                Arc::new(TaskContext::default()),
+            )
+            .await?;
             if batches.len() != 1 || batches[0].num_rows() != 1 {
                 return Err(TableError::Invalid(
                     "global projection must produce exactly one row".into(),

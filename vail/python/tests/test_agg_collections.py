@@ -1,0 +1,35 @@
+import pytest
+
+from vail.agg_collections import array_sum, collect_as_set, counter, take
+from vail.types import tarray, tint32, tint64, tstr
+
+
+def test_collect_as_set_keeps_element_type_and_source():
+    from vail.expressions import Expression
+    value = Expression(tint32, None, {"op": "literal", "value": 1})
+    result = collect_as_set(value)
+    assert result.dtype.element_type == tint32
+    assert result.to_ir()["function"] == "collect_as_set"
+
+
+def test_take_validates_n_and_carries_ordering():
+    from vail.expressions import Expression
+    value = Expression(tint32, None, {"op": "literal", "value": 1})
+    ordering = Expression(tint64, None, {"op": "literal", "value": 2})
+    result = take(value, 3, ordering)
+    assert result.dtype == tarray(tint32)
+    assert result.to_ir()["options"] == {"n": 3, "ordered": True}
+    assert result.to_ir()["value"]["fields"][1][1] == ordering.to_ir()
+    with pytest.raises(ValueError):
+        take(value, -1)
+
+
+def test_array_sum_uses_coordinate_array_aggregation():
+    from vail.expressions import Expression
+    value = Expression(tarray(tint32), None, {"op": "literal", "value": [1, 2]})
+    result = array_sum(value)
+    assert result.dtype == tarray(tint64)
+    assert result.to_ir()["op"] == "agg_array"
+    invalid = Expression(tstr, None, {"op": "literal", "value": "x"})
+    with pytest.raises(TypeError):
+        array_sum(invalid)

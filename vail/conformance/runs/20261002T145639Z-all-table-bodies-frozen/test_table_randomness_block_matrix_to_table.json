@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'linalg'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2600, in test_table_randomness_block_matrix_to_table\n    bm = hl.linalg.BlockMatrix.fill(10, 10, 0)\n         ^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'linalg'\n"
+  }
+]

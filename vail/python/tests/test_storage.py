@@ -50,15 +50,12 @@ def test_overwrite_and_failed_overwrite(tmp_path):
     with pytest.raises(FileExistsError):
         hl.range_table(1).write(path)
     assert (path / '_vail_table.json').read_bytes() == original
-    # Non-ASCII keys are not supported by the current certified comparator.
-    invalid = hl.Table.parallelize([{'s': 'β'}]).key_by('s')
-    with pytest.raises(RuntimeError, match="non-ASCII"):
-        invalid.write(path, overwrite=True)
-    assert (path / '_vail_table.json').read_bytes() == original
-    assert hl.read_table(path).count() == 4
+    unicode_key = hl.Table.parallelize([{'s': 'β'}]).key_by('s')
+    unicode_key.write(path, overwrite=True)
+    assert hl.read_table(path).collect() == unicode_key.collect()
     hl.range_table(2).write(path, overwrite=True)
     assert hl.read_table(path).count() == 2
-    assert len(list(path.rglob('*.vortex'))) == 3  # old generations remain readable
+    assert len(list(path.rglob('*.vortex'))) == 4  # old generations remain readable
 
 
 def test_paths_and_errors(tmp_path, monkeypatch):
@@ -71,8 +68,9 @@ def test_paths_and_errors(tmp_path, monkeypatch):
         hl.range_table(1).write('s3://bucket/table')
     with pytest.raises(NotImplementedError):
         hl.range_table(1).write(tmp_path / 'table', stage_locally=True)
-    with pytest.raises(NotImplementedError):
-        hl.read_table('relative', _n_partitions=2)
+    repartitioned = hl.read_table('relative', _n_partitions=2)
+    assert repartitioned.count() == 2
+    assert repartitioned.n_partitions() <= 2
     entry = tmp_path / 'relative' / '_vail_table.json'
     value = json.loads(entry.read_text())
     value['partition_rows'] = [99]
@@ -132,6 +130,50 @@ def test_floating_values(tmp_path):
     assert math.copysign(1, rows[1].x) == -1 and rows[1].y == float('-inf')
     assert rows[2].x is None and rows[2].y == 1.25
     assert loaded.row.dtype == table.row.dtype
+
+
+@pytest.mark.parametrize('dtype, values', [
+    (hl.tfloat64, [float('nan'), 0.0, -0.0, None]),
+    (hl.tset(hl.tint32), [{1, 2}, {2, 1}, {3}, None]),
+    (hl.tdict(hl.tstr, hl.tint32), [{'b': 2, 'a': 1}, {'a': 1, 'b': 2}, None]),
+    (hl.tarray(hl.tint32), [[1, None], [1, 2], None]),
+    (hl.tcall, [hl.Call((0, 1)), hl.Call((1, 0), True), None]),
+    (hl.tndarray(hl.tint32, 1),
+     [{'__vail_ndarray_data': [2], '__vail_ndarray_shape': [1]},
+      {'__vail_ndarray_data': [1], '__vail_ndarray_shape': [1]}, None]),
+])
+def test_ordered_complex_key_roundtrip(tmp_path, dtype, values):
+    table = hl.Table.parallelize([{'k': value} for value in values],
+                                 schema=hl.tstruct(k=dtype)).key_by('k')
+    path = tmp_path / 'table'
+    table.write(path)
+    assert hl.read_table(path)._same(table)
+
+
+def test_hail_key_sort_order_for_calls_unicode_and_nested_missing():
+    calls = [hl.Call((0, 2)), hl.Call((1, 1)), hl.Call((0, 1), True), hl.Call((0, 1))]
+    table = hl.Table.parallelize([{'k': value} for value in calls],
+                                 schema=hl.tstruct(k=hl.tcall)).key_by('k')
+    assert [row.k for row in table.collect()] == [
+        hl.Call((0, 1)), hl.Call((0, 1), True), hl.Call((1, 1)), hl.Call((0, 2))]
+    strings = hl.Table.parallelize([{'k': value} for value in ['β', None, '中', 'a']],
+                                   schema=hl.tstruct(k=hl.tstr)).key_by('k')
+    assert [row.k for row in strings.collect()] == ['a', 'β', '中', None]
+    nested = hl.Table.parallelize([{'k': value} for value in
+                                   [{'x': None}, {'x': 1}, None, {'x': -1}]],
+                                  schema=hl.tstruct(k=hl.tstruct(x=hl.tint32))).key_by('k')
+    assert [row.k for row in nested.collect()] == [
+        hl.Struct(x=-1), hl.Struct(x=1), hl.Struct(x=None), None]
+
+
+def test_same_uses_key_equivalence_for_nan_and_signed_zero():
+    schema = hl.tstruct(k=hl.tfloat64)
+    nan_a = hl.Table.parallelize([{'k': float('nan')}], schema=schema).key_by('k')
+    nan_b = hl.Table.parallelize([{'k': float('nan')}], schema=schema).key_by('k')
+    assert nan_a._same(nan_b)
+    negative_zero = hl.Table.parallelize([{'k': -0.0}], schema=schema).key_by('k')
+    positive_zero = hl.Table.parallelize([{'k': 0.0}], schema=schema).key_by('k')
+    assert not negative_zero._same(positive_zero)
 
 
 def test_write_rolls_one_logical_partition_into_multiple_files(tmp_path):

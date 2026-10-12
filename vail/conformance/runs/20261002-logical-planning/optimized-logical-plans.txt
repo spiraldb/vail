@@ -1,0 +1,22 @@
+Filter: x > Int32(5)
+  Projection: vail_source.idx, vail_semantic_kernel_integer_add_0(vail_source.idx) AS x, vail_source.__vail_partition
+    TableScan: vail_source projection=[idx, __vail_partition]
+Projection: g, n, xs, UInt64(0) AS __vail_partition
+  Sort: vail_key(g) ASC NULLS FIRST
+    Projection: __vail_rows.__vail_logical_group_value AS g, __vail_rows.__vail_aggregate AS n, __vail_rows.__vail_aggregate_ AS xs
+      Cross Join:
+        SubqueryAlias: __vail_globals
+          EmptyRelation: rows=1
+        SubqueryAlias: __vail_rows
+          Projection: __vail_aggregate, __vail_aggregate_, __vail_logical_group_value
+            Aggregate: groupBy=[[__vail_logical_group_key]], aggr=[[count(Int64(1)) AS __vail_aggregate, collect(vail_semantic_kernel_integer_add_2(__vail_rows.idx, __vail_globals.offset)) AS __vail_aggregate_, any_value(__vail_logical_group_value) AS __vail_logical_group_value]]
+              Projection: __vail_globals.offset, __vail_rows.idx, __vail_logical_group_value, vail_key(__vail_logical_group_value) AS __vail_logical_group_key
+                Projection: __vail_globals.offset, __vail_rows.idx, vail_semantic_kernel_modulo_1(__vail_rows.idx) AS __vail_logical_group_value
+                  Cross Join:
+                    SubqueryAlias: __vail_globals
+                      Projection: Int32(10) AS offset
+                        EmptyRelation: rows=1
+                    SubqueryAlias: __vail_rows
+                      Projection: vail_source.idx
+                        VailOrderedPartitions
+                          TableScan: vail_source projection=[idx, __vail_partition]

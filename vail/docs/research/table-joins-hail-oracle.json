@@ -1,0 +1,201 @@
+{
+  "hail_version": "0.2.139-e10cc355bc8c",
+  "cases": [
+    {
+      "case": "keyless_zip_2x3",
+      "status": "ok",
+      "value": {
+        "count": 1,
+        "rows": [
+          {
+            "data": [
+              {
+                "v": "b"
+              },
+              {
+                "v": "e"
+              }
+            ]
+          }
+        ],
+        "row_type": "struct{data: array<struct{v: str}>}",
+        "globals": {
+          "globals": [
+            {},
+            {}
+          ]
+        }
+      }
+    },
+    {
+      "case": "zip_names_data_name_equals_key",
+      "status": "error",
+      "error_type": "FatalError",
+      "error": "HailException: overlapping fields in struct concatenation: k"
+    },
+    {
+      "case": "zip_names_data_name_equals_value",
+      "status": "ok",
+      "value": {
+        "row_type": "struct{k: int32, v: array<struct{v: str}>}",
+        "global_type": "struct{globals: array<struct{g: str}>}",
+        "rows": [
+          {
+            "k": 1,
+            "v": [
+              {
+                "v": "a"
+              }
+            ]
+          }
+        ],
+        "globals": {
+          "globals": [
+            {
+              "g": "G"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "zip_names_global_name_equals_key",
+      "status": "error",
+      "error_type": "FatalError",
+      "error": "MatchError: ArraySeq() (of class scala.collection.immutable.ArraySeq$ofRef)"
+    },
+    {
+      "case": "zip_names_data_name_equals_global_name",
+      "status": "error",
+      "error_type": "FatalError",
+      "error": "NoSuchElementException: key not found: v"
+    },
+    {
+      "case": "zip_names_data_name_equals_global_field",
+      "status": "ok",
+      "value": {
+        "row_type": "struct{k: int32, g: array<struct{v: str}>}",
+        "global_type": "struct{globals: array<struct{g: str}>}",
+        "rows": [
+          {
+            "k": 1,
+            "g": [
+              {
+                "v": "a"
+              }
+            ]
+          }
+        ],
+        "globals": {
+          "globals": [
+            {
+              "g": "G"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "zip_names_global_name_equals_global_field",
+      "status": "ok",
+      "value": {
+        "row_type": "struct{k: int32, data: array<struct{v: str}>}",
+        "global_type": "struct{g: array<struct{g: str}>}",
+        "rows": [
+          {
+            "k": 1,
+            "data": [
+              {
+                "v": "a"
+              }
+            ]
+          }
+        ],
+        "globals": {
+          "g": [
+            {
+              "g": "G"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "zip_names_ordinary_names",
+      "status": "ok",
+      "value": {
+        "row_type": "struct{k: int32, data: array<struct{v: str}>}",
+        "global_type": "struct{globals: array<struct{g: str}>}",
+        "rows": [
+          {
+            "k": 1,
+            "data": [
+              {
+                "v": "a"
+              }
+            ]
+          }
+        ],
+        "globals": {
+          "globals": [
+            {
+              "g": "G"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "case": "semi_anti_struct_child_missing",
+      "status": "ok",
+      "value": {
+        "semi": [
+          {
+            "k": {
+              "x": null
+            },
+            "v": "nested_missing"
+          }
+        ],
+        "anti": [
+          {
+            "k": {
+              "x": 1
+            },
+            "v": "one"
+          },
+          {
+            "k": null,
+            "v": "top_missing"
+          }
+        ]
+      }
+    },
+    {
+      "case": "semi_anti_array_child_missing",
+      "status": "ok",
+      "value": {
+        "semi": [
+          {
+            "k": [
+              null
+            ],
+            "v": "array_missing_element"
+          }
+        ],
+        "anti": [
+          {
+            "k": [
+              1
+            ],
+            "v": "one"
+          },
+          {
+            "k": null,
+            "v": "top_missing"
+          }
+        ]
+      }
+    }
+  ]
+}

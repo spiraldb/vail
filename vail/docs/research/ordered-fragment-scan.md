@@ -1,5 +1,18 @@
 # Snapshot-bound ordered fragment scans
 
+Current update (2026-09-29): new certificates use `vail-total-order-key-v3`,
+with IEEE 754 totalOrder for both float widths and recursive total ordering
+for composite values. Keyed v2 snapshots are rejected rather than treating
+their Hail-ordered bounds as total-order proofs. See [Key ordering](../KEY_ORDERING.md).
+
+Previous update (2026-09-28): the `vail-hail-key-v2` index uses the shared
+`vail-ordering` canonical encoding for typed floats, Unicode strings, nested
+values, sets, dictionaries, calls and missing values. New local keyed tables
+wrote that version; old primitive-v1 snapshots remain readable. The paragraphs
+below that restrict certificates to primitive ASCII keys describe the earlier
+implementation and are superseded by this update. The index is still a flat
+JSON dictionary and task planning still enumerates Iceberg manifests.
+
 The native [fragment_index module](../../crates/vail-storage/src/fragment_index.rs) implements a primitive interval dictionary, metadata ordering and range selection. The [storage writer and reader](../../crates/vail-storage/src/lib.rs) now provide an initial, local, unpartitioned multi-file profile: the writer certifies each Vortex file's primitive-key row order, publishes an immutable JSON index bound to the Iceberg snapshot, and the reader resolves live `FileScanTask`s and feeds them to the PR reader in index order. A [fresh-reopen integration test](../../crates/vail-storage/tests/roundtrip.rs) asserts three actual Vortex tasks in one snapshot, touching-key duplicates, ordered rows and range filtering. The old unrestricted single-file path remains a physical-sequence read without a keyed-order claim. This uses [apache/iceberg-rust PR #2835 at `0252fe9174aa3062da51328c444a765aa7de2dae`](https://github.com/apache/iceberg-rust/commit/0252fe9174aa3062da51328c444a765aa7de2dae) with Vortex 0.86.1. The PR's multi-file Arrow reader does not impose key order ([companion audit](iceberg-pr-2835-ordering.md)); Vail supplies the task order. Ordinary keyed reads do not sort the whole table. The current index is one JSON dictionary rather than paged, does not yet bind reference-genome identity separately, and range scans still enumerate all manifest tasks before pruning data reads.
 
 ## Index contract

@@ -86,7 +86,7 @@ def test_invalid_index_and_slice_types_fail_during_construction():
         _ = table.a[::1.0]
     with pytest.raises(TypeError, match="numeric"):
         hl.sum(hl.literal([True]))
-    with pytest.raises(NotImplementedError, match="one array"):
+    with pytest.raises(TypeError, match="numeric"):
         hl.min(table.a, table.a)
 
 
@@ -97,3 +97,12 @@ def test_struct_field_named_length_is_not_shadowed_by_array_method():
     )
 
     assert table.s.length.collect() == [7]
+
+
+def test_variadic_min_max_use_existing_numeric_array_reductions():
+    assert hl.eval(hl.min(3, 1, 2)) == 1
+    assert hl.eval(hl.max(3, 1, 2)) == 3
+    assert hl.eval(hl.min(hl.missing(hl.tint32), 2)) == 2
+    assert hl.eval(hl.min(hl.missing(hl.tint32), 2, filter_missing=False)) is None
+    table = hl.range_table(5)
+    assert table.annotate(n=hl.min(table.idx, 4-table.idx)).n.collect() == [0, 1, 2, 1, 0]

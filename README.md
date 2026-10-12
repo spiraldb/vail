@@ -24,3 +24,5 @@ git submodule update --init
 ```
 
 Vail's tests need these upstream source checkouts; their own nested submodules are not required for the current Vail checks. Build commands run from `vail/`. Build outputs and local environments are ignored; written documentation and conformance run records are committed.
+
+Vail's original code is licensed under [MIT](LICENSE). Upstream submodules and the vendored Iceberg patch retain their own licenses and notices.

@@ -1,0 +1,2278 @@
+{
+  "source": "/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py",
+  "source_sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0",
+  "mode": "all-original-table-only-bodies-against-vail",
+  "limitations": "Attempt every upstream Table test body, with isolated subprocesses.\n\nImports and decorators are omitted. Original functions, class helpers, assertions,\nparameter values and local data fixtures are preserved. Hail initialization is\nomitted, and temporary-file/resource helpers are supplied by this harness.\n",
+  "definitions_summary": {
+    "passed": 0,
+    "failed": 0,
+    "blocked": 188
+  },
+  "cases_summary": {
+    "passed": 0,
+    "failed": 0,
+    "blocked": 188
+  },
+  "dedicated_table_only_inventory_total": 191,
+  "grouped_suite_definitions_unrun": 3,
+  "elapsed_seconds": 4.252415895462036,
+  "results": [
+    {
+      "test_id": "Tests.test_annotate",
+      "source_line": 31,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_aggregate1",
+      "source_line": 136,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_aggregate2",
+      "source_line": 162,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_aggregate_ir",
+      "source_line": 220,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_java_array_string_encoding",
+      "source_line": 240,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_group_by_field_lifetimes",
+      "source_line": 290,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_group_aggregate_by_key",
+      "source_line": 295,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_aggregate_by_key_partitioning",
+      "source_line": 303,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_group_aggregate_na",
+      "source_line": 315,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_filter",
+      "source_line": 327,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_filter_missing",
+      "source_line": 343,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_transmute",
+      "source_line": 348,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_transmute_globals",
+      "source_line": 372,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_transmute_key",
+      "source_line": 376,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_select",
+      "source_line": 382,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_errors",
+      "source_line": 418,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_scan_filter",
+      "source_line": 434,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_scan_tail",
+      "source_line": 440,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_semi_anti_join",
+      "source_line": 446,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_indirected_joins",
+      "source_line": 469,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_index_globals",
+      "source_line": 503,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_interval_join",
+      "source_line": 507,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_interval_filter_unordered",
+      "source_line": 520,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_interval_product_join",
+      "source_line": 555,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_interval_product_join_long_key",
+      "source_line": 572,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_with_empty",
+      "source_line": 594,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_with_key",
+      "source_line": 599,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_product_join",
+      "source_line": 604,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_multi_way_zip_join",
+      "source_line": 619,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_multi_way_zip_join_globals",
+      "source_line": 657,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_index_maintains_count",
+      "source_line": 702,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_index_keyless_table",
+      "source_line": 717,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_aggregation_with_no_aggregators",
+      "source_line": 722,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_drop",
+      "source_line": 726,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_weird_names",
+      "source_line": 744,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_sample",
+      "source_line": 762,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_from_pandas_works",
+      "source_line": 777,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_from_pandas_objects",
+      "source_line": 787,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_from_pandas_missing_and_nans",
+      "source_line": 809,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_from_pandas_mismatched_object_rows",
+      "source_line": 828,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_table_parallelize_infer_types",
+      "source_line": 835,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_table_parallelize_partial_infer_types",
+      "source_line": 890,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_table_parallelize_error_both_schema_partial_type_defined",
+      "source_line": 905,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_rename",
+      "source_line": 913,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_distinct",
+      "source_line": 940,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_group_by_key",
+      "source_line": 966,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_str_annotation_regression",
+      "source_line": 990,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_range_table",
+      "source_line": 995,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_range_table_zero",
+      "source_line": 1004,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_issue_3654",
+      "source_line": 1009,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_explode_key_error",
+      "source_line": 1014,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_explode_on_set",
+      "source_line": 1020,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_explode_nested",
+      "source_line": 1029,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_value_error",
+      "source_line": 1035,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_export",
+      "source_line": 1041,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_export_delim",
+      "source_line": 1049,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_export_parallel_manifest",
+      "source_line": 1057,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_write_stage_locally",
+      "source_line": 1078,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_write_no_parts",
+      "source_line": 1085,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_min_partitions",
+      "source_line": 1092,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_indexed_read_1",
+      "source_line": 1102,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_indexed_read_2",
+      "source_line": 1117,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_indexed_read_3",
+      "source_line": 1131,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_indexed_read_4",
+      "source_line": 1146,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_order_by_parsing",
+      "source_line": 1160,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_take_order",
+      "source_line": 1163,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_filter_partitions",
+      "source_line": 1169,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_union",
+      "source_line": 1202,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_nested_union_100",
+      "source_line": 1226,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_nested_union_200",
+      "source_line": 1230,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_union_unify",
+      "source_line": 1233,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_table_order_by_head_rewrite",
+      "source_line": 1255,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_order_by_expr",
+      "source_line": 1262,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_null_joins",
+      "source_line": 1278,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_null_joins_2",
+      "source_line": 1334,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_joins_one_null",
+      "source_line": 1397,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_types_ht1_is_what_we_expect",
+      "source_line": 1461,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_types_ht2_is_what_we_expect",
+      "source_line": 1465,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_types_left",
+      "source_line": 1469,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_types_right",
+      "source_line": 1474,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_types_inner",
+      "source_line": 1479,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_types_outer",
+      "source_line": 1484,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_partitioning_rewrite",
+      "source_line": 1489,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_flatten",
+      "source_line": 1495,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_expand_types",
+      "source_line": 1502,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_expand_types_ordering",
+      "source_line": 1509,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_expand_types_on_all_types",
+      "source_line": 1514,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_mangling",
+      "source_line": 1518,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_join_with_filter_intervals",
+      "source_line": 1525,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_key_by_aggregate_rewriting",
+      "source_line": 1541,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_field_method_assignment",
+      "source_line": 1546,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_refs_with_process_joins",
+      "source_line": 1553,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_aggregate_localize_false",
+      "source_line": 1562,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_collect_localize_false",
+      "source_line": 1567,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_take_localize_false",
+      "source_line": 1571,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_expr_collect_localize_false",
+      "source_line": 1575,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_expr_collect",
+      "source_line": 1579,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_expr_take_localize_false",
+      "source_line": 1602,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_empty_show",
+      "source_line": 1606,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_no_row_fields_show",
+      "source_line": 1609,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_same_equal",
+      "source_line": 1612,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_same_within_tolerance",
+      "source_line": 1616,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_same_different_type",
+      "source_line": 1622,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_same_different_global",
+      "source_line": 1634,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_same_different_rows",
+      "source_line": 1639,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_rvd_key_write",
+      "source_line": 1648,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_show_long_field_names",
+      "source_line": 1657,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_show__various_types",
+      "source_line": 1660,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_import_filter_replace",
+      "source_line": 1704,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_import_multiple_missing",
+      "source_line": 1717,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_unicode_ordering",
+      "source_line": 1722,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_repartition_empty_key",
+      "source_line": 1734,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_read_with_partitions",
+      "source_line": 1740,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "Tests.test_path_collision_error",
+      "source_line": 1748,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_large_number_of_fields",
+      "source_line": 1758,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_import_many_fields",
+      "source_line": 1768,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_segfault",
+      "source_line": 1772,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_can_process_wide_tables",
+      "source_line": 1862,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_join_with_key_prefix",
+      "source_line": 1903,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_join_distinct_preserves_count",
+      "source_line": 1914,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_write_table_containing_ndarray",
+      "source_line": 1934,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_group_within_partitions",
+      "source_line": 1944,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_group_within_partitions_after_explode",
+      "source_line": 1979,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_range_annotate_range",
+      "source_line": 1995,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_read_write_all_types",
+      "source_line": 2003,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_map_partitions_flatmap",
+      "source_line": 2010,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_map_partitions_errors",
+      "source_line": 2016,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_map_partitions_indexed",
+      "source_line": 2024,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_keys_before_scans",
+      "source_line": 2032,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_lowered_persist",
+      "source_line": 2045,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_lowered_shuffle",
+      "source_line": 2053,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_read_partitions",
+      "source_line": 2059,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_read_partitions_with_missing_key",
+      "source_line": 2066,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_empty_tree_aggregate",
+      "source_line": 2073,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_interval_filter_partitions",
+      "source_line": 2081,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_head_and_tail",
+      "source_line": 2128,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_to_pandas",
+      "source_line": 2146,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_to_pandas_types_type_to_type",
+      "source_line": 2164,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_to_pandas_types_column_to_type",
+      "source_line": 2174,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_to_pandas_flatten",
+      "source_line": 2184,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_to_pandas_null_ints",
+      "source_line": 2201,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_to_pandas_nd_array",
+      "source_line": 2227,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_literal_of_numpy_int64",
+      "source_line": 2243,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_literal_of_numpy_int32",
+      "source_line": 2249,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_literal_of_pandas_NA_and_numpy_int64",
+      "source_line": 2255,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_literal_of_pandas_NA_and_numpy_int32",
+      "source_line": 2263,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_write_many",
+      "source_line": 2272,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_indexed_read_boundaries",
+      "source_line": 2304,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_range_table",
+      "source_line": 2331,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_join",
+      "source_line": 2344,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_left_join_right_distinct",
+      "source_line": 2354,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_interval_join",
+      "source_line": 2364,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_union",
+      "source_line": 2376,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_map_globals_with_body_randomness",
+      "source_line": 2385,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_map_globals_without_body_randomness",
+      "source_line": 2393,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_explode",
+      "source_line": 2400,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_key_by",
+      "source_line": 2408,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_map_rows_with_body_randomness",
+      "source_line": 2415,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_map_rows_with_scan_randomness",
+      "source_line": 2423,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_map_rows_without_body_randomness",
+      "source_line": 2430,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_map_partitions",
+      "source_line": 2437,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_read",
+      "source_line": 2445,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_filter_with_cond_randomness",
+      "source_line": 2461,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_filter_without_cond_randomness",
+      "source_line": 2469,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+      "source_line": 2476,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+      "source_line": 2484,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+      "source_line": 2492,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_aggregate_by_key",
+      "source_line": 2499,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_parallelize_with_body_randomness",
+      "source_line": 2514,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_parallelize_without_body_randomness",
+      "source_line": 2521,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_head",
+      "source_line": 2527,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_tail",
+      "source_line": 2534,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_order_by",
+      "source_line": 2541,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_distinct",
+      "source_line": 2548,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_repartition",
+      "source_line": 2556,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_rename",
+      "source_line": 2572,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_multi_way_zip_join",
+      "source_line": 2579,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_filter_intervals",
+      "source_line": 2591,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_table_randomness_table_gen",
+      "source_line": 2606,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_order_by_desc",
+      "source_line": 2617,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_query_table_errors",
+      "source_line": 2632,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_query_table",
+      "source_line": 2684,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_query_table_randomness",
+      "source_line": 2688,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_query_table_compound_key",
+      "source_line": 2713,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_query_table_interval_key",
+      "source_line": 2736,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_large_number_of_partitions",
+      "source_line": 2741,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_range_table_biggest_int",
+      "source_line": 2746,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    },
+    {
+      "test_id": "test_group_by_aggregate_doesnt_clobber_global_field",
+      "source_line": 2755,
+      "status": "blocked",
+      "cases": [
+        {
+          "status": "blocked",
+          "phase": "worker",
+          "error": "worker exit 1"
+        }
+      ]
+    }
+  ],
+  "validity": "invalid-harness-run: mandatory pandas dependency absent; no test bodies executed"
+}

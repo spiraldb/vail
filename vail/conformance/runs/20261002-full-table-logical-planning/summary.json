@@ -1,0 +1,42 @@
+{
+  "definitions": {
+    "passed": 96,
+    "failed": 97,
+    "blocked": 21
+  },
+  "cases": {
+    "passed": 220,
+    "failed": 155,
+    "blocked": 21
+  },
+  "table_only_definitions": {
+    "passed": 96,
+    "failed": 75,
+    "blocked": 20
+  },
+  "failure_buckets": {
+    "MatrixTable / Spark outside Table-only scope": 23,
+    "Harness IR references / execution timeout": 20,
+    "Randomness and internal random-table support": 17,
+    "Missing Table convenience / scans / persistence APIs": 10,
+    "Other frontend semantics / assertions": 9,
+    "Hail filesystem / backend compatibility helpers": 8,
+    "Advanced lookup / interval and product lookup / query_table": 7,
+    "Read options / partition selection / indexed reads": 7,
+    "Join correctness: field case / key-prefix behavior": 7,
+    "Pandas / ndarray construction and parity": 6,
+    "Complex type construction / array numeric expressions": 4
+  },
+  "hail_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "sources": [
+    {
+      "path": "/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py",
+      "sha256": "5a0c3d749e72f9b8cf7fe681ae83ce362d97b8cd8beb425052e10bd217ab01b0"
+    },
+    {
+      "path": "/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_grouped_table.py",
+      "sha256": "ec00e2581166bf7c6c1250f9f37a857cf0551410b8208d45b23bcb8e95c2be02"
+    }
+  ],
+  "runner_sha256": "0012306d71a16a6dabd3301e620277ea3fe4f5913cd1478354cc260b06fca3e7"
+}

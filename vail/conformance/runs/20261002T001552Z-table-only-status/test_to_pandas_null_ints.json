@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'or_missing'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2204, in test_to_pandas_null_ints\n    missing_int32=hl.or_missing(ht.idx == 0, ht.idx),\n                  ^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'or_missing'. Did you mean: 'is_missing'?\n"
+  }
+]

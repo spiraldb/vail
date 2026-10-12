@@ -1,0 +1,35 @@
+[
+  {
+    "parameters": {
+      "query": "50",
+      "expected": "[Struct(idx=50, idx2=10, s='50')]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2714, in test_query_table_compound_key\n    assert hl.eval(hl.query_table(compound_key_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.StructExpression object at 0x1095a4d60>",
+      "expected": "[Struct(idx=50, idx2=10, s='50')]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2714, in test_query_table_compound_key\n    assert hl.eval(hl.query_table(compound_key_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  },
+  {
+    "parameters": {
+      "query": "<vail.expressions.Expression object at 0x10a551ea0>",
+      "expected": "[]"
+    },
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'query_table'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2714, in test_query_table_compound_key\n    assert hl.eval(hl.query_table(compound_key_table, query)) == expected\n                   ^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'query_table'. Did you mean: 'read_table'?\n"
+  }
+]

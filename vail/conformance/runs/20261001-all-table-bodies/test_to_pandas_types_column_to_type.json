@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "module 'vail' has no attribute 'range'",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2176, in test_to_pandas_types_column_to_type\n    ht = ht.annotate(s=hl.array([\"foo\", \"bar\", \"baz\"])[ht.idx], nested=hl.struct(foo=ht.idx, bar=hl.range(ht.idx)))\n                                                                                                 ^^^^^^^^\nAttributeError: module 'vail' has no attribute 'range'\n"
+  }
+]

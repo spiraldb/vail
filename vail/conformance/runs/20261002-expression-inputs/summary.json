@@ -1,0 +1,67 @@
+{
+  "python_suite": {
+    "passed": 626,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "rust_expression_source_tests_passed": 1,
+  "upstream_bodies": {
+    "Tests.test_table_parallelize_infer_types": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_from_pandas_works": [
+      {
+        "parameters": {},
+        "status": "failed",
+        "phase": "body",
+        "error_type": "AssertionError",
+        "error": "False is not true",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 785, in test_from_pandas_works\n    self.assertTrue(t._same(t2))\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 727, in assertTrue\n    raise self.failureException(msg)\nAssertionError: False is not true\n"
+      }
+    ],
+    "Tests.test_expr_collect": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ],
+    "Tests.test_from_pandas_objects": [
+      {
+        "parameters": {},
+        "status": "failed",
+        "phase": "body",
+        "error_type": "AssertionError",
+        "error": "False is not true",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 807, in test_from_pandas_objects\n    self.assertTrue(t._same(t2))\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 727, in assertTrue\n    raise self.failureException(msg)\nAssertionError: False is not true\n"
+      }
+    ],
+    "Tests.test_table_parallelize_error_both_schema_partial_type_defined": [
+      {
+        "parameters": {},
+        "status": "passed"
+      }
+    ]
+  },
+  "new_passing_definition": "Tests.test_table_parallelize_infer_types",
+  "execution": "Lazy TableIR source; Arrow-backed literals and singleton references; DataFusion evaluates array once per preparation, retains Arrow partition context, then UnnestExec/projection/GlobalLimitExec partition plans.",
+  "limitations": [
+    "Whole missing struct rows explicitly rejected; Hail can collect them as None. Missing fields are supported.",
+    "Partial types remain unimplemented.",
+    "Pandas original bodies now reach _same and fail on existing scalar/dictionary/ndarray type inference differences.",
+    "Upstream bodies use existing extraction harness, not full upstream pytest collection."
+  ],
+  "source_sha256": {
+    "python/vail/inputs.py": "2130d7a6d143b2faa02c2bb66cf053ab70558029ab5d1acd2e026664a36077d8",
+    "python/vail/__init__.py": "64e6f0307f2d1784f80906bd7fe9f7d58aaf8f3569ea1db2156564fd33826e27",
+    "crates/vail-table/src/lib.rs": "ba76645b0b9e64233ab4d25a499309430cc68575db673d79d65365646275a9ce",
+    "crates/vail-table/src/globals.rs": "0bbba191c039d40d2912dfc06ac5df5aef3052c705fbb0dc983ea44d961941ee",
+    "crates/vail-table/src/plan.rs": "ad4a8f26b21bbc237d7f8fa33bd6d5608c41cbc2de2a45739e6a027d9727f47e",
+    "crates/vail-table/src/partitioned.rs": "0ee7ddda69d937a2520bed054bb40d712c0ec1ab19e41b05c7a088d3777782c3",
+    "crates/vail-python/src/lib.rs": "fdcc0bc2b7bf5ddbb414d580a5d819589473d9ff7eea226f3de6afd50d954f3e",
+    "python/tests/test_expression_inputs.py": "89b75796dff5d02f3f5e7a73c03a97a31902659f2614ffc49868c4cceaaf1fd3",
+    "crates/vail-table/tests/expression_source.rs": "239f294ec005028f519254666150729fab490cb6d21c5cda89d380b3428c2cd0"
+  }
+}

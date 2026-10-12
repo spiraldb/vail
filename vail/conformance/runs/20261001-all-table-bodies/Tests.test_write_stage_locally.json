@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "NotImplementedError",
+    "error": "staging and custom codecs are not supported",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 128, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1081, in test_write_stage_locally\n    t.write(f, stage_locally=True)\n  File \"/Users/danielking/projects/vail/vail/python/vail/__init__.py\", line 349, in write\n    raise NotImplementedError(\"staging and custom codecs are not supported\")\nNotImplementedError: staging and custom codecs are not supported\n"
+  }
+]

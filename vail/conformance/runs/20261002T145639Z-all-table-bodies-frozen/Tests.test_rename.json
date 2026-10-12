@@ -1,0 +1,10 @@
+[
+  {
+    "parameters": {},
+    "status": "failed",
+    "phase": "body",
+    "error_type": "AttributeError",
+    "error": "_indices",
+    "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/all_upstream_table_cases.py\", line 129, in worker\n    fn(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 926, in test_rename\n    self.assertEqual(renamed['bar2']._indices, renamed._row_indices)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-table-suite-20261002T145639Z/vail/expressions.py\", line 582, in __getattr__\n    raise AttributeError(name)\nAttributeError: _indices\n"
+  }
+]

@@ -15,6 +15,30 @@ fn find<'a>(plan: &'a dyn ExecutionPlan, name: &str) -> Option<&'a dyn Execution
         .find_map(|child| find(child.as_ref(), name))
 }
 
+#[test]
+fn explode_lowers_to_datafusion_unnest() {
+    let source = TableIR::range(3, 2).unwrap();
+    let table = source
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            (
+                "items".into(),
+                ScalarIR::Literal {
+                    dtype: Type::Array {
+                        array: Box::new(Type::Primitive(PrimitiveType::Int32)),
+                    },
+                    value: json!([1, 2]),
+                },
+            ),
+        ])
+        .unwrap();
+    let exploded = table.explode(vec!["items".into()]).unwrap();
+    let physical = plan::lower(&exploded).unwrap().rows;
+    assert_eq!(physical.name(), "UnnestExec");
+    assert!(find(physical.as_ref(), "ProjectionExec").is_some());
+    assert!(find(physical.as_ref(), "RangeExec").is_some());
+}
+
 #[tokio::test]
 async fn singleton_globals_and_rows_are_both_datafusion_plans() {
     let source = TableIR::range(8, 3).unwrap();
