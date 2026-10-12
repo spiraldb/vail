@@ -1,0 +1,90 @@
+vail: table_range_force_count {'rows': 100000000}
+  0.032582s
+  0.030469s
+  0.031793s
+  0.031257s
+  0.030452s
+vail: table_key_by_shuffle {'rows': 1000000}
+  0.366072s
+  0.340733s
+  0.337011s
+  0.360472s
+  0.373086s
+vail: table_group_sorted {'rows': 10000000, 'group_width': 1000}
+  1.389452s
+  1.394152s
+  1.553804s
+  1.286571s
+  1.435465s
+vail: table_group_unsorted {'rows': 10000000, 'group_width': 1000}
+  1.819509s
+  1.708604s
+  1.890360s
+  1.906722s
+  1.834350s
+vail: table_annotate_100_fields {'rows': 1000000, 'fields': 100}
+  4.689376s
+  4.703920s
+  4.726752s
+  4.716471s
+  4.689412s
+vail: table_stats {'rows': 10000000}
+  0.722533s
+  0.717244s
+  0.725520s
+  0.722755s
+  0.726464s
+vail: table_inner_join {'left_rows': 1000000, 'right_rows': 1000000}
+  1.658182s
+  1.671947s
+  1.686764s
+  1.686445s
+  1.628082s
+vail: table_foreign_key_lookup {'rows': 1000000, 'target_rows': 1000}
+  0.535303s
+  0.537630s
+  0.537833s
+  0.535336s
+  0.537147s
+vail: table_scan_sum {'rows': 1000000}
+  1.012955s
+  0.913223s
+  0.953208s
+  0.955454s
+  0.881839s
+vail: table_write {'rows': 1000000, 'int32_columns': 2}
+  0.232171s
+  0.237314s
+  0.236810s
+  0.235740s
+  0.237462s
+vail: table_read {'rows': 1000000, 'int32_columns': 2}
+  0.010544s
+  0.010599s
+  0.010730s
+  0.010708s
+  0.010254s
+vail: matrix_force_count_rows {'rows': 100000, 'columns': 10}
+  0.006958s
+  0.006901s
+  0.006865s
+  0.007002s
+  0.007049s
+vail: matrix_entry_sum {'rows': 100000, 'columns': 10}
+  2.393422s
+  2.124818s
+  2.258127s
+  1.932371s
+  2.039692s
+vail: matrix_filter_rows_columns {'rows': 100000, 'columns': 10}
+  0.490058s
+  0.491025s
+  0.484672s
+  0.485155s
+  0.472488s
+vail: vcf_import_entry_sum {'rows': 50000, 'samples': 10}
+  0.935006s
+  0.912800s
+  0.923546s
+  0.906949s
+  0.921935s

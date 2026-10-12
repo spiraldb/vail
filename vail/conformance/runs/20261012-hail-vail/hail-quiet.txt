@@ -1,0 +1,99 @@
+2026-10-12 17:32:45.102 WARN  NativeCodeLoader:60 - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+2026-10-12 17:32:45.430 WARN  SparkConf:72 - Note that spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone/kubernetes and LOCAL_DIRS in YARN).
+hail: table_range_force_count {'rows': 100000000}
+  0.227471s
+  0.305307s
+  0.230633s
+  0.347463s
+  0.398415s
+hail: table_key_by_shuffle {'rows': 1000000}
+[Stage 8:>                                                        (0 + 14) / 14]                                                                                WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.apache.spark.util.SizeEstimator$ (file:/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/pyspark/jars/spark-core_2.12-3.5.9.jar) to field java.lang.ref.Reference.referent
+WARNING: Please consider reporting this to the maintainers of org.apache.spark.util.SizeEstimator$
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+[Stage 9:>                                                        (0 + 14) / 14][Stage 10:>                                                       (0 + 14) / 14]                                                                                [Stage 11:>                                                       (0 + 14) / 14]                                                                                  1.019159s
+  0.947339s
+  0.833855s
+  0.879645s
+  0.935512s
+hail: table_group_sorted {'rows': 10000000, 'group_width': 1000}
+  0.628589s
+  0.638134s
+  0.508005s
+  0.560817s
+[Stage 46:====================================>                    (9 + 5) / 14]                                                                                  0.796410s
+hail: table_group_unsorted {'rows': 10000000, 'group_width': 1000}
+  0.577396s
+  0.544690s
+  0.642724s
+  0.499570s
+  0.539033s
+hail: table_annotate_100_fields {'rows': 1000000, 'fields': 100}
+  0.231219s
+  0.207515s
+  0.203134s
+  0.365240s
+  0.217765s
+hail: table_stats {'rows': 10000000}
+  0.256232s
+  0.183377s
+  0.156250s
+  0.205536s
+  0.331421s
+hail: table_inner_join {'left_rows': 1000000, 'right_rows': 1000000}
+  0.225804s
+  0.222566s
+  0.276559s
+  0.183504s
+  0.186701s
+hail: table_foreign_key_lookup {'rows': 1000000, 'target_rows': 1000}
+[Stage 98:>                                                       (0 + 14) / 14]                                                                                [Stage 116:=======>                                               (2 + 12) / 14]                                                                                  1.823803s
+  1.536996s
+  1.624009s
+  1.529041s
+  1.685179s
+hail: table_scan_sum {'rows': 1000000}
+  0.117530s
+  0.120834s
+  0.111075s
+  0.113253s
+  0.118842s
+hail: table_write {'rows': 1000000, 'int32_columns': 2}
+  0.514502s
+  0.427684s
+  0.314252s
+  0.391679s
+  0.251577s
+hail: table_read {'rows': 1000000, 'int32_columns': 2}
+  0.102802s
+  0.120633s
+  0.207646s
+  0.112788s
+  0.083763s
+hail: matrix_force_count_rows {'rows': 100000, 'columns': 10}
+  0.187377s
+  0.044742s
+  0.067709s
+  0.059289s
+  0.048298s
+hail: matrix_entry_sum {'rows': 100000, 'columns': 10}
+  0.094406s
+  0.067593s
+  0.075834s
+  0.122641s
+  0.130702s
+hail: matrix_filter_rows_columns {'rows': 100000, 'columns': 10}
+  0.105520s
+  0.086714s
+  0.097472s
+  0.109274s
+  0.099805s
+hail: vcf_import_entry_sum {'rows': 50000, 'samples': 10}
+  0.122043s
+  0.174590s
+  0.131867s
+  0.118170s
+  0.113816s
