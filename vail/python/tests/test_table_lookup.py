@@ -3,6 +3,48 @@ import pytest
 import vail as hl
 
 
+@pytest.mark.parametrize('n_partitions', [1, 2, 4])
+@pytest.mark.parametrize('n_rows', [0, 1, 3, 17])
+def test_lookup_from_shared_scan_derived_key(n_rows, n_partitions):
+    source = hl.range_table(n_rows, n_partitions).key_by()
+    source = source.annotate(ordinal=hl.scan.count(), prefix=hl.scan.sum(source.idx))
+    target = source.key_by('ordinal')
+    result = source.annotate(match=target[source.ordinal])
+    expected = [
+        (i, i, i * (i - 1) // 2, hl.Struct(idx=i, prefix=i * (i - 1) // 2))
+        for i in range(n_rows)
+    ]
+    # Each action must replay both branches without sharing mutable scan state.
+    for _ in range(2):
+        assert [(row.idx, row.ordinal, row.prefix, row.match) for row in result.collect()] == expected
+    assert result.n_partitions() == source.n_partitions()
+
+
+@pytest.mark.parametrize('n_partitions', [1, 2, 4])
+def test_lookup_from_filtered_scan_target_keeps_ordinals(n_partitions):
+    source = hl.range_table(9, n_partitions).key_by()
+    source = source.annotate(ordinal=hl.scan.count())
+    target = source.filter(source.idx % 2 == 0).key_by('ordinal')
+    result = source.annotate(match=target[source.ordinal])
+    assert [(row.ordinal, row.match) for row in result.collect()] == [
+        (i, hl.Struct(idx=i) if i % 2 == 0 else None) for i in range(9)
+    ]
+
+
+def test_lookup_from_scan_over_union_preserves_every_branch():
+    base = hl.range_table(3, 2)
+    source = base.union(base.annotate(x=1), unify=True).key_by()
+    source = source.annotate(ordinal=hl.scan.count())
+    target = source.key_by('ordinal')
+    result = source.annotate(match=target[source.ordinal])
+    expected = [
+        (i, ordinal, hl.Struct(idx=i, x=x))
+        for ordinal, (i, x) in enumerate((i, x) for i in range(3) for x in (None, 1))
+    ]
+    for _ in range(2):
+        assert [(r.idx, r.ordinal, r.match) for r in result.collect()] == expected
+
+
 def people(rows=None):
     return hl.Table.parallelize(
         rows if rows is not None else [{'person_id': 1, 'age': 30}, {'person_id': 2, 'age': None}],

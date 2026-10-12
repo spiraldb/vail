@@ -559,6 +559,12 @@ impl ExecutionPlan for PartitionSetExec {
     fn benefits_from_input_partitioning(&self) -> Vec<bool> {
         vec![false; self.parts.len()]
     }
+    fn required_input_distribution(&self) -> Vec<datafusion_physical_plan::Distribution> {
+        // Each child is one independently executable Table partition; execute
+        // reads its partition zero. DF rewrites (e.g. sort over union) must
+        // coalesce any newly introduced child partitions before this boundary.
+        vec![datafusion_physical_plan::Distribution::SinglePartition; self.parts.len()]
+    }
     fn required_input_ordering(&self) -> Vec<Option<OrderingRequirements>> {
         self.requirements.clone()
     }

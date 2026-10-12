@@ -1,0 +1,162 @@
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+   Compiling vail-table v0.1.0 (/Users/danielking/projects/vail/vail/crates/vail-table)
+warning: linker stderr: ld: __eh_frame section too large (max 16MB) to encode dwarf unwind offsets in compact unwind table, performance of exception handling might be affected
+  |
+  = note: `#[warn(linker_messages)]` on by default
+
+warning: `vail-table` (test "ir") generated 1 warning
+warning: `vail-table` (test "logical_order") generated 1 warning (1 duplicate)
+warning: `vail-table` (test "datafusion_plans") generated 1 warning (1 duplicate)
+warning: `vail-table` (test "expression_source") generated 1 warning (1 duplicate)
+warning: `vail-table` (test "joins") generated 1 warning (1 duplicate)
+warning: `vail-table` (test "physical_partitions") generated 1 warning (1 duplicate)
+warning: `vail-table` (test "lookup") generated 1 warning (1 duplicate)
+warning: `vail-table` (test "text_io") generated 1 warning (1 duplicate)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 27.90s
+     Running unittests src/lib.rs (target/debug/deps/vail_table-4395ac0f5f6cd74d)
+
+running 23 tests
+test comparison::tests::hail_relative_tolerance_and_ieee_rules ... ok
+test join_interval::tests::missing_bounds_and_duplicate_prefixes_keep_a_single_boundary_cell ... ok
+test join_interval::tests::cells_are_disjoint_points_and_open_gaps ... ok
+test line_source::tests::preserves_quotes_blank_lines_crlf_and_unicode_across_chunks ... ok
+test line_source::tests::trailing_lf_does_not_create_an_extra_row ... ok
+test line_source::tests::splits_hail_universal_newlines_even_across_chunks ... ok
+test line_source::tests::opener_streams_object_store_file_and_rejects_invalid_utf8 ... ok
+test partitioned::expression_source_tests::replay_preserves_shared_physical_inputs_without_sharing_across_actions ... ok
+test initialized_scan::tests::rejects_non_singleton_initializer ... ok
+test initialized_aggregate::tests::rejects_runtime_schema_mismatch ... ok
+test initialized_aggregate::tests::rejects_empty_initializer ... ok
+test initialized_aggregate::tests::rejects_multiple_initializer_rows ... ok
+test initialized_scan::tests::rejects_initialized_schema_or_partition_count_mismatch ... ok
+test initialized_scan::tests::initializes_lazily_and_only_once_for_concurrent_partitions ... ok
+test initialized_aggregate::tests::yields_runtime_output_batches_incrementally ... ok
+test text_schema::tests::schema_inference_rejects_unbounded_json_array_mode ... ok
+test text_schema::tests::unknown_options_and_empty_paths_are_rejected ... ok
+test partitioned::expression_source_tests::exposed_children_are_reset_once_through_nested_ordering_wrappers ... ok
+test text_schema::tests::json_inference_handles_nested_values_and_merges_files ... ok
+test partitioned::expression_source_tests::array_expression_evaluates_once_per_action_across_partitions ... ok
+test aggregation::scope_join_tests::scoped_default_only_applies_when_the_scope_is_absent ... ok
+test text_schema::tests::csv_inference_rejects_different_column_names_or_order ... ok
+test text_schema::tests::csv_inference_merges_typed_columns_across_files ... ok
+
+test result: ok. 23 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/datafusion_plans.rs (target/debug/deps/datafusion_plans-f1e9c3962a61f16e)
+
+running 5 tests
+test explode_lowers_to_datafusion_unnest ... ok
+test singleton_globals_and_rows_are_both_datafusion_plans ... ok
+test captured_globals_share_ir_without_retaining_table_rows ... ok
+test viceberg_plan_advertises_certified_order_without_sorting ... ok
+test sort_spills_directly_from_a_generated_tableir_source ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.32s
+
+     Running tests/expression_source.rs (target/debug/deps/expression_source-c0a88f2d0ef5976b)
+
+running 2 tests
+test expression_source_plan_does_not_evaluate_invalid_array ... ok
+test expression_source_evaluates_once_and_splits_ordered_arrow_rows ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/ir.rs (target/debug/deps/ir-52abdd56142dee78)
+
+running 5 tests
+test constructors_typecheck_scalar_ir_without_execution ... ok
+test parallelize_keeps_shared_input_buffers_without_prepartitioning ... ok
+test range_is_lazy_and_head_stops_batch_generation ... ok
+test branches_share_a_typed_child_and_execute_independently ... ok
+test write_streams_transformed_rows_into_rolled_files ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/joins.rs (target/debug/deps/joins-cf67abeadc4a75df)
+
+running 3 tests
+test membership_joins_preserve_independent_left_partitions ... ok
+test native_join_has_lazy_datafusion_operator_and_cartesian_duplicates ... ok
+test interval_join_partitions_contain_merge_operators_and_metadata_needs_no_rows ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests/logical_order.rs (target/debug/deps/logical_order-2e24d917aed80077)
+
+running 1 test
+test optimized_planner_preserves_order_by_result ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/lookup.rs (target/debug/deps/lookup-bbe7eb24a083fbbf)
+
+running 2 tests
+test all_matches_lookup_keeps_duplicates_and_uses_empty_arrays_for_no_match ... ok
+test lookup_is_a_streaming_merge_join_and_preserves_source_partitions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/physical_partitions.rs (target/debug/deps/physical_partitions-8b3dcea99e34e622)
+
+running 7 tests
+test partitions_are_independent_datafusion_outputs_after_narrow_operations ... ok
+test actual_shuffle_output_is_a_datafusion_repartition ... ok
+test range_shuffle_and_coalesce_survive_planning_and_repeat_actions ... ok
+test pushed_key_filter_prunes_unicode_utf8_string_fragments ... ok
+test pushed_key_or_filter_unions_disjoint_fragment_ranges ... ok
+test read_partition_runs_without_any_unrelated_data_files ... ok
+test pushed_key_filter_skips_unmatched_files_inside_a_source_partition ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests/text_io.rs (target/debug/deps/text_io-d059a0052e16d06d)
+
+running 2 tests
+test line_read_adds_source_path_as_file_column ... ok
+test csv_text_read_is_lazy_partitioned_and_streams_to_single_file ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+   Doc-tests vail_table
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

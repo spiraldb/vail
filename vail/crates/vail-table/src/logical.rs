@@ -979,16 +979,15 @@ impl ExtensionPlanner for VailExtensionPlanner {
         &self,
         _planner: &dyn PhysicalPlanner,
         node: &dyn UserDefinedLogicalNode,
-        _logical_inputs: &[&LogicalPlan],
+        logical_inputs: &[&LogicalPlan],
         physical_inputs: &[PhysicalPlan],
-        _session: &dyn Session,
+        session: &dyn Session,
         _planning_ctx: &PhysicalPlanningContext,
     ) -> datafusion_common::Result<Option<PhysicalPlan>> {
         if let Some(node) = node.as_any().downcast_ref::<RestorePartitionsNode>() {
             let input = &physical_inputs[0];
-            if node.partitions <= 1 {
-                return Ok(Some(input.clone()));
-            }
+            // Keep the restoration boundary even for one logical partition:
+            // upstream window/join optimization can add physical partitions.
             let index = input.schema().index_of(&node.partition_name)?;
             let key: Arc<dyn datafusion_physical_expr::PhysicalExpr> = Arc::new(
                 datafusion_physical_expr::expressions::Column::new(&node.partition_name, index),
@@ -1024,6 +1023,46 @@ impl ExtensionPlanner for VailExtensionPlanner {
         let Some(node) = node.as_any().downcast_ref::<VailNode>() else {
             return Ok(None);
         };
+        // Prepared children become private inputs of deferred partition plans.
+        // Finalize them before that boundary: the outer optimizer cannot reach
+        // them to enforce window ordering/distribution or select a join mode.
+        let physical_inputs = physical_inputs
+            .iter()
+            .zip(logical_inputs)
+            .map(|(input, logical)| {
+                use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
+                let mut needs_finalization = false;
+                logical.apply(|plan| {
+                    // These extensions already own executable private plans.
+                    // Do not re-optimize them as if they were unfinished DF
+                    // operators (notably unions with replayed shared sources).
+                    if let LogicalPlan::Extension(extension) = plan
+                        && extension.node.as_any().is::<VailNode>()
+                    {
+                        return Ok(TreeNodeRecursion::Jump);
+                    }
+                    needs_finalization |= matches!(
+                        plan,
+                        LogicalPlan::Window(_)
+                            | LogicalPlan::Aggregate(_)
+                            | LogicalPlan::Join(_)
+                            | LogicalPlan::Sort(_)
+                            | LogicalPlan::Limit(_)
+                            | LogicalPlan::Repartition(_)
+                    );
+                    Ok(TreeNodeRecursion::Continue)
+                })?;
+                if needs_finalization {
+                    DefaultPhysicalPlanner::default().optimize_physical_plan(
+                        input.clone(),
+                        session,
+                        |_, _| {},
+                    )
+                } else {
+                    Ok(input.clone())
+                }
+            })
+            .collect::<datafusion_common::Result<Vec<_>>>()?;
         let children = children(&node.table);
         let prepared = children
             .iter()
