@@ -31,3 +31,26 @@ def test_force_count_executes_full_output_even_with_known_count(rows, partitions
             invalid._force_count()
     else:
         assert invalid._force_count() == 0
+
+
+@pytest.mark.parametrize('wrapper', ['order_by', 'key_by', 'select_after_order'])
+def test_count_skips_cardinality_preserving_ordering(tmp_path, wrapper):
+    path = tmp_path / 'ordered-malformed.csv'
+    path.write_text('good,bad\n2,invalid\n1,invalid\n')
+    table = hl.read_csv(str(path), schema=hl.tstruct(good=hl.tint32, bad=hl.tint32))
+    if wrapper == 'key_by':
+        table = table.key_by('good')
+    else:
+        table = table.order_by(table.good)
+        if wrapper == 'select_after_order':
+            table = table.select('good', 'bad')
+    assert table.count() == 2
+    with pytest.raises(RuntimeError, match='parsing'):
+        table._force_count()
+
+
+def test_count_preserves_sort_before_order_sensitive_row_selection():
+    table = hl.Table.parallelize([{'x': 3}, {'x': 1}, {'x': 2}])
+    table = table.order_by(table.x).head(1)
+    table = table.filter(table.x == 1)
+    assert table.count() == 1

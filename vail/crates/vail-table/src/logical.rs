@@ -991,10 +991,22 @@ pub(crate) async fn sample(
 
 pub(crate) async fn count(table: &TableRef) -> Result<usize> {
     use datafusion_physical_plan::execution_plan::collect;
+    // COUNT observes cardinality, not output values or order. Remove only the
+    // outer cardinality-preserving chain: crossing a filter, head, aggregate,
+    // or other row-selection operation could change its semantics (for example
+    // a filter on scan ordinals). force_count uses full execute() separately.
+    let mut input = table;
+    while let TableNode::OrderBy { child, .. }
+    | TableNode::KeyBy { child, .. }
+    | TableNode::MapRows { child, .. }
+    | TableNode::MapGlobals { child } = input.node()
+    {
+        input = child;
+    }
     let aggregate = datafusion_functions_aggregate::count::count_udaf()
         .call(vec![datafusion_expr::lit(1i32)])
         .alias("count");
-    let logical = LogicalPlanBuilder::from(lower(table)?)
+    let logical = LogicalPlanBuilder::from(lower(input)?)
         .aggregate(Vec::<Expr>::new(), vec![aggregate])?
         .build()?;
     let physical = physical_plan(logical, max_partitions(table)).await?;
