@@ -1026,7 +1026,15 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
                 Arc::new(ConfigOptions::default()),
             )?);
             let representative = datafusion_physical_expr::aggregate::AggregateExprBuilder::new(
-                datafusion_functions_aggregate::any_value::any_value_udaf(),
+                // Retain one Arrow row without DF's scalar compaction, which
+                // panics on nested zero-field structs. The take accumulator is
+                // bounded to one row per group and preserves nested metadata.
+                vail_execution::advanced_collection_aggregates::make_udaf(
+                    "take",
+                    &row.data_type(&input_schema)?,
+                    &serde_json::json!({"n": 1}),
+                )?
+                .ok_or_else(|| TableError::Invalid("take aggregate unavailable".into()))?,
                 vec![row],
             )
             .schema(input_schema.clone())
@@ -1040,8 +1048,21 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
                 input,
                 input_schema,
             )?);
-            let row_index = group_names.len();
-            let row_column = column(&grouped, row_index);
+            let row_index = group_names.len().max(1);
+            let row_column = vail_execution::expressions::lower(
+                &Expr::ArrayIndex {
+                    value: Box::new(Expr::Column {
+                        name: grouped.schema().field(row_index).name().clone(),
+                    }),
+                    index: Box::new(Expr::Literal {
+                        value: serde_json::json!(0),
+                        dtype: vail_execution::expressions::Type::Primitive(
+                            vail_execution::expressions::PrimitiveType::Int32,
+                        ),
+                    }),
+                },
+                &grouped.schema(),
+            )?;
             let grouped_schema = grouped.schema();
             let mut expressions: Vec<(Arc<dyn PhysicalExpr>, String)> =
                 Vec::with_capacity(child.schema().fields().len() + 1);
