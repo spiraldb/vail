@@ -72,6 +72,56 @@ struct NativeSession {
 
 #[pymethods]
 impl NativeSession {
+    fn vcf_metadata(&self, py: Python<'_>, path: String) -> PyResult<String> {
+        let header = py
+            .detach(|| vail_vcf::read_header(&path, &vail_vcf::Options::default()))
+            .map_err(value_error)?;
+        serde_json::to_string(&header.metadata).map_err(value_error)
+    }
+    /// Read only headers now; retain a bounded lazy native VCF source for rows.
+    fn read_vcf(
+        &self,
+        py: Python<'_>,
+        paths: Vec<String>,
+        header_file: Option<String>,
+        options_json: &str,
+    ) -> PyResult<(NativeTable, String, String)> {
+        let options: vail_vcf::Options = serde_json::from_str(options_json).map_err(value_error)?;
+        let (header, options) = py
+            .detach(|| -> Result<_, String> {
+                let first = header_file
+                    .as_ref()
+                    .or(paths.first())
+                    .ok_or("VCF input requires at least one path")?;
+                let header = vail_vcf::read_header(first, &options)?;
+                if header_file.is_none() {
+                    for path in paths.iter().skip(1) {
+                        header.validate_other(&vail_vcf::read_header(path, &options)?)?;
+                    }
+                }
+                Ok((header, options))
+            })
+            .map_err(value_error)?;
+        let schema = header.core_schema(&options).map_err(value_error)?;
+        let samples = serde_json::to_string(if options.drop_samples {
+            &[] as &[String]
+        } else {
+            &header.samples
+        })
+        .map_err(value_error)?;
+        let metadata = serde_json::to_string(&header.metadata).map_err(value_error)?;
+        let config = serde_json::json!({"header": header, "options": options});
+        let ir =
+            TableIR::read_text(schema, paths, "vcf", &config.to_string()).map_err(table_error)?;
+        Ok((
+            NativeTable {
+                runtime: self.runtime.clone(),
+                ir,
+            },
+            samples,
+            metadata,
+        ))
+    }
     #[new]
     fn new() -> PyResult<Self> {
         let runtime = Builder::new_multi_thread()
@@ -731,7 +781,8 @@ impl NativeTable {
     fn count(&self, py: Python<'_>) -> PyResult<usize> {
         match self.ir.known_count() {
             Some(count) => Ok(count),
-            None => py.detach(|| self.runtime.block_on(self.ir.count()))
+            None => py
+                .detach(|| self.runtime.block_on(self.ir.count()))
                 .map_err(table_error),
         }
     }

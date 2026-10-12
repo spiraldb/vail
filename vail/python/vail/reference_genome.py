@@ -25,9 +25,10 @@ def _names(values, label):
 class Locus:
     contig: str
     position: int
-    reference_genome: "ReferenceGenome"
+    reference_genome: "ReferenceGenome" = "default"
 
     def __post_init__(self):
+        object.__setattr__(self, "reference_genome", resolve_reference(self.reference_genome))
         if not isinstance(self.contig, str) or self.contig not in self.reference_genome.lengths:
             raise ValueError(f"contig {self.contig!r} is not in reference genome {self.reference_genome.name}")
         if type(self.position) is not int or not 1 <= self.position <= self.reference_genome.lengths[self.contig]:
@@ -188,6 +189,28 @@ class ReferenceGenome:
                 "x_contigs": list(self.x_contigs), "y_contigs": list(self.y_contigs),
                 "mt_contigs": list(self.mt_contigs),
                 "par": [{"contig": c, "start": s, "end": e} for c, s, e in self._par]}
+
+    @classmethod
+    def read(cls, path):
+        """Load a coordinate reference from Hail's public JSON definition."""
+        from .vcf import _local_path
+        with open(_local_path(path), encoding="utf-8") as stream:
+            config = json.load(stream)
+        if "lengths" in config:
+            return cls.from_wire(config)
+        contigs = config["contigs"]
+        par = []
+        for interval in config.get("par", []):
+            if interval["start"]["contig"] != interval["end"]["contig"]:
+                raise ValueError("PAR interval endpoints must be on the same contig")
+            par.append(dict(contig=interval["start"]["contig"],
+                            start=interval["start"]["position"],
+                            end=interval["end"]["position"]))
+        return cls.from_wire(dict(name=config["name"], contigs=[c["name"] for c in contigs],
+                                  lengths={c["name"]: c["length"] for c in contigs},
+                                  x_contigs=config.get("xContigs", []),
+                                  y_contigs=config.get("yContigs", []),
+                                  mt_contigs=config.get("mtContigs", []), par=par))
 
     @classmethod
     def from_wire(cls, definition):

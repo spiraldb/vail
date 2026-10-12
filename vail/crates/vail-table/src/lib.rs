@@ -24,6 +24,7 @@ pub mod plan;
 mod provider;
 mod text_export;
 pub mod text_schema;
+mod vcf_source;
 mod zip_join;
 use globals::{GlobalBindings, GlobalsIR, GlobalsRef, referenced_bindings};
 
@@ -539,7 +540,7 @@ impl TableIR {
         format: &str,
         options_json: &str,
     ) -> Result<TableRef> {
-        if !matches!(format, "csv" | "json" | "ndjson" | "lines") {
+        if !matches!(format, "csv" | "json" | "ndjson" | "lines" | "vcf") {
             return Err(TableError::Invalid(format!(
                 "unsupported text format {format:?}"
             )));
@@ -592,9 +593,10 @@ impl TableIR {
                         "only local text paths are supported: {path:?}"
                     )));
                 }
-                if [".gz", ".bgz", ".bz2", ".xz", ".zst"]
-                    .iter()
-                    .any(|suffix| path.ends_with(suffix))
+                if format != "vcf"
+                    && [".gz", ".bgz", ".bz2", ".xz", ".zst"]
+                        .iter()
+                        .any(|suffix| path.ends_with(suffix))
                 {
                     return Err(TableError::Invalid(
                         "compressed text sources are not implemented".into(),

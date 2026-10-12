@@ -250,6 +250,13 @@ pub(crate) fn source_partition_projected(
             serde_json::from_str(options_json).map_err(|e| TableError::Invalid(e.to_string()))?;
         let (file_schema, source): (SchemaRef, Arc<dyn datafusion_datasource::file::FileSource>) =
             match format.as_str() {
+                "vcf" => (
+                    row_schema.clone(),
+                    Arc::new(crate::vcf_source::VcfSource::new(
+                        row_schema.clone(),
+                        options_json,
+                    )?),
+                ),
                 "csv" => {
                     let csv = crate::text_schema::csv_options(options)?;
                     (

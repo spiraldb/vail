@@ -1,0 +1,217 @@
+{
+  "source": "/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py",
+  "source_sha256": "be4aee3d603d799ff52fb91263874a3d065b0a4b322830d822d4abb69c768ab6",
+  "adaptations": [
+    "Hail replaced with Vail",
+    "Decorators removed",
+    "FatalError/HailUserError mapped to RuntimeError or ValueError",
+    "No-codegen flag omitted"
+  ],
+  "results": [
+    {
+      "case": "test_info_char",
+      "status": "passed",
+      "seconds": 0.20851095812395215
+    },
+    {
+      "case": "test_info_float64",
+      "status": "passed",
+      "seconds": 0.002528917044401169
+    },
+    {
+      "case": "test_glob",
+      "status": "passed",
+      "seconds": 0.09488537511788309
+    },
+    {
+      "case": "test_undeclared_info",
+      "status": "passed",
+      "seconds": 0.022972082952037454
+    },
+    {
+      "case": "test_can_import_bad_number_flag",
+      "status": "passed",
+      "seconds": 0.014190874993801117
+    },
+    {
+      "case": "test_malformed",
+      "status": "passed",
+      "seconds": 0.009022959042340517
+    },
+    {
+      "case": "test_not_identical_headers",
+      "status": "passed",
+      "seconds": 13.075556249823421
+    },
+    {
+      "case": "test_filter",
+      "status": "passed",
+      "seconds": 0.025399917038157582
+    },
+    {
+      "case": "test_find_replace",
+      "status": "passed",
+      "seconds": 0.04963329201564193
+    },
+    {
+      "case": "test_haploid",
+      "status": "passed",
+      "seconds": 0.03681574994698167
+    },
+    {
+      "case": "test_call_fields",
+      "status": "passed",
+      "seconds": 0.03666487499140203
+    },
+    {
+      "case": "test_import_vcf",
+      "status": "failed_or_blocked",
+      "error_type": "NotImplementedError",
+      "message": "DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_vcf_cases.py\", line 59, in run\n    getattr(instance, name)()\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 168, in test_import_vcf\n    vcf = hl.split_multi_hts(\n          ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/variant.py\", line 61, in split_multi_hts\n    variant=_min_rep(split.locus,split.alleles[0],split.alleles[split.a_index])\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/variant.py\", line 31, in _min_rep\n    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py\", line 482, in _array_filter\n    predicate = as_expr(f(variable))\n                        ^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/variant.py\", line 31, in <lambda>\n    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])\n                                               ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py\", line 316, in __getitem__\n    return slice_(self, name) if isinstance(name, slice) else index(self, name)\n                                                              ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/strings.py\", line 104, in index\n    text = _bmp_literal(value)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/strings.py\", line 69, in _bmp_literal\n    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')\nNotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported\n",
+      "seconds": 0.22702237498015165
+    },
+    {
+      "case": "test_import_vcf_empty",
+      "status": "passed",
+      "seconds": 0.036516791908070445
+    },
+    {
+      "case": "test_import_vcf_no_reference_specified",
+      "status": "passed",
+      "seconds": 0.002904291031882167
+    },
+    {
+      "case": "test_import_vcf_bad_reference_allele",
+      "status": "passed",
+      "seconds": 0.0033841668628156185
+    },
+    {
+      "case": "test_import_vcf_flags_are_defined",
+      "status": "passed",
+      "seconds": 0.030046958941966295
+    },
+    {
+      "case": "test_import_vcf_can_import_float_array_format",
+      "status": "passed",
+      "seconds": 0.015810708049684763
+    },
+    {
+      "case": "test_import_vcf_can_import_float32_array_format",
+      "status": "passed",
+      "seconds": 0.015309750102460384
+    },
+    {
+      "case": "test_import_vcf_can_import_negative_numbers",
+      "status": "passed",
+      "seconds": 0.017012540949508548
+    },
+    {
+      "case": "test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements",
+      "status": "passed",
+      "seconds": 0.006987833883613348
+    },
+    {
+      "case": "test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements",
+      "status": "passed",
+      "seconds": 0.030734792118892074
+    },
+    {
+      "case": "test_import_vcf_missing_format_field_elements",
+      "status": "passed",
+      "seconds": 0.03156470810063183
+    },
+    {
+      "case": "test_vcf_unsorted_alleles",
+      "status": "passed",
+      "seconds": 0.03617258300073445
+    },
+    {
+      "case": "test_vcf_unsorted_alleles_no_codegen",
+      "status": "passed",
+      "seconds": 0.035523041151463985
+    },
+    {
+      "case": "test_import_vcf_skip_invalid_loci",
+      "status": "passed",
+      "seconds": 0.009196750121191144
+    },
+    {
+      "case": "test_import_vcf_set_field_missing",
+      "status": "passed",
+      "seconds": 0.016203582985326648
+    },
+    {
+      "case": "test_import_vcf_dosages_as_doubles_or_floats",
+      "status": "passed",
+      "seconds": 0.33296154206618667
+    },
+    {
+      "case": "test_import_vcf_invalid_float_type",
+      "status": "passed",
+      "seconds": 7.262500002980232e-05
+    },
+    {
+      "case": "test_import_gvcfs",
+      "status": "failed_or_blocked",
+      "error_type": "AttributeError",
+      "message": "'tarray' object has no attribute '_convert_to_json'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_vcf_cases.py\", line 59, in run\n    getattr(instance, name)()\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 524, in test_import_gvcfs\n    self.import_gvcfs_sample_vcf(path)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 468, in import_gvcfs_sample_vcf\n    parts_str = json.dumps(parts_type._convert_to_json(parts))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tarray' object has no attribute '_convert_to_json'\n",
+      "seconds": 0.0006162498611956835
+    },
+    {
+      "case": "test_import_gvcfs_long_line",
+      "status": "passed",
+      "seconds": 0.042072542011737823
+    },
+    {
+      "case": "test_vcf_parser_golden_master__ex_GRCh37",
+      "status": "failed_or_blocked",
+      "error_type": "FileNotFoundError",
+      "message": "[Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_vcf_cases.py\", line 59, in run\n    getattr(instance, name)()\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 538, in test_vcf_parser_golden_master__ex_GRCh37\n    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 549, in _test_vcf_parser_golden_master\n    mt = hl.read_matrix_table(vcf_path + '.mt')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/matrixtable.py\", line 1878, in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'\n",
+      "seconds": 0.0022103330120444298
+    },
+    {
+      "case": "test_vcf_parser_golden_master__sample_GRCh37",
+      "status": "failed_or_blocked",
+      "error_type": "FileNotFoundError",
+      "message": "[Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/sample.vcf.mt/_vail_matrix.json'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_vcf_cases.py\", line 59, in run\n    getattr(instance, name)()\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 541, in test_vcf_parser_golden_master__sample_GRCh37\n    self._test_vcf_parser_golden_master(resource('sample.vcf'), 'GRCh37')\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 549, in _test_vcf_parser_golden_master\n    mt = hl.read_matrix_table(vcf_path + '.mt')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/matrixtable.py\", line 1878, in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/sample.vcf.mt/_vail_matrix.json'\n",
+      "seconds": 0.0025617920327931643
+    },
+    {
+      "case": "test_vcf_parser_golden_master__gvcf_GRCh37",
+      "status": "failed_or_blocked",
+      "error_type": "FileNotFoundError",
+      "message": "[Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_vcf_cases.py\", line 59, in run\n    getattr(instance, name)()\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 545, in test_vcf_parser_golden_master__gvcf_GRCh37\n    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py\", line 549, in _test_vcf_parser_golden_master\n    mt = hl.read_matrix_table(vcf_path + '.mt')\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/matrixtable.py\", line 1878, in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'\n",
+      "seconds": 0.032076000003144145
+    },
+    {
+      "case": "test_flag_at_eol",
+      "status": "passed",
+      "seconds": 0.008754541864618659
+    },
+    {
+      "case": "test_missing_float_entries",
+      "status": "passed",
+      "seconds": 0.13658562488853931
+    },
+    {
+      "case": "test_custom_rg_import",
+      "status": "passed",
+      "seconds": 0.01128124981187284
+    },
+    {
+      "case": "test_empty_import_vcf_group_by_collect",
+      "status": "passed",
+      "seconds": 0.019012416945770383
+    },
+    {
+      "case": "test_vcf_different_info_errors",
+      "status": "passed",
+      "seconds": 0.0003701250534504652
+    }
+  ]
+}

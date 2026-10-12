@@ -5318,6 +5318,7 @@ dependencies = [
  "vail-execution",
  "vail-storage",
  "vail-table",
+ "vail-vcf",
 ]
 
 [[package]]
@@ -5382,6 +5383,22 @@ dependencies = [
  "vail-execution",
  "vail-ordering",
  "vail-storage",
+ "vail-vcf",
+]
+
+[[package]]
+name = "vail-vcf"
+version = "0.1.0"
+dependencies = [
+ "arrow-array",
+ "arrow-buffer",
+ "arrow-schema",
+ "flate2",
+ "memchr",
+ "regex",
+ "serde",
+ "serde_json",
+ "vail-execution",
 ]
 
 [[package]]

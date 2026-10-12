@@ -72,6 +72,8 @@ def _row_indexed(ir):
     if isinstance(ir, dict):
         if ir.get("op") == "literal":
             return False
+        if ir.get("op") in ("matrix_field", "matrix_scope") and ir.get("axis") != "global":
+            return True
         return ir.get("op") == "column" or any(_row_indexed(value) for value in ir.values())
     if isinstance(ir, list):
         return any(_row_indexed(value) for value in ir)
@@ -123,6 +125,15 @@ def _external_globals(native, dtype):
 
 class Expression:
     __slots__ = ("dtype", "source", "_ir_json", "_selection_name", "_top_level_name", "_global_refs", "_lookup_refs", "_row_indexed")
+
+    def __new__(cls, *args, **kwargs):
+        if cls is Expression:
+            dtype = args[0] if args else kwargs.get("dtype")
+            if dtype == tfloat32:
+                return object.__new__(Float32Expression)
+            if dtype == tfloat64:
+                return object.__new__(Float64Expression)
+        return object.__new__(cls)
 
     def __init__(self, dtype, source, ir, *, selection_name=None, top_level_name=None,
                  row_indexed=None):
@@ -650,6 +661,8 @@ class Expression:
         return ((name, self[name]) for name in self.dtype)
 
     def _collect_expression(self, n=None):
+        if hasattr(type(self.source), "_axis_type"):
+            return self.source._collect_expression(self, n)
         from . import agg, _ir_has_aggregate
         if _ir_has_aggregate(self.to_ir()):
             raise NotImplementedError("cannot collect an aggregated expression")
@@ -683,6 +696,16 @@ class Expression:
             raise TypeError("_localize must be a bool")
         result = self._collect_expression(n)
         return eval(result) if _localize else result
+
+
+class Float32Expression(Expression):
+    """A scalar expression whose native value type is float32."""
+    __slots__ = ()
+
+
+class Float64Expression(Expression):
+    """A scalar expression whose native value type is float64."""
+    __slots__ = ()
 
 
 class Field(Expression):
@@ -959,6 +982,37 @@ def or_missing(predicate, value):
     """Return value when predicate is true; false or missing produces missing."""
     expr = as_expr(value)
     return if_else(predicate, expr, missing(expr.dtype))
+
+
+def coalesce(*values):
+    """Return the first defined expression, preserving a common value type."""
+    if not values:
+        raise ValueError("coalesce requires at least one expression")
+    result = as_expr(values[-1])
+    for value in reversed(values[:-1]):
+        value = as_expr(value)
+        result = if_else(is_defined(value), value, result)
+    return result
+
+
+def approx_equal(x, y, tolerance=1e-6, absolute=False, nan_same=False):
+    """Compare numbers with Hail's relative/absolute tolerance and NaN policy."""
+    values = [as_expr(value) for value in (x, y, tolerance)]
+    for value in values:
+        _require_numeric(value.dtype, "approx_equal")
+    x, y, tolerance = (cast(value, tfloat64) for value in values)
+    absolute, nan_same = as_expr(absolute), as_expr(nan_same)
+    if absolute.dtype != tbool or nan_same.dtype != tbool:
+        raise TypeError("absolute and nan_same must be bool expressions")
+    ax, ay = if_else(x < 0, -x, x), if_else(y < 0, -y, y)
+    difference = x - y
+    difference = if_else(difference < 0, -difference, difference)
+    scale = tolerance * if_else(ax > ay, ax, ay)
+    bound = if_else(absolute, tolerance, if_else(scale > 2 ** -1022, scale, 2 ** -1022))
+    nx, ny = x == float("nan"), y == float("nan")
+    infinite = (ax == float("inf")) | (ay == float("inf"))
+    return if_else(nx | ny, nan_same & nx & ny,
+                   if_else(infinite, x == y, difference <= bound))
 
 
 def _valid_type(dtype):

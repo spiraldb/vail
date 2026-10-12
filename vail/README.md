@@ -75,6 +75,15 @@ Text interoperability includes lazy `import_lines`, delimited `import_table`,
 See [Text import and export](docs/TEXT_IMPORT_EXPORT.md) for supported options
 and explicit limitations, including Hail float and nested text rendering.
 
+## MatrixTable prototype
+
+The Python frontend now includes a lazy MatrixTable layer over native TableIR.
+Each core row owns its entry array; rows and entries are lazy views. It supports
+typed expression axes, sparse entry filtering, row/column aggregation and
+grouping, Table views, coordinate and row-major conversions, localization and
+its inverse, unions, explosion, and local matrix snapshots. This is not full Hail MatrixTable parity; see
+[MatrixTable support and dependencies](docs/MATRIX_TABLE.md).
+
 ## Checks
 
 Save all Vail-owned suite outcomes, command logs and source fingerprints:
