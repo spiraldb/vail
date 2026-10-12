@@ -1724,6 +1724,21 @@ impl TableIR {
     pub async fn count(self: &Arc<Self>) -> Result<usize> {
         partitioned::count(self.clone()).await
     }
+    /// Execute every output column for validation, retaining only a row count.
+    pub async fn force_count(self: &Arc<Self>) -> Result<usize> {
+        use futures::TryStreamExt;
+
+        let mut rows = 0usize;
+        let mut stream = self.execute();
+        while let Some(event) = stream.try_next().await? {
+            if let PartitionEvent::Batch(batch) = event {
+                rows = rows.checked_add(batch.num_rows()).ok_or_else(|| {
+                    TableError::Invalid("row count exceeds usize capacity".into())
+                })?;
+            }
+        }
+        Ok(rows)
+    }
     pub async fn n_partitions(self: &Arc<Self>) -> Result<usize> {
         if let Some(count) = self.known_n_partitions() {
             return Ok(count);

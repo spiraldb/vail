@@ -731,11 +731,12 @@ impl NativeTable {
     fn count(&self, py: Python<'_>) -> PyResult<usize> {
         match self.ir.known_count() {
             Some(count) => Ok(count),
-            None => self.force_count(py),
+            None => py.detach(|| self.runtime.block_on(self.ir.count()))
+                .map_err(table_error),
         }
     }
     fn force_count(&self, py: Python<'_>) -> PyResult<usize> {
-        py.detach(|| self.runtime.block_on(self.ir.count()))
+        py.detach(|| self.runtime.block_on(self.ir.force_count()))
             .map_err(table_error)
     }
     fn n_partitions(&self, py: Python<'_>) -> PyResult<usize> {
