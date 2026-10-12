@@ -985,6 +985,23 @@ class Table:
     def take(self, n, _localize=True):
         return self.head(n).collect(_localize)
 
+    def show(self, n=None, width=None, truncate=None, types=True, handler=None, n_rows=None):
+        """Display a bounded prefix, with optional types and a string handler."""
+        if n is not None and n_rows is not None:
+            raise ValueError(f"specify one of n_rows or n, received {n_rows} and {n}")
+        n = n_rows if n_rows is not None else n
+        for name, value in (("n", n), ("width", width), ("truncate", truncate)):
+            if value is not None and type(value) is not builtins.int:
+                raise TypeError(f"{name} must be an int or None")
+        if type(types) is not builtins.bool:
+            raise TypeError("types must be a bool")
+        if handler is not None and not callable(handler):
+            raise TypeError("handler must be callable")
+        from .display import TableDisplay
+
+        text = builtins.str(TableDisplay(self, n, width, truncate, types))
+        return (print if handler is None else handler)(text)
+
     def collect(self, _localize=True):
         if type(_localize) is not builtins.bool:
             raise TypeError("_localize must be a bool")
