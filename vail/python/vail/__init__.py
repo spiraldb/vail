@@ -258,6 +258,18 @@ class Table:
     def __delattr__(self, name):
         raise TypeError("Table is immutable")
 
+    def _unlocalize_entries(self, entries_field_name, cols_field_name, col_key):
+        from .matrixtable import unlocalize_entries
+        return unlocalize_entries(self, entries_field_name, cols_field_name, col_key)
+
+    def to_matrix_table(self, row_key, col_key, row_fields=(), col_fields=(), n_partitions=None):
+        from .matrixtable import to_matrix_table
+        return to_matrix_table(self, row_key, col_key, row_fields, col_fields, n_partitions)
+
+    def to_matrix_table_row_major(self, columns, entry_field_name=None, col_field_name='col'):
+        from .matrixtable import to_matrix_table_row_major
+        return to_matrix_table_row_major(self, columns, entry_field_name, col_field_name)
+
     @classmethod
     def parallelize(cls, rows, schema=None, key=None, n_partitions=None, *, partial_type=None, globals=None):
         if schema is not None and partial_type is not None:
@@ -1520,6 +1532,12 @@ def read_table(path, *, _intervals=None, _filter_intervals=False, _n_partitions=
 def eval(expression):
     """Evaluate an unindexed expression, including a table's globals."""
     expr = as_expr(expression)
+    if isinstance(expr.source, MatrixTable):
+        from .matrixtable import _axes
+        if _axes(expr.to_ir()):
+            raise ValueError("eval cannot evaluate indexed matrix expressions")
+        matrix = expr.source
+        expr = matrix._lower(expr, matrix.globals_table())
     if _referenced_columns(expr.to_ir()):
         raise ValueError("eval cannot evaluate row-indexed expressions")
     table = expr.source if expr.source is not None else utils.range_table(0)
@@ -1539,3 +1557,11 @@ from .collections import sorted_ as sorted
 from .queries import query_table
 
 from .expressions import bind
+from .matrixtable import MatrixTable, GroupedMatrixTable, range_matrix_table, read_matrix_table
+utils.range_matrix_table = range_matrix_table
+from .vcf import import_vcf, get_vcf_metadata
+from . import expr
+from .expressions import coalesce, approx_equal
+from .backend import current_backend
+from .vcf_export import export_vcf
+from .variant import split_multi_hts

@@ -1,0 +1,91 @@
+{
+  "source_sha256": "733a49a884741c6ca49e22301f92ce57d7e4e096f002c7dff970d2fd62601f59",
+  "source": "/Users/danielking/projects/vail/hail/hail/python/test/hail/matrixtable/test_matrix_table.py",
+  "cases": [
+    {
+      "case": "test_range_count",
+      "status": "passed",
+      "elapsed_seconds": 0.162,
+      "error": ""
+    },
+    {
+      "case": "test_head_rows_and_cols",
+      "status": "passed",
+      "elapsed_seconds": 0.175,
+      "error": ""
+    },
+    {
+      "case": "test_head_rows",
+      "status": "passed",
+      "elapsed_seconds": 0.171,
+      "error": ""
+    },
+    {
+      "case": "test_head_cols",
+      "status": "passed",
+      "elapsed_seconds": 0.167,
+      "error": ""
+    },
+    {
+      "case": "test_tail_cols",
+      "status": "passed",
+      "elapsed_seconds": 0.186,
+      "error": ""
+    },
+    {
+      "case": "test_tail_entries",
+      "status": "passed",
+      "elapsed_seconds": 0.301,
+      "error": ""
+    },
+    {
+      "case": "test_col_agg_no_rows",
+      "status": "passed",
+      "elapsed_seconds": 0.374,
+      "error": ""
+    },
+    {
+      "case": "test_col_collect",
+      "status": "passed",
+      "elapsed_seconds": 0.19,
+      "error": ""
+    },
+    {
+      "case": "test_group_by_field_lifetimes",
+      "status": "passed",
+      "elapsed_seconds": 0.43,
+      "error": ""
+    },
+    {
+      "case": "test_aggregate_cols_by",
+      "status": "passed",
+      "elapsed_seconds": 0.385,
+      "error": ""
+    },
+    {
+      "case": "test_aggregate_rows_by",
+      "status": "passed",
+      "elapsed_seconds": 0.401,
+      "error": ""
+    },
+    {
+      "case": "test_choose_cols",
+      "status": "failed_or_blocked",
+      "elapsed_seconds": 0.122,
+      "error": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_matrix_cases.py\", line 80, in <module>\n    main()\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_matrix_cases.py\", line 51, in main\n    execute(args.source, args.case)\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_matrix_cases.py\", line 39, in execute\n    scope[name](unittest.TestCase())\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 723, in test_choose_cols\n    ds = self.get_mt()\n         ^^^^^^^^^^^\nAttributeError: 'TestCase' object has no attribute 'get_mt'"
+    },
+    {
+      "case": "test_aggregation_with_no_aggregators",
+      "status": "passed",
+      "elapsed_seconds": 0.368,
+      "error": ""
+    },
+    {
+      "case": "test_collect_cols_by_key",
+      "status": "failed_or_blocked",
+      "elapsed_seconds": 0.133,
+      "error": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_matrix_cases.py\", line 80, in <module>\n    main()\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_matrix_cases.py\", line 51, in main\n    execute(args.source, args.case)\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/conformance/upstream_matrix_cases.py\", line 39, in execute\n    scope[name](unittest.TestCase())\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 436, in test_collect_cols_by_key\n    col_dict = hl.literal({0: [1], 1: [2, 3], 2: [4, 5, 6]})\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py\", line 723, in literal\n    dtype = infer_type(value)\n            ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/types.py\", line 432, in infer_type\n    return tstruct(**{name: infer_type(field) for name, field in value.items()})\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: keywords must be strings"
+    }
+  ],
+  "scope": "extracted original assertion bodies; no Hail oracle comparison"
+}

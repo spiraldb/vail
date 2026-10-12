@@ -40,7 +40,8 @@ def index(table, expressions, all_matches=False, query_interval=False):
         source = _merge_sources(source, expr.source)
     from . import _referenced_columns
 
-    if source is None or not any(_referenced_columns(expr.to_ir()) for expr in expressions):
+    from .matrixtable import _axes
+    if source is None or not any(_referenced_columns(expr.to_ir()) or _axes(expr.to_ir()) for expr in expressions):
         raise ExpressionException("Cannot index with a scalar expression")
     reference = uuid4().hex
     dtype = tstruct(**{name: ty for name, ty in table._schema.items() if name not in table._keys})
