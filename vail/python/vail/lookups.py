@@ -34,7 +34,7 @@ def index(table, expressions, all_matches=False, query_interval=False):
             if isinstance(packed.dtype, ttuple):
                 return index(table, tuple(packed[i] for i in range(len(packed.dtype.types))), all_matches)
         if not interval_point:
-            raise TypeError(f"lookup key type mismatch: expected {expected}, found {[expr.dtype for expr in expressions]}")
+            raise ExpressionException(f"lookup key type mismatch: expected {expected}, found {[expr.dtype for expr in expressions]}")
     source = None
     for expr in expressions:
         source = _merge_sources(source, expr.source)

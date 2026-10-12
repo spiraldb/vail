@@ -200,9 +200,9 @@ def test_lookup_reads_multiple_files_lazily_and_writes_without_private_fields(tm
 
 def test_lookup_rejects_invalid_keys_and_scalar_indexing():
     target, source = people(), visits()
-    with pytest.raises(TypeError):
+    with pytest.raises(hl.ExpressionException):
         target[source.person_id, source.visit]
-    with pytest.raises(TypeError):
+    with pytest.raises(hl.ExpressionException):
         target[hl.str(source.person_id)]
     with pytest.raises(hl.ExpressionException, match='scalar'):
         target[hl.literal(1)]
@@ -276,3 +276,30 @@ def test_interval_all_matches_preserves_empty_structs_in_left_and_right():
         == hl.range(0, hl.min(dropped.idx % 10, 10 - dropped.idx % 10))
     )
     assert table.collect() == rows
+
+
+@pytest.mark.parametrize('packed', ['scalar', 'struct', 'tuple'])
+def test_lookup_key_shape_mismatch_raises_expression_exception(packed):
+    target = hl.range_table(3)
+    target = target.key_by(target.idx, j=target.idx + 1)
+    source = hl.range_table(3)
+    probe = source.idx
+    if packed == 'struct':
+        probe = hl.struct(k=source.idx)
+    elif packed == 'tuple':
+        probe = hl.tuple([source.idx])
+    with pytest.raises(hl.ExpressionException, match='lookup key type mismatch'):
+        target.index(probe)
+
+
+def test_lookup_interval_and_key_type_mismatches_raise_expression_exception():
+    source = hl.range_table(3)
+    target = hl.range_table(3)
+    with pytest.raises(hl.ExpressionException, match='lookup key type mismatch'):
+        target.index(hl.str(source.idx))
+    point_interval = target.key_by(k=hl.interval(target.idx, target.idx, True, True))
+    with pytest.raises(hl.ExpressionException, match='lookup key type mismatch'):
+        point_interval.index(hl.struct(idx=source.idx, j=source.idx + 1))
+    product_interval = target.key_by(k=hl.interval(target.key, target.key, True, True))
+    with pytest.raises(hl.ExpressionException, match='lookup key type mismatch'):
+        product_interval.index(source.idx)
