@@ -224,6 +224,14 @@ impl ExecutionPlan for SourceExec {
     }
 }
 pub(crate) fn source_partition(table: &Arc<TableIR>, part: usize) -> Result<PhysicalPlan> {
+    source_partition_projected(table, part, None)
+}
+
+pub(crate) fn source_partition_projected(
+    table: &Arc<TableIR>,
+    part: usize,
+    projection: Option<&Vec<usize>>,
+) -> Result<PhysicalPlan> {
     let row_schema = table.schema().clone();
     let name = private_name(&row_schema, table.globals().schema(), "__vail_partition");
     let schema = with_partition(&row_schema, &name);
@@ -278,10 +286,20 @@ pub(crate) fn source_partition(table: &Arc<TableIR>, part: usize) -> Result<Phys
                 }
             };
         let file_path = path.trim_start_matches('/');
-        let config = FileScanConfigBuilder::new(ObjectStoreUrl::local_filesystem(), source)
+        let file_projection = projection.map(|indices| {
+            indices
+                .iter()
+                .copied()
+                .filter(|&i| i < file_schema.fields().len())
+                .collect::<Vec<_>>()
+        });
+        let mut builder = FileScanConfigBuilder::new(ObjectStoreUrl::local_filesystem(), source)
             .with_file(PartitionedFile::new(file_path, metadata.len()))
-            .with_preserve_order(true)
-            .build();
+            .with_preserve_order(true);
+        if format != "lines" {
+            builder = builder.with_projection(file_projection.clone());
+        }
+        let config = builder.build();
         let scan: PhysicalPlan = DataSourceExec::from_data_source(config);
         let mut exprs = Vec::new();
         if format == "lines" {
@@ -296,17 +314,23 @@ pub(crate) fn source_partition(table: &Arc<TableIR>, part: usize) -> Result<Phys
                 "text".to_owned(),
             ));
         } else {
-            for (index, field) in file_schema.fields().iter().enumerate() {
+            let indices =
+                file_projection.unwrap_or_else(|| (0..file_schema.fields().len()).collect());
+            for (index, source_index) in indices.into_iter().enumerate() {
+                let field = file_schema.field(source_index);
                 exprs.push((
                     Arc::new(Column::new(field.name(), index)) as Arc<dyn PhysicalExpr>,
                     field.name().clone(),
                 ));
             }
         }
-        exprs.push((
-            Arc::new(Literal::new(ScalarValue::UInt64(Some(part as u64)))) as Arc<dyn PhysicalExpr>,
-            name,
-        ));
+        if projection.is_none_or(|indices| indices.contains(&row_schema.fields().len())) {
+            exprs.push((
+                Arc::new(Literal::new(ScalarValue::UInt64(Some(part as u64))))
+                    as Arc<dyn PhysicalExpr>,
+                name,
+            ));
+        }
         return Ok(Arc::new(ProjectionExec::try_new(exprs, scan)?));
     }
     let source = match table.node() {

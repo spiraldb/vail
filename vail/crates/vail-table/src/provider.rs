@@ -73,6 +73,48 @@ impl TableProvider for VailSourceProvider {
         filters: &[Expr],
         _limit: Option<usize>, // Limits remain as DataFusion operators above the scan.
     ) -> DFResult<Arc<dyn ExecutionPlan>> {
+        if let TableNode::TextRead { format, .. } = self.table.node()
+            && format != "lines"
+        {
+            let count = self.table.known_n_partitions().ok_or_else(|| {
+                DataFusionError::Plan("text source partition count is not known".into())
+            })?;
+            // PartitionSetExec needs its internal tag even when COUNT requests
+            // no data columns. Retain it through the adapter, then project it out.
+            let tag = self.schema.fields().len() - 1;
+            let mut internal = projection.cloned().unwrap_or_else(|| (0..tag).collect());
+            internal.retain(|&index| index != tag);
+            internal.push(tag);
+            let partitions = (0..count)
+                .map(|part| {
+                    plan::source_partition_projected(&self.table, part, Some(&internal))
+                        .map_err(to_df_error)
+                })
+                .collect::<DFResult<Vec<_>>>()?;
+            let schema = Arc::new(self.schema.project(&internal)?);
+            let scan = Arc::new(PartitionSetExec::new(partitions, schema));
+            if let Some(indices) = projection {
+                let expressions = indices
+                    .iter()
+                    .map(|index| {
+                        let position =
+                            internal.iter().position(|i| i == index).ok_or_else(|| {
+                                DataFusionError::Plan(
+                                    "text projection field is out of range".into(),
+                                )
+                            })?;
+                        let field = self.schema.field(*index);
+                        Ok((
+                            Arc::new(Column::new(field.name(), position))
+                                as Arc<dyn datafusion::physical_expr::PhysicalExpr>,
+                            field.name().clone(),
+                        ))
+                    })
+                    .collect::<DFResult<Vec<_>>>()?;
+                return Ok(Arc::new(ProjectionExec::try_new(expressions, scan)?));
+            }
+            return Ok(scan);
+        }
         let mut scan: Arc<dyn ExecutionPlan> = match self.table.node() {
             TableNode::Prepared { rows, .. } => rows.clone(),
             TableNode::IntervalRead {
