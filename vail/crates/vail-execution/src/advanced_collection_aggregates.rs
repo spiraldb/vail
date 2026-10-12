@@ -13,7 +13,7 @@ use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_uda
 use datafusion_functions_aggregate::array_agg::DistinctArrayAggAccumulator;
 
 use crate::aggregate_identity::configured_udaf_name;
-use crate::expressions::ExprError;
+use crate::expressions::{ExprError, Type};
 
 #[derive(Debug)]
 struct SetAccumulator {
@@ -28,7 +28,17 @@ impl SetAccumulator {
                 "distinct array aggregate returned a non-list".into(),
             ));
         };
-        let item_field = Arc::new(Field::new("__vail_set_item", self.item_type.clone(), true));
+        let DataType::List(item_field) = (Type::Set {
+            set: Box::new(
+                Type::from_arrow(&self.item_type)
+                    .map_err(|e| DataFusionError::Execution(e.to_string()))?,
+            ),
+        })
+        .to_arrow()
+        .map_err(|e| DataFusionError::Execution(e.to_string()))?
+        else {
+            unreachable!()
+        };
         Ok(ScalarValue::List(Arc::new(ListArray::new(
             item_field,
             values.offsets().clone(),
@@ -66,11 +76,10 @@ pub fn make_udaf(
     match function {
         "collect_as_set" => {
             let item_type = input_type.clone();
-            let result_type = DataType::List(Arc::new(Field::new(
-                "__vail_set_item",
-                item_type.clone(),
-                true,
-            )));
+            let result_type = Type::Set {
+                set: Box::new(Type::from_arrow(&item_type)?),
+            }
+            .to_arrow()?;
             let state_type = result_type.clone();
             let accumulator_type = item_type.clone();
             let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {

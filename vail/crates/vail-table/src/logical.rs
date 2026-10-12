@@ -17,6 +17,7 @@ use datafusion_expr::{
 };
 use datafusion_expr::{WindowFrame, WindowFrameBound, WindowFrameUnits};
 use datafusion_physical_expr::{LexOrdering, PhysicalSortExpr, RangePartitioning};
+use datafusion_physical_plan::ExecutionPlan;
 use datafusion_session::Session;
 use std::collections::HashSet;
 use std::fmt;
@@ -582,7 +583,7 @@ fn lower_scans(
                 },
                 "any" => Some(ScalarValue::Boolean(Some(false))),
                 "all" => Some(ScalarValue::Boolean(Some(true))),
-                "fraction" => Some(ScalarValue::Float64(Some(f64::NAN))),
+                "fraction" => Some(ScalarValue::Float64(None)),
                 "mean" | "stddev" => Some(ScalarValue::Float64(Some(f64::NAN))),
                 _ => None,
             };
@@ -747,6 +748,11 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                 found
             }) {
                 if let Some(plan) =
+                    crate::logical_scan::initialize(table, child, input.clone(), fields, &indices)?
+                {
+                    return Ok(plan);
+                }
+                if let Some(plan) =
                     crate::logical_scan::lower(table, child, input.clone(), fields, &indices)?
                 {
                     return Ok(plan);
@@ -891,6 +897,45 @@ pub(crate) async fn physical_plan(
     Ok(planner.create_physical_plan(&optimized, &state).await?)
 }
 
+#[derive(Debug)]
+struct MetadataCrossJoin;
+impl datafusion::physical_optimizer::PhysicalOptimizerRule for MetadataCrossJoin {
+    fn name(&self) -> &str {
+        "vail_arrow_metadata_cross_join"
+    }
+    fn schema_check(&self) -> bool {
+        true
+    }
+    fn optimize(
+        &self,
+        plan: PhysicalPlan,
+        _: &datafusion_common::config::ConfigOptions,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        use datafusion_common::tree_node::{Transformed, TreeNode};
+        Ok(plan
+            .transform_up(|plan| {
+                if let Some(join) = plan
+                    .as_ref()
+                    .downcast_ref::<datafusion_physical_plan::joins::CrossJoinExec>()
+                {
+                    let metadata = join
+                        .schema()
+                        .fields()
+                        .iter()
+                        .any(|field| vail_ordering::has_type_metadata(field.data_type()));
+                    if metadata {
+                        return Ok(Transformed::yes(crate::plan::cross_join(
+                            join.left().clone(),
+                            join.right().clone(),
+                        )?));
+                    }
+                }
+                Ok(Transformed::no(plan))
+            })?
+            .data)
+    }
+}
+
 fn session_state(
     target_partitions: usize,
     parallel_scan: bool,
@@ -905,7 +950,14 @@ fn session_state(
     if parallel_scan {
         config = config.with_round_robin_repartition(false);
     }
-    SessionContext::new_with_config(config).state()
+    let state = SessionContext::new_with_config(config).state();
+    let mut rules: Vec<
+        Arc<dyn datafusion::physical_optimizer::PhysicalOptimizerRule + Send + Sync>,
+    > = vec![Arc::new(MetadataCrossJoin)];
+    rules.extend(state.physical_optimizers().iter().cloned());
+    datafusion::execution::session_state::SessionStateBuilder::new_from_existing(state)
+        .with_physical_optimizer_rules(rules)
+        .build()
 }
 
 pub(crate) async fn physical_globals(globals: &crate::globals::GlobalsRef) -> Result<PhysicalPlan> {
@@ -984,6 +1036,15 @@ impl ExtensionPlanner for VailExtensionPlanner {
         session: &dyn Session,
         _planning_ctx: &PhysicalPlanningContext,
     ) -> datafusion_common::Result<Option<PhysicalPlan>> {
+        if let Some(node) = node
+            .as_any()
+            .downcast_ref::<crate::logical_scan::ScanInitializationNode>()
+        {
+            return Ok(Some(
+                crate::logical_scan::plan_initialized(node.clone(), physical_inputs[0].clone())
+                    .await?,
+            ));
+        }
         if let Some(node) = node.as_any().downcast_ref::<RestorePartitionsNode>() {
             let input = &physical_inputs[0];
             // Keep the restoration boundary even for one logical partition:

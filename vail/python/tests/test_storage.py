@@ -1,9 +1,54 @@
 import json
 import subprocess
 import sys
+from pathlib import Path
 
 import pytest
 import vail as hl
+
+
+def _fragment_files(path):
+    index = next(
+        value for p in path.rglob('*.json')
+        if isinstance(value := json.loads(p.read_text()), dict) and 'fragments' in value
+    )
+    return [Path(f['identity']['file_path'].removeprefix('file://')) for f in index['fragments']]
+
+
+@pytest.mark.parametrize('partition', [0, 1, 2])
+@pytest.mark.parametrize('narrow', [False, True])
+def test_indexed_partition_does_not_open_other_partitions(tmp_path, partition, narrow):
+    path = tmp_path / 'indexed'
+    hl.range_table(12, 3).write(path)
+    loaded = hl.read_table(path)
+    files = _fragment_files(path)
+    assert len(files) == 3
+    for i, file in enumerate(files):
+        if i != partition:
+            file.unlink()
+    lower, upper = (partition * 4 + 1, partition * 4 + 4) if narrow else (0, 12)
+    filtered = loaded.filter(
+        (loaded.idx >= lower) & (loaded.idx < upper) & (loaded.idx % 2 == 0))
+    selected = filtered._filter_partitions([partition])
+    assert 'VailIndexedRead' in selected._native.physical_plan()
+    expected = [i for i in range(partition * 4, partition * 4 + 4)
+                if lower <= i < upper and i % 2 == 0]
+    assert [r.idx for r in selected.collect()] == expected
+    if not narrow:
+        with pytest.raises(FileNotFoundError):
+            filtered.collect()
+
+
+def test_indexed_partition_keeps_key_pruning_within_row_range(tmp_path):
+    path = tmp_path / 'indexed'
+    hl.range_table(8, 2).write(path)
+    loaded = hl.read_table(path)
+    for file in _fragment_files(path):
+        file.unlink()
+    # Partition zero's file is also absent, but cannot match this key query.
+    selected = loaded.filter(loaded.idx >= 4)._filter_partitions([0])
+    assert 'VailIndexedRead' in selected._native.physical_plan()
+    assert selected.collect() == []
 
 
 def test_multifile_roundtrip(tmp_path):

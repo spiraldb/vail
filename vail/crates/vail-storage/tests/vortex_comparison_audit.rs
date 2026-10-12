@@ -242,6 +242,16 @@ fn set_physical_order_is_not_logical_set_equality() {
     };
     let left = make(vec![Some(1), Some(2)]);
     let right = make(vec![Some(2), Some(1)]);
+    let logical = serde_json::json!({"set":"int32"});
+    let tag = |array: ArrayRef| {
+        arrow_cast::cast(
+            &array,
+            &vail_ordering::tag_type(array.data_type().clone(), &logical),
+        )
+        .unwrap()
+    };
+    let left = tag(left);
+    let right = tag(right);
     assert_eq!(
         comparisons(left.clone(), right.clone(), Operator::Eq),
         vec![Some(false)]
@@ -357,6 +367,16 @@ fn call_order_differs_from_physical_allele_order() {
     };
     let left = make(vec![Some(0), Some(2)]);
     let right = make(vec![Some(1), Some(1)]);
+    let logical = serde_json::json!("call");
+    let tag = |array: ArrayRef| {
+        arrow_cast::cast(
+            &array,
+            &vail_ordering::tag_type(array.data_type().clone(), &logical),
+        )
+        .unwrap()
+    };
+    let left = tag(left);
+    let right = tag(right);
     assert_eq!(
         comparisons(left.clone(), right.clone(), Operator::Lt),
         vec![Some(true)]
@@ -388,6 +408,16 @@ fn ndarray_order_differs_from_physical_data_first_order() {
     };
     let left = make(vec![Some(0), Some(0)], 2);
     let right = make(vec![Some(1)], 1);
+    let logical = serde_json::json!({"ndarray":["int32",1]});
+    let tag = |array: ArrayRef| {
+        arrow_cast::cast(
+            &array,
+            &vail_ordering::tag_type(array.data_type().clone(), &logical),
+        )
+        .unwrap()
+    };
+    let left = tag(left);
+    let right = tag(right);
     assert_eq!(
         comparisons(left.clone(), right.clone(), Operator::Lt),
         vec![Some(true)]
@@ -420,6 +450,16 @@ fn dictionary_entry_order_is_not_logical_dictionary_equality() {
     };
     let left = make(vec![1, 2]);
     let right = make(vec![2, 1]);
+    let logical = serde_json::json!({"dict":["int32","int32"]});
+    let tag = |array: ArrayRef| {
+        arrow_cast::cast(
+            &array,
+            &vail_ordering::tag_type(array.data_type().clone(), &logical),
+        )
+        .unwrap()
+    };
+    let left = tag(left);
+    let right = tag(right);
     assert_eq!(
         comparisons(left.clone(), right.clone(), Operator::Eq),
         vec![Some(false)]

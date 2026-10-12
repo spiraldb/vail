@@ -580,7 +580,7 @@ struct DownsamplePoint {
     label: ScalarValue,
 }
 fn tuple_item_type() -> DataType {
-    DataType::Struct(
+    let dtype = DataType::Struct(
         vec![
             Arc::new(Field::new("__vail_tuple_0", DataType::Float64, true)),
             Arc::new(Field::new("__vail_tuple_1", DataType::Float64, true)),
@@ -591,6 +591,10 @@ fn tuple_item_type() -> DataType {
             )),
         ]
         .into(),
+    );
+    vail_ordering::tag_type(
+        dtype,
+        &serde_json::json!({"tuple": ["float64", "float64", {"array": "str"}]}),
     )
 }
 fn downsample_type() -> DataType {
@@ -978,6 +982,9 @@ impl LinregAccumulator {
                         let pvals = t
                             .iter()
                             .map(|x| {
+                                if x.is_nan() {
+                                    return f64::NAN;
+                                }
                                 StudentsT::new(0., 1., df)
                                     .map(|d| 2. * d.sf(x.abs()))
                                     .unwrap_or(f64::NAN)
@@ -993,9 +1000,13 @@ impl LinregAccumulator {
                         let r2 = 1. - rss / rss0;
                         let adjusted = 1. - (1. - r2) * (self.n as f64 - self.nested as f64) / df;
                         let f = (rss0 - rss) * df / (rss * d0);
-                        let model_p = FisherSnedecor::new(d0, df)
+                        let model_p = if f.is_nan() {
+                            f64::NAN
+                        } else {
+                            FisherSnedecor::new(d0, df)
                                 .map(|d| d.sf(f))
-                                .unwrap_or(f64::NAN);
+                                .unwrap_or(f64::NAN)
+                        };
                         values = vec![
                             list(beta.iter().copied().collect()),
                             list(se),

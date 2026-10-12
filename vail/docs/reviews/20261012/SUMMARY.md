@@ -22,3 +22,17 @@ Expression-valued `filter_intervals` eagerly evaluates interval inputs. The Pyth
 The execution reviewer ran the focused scan suite: **19 tests passed**. Other checks used small reproductions or source inspection; no full suite or native rebuild was run for this review. Intentional divergences and deferred features were excluded. Findings have not been fixed as part of this review.
 
 Detailed evidence: [execution](execution.md), [storage](storage.md), [Python and Arrow](python.md).
+
+## P1 follow-up
+
+Both P1 findings are fixed. Tuple inputs now require exact arity and recursively validated members before Arrow conversion, including nested tuples and empty tuples. Population standard deviation delegates to DataFusion's accumulator, using Arrow kernels to center values and translate partial-state means during merging. This also fixes grouped and scan results. The numerical improvement deliberately differs from Hail's unstable result and is recorded in [intentional divergences](../../INTENTIONAL_HAIL_DIVERGENCES.md).
+
+Regression coverage: [test_p1_review_fixes.py](../../../python/tests/test_p1_review_fixes.py).
+
+## Indexed read follow-up
+
+The indexed-partition P2 finding is fixed: key candidate selection is intersected with each execution partition's original row range before opening files. See the [storage follow-up](storage.md#indexed-partition-issue-fixed) and its regression evidence.
+
+## Arrow type collision follow-up
+
+The Arrow sentinel-name P2 finding is fixed using versioned logical type metadata, strict untagged input inference, and Rust metadata restoration. See [the metadata contract](../../ARROW_TYPE_METADATA.md) and the [Python review follow-up](python.md#arrow-type-collision-follow-up-fixed). The `head` and empty row-scoped `eval` P2 findings remain open.

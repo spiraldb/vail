@@ -31,16 +31,17 @@ reduction because accumulator states are combined in a different grouping.
 The reducer's existing numerical behavior and known limitations still apply.
 
 Scan expressions are rejected in total and grouped aggregation contexts; they
-must not silently become ordinary aggregators. Reducers requiring initializers
-and aggregation combinators have separate support requirements, described by
-explicit errors where unsupported.
+must not silently become ordinary aggregators.
 
 ## Supported scan reducers and combinators
 
 Supported reducers are `count`, `count_where`, `fraction`, `any`, `all`, `sum`,
 `product`, `min`, `max`, `mean`, `collect`, `take`, `collect_as_set`, `corr`, and
-`ndarray_sum`. `stats` composes the supported scalar reducers. `take` preserves
-row order or its explicit ordering argument.
+`ndarray_sum`, `hist`, `approx_quantiles`, `approx_median`, `linreg`, `downsample`,
+`call_stats`, `hardy_weinberg_test`, `inbreeding`, and `info_score`. `stats`
+composes the scalar reducers. `take` preserves row order or its explicit ordering
+argument. `approx_cdf` remains explicitly rejected, matching the documented Vail
+divergence for aggregation.
 
 `scan.filter` attaches DataFusion aggregate filters to both local windows and
 partition summaries. Arguments are additionally guarded by a typed `CASE`, so
@@ -48,8 +49,31 @@ excluded rows cannot fail casts or other argument evaluation. Missing predicates
 exclude rows; included missing values remain in `collect`. Nested filters
 combine their predicates.
 
-Initializer reducers (`hist`, approximate quantiles/median), reducers requiring
-additional scan type inference (`linreg`, `downsample`, genomic reducers),
-`scan.explode`, grouped/counter scans, array combinators, and fold are not yet
-supported. Unsupported forms raise explicit errors rather than silently running
-as total aggregations.
+## Configuration and nested scopes
+
+Configuration expressions are lowered into a separate singleton DataFusion
+plan. At execution, `InitializedScanExec` evaluates that plan once, binds its
+Arrow values, and builds the configured scan plan. Concurrent output partitions
+share this initialization. Construction remains lazy; invalid runtime
+configuration fails during the action. Schema and output partition counts must
+remain the same as the template plan.
+
+`filter`, `explode`, `group_by`, `counter`, `array_agg`, `array_sum`, and `fold`
+compose the existing reducers. Group assignment uses DataFusion's `GroupValues`,
+and grouped updates/merges use its `GroupsAccumulatorAdapter`. DataFusion 55
+emits grouped results destructively, so the adapter exports state snapshots and
+restores them using the standard merge API. It does not implement a separate
+grouping or reduction algorithm.
+
+Nested scopes return raw reducer results. Ordinary DataFusion projections then
+evaluate the result expression, including references to the current row. This
+distinguishes a running aggregate's prefix input from a current-row expression
+used to construct its output.
+
+Array scopes validate identical lengths across partition summaries, including
+the final partition. An inclusive summary window supplies that validation as an
+explicit dependency of the finisher; values still come from the exclusive
+prefix. Missing arrays are skipped; known empty arrays remain empty.
+
+Private `_prev_nonnull` and `_densify` helpers compose fold and existing array
+expressions. Seeded randomness remains outside the supported scope.

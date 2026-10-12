@@ -366,14 +366,14 @@ async fn interval_bounds_select_across_two_vortex_files() {
     let DataType::Struct(fields) = dtype else {
         unreachable!()
     };
-    // The split falls between [1,3] and (1,3), whose order depends on
-    // inclusivity rather than the raw Arrow struct child order.
+    // The split falls between [1,3] and (1,3). Physical fields are start,
+    // start_exclusive, end, end_inclusive, preserving interval key order.
     let intervals = StructArray::new(
         fields,
         vec![
             Arc::new(Int32Array::from(vec![1, 1, 1, 2])),
+            Arc::new(BooleanArray::from(vec![false, false, true, false])),
             Arc::new(Int32Array::from(vec![3, 3, 3, 4])),
-            Arc::new(BooleanArray::from(vec![true, true, false, true])),
             Arc::new(BooleanArray::from(vec![false, true, false, false])),
         ],
         None,
@@ -448,8 +448,8 @@ async fn interval_bounds_select_across_two_vortex_files() {
                 .as_any()
                 .downcast_ref::<StructArray>()
                 .unwrap();
-            let starts = values
-                .column(2)
+            let start_exclusive = values
+                .column(1)
                 .as_any()
                 .downcast_ref::<BooleanArray>()
                 .unwrap();
@@ -459,11 +459,11 @@ async fn interval_bounds_select_across_two_vortex_files() {
                 .downcast_ref::<BooleanArray>()
                 .unwrap();
             (0..batch.num_rows())
-                .map(|row| (starts.value(row), ends.value(row)))
+                .map(|row| (start_exclusive.value(row), ends.value(row)))
                 .collect::<Vec<_>>()
         })
         .collect::<Vec<_>>();
-    assert_eq!(flags, vec![(true, true), (false, false)]);
+    assert_eq!(flags, vec![(false, true), (true, false)]);
 }
 
 #[tokio::test]

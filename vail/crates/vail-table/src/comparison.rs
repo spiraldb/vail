@@ -116,7 +116,7 @@ impl TableIR {
             let left = crate::logical::physical_globals(self.globals()).await?;
             let right = crate::logical::physical_globals(other.globals()).await?;
             let offset = left.schema().fields().len();
-            let joined: PhysicalPlan = Arc::new(CrossJoinExec::new(left, right));
+            let joined: PhysicalPlan = crate::plan::cross_join(left, right)?;
             let fields = global_pairs
                 .iter()
                 .map(|(l, r)| (*l, offset + r))
@@ -250,7 +250,7 @@ use datafusion_physical_expr::{PhysicalExpr, expressions::Literal};
 use datafusion_physical_plan::{
     aggregates::{AggregateExec, AggregateMode, PhysicalGroupBy},
     filter::FilterExec,
-    joins::{CrossJoinExec, HashJoinExec, PartitionMode, SortMergeJoinExec},
+    joins::{HashJoinExec, PartitionMode, SortMergeJoinExec},
     limit::GlobalLimitExec,
 };
 use std::hash::{Hash, Hasher};

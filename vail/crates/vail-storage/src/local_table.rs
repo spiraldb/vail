@@ -665,12 +665,33 @@ impl LocalRead {
         &self,
         queries: &[QueryInterval],
     ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
+        self.interval_batches_impl(queries, None)
+    }
+
+    /// Prune by both key intervals and the requested execution partition's
+    /// original row range. No unrelated candidate file is opened.
+    pub fn interval_batches_in_rows(
+        &self,
+        queries: &[QueryInterval],
+        rows: std::ops::Range<u64>,
+    ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
+        self.interval_batches_impl(queries, Some(rows))
+    }
+
+    fn interval_batches_impl(
+        &self,
+        queries: &[QueryInterval],
+        rows: Option<std::ops::Range<u64>>,
+    ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
         let read = self.clone();
         let queries = queries.to_vec();
         async_stream::try_stream! {
             let snapshot_id = read.table.metadata().current_snapshot_id()
                 .ok_or_else(|| StorageError::Invalid("table has no snapshot".into()))?;
-            let (mut batches, _) = super::stream_snapshot_intervals(&read.table, snapshot_id, &queries).await?;
+            let (mut batches, _) = match rows {
+                Some(rows) => super::stream_snapshot_intervals_rows(&read.table, snapshot_id, &queries, rows).await?,
+                None => super::stream_snapshot_intervals(&read.table, snapshot_id, &queries).await?,
+            };
             while let Some((offset, batch)) = batches.try_next().await? {
                 let batch = if read.entry.empty_row {
                     RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![],
@@ -938,7 +959,9 @@ mod tests {
             upper: Some(point),
         };
         assert_eq!(
-            read.candidate_partitions(&[query]).await.unwrap(),
+            read.candidate_partitions(std::slice::from_ref(&query))
+                .await
+                .unwrap(),
             vec![0, 1, 2]
         );
         let mut first = read.partition_batches(0);
@@ -954,6 +977,18 @@ mod tests {
             }
         }
         assert_eq!(first_values, vec![0, 1, 2, 3]);
+        let indexed_first = read
+            .interval_batches_in_rows(std::slice::from_ref(&query), 0..4)
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+        assert_eq!(
+            indexed_first
+                .iter()
+                .map(|(offset, _)| *offset)
+                .collect::<Vec<_>>(),
+            vec![0, 2],
+        );
 
         // The middle partition remains readable after an earlier file is
         // removed. Its duplicated keys do not affect ordinal selection.
@@ -976,6 +1011,41 @@ mod tests {
             }
         }
         assert_eq!(second_values, vec![4, 5, 6, 7]);
+        let indexed_middle = read
+            .interval_batches_in_rows(std::slice::from_ref(&query), 4..8)
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+        assert_eq!(
+            indexed_middle
+                .iter()
+                .map(|(offset, _)| *offset)
+                .collect::<Vec<_>>(),
+            vec![4, 6],
+        );
+        // Boundary files are retained even when the row range cuts through
+        // them; the caller slices the returned batches using these offsets.
+        let partial = read
+            .interval_batches_in_rows(std::slice::from_ref(&query), 5..7)
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+        assert_eq!(
+            partial
+                .iter()
+                .map(|(offset, _)| *offset)
+                .collect::<Vec<_>>(),
+            vec![4, 6]
+        );
+        // Empty row ranges must not open a file, including an absent file
+        // containing that ordinal.
+        assert!(
+            read.interval_batches_in_rows(std::slice::from_ref(&query), 11..11)
+                .try_collect::<Vec<_>>()
+                .await
+                .unwrap()
+                .is_empty()
+        );
     }
 
     #[tokio::test]

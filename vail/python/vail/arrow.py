@@ -19,7 +19,57 @@ def _pa():
     return pa
 
 
+TYPE_VERSION = b"vail.type.version"
+TYPE_DESCRIPTOR = b"vail.type"
+
+
+def _type_metadata(ty):
+    pa = _pa()
+    field = ty.field(0) if pa.types.is_struct(ty) and ty.num_fields else (
+        ty.value_field if pa.types.is_list(ty) or pa.types.is_large_list(ty) else None)
+    metadata = field.metadata or {} if field is not None else {}
+    version, descriptor = metadata.get(TYPE_VERSION), metadata.get(TYPE_DESCRIPTOR)
+    if version is None and descriptor is None:
+        return None
+    if version is None or descriptor is None:
+        raise TypeError("incomplete Arrow logical type metadata")
+    if version != b"1":
+        raise TypeError("unsupported Arrow logical type metadata version")
+    try:
+        from .types import type_from_wire
+        return type_from_wire(json.loads(descriptor))
+    except (ValueError, KeyError, TypeError, NotImplementedError) as exc:
+        raise TypeError("invalid Arrow logical type metadata") from exc
+
+
+def same_arrow_layout(left, right):
+    """Validate buffers and names, allowing Arrow's large-offset variants."""
+    pa = _pa()
+    if pa.types.is_struct(left) and pa.types.is_struct(right):
+        return left.num_fields == right.num_fields and all(
+            a.name == b.name and same_arrow_layout(a.type, b.type) for a, b in zip(left, right))
+    if (pa.types.is_list(left) or pa.types.is_large_list(left)) and pa.types.is_list(right):
+        return same_arrow_layout(left.value_type, right.value_type)
+    if pa.types.is_large_string(left) and pa.types.is_string(right):
+        return True
+    return left.equals(right)
+
+
 def arrow_type(dtype):
+    pa = _pa()
+    ty = _arrow_storage_type(dtype)
+    if dtype == tcall or isinstance(dtype, (ttuple, tlocus, tinterval, tdict, tset, tndarray)):
+        from .types import type_to_wire
+        field = ty.field(0) if pa.types.is_struct(ty) else ty.value_field
+        metadata = dict(field.metadata or {})
+        metadata.update({TYPE_VERSION: b"1", TYPE_DESCRIPTOR:
+                         json.dumps(type_to_wire(dtype), separators=(",", ":")).encode()})
+        field = field.with_metadata(metadata)
+        ty = pa.struct([field, *list(ty)[1:]]) if pa.types.is_struct(ty) else pa.list_(field)
+    return ty
+
+
+def _arrow_storage_type(dtype):
     pa = _pa()
     if isinstance(dtype, tstruct):
         return pa.struct([pa.field(name, arrow_type(ty), nullable=True) for name, ty in dtype.items()])
@@ -72,9 +122,10 @@ def _physical(value, dtype):
                 "__vail_interval_start_exclusive": not value.includes_start,
                 "__vail_interval_end_inclusive": value.includes_end}
     if isinstance(dtype, ttuple):
+        dtype._validate_value(value)
         if not dtype.types:
             return {"__vail_tuple_empty": False}
-        return {f"__vail_tuple_{i}": _physical(v, ty) for i, (v, ty) in enumerate(zip(value, dtype.types))}
+        return {f"__vail_tuple_{i}": _physical(value[i], ty) for i, ty in enumerate(dtype.types)}
     if isinstance(dtype, tdict):
         return [{"key": _physical(k, dtype.key_type), "value": _physical(v, dtype.value_type)}
                 for k, v in value.items()]
@@ -206,31 +257,16 @@ def dtype_from_arrow(ty):
     if pa.types.is_float64(ty): return tfloat64
     if pa.types.is_boolean(ty): return tbool
     if pa.types.is_string(ty) or pa.types.is_large_string(ty): return tstr
+    logical = _type_metadata(ty)
+    if logical is not None:
+        children = [field.type for field in ty] if pa.types.is_struct(ty) else [ty.value_type]
+        for child in children:
+            dtype_from_arrow(child)  # nested versions must also be understood
+        if not same_arrow_layout(ty, arrow_type(logical)):
+            raise TypeError("Arrow logical type metadata does not match physical layout")
+        return logical
     if pa.types.is_list(ty) or pa.types.is_large_list(ty):
-        field = ty.value_field
-        if field.name == "__vail_set_item": return tset(dtype_from_arrow(field.type))
-        if field.name == "__vail_dict_entry" and pa.types.is_struct(field.type):
-            return tdict(dtype_from_arrow(field.type.field("key").type),
-                         dtype_from_arrow(field.type.field("value").type))
-        return tarray(dtype_from_arrow(field.type))
+        return tarray(dtype_from_arrow(ty.value_type))
     if pa.types.is_struct(ty):
-        names = [f.name for f in ty]
-        if names == ["__vail_call_alleles", "__vail_call_phased"]: return tcall
-        if names == ["__vail_interval_start", "__vail_interval_start_exclusive", "__vail_interval_end", "__vail_interval_end_inclusive"]:
-            return tinterval(dtype_from_arrow(ty.field(0).type))
-        if names == ["__vail_ndarray_data", "__vail_ndarray_shape"]:
-            field = ty.field(0).type.value_field
-            try: rank = int(field.name.rsplit("_", 1)[1])
-            except (ValueError, IndexError): raise TypeError("ndarray Arrow schema is missing its rank") from None
-            return tndarray(dtype_from_arrow(field.type), rank)
-        if names == ["__vail_tuple_empty"]: return ttuple()
-        if names and all(name == f"__vail_tuple_{i}" for i, name in enumerate(names)):
-            return ttuple(*(dtype_from_arrow(f.type) for f in ty))
-        if names == ["__vail_locus_ordinal", "__vail_locus_contig", "__vail_locus_position"]:
-            from .types import tlocus, type_from_wire
-            metadata = ty.field(1).metadata or {}
-            wire = metadata.get(b"vail.reference")
-            if wire is None: raise TypeError("locus Arrow schema is missing reference metadata")
-            return type_from_wire({"locus": json.loads(wire)})
         return tstruct(**{f.name: dtype_from_arrow(f.type) for f in ty})
     raise TypeError(f"cannot infer a Vail type from Arrow type {ty}")

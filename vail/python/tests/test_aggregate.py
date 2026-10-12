@@ -39,7 +39,7 @@ class AggregateTests(unittest.TestCase):
 
     def test_reducers_on_empty_and_all_missing_tables(self):
         for table, expected_count, expected_values, expected_fraction in (
-            (hl.Table.parallelize([], schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 0, [], math.nan),
+            (hl.Table.parallelize([], schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 0, [], None),
             (hl.Table.parallelize([{"x": None, "b": None}, {"x": None, "b": None}],
                                   schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 2, [None, None], 0.0),
         ):
@@ -66,10 +66,7 @@ class AggregateTests(unittest.TestCase):
             self.assertTrue(math.isnan(result.mean))
             self.assertEqual(result.collect, expected_values)
             self.assertEqual(result.count_where, 0)
-            if math.isnan(expected_fraction):
-                self.assertTrue(math.isnan(result.fraction))
-            else:
-                self.assertEqual(result.fraction, expected_fraction)
+            self.assertEqual(result.fraction, expected_fraction)
             self.assertFalse(result.any)
             self.assertTrue(result.all)
             self.assertEqual(result.stats.n, 0)

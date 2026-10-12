@@ -27,3 +27,9 @@ I ran a focused Python repro using the existing `_native.abi3.so` (no build): wr
 ### Fragment order and descriptor round-trip
 
 I inspected the existing storage round-trip test `crates/vail-storage/tests/roundtrip.rs` around its first ordered snapshot case. It deliberately submits files out of key order and asserts that a full read returns globally key-sorted rows; this matches the fragment index's metadata sort and snapshot reader selection. The per-file bounds are certified by `certify_file`, and `FragmentIndex::new` rejects interior overlap. Local storage then associates descriptor file offsets with the original stream order, which is the order produced by the keyed Table stream. I found no second concrete metadata/bounds inconsistency to report.
+
+### Indexed partition issue: fixed
+
+The indexed provider now passes its execution partition's original row range into storage together with the key queries. Storage intersects indexed candidate paths with files overlapping that half-open row range before opening Vortex data files. Original batch offsets, boundary slicing, and DataFusion's residual predicate remain intact. Empty row ranges select no files.
+
+Regressions in `python/tests/test_storage.py` remove every unrelated data file and collect the first, middle, or last filtered partition, for broad and narrow key predicates with an additional residual predicate. A separate case removes all files and verifies that a partition whose file cannot match the key predicate returns empty. The rolled-file storage test covers duplicate keys, multiple files per partition, partially overlapping boundary files, and an empty range inside an absent file. See the [saved validation record](../../../conformance/runs/20261012-indexed-partition-files/SUMMARY.md).

@@ -47,15 +47,48 @@ impl ScanState {
         })
     }
 
-
-
-
-
-
+    pub fn output_type(&self) -> DataType {
+        self.output.clone()
+    }
+    pub fn input_type(&self) -> DataType {
+        self.inputs[0].clone()
+    }
+    pub fn fields(&self) -> Fields {
+        self.fields.clone()
+    }
+    pub fn snapshot_accumulator(&self) -> Result<Box<dyn Accumulator>> {
+        Ok(Box::new(StateAccumulator {
+            inner: self.accumulator()?,
+            fields: self.fields.clone(),
+            merge_input: false,
+            input_count: self.inputs.len(),
+        }))
+    }
+    pub fn finish_states(&self, states: &StructArray) -> Result<ArrayRef> {
+        let mut values = Vec::with_capacity(states.len());
+        for row in 0..states.len() {
+            let mut accumulator = self.accumulator()?;
+            if states.is_valid(row) {
+                accumulator.merge_batch(
+                    &states
+                        .columns()
+                        .iter()
+                        .map(|c| c.slice(row, 1))
+                        .collect::<Vec<_>>(),
+                )?;
+            }
+            values.push(accumulator.evaluate()?);
+        }
+        if values.is_empty() {
+            Ok(arrow_array::new_empty_array(&self.output))
+        } else {
+            ScalarValue::iter_to_array(values)
+        }
+    }
     pub fn state_type(&self) -> DataType {
         DataType::Struct(self.fields.clone())
     }
-    fn accumulator(&self) -> Result<Box<dyn Accumulator>> {
+    pub fn accumulator(&self) -> Result<Box<dyn Accumulator>> {
         let schema = Schema::empty();
         let expr_fields: Vec<FieldRef> = self
             .inputs
@@ -119,16 +152,28 @@ impl ScanState {
         ))
     }
     pub fn finish_udf(&self) -> Arc<ScalarUDF> {
+        self.finisher(false)
+    }
+    /// Keep inclusive summary validation in the plan while returning the exclusive prefix.
+    pub fn validated_finish_udf(&self) -> Arc<ScalarUDF> {
+        self.finisher(true)
+    }
+    fn finisher(&self, validation: bool) -> Arc<ScalarUDF> {
         let descriptor = self.clone();
-        let name = format!("vail_scan_finish_{}_{}", self.aggregate.name(), self.id);
+        let name = format!(
+            "vail_scan_finish_{}_{}_{}",
+            self.aggregate.name(),
+            self.id,
+            validation
+        );
         Arc::new(create_udf(
             &name,
-            vec![self.state_type(), self.state_type()],
+            vec![self.state_type(); if validation { 3 } else { 2 }],
             self.output.clone(),
             Volatility::Immutable,
             Arc::new(move |args| {
                 let arrays = ColumnarValue::values_to_arrays(args)?;
-                let [carry, local] = arrays.as_slice() else {
+                let [carry, local] = &arrays[..2] else {
                     return Err(DataFusionError::Execution(
                         "scan finalize requires carry and local states".into(),
                     ));

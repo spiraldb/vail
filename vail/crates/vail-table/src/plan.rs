@@ -1156,7 +1156,7 @@ pub(crate) fn bind_external(
         let expression = lower_with_global_columns(&value, &plan.schema(), globals.schema())?;
         let name = private_name(&input.schema(), &Schema::empty(), "__vail_external_globals");
         let singleton = Arc::new(ProjectionExec::try_new(vec![(expression, name)], plan)?);
-        input = Arc::new(CrossJoinExec::new(singleton, input));
+        input = cross_join(singleton, input)?;
         for index in indices.values_mut() {
             *index += 1;
         }
@@ -1165,12 +1165,40 @@ pub(crate) fn bind_external(
     Ok((input, indices))
 }
 
+/// DF55 CrossJoinExec rebuilds its left values through scalar conversion,
+/// which drops list typing metadata. Its nested-loop join uses Arrow take and
+/// provides the same Cartesian relation without changing the representation.
+pub(crate) fn cross_join(
+    left: PhysicalPlan,
+    right: PhysicalPlan,
+) -> datafusion_common::Result<PhysicalPlan> {
+    let metadata = left
+        .schema()
+        .fields()
+        .iter()
+        .chain(right.schema().fields())
+        .any(|f| vail_ordering::has_type_metadata(f.data_type()));
+    if metadata {
+        Ok(Arc::new(
+            datafusion_physical_plan::joins::NestedLoopJoinExec::try_new(
+                left,
+                right,
+                None,
+                &datafusion_expr::JoinType::Inner,
+                None,
+            )?,
+        ))
+    } else {
+        Ok(Arc::new(CrossJoinExec::new(left, right)))
+    }
+}
+
 pub(crate) fn bind_globals(rows: PhysicalPlan, table: &Arc<TableIR>) -> Result<PhysicalPlan> {
     if table.globals().schema().fields().is_empty() {
         return Ok(rows);
     }
     // CrossJoin builds its left input: exactly one row, including for empty tables.
-    Ok(Arc::new(CrossJoinExec::new(table.globals().lower()?, rows)))
+    Ok(cross_join(table.globals().lower()?, rows)?)
 }
 pub(crate) fn sort(input: TablePlan, keys: &[(String, bool)]) -> Result<TablePlan> {
     if keys.is_empty() {

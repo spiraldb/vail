@@ -31,6 +31,7 @@ pub mod expressions;
 pub mod logical_expr;
 pub mod ordering;
 pub mod reference;
+pub mod scan_scopes;
 pub mod scan_state;
 
 #[derive(Debug, Error)]

@@ -58,6 +58,12 @@ class ttuple:
             raise TypeError("ttuple requires Vail types")
         object.__setattr__(self, "types", tuple(types))
 
+    def _validate_value(self, value):
+        if not isinstance(value, tuple):
+            raise TypeError("expected a Python tuple")
+        if len(value) != len(self.types):
+            raise TypeError(f"expected a tuple with {len(self.types)} elements, found {len(value)}")
+
 
 @dataclass(frozen=True)
 class tdict:
@@ -516,9 +522,10 @@ def encode_value(value, dtype=None):
     if isinstance(dtype, tdict):
         return [{"key": encode_value(k, dtype.key_type), "value": encode_value(v, dtype.value_type)} for k, v in value.items()]
     if isinstance(dtype, ttuple):
+        dtype._validate_value(value)
         if not dtype.types:
             return {"__vail_tuple_empty": False}
-        return {f"__vail_tuple_{i}": encode_value(v, t) for i, (v, t) in enumerate(zip(value, dtype.types))}
+        return {f"__vail_tuple_{i}": encode_value(value[i], ty) for i, ty in enumerate(dtype.types)}
     if isinstance(dtype, tndarray):
         import numpy as np
         if isinstance(value, Mapping) and "__vail_ndarray_data" in value:

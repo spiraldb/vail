@@ -604,6 +604,9 @@ impl ExecutionPlan for PartitionSetExec {
                     .checked_sub(1)
                     .ok_or_else(|| DataFusionError::Internal("partition tag is absent".into()))?;
                 columns[index] = Arc::new(UInt64Array::from_value(p as u64, batch.num_rows()));
+                let columns = columns.iter().zip(schema.fields())
+                    .map(|(array, field)| arrow_cast::cast(array, field.data_type()))
+                    .collect::<std::result::Result<Vec<_>, _>>()?;
                 RecordBatch::try_new(schema, columns).map_err(Into::into)
             }
         });
@@ -687,6 +690,9 @@ impl ExecutionPlan for OrderedConcatExec {
                     while let Some(batch)=stream.try_next().await? {
                         let mut columns=batch.columns().to_vec();
                         if !columns.is_empty() {let last=columns.len()-1;columns[last]=Arc::new(UInt64Array::from_iter_values(std::iter::repeat_n(id as u64,batch.num_rows())));}
+                        let columns = columns.iter().zip(schema.fields())
+                            .map(|(array, field)| arrow_cast::cast(array, field.data_type()))
+                            .collect::<std::result::Result<Vec<_>, _>>()?;
                         yield RecordBatch::try_new(schema.clone(),columns)?;
                     }
                 }

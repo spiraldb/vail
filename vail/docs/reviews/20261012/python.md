@@ -42,6 +42,10 @@ The explicit schema is valid, but the Arrow inference path classifies nested `x`
 
 ## Coverage notes
 
+### Arrow type collision follow-up: fixed
+
+Special types now use versioned Arrow metadata in both Python and Rust. Untagged sentinel-shaped structs/lists infer ordinary types. Explicit schemas validate physical layouts, and Rust restores declared metadata at execution and IPC export boundaries. The change also removes name-based special-type interpretation from key comparison. Nested metadata versions and malformed layouts are validated. See [the metadata contract](../../ARROW_TYPE_METADATA.md) and `python/tests/test_arrow_type_metadata.py` for collision, globals, join/lookup, and storage regressions.
+
 The changed Python tests cover successful typed tuple round trips and general expression/collection behavior, but miss tuple arity corruption, row-scope on zero-field structs, and Arrow structs that collide with the bridge's reserved physical names. The exact-option/result-metadata failures mentioned in the task were not reported as runtime findings.
 
 ### Design clarification: `filter_intervals` eagerly evaluates inputs, matching Hail

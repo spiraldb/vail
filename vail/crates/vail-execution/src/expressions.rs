@@ -140,7 +140,7 @@ impl Type {
     }
 
     pub fn to_arrow(&self) -> Result<DataType, ExprError> {
-        Ok(match self {
+        let dtype = match self {
             Self::Primitive(PrimitiveType::Int32) => DataType::Int32,
             Self::Primitive(PrimitiveType::Int64) => DataType::Int64,
             Self::Primitive(PrimitiveType::Float32) => DataType::Float32,
@@ -226,10 +226,49 @@ impl Type {
             Self::Array { array } => {
                 DataType::List(Arc::new(Field::new("item", array.to_arrow()?, true)))
             }
-        })
+        };
+        if matches!(
+            self,
+            Self::Tuple { .. }
+                | Self::Set { .. }
+                | Self::Dict { .. }
+                | Self::Interval { .. }
+                | Self::Ndarray { .. }
+                | Self::Locus { .. }
+                | Self::Primitive(PrimitiveType::Call)
+        ) {
+            let logical =
+                serde_json::to_value(self).map_err(|e| ExprError::Invalid(e.to_string()))?;
+            Ok(vail_ordering::tag_type(dtype, &logical))
+        } else {
+            Ok(dtype)
+        }
     }
 
     pub fn from_arrow(dtype: &DataType) -> Result<Self, ExprError> {
+        if let Some(logical) =
+            vail_ordering::type_metadata(dtype).map_err(|e| ExprError::Invalid(e.to_string()))?
+        {
+            match dtype {
+                DataType::Struct(fields) => {
+                    for field in fields {
+                        Self::from_arrow(field.data_type())?;
+                    }
+                }
+                DataType::List(field) => {
+                    Self::from_arrow(field.data_type())?;
+                }
+                _ => (),
+            }
+            let ty: Self = serde_json::from_value(logical)
+                .map_err(|e| ExprError::Invalid(format!("invalid Arrow logical type: {e}")))?;
+            if !vail_ordering::same_layout(dtype, &ty.to_arrow()?) {
+                return Err(ExprError::Invalid(
+                    "Arrow logical type metadata does not match physical layout".into(),
+                ));
+            }
+            return Ok(ty);
+        }
         Ok(match dtype {
             DataType::Int32 => Self::Primitive(PrimitiveType::Int32),
             DataType::Int64 => Self::Primitive(PrimitiveType::Int64),
@@ -237,113 +276,11 @@ impl Type {
             DataType::Float64 => Self::Primitive(PrimitiveType::Float64),
             DataType::Boolean => Self::Primitive(PrimitiveType::Bool),
             DataType::Utf8 => Self::Primitive(PrimitiveType::Str),
-            DataType::Struct(fields)
-                if fields.len() == 3
-                    && fields[0].name() == "__vail_locus_ordinal"
-                    && fields[1].name() == "__vail_locus_contig"
-                    && fields[2].name() == "__vail_locus_position" =>
-            {
-                if fields[0].data_type() != &DataType::Int32
-                    || fields[1].data_type() != &DataType::Utf8
-                    || fields[2].data_type() != &DataType::Int32
-                {
-                    return Err(ExprError::Invalid(
-                        "locus fields must be int32, string, int32".into(),
-                    ));
-                }
-                let raw = fields[1].metadata().get("vail.reference").ok_or_else(|| {
-                    ExprError::Invalid("locus contig field is missing reference metadata".into())
-                })?;
-                let locus: ReferenceDefinition = serde_json::from_str(raw).map_err(|e| {
-                    ExprError::Invalid(format!("invalid locus reference metadata: {e}"))
-                })?;
-                locus.validate().map_err(ExprError::Invalid)?;
-                Self::Locus { locus }
-            }
-            DataType::Struct(fields)
-                if fields.len() == 4
-                    && fields[0].name() == "__vail_interval_start"
-                    && fields[1].name() == "__vail_interval_start_exclusive"
-                    && fields[2].name() == "__vail_interval_end"
-                    && fields[3].name() == "__vail_interval_end_inclusive" =>
-            {
-                let start = Self::from_arrow(fields[0].data_type())?;
-                if start != Self::from_arrow(fields[2].data_type())? {
-                    return Err(ExprError::Invalid(
-                        "interval endpoints must have the same type".into(),
-                    ));
-                }
-                Self::Interval {
-                    interval: Box::new(start),
-                }
-            }
-            DataType::Struct(fields)
-                if fields.len() == 1
-                    && fields[0].name() == "__vail_tuple_empty"
-                    && fields[0].data_type() == &DataType::Boolean =>
-            {
-                Self::Tuple { tuple: vec![] }
-            }
-            DataType::Struct(fields)
-                if !fields.is_empty()
-                    && fields
-                        .iter()
-                        .enumerate()
-                        .all(|(i, f)| f.name() == &format!("__vail_tuple_{i}")) =>
-            {
-                Self::Tuple {
-                    tuple: fields
-                        .iter()
-                        .map(|f| Self::from_arrow(f.data_type()))
-                        .collect::<Result<_, _>>()?,
-                }
-            }
-            DataType::Struct(fields)
-                if fields.len() == 2
-                    && fields[0].name() == "__vail_call_alleles"
-                    && fields[1].name() == "__vail_call_phased" =>
-            {
-                Self::Primitive(PrimitiveType::Call)
-            }
-            DataType::Struct(fields)
-                if fields.len() == 2
-                    && fields[0].name() == "__vail_ndarray_data"
-                    && fields[1].name() == "__vail_ndarray_shape" =>
-            {
-                let DataType::List(item) = fields[0].data_type() else {
-                    return Err(ExprError::Invalid("invalid ndarray data type".into()));
-                };
-                let ndim = item
-                    .name()
-                    .strip_prefix("__vail_ndarray_item_")
-                    .and_then(|n| n.parse::<usize>().ok())
-                    .ok_or_else(|| ExprError::Invalid("invalid ndarray rank".into()))?;
-                Self::Ndarray {
-                    ndarray: Box::new((Self::from_arrow(item.data_type())?, ndim)),
-                }
-            }
-            DataType::List(field) if field.name() == "__vail_dict_entry" => {
-                let DataType::Struct(fields) = field.data_type() else {
-                    return Err(ExprError::Invalid("invalid dict entry type".into()));
-                };
-                if fields.len() != 2 || fields[0].name() != "key" || fields[1].name() != "value" {
-                    return Err(ExprError::Invalid("invalid dict fields".into()));
-                }
-                Self::Dict {
-                    dict: Box::new((
-                        Self::from_arrow(fields[0].data_type())?,
-                        Self::from_arrow(fields[1].data_type())?,
-                    )),
-                }
-            }
             DataType::Struct(fields) => Self::Struct {
                 r#struct: fields
                     .iter()
                     .map(|f| Ok((f.name().clone(), Self::from_arrow(f.data_type())?)))
-                    .collect::<Result<Vec<_>, ExprError>>()?,
-            },
-            DataType::List(field) if field.name() == "__vail_set_item" => Self::Set {
-                set: Box::new(Self::from_arrow(field.data_type())?),
+                    .collect::<Result<_, ExprError>>()?,
             },
             DataType::List(field) => Self::Array {
                 array: Box::new(Self::from_arrow(field.data_type())?),
@@ -977,6 +914,28 @@ impl Expr {
         Ok(result)
     }
 
+    pub fn contains_scan(&self) -> bool {
+        let mut found = false;
+        self.visit(&mut |node| {
+            found |= matches!(node, Self::Aggregate { options, .. }
+            if options.get("__vail_scan").and_then(Value::as_bool) == Some(true));
+        });
+        found
+    }
+
+    pub fn dtype_with_lexical(
+        &self,
+        schema: &Schema,
+        globals: &Schema,
+        variables: &[(String, Type)],
+    ) -> Result<Type, ExprError> {
+        let scope = variables
+            .iter()
+            .map(|(name, ty)| (name.clone(), ty.clone(), 0))
+            .collect::<Vec<_>>();
+        self.dtype_scoped(schema, globals, &scope)
+    }
+
     pub fn dtype(&self, schema: &Schema) -> Result<Type, ExprError> {
         self.dtype_with_globals(schema, &Schema::empty())
     }
@@ -998,6 +957,18 @@ impl Expr {
                 options,
                 ..
             } if options.get("__vail_scan").and_then(Value::as_bool) == Some(true) => {
+                if function == "__scan_fold" {
+                    if let Some(value) = value {
+                        if let Self::AggregateFold { initial, .. } = value.as_ref() {
+                            return initial.dtype_scoped(schema, globals, scope);
+                        }
+                    }
+                    return Err(ExprError::Invalid("scan fold requires fold IR".into()));
+                }
+                if let Some(dtype) = options.get("__vail_result_type") {
+                    return serde_json::from_value(dtype.clone())
+                        .map_err(|e| ExprError::Invalid(format!("invalid scan result type: {e}")));
+                }
                 let value_type = value
                     .as_ref()
                     .map(|v| v.dtype_scoped(schema, globals, scope))
@@ -1044,6 +1015,41 @@ impl Expr {
                     }
                 })
             }
+            Self::AggExplode {
+                value,
+                parameter,
+                body,
+            }
+            | Self::AggArray {
+                value,
+                parameter,
+                body,
+            } if body.contains_scan() => {
+                let element = match value.dtype_scoped(schema, globals, scope)? {
+                    Type::Array { array } | Type::Set { set: array } => *array,
+                    _ => {
+                        return Err(ExprError::Invalid(
+                            "scan collection scope requires array or set".into(),
+                        ));
+                    }
+                };
+                let mut nested = scope.to_vec();
+                nested.push((parameter.clone(), element, 0));
+                let result = body.dtype_scoped(schema, globals, &nested)?;
+                if matches!(self, Self::AggArray { .. }) {
+                    Ok(Type::Array {
+                        array: Box::new(result),
+                    })
+                } else {
+                    Ok(result)
+                }
+            }
+            Self::AggGroupBy { key, body } if body.contains_scan() => Ok(Type::Dict {
+                dict: Box::new((
+                    key.dtype_scoped(schema, globals, scope)?,
+                    body.dtype_scoped(schema, globals, scope)?,
+                )),
+            }),
             Self::Aggregate { .. }
             | Self::AggExplode { .. }
             | Self::AggGroupBy { .. }
@@ -2189,7 +2195,7 @@ pub(crate) fn literal_array(v: &Value, t: &Type, len: usize) -> Result<ArrayRef,
             ))
         }
     };
-    Ok(a)
+    Ok(arrow_cast::cast(&a, &dt)?)
 }
 
 pub fn validate_projection(
@@ -2343,7 +2349,7 @@ fn custom_numeric(
     }
     Ok(ScalarValue::iter_to_array(values.into_iter())?)
 }
-pub(crate) fn scalar_at(a: &ArrayRef, i: usize) -> Result<ScalarValue, ExprError> {
+pub fn scalar_at(a: &ArrayRef, i: usize) -> Result<ScalarValue, ExprError> {
     // DF's list scalar builder drops item-field metadata. Slice the original
     // nested array so set types survive scalar literals and singleton globals.
     if let Some(list) = a.as_any().downcast_ref::<ListArray>() {
@@ -2663,6 +2669,7 @@ fn array_reduce(
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum HailKind {
+    RestoreArrowType,
     Die,
     Numeric(BinaryOperator),
     ToString(String),
@@ -3578,7 +3585,11 @@ impl std::hash::Hash for HailPhysicalExpr {
 }
 impl std::fmt::Display for HailPhysicalExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Hail({:?})", self.kind)
+        if matches!(self.kind, HailKind::RestoreArrowType) {
+            write!(f, "RestoreArrowType({})", self.args[0])
+        } else {
+            write!(f, "Hail({:?})", self.kind)
+        }
     }
 }
 impl PhysicalExpr for HailPhysicalExpr {
@@ -3618,6 +3629,7 @@ impl PhysicalExpr for HailPhysicalExpr {
             .collect::<datafusion_common::Result<Vec<_>>>()?;
         let result = (|| -> Result<ArrayRef, ExprError> {
             match &self.kind {
+                HailKind::RestoreArrowType => Ok(args[0].clone()),
                 HailKind::Die => {
                     if len == 0 {
                         return Ok(arrow_array::new_empty_array(&self.dtype));
@@ -3749,6 +3761,7 @@ impl PhysicalExpr for HailPhysicalExpr {
             }
         })();
         result
+            .and_then(|array| Ok(arrow_cast::cast(&array, &self.dtype)?))
             .map(ColumnarValue::Array)
             .map_err(|e| DataFusionError::Execution(e.to_string()))
     }
@@ -3761,6 +3774,17 @@ fn custom(
 ) -> Arc<dyn PhysicalExpr> {
     Arc::new(HailPhysicalExpr { kind, args, dtype })
 }
+pub fn restore_physical_type(
+    value: Arc<dyn PhysicalExpr>,
+    dtype: DataType,
+) -> Arc<dyn PhysicalExpr> {
+    if vail_ordering::has_type_metadata(&dtype) {
+        custom(HailKind::RestoreArrowType, vec![value], dtype)
+    } else {
+        value
+    }
+}
+
 fn lower_cast(
     child: Arc<dyn PhysicalExpr>,
     source: &Schema,
@@ -3958,6 +3982,16 @@ fn lower_array_lambda(
         },
         _ => unreachable!("array lambda typing validates its input"),
     };
+    // The list's container tag is not a lambda-variable field tag. Give DF
+    // an ordinary array item field, retaining the element's nested typing.
+    let input = cast(
+        input,
+        schema,
+        Type::Array {
+            array: Box::new(array.clone()),
+        }
+        .to_arrow()?,
+    )?;
     let mut fields = schema.fields().to_vec();
     fields.push(Arc::new(Field::new(parameter, array.to_arrow()?, true)));
     let nested_schema = Schema::new(fields);
@@ -4017,7 +4051,8 @@ fn lower_scoped(
     let dtype = expr
         .dtype_scoped(schema, globals.schema(), scope)?
         .to_arrow()?;
-    Ok(match expr {
+    let output_type = dtype.clone();
+    let result: Arc<dyn PhysicalExpr> = match expr {
         Expr::Aggregate { .. }
         | Expr::AggFilter { .. }
         | Expr::AggExplode { .. }
@@ -4057,7 +4092,17 @@ fn lower_scoped(
             };
             let args = args
                 .iter()
-                .map(|arg| lower_scoped(arg, schema, globals, scope))
+                .map(|arg| {
+                    let value = lower_scoped(arg, schema, globals, scope)?;
+                    let ty = arg
+                        .dtype_scoped(schema, globals.schema(), scope)?
+                        .to_arrow()?;
+                    Ok(cast(
+                        value,
+                        schema,
+                        vail_ordering::without_type_metadata(&ty),
+                    )?)
+                })
                 .collect::<Result<Vec<_>, ExprError>>()?;
             if function == "canonical_key" {
                 let canonical =
@@ -4344,8 +4389,18 @@ fn lower_scoped(
             } else {
                 let children = elements
                     .iter()
-                    .map(|e| lower_scoped(e, schema, globals, scope))
-                    .collect::<Result<Vec<_>, _>>()?;
+                    .map(|e| {
+                        let value = lower_scoped(e, schema, globals, scope)?;
+                        let ty = e
+                            .dtype_scoped(schema, globals.schema(), scope)?
+                            .to_arrow()?;
+                        Ok(cast(
+                            value,
+                            schema,
+                            vail_ordering::without_type_metadata(&ty),
+                        )?)
+                    })
+                    .collect::<Result<Vec<_>, ExprError>>()?;
                 Arc::new(ScalarFunctionExpr::try_new(
                     datafusion_functions_nested::make_array::make_array_udf(),
                     children,
@@ -4743,7 +4798,18 @@ fn lower_scoped(
                 Some(no),
             )?)
         }
-    })
+    };
+    if vail_ordering::has_type_metadata(&output_type) {
+        // Cast arrays, not DF scalars: scalar list reconstruction can discard
+        // item-field metadata even when its advertised type is unchanged.
+        Ok(custom(
+            HailKind::RestoreArrowType,
+            vec![result],
+            output_type,
+        ))
+    } else {
+        Ok(result)
+    }
 }
 
 /// Compile each projection expression once for reuse across ordered batches.

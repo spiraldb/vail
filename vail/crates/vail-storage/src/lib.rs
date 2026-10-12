@@ -548,6 +548,23 @@ pub async fn stream_snapshot_intervals(
     Ok((stream, descriptor))
 }
 
+/// Intersect indexed candidate files with an original snapshot row range
+/// before opening them. Batches retain original offsets and need residual
+/// filtering and boundary slicing by the caller.
+pub async fn stream_snapshot_intervals_rows(
+    table: &Table,
+    snapshot_id: i64,
+    queries: &[QueryInterval],
+    rows: Range<u64>,
+) -> Result<(
+    futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
+    SnapshotDescriptor,
+)> {
+    let (stream, descriptor, _) =
+        stream_snapshot_internal(table, snapshot_id, Some(queries), false, Some(rows)).await?;
+    Ok((stream, descriptor))
+}
+
 /// Return original row ranges of the candidate files selected by an interval
 /// query. This performs the same descriptor, manifest, and index binding
 /// validation as the streaming reader but does not open or decode data files.
@@ -574,11 +591,6 @@ pub async fn stream_snapshot_rows(
     futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
     SnapshotDescriptor,
 )> {
-    if rows.start > rows.end {
-        return Err(StorageError::Invalid(
-            "snapshot row range start exceeds end".into(),
-        ));
-    }
     let (stream, descriptor, _) =
         stream_snapshot_internal(table, snapshot_id, None, false, Some(rows)).await?;
     Ok((stream, descriptor))
@@ -602,6 +614,11 @@ async fn stream_snapshot_internal(
             .ok_or_else(|| StorageError::Invalid("snapshot row count overflow".into()))
     })?;
     if let Some(rows) = &row_range {
+        if rows.start > rows.end {
+            return Err(StorageError::Invalid(
+                "snapshot row range start exceeds end".into(),
+            ));
+        }
         if rows.end > total_rows {
             return Err(StorageError::Invalid(
                 "snapshot row range exceeds row count".into(),
@@ -759,18 +776,7 @@ async fn stream_snapshot_internal(
         .drain(..)
         .map(|task| (task.data_file_path().to_owned(), task))
         .collect();
-    let selected = if let Some(rows) = &row_range {
-        let mut file_end = 0u64;
-        descriptor
-            .files
-            .iter()
-            .filter_map(|file| {
-                let file_start = file_end;
-                file_end += file.row_count;
-                (file_start < rows.end && rows.start < file_end).then_some(file.path.as_str())
-            })
-            .collect::<Vec<_>>()
-    } else if let Some(index) = &index {
+    let mut selected = if let Some(index) = &index {
         let leaves = if let Some(queries) = queries {
             let mut selected_paths = HashSet::new();
             for query in queries {
@@ -817,6 +823,23 @@ async fn stream_snapshot_internal(
             .map(|file| file.path.as_str())
             .collect::<Vec<_>>()
     };
+    if let Some(rows) = &row_range {
+        let candidates: HashSet<_> = selected.iter().copied().collect();
+        let mut file_end = 0u64;
+        selected = descriptor
+            .files
+            .iter()
+            .filter_map(|file| {
+                let file_start = file_end;
+                file_end += file.row_count;
+                (rows.start < rows.end
+                    && file_start < rows.end
+                    && rows.start < file_end
+                    && candidates.contains(file.path.as_str()))
+                .then_some(file.path.as_str())
+            })
+            .collect();
+    }
     let selected_paths: HashSet<_> = selected.iter().copied().collect();
     let mut file_end = 0u64;
     let selected_row_ranges = descriptor

@@ -68,8 +68,7 @@ def input_expression(value, dtype):
     if isinstance(dtype, tarray) and isinstance(value, (list, tuple)):
         return array([input_expression(item, dtype.element_type) for item in value])
     if isinstance(dtype, ttuple) and isinstance(value, tuple):
-        if len(value) != len(dtype.types):
-            raise ValueError("tuple width must match schema")
+        dtype._validate_value(value)
         return tuple_([input_expression(item, ty) for item, ty in zip(value, dtype.types)])
     if isinstance(dtype, tdict) and isinstance(value, Mapping):
         from .collections import _cast

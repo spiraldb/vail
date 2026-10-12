@@ -18,7 +18,10 @@ def test_take_validates_n_and_carries_ordering():
     ordering = Expression(tint64, None, {"op": "literal", "value": 2})
     result = take(value, 3, ordering)
     assert result.dtype == tarray(tint32)
-    assert result.to_ir()["options"] == {"n": 3, "ordered": True}
+    options = result.to_ir()["options"]
+    assert options["n"] == 3
+    assert options["ordered"] is True
+    assert options["__vail_result_type"] == {"array": "int32"}
     assert result.to_ir()["value"]["fields"][1][1] == ordering.to_ir()
     with pytest.raises(ValueError):
         take(value, -1)

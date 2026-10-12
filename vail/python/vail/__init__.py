@@ -180,6 +180,16 @@ def _check_value(value, dtype, name):
     elif isinstance(dtype, tinterval):
         if not isinstance(value, Interval) or value.point_type != dtype.point_type:
             raise TypeError(f"field {name!r} requires an interval with point type {dtype.point_type}")
+    elif isinstance(dtype, ttuple):
+        dtype._validate_value(value)
+        for index, (item, item_type) in enumerate(zip(value, dtype.types)):
+            _check_value(item, item_type, f"{name}[{index}]")
+    elif isinstance(dtype, tdict):
+        if not isinstance(value, Mapping):
+            raise TypeError(f"field {name!r} requires {dtype}")
+        for key, item in value.items():
+            _check_value(key, dtype.key_type, f"{name}.key")
+            _check_value(item, dtype.value_type, f"{name}[{key!r}]")
     elif isinstance(dtype, tarray):
         if not isinstance(value, (list, builtins.tuple)):
             raise TypeError(f"field {name!r} requires {dtype}")
@@ -257,7 +267,7 @@ class Table:
         from .inputs import contains_expression, infer_input_type, input_expression
         if isinstance(rows, Expression):
             return cls._parallelize_expression(rows, schema, key, n_partitions, globals)
-        from .arrow import as_ipc, dtype_from_arrow, arrow_type
+        from .arrow import as_ipc, dtype_from_arrow, arrow_type, same_arrow_layout
         try:
             import pyarrow as _pa
         except ImportError:
@@ -272,9 +282,12 @@ class Table:
                 raise TypeError("schema must be a vail.tstruct")
             if list(schema) != arrow_table.column_names:
                 raise ValueError("Arrow column names must match schema fields and order")
-            inferred = tstruct(**{field.name: dtype_from_arrow(field.type) for field in arrow_table.schema})
-            if inferred != schema:
-                raise TypeError("Arrow field types must match the supplied schema")
+            # An explicit logical schema is authoritative. Validate physical
+            # layouts rather than guessing tuples from ordinary struct names.
+            for field in arrow_table.schema:
+                dtype_from_arrow(field.type)  # validate any advertised metadata
+                if not same_arrow_layout(field.type, arrow_type(schema[field.name])):
+                    raise TypeError("Arrow field types must match the supplied schema")
             if schema:
                 arrow_table = arrow_table.cast(_pa.schema([_pa.field(name, arrow_type(ty)) for name, ty in schema.items()]))
             n_partitions = 1 if n_partitions is None else n_partitions
@@ -1298,8 +1311,21 @@ def _ir_has_aggregate(node):
     if isinstance(node, builtins.dict):
         if node.get("op") == "literal":
             return False
-        if node.get("op") in ("aggregate", "aggregate_filter", "aggregate_explode", "aggregate_group_by", "aggregate_array", "aggregate_fold"):
+        if node.get("op") == "aggregate":
+            return not (node.get("options") or {}).get("__vail_scan", False)
+        if node.get("op") == "aggregate_fold":
             return True
+        if node.get("op") in ("agg_filter", "agg_explode", "agg_group_by", "agg_array"):
+            def has_scan(value):
+                if isinstance(value, builtins.dict):
+                    if value.get("op") == "literal":
+                        return False
+                    if value.get("op") == "aggregate" and (value.get("options") or {}).get("__vail_scan"):
+                        return True
+                    return any(has_scan(child) for child in value.values())
+                return isinstance(value, list) and any(has_scan(child) for child in value)
+            if not has_scan(node):
+                return True
         return any(_ir_has_aggregate(child) for child in node.values())
     if isinstance(node, list):
         return any(_ir_has_aggregate(child) for child in node)
@@ -1495,3 +1521,4 @@ bool = _bool_cast
 from .collections import sorted_ as sorted
 from .queries import query_table
 
+from .expressions import bind

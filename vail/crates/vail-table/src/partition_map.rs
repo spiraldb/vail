@@ -45,7 +45,10 @@ pub(crate) fn lower(
         Arc::new(ConfigOptions::default()),
     )?);
     let collected = AggregateExprBuilder::new(
-        datafusion_functions_aggregate::array_agg::array_agg_udaf(),
+        // DF's array_agg compacts struct scalars through a constructor that
+        // panics on nested zero-field structs. Our Arrow-native collect UDAF
+        // retains those arrays (and their typing metadata) without scalarization.
+        vail_execution::collect_aggregate::collect_udf(&row.data_type(&schema)?),
         vec![row],
     )
     .order_by(vec![PhysicalSortExpr::new(

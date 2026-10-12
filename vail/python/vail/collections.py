@@ -336,3 +336,18 @@ def sorted_(collection, key=None, reverse=False):
         value = _cast(value, tarray(value.dtype.element_type))
     return _function("array_sort", [value, literal("DESC" if reverse else "ASC"), literal("NULLS LAST")], value.dtype)
 
+
+def append(collection, value):
+    from .expressions import array, cast
+    from .types import unify_types
+    collection, value = as_expr(collection), as_expr(value)
+    if not isinstance(collection.dtype, tarray):
+        raise TypeError("append requires an array expression")
+    common = unify_types(collection.dtype.element_type, value.dtype)
+    if common is None:
+        raise TypeError("array append element types are incompatible")
+    if collection.dtype.element_type != common:
+        collection = collection.map(lambda item: cast(item, common))
+    value = _coerce(value, common)
+    result = _function("array_concat", [collection, array([value])], tarray(common))
+    return if_else(is_missing(collection), missing(tarray(common)), result)

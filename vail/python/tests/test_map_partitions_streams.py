@@ -79,3 +79,42 @@ def test_struct_annotate_and_drop_rebuild_lazy_fields():
         lambda rows: rows.map(lambda row: row.annotate(extra=row.idx + 2).drop("extra"))
     )
     assert result.collect() == table.collect()
+
+
+@pytest.mark.parametrize("n,partitions", [(0, 1), (1, 1), (1, 3), (5, 3)])
+def test_map_partitions_rebuild_preserves_empty_structs(n, partitions):
+    from vail.streams import StreamExpression
+
+    table = hl.range_table(n, partitions).annotate(empty=hl.struct()).key_by()
+
+    def rebuild(rows):
+        values = rows.to_array()
+        return StreamExpression(
+            hl.range(hl.len(values)).map(
+                lambda i: hl.struct(idx=values[i].idx, empty=values[i].empty)
+            )
+        )
+
+    result = table._map_partitions(rebuild)
+    expected = [hl.Struct(idx=i, empty=hl.Struct()) for i in range(n)]
+    assert result.collect() == expected
+    assert result.collect() == expected
+    assert result.n_partitions() == table.n_partitions()
+
+
+def test_map_partitions_rebuild_preserves_missing_empty_structs():
+    from vail.streams import StreamExpression
+
+    schema = hl.tstruct(idx=hl.tint32, empty=hl.tstruct())
+    values = [hl.Struct(idx=0, empty=hl.Struct()), hl.Struct(idx=1, empty=None)]
+    table = hl.Table.parallelize(values, schema=schema)
+
+    def rebuild(rows):
+        values = rows.to_array()
+        return StreamExpression(
+            hl.range(hl.len(values)).map(
+                lambda i: hl.struct(idx=values[i].idx, empty=values[i].empty)
+            )
+        )
+
+    assert table._map_partitions(rebuild).collect() == values

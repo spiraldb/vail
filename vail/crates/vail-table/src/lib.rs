@@ -4,6 +4,7 @@ pub mod aggregation;
 pub mod comparison;
 pub mod globals;
 mod initialized_aggregate;
+mod initialized_scan;
 mod interval_read;
 mod join_interval;
 mod joins;
@@ -14,6 +15,7 @@ mod logical_globals;
 mod logical_same;
 mod logical_scan;
 mod lookup;
+mod nested_scan;
 mod partition_grouping;
 mod partition_map;
 pub mod partitioned;
@@ -1260,7 +1262,19 @@ impl TableIR {
             keys.iter().chain(fields.iter()).map(|(_, expr)| expr),
             bindings,
         )?;
-        let plan = crate::aggregation::lower_grouped(self, &keys, &fields, &bindings)?;
+        // Validate aggregate expressions against the input schema without
+        // lowering its transformation graph through the legacy physical path.
+        // Execution lowers the real child through the logical planner, including
+        // any scan windows that produced its columns.
+        let input = Self::prepared(
+            self,
+            Arc::new(datafusion_physical_plan::empty::EmptyExec::new(
+                crate::plan::physical_schema(self),
+            )),
+            Some(0),
+            1,
+        );
+        let plan = crate::aggregation::lower_grouped(&input, &keys, &fields, &bindings)?;
         let schema = plan.schema();
         if !keys.is_empty() {
             order_requirement(

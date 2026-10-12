@@ -11,6 +11,9 @@ from .types import tarray, tbool, tfloat32, tfloat64, tint32, tint64, tset
 
 def _aggregate(function, value, result_type, options):
     value = as_expr(value)
+    from .types import type_to_wire
+    options = dict(options)
+    options["__vail_result_type"] = type_to_wire(result_type)
     return Expression(
         result_type, value.source,
         {"op": "aggregate", "function": function, "value": value.to_ir(), "options": options},
@@ -44,6 +47,8 @@ def take(expr, n, ordering=None):
             ordering = ordering(value)
         ordering = as_expr(ordering)
         packed = as_expr({"value": value, "ordering": ordering})
+    from .types import type_to_wire
+    options["__vail_result_type"] = type_to_wire(tarray(value.dtype))
     return Expression(tarray(value.dtype), packed.source, {
         "op": "aggregate", "function": "take", "value": packed.to_ir(), "options": options,
     })

@@ -12,7 +12,6 @@ use datafusion_physical_expr::{
 use datafusion_physical_plan::{
     aggregates::{AggregateExec, AggregateMode, PhysicalGroupBy},
     filter::FilterExec,
-    joins::CrossJoinExec,
     projection::ProjectionExec,
     unnest::{ListUnnest, UnnestExec},
 };
@@ -205,7 +204,7 @@ fn lower_scope(
 ) -> Result<(PhysicalPlan, Vec<ScalarValue>)> {
     let mut input = crate::plan::lower(table)?.rows;
     if !table.globals().schema().fields().is_empty() {
-        input = Arc::new(CrossJoinExec::new(table.globals().lower()?, input));
+        input = crate::plan::cross_join(table.globals().lower()?, input)?;
     }
     let (mut input, indices) = bind_external(input, bindings)?;
     let logical_fields = table.schema().fields().to_vec();
@@ -422,7 +421,11 @@ fn lower_bound_scope(
     for (name, _) in keys {
         let aggregate = AggregateExprBuilder::new(
             datafusion_functions_aggregate::any_value::any_value_udaf(),
-            vec![column(&input, schema.index_of(name)?)],
+            vec![datafusion_physical_expr::expressions::cast(
+                column(&input, schema.index_of(name)?),
+                &schema,
+                vail_ordering::without_type_metadata(schema.field_with_name(name)?.data_type()),
+            )?],
         )
         .schema(schema.clone())
         .alias(&format!("__vail_representative_{name}"))
@@ -442,6 +445,10 @@ fn lower_bound_scope(
         .build()?;
         aggregates.push(Arc::new(aggregate));
     }
+    let representative_types = keys
+        .iter()
+        .map(|(name, _)| Ok(schema.field_with_name(name)?.data_type().clone()))
+        .collect::<Result<Vec<_>>>()?;
     representatives.extend(aggregates);
     let aggregates = representatives;
     let filters = vec![None; aggregates.len()];
@@ -460,7 +467,16 @@ fn lower_bound_scope(
     let mut restored = keys
         .iter()
         .enumerate()
-        .map(|(i, (name, _))| (column(&result, key_count + i), name.clone()))
+        .map(|(i, (name, _))| {
+            (
+                Arc::new(datafusion_physical_expr::expressions::CastExpr::new(
+                    column(&result, key_count + i),
+                    representative_types[i].clone(),
+                    None,
+                )) as Arc<dyn PhysicalExpr>,
+                name.clone(),
+            )
+        })
         .collect::<Vec<_>>();
     for i in (key_count * 2)..result.schema().fields().len() {
         restored.push((column(&result, i), result.schema().field(i).name().clone()));
@@ -519,7 +535,7 @@ fn lower_bound_scope(
 /// During validation we substitute typed placeholders solely to obtain the
 /// output schema. At execution a DataFusion projection evaluates the actual
 /// expressions on the singleton globals relation before any row scan starts.
-fn bind_initializers(
+pub(crate) fn bind_initializers(
     expr: &Expr,
     bind: &mut impl FnMut(&str, &Expr) -> Result<ScalarValue>,
 ) -> Result<Expr> {
@@ -578,7 +594,9 @@ fn initializer_option(value: &ScalarValue) -> Result<serde_json::Value> {
             let values = a.value(0);
             Value::Array(
                 (0..values.len())
-                    .map(|i| initializer_option(&ScalarValue::try_from_array(&values, i)?))
+                    .map(|i| {
+                        initializer_option(&vail_execution::expressions::scalar_at(&values, i)?)
+                    })
                     .collect::<Result<Vec<_>>>()?,
             )
         }
@@ -591,7 +609,7 @@ fn initializer_option(value: &ScalarValue) -> Result<serde_json::Value> {
     })
 }
 
-fn initializer_placeholder(name: &str, dtype: &DataType) -> Result<ScalarValue> {
+pub(crate) fn initializer_placeholder(name: &str, dtype: &DataType) -> Result<ScalarValue> {
     Ok(match name {
         "start" => ScalarValue::Float64(Some(0.0)),
         "end" => ScalarValue::Float64(Some(1.0)),
@@ -663,7 +681,7 @@ fn initialize(
                 .iter()
                 .map(|(name, expr)| {
                     let expr = bind_initializers(expr, &mut |_, _| {
-                        let value = ScalarValue::try_from_array(batch.column(index), 0)?;
+                        let value = vail_execution::expressions::scalar_at(batch.column(index), 0)?;
                         index += 1;
                         Ok(value)
                     })?;
@@ -710,10 +728,7 @@ pub fn lower(
     let output = extract(expression, &[], &mut groups, &mut used)?;
     let mut input = table.globals().lower()?;
     for group in groups {
-        input = Arc::new(CrossJoinExec::new(
-            input,
-            lower_group(table, &group, bindings)?,
-        ));
+        input = crate::plan::cross_join(input, lower_group(table, &group, bindings)?)?;
     }
     let (input, indices) = bind_external(input, bindings)?;
     let expression =
@@ -831,7 +846,7 @@ pub fn lower_grouped(
     }
     // Globals are a singleton relation; attaching them after aggregation keeps
     // them available even when a scope has no qualifying rows.
-    input = Arc::new(CrossJoinExec::new(input, table.globals().lower()?));
+    input = crate::plan::cross_join(input, table.globals().lower()?)?;
     let (input, indices) = bind_external(input, bindings)?;
     let mut projection = keys
         .iter()
@@ -863,7 +878,7 @@ fn join_results(
     use datafusion_physical_expr::expressions::{CaseExpr, IsNullExpr};
     use datafusion_physical_plan::joins::{HashJoinExec, PartitionMode};
     if key_count == 0 {
-        return Ok(Arc::new(CrossJoinExec::new(left, right)));
+        return Ok(crate::plan::cross_join(left, right)?);
     }
     let names = left
         .schema()
@@ -927,7 +942,11 @@ fn join_results(
                 Some(value),
             )?)
         };
-        projection.push((value, name.clone()));
+        let dtype = value.data_type(&joined.schema())?;
+        projection.push((
+            vail_execution::expressions::restore_physical_type(value, dtype),
+            name.clone(),
+        ));
     }
     Ok(Arc::new(ProjectionExec::try_new(projection, joined)?))
 }
@@ -973,7 +992,7 @@ mod scope_join_tests {
             .try_next()
             .await?
             .ok_or_else(|| TableError::Invalid("scope join returned no batch".into()))?;
-        Ok(ScalarValue::try_from_array(batch.column(1), 0)?)
+        Ok(vail_execution::expressions::scalar_at(batch.column(1), 0)?)
     }
 
     #[tokio::test]
@@ -1051,7 +1070,7 @@ fn lower_bound_body(
                 .collect::<Vec<_>>(),
         )?;
     }
-    result = Arc::new(CrossJoinExec::new(table.globals().lower()?, result));
+    result = crate::plan::cross_join(table.globals().lower()?, result)?;
     let (result, bound) = bind_external(result, bindings)?;
     let mut projection = keys
         .iter()
@@ -1157,7 +1176,7 @@ fn collect_nested(
         .alias(name)
         .build()?;
     let default = aggregate.create_accumulator()?.evaluate()?;
-    let default = ScalarValue::try_from_array(
+    let default = vail_execution::expressions::scalar_at(
         &arrow_cast::cast(&default.to_array_of_size(1)?, &output_type)?,
         0,
     )?;
@@ -1175,13 +1194,21 @@ fn collect_nested(
         .map(|(name, _)| {
             let aggregate = AggregateExprBuilder::new(
                 datafusion_functions_aggregate::any_value::any_value_udaf(),
-                vec![column(&input, schema.index_of(name)?)],
+                vec![datafusion_physical_expr::expressions::cast(
+                    column(&input, schema.index_of(name)?),
+                    &schema,
+                    vail_ordering::without_type_metadata(schema.field_with_name(name)?.data_type()),
+                )?],
             )
             .schema(schema.clone())
             .alias(&format!("__vail_representative_{name}"))
             .build()?;
             Ok(Arc::new(aggregate))
         })
+        .collect::<Result<Vec<_>>>()?;
+    let representative_types = keys
+        .iter()
+        .map(|(name, _)| Ok(schema.field_with_name(name)?.data_type().clone()))
         .collect::<Result<Vec<_>>>()?;
     representatives.push(Arc::new(aggregate));
     let result: PhysicalPlan = Arc::new(AggregateExec::try_new(
@@ -1195,7 +1222,16 @@ fn collect_nested(
     let mut projection = keys
         .iter()
         .enumerate()
-        .map(|(i, (name, _))| (column(&result, keys.len() + i), name.clone()))
+        .map(|(i, (name, _))| {
+            (
+                Arc::new(datafusion_physical_expr::expressions::CastExpr::new(
+                    column(&result, keys.len() + i),
+                    representative_types[i].clone(),
+                    None,
+                )) as Arc<dyn PhysicalExpr>,
+                name.clone(),
+            )
+        })
         .collect::<Vec<_>>();
     projection.push((
         cast(
@@ -1405,7 +1441,7 @@ fn lower_array_aggregation(
     Ok((Arc::new(ProjectionExec::try_new(projection, result)?), null))
 }
 
-fn lower_fold(
+pub(crate) fn lower_fold(
     expr: &Expr,
     input: &PhysicalPlan,
     logical: &Schema,

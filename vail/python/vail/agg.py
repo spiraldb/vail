@@ -43,6 +43,9 @@ def _aggregate(function, value=None, result_type=None, *, options=None, init=Non
         _validate_initializer(expr, function)
     if result_type is None:
         result_type = value_expr.dtype
+    from .types import type_to_wire
+    options = dict(options or {})
+    options["__vail_result_type"] = type_to_wire(result_type)
     return Expression(result_type, source,
                       {"op": "aggregate", "function": function,
                        "value": None if value_expr is None else value_expr.to_ir(),
@@ -135,13 +138,10 @@ def stats(expr):
     value64 = cast(value, tfloat64)
     n = count_where(~is_missing(value))
     total = sum(value64)
-    total_sq = sum(value64 * value64)
     average = total / n
     return as_expr({
         "mean": average,
-        # Match Hail's sqrt((sum(x^2) - mean * sum(x)) / n) formula,
-        # including NaN for an empty or all-missing input.
-        "stdev": ((total_sq - average * total) / n) ** 0.5,
+        "stdev": _aggregate("stddev_pop", value64, tfloat64),
         "min": cast(min(value), tfloat64),
         "max": cast(max(value), tfloat64),
         "n": n,

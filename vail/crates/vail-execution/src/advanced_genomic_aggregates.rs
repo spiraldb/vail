@@ -410,10 +410,18 @@ impl GenomicAccumulator {
             shape_data,
             None,
         )));
-        scalar_struct(
+        let value = scalar_struct(
             &["__vail_ndarray_data", "__vail_ndarray_shape"],
             vec![data_list, shape_list],
-        )
+        )?;
+        let array = arrow_cast::cast(&value.to_array_of_size(1)?, &self.input_type)?;
+        Ok(ScalarValue::Struct(Arc::new(
+            array
+                .as_any()
+                .downcast_ref::<StructArray>()
+                .ok_or_else(|| bad("ndarray metadata restoration must produce struct"))?
+                .clone(),
+        )))
     }
     fn result(&self) -> DfResult<ScalarValue> {
         match self.kind {

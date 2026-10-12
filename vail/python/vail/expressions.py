@@ -183,6 +183,11 @@ class Expression:
     def _compare(self, other, operator):
         other = as_expr(other)
         source = _merge_sources(self.source, other.source)
+        if isinstance(self.dtype, tarray) and isinstance(other.dtype, tarray) and self.dtype != other.dtype:
+            numeric = (tint32, tint64, tfloat32, tfloat64)
+            if self.dtype.element_type in numeric and other.dtype.element_type in numeric:
+                common = unify_types(self.dtype.element_type, other.dtype.element_type)
+                return self.map(lambda x: cast(x, common))._compare(other.map(lambda x: cast(x, common)), operator)
         _check_comparable(self.dtype, other.dtype, operator)
         return Expression(
             tbool,
@@ -440,6 +445,10 @@ class Expression:
         return Expression(tarray(body.dtype), _merge_sources(self.source, body.source),
                           {"op": "array_map", "value": self.to_ir(),
                            "parameter": parameter, "body": body.to_ir()})
+
+    def append(self, value):
+        from .collections import append
+        return append(self, value)
 
     def _array_flatmap(self, f):
         if not callable(f):
@@ -1113,3 +1122,8 @@ def get_sequence(*args, **kwargs):
 def liftover(*args, **kwargs):
     raise NotImplementedError("liftover is not implemented")
 
+
+def bind(function, *values):
+    if not callable(function):
+        raise TypeError("bind requires a callable")
+    return as_expr(function(*(as_expr(value) for value in values)))

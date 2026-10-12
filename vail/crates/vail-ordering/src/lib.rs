@@ -23,6 +23,100 @@ pub enum KeyError {
     Arrow(#[from] ArrowError),
 }
 
+/// Versioned logical type metadata lives on the first struct child or list
+/// element field, so it remains accessible from Arrow's DataType API.
+pub const TYPE_VERSION: &str = "vail.type.version";
+pub const TYPE_DESCRIPTOR: &str = "vail.type";
+
+pub fn type_metadata(dtype: &DataType) -> Result<Option<Value>, KeyError> {
+    let field = match dtype {
+        DataType::Struct(fields) => fields.first(),
+        DataType::List(field) | DataType::LargeList(field) => Some(field),
+        _ => None,
+    };
+    let Some(field) = field else { return Ok(None) };
+    let metadata = field.metadata();
+    match (metadata.get(TYPE_VERSION), metadata.get(TYPE_DESCRIPTOR)) {
+        (None, None) => Ok(None),
+        (Some(version), Some(raw)) if version == "1" => serde_json::from_str(raw)
+            .map(Some)
+            .map_err(|_| KeyError::Invalid("invalid Arrow logical type metadata")),
+        (Some(_), Some(_)) => Err(KeyError::Invalid(
+            "unsupported Arrow logical type metadata version",
+        )),
+        _ => Err(KeyError::Invalid("incomplete Arrow logical type metadata")),
+    }
+}
+
+pub fn tag_type(dtype: DataType, logical: &Value) -> DataType {
+    let tag = |field: &arrow_schema::Field| {
+        let mut metadata = field.metadata().clone();
+        metadata.insert(TYPE_VERSION.into(), "1".into());
+        metadata.insert(TYPE_DESCRIPTOR.into(), logical.to_string());
+        std::sync::Arc::new(field.clone().with_metadata(metadata))
+    };
+    match dtype {
+        DataType::Struct(fields) => {
+            let mut fields: Vec<_> = fields.iter().cloned().collect();
+            if let Some(first) = fields.first_mut() {
+                *first = tag(first);
+            }
+            DataType::Struct(fields.into())
+        }
+        DataType::List(field) => DataType::List(tag(&field)),
+        other => other,
+    }
+}
+
+/// Metadata and nullable flags do not change the buffers' physical layout.
+pub fn same_layout(a: &DataType, b: &DataType) -> bool {
+    match (a, b) {
+        (DataType::Struct(a), DataType::Struct(b)) => {
+            a.len() == b.len()
+                && a.iter()
+                    .zip(b)
+                    .all(|(a, b)| a.name() == b.name() && same_layout(a.data_type(), b.data_type()))
+        }
+        (DataType::List(a), DataType::List(b)) => same_layout(a.data_type(), b.data_type()),
+        _ => a == b,
+    }
+}
+
+/// A metadata-free view for library kernels that build fresh child fields.
+/// Logical typing remains on the IR and is restored on the result.
+pub fn without_type_metadata(dtype: &DataType) -> DataType {
+    let clean = |field: &arrow_schema::Field| {
+        let mut metadata = field.metadata().clone();
+        metadata.remove(TYPE_VERSION);
+        metadata.remove(TYPE_DESCRIPTOR);
+        std::sync::Arc::new(
+            field
+                .clone()
+                .with_metadata(metadata)
+                .with_data_type(without_type_metadata(field.data_type())),
+        )
+    };
+    match dtype {
+        DataType::Struct(fields) => {
+            DataType::Struct(fields.iter().map(|f| clean(f)).collect::<Vec<_>>().into())
+        }
+        DataType::List(field) => DataType::List(clean(field)),
+        other => other.clone(),
+    }
+}
+
+pub fn has_type_metadata(dtype: &DataType) -> bool {
+    match dtype {
+        DataType::Struct(fields) => fields
+            .iter()
+            .any(|f| f.metadata().contains_key(TYPE_VERSION) || has_type_metadata(f.data_type())),
+        DataType::List(field) => {
+            field.metadata().contains_key(TYPE_VERSION) || has_type_metadata(field.data_type())
+        }
+        _ => false,
+    }
+}
+
 pub fn supports(data_type: &DataType) -> bool {
     match data_type {
         DataType::Boolean
@@ -59,82 +153,24 @@ pub fn encode_array(array: &dyn Array) -> Result<BinaryArray, KeyError> {
 /// metadata through nested Arrow types. `null` children mean that the child
 /// needs no logical override and are filtered out at the corresponding node.
 fn logical_type_from_arrow(dtype: &DataType) -> Result<Option<Value>, KeyError> {
+    if let Some(logical) = type_metadata(dtype)? {
+        return Ok(Some(logical));
+    }
     match dtype {
         DataType::Struct(fields) => {
-            if fields.len() == 3
-                && fields[0].data_type() == &DataType::Int32
-                && fields[1].data_type() == &DataType::Utf8
-                && fields[2].data_type() == &DataType::Int32
-                && let Some(raw) = fields[1].metadata().get("vail.reference")
-            {
-                let reference: Value = serde_json::from_str(raw)
-                    .map_err(|_| KeyError::Invalid("invalid locus reference metadata"))?;
-                return Ok(Some(serde_json::json!({"locus": reference})));
-            }
-            if fields.len() == 4
-                && fields[0].name() == "__vail_interval_start"
-                && fields[1].name() == "__vail_interval_start_exclusive"
-            {
-                if let Some(point) = logical_type_from_arrow(fields[0].data_type())? {
-                    return Ok(Some(serde_json::json!({"interval": point})));
-                }
-            }
-            if fields.len() == 2
-                && fields[0].name() == "__vail_ndarray_data"
-                && fields[1].name() == "__vail_ndarray_shape"
-            {
-                if let DataType::List(item) = fields[0].data_type()
-                    && let Some(element) = logical_type_from_arrow(item.data_type())?
-                {
-                    let rank = item
-                        .name()
-                        .strip_prefix("__vail_ndarray_item_")
-                        .and_then(|v| v.parse::<usize>().ok())
-                        .ok_or(KeyError::Invalid("invalid ndarray rank metadata"))?;
-                    return Ok(Some(serde_json::json!({"ndarray": [element, rank]})));
-                }
-            }
-            if fields.len() == 2
-                && fields[0].name() == "__vail_call_alleles"
-                && fields[1].name() == "__vail_call_phased"
-            {
-                return Ok(None);
-            }
-            let mut children = Vec::with_capacity(fields.len());
-            let mut found = false;
-            for field in fields {
-                let child = logical_type_from_arrow(field.data_type())?;
-                found |= child.is_some();
-                children.push(serde_json::json!([
-                    field.name(),
-                    child.unwrap_or(Value::Null)
-                ]));
-            }
-            Ok(found.then(|| serde_json::json!({"struct": children})))
+            let children = fields
+                .iter()
+                .map(|field| {
+                    Ok(serde_json::json!([
+                        field.name(),
+                        logical_type_from_arrow(field.data_type())?.unwrap_or(Value::Null)
+                    ]))
+                })
+                .collect::<Result<Vec<_>, KeyError>>()?;
+            Ok(Some(serde_json::json!({"struct": children})))
         }
-        DataType::List(field) => {
-            if field.name() == "__vail_dict_entry"
-                && let DataType::Struct(entries) = field.data_type()
-                && entries.len() == 2
-            {
-                let key = logical_type_from_arrow(entries[0].data_type())?;
-                let value = logical_type_from_arrow(entries[1].data_type())?;
-                if key.is_some() || value.is_some() {
-                    return Ok(Some(
-                        serde_json::json!({"dict": [key.unwrap_or(Value::Null), value.unwrap_or(Value::Null)]}),
-                    ));
-                }
-            }
-            if let Some(element) = logical_type_from_arrow(field.data_type())? {
-                if field.name() == "__vail_set_item" {
-                    Ok(Some(serde_json::json!({"set": element})))
-                } else {
-                    Ok(Some(serde_json::json!({"array": element})))
-                }
-            } else {
-                Ok(None)
-            }
-        }
+        DataType::List(field) => Ok(Some(serde_json::json!({"array":
+            logical_type_from_arrow(field.data_type())?.unwrap_or(Value::Null)}))),
         _ => Ok(None),
     }
 }
@@ -151,6 +187,14 @@ pub fn encode_typed_value(
     logical: Option<&Value>,
 ) -> Result<Vec<u8>, KeyError> {
     let mut out = Vec::new();
+    let inferred;
+    let logical = match logical {
+        Some(value) => Some(value),
+        None => {
+            inferred = logical_type_from_arrow(array.data_type())?;
+            inferred.as_ref()
+        }
+    };
     append_value(&mut out, array, row, logical)?;
     Ok(out)
 }
@@ -260,12 +304,7 @@ fn append_value(
         }
         DataType::Binary => append_bytes(out, down::<BinaryArray>(array)?.value(row)),
         DataType::Struct(fields)
-            if fields.len() == 4
-                && (logical.is_some_and(|v| v.get("interval").is_some())
-                    || (fields[0].name() == "__vail_interval_start"
-                        && fields[1].name() == "__vail_interval_start_exclusive"
-                        && fields[2].name() == "__vail_interval_end"
-                        && fields[3].name() == "__vail_interval_end_inclusive")) =>
+            if fields.len() == 4 && logical.is_some_and(|v| v.get("interval").is_some()) =>
         {
             let interval = down::<StructArray>(array)?;
             if interval.column(1).is_null(row) || interval.column(3).is_null(row) {
@@ -283,13 +322,7 @@ fn append_value(
             // Right endpoints use sign (-1 exclusive, +1 inclusive).
             out.push(u8::from(includes_end));
         }
-        DataType::Struct(fields)
-            if logical.is_some_and(|v| v == "call")
-                || (logical.is_none()
-                    && fields.len() == 2
-                    && fields[0].name() == "__vail_call_alleles"
-                    && fields[1].name() == "__vail_call_phased") =>
-        {
+        DataType::Struct(fields) if logical.is_some_and(|v| v == "call") => {
             let call = down::<StructArray>(array)?;
             let alleles = down::<ListArray>(call.column(0).as_ref())?.value(row);
             let alleles = down::<Int32Array>(alleles.as_ref())?;
@@ -319,13 +352,7 @@ fn append_value(
                 ((repr as i32) << 3) | ((alleles.len() as i32) << 1) | i32::from(phased);
             out.extend(((call_bits as u32) ^ (1 << 31)).to_be_bytes());
         }
-        DataType::Struct(fields)
-            if logical.is_some_and(|t| t.get("ndarray").is_some())
-                || (logical.is_none()
-                    && fields.len() == 2
-                    && fields[0].name() == "__vail_ndarray_data"
-                    && fields[1].name() == "__vail_ndarray_shape") =>
-        {
+        DataType::Struct(fields) if logical.is_some_and(|t| t.get("ndarray").is_some()) => {
             // Shape first, then row-major elements. Never compare buffers by
             // their physical layout; the logical value defines the key.
             let values = down::<StructArray>(array)?;
@@ -351,7 +378,7 @@ fn append_value(
                 append_value(out, child.as_ref(), row, child_type)?;
             }
         }
-        DataType::List(field) => {
+        DataType::List(_) => {
             let values = down::<ListArray>(array)?.value(row);
             let element_type = logical
                 .and_then(|t| t.get("array").or_else(|| t.get("set")))
@@ -382,9 +409,8 @@ fn append_value(
                     }
                 })
                 .collect::<Result<Vec<_>, _>>()?;
-            let is_set = logical.is_some_and(|t| t.get("set").is_some())
-                || field.name() == "__vail_set_item";
-            let is_dict = dict_types.is_some() || field.name() == "__vail_dict_entry";
+            let is_set = logical.is_some_and(|t| t.get("set").is_some());
+            let is_dict = dict_types.is_some();
             if is_set || is_dict {
                 elements.sort();
                 // Sets and maps contain unique members/keys by construction.
@@ -427,18 +453,21 @@ mod tests {
     use std::sync::Arc;
 
     #[test]
-    fn untyped_locus_keys_infer_reference_and_reject_forged_coordinates() {
+    fn versioned_locus_keys_infer_reference_and_reject_forged_coordinates() {
         let reference = serde_json::json!({"name":"r","contigs":["chr1"],"lengths":{"chr1":10},"x_contigs":[],"y_contigs":[],"mt_contigs":[],"par":[]});
-        let metadata = [("vail.reference".to_string(), reference.to_string())]
-            .into_iter()
-            .collect();
-        let fields = vec![
-            Arc::new(arrow_schema::Field::new("renamed0", DataType::Int32, true)),
-            Arc::new(
-                arrow_schema::Field::new("renamed1", DataType::Utf8, true).with_metadata(metadata),
+        let DataType::Struct(fields) = tag_type(
+            DataType::Struct(
+                vec![
+                    Arc::new(arrow_schema::Field::new("renamed0", DataType::Int32, true)),
+                    Arc::new(arrow_schema::Field::new("renamed1", DataType::Utf8, true)),
+                    Arc::new(arrow_schema::Field::new("renamed2", DataType::Int32, true)),
+                ]
+                .into(),
             ),
-            Arc::new(arrow_schema::Field::new("renamed2", DataType::Int32, true)),
-        ];
+            &serde_json::json!({"locus": reference}),
+        ) else {
+            unreachable!()
+        };
         let forged = StructArray::try_new(
             fields.clone().into(),
             vec![

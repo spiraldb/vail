@@ -4,7 +4,7 @@ use crate::{Result, TableError, TableNode, TableRef};
 use arrow_schema::{DataType, Schema};
 use datafusion_common::{NullHandling, ScalarValue, UnnestOptions};
 use datafusion_expr::{
-    AggregateUDF, Expr as DFExpr, JoinType, LogicalPlan, LogicalPlanBuilder, lit,
+    AggregateUDF, Expr as DFExpr, ExprSchemable, JoinType, LogicalPlan, LogicalPlanBuilder, lit,
 };
 use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Literal};
 use std::{
@@ -181,10 +181,20 @@ fn scope_plan(
         );
         aggregates.push(udf.call(vec![logical_value]).alias(&reducer.name));
     }
+    let mut representative_types = BTreeMap::new();
     for name in key_names {
+        let dtype = input
+            .schema()
+            .field_with_unqualified_name(name)?
+            .data_type()
+            .clone();
+        representative_types.insert(name.clone(), dtype.clone());
         aggregates.push(
             datafusion_functions_aggregate::any_value::any_value_udaf()
-                .call(vec![col(name)])
+                .call(vec![col(name).cast_to(
+                    &vail_ordering::without_type_metadata(&dtype),
+                    input.schema(),
+                )?])
                 .alias(name),
         );
     }
@@ -198,7 +208,24 @@ fn scope_plan(
     let result = LogicalPlanBuilder::from(input)
         .aggregate(groups, aggregates)?
         .build()?;
-    let _ = table; // Scope validity follows the bound input relation.
+    let projection = result
+        .schema()
+        .columns()
+        .into_iter()
+        .map(|column| {
+            let name = column.name.clone();
+            let value = DFExpr::Column(column);
+            match representative_types.get(&name) {
+                Some(dtype) => {
+                    vail_execution::logical_expr::restore_type(value, dtype.clone()).alias(&name)
+                }
+                None => value,
+            }
+        })
+        .collect::<Vec<_>>();
+    let result = LogicalPlanBuilder::from(result)
+        .project(projection)?
+        .build()?;
     Ok((result, defaults, presence))
 }
 

@@ -1,12 +1,128 @@
 //! Hail-compatible numeric and Boolean DataFusion aggregate UDAFs.
 use std::sync::Arc;
 
-use arrow_array::{Array, ArrayRef};
-use arrow_schema::DataType;
+use arrow_array::{Array, ArrayRef, Float64Array, Scalar};
+use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use datafusion_expr::{
+    Accumulator, AggregateUDF, Volatility,
+    expr_fn::create_udaf,
+    function::{AccumulatorArgs, StateFieldsArgs},
+};
 
 use crate::expressions::ExprError;
+
+/// Delegate variance computation and state merging to DataFusion, retaining
+/// Hail's NaN result for empty and all-missing input.
+#[derive(Debug)]
+struct StableStddev {
+    inner: Box<dyn Accumulator>,
+    origin: Option<f64>,
+}
+impl Accumulator for StableStddev {
+    fn update_batch(&mut self, values: &[ArrayRef]) -> DfResult<()> {
+        let value = values
+            .first()
+            .ok_or_else(|| DataFusionError::Execution("stddev_pop requires an input".into()))?;
+        let values = arrow_cast::cast(value, &DataType::Float64)?;
+        let values = values
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| DataFusionError::Internal("stddev cast must produce Float64".into()))?;
+        if self.origin.is_none() {
+            self.origin = values
+                .iter()
+                .flatten()
+                .next()
+                .map(|value| if value.is_finite() { value } else { 0. });
+        }
+        // Variance is translation invariant. Centering also protects the
+        // library's running mean when the original offset is near an f64 ULP.
+        let origin = Scalar::new(Float64Array::from(vec![self.origin.unwrap_or(0.)]));
+        self.inner
+            .update_batch(&[arrow_arith::numeric::sub(values, &origin)?])
+    }
+    fn evaluate(&mut self) -> DfResult<ScalarValue> {
+        // DF's population singleton identity is zero even for NaN/Infinity.
+        // Preserve nonfinite propagation using the library's M2 state.
+        if matches!(self.inner.state()?.get(2), Some(ScalarValue::Float64(Some(value))) if value.is_nan())
+        {
+            return Ok(ScalarValue::Float64(Some(f64::NAN)));
+        }
+        Ok(match self.inner.evaluate()? {
+            ScalarValue::Float64(None) => ScalarValue::Float64(Some(f64::NAN)),
+            value => value,
+        })
+    }
+    fn size(&self) -> usize {
+        std::mem::size_of::<Self>() + self.inner.size()
+    }
+    fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
+        let mut state = self.inner.state()?;
+        state.push(ScalarValue::Float64(self.origin));
+        Ok(state)
+    }
+    fn merge_batch(&mut self, states: &[ArrayRef]) -> DfResult<()> {
+        let [count, mean, m2, origins] = states else {
+            return Err(DataFusionError::Execution(
+                "invalid stddev state arity".into(),
+            ));
+        };
+        let origins = origins
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| DataFusionError::Execution("invalid stddev origin state".into()))?;
+        if self.origin.is_none() {
+            self.origin = origins.iter().flatten().next();
+        }
+        // Move each partial mean into this accumulator's coordinate system;
+        // DataFusion still owns the count/M2 merge and variance calculation.
+        let origin = Scalar::new(Float64Array::from(vec![self.origin.unwrap_or(0.)]));
+        let delta = arrow_arith::numeric::sub(origins, &origin)?;
+        let adjusted = arrow_arith::numeric::add(mean, &delta)?;
+        self.inner
+            .merge_batch(&[count.clone(), adjusted, m2.clone()])
+    }
+}
+fn stable_stddev(input: Option<&DataType>) -> Result<Arc<AggregateUDF>, ExprError> {
+    let input =
+        input.ok_or_else(|| ExprError::Invalid("stddev_pop requires an input type".into()))?;
+    if !matches!(
+        input,
+        DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64
+    ) {
+        return Err(ExprError::Invalid(format!(
+            "stddev_pop does not support {input:?}"
+        )));
+    }
+    let udf = datafusion_functions_aggregate::stddev::stddev_pop_udaf();
+    let fields = [Arc::new(Field::new("value", input.clone(), true))];
+    let mut state: Vec<DataType> = udf
+        .state_fields(StateFieldsArgs {
+            name: "stddev_pop",
+            input_fields: &fields,
+            return_field: Arc::new(Field::new("value", DataType::Float64, true)),
+            ordering_fields: &[],
+            is_distinct: false,
+        })?
+        .iter()
+        .map(|field| field.data_type().clone())
+        .collect();
+    state.push(DataType::Float64);
+    Ok(Arc::new(create_udaf(
+        "stddev_pop",
+        vec![input.clone()],
+        Arc::new(DataType::Float64),
+        Volatility::Immutable,
+        Arc::new(move |args: AccumulatorArgs| {
+            Ok(Box::new(StableStddev {
+                inner: udf.accumulator(args)?,
+                origin: None,
+            }))
+        }),
+        Arc::new(state),
+    )))
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum AggregateKind {
@@ -20,7 +136,6 @@ enum AggregateKind {
     Fraction,
     Any,
     All,
-    Stddev,
 }
 #[derive(Debug)]
 struct HailAccumulator {
@@ -29,7 +144,6 @@ struct HailAccumulator {
     count: i64,
     integer_value: i64,
     float_value: f64,
-    sum_squares: f64,
     seen: bool,
 }
 impl HailAccumulator {
@@ -40,7 +154,6 @@ impl HailAccumulator {
             count: 0,
             integer_value: 0,
             float_value: 0.,
-            sum_squares: 0.,
             seen: false,
         }
     }
@@ -124,10 +237,9 @@ impl Accumulator for HailAccumulator {
                     }
                     self.count = self.count.wrapping_add(1);
                 }
-                AggregateKind::Mean | AggregateKind::Stddev => {
+                AggregateKind::Mean => {
                     let z = num(&v)?;
                     self.float_value += z;
-                    self.sum_squares += z * z;
                     self.count = self.count.wrapping_add(1);
                 }
             }
@@ -182,12 +294,6 @@ impl Accumulator for HailAccumulator {
                 }
             }
             AggregateKind::Mean => ScalarValue::Float64(Some(self.float_value / self.count as f64)),
-            AggregateKind::Stddev => {
-                let m = self.float_value / self.count as f64;
-                ScalarValue::Float64(Some(
-                    ((self.sum_squares - m * self.float_value) / self.count as f64).sqrt(),
-                ))
-            }
         })
     }
     fn size(&self) -> usize {
@@ -228,11 +334,6 @@ impl Accumulator for HailAccumulator {
                 ScalarValue::Float64(Some(self.float_value)),
                 ScalarValue::Int64(Some(self.count)),
             ],
-            AggregateKind::Stddev => vec![
-                ScalarValue::Float64(Some(self.float_value)),
-                ScalarValue::Float64(Some(self.sum_squares)),
-                ScalarValue::Int64(Some(self.count)),
-            ],
         })
     }
     fn merge_batch(&mut self, s: &[ArrayRef]) -> DfResult<()> {
@@ -243,7 +344,6 @@ impl Accumulator for HailAccumulator {
             | AggregateKind::Product
             | AggregateKind::Mean => 2,
             AggregateKind::Any | AggregateKind::All | AggregateKind::Min | AggregateKind::Max => 1,
-            AggregateKind::Stddev => 3,
         };
         if s.len() != expected {
             return Err(DataFusionError::Execution(
@@ -314,11 +414,6 @@ impl Accumulator for HailAccumulator {
                     self.float_value += num(&get(0)?).unwrap_or(0.);
                     self.count = self.count.wrapping_add(as_i64(&get(1)?).unwrap_or(0));
                 }
-                AggregateKind::Stddev => {
-                    self.float_value += num(&get(0)?).unwrap_or(0.);
-                    self.sum_squares += num(&get(1)?).unwrap_or(0.);
-                    self.count = self.count.wrapping_add(as_i64(&get(2)?).unwrap_or(0));
-                }
             }
         }
         Ok(())
@@ -383,6 +478,9 @@ pub fn aggregate_udf(
     function: &str,
     input_type: Option<&DataType>,
 ) -> Result<Arc<AggregateUDF>, ExprError> {
+    if function == "stddev_pop" {
+        return stable_stddev(input_type);
+    }
     let (kind, input, ret, state) = match function {
         "count" => (
             AggregateKind::Count,
@@ -425,7 +523,7 @@ pub fn aggregate_udf(
                 ),
             }
         }
-        "sum" | "product" | "min" | "max" | "mean" | "stddev_pop" => {
+        "sum" | "product" | "min" | "max" | "mean" => {
             let t = input_type
                 .ok_or_else(|| ExprError::Invalid(format!("{function} requires an input type")))?;
             if !matches!(
@@ -441,8 +539,7 @@ pub fn aggregate_udf(
                 "product" => AggregateKind::Product,
                 "min" => AggregateKind::Min,
                 "max" => AggregateKind::Max,
-                "mean" => AggregateKind::Mean,
-                _ => AggregateKind::Stddev,
+                _ => AggregateKind::Mean,
             };
             let out = if matches!(k, AggregateKind::Min | AggregateKind::Max) {
                 t.clone()
@@ -454,8 +551,7 @@ pub fn aggregate_udf(
             let st = match k {
                 AggregateKind::Min | AggregateKind::Max => vec![t.clone()],
                 AggregateKind::Sum | AggregateKind::Product => vec![DataType::Int64, out.clone()],
-                AggregateKind::Mean => vec![DataType::Float64, DataType::Int64],
-                _ => vec![DataType::Float64, DataType::Float64, DataType::Int64],
+                _ => vec![DataType::Float64, DataType::Int64],
             };
             (k, Some(t.clone()), out, st)
         }
@@ -523,10 +619,12 @@ mod tests {
         assert!(
             matches!(HailAccumulator::new(AggregateKind::Mean,DataType::Float64).evaluate().unwrap(),ScalarValue::Float64(Some(x)) if x.is_nan())
         );
-        assert!(
-            matches!(HailAccumulator::new(AggregateKind::Stddev,DataType::Float64).evaluate().unwrap(),ScalarValue::Float64(Some(x)) if x.is_nan())
+        assert_eq!(
+            HailAccumulator::new(AggregateKind::Fraction, DataType::Boolean)
+                .evaluate()
+                .unwrap(),
+            ScalarValue::Float64(None)
         );
-        assert!(matches!(HailAccumulator::new(AggregateKind::Fraction,DataType::Boolean).evaluate().unwrap(),ScalarValue::Float64(Some(x)) if x.is_nan()));
         let mut all = HailAccumulator::new(AggregateKind::All, DataType::Boolean);
         all.update_batch(&[Arc::new(BooleanArray::from(vec![Some(true), None]))])
             .unwrap();
@@ -541,35 +639,37 @@ mod tests {
         assert_eq!(cw.evaluate().unwrap(), ScalarValue::Int64(Some(1)));
     }
     #[test]
-    fn floating_states_merge() {
-        let mut a = HailAccumulator::new(AggregateKind::Stddev, DataType::Float64);
-        a.update_batch(&[Arc::new(Float64Array::from(vec![1., 3.]))])
-            .unwrap();
-        let mut b = HailAccumulator::new(AggregateKind::Stddev, DataType::Float64);
-        b.update_batch(&[Arc::new(Float64Array::from(vec![5.]))])
-            .unwrap();
-        let sa = a.state().unwrap();
-        let sb = b.state().unwrap();
-        let states: Vec<ArrayRef> = vec![
-            Arc::new(Float64Array::from(vec![
-                num(&sa[0]).unwrap(),
-                num(&sb[0]).unwrap(),
-            ])),
-            Arc::new(Float64Array::from(vec![
-                num(&sa[1]).unwrap(),
-                num(&sb[1]).unwrap(),
-            ])),
-            Arc::new(Int64Array::from(vec![
-                as_i64(&sa[2]).unwrap(),
-                as_i64(&sb[2]).unwrap(),
-            ])),
-        ];
-        let mut m = HailAccumulator::new(AggregateKind::Stddev, DataType::Float64);
-        m.merge_batch(&states).unwrap();
+    fn stable_stddev_merges_library_state_for_large_offset_values() {
+        let descriptor = crate::scan_state::ScanState::new(
+            aggregate_udf("stddev_pop", Some(&DataType::Float64)).unwrap(),
+            vec![DataType::Float64],
+        )
+        .unwrap();
+        let mut merged = descriptor.accumulator().unwrap();
+        for value in [1e12, 1e12 + 1., 1e12 + 2.] {
+            let mut part = descriptor.accumulator().unwrap();
+            part.update_batch(&[Arc::new(Float64Array::from(vec![value]))])
+                .unwrap();
+            let state = part
+                .state()
+                .unwrap()
+                .iter()
+                .map(|value| value.to_array_of_size(1).unwrap())
+                .collect::<Vec<_>>();
+            merged.merge_batch(&state).unwrap();
+        }
         assert_eq!(
-            m.evaluate().unwrap(),
-            ScalarValue::Float64(Some((8f64 / 3.).sqrt()))
+            merged.evaluate().unwrap(),
+            ScalarValue::Float64(Some((2f64 / 3.).sqrt()))
         );
+        let mut empty = descriptor.accumulator().unwrap();
+        assert!(
+            matches!(empty.evaluate().unwrap(), ScalarValue::Float64(Some(value)) if value.is_nan())
+        );
+        empty
+            .update_batch(&[Arc::new(Float64Array::from(vec![7.]))])
+            .unwrap();
+        assert_eq!(empty.evaluate().unwrap(), ScalarValue::Float64(Some(0.)));
     }
 
     #[test]

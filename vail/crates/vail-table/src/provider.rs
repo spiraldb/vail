@@ -434,7 +434,7 @@ impl ExecutionPlan for ReadKeyFilteredExec {
         let queries = self.queries.clone();
         let row_schema = self.table.schema().clone();
         let schema = self.schema.clone();
-        let mut batches = source.interval_batches(&queries);
+        let mut batches = source.interval_batches_in_rows(&queries, start..end);
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {

@@ -752,6 +752,8 @@ impl NativeTable {
                 let mut input = self.ir.execute();
                 while let Some(event) = input.try_next().await.map_err(table_error)? {
                     if let vail_table::PartitionEvent::Batch(batch) = event {
+                        let batch = vail_storage::local_table::normalize(&batch, schema.clone())
+                            .map_err(value_error)?;
                         writer.write(&batch).map_err(value_error)?;
                     }
                 }
@@ -778,6 +780,9 @@ impl NativeTable {
                     arrow_ipc::writer::StreamWriter::try_new(&mut bytes, self.ir.schema())
                         .map_err(value_error)?;
                 for batch in batches {
+                    let batch =
+                        vail_storage::local_table::normalize(&batch, self.ir.schema().clone())
+                            .map_err(value_error)?;
                     writer.write(&batch).map_err(value_error)?;
                 }
                 writer.finish().map_err(value_error)?;

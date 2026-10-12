@@ -108,6 +108,37 @@ pub fn canonical_key_hex_logical(
         .call(vec![key, lit(ScalarValue::Utf8(Some("hex".into())))]))
 }
 
+/// Restore an IR-declared type after a library operator constructs new Arrow
+/// fields. Volatile prevents constant folding from stripping list metadata.
+pub fn restore_type(value: LogicalExpr, dtype: arrow_schema::DataType) -> LogicalExpr {
+    let output = dtype.clone();
+    let udf = datafusion_expr::ScalarUDF::from(
+        datafusion_expr::expr_fn::SimpleScalarUDF::new_with_signature(
+            "vail_restore_arrow_type",
+            Signature::any(1, Volatility::Volatile),
+            dtype,
+            Arc::new(move |args| {
+                let scalar = matches!(&args[0], datafusion_expr::ColumnarValue::Scalar(_));
+                let array = args[0].clone().into_array(match &args[0] {
+                    datafusion_expr::ColumnarValue::Array(a) => a.len(),
+                    _ => 1,
+                })?;
+                let array = arrow_cast::cast(&array, &output)?;
+                if scalar {
+                    Ok(datafusion_expr::ColumnarValue::Scalar(
+                        crate::expressions::scalar_at(&array, 0).map_err(|e| {
+                            datafusion_common::DataFusionError::Execution(e.to_string())
+                        })?,
+                    ))
+                } else {
+                    Ok(datafusion_expr::ColumnarValue::Array(array))
+                }
+            }),
+        ),
+    );
+    udf.call(vec![value])
+}
+
 fn lower(
     expr: &Expr,
     schema: &DFSchema,
@@ -118,7 +149,12 @@ fn lower(
     let recurse = |e: &Expr| lower(e, schema, globals, bindings, scope);
     Ok(match expr {
         Expr::RuntimeLiteral { value } => lit(value.clone()),
-        Expr::Literal { dtype, value } => lit(literal_scalar(value, dtype)?),
+        Expr::Literal { dtype, value } => {
+            if !matches!(dtype, Type::Primitive(_)) {
+                return logical_kernel(expr, schema, globals, bindings, scope);
+            }
+            lit(literal_scalar(value, dtype)?)
+        }
         Expr::Column { name } => {
             let start = globals.fields().len();
             let matches = (start..schema.fields().len())
@@ -341,7 +377,12 @@ fn lower(
                     lit(false),
                 ]);
             }
-            datafusion_functions::core::named_struct().call(args)
+            let dtype = expr
+                .dtype_with_globals(schema.as_arrow(), globals)?
+                .to_arrow()?;
+            datafusion_functions::core::named_struct()
+                .call(args)
+                .cast_to(&dtype, schema)?
         }
         Expr::GetField { .. } => return logical_kernel(expr, schema, globals, bindings, scope),
         Expr::NestedFunction { function, args, .. } => {
@@ -354,18 +395,27 @@ fn lower(
                 let key_type = args[0].dtype_with_globals(&schema.as_arrow(), globals)?;
                 return canonical_key_hex_logical(recurse(&args[0])?, &key_type);
             }
-            // DataFusion's built-in nested functions are logical UDF calls. The
-            // registry is the same one used by the existing physical lowering.
             let udf = crate::expressions::nested_function(function)?;
-            udf.call(args.iter().map(recurse).collect::<Result<Vec<_>, _>>()?)
+            let arguments =
+                args.iter()
+                    .map(|arg| {
+                        let ty = arg
+                            .dtype_with_globals(schema.as_arrow(), globals)?
+                            .to_arrow()?;
+                        Ok(recurse(arg)?
+                            .cast_to(&vail_ordering::without_type_metadata(&ty), schema)?)
+                    })
+                    .collect::<Result<Vec<_>, ExprError>>()?;
+            let dtype = expr
+                .dtype_with_globals(schema.as_arrow(), globals)?
+                .to_arrow()?;
+            restore_type(udf.call(arguments), dtype)
         }
         Expr::StringFunction { function, args } => {
             let (udf, _, _) = crate::expressions::string_function(function)?;
             udf.call(args.iter().map(recurse).collect::<Result<Vec<_>, _>>()?)
         }
-        Expr::CollectionCast { value, dtype } => {
-            recurse(value)?.cast_to(&dtype.to_arrow()?, schema)?
-        }
+        Expr::CollectionCast { value, dtype } => restore_type(recurse(value)?, dtype.to_arrow()?),
         Expr::ToString { value } => {
             let ty = value.dtype_with_globals(&schema.as_arrow(), globals)?;
             let value = recurse(value)?;
@@ -383,9 +433,20 @@ fn lower(
         Expr::Array { elements, .. } => {
             let args = elements
                 .iter()
-                .map(recurse)
-                .collect::<Result<Vec<_>, _>>()?;
-            datafusion_functions_nested::make_array::make_array_udf().call(args)
+                .map(|element| {
+                    let ty = element
+                        .dtype_with_globals(schema.as_arrow(), globals)?
+                        .to_arrow()?;
+                    Ok(recurse(element)?
+                        .cast_to(&vail_ordering::without_type_metadata(&ty), schema)?)
+                })
+                .collect::<Result<Vec<_>, ExprError>>()?;
+            let value = datafusion_functions_nested::make_array::make_array_udf().call(args);
+            restore_type(
+                value,
+                expr.dtype_with_globals(schema.as_arrow(), globals)?
+                    .to_arrow()?,
+            )
         }
         Expr::ArrayLength { value } => datafusion_functions_nested::length::array_length_udf()
             .call(vec![recurse(value)?])
@@ -622,7 +683,11 @@ fn logical_kernel(
                     .unwrap_or(1);
                 let arrays = args
                     .iter()
-                    .map(|value| value.clone().into_array(row_count))
+                    .zip(kernel_schema.fields())
+                    .map(|(value, field)| {
+                        let array = value.clone().into_array(row_count)?;
+                        Ok(arrow_cast::cast(&array, field.data_type())?)
+                    })
                     .collect::<datafusion_common::Result<Vec<_>>>()?;
                 let batch = arrow_array::RecordBatch::try_new_with_options(
                     Arc::clone(&kernel_schema),
@@ -633,7 +698,9 @@ fn logical_kernel(
                 let output = arrow_cast::cast(output.as_ref(), &expected_output_type)?;
                 if args.is_empty() && row_count > 0 {
                     Ok(datafusion_expr::ColumnarValue::Scalar(
-                        ScalarValue::try_from_array(output.as_ref(), 0)?,
+                        crate::expressions::scalar_at(&output, 0).map_err(|e| {
+                            datafusion_common::DataFusionError::Execution(e.to_string())
+                        })?,
                     ))
                 } else {
                     Ok(datafusion_expr::ColumnarValue::Array(Arc::new(output)))
