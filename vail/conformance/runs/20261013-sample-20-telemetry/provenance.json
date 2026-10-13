@@ -1,0 +1,72 @@
+{
+  "base_commit": "551f8ab69f67ee16e9370bb004bac49e3527dd62",
+  "platform": "macOS-15.8-arm64-arm-64bit",
+  "host_logical_cpus": 14,
+  "sampling_hz_target": 10,
+  "counter_api": "proc_pid_rusage RUSAGE_INFO_V4",
+  "mach_tick_nanoseconds": 41.666666666666664,
+  "timestamp_definition": "Process counters timestamped immediately after process reads; SSD counters timestamped after IORegistry polling, using independent deltas.",
+  "collector_sha256": "cb21c9e27b10616ac354dae6cffe87c8becdd80cbea16199ca3c6f22f93f2d58",
+  "renderer_sha256": "6faeb8897b0704606fafbd61f854e27f4ca31b34584e46a1281a747373962e94",
+  "checks": [
+    {
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "samples": 99,
+      "median_interval_seconds": 0.100026458,
+      "peak_cpu_cores": 13.95554549573183
+    },
+    {
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "samples": 99,
+      "median_interval_seconds": 0.099950458,
+      "peak_cpu_cores": 1.0711135780846939
+    },
+    {
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "samples": 98,
+      "median_interval_seconds": 0.099991354,
+      "peak_cpu_cores": 11.434566135535867
+    },
+    {
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "samples": 100,
+      "median_interval_seconds": 0.1000641045,
+      "peak_cpu_cores": 1.0119910482150725
+    },
+    {
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "samples": 98,
+      "median_interval_seconds": 0.1000842705,
+      "peak_cpu_cores": 13.105269877652425
+    },
+    {
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "samples": 98,
+      "median_interval_seconds": 0.099994625,
+      "peak_cpu_cores": 1.0355870678637151
+    },
+    {
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "samples": 99,
+      "median_interval_seconds": 0.09999425,
+      "peak_cpu_cores": 3.8838035493645378
+    },
+    {
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "samples": 99,
+      "median_interval_seconds": 0.099960417,
+      "peak_cpu_cores": 1.1159676798074574
+    }
+  ],
+  "csv_format_note": "CSV line endings normalized to LF after capture; numeric data unchanged. The collector/renderer capture hashes above precede this formatting-only change.",
+  "collector_sha256_after_csv_formatting": "29a49798c8c091c88c0c1f9a2af469a824bef26c2e2cdc0a5f1baa9deeeff654",
+  "renderer_sha256_after_csv_formatting": "f56b6b2aeb7a688ff554ec8a68c786179725c0c9aa6f709b51ad0d92dbab6ecd"
+}

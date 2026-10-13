@@ -1,0 +1,37 @@
+{
+  "engine": "hail",
+  "case": "matrix_force_count_rows",
+  "median_seconds": 0.045501542,
+  "repetitions": 194,
+  "measured_samples": 98,
+  "observed_seconds": 9.807391917000002,
+  "mean_cpu_cores": 7.416126974993816,
+  "peak_rss_mib": 2626.5,
+  "peak_footprint_mib": 2438.4638061523438,
+  "instructions": 230519156233.0,
+  "cycles": 243222107095.0,
+  "process_read_mib": 0.10546875,
+  "process_write_mib": 0.0,
+  "ssd_read_mib": 0.14453125,
+  "ssd_write_mib": 1.9921875,
+  "median_interval_seconds": 0.1000842705,
+  "max_collector_seconds": 0.069421333,
+  "tracked_pids": [
+    95099,
+    95111
+  ],
+  "ssd_devices": [
+    {
+      "name": [
+        "APPLE SSD AP1024Z Media"
+      ],
+      "id": 4294969317,
+      "read": 4287950671872,
+      "write": 9936131227648,
+      "read_ops": 201544696,
+      "write_ops": 258811320
+    }
+  ],
+  "cache_misses": "not exposed by proc_pid_rusage V4",
+  "ipc": 0.9477722193359736
+}
