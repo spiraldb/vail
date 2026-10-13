@@ -35,17 +35,25 @@ pub fn lower_logical(expr: &Expr, schema: &DFSchema) -> Result<LogicalExpr, Expr
     lower_logical_with_bindings(expr, schema, &Schema::empty(), &BTreeMap::new())
 }
 
-/// Produce the canonical binary key used by Vail equality and grouping.
-///
-/// The input remains a child of an explicit scalar UDF in the logical plan.
-/// `nullable = false` encodes missing values as sortable keys for grouping.
-/// `nullable = true` preserves a missing outer value as a null binary key.
+/// Keep supported values native for DataFusion equality and grouping. Only
+/// representations lacking native support require an encoded fallback.
 pub fn canonical_key_logical(
     value: LogicalExpr,
     dtype: &Type,
     nullable: bool,
 ) -> Result<LogicalExpr, ExprError> {
+    if dtype.native_key() {
+        return Ok(value);
+    }
+    encoded_key_logical(value, dtype, nullable)
+}
+fn encoded_key_logical(
+    value: LogicalExpr,
+    dtype: &Type,
+    nullable: bool,
+) -> Result<LogicalExpr, ExprError> {
     let _data_type = dtype.to_arrow()?;
+    let native = dtype.native_key();
     let logical = serde_json::to_value(dtype)
         .map_err(|e| ExprError::Invalid(format!("invalid canonical key type: {e}")))?;
     let name = if nullable {
@@ -62,6 +70,44 @@ pub fn canonical_key_logical(
                 let arg = args.first().ok_or_else(|| {
                     DataFusionError::Internal("canonical key UDF requires one argument".into())
                 })?;
+                if native {
+                    use arrow_array::Array;
+                    let array = match arg {
+                        datafusion_expr::ColumnarValue::Scalar(value) => {
+                            value.to_array_of_size(1)?
+                        }
+                        datafusion_expr::ColumnarValue::Array(array) => array.clone(),
+                    };
+                    let converter = arrow_row::RowConverter::new(vec![
+                        arrow_row::SortField::new_with_options(
+                            array.data_type().clone(),
+                            arrow_schema::SortOptions {
+                                descending: false,
+                                nulls_first: false,
+                            },
+                        ),
+                    ])?;
+                    let rows = converter.convert_columns(&[array.clone()])?;
+                    let bytes = arrow_array::BinaryArray::from_iter(rows.iter().enumerate().map(
+                        |(i, row)| {
+                            if nullable && array.is_null(i) {
+                                None
+                            } else {
+                                Some(row.data())
+                            }
+                        },
+                    ));
+                    return match arg {
+                        datafusion_expr::ColumnarValue::Scalar(_) => {
+                            Ok(datafusion_expr::ColumnarValue::Scalar(
+                                ScalarValue::try_from_array(&bytes, 0)?,
+                            ))
+                        }
+                        datafusion_expr::ColumnarValue::Array(_) => {
+                            Ok(datafusion_expr::ColumnarValue::Array(Arc::new(bytes)))
+                        }
+                    };
+                }
                 match arg {
                     datafusion_expr::ColumnarValue::Scalar(value) => {
                         let array = value.to_array_of_size(1)?;
@@ -103,7 +149,7 @@ pub fn canonical_key_hex_logical(
     value: LogicalExpr,
     dtype: &Type,
 ) -> Result<LogicalExpr, ExprError> {
-    let key = canonical_key_logical(value, dtype, false)?;
+    let key = encoded_key_logical(value, dtype, false)?;
     Ok(datafusion_functions::encoding::encode()
         .call(vec![key, lit(ScalarValue::Utf8(Some("hex".into())))]))
 }
@@ -247,15 +293,10 @@ fn lower(
                 let common_arrow = common.to_arrow()?;
                 let left = recurse(left)?.cast_to(&common_arrow, schema)?;
                 let right = recurse(right)?.cast_to(&common_arrow, schema)?;
-                if matches!(
-                    common,
-                    Type::Primitive(
-                        PrimitiveType::Bool
-                            | PrimitiveType::Int32
-                            | PrimitiveType::Int64
-                            | PrimitiveType::Str
-                    )
-                ) {
+                if !matches!(operator, BinaryOperator::Eq | BinaryOperator::Ne) {
+                    common.ensure_keyable()?;
+                }
+                if common.native_key() {
                     datafusion_expr::expr_fn::binary_expr(left, binary_operator(*operator)?, right)
                 } else {
                     let left = canonical_key_logical(left, &common, true)?;
@@ -332,6 +373,10 @@ fn lower(
                 UnaryOperator::Not => LogicalExpr::Not(Box::new(value)),
             }
         }
+        Expr::Cast {
+            dtype: Type::Primitive(PrimitiveType::Call),
+            ..
+        } => return logical_kernel(expr, schema, globals, bindings, scope),
         Expr::Cast { dtype, value } => {
             let source = value.dtype_with_globals(&schema.as_arrow(), globals)?;
             let fallible = matches!(source, Type::Primitive(PrimitiveType::Str))

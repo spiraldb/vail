@@ -45,36 +45,23 @@ fn call_alleles(call: &StructArray, row: usize) -> DfResult<Option<Vec<i32>>> {
     if call.is_null(row) {
         return Ok(None);
     }
-    let a = call
-        .column_by_name("__vail_call_alleles")
-        .ok_or_else(|| bad("Call missing alleles"))?
-        .as_any()
-        .downcast_ref::<ListArray>()
-        .ok_or_else(|| bad("Call alleles must be a list"))?;
-    if a.is_null(row) {
-        return Ok(None);
-    }
-    let values = a.value(row);
-    let ints = values
+    let words = call
+        .column_by_name("__vail_call_word")
+        .ok_or_else(|| bad("Call missing packed word"))?
         .as_any()
         .downcast_ref::<Int32Array>()
-        .ok_or_else(|| bad("Call alleles must be int32"))?;
-    let mut result = Vec::with_capacity(ints.len());
-    for i in 0..ints.len() {
-        if ints.is_null(i) || ints.value(i) < 0 {
-            return Err(bad("Call allele must be a nonnegative int32"));
-        }
-        result.push(ints.value(i));
+        .ok_or_else(|| bad("Call word must be int32"))?;
+    if words.is_null(row) {
+        return Err(bad("present Call has missing word"));
     }
-    Ok(Some(result))
+    Ok(Some(
+        vail_ordering::call::unpack(words.value(row))
+            .map_err(bad)?
+            .0,
+    ))
 }
 fn call_input(t: &DataType) -> bool {
-    let DataType::Struct(fields) = t else {
-        return false;
-    };
-    fields
-        .iter()
-        .any(|f| f.name() == "__vail_call_alleles" && matches!(f.data_type(), DataType::List(_)))
+    matches!(t,DataType::Struct(fields) if fields.len()==1 && fields[0].name()=="__vail_call_word" && fields[0].data_type()==&DataType::Int32)
 }
 fn packed<'a>(t: &'a DataType, name: &str) -> Result<&'a DataType, ExprError> {
     let DataType::Struct(fs) = t else {
@@ -847,21 +834,22 @@ mod tests {
     use super::*;
 
     fn call_array(calls: Vec<Option<Vec<i32>>>) -> StructArray {
-        let alleles = ListArray::from_iter_primitive::<arrow_array::types::Int32Type, _, _>(
+        let words = Int32Array::from(
             calls
                 .iter()
-                .map(|c| c.as_ref().map(|v| v.iter().map(|x| Some(*x)))),
+                .map(|call| {
+                    call.as_ref()
+                        .map(|alleles| crate::calls::pack(alleles, false).unwrap())
+                })
+                .collect::<Vec<_>>(),
         );
-        StructArray::from(vec![
-            (
-                field("__vail_call_alleles", alleles.data_type().clone()),
-                Arc::new(alleles) as ArrayRef,
-            ),
-            (
-                field("__vail_call_phased", DataType::Boolean),
-                Arc::new(arrow_array::BooleanArray::from(vec![false; calls.len()])) as ArrayRef,
-            ),
-        ])
+        StructArray::new(
+            vec![field("__vail_call_word", DataType::Int32)].into(),
+            vec![Arc::new(words)],
+            Some(arrow_buffer::NullBuffer::from(
+                calls.iter().map(Option::is_some).collect::<Vec<_>>(),
+            )),
+        )
     }
 
     #[test]

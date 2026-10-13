@@ -717,6 +717,7 @@ class Table:
         )
 
     def key_by(self, *keys, **named_keys):
+        from .types import _ensure_orderable
         names = []
         computed = {}
         for key in keys:
@@ -726,6 +727,7 @@ class Table:
             if expr._selection_name is None or not _referenced_columns(expr.to_ir()):
                 raise ExpressionException("key_by requires keyword arguments for complex expressions")
             name = expr._selection_name
+            _ensure_orderable(expr.dtype)
             names.append(name)
             if name not in self._schema or expr.to_ir() != self[name].to_ir():
                 computed[name] = expr
@@ -735,6 +737,7 @@ class Table:
             expr = as_expr(value)
             if expr.source is not None and expr.source is not self:
                 raise ExpressionException("expression source mismatch: field belongs to a different Table")
+            _ensure_orderable(expr.dtype)
             names.append(name)
             computed[name] = expr
         if builtins.len(builtins.set(names)) != builtins.len(names):
@@ -765,6 +768,8 @@ class Table:
         if builtins.len(builtins.set(names)) != builtins.len(names):
             raise ValueError("duplicate grouping field names")
         for _, expr in key_fields:
+            from .types import _ensure_orderable
+            _ensure_orderable(expr.dtype)
             if expr.source is not None and expr.source is not self:
                 raise ExpressionException("expression source mismatch: field belongs to a different Table")
             ir = expr.to_ir()
@@ -779,6 +784,8 @@ class Table:
         for value in exprs:
             sort = value if isinstance(value, _Sort) else asc(value)
             expr = self[sort.col] if isinstance(sort.col, builtins.str) else as_expr(sort.col)
+            from .types import _ensure_orderable
+            _ensure_orderable(expr.dtype)
             if expr.source is not self:
                 raise ValueError("expression source mismatch: sort expressions must belong to this Table")
             if not _referenced_columns(expr.to_ir()):

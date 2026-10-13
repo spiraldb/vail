@@ -77,7 +77,10 @@ impl DeclaredOrderingExec {
         let ordering = LexOrdering::new(vec![
             PhysicalSortExpr::new(
                 column(&input, schema.index_of(key)?),
-                SortOptions::default(),
+                SortOptions {
+                    descending: false,
+                    nulls_first: false,
+                },
             ),
             PhysicalSortExpr::new(
                 column(&input, schema.index_of(ordinal)?),
@@ -232,10 +235,12 @@ fn keyed_input(
             .ok_or_else(|| TableError::Invalid("interval lookup requires one key".into()))?
             .clone()
     } else if let Some(missing) = missing {
+        let key = vail_execution::ordering::canonical_key(key_struct);
+        let null = ScalarValue::try_from(key.data_type(bound.schema().as_ref())?)?;
         Arc::new(CaseExpr::try_new(
             None,
-            vec![(missing, Arc::new(Literal::new(ScalarValue::Binary(None))))],
-            Some(vail_execution::ordering::canonical_key(key_struct)),
+            vec![(missing, Arc::new(Literal::new(null)))],
+            Some(key),
         )?)
     } else {
         key_struct
@@ -412,7 +417,13 @@ fn join_partition(
     let sorted_left = sort_by(
         left,
         &[
-            (left_key_index, SortOptions::default()),
+            (
+                left_key_index,
+                SortOptions {
+                    descending: false,
+                    nulls_first: false,
+                },
+            ),
             (left_ordinal_index, SortOptions::default()),
         ],
     )?;
@@ -424,13 +435,27 @@ fn join_partition(
         let right_field = sorted_right.schema().field(sorted_right_key).clone();
         let filter_schema = Arc::new(arrow_schema::Schema::new(vec![left_field, right_field]));
         let filter_expr = if query_interval_mode {
+            let Type::Interval {
+                interval: point_type,
+            } = Type::from_arrow(filter_schema.field(0).data_type())?
+            else {
+                return Err(TableError::Invalid(
+                    "query interval key type expected".into(),
+                ));
+            };
             Expr::IntervalContains {
-                interval: Box::new(Expr::Column {
-                    name: left_key.to_owned(),
-                }),
-                point: Box::new(Expr::Column {
-                    name: right_key.to_owned(),
-                }),
+                interval: Box::new(crate::interval_read::ordered_key_interval(
+                    Expr::Column {
+                        name: left_key.to_owned(),
+                    },
+                    &point_type,
+                )),
+                point: Box::new(crate::interval_read::ordered_key_point(
+                    Expr::Column {
+                        name: right_key.to_owned(),
+                    },
+                    &point_type,
+                )),
             }
         } else {
             Expr::IntervalContains {
@@ -470,7 +495,10 @@ fn join_partition(
             )],
             None,
             JoinType::Left,
-            vec![SortOptions::default()],
+            vec![SortOptions {
+                descending: false,
+                nulls_first: false,
+            }],
             datafusion_common::NullEquality::NullEqualsNothing,
         )?)
     };
@@ -607,7 +635,9 @@ fn join_partition(
                         }),
                         index: Box::new(Expr::Literal {
                             value: serde_json::json!(0),
-                            dtype: Type::Primitive(vail_execution::expressions::PrimitiveType::Int32),
+                            dtype: Type::Primitive(
+                                vail_execution::expressions::PrimitiveType::Int32,
+                            ),
                         }),
                     },
                     &schema,

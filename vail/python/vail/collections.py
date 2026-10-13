@@ -338,9 +338,10 @@ def sorted_(collection, key=None, reverse=False):
         raise TypeError("reverse must be a bool")
     if key is not None:
         raise NotImplementedError("expression-valued sorted keys are not yet implemented")
-    from .types import tstr
-    if value.dtype.element_type not in (tint32, tint64, tbool, tstr):
-        raise NotImplementedError("DataFusion array_sort does not preserve Vail total ordering for this element type")
+    from .types import tstr, tfloat32, tfloat64, _ensure_orderable
+    _ensure_orderable(value.dtype.element_type)
+    if value.dtype.element_type not in (tint32, tint64, tfloat32, tfloat64, tbool, tstr):
+        raise NotImplementedError("array_sort is not yet enabled for this element type")
     if isinstance(value.dtype, tset):
         value = _cast(value, tarray(value.dtype.element_type))
     return _function("array_sort", [value, literal("DESC" if reverse else "ASC"), literal("NULLS LAST")], value.dtype)

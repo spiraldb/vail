@@ -9,13 +9,13 @@ use crate::{
     plan::{self, PhysicalPlan, column},
 };
 use arrow_array::Array;
-use arrow_schema::SchemaRef;
+use arrow_schema::{DataType, SchemaRef};
 use datafusion_common::{ScalarValue, config::ConfigOptions};
 use datafusion_execution::TaskContext;
 use datafusion_expr::Operator;
 use datafusion_physical_expr::{
     PhysicalExpr, ScalarFunctionExpr,
-    expressions::{BinaryExpr, Literal},
+    expressions::{BinaryExpr, CaseExpr, Literal},
 };
 use datafusion_physical_plan::filter::FilterExec;
 use futures::TryStreamExt;
@@ -323,8 +323,8 @@ fn inherited_bounds(table: &TableRef, join_key: usize) -> Result<Option<Vec<Opti
                 result.push(
                     pair.map(|(first, last)| -> Result<Bound> {
                         Ok(Bound {
-                            first: encode_prefix(&first, join_key)?,
-                            last: encode_prefix(&last, join_key)?,
+                            first: encode_prefix(&first, join_key, table)?,
+                            last: encode_prefix(&last, join_key, table)?,
                         })
                     })
                     .transpose()?,
@@ -404,29 +404,74 @@ fn key_expression(input: &PhysicalPlan, keys: &[String]) -> Result<Arc<dyn Physi
         args.push(Arc::new(Literal::new(ScalarValue::Utf8(Some(format!(
             "__key_{index}"
         ))))));
-        args.push(column(input, input.schema().index_of(name)?));
+        let field_index = input.schema().index_of(name)?;
+        let value = column(input, field_index);
+        // Bounds must use the same equivalence classes as native scalar join
+        // keys. Normalize only the scalar zero boundary with DataFusion CASE.
+        let zero = match input.schema().field(field_index).data_type() {
+            DataType::Float32 => Some(ScalarValue::Float32(Some(0.0))),
+            DataType::Float64 => Some(ScalarValue::Float64(Some(0.0))),
+            _ => None,
+        };
+        args.push(if let Some(zero) = zero {
+            let zero = Arc::new(Literal::new(zero)) as Arc<dyn PhysicalExpr>;
+            let condition = Arc::new(BinaryExpr::new(value.clone(), Operator::Eq, zero.clone()))
+                as Arc<dyn PhysicalExpr>;
+            Arc::new(CaseExpr::try_new(
+                None,
+                vec![(condition, zero)],
+                Some(value),
+            )?) as Arc<dyn PhysicalExpr>
+        } else {
+            value
+        });
     }
-    Ok(vail_execution::ordering::canonical_key(
-        Arc::new(ScalarFunctionExpr::try_new(
-            datafusion_functions::core::named_struct(),
-            args,
-            &input.schema(),
-            Arc::new(ConfigOptions::default()),
-        )?) as Arc<dyn PhysicalExpr>,
-    ))
+    let key = Arc::new(ScalarFunctionExpr::try_new(
+        datafusion_functions::core::named_struct(),
+        args,
+        &input.schema(),
+        Arc::new(ConfigOptions::default()),
+    )?) as Arc<dyn PhysicalExpr>;
+    let dtype = vail_execution::expressions::Type::from_arrow(&key.data_type(&input.schema())?)?;
+    let logical = serde_json::to_value(dtype)
+        .map_err(|e| TableError::Invalid(format!("invalid join bound type: {e}")))?;
+    Ok(vail_execution::ordering::storage_bound_key(key, logical))
 }
 
-fn encode_prefix(key: &CompositeKey, length: usize) -> Result<Vec<u8>> {
+fn encode_prefix(key: &CompositeKey, length: usize, table: &TableRef) -> Result<Vec<u8>> {
     if key.len() < length {
         return Err(TableError::Invalid(
             "indexed key has fewer fields than join prefix".into(),
         ));
     }
     let mut encoded = vec![1];
-    for value in &key[..length] {
+    for (index, value) in key[..length].iter().enumerate() {
         match value {
             KeyValue::Missing => encoded.push(2),
-            KeyValue::Canonical(bytes) => encoded.extend_from_slice(bytes),
+            KeyValue::Canonical(bytes) => {
+                let dtype = table
+                    .schema()
+                    .field_with_name(&table.keys()[index])?
+                    .data_type();
+                let zeros = match dtype {
+                    DataType::Float32 => Some((
+                        ScalarValue::Float32(Some(-0.0)),
+                        ScalarValue::Float32(Some(0.0)),
+                    )),
+                    DataType::Float64 => Some((
+                        ScalarValue::Float64(Some(-0.0)),
+                        ScalarValue::Float64(Some(0.0)),
+                    )),
+                    _ => None,
+                };
+                if let Some((negative, positive)) = zeros {
+                    if bytes == &encode_scalar(negative)? {
+                        encoded.extend_from_slice(&encode_scalar(positive)?);
+                        continue;
+                    }
+                }
+                encoded.extend_from_slice(bytes);
+            }
             KeyValue::Int32(value) => {
                 encoded.extend_from_slice(&encode_scalar(ScalarValue::Int32(Some(*value)))?)
             }

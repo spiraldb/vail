@@ -308,6 +308,7 @@ pub(crate) fn lower_logical_grouped(
         let encoded = unique(&mut used, "__vail_logical_group_key");
         let dtype =
             expr.dtype_with_globals(projected.schema().as_arrow(), table.globals().schema())?;
+        dtype.ensure_keyable()?;
         projections.push(canonical_key_logical(col(name), &dtype, false)?.alias(&encoded));
         encoded_names.push(encoded);
     }
@@ -349,11 +350,12 @@ pub(crate) fn lower_logical_grouped(
             .build()?;
         let left_columns = columns(&result);
         result = LogicalPlanBuilder::from(result)
-            .join(
+            .join_detailed(
                 right,
                 JoinType::Left,
                 (encoded_names.clone(), right_keys),
                 None,
+                datafusion_common::NullEquality::NullEqualsNull,
             )?
             .build()?;
         let mut projection = left_columns;

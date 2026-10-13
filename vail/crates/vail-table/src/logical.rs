@@ -714,7 +714,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                                     &dtype,
                                     false,
                                 )?
-                                .sort(true, true))
+                                .sort(true, false))
                             })
                             .collect::<Result<Vec<_>>>()?;
                         LogicalPlanBuilder::from(plan).sort(sorts)?.build()?

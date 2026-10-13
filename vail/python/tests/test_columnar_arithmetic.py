@@ -86,7 +86,7 @@ def test_primitive_comparisons_in_collection_lambdas(dtype, values, threshold):
     assert result.filtered == [v for v in values if v is not None and v > threshold]
 
 
-def test_collection_float_comparisons_preserve_total_order():
+def test_collection_float_comparisons_use_native_datafusion():
     table = hl.Table.parallelize(
         [{'values': [-0.0, 0.0, float('nan'), None]}],
         schema=hl.tstruct(values=hl.tarray(hl.tfloat64)),
@@ -95,8 +95,8 @@ def test_collection_float_comparisons_preserve_total_order():
         equality=table.values.map(lambda x: x == -0.0),
         greater=table.values.map(lambda x: x > -0.0),
     ).collect()[0]
-    assert result.equality == [True, False, False, None]
-    assert result.greater == [False, True, True, None]
+    assert result.equality == [True, True, False, None]
+    assert result.greater == [False, False, True, None]
 
 
 def test_integer_sum_batch_reduction_overflow_nulls_and_partition_merge():

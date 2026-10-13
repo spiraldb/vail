@@ -188,6 +188,13 @@ def test_floating_values(tmp_path):
       {'__vail_ndarray_data': [1], '__vail_ndarray_shape': [1]}, None]),
 ])
 def test_ordered_complex_key_roundtrip(tmp_path, dtype, values):
+    if isinstance(dtype, (hl.tset, hl.tdict)):
+        table = hl.Table.parallelize([{'k': value} for value in values], schema=hl.tstruct(k=dtype))
+        with pytest.raises(NotImplementedError, match='Set/Dictionary'):
+            table.key_by('k')
+        table.write(tmp_path / 'unkeyed')
+        assert hl.read_table(tmp_path / 'unkeyed')._same(table)
+        return
     table = hl.Table.parallelize([{'k': value} for value in values],
                                  schema=hl.tstruct(k=dtype)).key_by('k')
     path = tmp_path / 'table'

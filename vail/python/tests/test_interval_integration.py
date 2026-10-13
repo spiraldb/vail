@@ -75,7 +75,14 @@ def test_interval_point_types_roundtrip(tmp_path, point_type, start, end):
     table = hl.Table.parallelize(
         [{'region': interval}, {'region': None}],
         schema=hl.tstruct(region=interval_type), n_partitions=2,
-    ).key_by('region')
+    )
+    if isinstance(point_type, (hl.tset, hl.tdict)):
+        with pytest.raises(NotImplementedError, match='Set/Dictionary'):
+            table.key_by('region')
+        table.write(tmp_path / 'unkeyed-intervals')
+        assert hl.read_table(tmp_path / 'unkeyed-intervals')._same(table)
+        return
+    table = table.key_by('region')
     assert isinstance(table.collect()[0].region, hl.Interval)
     path = tmp_path / 'intervals'
     table.write(path)

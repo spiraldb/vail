@@ -84,8 +84,7 @@ def _arrow_storage_type(dtype):
             pa.field("__vail_locus_position", pa.int32()),
         ])
     if dtype == tcall:
-        return pa.struct([pa.field("__vail_call_alleles", pa.list_(pa.int32())),
-                          pa.field("__vail_call_phased", pa.bool_())])
+        return pa.struct([pa.field("__vail_call_word", pa.int32())])
     if isinstance(dtype, tinterval):
         return pa.struct([pa.field("__vail_interval_start", arrow_type(dtype.point_type)),
                           pa.field("__vail_interval_start_exclusive", pa.bool_()),
@@ -115,7 +114,8 @@ def _physical(value, dtype):
         return {"__vail_locus_ordinal": dtype.reference_genome.contigs.index(value.contig), "__vail_locus_contig": value.contig,
                 "__vail_locus_position": value.position}
     if dtype == tcall:
-        return {"__vail_call_alleles": list(value.alleles), "__vail_call_phased": value.phased}
+        from .types import _pack_call
+        return {"__vail_call_word": _pack_call(value)}
     if isinstance(dtype, tinterval):
         return {"__vail_interval_start": _physical(value.start, dtype.point_type),
                 "__vail_interval_end": _physical(value.end, dtype.point_type),
@@ -264,6 +264,15 @@ def dtype_from_arrow(ty):
             dtype_from_arrow(child)  # nested versions must also be understood
         if not same_arrow_layout(ty, arrow_type(logical)):
             raise TypeError("Arrow logical type metadata does not match physical layout")
+        from .types import tlocus
+        if isinstance(logical, tlocus):
+            raw = (ty[1].metadata or {}).get(b"vail.reference")
+            try:
+                reference = json.loads(raw) if raw is not None else None
+            except (ValueError, TypeError) as error:
+                raise TypeError("invalid Locus reference metadata") from error
+            if reference != logical.reference_genome.to_wire():
+                raise TypeError("Locus reference metadata disagrees with its logical type")
         return logical
     if pa.types.is_list(ty) or pa.types.is_large_list(ty):
         return tarray(dtype_from_arrow(ty.value_type))

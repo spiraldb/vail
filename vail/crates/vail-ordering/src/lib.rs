@@ -5,6 +5,8 @@
 //! every nesting level. Lists and structs compare lexicographically; sets and
 //! dictionaries compare their sorted elements/entries, independently of their
 //! physical iteration order.
+pub mod call;
+
 use arrow_array::{
     Array, BinaryArray, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array,
     LargeStringArray, ListArray, StringArray, StructArray,
@@ -324,32 +326,12 @@ fn append_value(
         }
         DataType::Struct(fields) if logical.is_some_and(|v| v == "call") => {
             let call = down::<StructArray>(array)?;
-            let alleles = down::<ListArray>(call.column(0).as_ref())?.value(row);
-            let alleles = down::<Int32Array>(alleles.as_ref())?;
-            if alleles.len() > 2 || alleles.iter().any(|a| a.is_none_or(|a| a < 0)) {
-                return Err(KeyError::Invalid("invalid call alleles"));
+            let words = down::<Int32Array>(call.column(0).as_ref())?;
+            if words.is_null(row) {
+                return Err(KeyError::Invalid("present Call has missing word"));
             }
-            let phased = down::<BooleanArray>(call.column(1).as_ref())?.value(row);
-            let repr = match alleles.len() {
-                0 => 0,
-                1 => alleles.value(0) as i64,
-                2 => {
-                    let a = alleles.value(0) as i64;
-                    let b = alleles.value(1) as i64;
-                    let (j, k) = if phased {
-                        (a, a + b)
-                    } else {
-                        (a.min(b), a.max(b))
-                    };
-                    k * (k + 1) / 2 + j
-                }
-                _ => unreachable!(),
-            };
-            if repr > (1 << 29) - 1 {
-                return Err(KeyError::Invalid("call allele representation overflow"));
-            }
-            let call_bits =
-                ((repr as i32) << 3) | ((alleles.len() as i32) << 1) | i32::from(phased);
+            let call_bits = words.value(row);
+            crate::call::unpack(call_bits).map_err(|_| KeyError::Invalid("invalid packed Call"))?;
             out.extend(((call_bits as u32) ^ (1 << 31)).to_be_bytes());
         }
         DataType::Struct(fields) if logical.is_some_and(|t| t.get("ndarray").is_some()) => {

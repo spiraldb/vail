@@ -34,6 +34,7 @@ fn table_error(error: TableError) -> PyErr {
                 TableError::Invalid(_) | TableError::Arrow(_) => return value_error(table),
                 TableError::Expression(expr) => {
                     return match expr {
+                        vail_execution::expressions::ExprError::Unsupported(_) => PyNotImplementedError::new_err(expr.to_string()),
                         vail_execution::expressions::ExprError::DataFusion(_) => {
                             PyRuntimeError::new_err(expr.to_string())
                         }

@@ -31,6 +31,8 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum ExprError {
+    #[error("unsupported operation: {0}")]
+    Unsupported(String),
     #[error("invalid expression: {0}")]
     Invalid(String),
     #[error("Arrow expression failed: {0}")]
@@ -66,6 +68,38 @@ pub enum Type {
 }
 
 impl Type {
+    pub fn contains_unordered(&self) -> bool {
+        match self {
+            Self::Set { .. } | Self::Dict { .. } => true,
+            Self::Struct { r#struct: fields } => fields.iter().any(|(_, t)| t.contains_unordered()),
+            Self::Tuple { tuple } => tuple.iter().any(Self::contains_unordered),
+            Self::Array { array } | Self::Interval { interval: array } => {
+                array.contains_unordered()
+            }
+            Self::Ndarray { ndarray } => ndarray.0.contains_unordered(),
+            _ => false,
+        }
+    }
+    pub fn ensure_keyable(&self) -> Result<(), ExprError> {
+        if self.contains_unordered() {
+            Err(ExprError::Unsupported(
+                "Set/Dictionary ordering and keying".into(),
+            ))
+        } else {
+            Ok(())
+        }
+    }
+    pub fn native_key(&self) -> bool {
+        match self {
+            Self::Set { .. } | Self::Dict { .. } | Self::Ndarray { .. } => false,
+            Self::Struct { r#struct: fields } => {
+                !fields.is_empty() && fields.iter().all(|(_, t)| t.native_key())
+            }
+            Self::Tuple { tuple } => tuple.iter().all(Self::native_key),
+            Self::Array { array } | Self::Interval { interval: array } => array.native_key(),
+            _ => true,
+        }
+    }
     fn storage_type(&self) -> Option<Type> {
         match self {
             Self::Tuple { tuple } if tuple.is_empty() => Some(Self::Struct {
@@ -84,18 +118,10 @@ impl Type {
                     .collect(),
             }),
             Self::Primitive(PrimitiveType::Call) => Some(Self::Struct {
-                r#struct: vec![
-                    (
-                        "__vail_call_alleles".into(),
-                        Self::Array {
-                            array: Box::new(Self::Primitive(PrimitiveType::Int32)),
-                        },
-                    ),
-                    (
-                        "__vail_call_phased".into(),
-                        Self::Primitive(PrimitiveType::Bool),
-                    ),
-                ],
+                r#struct: vec![(
+                    "__vail_call_word".into(),
+                    Self::Primitive(PrimitiveType::Int32),
+                )],
             }),
             Self::Dict { dict } => Some(Self::Array {
                 array: Box::new(Self::Struct {
@@ -262,6 +288,23 @@ impl Type {
             }
             let ty: Self = serde_json::from_value(logical)
                 .map_err(|e| ExprError::Invalid(format!("invalid Arrow logical type: {e}")))?;
+            if let Self::Locus { locus } = &ty {
+                locus.validate().map_err(ExprError::Invalid)?;
+                let DataType::Struct(fields) = dtype else {
+                    return Err(ExprError::Invalid("invalid Locus storage".into()));
+                };
+                let stored = fields
+                    .get(1)
+                    .and_then(|f| f.metadata().get("vail.reference"))
+                    .ok_or_else(|| ExprError::Invalid("Locus reference metadata missing".into()))?;
+                let reference: ReferenceDefinition =
+                    serde_json::from_str(stored).map_err(|e| ExprError::Invalid(e.to_string()))?;
+                if &reference != locus {
+                    return Err(ExprError::Invalid(
+                        "Locus reference metadata disagrees with its logical type".into(),
+                    ));
+                }
+            }
             if !vail_ordering::same_layout(dtype, &ty.to_arrow()?) {
                 return Err(ExprError::Invalid(
                     "Arrow logical type metadata does not match physical layout".into(),
@@ -1660,6 +1703,7 @@ impl Expr {
                         array: Box::new(Type::Primitive(PrimitiveType::Int32)),
                     }),
                     "__vail_call_phased" => Ok(Type::Primitive(PrimitiveType::Bool)),
+                    "__vail_call_word" => Ok(Type::Primitive(PrimitiveType::Int32)),
                     _ => Err(ExprError::Invalid(format!(
                         "invalid call storage field {name:?}"
                     ))),
@@ -1727,6 +1771,16 @@ impl Expr {
             } => {
                 let a = left.dtype_scoped(schema, globals, scope)?;
                 let b = right.dtype_scoped(schema, globals, scope)?;
+                if matches!(
+                    operator,
+                    BinaryOperator::Lt
+                        | BinaryOperator::Le
+                        | BinaryOperator::Gt
+                        | BinaryOperator::Ge
+                ) {
+                    a.ensure_keyable()?;
+                    b.ensure_keyable()?;
+                }
                 match operator {
                     BinaryOperator::And | BinaryOperator::Or => {
                         ensure_bool(&a, "boolean operator")?;
@@ -1807,7 +1861,15 @@ fn validate_literal(value: &Value, dtype: &Type) -> Result<(), ExprError> {
     }
     if !matches!(dtype, Type::Interval { .. }) {
         if let Some(storage) = dtype.storage_type() {
-            return validate_literal(value, &storage);
+            validate_literal(value, &storage)?;
+            if *dtype == Type::Primitive(PrimitiveType::Call) {
+                let word = value["__vail_call_word"]
+                    .as_i64()
+                    .ok_or_else(|| ExprError::Invalid("Call word must be present".into()))?
+                    as i32;
+                vail_ordering::call::unpack(word).map_err(ExprError::Invalid)?;
+            }
+            return Ok(());
         }
     }
     match dtype {
@@ -3161,53 +3223,18 @@ fn annotation_text(array: &ArrayRef, row: usize, dtype: &Type) -> Result<String,
     })
 }
 
-fn call_raw(array: &ArrayRef, row: usize) -> Result<String, ExprError> {
+fn call_word(array: &ArrayRef, row: usize) -> Result<i32, ExprError> {
     let st = down::<StructArray>(array.as_ref())?;
-    let list = down::<ListArray>(
-        st.column_by_name("__vail_call_alleles")
-            .ok_or_else(|| ExprError::Invalid("call alleles missing".into()))?
-            .as_ref(),
-    )?;
-    let alleles = list.value(row);
-    let alleles = down::<Int32Array>(alleles.as_ref())?;
-    let phased = down::<BooleanArray>(
-        st.column_by_name("__vail_call_phased")
-            .ok_or_else(|| ExprError::Invalid("call phased missing".into()))?
-            .as_ref(),
-    )?
-    .value(row);
-    let values = (0..alleles.len())
-        .map(|i| i128::from(alleles.value(i)))
-        .collect::<Vec<_>>();
-    let ploidy = values.len() as i32;
-    let allele_repr = match values.as_slice() {
-        [] => 0,
-        [a] => *a,
-        [a, b] if phased => {
-            let k = a + b;
-            k * (k + 1) / 2 + a
-        }
-        [a, b] => {
-            let (j, k) = if a <= b { (*a, *b) } else { (*b, *a) };
-            k * (k + 1) / 2 + j
-        }
-        _ => {
-            return Err(ExprError::Invalid(
-                "Hail calls support at most diploid ploidy".into(),
-            ));
-        }
-    };
-    if alleles.null_count() != 0
-        || values.iter().any(|a| *a < 0)
-        || !(0..1 << 29).contains(&allele_repr)
-    {
-        return Err(ExprError::Invalid(
-            "invalid Hail call allele representation".into(),
-        ));
+    let word = down::<Int32Array>(st.column(0).as_ref())?;
+    if word.is_null(row) {
+        return Err(ExprError::Invalid("present Call has missing word".into()));
     }
-    // Hail's Call annotation is a packed signed Int; preserve its bit pattern.
-    let packed = ((allele_repr as u32) << 3) | ((ploidy as u32) << 1) | u32::from(phased);
-    Ok((packed as i32).to_string())
+    let word = word.value(row);
+    vail_ordering::call::unpack(word).map_err(ExprError::Invalid)?;
+    Ok(word)
+}
+fn call_raw(array: &ArrayRef, row: usize) -> Result<String, ExprError> {
+    Ok(call_word(array, row)?.to_string())
 }
 
 fn hail_value_string(
@@ -3268,28 +3295,18 @@ fn hail_value_string(
                 }
             }
             Type::Primitive(PrimitiveType::Call) => {
-                let st = down::<StructArray>(array.as_ref())?;
-                let alleles = st
-                    .column_by_name("__vail_call_alleles")
-                    .ok_or_else(|| ExprError::Invalid("call alleles field missing".into()))?;
-                let list = down::<ListArray>(alleles.as_ref())?;
-                let offsets = list.value_offsets();
-                let (start, end) = (offsets[row], offsets[row + 1]);
-                let items = list.values();
-                let phased = down::<BooleanArray>(
-                    st.column_by_name("__vail_call_phased")
-                        .ok_or_else(|| ExprError::Invalid("call phased field missing".into()))?
-                        .as_ref(),
-                )?
-                .value(row);
-                let sep = if phased { "|" } else { "/" };
-                let out = (start as usize..end as usize)
-                    .map(|i| down::<Int32Array>(items.as_ref()).map(|a| a.value(i).to_string()))
-                    .collect::<Result<Vec<_>, _>>()?;
-                let call = if out.is_empty() {
+                let (alleles, phased) = vail_ordering::call::unpack(call_word(array, row)?)
+                    .map_err(ExprError::Invalid)?;
+                let call = if alleles.is_empty() {
                     if phased { "|-".into() } else { "-".into() }
+                } else if phased && alleles.len() == 1 {
+                    format!("|{}", alleles[0])
                 } else {
-                    out.join(sep)
+                    alleles
+                        .iter()
+                        .map(ToString::to_string)
+                        .collect::<Vec<_>>()
+                        .join(if phased { "|" } else { "/" })
                 };
                 Ok(if top { call } else { json_quote(&call)? })
             }
@@ -4286,6 +4303,24 @@ fn lower_scoped(
             let one = literal_array(value, dtype, 1)?;
             Arc::new(Literal::new(scalar_at(&one, 0)?))
         }
+        Expr::Cast {
+            dtype: Type::Primitive(PrimitiveType::Call),
+            value,
+        } if matches!(value.dtype_scoped(schema,globals.schema(),scope)?, Type::Struct { r#struct: fields } if fields.iter().any(|(name,_)| name=="__vail_call_alleles")) => {
+            lower_scoped(&crate::calls::construct(value), schema, globals, scope)?
+        }
+        Expr::GetField { value, name }
+            if value.dtype_scoped(schema, globals.schema(), scope)?
+                == Type::Primitive(PrimitiveType::Call)
+                && crate::calls::getter(value, name).is_some() =>
+        {
+            lower_scoped(
+                &crate::calls::getter(value, name).unwrap(),
+                schema,
+                globals,
+                scope,
+            )?
+        }
         Expr::Cast { dtype, value } => lower_cast(
             lower_scoped(value, schema, globals, scope)?,
             schema,
@@ -4686,18 +4721,10 @@ fn lower_scoped(
                     let common_arrow = common.to_arrow()?;
                     l = lower_cast(l, schema, &common_arrow)?;
                     r = lower_cast(r, schema, &common_arrow)?;
-                    // Primitive comparisons have the same null/value semantics
-                    // as DataFusion. Avoid allocating canonical binary keys for
-                    // every element, especially inside collection lambdas.
-                    if !matches!(
-                        common,
-                        Type::Primitive(
-                            PrimitiveType::Bool
-                                | PrimitiveType::Int32
-                                | PrimitiveType::Int64
-                                | PrimitiveType::Str
-                        )
-                    ) {
+                    if !matches!(operator, BinaryOperator::Eq | BinaryOperator::Ne) {
+                        common.ensure_keyable()?;
+                    }
+                    if !common.native_key() {
                         l = crate::ordering::canonical_key_nullable(l, logical.clone());
                         r = crate::ordering::canonical_key_nullable(r, logical);
                     }

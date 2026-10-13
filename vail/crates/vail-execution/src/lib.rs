@@ -25,6 +25,7 @@ use thiserror::Error;
 
 mod aggregate_identity;
 pub mod aggregates;
+pub mod calls;
 pub mod collect_aggregate;
 pub mod csv_line;
 pub mod expressions;

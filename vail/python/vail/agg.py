@@ -181,6 +181,8 @@ def explode(f, array_agg_expr):
 def group_by(group, agg_expr):
     from .types import tdict
     key, body = as_expr(group), as_expr(agg_expr)
+    from .types import _ensure_orderable
+    _ensure_orderable(key.dtype)
     return Expression(tdict(key.dtype, body.dtype), _merge_sources(key.source, body.source),
                       {"op": "agg_group_by", "key": key.to_ir(), "body": body.to_ir()})
 

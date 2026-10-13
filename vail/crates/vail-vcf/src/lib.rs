@@ -521,22 +521,15 @@ fn append_call(builder: &mut StructBuilder, token: &str) -> Result<()> {
     if !token.contains('|') && ploidy == 2 && alleles[0] > alleles[1] {
         alleles.swap(0, 1);
     }
-    let list = builder
-        .field_builder::<ListBuilder<Box<dyn ArrayBuilder>>>(0)
-        .unwrap();
-    let values = list
-        .values()
-        .as_any_mut()
-        .downcast_mut::<Int32Builder>()
-        .unwrap();
-    if !missing {
-        values.append_slice(&alleles[..ploidy]);
+    let words = builder.field_builder::<Int32Builder>(0).unwrap();
+    if missing {
+        words.append_null();
+    } else {
+        words.append_value(vail_execution::calls::pack(
+            &alleles[..ploidy],
+            token.contains('|'),
+        )?);
     }
-    list.append(!missing);
-    builder
-        .field_builder::<BooleanBuilder>(1)
-        .unwrap()
-        .append_value(token.contains('|'));
     builder.append(!missing);
     Ok(())
 }
@@ -1089,14 +1082,12 @@ mod tests {
             .downcast_ref::<StructArray>()
             .unwrap();
         assert!(calls.is_null(1));
-        assert!(
-            calls
-                .column(1)
-                .as_any()
-                .downcast_ref::<BooleanArray>()
-                .unwrap()
-                .value(0)
-        );
+        let words = calls
+            .column(0)
+            .as_any()
+            .downcast_ref::<arrow_array::Int32Array>()
+            .unwrap();
+        assert!(vail_execution::calls::unpack(words.value(0)).unwrap().1);
     }
     #[test]
     fn drop_samples_and_empty_structs_preserve_row_lengths() {

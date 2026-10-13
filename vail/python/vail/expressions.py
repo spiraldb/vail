@@ -1074,6 +1074,10 @@ def _array_arithmetic(left, right, operator):
 
 
 def _check_comparable(left, right, operator):
+    if operator in ('lt','le','gt','ge'):
+        from .types import _ensure_orderable
+        _ensure_orderable(left)
+        _ensure_orderable(right)
     if left == right:
         return
     if left in (tint32, tint64, tfloat32, tfloat64) and right in (tint32, tint64, tfloat32, tfloat64):

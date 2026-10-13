@@ -149,7 +149,9 @@ pub(crate) fn lower(
                 None,
                 vec![(
                     any_missing.expect("non-empty key indices"),
-                    Arc::new(Literal::new(ScalarValue::Binary(None))),
+                    Arc::new(Literal::new(ScalarValue::try_from(
+                        canonical.data_type(&schema)?,
+                    )?)),
                 )],
                 Some(canonical),
             )?)

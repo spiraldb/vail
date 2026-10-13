@@ -1,4 +1,6 @@
-# Vail total key ordering
+# Vail key ordering
+
+**Current execution policy:** Supported types use native DataFusion comparisons, grouping, joins, and sorting. The canonical encoding described below remains a storage-bound format and fallback for unsupported native representations; it is not a requirement to encode every execution operand. Native equality differences are documented in [intentional differences](INTENTIONAL_HAIL_DIVERGENCES.md). Set/Dictionary ordering and keying are unsupported. The following historical description predates that policy.
 
 `vail-ordering` defines one canonical byte encoding. DataFusion sorts these bytes,
 groups and joins on them, and the Iceberg fragment index compares the same bytes.

@@ -6,6 +6,7 @@ rust-version.workspace = true
 license.workspace = true
 
 [dependencies]
+arrow-row = "=59.2.0"
 datafusion-functions = { version = "=55.0.0", default-features = false, features = ["string_expressions", "unicode_expressions", "regex_expressions", "math_expressions"] }
 ndhistogram = "=0.12.0"
 arrow-ord = "=59.2.0"

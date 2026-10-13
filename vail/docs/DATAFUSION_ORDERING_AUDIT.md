@@ -2,7 +2,9 @@
 
 Audited 13 October 2026 against the pinned DataFusion 55.0.0 and Arrow 59.2.0, using direct DataFusion SQL and its native operators. The probe bypasses Vail's custom canonical-key expressions. No production representation or semantic policy is changed by this audit.
 
-The target is the documented Vail decision: IEEE 754 totalOrder, including distinct signed zeros and NaN bit patterns, and the agreed nested missing-first order. This is deliberately different from Hail. Vail's current custom comparator still implements missing-last, so the null-order decision remains an implementation gap. Cross-type comparisons must still obey Vail's type promotion and reference-genome checks.
+**Policy update:** The subsequent decision is to use native DataFusion operators directly for floating-point values. The float-view proposal below is historical and must not be implemented. Set/Dictionary ordering and keying are explicitly unsupported; ndarray work is deferred. See [intentional differences](INTENTIONAL_HAIL_DIVERGENCES.md).
+
+The original audit target was: IEEE 754 totalOrder, including distinct signed zeros and NaN bit patterns, and the agreed nested missing-first order. This is deliberately different from Hail. Vail's current custom comparator still implements missing-last, so the null-order decision remains an implementation gap. Cross-type comparisons must still obey Vail's type promotion and reference-genome checks.
 
 ## Type-by-type answer
 

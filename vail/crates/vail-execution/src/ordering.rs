@@ -14,10 +14,25 @@ use std::{
 struct CanonicalKeyExpr {
     child: Arc<dyn PhysicalExpr>,
     logical: Option<String>,
+    force_rows: bool,
 }
+impl CanonicalKeyExpr {
+    fn supports_native(&self, dtype: &DataType) -> Result<bool> {
+        let logical = match &self.logical {
+            Some(raw) => serde_json::from_str::<crate::expressions::Type>(raw)
+                .map_err(|e| DataFusionError::Plan(e.to_string()))?,
+            None => crate::expressions::Type::from_arrow(dtype)
+                .map_err(|e| DataFusionError::Plan(e.to_string()))?,
+        };
+        Ok(logical.native_key())
+    }
+}
+
 impl PartialEq for CanonicalKeyExpr {
     fn eq(&self, other: &Self) -> bool {
-        self.child.eq(&other.child) && self.logical == other.logical
+        self.child.eq(&other.child)
+            && self.logical == other.logical
+            && self.force_rows == other.force_rows
     }
 }
 impl Eq for CanonicalKeyExpr {}
@@ -25,6 +40,7 @@ impl Hash for CanonicalKeyExpr {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.child.hash(state);
         self.logical.hash(state);
+        self.force_rows.hash(state);
     }
 }
 impl fmt::Display for CanonicalKeyExpr {
@@ -36,11 +52,20 @@ impl PhysicalExpr for CanonicalKeyExpr {
     fn fmt_sql(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{self}")
     }
-    fn data_type(&self, _: &Schema) -> Result<DataType> {
-        Ok(DataType::Binary)
+    fn data_type(&self, schema: &Schema) -> Result<DataType> {
+        let ty = self.child.data_type(schema)?;
+        if !self.force_rows && self.supports_native(&ty)? {
+            Ok(ty)
+        } else {
+            Ok(DataType::Binary)
+        }
     }
-    fn nullable(&self, _: &Schema) -> Result<bool> {
-        Ok(false)
+    fn nullable(&self, schema: &Schema) -> Result<bool> {
+        if self.data_type(schema)? != DataType::Binary {
+            self.child.nullable(schema)
+        } else {
+            Ok(false)
+        }
     }
     fn children(&self) -> Vec<&Arc<dyn PhysicalExpr>> {
         vec![&self.child]
@@ -57,10 +82,28 @@ impl PhysicalExpr for CanonicalKeyExpr {
         Ok(Arc::new(Self {
             child: children[0].clone(),
             logical: self.logical.clone(),
+            force_rows: self.force_rows,
         }))
     }
     fn evaluate(&self, batch: &RecordBatch) -> Result<ColumnarValue> {
+        if self.data_type(batch.schema().as_ref())? != DataType::Binary {
+            return self.child.evaluate(batch);
+        }
         let values = self.child.evaluate(batch)?.into_array(batch.num_rows())?;
+        if self.force_rows && self.supports_native(values.data_type())? {
+            let converter =
+                arrow_row::RowConverter::new(vec![arrow_row::SortField::new_with_options(
+                    values.data_type().clone(),
+                    arrow_schema::SortOptions {
+                        descending: false,
+                        nulls_first: false,
+                    },
+                )])?;
+            let rows = converter.convert_columns(&[values])?;
+            return Ok(ColumnarValue::Array(Arc::new(
+                BinaryArray::from_iter_values(rows.iter().map(|row| row.data())),
+            )));
+        }
         let encoded = if let Some(logical) = &self.logical {
             let logical: serde_json::Value = serde_json::from_str(logical).map_err(|e| {
                 DataFusionError::Internal(format!("invalid canonical key type: {e}"))
@@ -86,6 +129,16 @@ pub fn canonical_key(child: Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
     Arc::new(CanonicalKeyExpr {
         child,
         logical: None,
+        force_rows: false,
+    })
+}
+
+/// Batch row encoding for DataFusion range split points. No per-value key vectors.
+pub fn range_key(child: Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
+    Arc::new(CanonicalKeyExpr {
+        child,
+        logical: None,
+        force_rows: true,
     })
 }
 
@@ -96,6 +149,7 @@ pub fn canonical_key_typed(
     Arc::new(CanonicalKeyExpr {
         child,
         logical: Some(logical.to_string()),
+        force_rows: true,
     })
 }
 
@@ -173,6 +227,23 @@ impl PhysicalExpr for NullableCanonicalKeyExpr {
 }
 
 pub fn canonical_key_nullable(
+    child: Arc<dyn PhysicalExpr>,
+    logical: serde_json::Value,
+) -> Arc<dyn PhysicalExpr> {
+    if serde_json::from_value::<crate::expressions::Type>(logical.clone())
+        .is_ok_and(|dtype| dtype.native_key())
+    {
+        return child;
+    }
+    Arc::new(NullableCanonicalKeyExpr {
+        child,
+        logical: logical.to_string(),
+    })
+}
+
+/// Versioned storage-bound comparison only. Execution comparisons and join keys
+/// should use native expressions. The composite passed here is always present.
+pub fn storage_bound_key(
     child: Arc<dyn PhysicalExpr>,
     logical: serde_json::Value,
 ) -> Arc<dyn PhysicalExpr> {

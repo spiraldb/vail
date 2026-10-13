@@ -243,13 +243,15 @@ fn combined_globals(left: &GlobalsRef, right: &GlobalsRef) -> Result<GlobalsRef>
 }
 fn match_key(input: &PhysicalPlan, name: &str) -> Result<Arc<dyn PhysicalExpr>> {
     let value = column(input, input.schema().index_of(name)?);
+    let key = vail_execution::ordering::canonical_key(value.clone());
+    let missing = ScalarValue::try_from(key.data_type(input.schema().as_ref())?)?;
     Ok(Arc::new(CaseExpr::try_new(
         None,
         vec![(
             Arc::new(IsNullExpr::new(value.clone())),
-            Arc::new(Literal::new(ScalarValue::Binary(None))),
+            Arc::new(Literal::new(missing)),
         )],
-        Some(vail_execution::ordering::canonical_key(value)),
+        Some(key),
     )?))
 }
 fn prefer_left(

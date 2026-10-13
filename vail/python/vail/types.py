@@ -203,6 +203,7 @@ class Call:
             raise TypeError("phased must be bool")
         if not self.phased:
             object.__setattr__(self, "alleles", tuple(sorted(self.alleles)))
+        _pack_call(self)
 
     @property
     def ploidy(self):
@@ -218,6 +219,42 @@ tfloat32 = _PrimitiveType("float32")
 tfloat64 = _PrimitiveType("float64")
 tbool = _PrimitiveType("bool")
 tstr = _PrimitiveType("str")
+def _pack_call(value):
+    a = value.alleles
+    if not a:
+        representation = 0
+    elif len(a) == 1:
+        representation = a[0]
+    else:
+        j, k = (a[0], a[0] + a[1]) if value.phased else (min(a), max(a))
+        representation = k * (k + 1) // 2 + j
+    if not 0 <= representation < (1 << 29):
+        raise ValueError("Call allele representation exceeds 29 bits")
+    word = (representation << 3) | (len(a) << 1) | int(value.phased)
+    return word if word < (1 << 31) else word - (1 << 32)
+
+
+def _unpack_call(word):
+    if type(word) is not int or not -(1 << 31) <= word < (1 << 31):
+        raise ValueError("invalid packed Call word")
+    bits = word & 0xffffffff
+    ploidy, representation, phased = (bits >> 1) & 3, bits >> 3, bool(bits & 1)
+    if ploidy == 0 and representation == 0:
+        alleles = ()
+    elif ploidy == 1:
+        alleles = (representation,)
+    elif ploidy == 2:
+        k = (math.isqrt(8 * representation + 1) - 1) // 2
+        j = representation - k * (k + 1) // 2
+        alleles = (j, k-j if phased else k)
+    else:
+        raise ValueError("invalid packed Call ploidy")
+    result = Call(alleles, phased)
+    if _pack_call(result) != word:
+        raise ValueError("invalid packed Call")
+    return result
+
+
 tcall = _PrimitiveType("call")
 tint = tint32
 tfloat = tfloat64
@@ -545,7 +582,7 @@ def encode_value(value, dtype=None):
     if isinstance(dtype, tstruct):
         return {name: encode_value(value[name], ty) for name, ty in dtype.items()}
     if isinstance(value, Call):
-        return {"__vail_call_alleles": list(value.alleles), "__vail_call_phased": value.phased}
+        return {"__vail_call_word": _pack_call(value)}
     if isinstance(value, Struct):
         value = dict(value)
     if isinstance(value, Mapping):
@@ -583,7 +620,7 @@ def decode_value(value, dtype=None):
         return Interval(decode_value(value["start"], dtype.point_type), decode_value(value["end"], dtype.point_type),
                         value["includes_start"], value["includes_end"], dtype.point_type)
     if dtype == tcall:
-        return Call(tuple(value["__vail_call_alleles"]), value["__vail_call_phased"])
+        return _unpack_call(value["__vail_call_word"])
     if isinstance(dtype, ttuple):
         return tuple(decode_value(value[f"__vail_tuple_{i}"], t) for i, t in enumerate(dtype.types))
     if isinstance(dtype, tdict):
@@ -651,3 +688,20 @@ def _decode_set_element(value, dtype):
     if isinstance(dtype, tstruct):
         return None if value is None else Struct(**{name: _decode_set_element(value[name], ty) for name, ty in dtype.items()})
     return decode_value(value, dtype)
+
+
+def _ensure_orderable(dtype):
+    if isinstance(dtype, (tset, tdict)):
+        raise NotImplementedError("Set/Dictionary ordering and keying are unsupported")
+    if isinstance(dtype, tstruct):
+        children = dtype.values()
+    elif isinstance(dtype, ttuple):
+        children = dtype.types
+    elif isinstance(dtype, (tarray, tndarray)):
+        children = (dtype.element_type,)
+    elif isinstance(dtype, tinterval):
+        children = (dtype.point_type,)
+    else:
+        children = ()
+    for child in children:
+        _ensure_orderable(child)

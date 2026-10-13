@@ -79,7 +79,7 @@ pub(crate) fn key_expression(
         &schema,
         Arc::new(ConfigOptions::default()),
     )?);
-    Ok(vail_execution::ordering::canonical_key(value))
+    Ok(vail_execution::ordering::range_key(value))
 }
 pub(crate) async fn key_ranges(
     input: PhysicalPlan,

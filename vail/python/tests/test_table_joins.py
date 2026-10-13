@@ -181,7 +181,7 @@ def test_semi_anti_joins_keep_left_partitions_globals_and_followup_filters():
     assert [row.idx for row in anti.filter(anti.idx < 4).collect()] == [1, 3]
 
 
-def test_join_nested_and_ieee_float_keys_follow_total_key_equality():
+def test_join_nested_and_float_keys_use_native_datafusion_equality():
     nested_schema = hl.tstruct(k=hl.tstruct(x=hl.tint32), v=hl.tint32)
     left_nested = keyed([{"k": {"x": 1}, "v": 10}], schema=nested_schema)
     right_nested = keyed([{"k": {"x": 1}, "v": 20}], schema=nested_schema)
@@ -205,7 +205,7 @@ def test_join_nested_and_ieee_float_keys_follow_total_key_equality():
         schema=float_schema,
     )
     rows = left.join(right).collect()
-    assert [(r.v, r.v_1) for r in rows] == [(1, 4)]
+    assert [(r.v, r.v_1) for r in rows] == [(3, 6), (1, 4)]
 
     float32_schema = hl.tstruct(k=hl.tfloat32, v=hl.tint32)
     left32 = keyed([{"k": 1.5, "v": 7}], schema=float32_schema)

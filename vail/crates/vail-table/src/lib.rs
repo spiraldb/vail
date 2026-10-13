@@ -1069,7 +1069,9 @@ impl TableIR {
             return Ok(self.clone());
         }
         for name in &keys {
-            self.schema.index_of(name)?;
+            let i = self.schema.index_of(name)?;
+            vail_execution::expressions::Type::from_arrow(self.schema.field(i).data_type())?
+                .ensure_keyable()?;
         }
         if !keys.is_empty() {
             OrderRequirement::new(keys.iter().map(|k| OrderKey::new(k, false, true)).collect())?;
@@ -1086,7 +1088,9 @@ impl TableIR {
     }
     pub fn order_by(self: &Arc<Self>, keys: Vec<(String, bool)>) -> Result<TableRef> {
         for (name, _) in &keys {
-            self.schema.index_of(name)?;
+            let i = self.schema.index_of(name)?;
+            vail_execution::expressions::Type::from_arrow(self.schema.field(i).data_type())?
+                .ensure_keyable()?;
         }
         if !keys.is_empty() {
             order_requirement(&keys)?;
@@ -1247,6 +1251,10 @@ impl TableIR {
         fields: Vec<(String, ScalarIR)>,
         bindings: GlobalBindings,
     ) -> Result<TableRef> {
+        for (_, expr) in &keys {
+            expr.dtype_with_globals(&self.schema, self.globals.schema())?
+                .ensure_keyable()?;
+        }
         let mut names = std::collections::HashSet::new();
         for (name, _) in keys.iter().chain(fields.iter()) {
             if !names.insert(name.clone()) {

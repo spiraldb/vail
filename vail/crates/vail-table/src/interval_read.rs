@@ -514,6 +514,52 @@ fn compare_key(a: &[KeyValue], b: &[KeyValue], binding: &IndexBinding) -> std::c
     a.len().cmp(&b.len())
 }
 
+/// Composite storage bounds sort missing key fields last. Represent presence
+/// explicitly to retain that order with native DataFusion struct comparisons.
+pub(crate) fn ordered_key_point(value: Expr, point_type: &Type) -> Expr {
+    if let Type::Struct { r#struct } = point_type {
+        Expr::Struct {
+            fields: r#struct
+                .iter()
+                .map(|(name, _)| {
+                    let field = Expr::GetField {
+                        value: Box::new(value.clone()),
+                        name: name.clone(),
+                    };
+                    (
+                        name.clone(),
+                        Expr::Struct {
+                            fields: vec![
+                                (
+                                    "missing".into(),
+                                    Expr::IsMissing {
+                                        value: Box::new(field.clone()),
+                                    },
+                                ),
+                                ("value".into(), field),
+                            ],
+                        },
+                    )
+                })
+                .collect(),
+        }
+    } else {
+        value
+    }
+}
+pub(crate) fn ordered_key_interval(value: Expr, point_type: &Type) -> Expr {
+    let field = |name: &str| Expr::GetField {
+        value: Box::new(value.clone()),
+        name: name.into(),
+    };
+    Expr::Interval {
+        start: Box::new(ordered_key_point(field("start"), point_type)),
+        end: Box::new(ordered_key_point(field("end"), point_type)),
+        includes_start: Box::new(field("includes_start")),
+        includes_end: Box::new(field("includes_end")),
+    }
+}
+
 fn union_predicate(intervals: &[ScalarIR], keys: &[String], point_type: &Type) -> Result<Expr> {
     let point = match point_type {
         Type::Primitive(_) | Type::Locus { .. } => Expr::Column {
@@ -541,8 +587,8 @@ fn union_predicate(intervals: &[ScalarIR], keys: &[String], point_type: &Type) -
         }
     };
     let mut predicates = intervals.iter().map(|interval| Expr::IntervalContains {
-        interval: Box::new(interval.clone()),
-        point: Box::new(point.clone()),
+        interval: Box::new(ordered_key_interval(interval.clone(), point_type)),
+        point: Box::new(ordered_key_point(point.clone(), point_type)),
     });
     let mut result = predicates
         .next()

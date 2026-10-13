@@ -1,4 +1,4 @@
-"""One total order across expressions, grouping joins, sorting and storage."""
+"""Native DataFusion execution semantics and versioned storage ordering."""
 import struct
 
 import numpy as np
@@ -35,10 +35,11 @@ def test_float_sort_group_scoped_join_distinct_and_storage(tmp_path):
     grouped = table.group_by('k').aggregate(
         n=hl.agg.count(), scoped=hl.agg.filter(True, hl.agg.count()),
     ).collect()
-    assert [bits64(row.k) for row in grouped[:-1]] == BITS
-    assert [row.n for row in grouped] == [2] + [1] * len(BITS)
+    assert len(grouped) == len(BITS)
+    assert sum(row.n for row in grouped) == len(values) + 2
+    assert next(row.n for row in grouped if row.k == 0.0) == 2
     assert [row.scoped for row in grouped] == [row.n for row in grouped]
-    assert ordered.distinct().count() == len(BITS) + 1
+    assert ordered.distinct().count() == len(BITS)
     path = tmp_path / 'total-order'
     ordered.write(path)
     restored = hl.read_table(path).collect()
@@ -46,14 +47,17 @@ def test_float_sort_group_scoped_join_distinct_and_storage(tmp_path):
     assert restored[-1].k is None
 
 
-def test_expression_comparison_agrees_with_key_order_and_preserves_nulls():
+def test_native_expression_comparison_preserves_nulls():
     table = hl.Table.parallelize(
         [{'a': float64(a), 'b': float64(b)} for a, b in zip(BITS, BITS[1:])]
         + [{'a': None, 'b': 0.0}],
         schema=hl.tstruct(a=hl.tfloat64, b=hl.tfloat64),
     )
-    assert (table.a < table.b).collect() == [True] * (len(BITS) - 1) + [None]
-    assert (table.a == table.b).collect() == [False] * (len(BITS) - 1) + [None]
+    expected_lt = [True] * (len(BITS) - 1) + [None]
+    expected_eq = [False] * (len(BITS) - 1) + [None]
+    expected_lt[4], expected_eq[4] = False, True
+    assert (table.a < table.b).collect() == expected_lt
+    assert (table.a == table.b).collect() == expected_eq
     assert (table.a == table.a).collect() == [True] * (len(BITS) - 1) + [None]
 
 
@@ -72,7 +76,11 @@ def test_nested_order_uses_the_same_float_comparator(kind):
         [{'k': wrap(x), 'ordinal': i} for i, x in reversed(list(enumerate(values)))],
         schema=hl.tstruct(k=dtype, ordinal=hl.tint32),
     )
-    assert [row.ordinal for row in table.key_by('k').collect()] == list(range(len(BITS)))
+    if kind == 'dict':
+        with pytest.raises(NotImplementedError, match='Set/Dictionary'):
+            table.key_by('k')
+    else:
+        assert [row.ordinal for row in table.key_by('k').collect()] == list(range(len(BITS)))
     assert (table.k == table.k).collect() == [True] * len(BITS)
 
 
@@ -85,7 +93,8 @@ def test_set_ingestion_keeps_signed_zeros_and_distinct_nan_payloads():
     assert hl.eval(a == hl.literal([float64(BITS[1]), -0.0, 0.0, float64(BITS[0])], dtype)) is True
     table = hl.range_table(2)
     table = table.annotate(k=hl.if_else(table.idx == 0, a, b))
-    assert table.group_by('k').aggregate(n=hl.agg.count()).count() == 2
+    with pytest.raises(NotImplementedError, match='Set/Dictionary'):
+        table.group_by('k')
 
 
 def test_float32_keys_keep_payloads_at_the_declared_width():

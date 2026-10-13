@@ -105,10 +105,11 @@ def test_string_interval_complex_point_types(point_type, start, end, expected):
 
 
 def test_interval_string_invalid_packed_call_errors_without_overflow():
-    call = hl.Call((2**31 - 1, 2**31 - 1))
-    expression = hl.str(hl.literal(hl.Interval(call, call)))
+    with pytest.raises(ValueError, match='allele representation'):
+        hl.Call((2**31 - 1, 2**31 - 1))
+    source = hl.range_table(1)
     with pytest.raises((ValueError, RuntimeError), match='allele representation'):
-        hl.eval(expression)
+        source.annotate(call=hl.call(hl.int32(source.idx + 2**31 - 1), source.idx)).collect()
 
 
 def test_string_export_does_not_shadow_internal_python_type_checks():
