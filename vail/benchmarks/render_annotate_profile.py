@@ -64,6 +64,12 @@ def stacks(folder):
 
 
 def label(name):
+    if name.startswith('<datafusion_physical_expr::expressions::binary::BinaryExpr as '):
+        return 'DataFusion BinaryExpr::evaluate'
+    if 'projection::Projector>::project_batch' in name:
+        return 'DataFusion projection: evaluate columns'
+    if name.startswith('datafusion_physical_expr_common::datum::apply'):
+        return 'DataFusion: Arrow arithmetic kernel'
     if name.startswith('<vail_execution::expressions::HailPhysicalExpr as '):
         return 'HailPhysicalExpr::evaluate' + (' closure' if 'closure' in name else '')
     if 'ScalarValue>::try_from_array' in name:
@@ -88,7 +94,7 @@ def flame(folder, folded, total):
     # collapsed.folded and the native profile. Widths use sampled CPU, not idle time.
     root = {'weight': total, 'children': {}}
     for trace, weight in folded.items():
-        index = next((i for i, name in enumerate(trace) if name.startswith('<vail_execution::expressions::HailPhysicalExpr as ') and '::evaluate' in name), None)
+        index = next((i for i, name in enumerate(trace) if (name.startswith('<vail_execution::expressions::HailPhysicalExpr as ') and '::evaluate' in name) or 'projection::Projector>::project_batch' in name), None)
         view = trace[index:] if index is not None else ('Other native / planning', trace[-1])
         node = root
         for name in view:
@@ -109,7 +115,7 @@ def flame(folder, folded, total):
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         '<rect width="100%" height="100%" fill="#fff"/>',
         '<text x="20" y="32" font-family="sans-serif" font-size="24" font-weight="bold">Vail: annotate 100 fields on 1 million rows</text>',
-        '<text x="20" y="60" font-family="sans-serif" font-size="16">CPU flamegraph · five measured runs · 500 Hz native stack samples</text>',
+        '<text x="20" y="60" font-family="sans-serif" font-size="16">CPU flamegraph · measured runs only · 500 Hz native stack samples</text>',
         '<text x="20" y="85" font-family="sans-serif" font-size="14">Widths = CPU time; warmups and idle threads excluded. Python/async wrappers omitted from this overview.</text>']
     for x, depth, w, name, weight in rectangles:
         y = height - 45 - (depth + 1) * bar_height

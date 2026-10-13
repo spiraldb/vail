@@ -2227,127 +2227,70 @@ pub fn validate_projection_with_globals(
     Ok(Arc::new(Schema::new(output)))
 }
 
-fn custom_numeric(
+// Floor division and modulo require Hail-specific sign/overflow behavior.
+// Arrow owns the typed array iteration, output buffers, and validity handling;
+// no operand is extracted as a ScalarValue.
+fn columnar_numeric(
     op: BinaryOperator,
     left: &ArrayRef,
     right: &ArrayRef,
     t: &Type,
 ) -> Result<ArrayRef, ExprError> {
-    let mut values = Vec::with_capacity(left.len());
-    for i in 0..left.len() {
-        let l = scalar_at(left, i)?;
-        let r = scalar_at(right, i)?;
-        if l.is_null() || r.is_null() {
-            values.push(ScalarValue::try_from(&t.to_arrow()?)?);
-            continue;
-        }
-        let result = match (l, r, t) {
-            (
-                ScalarValue::Int32(Some(a)),
-                ScalarValue::Int32(Some(b)),
-                Type::Primitive(PrimitiveType::Int32),
-            ) => {
-                let n = match op {
-                    BinaryOperator::Add => a.wrapping_add(b),
-                    BinaryOperator::Sub => a.wrapping_sub(b),
-                    BinaryOperator::Mul => a.wrapping_mul(b),
-                    BinaryOperator::Floordiv => {
-                        if b == 0 {
-                            return Err(ExprError::Invalid("integer division by zero".into()));
-                        }
-                        let q = a.wrapping_div(b);
-                        q.wrapping_sub(i32::from(a.wrapping_rem(b) != 0 && (a < 0) != (b < 0)))
+    use arrow_array::types::{Float32Type, Float64Type, Int32Type, Int64Type};
+    macro_rules! integer {
+        ($ty:ty, $native:ty) => {{
+            let l = down::<arrow_array::PrimitiveArray<$ty>>(left.as_ref())?;
+            let r = down::<arrow_array::PrimitiveArray<$ty>>(right.as_ref())?;
+            let result =
+                arrow_arith::arity::try_binary::<_, _, _, $ty>(l, r, |a: $native, b: $native| {
+                    if b == 0 {
+                        return Err(ArrowError::ComputeError(
+                            "integer division or modulo by zero".into(),
+                        ));
                     }
-                    BinaryOperator::Mod => {
-                        if b == 0 {
-                            return Err(ExprError::Invalid("modulo by zero".into()));
+                    let rem = a.wrapping_rem(b);
+                    Ok(match op {
+                        BinaryOperator::Floordiv => a
+                            .wrapping_div(b)
+                            .wrapping_sub(<$native>::from(rem != 0 && (a < 0) != (b < 0))),
+                        BinaryOperator::Mod => {
+                            rem.wrapping_add(if rem != 0 && (a < 0) != (b < 0) { b } else { 0 })
                         }
-                        let rem = a.wrapping_rem(b);
-                        rem.wrapping_add(if rem != 0 && (a < 0) != (b < 0) { b } else { 0 })
-                    }
-                    _ => unreachable!(),
-                };
-                ScalarValue::Int32(Some(n))
-            }
-            (
-                ScalarValue::Int64(Some(a)),
-                ScalarValue::Int64(Some(b)),
-                Type::Primitive(PrimitiveType::Int64),
-            ) => {
-                let n = match op {
-                    BinaryOperator::Add => a.wrapping_add(b),
-                    BinaryOperator::Sub => a.wrapping_sub(b),
-                    BinaryOperator::Mul => a.wrapping_mul(b),
-                    BinaryOperator::Floordiv => {
-                        if b == 0 {
-                            return Err(ExprError::Invalid("integer division by zero".into()));
-                        }
-                        let q = a.wrapping_div(b);
-                        q.wrapping_sub(i64::from(a.wrapping_rem(b) != 0 && (a < 0) != (b < 0)))
-                    }
-                    BinaryOperator::Mod => {
-                        if b == 0 {
-                            return Err(ExprError::Invalid("modulo by zero".into()));
-                        }
-                        let rem = a.wrapping_rem(b);
-                        rem.wrapping_add(if rem != 0 && (a < 0) != (b < 0) { b } else { 0 })
-                    }
-                    _ => unreachable!(),
-                };
-                ScalarValue::Int64(Some(n))
-            }
-            (
-                ScalarValue::Float32(Some(a)),
-                ScalarValue::Float32(Some(b)),
-                Type::Primitive(PrimitiveType::Float32),
-            ) => {
-                let n = match op {
-                    BinaryOperator::Add => a + b,
-                    BinaryOperator::Sub => a - b,
-                    BinaryOperator::Mul => a * b,
-                    BinaryOperator::Floordiv => (f64::from(a) / f64::from(b)).floor() as f32,
-                    BinaryOperator::Mod => {
-                        if b == 0.0 {
-                            return Err(ExprError::Invalid("modulo by zero".into()));
-                        }
-                        let rem = a % b;
-                        if rem < 0.0 { rem + b } else { rem }
-                    }
-                    _ => unreachable!(),
-                };
-                ScalarValue::Float32(Some(n))
-            }
-            (
-                ScalarValue::Float64(Some(a)),
-                ScalarValue::Float64(Some(b)),
-                Type::Primitive(PrimitiveType::Float64),
-            ) => {
-                let n = match op {
-                    BinaryOperator::Add => a + b,
-                    BinaryOperator::Sub => a - b,
-                    BinaryOperator::Mul => a * b,
-                    BinaryOperator::Div => a / b,
-                    BinaryOperator::Floordiv => (a / b).floor(),
-                    BinaryOperator::Mod => {
-                        if b == 0.0 {
-                            return Err(ExprError::Invalid("modulo by zero".into()));
-                        }
-                        let rem = a % b;
-                        if rem < 0.0 { rem + b } else { rem }
-                    }
-                    BinaryOperator::Pow => a.powf(b),
-                    _ => unreachable!(),
-                };
-                ScalarValue::Float64(Some(n))
-            }
-            _ => return Err(ExprError::Invalid("numeric operand type mismatch".into())),
-        };
-        values.push(result);
+                        _ => unreachable!("basic arithmetic lowers to DataFusion"),
+                    })
+                })?;
+            Ok(Arc::new(result) as ArrayRef)
+        }};
     }
-    if values.is_empty() {
-        return Ok(new_null_array(&t.to_arrow()?, 0));
+    macro_rules! float {
+        ($ty:ty, $native:ty) => {{
+            let l = down::<arrow_array::PrimitiveArray<$ty>>(left.as_ref())?;
+            let r = down::<arrow_array::PrimitiveArray<$ty>>(right.as_ref())?;
+            let result =
+                arrow_arith::arity::try_binary::<_, _, _, $ty>(l, r, |a: $native, b: $native| {
+                    Ok(match op {
+                        BinaryOperator::Floordiv => ((a as f64) / (b as f64)).floor() as $native,
+                        BinaryOperator::Mod => {
+                            if b == 0.0 {
+                                return Err(ArrowError::ComputeError("modulo by zero".into()));
+                            }
+                            let rem = a % b;
+                            if rem < 0.0 { rem + b } else { rem }
+                        }
+                        BinaryOperator::Pow => a.powf(b),
+                        _ => unreachable!("basic arithmetic lowers to DataFusion"),
+                    })
+                })?;
+            Ok(Arc::new(result) as ArrayRef)
+        }};
     }
-    Ok(ScalarValue::iter_to_array(values.into_iter())?)
+    match t {
+        Type::Primitive(PrimitiveType::Int32) => integer!(Int32Type, i32),
+        Type::Primitive(PrimitiveType::Int64) => integer!(Int64Type, i64),
+        Type::Primitive(PrimitiveType::Float32) => float!(Float32Type, f32),
+        Type::Primitive(PrimitiveType::Float64) => float!(Float64Type, f64),
+        _ => Err(ExprError::Invalid("numeric operand type mismatch".into())),
+    }
 }
 pub fn scalar_at(a: &ArrayRef, i: usize) -> Result<ScalarValue, ExprError> {
     // DF's list scalar builder drops item-field metadata. Slice the original
@@ -3652,7 +3595,7 @@ impl PhysicalExpr for HailPhysicalExpr {
                 }
                 HailKind::Numeric(op) => {
                     let t = Type::from_arrow(&self.dtype)?;
-                    custom_numeric(*op, &args[0], &args[1], &t)
+                    columnar_numeric(*op, &args[0], &args[1], &t)
                 }
                 HailKind::ToString(input_type) => {
                     let input_type: Type = serde_json::from_str(input_type)
@@ -4760,6 +4703,43 @@ fn lower_scoped(
                     l = lower_cast(l, schema, &dtype)?;
                     r = lower_cast(r, schema, &dtype)?;
                     binary(l, Operator::Divide, r, schema)?
+                }
+                BinaryOperator::Add | BinaryOperator::Sub | BinaryOperator::Mul => {
+                    l = lower_cast(l, schema, &dtype)?;
+                    r = lower_cast(r, schema, &dtype)?;
+                    let op = match operator {
+                        BinaryOperator::Add => Operator::Plus,
+                        BinaryOperator::Sub => Operator::Minus,
+                        BinaryOperator::Mul => Operator::Multiply,
+                        _ => unreachable!(),
+                    };
+                    // DataFusion's default BinaryExpr wraps integer overflow.
+                    // It also preserves scalar operands and uses Arrow kernels.
+                    binary(l, op, r, schema)?
+                }
+                BinaryOperator::Pow => {
+                    l = lower_cast(l, schema, &dtype)?;
+                    r = lower_cast(r, schema, &dtype)?;
+                    Arc::new(ScalarFunctionExpr::try_new(
+                        datafusion_functions::math::power(),
+                        vec![l, r],
+                        schema,
+                        Arc::new(ConfigOptions::default()),
+                    )?)
+                }
+                BinaryOperator::Floordiv
+                    if matches!(dtype, DataType::Float32 | DataType::Float64) =>
+                {
+                    l = lower_cast(l, schema, &DataType::Float64)?;
+                    r = lower_cast(r, schema, &DataType::Float64)?;
+                    let divided = binary(l, Operator::Divide, r, schema)?;
+                    let floored = Arc::new(ScalarFunctionExpr::try_new(
+                        datafusion_functions::math::floor(),
+                        vec![divided],
+                        schema,
+                        Arc::new(ConfigOptions::default()),
+                    )?);
+                    lower_cast(floored, schema, &dtype)?
                 }
                 _ => {
                     l = lower_cast(l, schema, &dtype)?;

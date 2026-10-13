@@ -262,6 +262,31 @@ fn lower(
                     let right = canonical_key_logical(right, &common, true)?;
                     datafusion_expr::expr_fn::binary_expr(left, binary_operator(*operator)?, right)
                 }
+            } else if *operator == BinaryOperator::Pow {
+                let dtype = expr
+                    .dtype_with_globals(&schema.as_arrow(), globals)?
+                    .to_arrow()?;
+                datafusion_functions::math::power().call(vec![
+                    recurse(left)?.cast_to(&dtype, schema)?,
+                    recurse(right)?.cast_to(&dtype, schema)?,
+                ])
+            } else if *operator == BinaryOperator::Floordiv
+                && matches!(
+                    expr.dtype_with_globals(&schema.as_arrow(), globals)?,
+                    Type::Primitive(PrimitiveType::Float32 | PrimitiveType::Float64)
+                )
+            {
+                let dtype = expr
+                    .dtype_with_globals(&schema.as_arrow(), globals)?
+                    .to_arrow()?;
+                let divided = datafusion_expr::expr_fn::binary_expr(
+                    recurse(left)?.cast_to(&arrow_schema::DataType::Float64, schema)?,
+                    Operator::Divide,
+                    recurse(right)?.cast_to(&arrow_schema::DataType::Float64, schema)?,
+                );
+                datafusion_functions::math::floor()
+                    .call(vec![divided])
+                    .cast_to(&dtype, schema)?
             } else if matches!(
                 operator,
                 BinaryOperator::Floordiv | BinaryOperator::Mod | BinaryOperator::Pow
@@ -271,20 +296,11 @@ fn lower(
                 let result_type = expr
                     .dtype_with_globals(&schema.as_arrow(), globals)?
                     .to_arrow()?;
-                let left_type = left.dtype_with_globals(&schema.as_arrow(), globals)?;
                 let mut left_expr = recurse(left)?;
                 let mut right_expr = recurse(right)?;
                 if *operator == BinaryOperator::Div {
                     left_expr = left_expr.cast_to(&result_type, schema)?;
                     right_expr = right_expr.cast_to(&result_type, schema)?;
-                } else if matches!(
-                    operator,
-                    BinaryOperator::Add | BinaryOperator::Sub | BinaryOperator::Mul
-                ) && matches!(
-                    left_type,
-                    Type::Primitive(PrimitiveType::Int32 | PrimitiveType::Int64)
-                ) {
-                    return logical_kernel(expr, schema, globals, bindings, scope);
                 } else if matches!(
                     operator,
                     BinaryOperator::Add | BinaryOperator::Sub | BinaryOperator::Mul
