@@ -25,6 +25,27 @@ def test_serial_scan_exclusive_across_partitions_and_filter():
     assert scanned.filter(scanned.i == 5).collect()[0].n == 5
 
 
+def test_scan_sum_vectorized_finish_preserves_nulls_overflow_and_empty_partitions():
+    schema = hl.tstruct(i=hl.tint64, x=hl.tfloat64)
+    table = hl.Table.parallelize(
+        [
+            {"i": 2**63 - 1, "x": 1.5},
+            {"i": None, "x": None},
+            {"i": 1, "x": -0.25},
+            {"i": -3, "x": 2.0},
+        ],
+        schema=schema,
+        n_partitions=7,
+    )
+    rows = table.annotate(prefix_i=hl.scan.sum(table.i), prefix_x=hl.scan.sum(table.x)).collect()
+    assert [row.prefix_i for row in rows] == [0, 2**63 - 1, 2**63 - 1, -(2**63)]
+    assert [row.prefix_x for row in rows] == [0.0, 1.5, 1.5, 1.25]
+    assert table.n_partitions() == 7
+
+    empty = hl.Table.parallelize([], schema=schema, n_partitions=3)
+    assert empty.annotate(prefix=hl.scan.sum(empty.i)).collect() == []
+
+
 def test_scan_row_windows_use_datafusion_partitioned_execution():
     table = hl.Table.parallelize([{"x": i} for i in range(12)], n_partitions=3)
     scanned = table.annotate(prefix=hl.scan.sum(table.x))
