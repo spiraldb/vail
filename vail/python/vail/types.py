@@ -189,23 +189,31 @@ def _value_matches_type(value, dtype):
     return False
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, init=False)
 class Call:
-    alleles: tuple
+    _alleles: tuple
     phased: bool = False
 
-    def __post_init__(self):
-        object.__setattr__(self, "alleles", tuple(self.alleles))
-        if len(self.alleles) > 2 or any(type(a) is not int or a < 0 for a in self.alleles):
+    def __init__(self, alleles, phased=False):
+        alleles = tuple(alleles)
+        if len(alleles) > 2 or any(type(a) is not int or a < 0 for a in alleles):
             raise ValueError("calls require zero, one, or two nonnegative integer alleles")
-        if type(self.phased) is not bool:
+        if type(phased) is not bool:
             raise TypeError("phased must be bool")
-        if not self.phased:
-            object.__setattr__(self, "alleles", tuple(sorted(self.alleles)))
+        object.__setattr__(self, "_alleles", alleles if phased else tuple(sorted(alleles)))
+        object.__setattr__(self, "phased", phased)
+
+    @property
+    def alleles(self):
+        """Return the alleles as a list without exposing mutable hash state."""
+        return list(self._alleles)
+
+    def __repr__(self):
+        return f"Call(alleles={self.alleles!r}, phased={self.phased!r})"
 
     @property
     def ploidy(self):
-        return len(self.alleles)
+        return len(self._alleles)
 
     def __getitem__(self, i):
         return self.alleles[i]
