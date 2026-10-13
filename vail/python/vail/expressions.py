@@ -41,7 +41,7 @@ def _merge_sources(left, right):
         return right
     if right is None or left is right:
         return left
-    raise ExpressionException("expression source mismatch: fields belong to different Tables")
+    raise ExpressionException("Found fields from 2 objects: expression source mismatch: fields belong to different datasets")
 
 
 def as_expr(value):
