@@ -1,4 +1,5 @@
 import json
+import gzip
 from pathlib import Path
 import sys
 
@@ -64,3 +65,21 @@ def test_sample_snapshot_path_appended_to_vcf_is_adapted(tmp_path, monkeypatch):
     assert [c[1] for c in calls if c[0] == 'partitions'] == [2, 20]
     assert all(c[1] == str(resources / 'sample.vcf') for c in calls if c[0] == 'source')
     assert module.read_matrix_table(str(resources / 'unrelated.mt')) == str(resources / 'unrelated.mt')
+
+
+def test_snapshot_fixture_preserves_declared_partition_boundaries(tmp_path, monkeypatch):
+    resources = tmp_path / 'resources'
+    legacy = resources / 'sample.vcf-20-partitions.mt'
+    legacy.mkdir(parents=True)
+    counts = [2, 1, 3]
+    with gzip.open(legacy / 'metadata.json.gz', 'wt') as file:
+        json.dump({'components': {'partition_counts': {'counts': counts}}}, file)
+    matrix = hl.range_matrix_table(6, 2)
+    matrix = matrix.annotate_entries(value=matrix.row_idx + matrix.col_idx)
+    monkeypatch.setattr(hl, 'import_vcf', lambda path, **kwargs: matrix)
+    loaded = FixtureModule(hl, resources, tmp_path / 'cache').read_matrix_table(legacy)
+    assert loaded.count() == (6, 2)
+    assert loaded.n_partitions() == 3
+    assert [loaded._filter_partitions([i]).count_rows() for i in range(3)] == counts
+    assert [r.row_idx for r in loaded.rows().collect()] == list(range(6))
+    assert [r.value for r in loaded.entries().collect()] == [i + j for i in range(6) for j in range(2)]
