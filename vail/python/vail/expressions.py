@@ -882,10 +882,15 @@ def missing(dtype):
     return literal(None, dtype)
 
 
-def if_else(condition, consequent, alternate):
+def if_else(condition, consequent, alternate, missing_false=False):
+    """Select a branch, optionally treating a missing condition as false."""
+    if type(missing_false) is not bool:
+        raise TypeError("missing_false must be a bool")
     condition = as_expr(condition)
     if condition.dtype != tbool:
         raise TypeError("if_else condition must have bool type")
+    if missing_false:
+        condition = if_else(is_missing(condition), False, condition)
     consequent = as_expr(consequent)
     alternate = as_expr(alternate)
     result_type = unify_types(consequent.dtype, alternate.dtype)
