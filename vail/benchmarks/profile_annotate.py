@@ -1,4 +1,4 @@
-"""Profile annotation and Matrix entry-sum benchmarks on macOS.
+"""Profile Vail annotation, scan, and Matrix entry-sum benchmarks on macOS.
 
 The monitor is a separate process. proc_pid_rusage V4 supplies cumulative process
 counters; Mach CPU ticks are converted with mach_timebase_info. Metrics contain
@@ -65,17 +65,35 @@ def worker(output, iterations, warmups, workload="annotate"):
                 table = hl.utils.range_table(1_000_000, 14)
                 table = table.annotate(**{f'x{i}': i + table.idx for i in range(100)})
                 expected = 1_000_000
-            else:
+            elif workload == 'matrix-entry-sum':
                 table = hl.utils.range_matrix_table(100_000, 10, 14)
                 table = table.annotate_entries(value=table.row_idx + table.col_idx)
                 expression = hl.agg.sum(hl.int64(table.value))
                 expected = 10 * 100_000 * 99_999 // 2 + 100_000 * 10 * 9 // 2
+            elif workload == 'numeric-stats':
+                table = hl.utils.range_table(10_000_000, 14)
+                expression = hl.agg.stats(hl.float64(table.idx))
+                expected = 10_000_000
+            else:
+                table = hl.utils.range_table(1_000_000, 14)
+                table = table.annotate(prefix=hl.scan.sum(table.idx))
+                expected = 1_000_000
             constructed = time.perf_counter_ns()
-            result = table._force_count() if workload == 'annotate' else table.aggregate_entries(expression)
+            if workload == 'numeric-stats':
+                result = table.aggregate(expression)
+                assert result.n == expected
+                assert result.min == 0 and result.max == expected - 1
+                assert abs(result.mean - (expected - 1) / 2) < 1e-6
+                result = expected
+            elif workload == 'annotate' or workload == 'prefix-sum-scan':
+                result = table._force_count()
+            else:
+                result = table.aggregate_entries(expression)
             ended = time.perf_counter_ns()
             end_wall = time.time_ns()
             after = read(os.getpid())
-            assert result == expected
+            if workload != 'numeric-stats':
+                assert result == expected
             delta = {name: after[name] - before[name] for name in (
                 'user_time', 'system_time', 'instructions', 'cycles', 'pageins',
                 'diskio_bytesread', 'diskio_byteswritten')}
@@ -92,9 +110,10 @@ def worker(output, iterations, warmups, workload="annotate"):
     (output / 'worker.json').write_text(json.dumps({'pid': os.getpid(), 'tick_nanoseconds': tick_ns,
         'package': hl.__file__, 'native_sha256': hashlib.sha256(native.read_bytes()).hexdigest(),
         'median_seconds': statistics.median(x['seconds'] for x in events if x['phase'] == 'measured'),
-        'workload': workload, 'rows': 1_000_000 if workload == 'annotate' else 100_000,
-        'fields': 100 if workload == 'annotate' else 1,
-        'columns': None if workload == 'annotate' else 10, 'source_partitions': 14}, indent=2) + '\n')
+        'workload': workload,
+        'rows': 100_000 if workload == 'matrix-entry-sum' else (10_000_000 if workload == 'numeric-stats' else 1_000_000),
+        'fields': 100 if workload == 'annotate' else (1 if workload == 'matrix-entry-sum' else None),
+        'columns': 10 if workload == 'matrix-entry-sum' else None, 'source_partitions': 14}, indent=2) + '\n')
     time.sleep(0.2)  # let the independent monitor capture final counters
 
 
@@ -156,7 +175,7 @@ def monitor(output, python, iterations, warmups, profile, workload="annotate"):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--worker', action='store_true')
-    parser.add_argument('--workload', choices=['annotate', 'matrix-entry-sum'], default='annotate')
+    parser.add_argument('--workload', choices=['annotate', 'matrix-entry-sum', 'prefix-sum-scan', 'numeric-stats'], default='annotate')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--python', default='/private/tmp/vail-release-benchmark/bin/python')
     parser.add_argument('--iterations', type=int, default=5)

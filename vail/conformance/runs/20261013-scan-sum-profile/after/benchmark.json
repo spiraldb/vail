@@ -1,0 +1,61 @@
+{
+  "engine": "vail",
+  "package_version": "0.1.0a1",
+  "runtime_version": null,
+  "python": "3.11.6",
+  "architecture": "arm64",
+  "pid": 60149,
+  "cores": 14,
+  "scale": 1.0,
+  "warmups": 3,
+  "iterations": 5,
+  "import_seconds": 0.02095358306542039,
+  "initialization_seconds": 2.50060111284256e-07,
+  "settings": {},
+  "cases": [
+    {
+      "name": "table_scan_sum",
+      "parameters": {
+        "rows": 1000000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.7788181668147445,
+        0.8348903330042958,
+        0.9282229589298368,
+        0.7762052081525326,
+        0.8941070828586817
+      ],
+      "load_average_before": [
+        [
+          24.66943359375,
+          28.546875,
+          20.9775390625
+        ],
+        [
+          24.66943359375,
+          28.546875,
+          20.9775390625
+        ],
+        [
+          24.66943359375,
+          28.546875,
+          20.9775390625
+        ],
+        [
+          23.17431640625,
+          28.17236328125,
+          20.8896484375
+        ],
+        [
+          23.17431640625,
+          28.17236328125,
+          20.8896484375
+        ]
+      ],
+      "median_seconds": 0.8348903330042958
+    }
+  ]
+}

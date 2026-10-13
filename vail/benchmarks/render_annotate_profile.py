@@ -91,7 +91,14 @@ def label(name):
 
 def workload_title(folder):
     worker = json.loads((folder / 'worker.json').read_text())
-    return 'Matrix entry sum / 100K rows × 10 columns' if worker.get('workload') == 'matrix-entry-sum' else 'Annotate 100 fields / 1M rows'
+    workload = worker.get('workload')
+    if workload == 'matrix-entry-sum':
+        return 'Matrix entry sum / 100K rows × 10 columns'
+    if workload == 'prefix-sum-scan':
+        return 'Prefix sum scan / 1M rows'
+    if workload == 'numeric-stats':
+        return 'Numeric statistics / 10M rows'
+    return 'Annotate 100 fields / 1M rows'
 
 
 def flame(folder, folded, total):
