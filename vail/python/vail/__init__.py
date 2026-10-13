@@ -1574,5 +1574,10 @@ from .expressions import coalesce, approx_equal
 from .backend import current_backend
 from .vcf_export import export_vcf
 from .variant import split_multi_hts
+from .allele_functions import (
+    allele_type, numeric_allele_type, is_snp, is_mnp, is_insertion,
+    is_deletion, is_indel, is_complex, is_star, is_symbolic,
+    is_transition, is_transversion, is_strand_ambiguous,
+)
 from . import genetics
 from .builders import switch
