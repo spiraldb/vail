@@ -1,0 +1,34 @@
+{
+  "harness_sha256": "8e7850ae5f99a741ba1b68d68903104a45dee578f63bcee82cc31ee02c230a75",
+  "matrix_rows": 100000,
+  "vcf_variants": 50000,
+  "cores": 14,
+  "warmups": 3,
+  "iterations": 5,
+  "runs": [
+    {
+      "tag": "vail-20-samples",
+      "returncode": 0,
+      "wall_seconds": 3.951807415811345
+    },
+    {
+      "tag": "hail-20-samples",
+      "returncode": 0,
+      "wall_seconds": 22.086496292147785
+    },
+    {
+      "tag": "vail-40-samples",
+      "returncode": 0,
+      "wall_seconds": 13.681036750087515
+    },
+    {
+      "tag": "hail-40-samples",
+      "returncode": 0,
+      "wall_seconds": 22.668514041928574
+    }
+  ],
+  "base_commit": "562c22b827cd6770c3fd73fca634dc322fce508e",
+  "vail_python_path": "/private/tmp/vail-matrix-benchmark/lib/python3.11/site-packages/vail/__init__.py",
+  "native_path": "/private/tmp/vail-matrix-benchmark/lib/python3.11/site-packages/vail/_native.abi3.so",
+  "native_sha256": "0ea9e6446a0592417a865faf1876eb849dd65d2e92864c196a0d58c61ce9c44b"
+}

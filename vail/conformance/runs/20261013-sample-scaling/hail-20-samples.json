@@ -1,0 +1,235 @@
+{
+  "engine": "hail",
+  "package_version": "0.2.139",
+  "runtime_version": "0.2.139-5e5eedb87ff8",
+  "python": "3.11.13",
+  "architecture": "arm64",
+  "pid": 91729,
+  "cores": 14,
+  "scale": 1.0,
+  "warmups": 3,
+  "iterations": 5,
+  "import_seconds": 1.0927299580071121,
+  "initialization_seconds": 2.0145146660506725,
+  "settings": {
+    "spark_version": "3.5.9",
+    "master": "local[14]",
+    "parallelism": 14,
+    "max_heap_bytes": 51539607552,
+    "spark_conf": {
+      "spark.hadoop.io.compression.codecs": "org.apache.hadoop.io.compress.DefaultCodec,is.hail.io.compress.BGzipCodec,is.hail.io.compress.BGzipCodecTbi,org.apache.hadoop.io.compress.GzipCodec",
+      "spark.master": "local[14]",
+      "spark.executor.extraClassPath": "/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+      "spark.app.submitTime": "1791934733968",
+      "spark.kryo.registrator": "is.hail.kryo.HailKryoRegistrator",
+      "spark.jars": "/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+      "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+      "spark.app.startTime": "1791934734265",
+      "spark.driver.extraClassPath": "/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+      "spark.repl.local.jars": "file:///private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+      "spark.serializer.objectStreamReset": "100",
+      "spark.submit.deployMode": "client",
+      "spark.app.name": "Hail",
+      "spark.driver.extraJavaOptions": "-Djava.net.preferIPv6Addresses=false -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false",
+      "spark.executor.id": "driver",
+      "spark.driver.memory": "48g",
+      "spark.logConf": "true",
+      "spark.local.dir": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/",
+      "spark.driver.host": "daniels-macbook-pro-2.tail306708.ts.net",
+      "spark.executor.memory": "48g",
+      "spark.app.id": "local-1791934734493",
+      "spark.app.initial.jar.urls": "spark://daniels-macbook-pro-2.tail306708.ts.net:64409/jars/hail-all-spark.jar",
+      "spark.kryoserializer.buffer.max": "1g",
+      "spark.driver.maxResultSize": "8g",
+      "spark.rdd.compress": "True",
+      "spark.sql.shuffle.partitions": "14",
+      "spark.executor.extraJavaOptions": "-Djava.net.preferIPv6Addresses=false -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false",
+      "spark.ui.enabled": "false",
+      "spark.submit.pyFiles": "",
+      "spark.driver.port": "64409",
+      "spark.ui.showConsoleProgress": "true"
+    }
+  },
+  "cases": [
+    {
+      "name": "matrix_force_count_rows",
+      "parameters": {
+        "rows": 100000,
+        "columns": 20
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.1273327919188887,
+        0.15712379105389118,
+        0.0850698750000447,
+        0.0757720828987658,
+        0.11164858401753008
+      ],
+      "load_average_before": [
+        [
+          2.46240234375,
+          3.4013671875,
+          4.05859375
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ]
+      ],
+      "median_seconds": 0.11164858401753008
+    },
+    {
+      "name": "matrix_entry_sum",
+      "parameters": {
+        "rows": 100000,
+        "columns": 20
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.17792899999767542,
+        0.20104358298704028,
+        0.18136595794931054,
+        0.11418620799668133,
+        0.0988074999768287
+      ],
+      "load_average_before": [
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ]
+      ],
+      "median_seconds": 0.17792899999767542
+    },
+    {
+      "name": "matrix_filter_rows_columns",
+      "parameters": {
+        "rows": 100000,
+        "columns": 20
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.1019002920947969,
+        0.12058245902881026,
+        0.10050733294337988,
+        0.23180583282373846,
+        0.1198797922115773
+      ],
+      "load_average_before": [
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ],
+        [
+          2.58544921875,
+          3.4111328125,
+          4.05810546875
+        ]
+      ],
+      "median_seconds": 0.1198797922115773
+    },
+    {
+      "name": "vcf_import_entry_sum",
+      "parameters": {
+        "rows": 50000,
+        "samples": 20
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": null,
+      "status": "passed",
+      "seconds": [
+        0.17493404098786414,
+        0.1629580408334732,
+        0.15956808300688863,
+        0.17108687502332032,
+        0.148179667070508
+      ],
+      "load_average_before": [
+        [
+          2.7783203125,
+          3.4375,
+          4.0634765625
+        ],
+        [
+          2.7783203125,
+          3.4375,
+          4.0634765625
+        ],
+        [
+          2.7783203125,
+          3.4375,
+          4.0634765625
+        ],
+        [
+          2.7783203125,
+          3.4375,
+          4.0634765625
+        ],
+        [
+          2.7783203125,
+          3.4375,
+          4.0634765625
+        ]
+      ],
+      "median_seconds": 0.1629580408334732
+    }
+  ]
+}

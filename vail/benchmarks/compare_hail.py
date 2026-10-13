@@ -29,11 +29,14 @@ def main():
     parser.add_argument('--scale', type=float, default=1.0)
     parser.add_argument('--matrix-rows', type=int, default=100_000)
     parser.add_argument('--matrix-columns', type=int, default=10)
+    parser.add_argument('--vcf-samples', type=int, default=10)
     parser.add_argument('--iterations', type=int, default=3)
     parser.add_argument('--warmups', type=int, default=1)
     parser.add_argument('--cores', type=int, default=14)
     parser.add_argument('--case', action='append')
     args = parser.parse_args()
+    if args.matrix_columns < 1 or args.vcf_samples < 1:
+        parser.error('matrix-columns and vcf-samples must be positive')
     args.workdir.mkdir(parents=True, exist_ok=True)
     imported_at = time.perf_counter()
     hl = importlib.import_module(args.engine)
@@ -62,7 +65,7 @@ def main():
     range_n = size(100_000_000)
     matrix_n = size(args.matrix_rows)
     matrix_cols = args.matrix_columns
-    cols = 10
+    cols = args.vcf_samples
     rt = hl.utils.range_table
     rm = hl.utils.range_matrix_table
 
