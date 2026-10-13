@@ -1554,7 +1554,7 @@ float = float64
 bool = _bool_cast
 
 from .collections import sorted_ as sorted
-from .queries import query_table
+from .queries import query_table, query_matrix_table_rows
 
 from .expressions import bind
 from .matrixtable import MatrixTable, GroupedMatrixTable, range_matrix_table, read_matrix_table

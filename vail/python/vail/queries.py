@@ -38,18 +38,43 @@ def query_table(path, point_or_interval):
     all-matches lookup node; dynamic interval queries currently read the right
     provider partitions because their bounds vary by left row.
     """
-    from . import eval, filter_intervals, read_table
+    from . import read_table
 
     if not isinstance(path, str):
         raise TypeError("query_table path must be a string")
-    if not isinstance(point_or_interval, Expression):
-        point_or_interval = as_expr(point_or_interval)
     table = read_table(path)
+    return _query_rows(table, point_or_interval)
+
+
+def query_matrix_table_rows(path, point_or_interval, entries_name='entries_array'):
+    """Query stored matrix rows, localizing entries in column order.
+
+    Accepts a key point or an interval over a key prefix, including expressions
+    belonging to another Table. Filtered entries appear as missing structs.
+    """
+    from .matrixtable import read_matrix_table
+
+    if not isinstance(path, str):
+        raise TypeError("query_matrix_table_rows path must be a string")
+    if not isinstance(entries_name, str):
+        raise TypeError("entries_name must be a string")
+    matrix = read_matrix_table(path)
+    if entries_name in matrix.row.dtype:
+        raise ValueError(
+            f'field "{entries_name}" is present in matrix table row fields, '
+            'use a different `entries_name`'
+        )
+    return _query_rows(matrix.localize_entries(entries_name), point_or_interval)
+
+
+def _query_rows(table, point_or_interval):
+    from . import eval, filter_intervals
+
+    query = as_expr(point_or_interval)
     if not table._keys:
         raise ValueError("cannot query unkeyed table")
     key_names = list(table._keys)
     key_types = [table._schema[name] for name in key_names]
-    query = point_or_interval
     range_query = isinstance(query.dtype, tinterval) and query.dtype != key_types[0]
 
     if range_query:
