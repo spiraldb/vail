@@ -15,3 +15,15 @@ def __getattr__(name):
 
 def __dir__():
     return sorted(set(globals()) | set(__all__))
+
+
+def _cdf_combine(*args, **kwargs):
+    raise NotImplementedError('vail.expr.functions._cdf_combine is not implemented')
+
+
+def _error_from_cdf(*args, **kwargs):
+    raise NotImplementedError('vail.expr.functions._error_from_cdf is not implemented')
+
+
+def _result_from_raw_cdf(*args, **kwargs):
+    raise NotImplementedError('vail.expr.functions._result_from_raw_cdf is not implemented')

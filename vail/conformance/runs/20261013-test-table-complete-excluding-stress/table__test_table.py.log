@@ -1,0 +1,1035 @@
+............F.F....FFF............FF...F..F.FFFF....F................... [ 18%]
+...Fx...F.FF....F..F.F.....F....F..F...F..F..........FF..FFFF....F.....F [ 36%]
+.F.F..F................................................................. [ 54%]
+.....................FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF........... [ 73%]
+.....................................FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 91%]
+FFFFFFFFF.............F..........                                        [100%]
+=================================== FAILURES ===================================
+______________________________ Tests.test_errors _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:432: in test_errors
+    self.assertRaises(NotImplementedError, f)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:430: in f
+    kt.a = 5
+    ^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:256: in __setattr__
+    raise TypeError("Table is immutable")
+E   TypeError: Table is immutable
+_____________________ Tests.test_expand_types_on_all_types _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1515: in test_expand_types_on_all_types
+    t = create_all_values_table()
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:67: in create_all_values_table
+    all_values = create_all_values()
+                 ^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:61: in create_all_values
+    return hl.struct(f32=hl.float32(3.14), i64=hl.int64(-9), m=hl.missing(hl.tfloat64), astruct=hl.struct(a=hl.missing(hl.tint32), b=5.5), mstruct=hl.missing(hl.tstruct(x=hl.tint32, y=hl.tstr)), aset=hl.set(['foo', 'bar', 'baz']), mset=hl.missing(hl.tset(hl.tfloat64)), d=hl.dict({hl.array(['a', 'b']): 0.5, hl.array(['x', hl.missing(hl.tstr), 'z']): 0.3}), md=hl.missing(hl.tdict(hl.tint32, hl.tstr)), h38=hl.locus('chr22', 33878978, 'GRCh38'), ml=hl.missing(hl.tlocus('GRCh37')), i=hl.interval(hl.locus('1', 999), hl.locus('1', 1001)), c=hl.call(0, 1), mc=hl.missing(hl.tcall), t=hl.tuple([hl.call(1, 2, phased=True), 'foo', hl.missing(hl.tstr)]), mt=hl.missing(hl.ttuple(hl.tlocus('GRCh37'), hl.tbool)), nd=hl.nd.arange(0, 10).reshape((2, 5)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: reshape
+______________________________ Tests.test_export _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1046: in test_export
+    with hl.hadoop_open(tmp_file, 'r') as f_in:
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'hadoop_open'
+___________________________ Tests.test_export_delim ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1054: in test_export_delim
+    with hl.hadoop_open(tmp_file, 'r') as f_in:
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'hadoop_open'
+_____________________ Tests.test_export_parallel_manifest ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1063: in test_export_parallel_manifest
+    t.export(tmp_file, parallel='separate_header')
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:485: in export
+    return export(self, output, types_file, header, parallel, delimiter)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/text.py:232: in export
+    raise NotImplementedError('types files and parallel text export are not implemented')
+E   NotImplementedError: types files and parallel text export are not implemented
+_________________________ Tests.test_from_spark_works __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:769: in test_from_spark_works
+    spark_session = Env.spark_session()
+                    ^^^^^^^^^^^^^^^^^
+E   AttributeError: type object 'Env' has no attribute 'spark_session'
+______________________ Tests.test_group_aggregate_by_key _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:298: in test_group_aggregate_by_key
+    r1 = ht.group_by(k=ht.idx % 5)._set_buffer_size(3).aggregate(n=hl.agg.count())
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'GroupedTable' object has no attribute '_set_buffer_size'
+_______________________ Tests.test_import_filter_replace _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1715: in test_import_filter_replace
+    assert_filter_equals(None, (r'\((\w+)\)', '$1'), ['(Foo,Bar)', 'Baz,Qux('])
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1707: in assert_filter_equals
+    hl.import_table(resource('filter_replace.txt'), filter=filter, find_replace=find_replace)[
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/text.py:161: in import_table
+    table = table.annotate(text=table.text.replace(*find_replace))
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:584: in <lambda>
+    return lambda *args, **kwargs: methods[name](self, *args, **kwargs)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/strings.py:149: in replace
+    pattern = _literal_regex(pattern)
+              ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/strings.py:135: in _literal_regex
+    raise NotImplementedError('Java regular-expression semantics differ from DataFusion; only literal patterns are supported')
+E   NotImplementedError: Java regular-expression semantics differ from DataFusion; only literal patterns are supported
+________________________ Tests.test_index_keyless_table ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:720: in test_index_keyless_table
+    t[t.idx]
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:380: in __getitem__
+    return self.index(*(item if isinstance(item, builtins.tuple) else (item,)))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:387: in index
+    return _index_table(self, expressions, all_matches, query_interval)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/lookups.py:19: in index
+    raise ValueError("Cannot index an unkeyed table")
+E   ValueError: Cannot index an unkeyed table
+__________________________ Tests.test_indexed_read_1 ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1103: in test_indexed_read_1
+    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:1487: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+__________________________ Tests.test_indexed_read_2 ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1118: in test_indexed_read_2
+    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:1487: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+__________________________ Tests.test_indexed_read_3 ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1132: in test_indexed_read_3
+    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:1487: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+__________________________ Tests.test_indexed_read_4 ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1147: in test_indexed_read_4
+    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:1487: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+__________________ Tests.test_interval_product_join_long_key ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:573: in test_interval_product_join_long_key
+    with hl.TemporaryDirectory(suffix='.ht', ensure_exists=False) as tmpfile:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+_________________________ Tests.test_nested_union_100 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1227: in test_nested_union_100
+    self.nested_union(10, 100)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1219: in nested_union
+    t = t.filter(hl.rand_bool(1))  # prevent count optimization
+                 ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_bool'
+___________________________ Tests.test_order_by_expr ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1264: in test_order_by_expr
+    ht = ht.annotate(xs=hl.range(0, 1).map(lambda x: hl.int(hl.rand_unif(0, 100))))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1264: in <lambda>
+    ht = ht.annotate(xs=hl.range(0, 1).map(lambda x: hl.int(hl.rand_unif(0, 100))))
+                                                            ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_unif'
+_______________________ Tests.test_partitioning_rewrite ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1491: in test_partitioning_rewrite
+    ht1 = ht.annotate(x=hl.rand_unif(0, 1))
+                        ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_unif'
+_______________________ Tests.test_path_collision_error ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1754: in test_path_collision_error
+    ht.write(path)
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:481: in write
+    self._native.write(os.fspath(output), overwrite)
+E   FileExistsError: table output already exists
+____________________ Tests.test_read_back_same_as_exported _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1096: in test_read_back_same_as_exported
+    t, _ = create_all_values_datasets()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:75: in create_all_values_datasets
+    return (create_all_values_table(), create_all_values_matrix_table())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:67: in create_all_values_table
+    all_values = create_all_values()
+                 ^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:61: in create_all_values
+    return hl.struct(f32=hl.float32(3.14), i64=hl.int64(-9), m=hl.missing(hl.tfloat64), astruct=hl.struct(a=hl.missing(hl.tint32), b=5.5), mstruct=hl.missing(hl.tstruct(x=hl.tint32, y=hl.tstr)), aset=hl.set(['foo', 'bar', 'baz']), mset=hl.missing(hl.tset(hl.tfloat64)), d=hl.dict({hl.array(['a', 'b']): 0.5, hl.array(['x', hl.missing(hl.tstr), 'z']): 0.3}), md=hl.missing(hl.tdict(hl.tint32, hl.tstr)), h38=hl.locus('chr22', 33878978, 'GRCh38'), ml=hl.missing(hl.tlocus('GRCh37')), i=hl.interval(hl.locus('1', 999), hl.locus('1', 1001)), c=hl.call(0, 1), mc=hl.missing(hl.tcall), t=hl.tuple([hl.call(1, 2, phased=True), 'foo', hl.missing(hl.tstr)]), mt=hl.missing(hl.ttuple(hl.tlocus('GRCh37'), hl.tbool)), nd=hl.nd.arange(0, 10).reshape((2, 5)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: reshape
+______________________________ Tests.test_rename _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:926: in test_rename
+    self.assertEqual(renamed['bar2']._indices, renamed._row_indices)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _indices
+___________________________ Tests.test_rvd_key_write ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1649: in test_rvd_key_write
+    with hl.TemporaryDirectory(suffix='.ht', ensure_exists=False) as tempfile:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+______________________________ Tests.test_sample _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:764: in test_sample
+    kt_small = kt.sample(0.25, seed=0)
+               ^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: sample
+________________________ Tests.test_show__various_types ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1662: in test_show__various_types
+    ht = ht.annotate(
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:535: in annotate
+    expr = as_expr(value)
+           ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:51: in as_expr
+    return StructExpression(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:764: in __init__
+    dtype = tstruct(**{name: expr.dtype for name, expr in field_exprs.items()})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+__________________ Tests.test_table_matrix_join_combinations ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:497: in test_table_matrix_join_combinations
+    n_C1589 = m.filter_cols(m.s[:5] == 'C1589').count_cols()
+                            ^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:316: in __getitem__
+    return slice_(self, name) if isinstance(name, slice) else index(self, name)
+           ^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/strings.py:95: in slice_
+    _bmp_literal(value)
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/strings.py:69: in _bmp_literal
+    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')
+E   NotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported
+_______________ Tests.test_table_parallelize_partial_infer_types _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:899: in test_table_parallelize_partial_infer_types
+    table = hl.Table.parallelize(data, partial_type=partial_type, key='idx')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:278: in parallelize
+    raise NotImplementedError("partial_type is not implemented in this initial slice")
+E   NotImplementedError: partial_type is not implemented in this initial slice
+__________________________ Tests.test_to_matrix_table __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:251: in test_to_matrix_table
+    mt = mt.annotate_cols(c1=hl.rand_bool(0.5))
+                             ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_bool'
+________________________ Tests.test_write_stage_locally ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1081: in test_write_stage_locally
+    t.write(f, stage_locally=True)
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:480: in write
+    raise NotImplementedError("staging and custom codecs are not supported")
+E   NotImplementedError: staging and custom codecs are not supported
+_________________________ test_large_number_of_fields __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1761: in test_large_number_of_fields
+    with hl.TemporaryDirectory(ensure_exists=False) as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+_______________ test_maybe_flexindex_table_by_expr_direct_match ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1785: in test_maybe_flexindex_table_by_expr_direct_match
+    match_key = t1._maybe_flexindex_table_by_expr(t2.key)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _maybe_flexindex_table_by_expr
+_______________ test_maybe_flexindex_table_by_expr_prefix_match ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1805: in test_maybe_flexindex_table_by_expr_prefix_match
+    match_key = t1._maybe_flexindex_table_by_expr(t2.key)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _maybe_flexindex_table_by_expr
+___________ test_maybe_flexindex_table_by_expr_direct_interval_match ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1824: in test_maybe_flexindex_table_by_expr_direct_interval_match
+    match_key = t1._maybe_flexindex_table_by_expr(t2.key)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _maybe_flexindex_table_by_expr
+___________ test_maybe_flexindex_table_by_expr_prefix_interval_match ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1845: in test_maybe_flexindex_table_by_expr_prefix_interval_match
+    match_key = t1._maybe_flexindex_table_by_expr(t2.key)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _maybe_flexindex_table_by_expr
+______________________ test_can_process_wide_tables[3072] ______________________
+[XPASS(strict)] 
+________________ test_group_within_partitions_after_import_vcf _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:1991: in test_group_within_partitions_after_import_vcf
+    ht.collect()  # Just testing import without segault
+    ^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:1023: in collect
+    return decode_rows(self._native.collect_arrow(), self._schema)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   pyo3_runtime.PanicException: called `Result::unwrap()` on an `Err` value: InvalidArgumentError("use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly")
+----------------------------- Captured stderr call -----------------------------
+
+thread '<unnamed>' (83084834) panicked at /kache/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/arrow-array-59.2.0/src/array/struct_array.rs:91:46:
+called `Result::unwrap()` on an `Err` value: InvalidArgumentError("use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+__________________________ test_read_write_all_types ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2004: in test_read_write_all_types
+    ht = create_all_values_table()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:67: in create_all_values_table
+    all_values = create_all_values()
+                 ^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:61: in create_all_values
+    return hl.struct(f32=hl.float32(3.14), i64=hl.int64(-9), m=hl.missing(hl.tfloat64), astruct=hl.struct(a=hl.missing(hl.tint32), b=5.5), mstruct=hl.missing(hl.tstruct(x=hl.tint32, y=hl.tstr)), aset=hl.set(['foo', 'bar', 'baz']), mset=hl.missing(hl.tset(hl.tfloat64)), d=hl.dict({hl.array(['a', 'b']): 0.5, hl.array(['x', hl.missing(hl.tstr), 'z']): 0.3}), md=hl.missing(hl.tdict(hl.tint32, hl.tstr)), h38=hl.locus('chr22', 33878978, 'GRCh38'), ml=hl.missing(hl.tlocus('GRCh37')), i=hl.interval(hl.locus('1', 999), hl.locus('1', 1001)), c=hl.call(0, 1), mc=hl.missing(hl.tcall), t=hl.tuple([hl.call(1, 2, phased=True), 'foo', hl.missing(hl.tstr)]), mt=hl.missing(hl.ttuple(hl.tlocus('GRCh37'), hl.tbool)), nd=hl.nd.arange(0, 10).reshape((2, 5)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: reshape
+__________________________ test_map_partitions_errors __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2018: in test_map_partitions_errors
+    with pytest.raises(TypeError, match='expected return type expression of type stream<struct>'):
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'expected return type expression of type stream<struct>'
+E     Actual message: 'Table._map_partitions callback must return a stream expression'
+_____________________________ test_lowered_persist _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2046: in test_lowered_persist
+    ht = hl.utils.range_table(100, 10).persist()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: persist
+______________ test_table_head_and_tail[rtcache-3-10-head-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-10-head-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-3-10-tail-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-10-tail-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+_______________ test_table_head_and_tail[rtcache-3-9-head-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-9-head-_force_count] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+_______________ test_table_head_and_tail[rtcache-3-9-tail-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-9-tail-_force_count] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-3-11-head-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-11-head-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-3-11-tail-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-11-tail-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+_______________ test_table_head_and_tail[rtcache-3-0-head-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-0-head-_force_count] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+_______________ test_table_head_and_tail[rtcache-3-0-tail-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-0-tail-_force_count] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+_______________ test_table_head_and_tail[rtcache-3-7-head-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-7-head-_force_count] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+_______________ test_table_head_and_tail[rtcache-3-7-tail-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-3-7-tail-_force_count] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-10-head-count] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+__________ test_table_head_and_tail[rtcache-11-10-head-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-10-tail-count] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+__________ test_table_head_and_tail[rtcache-11-10-tail-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-9-head-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-11-9-head-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-9-tail-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-11-9-tail-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-11-head-count] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+__________ test_table_head_and_tail[rtcache-11-11-head-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-11-tail-count] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+__________ test_table_head_and_tail[rtcache-11-11-tail-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-0-head-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-11-0-head-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-0-tail-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-11-0-tail-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-7-head-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-11-7-head-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+______________ test_table_head_and_tail[rtcache-11-7-tail-count] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+___________ test_table_head_and_tail[rtcache-11-7-tail-_force_count] ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2136: in test_table_head_and_tail
+    table = hl.utils.range_table(10, n_partitions=num_parts).cache()
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+__________________ test_literal_of_pandas_NA_and_numpy_int64 ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2260: in test_literal_of_pandas_NA_and_numpy_int64
+    hl.eval(hl.literal(x))
+            ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:789: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/types.py:511: in infer_type
+    types = [infer_type(x) for x in value if x is not None]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/types.py:511: in <listcomp>
+    types = [infer_type(x) for x in value if x is not None]
+             ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/types.py:534: in infer_type
+    raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
+E   TypeError: cannot infer a Vail type for NAType
+__________________ test_literal_of_pandas_NA_and_numpy_int32 ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2268: in test_literal_of_pandas_NA_and_numpy_int32
+    hl.eval(hl.literal(x))
+            ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:789: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/types.py:511: in infer_type
+    types = [infer_type(x) for x in value if x is not None]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/types.py:511: in <listcomp>
+    types = [infer_type(x) for x in value if x is not None]
+             ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/types.py:534: in infer_type
+    raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
+E   TypeError: cannot infer a Vail type for NAType
+_______________________________ test_write_many ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2275: in test_write_many
+    with hl.TemporaryDirectory(ensure_exists=False) as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+_______________________ test_indexed_read_boundaries[2] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2305: in test_indexed_read_boundaries
+    with hl._with_flags(index_branching_factor=str(branching_factor)):
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_with_flags'
+_______________________ test_indexed_read_boundaries[3] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2305: in test_indexed_read_boundaries
+    with hl._with_flags(index_branching_factor=str(branching_factor)):
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_with_flags'
+_______________________ test_indexed_read_boundaries[5] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2305: in test_indexed_read_boundaries
+    with hl._with_flags(index_branching_factor=str(branching_factor)):
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_with_flags'
+_______________________ test_indexed_read_boundaries[7] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2305: in test_indexed_read_boundaries
+    with hl._with_flags(index_branching_factor=str(branching_factor)):
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_with_flags'
+______________________ test_indexed_read_boundaries[121] _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2305: in test_indexed_read_boundaries
+    with hl._with_flags(index_branching_factor=str(branching_factor)):
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_with_flags'
+______________________ test_table_randomness_range_table _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2333: in test_table_randomness_range_table
+    assert_contains_node(t, ir.TableRange)
+                            ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableRange is not implemented
+________________ test_table_randomness_range_matrix_rows_table _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2340: in test_table_randomness_range_matrix_rows_table
+    assert_contains_node(t, ir.MatrixRowsTable)
+                            ^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixRowsTable is not implemented
+__________________________ test_table_randomness_join __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2350: in test_table_randomness_join
+    assert_contains_node(t, ir.TableJoin)
+                            ^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableJoin is not implemented
+________________ test_table_randomness_left_join_right_distinct ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2360: in test_table_randomness_left_join_right_distinct
+    assert_contains_node(t, ir.TableLeftJoinRightDistinct)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableLeftJoinRightDistinct is not implemented
+_____________________ test_table_randomness_interval_join ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2369: in test_table_randomness_interval_join
+    assert_contains_node(t, ir.TableIntervalJoin)
+                            ^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableIntervalJoin is not implemented
+_________________________ test_table_randomness_union __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2381: in test_table_randomness_union
+    assert_contains_node(t, ir.TableUnion)
+                            ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableUnion is not implemented
+____________ test_table_randomness_map_globals_with_body_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2387: in test_table_randomness_map_globals_with_body_randomness
+    t1 = rt.annotate_globals(x=hl.rand_int64())
+                               ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_int64'
+__________ test_table_randomness_map_globals_without_body_randomness ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2396: in test_table_randomness_map_globals_without_body_randomness
+    assert_contains_node(t2, ir.TableMapGlobals)
+                             ^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableMapGlobals is not implemented
+________________________ test_table_randomness_explode _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2404: in test_table_randomness_explode
+    assert_contains_node(t, ir.TableExplode)
+                            ^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableExplode is not implemented
+_________________________ test_table_randomness_key_by _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2411: in test_table_randomness_key_by
+    assert_contains_node(t, ir.TableKeyBy)
+                            ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableKeyBy is not implemented
+_____________ test_table_randomness_map_rows_with_body_randomness ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2417: in test_table_randomness_map_rows_with_body_randomness
+    t = rt.annotate(x=hl.rand_int64())
+                      ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_int64'
+_____________ test_table_randomness_map_rows_with_scan_randomness ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2425: in test_table_randomness_map_rows_with_scan_randomness
+    t = rt.annotate(x=hl.scan.sum(hl.rand_int64()))
+                                  ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_int64'
+____________ test_table_randomness_map_rows_without_body_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2433: in test_table_randomness_map_rows_without_body_randomness
+    assert_contains_node(t, ir.TableMapRows)
+                            ^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableMapRows is not implemented
+_____________________ test_table_randomness_map_partitions _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2439: in test_table_randomness_map_partitions
+    t = rt.annotate(x=hl.rand_int64())
+                      ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_int64'
+__________________________ test_table_randomness_read __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2450: in test_table_randomness_read
+    assert_contains_node(t, ir.TableRead)
+                            ^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableRead is not implemented
+__________________ test_table_randomness_matrix_entries_table __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2457: in test_table_randomness_matrix_entries_table
+    assert_contains_node(t, ir.MatrixEntriesTable)
+                            ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixEntriesTable is not implemented
+______________ test_table_randomness_filter_with_cond_randomness _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2463: in test_table_randomness_filter_with_cond_randomness
+    t = rt.filter(hl.rand_int64() % 2 == 0)
+                  ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_int64'
+_____________ test_table_randomness_filter_without_cond_randomness _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2472: in test_table_randomness_filter_without_cond_randomness
+    assert_contains_node(t, ir.TableFilter)
+                            ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableFilter is not implemented
+_______ test_table_randomness_key_by_and_aggregate_with_body_randomness ________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2478: in test_table_randomness_key_by_and_aggregate_with_body_randomness
+    t = rt.group_by(k=rt.idx % 5).aggregate(x=hl.agg.sum(rt.idx) + hl.rand_int64())
+                                                                   ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_int64'
+________ test_table_randomness_key_by_and_aggregate_with_agg_randomness ________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2486: in test_table_randomness_key_by_and_aggregate_with_agg_randomness
+    t = rt.group_by(k=rt.idx % 5).aggregate(x=hl.agg.sum(hl.rand_int64()))
+                                                         ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_int64'
+______ test_table_randomness_key_by_and_aggregate_without_body_randomness ______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2495: in test_table_randomness_key_by_and_aggregate_without_body_randomness
+    assert_contains_node(t, ir.TableKeyByAndAggregate)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableKeyByAndAggregate is not implemented
+____________________ test_table_randomness_aggregate_by_key ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2503: in test_table_randomness_aggregate_by_key
+    assert_contains_node(t, ir.TableAggregateByKey)
+                            ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableAggregateByKey is not implemented
+___________________ test_table_randomness_matrix_cols_table ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2510: in test_table_randomness_matrix_cols_table
+    assert_contains_node(t, ir.MatrixColsTable)
+                            ^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixColsTable is not implemented
+____________ test_table_randomness_parallelize_with_body_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2515: in test_table_randomness_parallelize_with_body_randomness
+    t = hl.Table.parallelize(hl.array([1, 2, 3]).map(lambda x: hl.struct(x=x, r=hl.rand_int64())))
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2515: in <lambda>
+    t = hl.Table.parallelize(hl.array([1, 2, 3]).map(lambda x: hl.struct(x=x, r=hl.rand_int64())))
+                                                                                ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_int64'
+__________ test_table_randomness_parallelize_without_body_randomness ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2523: in test_table_randomness_parallelize_without_body_randomness
+    assert_contains_node(t, ir.TableParallelize)
+                            ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableParallelize is not implemented
+__________________________ test_table_randomness_head __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2530: in test_table_randomness_head
+    assert_contains_node(t, ir.TableHead)
+                            ^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableHead is not implemented
+__________________________ test_table_randomness_tail __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2537: in test_table_randomness_tail
+    assert_contains_node(t, ir.TableTail)
+                            ^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableTail is not implemented
+________________________ test_table_randomness_order_by ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2544: in test_table_randomness_order_by
+    assert_contains_node(t, ir.TableOrderBy)
+                            ^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableOrderBy is not implemented
+________________________ test_table_randomness_distinct ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2552: in test_table_randomness_distinct
+    assert_contains_node(t, ir.TableDistinct)
+                            ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableDistinct is not implemented
+______________________ test_table_randomness_repartition _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2557: in test_table_randomness_repartition
+    if not hl.current_backend().requires_lowering:
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'NativeBackend' object has no attribute 'requires_lowering'
+__________________ test_table_randomness_cast_matrix_to_table __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2568: in test_table_randomness_cast_matrix_to_table
+    assert_contains_node(t, ir.CastMatrixToTable)
+                            ^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.CastMatrixToTable is not implemented
+_________________________ test_table_randomness_rename _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2575: in test_table_randomness_rename
+    assert_contains_node(t, ir.TableRename)
+                            ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableRename is not implemented
+___________________ test_table_randomness_multi_way_zip_join ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2587: in test_table_randomness_multi_way_zip_join
+    assert_contains_node(t, ir.TableMultiWayZipJoin)
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableMultiWayZipJoin is not implemented
+____________________ test_table_randomness_filter_intervals ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2595: in test_table_randomness_filter_intervals
+    assert_contains_node(t, ir.TableFilterIntervals)
+                            ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.TableFilterIntervals is not implemented
+_________________ test_table_randomness_block_matrix_to_table __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2600: in test_table_randomness_block_matrix_to_table
+    bm = hl.linalg.BlockMatrix.fill(10, 10, 0)
+         ^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'linalg'
+_______________________ test_table_randomness_table_gen ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2607: in test_table_randomness_table_gen
+    t = hl.Table._generate(
+        ^^^^^^^^^^^^^^^^^^
+E   AttributeError: type object 'Table' has no attribute '_generate'
+_________________________ test_query_table_randomness __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py:2692: in test_query_table_randomness
+    x = hl.eval(rows.aggregate(lambda _: hl.struct(r=hl.agg.collect_as_set(hl.rand_int64()), n=hl.agg.count())))
+                ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/142f/vail/vail/python/vail/expressions.py:663: in __getattr__
+    raise AttributeError(f"ArrayStructExpression instance has no field, method, or property {name!r}")
+E   AttributeError: ArrayStructExpression instance has no field, method, or property 'aggregate'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:101
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:101: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:108
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:108: PytestUnknownMarkWarning: Unknown pytest.mark.timeout - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    return pytest.mark.timeout(timeout)
+
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:80
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/helpers.py:80: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    return pytest.mark.backend('spark')
+
+test_table.py::test_timeout
+  /private/tmp/vail-full-hail-import-shims-env/lib/python3.11/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_table.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_errors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_expand_types_on_all_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_export_delim
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_export_parallel_manifest
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_from_spark_works
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_group_aggregate_by_key
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_import_filter_replace
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_index_keyless_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_indexed_read_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_indexed_read_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_indexed_read_3
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_indexed_read_4
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_interval_product_join_long_key
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_nested_union_100
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_order_by_expr
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_partitioning_rewrite
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_path_collision_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_read_back_same_as_exported
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_rename
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_rvd_key_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_sample
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_show__various_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_table_matrix_join_combinations
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_table_parallelize_partial_infer_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_to_matrix_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::Tests::test_write_stage_locally
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_large_number_of_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_maybe_flexindex_table_by_expr_direct_match
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_maybe_flexindex_table_by_expr_prefix_match
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_maybe_flexindex_table_by_expr_direct_interval_match
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_maybe_flexindex_table_by_expr_prefix_interval_match
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_can_process_wide_tables[3072]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_group_within_partitions_after_import_vcf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_read_write_all_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_map_partitions_errors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_lowered_persist
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-10-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-10-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-10-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-10-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-9-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-9-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-9-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-9-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-11-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-11-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-11-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-11-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-0-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-0-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-0-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-0-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-7-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-7-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-7-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-3-7-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-10-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-10-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-10-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-10-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-9-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-9-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-9-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-9-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-11-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-11-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-11-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-11-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-0-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-0-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-0-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-0-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-7-head-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-7-head-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-7-tail-count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_head_and_tail[rtcache-11-7-tail-_force_count]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_literal_of_pandas_NA_and_numpy_int64
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_literal_of_pandas_NA_and_numpy_int32
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_write_many
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_indexed_read_boundaries[2]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_indexed_read_boundaries[3]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_indexed_read_boundaries[5]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_indexed_read_boundaries[7]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_indexed_read_boundaries[121]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_range_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_range_matrix_rows_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_join
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_left_join_right_distinct
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_interval_join
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_union
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_map_globals_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_map_globals_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_explode
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_key_by
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_map_rows_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_map_rows_with_scan_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_map_rows_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_map_partitions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_read
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_matrix_entries_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_filter_with_cond_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_filter_without_cond_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_key_by_and_aggregate_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_key_by_and_aggregate_with_agg_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_key_by_and_aggregate_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_aggregate_by_key
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_matrix_cols_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_parallelize_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_parallelize_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_head
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_tail
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_order_by
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_distinct
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_repartition
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_cast_matrix_to_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_rename
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_multi_way_zip_join
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_filter_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_block_matrix_to_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_table_randomness_table_gen
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ipd48u3m/upstream_hail/table/test_table.py::test_query_table_randomness
+122 failed, 270 passed, 1 deselected, 1 xfailed, 4 warnings in 78.33s (0:01:18)

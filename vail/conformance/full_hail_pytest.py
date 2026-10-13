@@ -31,10 +31,13 @@ def pytest_collection_modifyitems(items):
     emit(dict(kind='inventory', items=[i.nodeid for i in items]))
 def pytest_runtest_setup(item):
     emit(dict(kind='started', nodeid=item.nodeid))
+    timeout_seconds = int(os.environ.get('VAIL_PER_TEST_TIMEOUT', '45'))
+    if timeout_seconds <= 0:
+        return
     def timeout(signum, frame):
-        raise TimeoutError('per-test time limit exceeded (45 seconds)')
+        raise TimeoutError(f'per-test time limit exceeded ({timeout_seconds} seconds)')
     signal.signal(signal.SIGALRM, timeout)
-    signal.alarm(45)
+    signal.alarm(timeout_seconds)
 def pytest_runtest_logreport(report):
     emit(dict(kind='test', nodeid=report.nodeid, when=report.when,
               outcome=report.outcome, duration=report.duration,
@@ -73,11 +76,23 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--module', help='Run only the test module at this path relative to --source')
+    parser.add_argument('--module-timeout', type=int, default=300,
+                        help='Per-module timeout in seconds; 0 disables it (default: 300)')
+    parser.add_argument('--per-test-timeout', type=int, default=45,
+                        help='Per-test timeout in seconds; 0 disables it (default: 45)')
+    parser.add_argument('--deselect', action='append', default=[],
+                        help='Pytest node ID(s) to deselect; may be repeated')
     args = parser.parse_args()
     source = args.source.resolve()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     files = [p for p in sorted(source.rglob('test_*.py')) if 'backend' not in p.relative_to(source).parts]
+    if args.module:
+        requested = Path(args.module)
+        files = [p for p in files if p.relative_to(source) == requested]
+        if not files:
+            parser.error(f'no eligible test module matches {args.module!r}')
     inventory = []
     for file in files:
         tree = ast.parse(file.read_text())
@@ -109,27 +124,41 @@ def main():
                 node.body = [ast.Pass()]
             if isinstance(node, ast.FunctionDef) and node.name == 'with_flags':
                 node.body = ast.parse('return lambda f: f').body
-        helper.write_text('choose_backend = lambda *args: "vail"\n' + ast.unparse(ast.fix_missing_locations(tree)))
+        # Hail's decorators only recognize local/batch/spark when selecting
+        # timeout presets. Vail executes locally, so present it as ``local``
+        # to the test harness; the adapted API imports still target Vail.
+        helper.write_text('choose_backend = lambda *args: "local"\n' + ast.unparse(ast.fix_missing_locations(tree)))
         (target / 'conftest.py').write_text(CONFTEST)
         shutil.copyfile(Path(__file__).with_name('upstream_paths.py'), root / 'upstream_paths.py')
+        # Hail test modules import shared fixtures as ``test.hail.*``.  The
+        # runner copies only the Hail test package, so provide that package
+        # name inside the isolated root and point it at the adapted copy.
+        test_package = root / 'test'
+        test_package.mkdir()
+        (test_package / '__init__.py').write_text('')
+        (test_package / 'hail').symlink_to(target, target_is_directory=True)
         (root / 'vail_pytest_reporter.py').write_text(PLUGIN)
         env = dict(os.environ)
         env['PYTHONPATH'] = str(root) + os.pathsep + env.get('PYTHONPATH', '')
         env['HAIL_TEST_RESOURCES_DIR'] = str(source.parents[2] / 'hail' / 'test' / 'resources')
         env['HAIL_DOCTEST_DATA_DIR'] = doctest_data_dir(source)
         env['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
+        env['VAIL_PER_TEST_TIMEOUT'] = str(args.per_test_timeout)
         for index, file in enumerate(files):
             relative = file.relative_to(source)
             label = str(relative).replace('/', '__')
             events = output / (label + '.jsonl')
             env['VAIL_PYTEST_EVENTS'] = str(events)
             command = [sys.executable, '-m', 'pytest', str(target / relative),
-                       '-p', 'vail_pytest_reporter', '--continue-on-collection-errors',
+                       '-p', 'vail_pytest_reporter', '-p', 'test.hail.conftest',
+                       '--continue-on-collection-errors',
                        '-o', 'addopts=', '--tb=short', '-q']
+            for nodeid in args.deselect:
+                command.extend(['--deselect', nodeid])
             with (output / (label + '.log')).open('w') as log:
                 try:
                     proc = subprocess.run(command, env=env, cwd=root, stdout=log,
-                                          stderr=log, timeout=300)
+                                          stderr=log, timeout=args.module_timeout or None)
                     result = dict(module=str(relative), exit_code=proc.returncode)
                 except subprocess.TimeoutExpired:
                     result = dict(module=str(relative), timeout=True)

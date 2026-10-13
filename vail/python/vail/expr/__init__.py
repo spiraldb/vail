@@ -18,3 +18,11 @@ def __getattr__(name):
 
 __all__ = ["Expression", "ExpressionException", "Float32Expression", "Float64Expression",
            "expressions", "types", "aggregators", "functions"]
+
+
+def construct_expr(*args, **kwargs):
+    """Import shim for Hail IR-oriented tests; Vail has no Hail IR constructor."""
+    raise NotImplementedError('vail.expr.construct_expr requires Hail Python IR support')
+
+
+__all__.append('construct_expr')

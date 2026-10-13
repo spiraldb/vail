@@ -1,0 +1,1268 @@
+[
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_annotate",
+    "line": 31,
+    "body": "@qobtest\ndef test_annotate(self):\n    schema = hl.tstruct(a=hl.tint32, b=hl.tint32, c=hl.tint32, d=hl.tint32, e=hl.tstr, f=hl.tarray(hl.tint32))\n    rows = [{'a': 4, 'b': 1, 'c': 3, 'd': 5, 'e': 'hello', 'f': [1, 2, 3]}, {'a': 0, 'b': 5, 'c': 13, 'd': -1, 'e': 'cat', 'f': []}, {'a': 4, 'b': 2, 'c': 20, 'd': 3, 'e': 'dog', 'f': [5, 6, 7]}]\n    kt = hl.Table.parallelize(rows, schema)\n    self.assertTrue(kt.annotate()._same(kt))\n    result1 = convert_struct_to_dict(kt.annotate(foo=kt.a + 1, foo2=kt.a).take(1)[0])\n    self.assertDictEqual(result1, {'a': 4, 'b': 1, 'c': 3, 'd': 5, 'e': 'hello', 'f': [1, 2, 3], 'foo': 5, 'foo2': 4})\n    result3 = convert_struct_to_dict(kt.annotate(x1=kt.f.map(lambda x: x * 2), x2=kt.f.map(lambda x: [x, x + 1]).flatmap(lambda x: x), x3=hl.min(kt.f), x4=hl.max(kt.f), x5=hl.sum(kt.f), x6=hl.product(kt.f), x7=kt.f.length(), x8=kt.f.filter(lambda x: x == 3), x9=kt.f[1:], x10=kt.f[:], x11=kt.f[1:2], x12=kt.f.map(lambda x: [x, x + 1]), x13=kt.f.map(lambda x: [[x, x + 1], [x + 2]]).flatmap(lambda x: x), x14=hl.if_else(kt.a < kt.b, kt.c, hl.missing(hl.tint32)), x15={1, 2, 3}).take(1)[0])\n    self.assertDictEqual(result3, {'a': 4, 'b': 1, 'c': 3, 'd': 5, 'e': 'hello', 'f': [1, 2, 3], 'x1': [2, 4, 6], 'x2': [1, 2, 2, 3, 3, 4], 'x3': 1, 'x4': 3, 'x5': 6, 'x6': 6, 'x7': 3, 'x8': [3], 'x9': [2, 3], 'x10': [1, 2, 3], 'x11': [2], 'x12': [[1, 2], [2, 3], [3, 4]], 'x13': [[1, 2], [3], [2, 3], [4], [3, 4], [5]], 'x14': None, 'x15': set([1, 2, 3])})\n    kt.annotate(x1=kt.a + 5, x2=5 + kt.a, x3=kt.a + kt.b, x4=kt.a - 5, x5=5 - kt.a, x6=kt.a - kt.b, x7=kt.a * 5, x8=5 * kt.a, x9=kt.a * kt.b, x10=kt.a / 5, x11=5 / kt.a, x12=kt.a / kt.b, x13=-kt.a, x14=+kt.a, x15=kt.a == kt.b, x16=kt.a == 5, x17=5 == kt.a, x18=kt.a != kt.b, x19=kt.a != 5, x20=5 != kt.a, x21=kt.a > kt.b, x22=kt.a > 5, x23=5 > kt.a, x24=kt.a >= kt.b, x25=kt.a >= 5, x26=5 >= kt.a, x27=kt.a < kt.b, x28=kt.a < 5, x29=5 < kt.a, x30=kt.a <= kt.b, x31=kt.a <= 5, x32=5 <= kt.a, x33=(kt.a == 0) & (kt.b == 5), x34=(kt.a == 0) | (kt.b == 5), x35=False, x36=True)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate1",
+    "line": 136,
+    "body": "@qobtest\ndef test_aggregate1(self):\n    schema = hl.tstruct(a=hl.tint32, b=hl.tint32, c=hl.tint32, d=hl.tint32, e=hl.tstr, f=hl.tarray(hl.tint32))\n    rows = [{'a': 4, 'b': 1, 'c': 3, 'd': 5, 'e': 'hello', 'f': [1, 2, 3]}, {'a': 0, 'b': 5, 'c': 13, 'd': -1, 'e': 'cat', 'f': []}, {'a': 4, 'b': 2, 'c': 20, 'd': 3, 'e': 'dog', 'f': [5, 6, 7]}]\n    kt = hl.Table.parallelize(rows, schema)\n    results = kt.aggregate(hl.Struct(q1=agg.sum(kt.b), q2=agg.count(), q3=agg.collect(kt.e), q4=agg.filter((kt.d >= 5) | (kt.a == 0), agg.collect(kt.e)), q5=agg.explode(lambda elt: agg.mean(elt), kt.f)))\n    self.assertEqual(results.q1, 8)\n    self.assertEqual(results.q2, 3)\n    self.assertEqual(set(results.q3), {'hello', 'cat', 'dog'})\n    self.assertEqual(set(results.q4), {'hello', 'cat'})\n    self.assertAlmostEqual(results.q5, 4)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate2",
+    "line": 162,
+    "body": "def test_aggregate2(self):\n    schema = hl.tstruct(status=hl.tint32, GT=hl.tcall, qPheno=hl.tint32)\n    rows = [{'status': 0, 'GT': hl.Call([0, 0]), 'qPheno': 3}, {'status': 0, 'GT': hl.Call([0, 1]), 'qPheno': 13}]\n    kt = hl.Table.parallelize(rows, schema)\n    result = convert_struct_to_dict(kt.group_by(status=kt.status).aggregate(x1=agg.collect(kt.qPheno * 2), x2=agg.explode(lambda elt: agg.collect(elt), [kt.qPheno, kt.qPheno + 1]), x3=agg.min(kt.qPheno), x4=agg.max(kt.qPheno), x5=agg.sum(kt.qPheno), x6=agg.product(hl.int64(kt.qPheno)), x7=agg.count(), x8=agg.count_where(kt.qPheno == 3), x9=agg.fraction(kt.qPheno == 1), x10=agg.stats(hl.float64(kt.qPheno)), x11=agg.hardy_weinberg_test(kt.GT), x13=agg.inbreeding(kt.GT, 0.1), x14=agg.call_stats(kt.GT, ['A', 'T']), x15=agg.collect(hl.Struct(a=5, b='foo', c=hl.Struct(banana='apple')))[0], x16=agg.collect(hl.Struct(a=5, b='foo', c=hl.Struct(banana='apple')).c.banana)[0], x17=agg.explode(lambda elt: agg.collect(elt), hl.missing(hl.tarray(hl.tint32))), x18=agg.explode(lambda elt: agg.collect(elt), hl.missing(hl.tset(hl.tint32))), x19=agg.take(kt.GT, 1, ordering=-kt.qPheno)).take(1)[0])\n    expected = {'status': 0, 'x13': {'n_called': 2, 'expected_homs': 1.64, 'f_stat': -1.777777777777777, 'observed_homs': 1}, 'x14': {'AC': [3, 1], 'AF': [0.75, 0.25], 'AN': 4, 'homozygote_count': [1, 0]}, 'x15': {'a': 5, 'c': {'banana': 'apple'}, 'b': 'foo'}, 'x10': {'min': 3.0, 'max': 13.0, 'sum': 16.0, 'stdev': 5.0, 'n': 2, 'mean': 8.0}, 'x8': 1, 'x9': 0.0, 'x16': 'apple', 'x11': {'het_freq_hwe': 0.5, 'p_value': 0.5}, 'x2': [3, 4, 13, 14], 'x3': 3, 'x1': [6, 26], 'x6': 39, 'x7': 2, 'x4': 13, 'x5': 16, 'x17': [], 'x18': [], 'x19': [hl.Call([0, 1])]}\n    self.maxDiff = None\n    self.assertDictEqual(result, expected)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate_ir",
+    "line": 220,
+    "body": "def test_aggregate_ir(self):\n    kt = hl.utils.range_table(10).annotate_globals(g1=5)\n    r = kt.aggregate(hl.struct(x=agg.sum(kt.idx) + kt.g1, y=agg.filter(kt.idx % 2 != 0, agg.sum(kt.idx + 2)) + kt.g1, z=agg.sum(kt.g1 + kt.idx) + kt.g1))\n    self.assertEqual(convert_struct_to_dict(r), {'x': 50, 'y': 40, 'z': 100})\n    r = kt.aggregate(5)\n    self.assertEqual(r, 5)\n    r = kt.aggregate(hl.missing(hl.tint32))\n    self.assertEqual(r, None)\n    r = kt.aggregate(agg.filter(kt.idx % 2 != 0, agg.sum(kt.idx + 2)) + kt.g1)\n    self.assertEqual(r, 40)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_java_array_string_encoding",
+    "line": 240,
+    "body": "def test_java_array_string_encoding(self):\n    ht = hl.utils.range_table(10)\n    ht = ht.annotate(foo=hl.str(ht.idx).split(','))\n    path = new_temp_file(extension='ht')\n    ht.write(path)\n    hl.read_table(path)._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_to_matrix_table",
+    "line": 247,
+    "body": "def test_to_matrix_table(self):\n    N, M = (50, 50)\n    mt = hl.utils.range_matrix_table(N, M)\n    mt = mt.key_cols_by(s='Col' + hl.str(M - mt.col_idx))\n    mt = mt.annotate_cols(c1=hl.rand_bool(0.5))\n    mt = mt.annotate_rows(r1=hl.rand_bool(0.5))\n    mt = mt.annotate_entries(e1=hl.rand_bool(0.5))\n    re_mt = mt.entries().to_matrix_table(['row_idx'], ['s'], ['r1'], ['col_idx', 'c1'])\n    new_col_order = re_mt.col_idx.collect()\n    mapping = [t[1] for t in sorted([(old, new) for new, old in enumerate(new_col_order)])]\n    assert re_mt.choose_cols(mapping).drop('col_idx')._same(mt.drop('col_idx'))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_to_matrix_table_row_major",
+    "line": 261,
+    "body": "def test_to_matrix_table_row_major(self):\n    t = hl.utils.range_table(10)\n    t = t.annotate(foo=t.idx, bar=2 * t.idx, baz=3 * t.idx)\n    mt = t.to_matrix_table_row_major(['bar', 'baz'], 'entry', 'col')\n    round_trip = mt.localize_entries('entries', 'cols')\n    round_trip = round_trip.transmute(**{col.col: round_trip.entries[i].entry for i, col in enumerate(hl.eval(round_trip.cols))})\n    round_trip = round_trip.drop(round_trip.cols)\n    self.assertTrue(t._same(round_trip))\n    t = hl.utils.range_table(10)\n    t = t.annotate(foo=t.idx, bar=hl.struct(val=2 * t.idx), baz=hl.struct(val=3 * t.idx))\n    mt = t.to_matrix_table_row_major(['bar', 'baz'])\n    round_trip = mt.localize_entries('entries', 'cols')\n    round_trip = round_trip.transmute(**{col.col: round_trip.entries[i] for i, col in enumerate(hl.eval(round_trip.cols))})\n    round_trip = round_trip.drop(round_trip.cols)\n    self.assertTrue(t._same(round_trip))\n    t = t.annotate(**{'a': 1, 'b': 2, 'c': 'v', 'd': hl.struct(e=2)})\n    self.assertRaises(ValueError, lambda: t.to_matrix_table_row_major(['a', 'b']))\n    self.assertRaises(ValueError, lambda: t.to_matrix_table_row_major(['a', 'd']))\n    self.assertRaises(ValueError, lambda: t.to_matrix_table_row_major(['d'], entry_field_name='c'))\n    self.assertRaises(ValueError, lambda: t.to_matrix_table_row_major([]))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_group_by_field_lifetimes",
+    "line": 290,
+    "body": "def test_group_by_field_lifetimes(self):\n    ht = hl.utils.range_table(3)\n    ht2 = ht.group_by(idx='100').aggregate(x=hl.agg.collect_as_set(ht.idx + 5))\n    assert ht2.all(ht2.x == hl.set({5, 6, 7}))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_group_aggregate_by_key",
+    "line": 295,
+    "body": "def test_group_aggregate_by_key(self):\n    ht = hl.utils.range_table(100, n_partitions=10)\n    r1 = ht.group_by(k=ht.idx % 5)._set_buffer_size(3).aggregate(n=hl.agg.count())\n    r2 = ht.group_by(k=ht.idx // 20)._set_buffer_size(3).aggregate(n=hl.agg.count())\n    assert r1.all(r1.n == 20)\n    assert r2.all(r2.n == 20)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate_by_key_partitioning",
+    "line": 303,
+    "body": "def test_aggregate_by_key_partitioning(self):\n    ht1 = hl.Table.parallelize([{'k': 'foo', 'b': 1}, {'k': 'bar', 'b': 2}, {'k': 'bar', 'b': 2}], hl.tstruct(k=hl.tstr, b=hl.tint32), key='k')\n    self.assertEqual(set(ht1.group_by('k').aggregate(mean_b=hl.agg.mean(ht1.b)).collect()), {hl.Struct(k='foo', mean_b=1.0), hl.Struct(k='bar', mean_b=2.0)})"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_group_aggregate_na",
+    "line": 315,
+    "body": "@test_timeout(batch=6 * 60)\ndef test_group_aggregate_na(self):\n    ht = hl.utils.range_table(100, 8)\n    ht = ht.key_by(k=hl.or_missing(ht.idx % 10 == 0, ht.idx % 4))\n    expected = [hl.utils.Struct(k=0, n=5), hl.utils.Struct(k=2, n=5), hl.utils.Struct(k=None, n=90)]\n    assert ht.group_by(ht.k).aggregate(n=hl.agg.count()).collect() == expected\n    ht = ht.checkpoint(new_temp_file())\n    assert ht.group_by(ht.k).aggregate(n=hl.agg.count()).collect() == expected"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_filter",
+    "line": 327,
+    "body": "def test_filter(self):\n    schema = hl.tstruct(a=hl.tint32, b=hl.tint32, c=hl.tint32, d=hl.tint32, e=hl.tstr, f=hl.tarray(hl.tint32))\n    rows = [{'a': 4, 'b': 1, 'c': 3, 'd': 5, 'e': 'hello', 'f': [1, 2, 3]}, {'a': 0, 'b': 5, 'c': 13, 'd': -1, 'e': 'cat', 'f': []}, {'a': 4, 'b': 2, 'c': 20, 'd': 3, 'e': 'dog', 'f': [5, 6, 7]}]\n    kt = hl.Table.parallelize(rows, schema)\n    self.assertEqual(kt.filter(kt.a == 4).count(), 2)\n    self.assertEqual(kt.filter((kt.d == -1) | (kt.c == 20) | (kt.e == 'hello')).count(), 3)\n    self.assertEqual(kt.filter((kt.c != 20) & (kt.a == 4)).count(), 1)\n    self.assertEqual(kt.filter(True).count(), 3)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_filter_missing",
+    "line": 343,
+    "body": "def test_filter_missing(self):\n    ht = hl.utils.range_table(1, 1)\n    self.assertEqual(ht.filter(hl.missing(hl.tbool)).count(), 0)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_transmute",
+    "line": 348,
+    "body": "def test_transmute(self):\n    schema = hl.tstruct(a=hl.tint32, b=hl.tint32, c=hl.tint32, d=hl.tint32, e=hl.tstr, f=hl.tarray(hl.tint32), g=hl.tstruct(x=hl.tbool, y=hl.tint32))\n    rows = [{'a': 4, 'b': 1, 'c': 3, 'd': 5, 'e': 'hello', 'f': [1, 2, 3], 'g': {'x': True, 'y': 2}}, {'a': 0, 'b': 5, 'c': 13, 'd': -1, 'e': 'cat', 'f': [], 'g': {'x': True, 'y': 2}}, {'a': 4, 'b': 2, 'c': 20, 'd': 3, 'e': 'dog', 'f': [5, 6, 7], 'g': None}]\n    df = hl.Table.parallelize(rows, schema)\n    df = df.transmute(h=df.a + df.b + df.c + df.g.y)\n    r = df.select('h').collect()\n    self.assertEqual(list(df.row), ['d', 'e', 'f', 'h'])\n    self.assertEqual(r, [hl.Struct(h=x) for x in [10, 20, None]])"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_transmute_globals",
+    "line": 372,
+    "body": "def test_transmute_globals(self):\n    ht = hl.utils.range_table(1).annotate_globals(a=5, b=10)\n    self.assertEqual(ht.transmute_globals(c=ht.a + 5).globals.dtype, hl.tstruct(b=hl.tint, c=hl.tint))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_transmute_key",
+    "line": 376,
+    "body": "def test_transmute_key(self):\n    ht = hl.utils.range_table(10)\n    self.assertEqual(ht.transmute(y=ht.idx + 2).row.dtype, hl.dtype('struct{idx: int32, y: int32}'))\n    ht = ht.key_by()\n    self.assertEqual(ht.transmute(y=ht.idx + 2).row.dtype, hl.dtype('struct{y: int32}'))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_select",
+    "line": 382,
+    "body": "def test_select(self):\n    schema = hl.tstruct(a=hl.tint32, b=hl.tint32, c=hl.tint32, d=hl.tint32, e=hl.tstr, f=hl.tarray(hl.tint32), g=hl.tstruct(x=hl.tbool, y=hl.tint32))\n    rows = [{'a': 4, 'b': 1, 'c': 3, 'd': 5, 'e': 'hello', 'f': [1, 2, 3], 'g': {'x': True, 'y': 2}}, {'a': 0, 'b': 5, 'c': 13, 'd': -1, 'e': 'cat', 'f': [], 'g': {'x': True, 'y': 2}}, {'a': 4, 'b': 2, 'c': 20, 'd': 3, 'e': 'dog', 'f': [5, 6, 7], 'g': None}]\n    kt = hl.Table.parallelize(rows, schema)\n    t1 = kt.select(kt.a, kt.e)\n    self.assertEqual(list(t1.row), ['a', 'e'])\n    self.assertEqual(list(t1.key), [])\n    t2 = kt.key_by('e')\n    t2 = t2.select(t2.a)\n    self.assertEqual(list(t2.row), ['e', 'a'])\n    self.assertEqual(list(t2.key), ['e'])\n    self.assertEqual(list(kt.select(kt.a, foo=kt.a + kt.b - kt.c - kt.d).row), ['a', 'foo'])\n    self.assertEqual(list(kt.select(kt.a, foo=kt.a + kt.b - kt.c - kt.d, **kt.g).row), ['a', 'foo', 'x', 'y'])\n    s = kt.select()\n    self.assertEqual(list(s.row), [])\n    self.assertEqual(list(s.key), [])"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_errors",
+    "line": 418,
+    "body": "def test_errors(self):\n    schema = hl.tstruct(status=hl.tint32, gt=hl.tcall, qPheno=hl.tint32)\n    rows = [{'status': 0, 'gt': hl.Call([0, 0]), 'qPheno': 3}, {'status': 0, 'gt': hl.Call([0, 1]), 'qPheno': 13}, {'status': 1, 'gt': hl.Call([0, 1]), 'qPheno': 20}]\n    kt = hl.Table.parallelize(rows, schema)\n\n    def f():\n        kt.a = 5\n    self.assertRaises(NotImplementedError, f)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_scan_filter",
+    "line": 434,
+    "body": "def test_scan_filter(self):\n    ht = hl.utils.range_table(10, n_partitions=10)\n    ht = ht.annotate(x=hl.scan.count())\n    ht = ht.filter(ht.idx == 9)\n    assert ht.x.collect() == [9]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_scan_tail",
+    "line": 440,
+    "body": "def test_scan_tail(self):\n    ht = hl.utils.range_table(100, n_partitions=16)\n    ht = ht.annotate(x=hl.scan.count())\n    ht = ht.tail(30)\n    assert ht.x.collect() == list(range(70, 100))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_semi_anti_join",
+    "line": 446,
+    "body": "def test_semi_anti_join(self):\n    ht = hl.utils.range_table(10)\n    ht2 = ht.filter(ht.idx < 3)\n    ht_2k = ht.key_by(k1=ht.idx, k2=hl.str(ht.idx * 2))\n    ht2_2k = ht2.key_by(k1=ht2.idx, k2=hl.str(ht2.idx * 2))\n    assert ht.semi_join(ht2).count() == 3\n    assert ht.anti_join(ht2).count() == 7\n    assert ht_2k.semi_join(ht2).count() == 3\n    assert ht_2k.anti_join(ht2).count() == 7\n    assert ht_2k.semi_join(ht2_2k).count() == 3\n    assert ht_2k.anti_join(ht2_2k).count() == 7\n    with pytest.raises(ValueError, match='semi_join: cannot join'):\n        ht.semi_join(ht2_2k)\n    with pytest.raises(ValueError, match='semi_join: cannot join'):\n        ht.semi_join(ht2.key_by())\n    with pytest.raises(ValueError, match='anti_join: cannot join'):\n        ht.anti_join(ht2_2k)\n    with pytest.raises(ValueError, match='anti_join: cannot join'):\n        ht.anti_join(ht2.key_by())"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indirected_joins",
+    "line": 469,
+    "body": "def test_indirected_joins(self):\n    kt = hl.utils.range_table(1)\n    kt = kt.annotate(a='foo')\n    kt1 = hl.utils.range_table(1)\n    kt1 = kt1.annotate(a='foo', b='bar').key_by('a')\n    kt2 = hl.utils.range_table(1)\n    kt2 = kt2.annotate(b='bar', c='baz').key_by('b')\n    kt3 = hl.utils.range_table(1)\n    kt3 = kt3.annotate(c='baz', d='qux').key_by('c')\n    kt4 = hl.utils.range_table(1)\n    kt4 = kt4.annotate(d='qux', e='quam').key_by('d')\n    assert kt.aggregate(agg.collect(kt4[kt3[kt2[kt1[kt.a].b].c].d].e)) == ['quam']"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_matrix_join_combinations",
+    "line": 487,
+    "body": "def test_table_matrix_join_combinations(self):\n    m = hl.import_vcf(resource('sample.vcf'))\n    vkt = m.rows()\n    assert vkt.filter(vkt.qual != m.index_rows(vkt.key).qual).count() == 0\n    assert m.filter_rows(m.qual != vkt.index(m.row_key).qual).count_rows() == 0\n    assert m.filter_rows(m.qual != m.index_rows(m.row_key).qual).count_rows() == 0\n    kt5 = hl.utils.range_table(1).annotate(s='C1589').key_by('s')\n    n_C1589 = m.filter_cols(m.s[:5] == 'C1589').count_cols()\n    assert n_C1589 > 1\n    m2 = m.annotate_cols(foo=m.s[:5])\n    assert m2.filter_cols(hl.is_defined(kt5[m2.foo].idx)).count_cols() == n_C1589"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_index_globals",
+    "line": 503,
+    "body": "def test_index_globals(self):\n    ht = hl.utils.range_table(1).annotate_globals(foo=5)\n    assert hl.eval(ht.index_globals().foo) == 5"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_interval_join",
+    "line": 507,
+    "body": "def test_interval_join(self):\n    left = hl.utils.range_table(50, n_partitions=10)\n    intervals = hl.utils.range_table(4)\n    intervals = intervals.key_by(interval=hl.interval(intervals.idx * 10, intervals.idx * 10 + 5))\n    left = left.annotate(interval_matches=intervals.index(left.key))\n    self.assertTrue(left.all(hl.case().when(left.idx % 10 < 5, left.interval_matches.idx == left.idx // 10).default(hl.is_missing(left.interval_matches))))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_interval_filter_unordered",
+    "line": 520,
+    "body": "def test_interval_filter_unordered(self):\n    ht = hl.utils.range_table(100)\n    ht1 = hl.filter_intervals(ht, [hl.utils.Interval(hl.utils.Struct(idx=10), hl.utils.Struct(idx=30)), hl.utils.Interval(hl.utils.Struct(idx=50), hl.utils.Struct(idx=60))])\n    assert ht1.count() == 30\n    ht2 = hl.filter_intervals(ht1, [hl.utils.Interval(hl.utils.Struct(idx=25), hl.utils.Struct(idx=35)), hl.utils.Interval(hl.utils.Struct(idx=70), hl.utils.Struct(idx=80))])\n    assert ht2.count() == 5\n    ht3 = hl.filter_intervals(ht, [hl.utils.Interval(hl.utils.Struct(idx=50), hl.utils.Struct(idx=60)), hl.utils.Interval(hl.utils.Struct(idx=10), hl.utils.Struct(idx=30))])\n    assert ht3.count() == 30\n    ht4 = hl.filter_intervals(ht3, [hl.utils.Interval(hl.utils.Struct(idx=25), hl.utils.Struct(idx=35))])\n    assert ht4.count() == 5"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_interval_product_join",
+    "line": 555,
+    "body": "def test_interval_product_join(self):\n    left = hl.utils.range_table(50, n_partitions=8)\n    intervals = hl.utils.range_table(25)\n    intervals = intervals.key_by(interval=hl.interval(1 + intervals.idx // 5 * 10 + intervals.idx % 5, (1 + intervals.idx // 5) * 10 - intervals.idx % 5))\n    intervals = intervals.annotate(i=intervals.idx % 5)\n    left = left.annotate(interval_matches=intervals.index(left.key, all_matches=True))\n    self.assertTrue(left.all(hl.sorted(left.interval_matches.map(lambda x: x.i)) == hl.range(0, hl.min(left.idx % 10, 10 - left.idx % 10))))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_interval_product_join_long_key",
+    "line": 572,
+    "body": "def test_interval_product_join_long_key(self):\n    with hl.TemporaryDirectory(suffix='.ht', ensure_exists=False) as tmpfile:\n        left = hl.utils.range_table(50, n_partitions=8)\n        intervals = hl.utils.range_table(25)\n        intervals = intervals.key_by(interval=hl.interval(1 + intervals.idx // 5 * 10 + intervals.idx % 5, (1 + intervals.idx // 5) * 10 - intervals.idx % 5), k2=1)\n        intervals = intervals.checkpoint(tmpfile)\n        intervals = intervals.annotate(i=intervals.idx % 5)\n        intervals = intervals.key_by('interval')\n        left = left.annotate(interval_matches=intervals.index(left.idx, all_matches=True))\n        self.assertTrue(left.all(hl.sorted(left.interval_matches.map(lambda x: x.i)) == hl.range(0, hl.min(left.idx % 10, 10 - left.idx % 10))))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_with_empty",
+    "line": 594,
+    "body": "def test_join_with_empty(self):\n    kt = hl.utils.range_table(10)\n    kt2 = kt.head(0)\n    kt.annotate(foo=hl.is_defined(kt2[kt.idx]))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_with_key",
+    "line": 599,
+    "body": "def test_join_with_key(self):\n    ht = hl.utils.range_table(10)\n    ht1 = ht.annotate(foo=5)\n    self.assertTrue(ht.all(ht1[ht.key].foo == 5))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_product_join",
+    "line": 604,
+    "body": "def test_product_join(self):\n    left = hl.utils.range_table(5)\n    right = hl.utils.range_table(5)\n    right = right.annotate(i=hl.range(right.idx + 1, 5)).explode('i').key_by('i')\n    left = left.annotate(matches=right.index(left.key, all_matches=True))\n    self.assertTrue(left.all(left.matches.length() == left.idx))\n    self.assertTrue(left.all(left.matches.map(lambda x: x.idx) == hl.range(0, left.idx)))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multiple_entry_joins",
+    "line": 612,
+    "body": "def test_multiple_entry_joins(self):\n    mt = hl.utils.range_matrix_table(4, 4)\n    mt2 = hl.utils.range_matrix_table(4, 4)\n    mt2 = mt2.annotate_entries(x=mt2.row_idx + mt2.col_idx)\n    mt.select_entries(a=mt2[mt.row_idx, mt.col_idx].x, b=mt2[mt.row_idx, mt.col_idx].x)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join",
+    "line": 619,
+    "body": "@test_timeout(batch=8 * 60)\ndef test_multi_way_zip_join(self):\n    d1 = [{'id': 0, 'name': 'a', 'data': 0.0}, {'id': 1, 'name': 'b', 'data': 3.14}, {'id': 2, 'name': 'c', 'data': 2.78}]\n    d2 = [{'id': 0, 'name': 'd', 'data': 1.1}, {'id': 2, 'name': 'v', 'data': 7.89}]\n    d3 = [{'id': 1, 'name': 'f', 'data': 9.99}, {'id': 2, 'name': 'g', 'data': -1.0}, {'id': 3, 'name': 'z', 'data': 0.01}]\n    s = hl.tstruct(id=hl.tint32, name=hl.tstr, data=hl.tfloat64)\n    ts = [hl.Table.parallelize(r, schema=s, key='id') for r in [d1, d2, d3]]\n    joined = hl.Table.multi_way_zip_join(ts, '__data', '__globals').drop('__globals')\n    dexpected = [{'id': 0, '__data': [{'name': 'a', 'data': 0.0}, {'name': 'd', 'data': 1.1}, None]}, {'id': 1, '__data': [{'name': 'b', 'data': 3.14}, None, {'name': 'f', 'data': 9.99}]}, {'id': 2, '__data': [{'name': 'c', 'data': 2.78}, {'name': 'v', 'data': 7.89}, {'name': 'g', 'data': -1.0}]}, {'id': 3, '__data': [None, None, {'name': 'z', 'data': 0.01}]}]\n    expected = hl.Table.parallelize(dexpected, schema=hl.tstruct(id=hl.tint32, __data=hl.tarray(hl.tstruct(name=hl.tstr, data=hl.tfloat64))), key='id')\n    self.assertTrue(expected._same(joined))\n    expected2 = expected.transmute(data=expected['__data'])\n    joined_same_name = hl.Table.multi_way_zip_join(ts, 'data', 'globals').drop('globals')\n    self.assertTrue(expected2._same(joined_same_name))\n    joined_nothing = hl.Table.multi_way_zip_join(ts, 'data', 'globals').drop('data', 'globals')\n    self.assertEqual(joined_nothing._force_count(), 4)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join_globals",
+    "line": 657,
+    "body": "def test_multi_way_zip_join_globals(self):\n    t1 = hl.utils.range_table(1).annotate_globals(x=hl.missing(hl.tint32))\n    t2 = hl.utils.range_table(1).annotate_globals(x=5)\n    t3 = hl.utils.range_table(1).annotate_globals(x=0)\n    expected = hl.struct(__globals=hl.array([hl.struct(x=hl.missing(hl.tint32)), hl.struct(x=5), hl.struct(x=0)]))\n    joined = hl.Table.multi_way_zip_join([t1, t2, t3], '__data', '__globals')\n    self.assertEqual(hl.eval(joined.globals), hl.eval(expected))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join_key_downcast",
+    "line": 665,
+    "body": "def test_multi_way_zip_join_key_downcast(self):\n    mt = hl.import_vcf(resource('sample.vcf.bgz'))\n    mt = mt.key_rows_by('locus')\n    ht = mt.rows()\n    j = hl.Table.multi_way_zip_join([ht, ht], 'd', 'g')\n    j._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join_key_downcast2",
+    "line": 672,
+    "body": "def test_multi_way_zip_join_key_downcast2(self):\n    vcf2 = hl.import_vcf(resource('gvcfs/HG00268.g.vcf.gz'), force_bgz=True, reference_genome='GRCh38')\n    vcf1 = hl.import_vcf(resource('gvcfs/HG00096.g.vcf.gz'), force_bgz=True, reference_genome='GRCh38')\n    vcfs = [vcf1.rows().key_by('locus'), vcf2.rows().key_by('locus')]\n    exp_count = vcfs[0].count() + vcfs[1].count() - vcfs[0].aggregate(hl.agg.count_where(hl.is_defined(vcfs[1][vcfs[0].locus])))\n    ht = hl.Table.multi_way_zip_join(vcfs, 'data', 'new_globals')\n    assert exp_count == ht._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245",
+    "line": 685,
+    "body": "@test_timeout(3 * 60)\ndef test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245(self):\n\n    def import_vcf(file: str, partitions: int):\n        return hl.import_vcf(file, force_bgz=True, reference_genome='GRCh38', min_partitions=partitions).rows().select()\n    hl.Table.multi_way_zip_join([import_vcf(resource('gvcfs/HG00096.g.vcf.gz'), 100), import_vcf(resource('gvcfs/HG00268.g.vcf.gz'), 1)], 'data', 'new_globals').write(new_temp_file(extension='ht'))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_index_maintains_count",
+    "line": 702,
+    "body": "def test_index_maintains_count(self):\n    t1 = hl.Table.parallelize([{'a': 'foo', 'b': 1}, {'a': 'bar', 'b': 2}, {'a': 'bar', 'b': 2}], hl.tstruct(a=hl.tstr, b=hl.tint32), key='a')\n    t2 = hl.Table.parallelize([{'t': 'foo', 'x': 3.14}, {'t': 'bar', 'x': 2.78}, {'t': 'bar', 'x': -1}, {'t': 'quam', 'x': 0}], hl.tstruct(t=hl.tstr, x=hl.tfloat64), key='t')\n    j = t1.annotate(f=t2[t1.a].x)\n    self.assertEqual(j.count(), t1.count())"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_index_keyless_table",
+    "line": 717,
+    "body": "def test_index_keyless_table(self):\n    t = hl.utils.range_table(10).key_by()\n    with self.assertRaisesRegex(hl.expr.ExpressionException, 'Table key: *<<<empty key>>>'):\n        t[t.idx]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregation_with_no_aggregators",
+    "line": 722,
+    "body": "def test_aggregation_with_no_aggregators(self):\n    ht = hl.utils.range_table(3)\n    self.assertEqual(ht.group_by(ht.idx).aggregate().count(), 3)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_drop",
+    "line": 726,
+    "body": "def test_drop(self):\n    kt = hl.utils.range_table(10)\n    kt = kt.annotate(sq=kt.idx ** 2, foo='foo', bar='bar').key_by('foo')\n    ktd = kt.drop('idx')\n    self.assertEqual(set(ktd.row), {'foo', 'sq', 'bar'})\n    ktd = ktd.key_by().drop('foo')\n    self.assertEqual(list(ktd.key), [])\n    self.assertEqual(set(kt.drop(kt['idx']).row), {'foo', 'sq', 'bar'})\n    d = kt.key_by().drop(*list(kt.row))\n    self.assertEqual(list(d.row), [])\n    self.assertEqual(list(d.key), [])\n    self.assertTrue(kt.drop()._same(kt))\n    self.assertTrue(kt.drop(*list(kt.row_value))._same(kt.select()))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_weird_names",
+    "line": 744,
+    "body": "def test_weird_names(self):\n    df = hl.utils.range_table(10)\n    exprs = {'a': 5, '   a    ': 5, '\\\\%!^!@#&#&$%#$%': [5], '$': 5, '\u00df': 5}\n    df.annotate_globals(**exprs)\n    df.select_globals(**exprs)\n    df.annotate(**exprs)\n    df.select(**exprs)\n    df = df.transmute(**exprs)\n    df.explode('\\\\%!^!@#&#&$%#$%')\n    df.explode(df['\\\\%!^!@#&#&$%#$%'])\n    df.drop('\\\\%!^!@#&#&$%#$%')\n    df.drop(df['\\\\%!^!@#&#&$%#$%'])\n    df.group_by(**{'*``81': df.a}).aggregate(c=agg.count())"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_sample",
+    "line": 762,
+    "body": "def test_sample(self):\n    kt = hl.utils.range_table(16)\n    kt_small = kt.sample(0.25, seed=0)\n    self.assertEqual(4, kt_small.count())"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_spark_works",
+    "line": 768,
+    "body": "@skip_unless_spark_backend()\ndef test_from_spark_works(self):\n    spark_session = Env.spark_session()\n    df = spark_session.createDataFrame([pyspark.sql.Row(x=5, y='foo')])\n    t = hl.Table.from_spark(df)\n    rows = t.collect()\n    self.assertEqual(len(rows), 1)\n    self.assertEqual(rows[0].x, 5)\n    self.assertEqual(rows[0].y, 'foo')"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_pandas_works",
+    "line": 777,
+    "body": "def test_from_pandas_works(self):\n    d = {'a': [1, 2], 'b': ['foo', 'bar']}\n    df = pd.DataFrame(data=d)\n    t = hl.Table.from_pandas(df, key='a')\n    d2 = [hl.struct(a=hl.int32(1), b='foo'), hl.struct(a=hl.int32(2), b='bar')]\n    t2 = hl.Table.parallelize(d2, key='a')\n    self.assertTrue(t._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_pandas_objects",
+    "line": 787,
+    "body": "def test_from_pandas_objects(self):\n    import numpy as np\n    d = {'a': [[1, 2], [3, 4]], 'b': [{'a': 22, 'b': 21}, {'a': 23, 'b': 23}], 'c': [np.array([np.array([1], dtype=np.int32), np.array([1], dtype=np.int32)]), np.array([np.array([2], dtype=np.int32), np.array([2], dtype=np.int32)])]}\n    df = pd.DataFrame(data=d)\n    t = hl.Table.from_pandas(df)\n    d2 = [hl.struct(a=hl.array([1, 2]), b=hl.literal({'a': 22, 'b': 21}), c=hl.nd.array([[1], [1]])), hl.struct(a=hl.array([3, 4]), b=hl.literal({'a': 23, 'b': 23}), c=hl.nd.array([[2], [2]]))]\n    t2 = hl.Table.parallelize(d2)\n    self.assertTrue(t._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_pandas_missing_and_nans",
+    "line": 809,
+    "body": "def test_from_pandas_missing_and_nans(self):\n    df = pd.DataFrame({'x': pd.Series([None, 1, 2, None, 4], dtype=pd.Int64Dtype()), 'y': pd.Series([None, 1, 2, None, 4], dtype=pd.Int32Dtype()), 'z': pd.Series([np.nan, 1.0, 3.0, 4.0, np.nan]), 's': pd.Series([None, 'cat', None, 'fox', 'dog'], dtype=pd.StringDtype())})\n    ht = hl.Table.from_pandas(df)\n    collected = ht.collect()\n    assert [s.x for s in collected] == [None, 1, 2, None, 4]\n    assert [s.y for s in collected] == [None, 1, 2, None, 4]\n    assert [s.s for s in collected] == [None, 'cat', None, 'fox', 'dog']\n    assert np.isnan(collected[0].z)\n    assert np.isnan(collected[-1].z)\n    assert [s.z for s in collected[1:-1]] == [1.0, 3.0, 4.0]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_pandas_mismatched_object_rows",
+    "line": 828,
+    "body": "def test_from_pandas_mismatched_object_rows(self):\n    d = {'a': [[1, 2], {1, 2}]}\n    df = pd.DataFrame(data=d)\n    with pytest.raises(ExpressionException, match='cannot impute array elements'):\n        hl.Table.from_pandas(df)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_parallelize_infer_types",
+    "line": 835,
+    "body": "def test_table_parallelize_infer_types(self):\n    import numpy as np\n    a = hl.array([{'b': 1, 'c': 'd'}, {'b': 1, 'c': 'd'}])\n    d = hl.array([[3, 4, 5], [1, 2, 3]])\n    e = hl.array([{'a': 1, 'b': 2}, {'a': 3, 'b': 4}])\n    f = hl.array([0.01, 2e-08])\n    g = hl.array([(True, False), (False, True)])\n    h = hl.array([np.array([1, 2, 3]), np.array([3, 4, 5])])\n    i = hl.array([hl.Call([0, 0]), hl.Call([0, 1])])\n    j = hl.array([hl.locus('20', 17434581), hl.locus('19', 15434581)])\n    k = hl.array([hl.struct(a=1, b='2'), hl.struct(a=3, b='5')])\n    data = [{'idx': 0, 'a': {'b': 1, 'c': 'd'}, 'd': [3, 4, 5], 'e': {'a': 1, 'b': 2}, 'f': 0.01, 'g': (True, False), 'h': np.array([1, 2, 3]), 'i': hl.Call([0, 0]), 'j': hl.locus('20', 17434581), 'k': hl.struct(a=1, b='2')}, {'idx': 1, 'a': {'b': 1, 'c': 'd'}, 'd': [1, 2, 3], 'e': {'a': 3, 'b': 4}, 'f': 2e-08, 'g': (False, True), 'h': np.array([3, 4, 5]), 'i': hl.Call([0, 1]), 'j': hl.locus('19', 15434581), 'k': hl.struct(a=3, b='5')}]\n    table = hl.Table.parallelize(data, key='idx')\n    ht = hl.utils.range_table(2)\n    ht = ht.annotate(a=hl.struct(b=a[ht.idx]['b'], c=a[ht.idx]['c']), d=d[ht.idx], e=e[ht.idx], f=f[ht.idx], g=g[ht.idx], h=h[ht.idx], i=i[ht.idx], j=j[ht.idx], k=k[ht.idx])\n    self.assertTrue(table._same(ht))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_parallelize_partial_infer_types",
+    "line": 890,
+    "body": "def test_table_parallelize_partial_infer_types(self):\n    b = hl.array([{'c': {1, 2, 3}, 'd': {3, 4, 5}}, {'c': {6, 7, 8}, 'd': {9, 10, 11}}])\n    e = hl.array([[[3], [4], [5]], [[1], [2], [3]]])\n    f = hl.array([hl.struct(a=1, b=2), hl.struct(a=3, b=4)])\n    data = [{'idx': 0, 'b': {'c': {1, 2, 3}, 'd': {3, 4, 5}}, 'e': [[3], [4], [5]], 'f': {'a': 1, 'b': 2}}, {'idx': 1, 'b': {'c': {6, 7, 8}, 'd': {9, 10, 11}}, 'e': [[1], [2], [3]], 'f': {'a': 3, 'b': 4}}]\n    partial_type = {'idx': hl.tint32, 'f': hl.tstruct(a=hl.tint32, b=hl.tint32)}\n    table = hl.Table.parallelize(data, partial_type=partial_type, key='idx')\n    ht = hl.utils.range_table(2)\n    ht = ht.annotate(b=b[ht.idx], e=e[ht.idx], f=f[ht.idx])\n    self.assertTrue(table._same(ht))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_parallelize_error_both_schema_partial_type_defined",
+    "line": 905,
+    "body": "def test_table_parallelize_error_both_schema_partial_type_defined(self):\n    data = [{'a': 1, 'b': 'a'}, {'a': 2, 'b': 'c'}]\n    schema = 'array<struct{a: int, b: str}>'\n    partial_type = {'a': hl.tint32}\n    with pytest.raises(ValueError, match='define either schema or partial type'):\n        hl.Table.parallelize(data, schema=schema, partial_type=partial_type)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_rename",
+    "line": 913,
+    "body": "def test_rename(self):\n    kt = hl.utils.range_table(10)\n    kt = kt.annotate_globals(foo=5, fi=3)\n    kt = kt.annotate(bar=45, baz=32).key_by('bar')\n    renamed = kt.rename({'foo': 'foo2', 'bar': 'bar2'})\n    renamed.count()\n    self.assertEqual(list(renamed.key), ['bar2'])\n    self.assertEqual(renamed['foo2'].dtype, kt['foo'].dtype)\n    self.assertEqual(renamed['fi'].dtype, kt['fi'].dtype)\n    self.assertEqual(renamed['bar2'].dtype, kt['bar'].dtype)\n    self.assertEqual(renamed['baz'].dtype, kt['baz'].dtype)\n    self.assertEqual(renamed['bar2']._indices, renamed._row_indices)\n    self.assertFalse('foo' in renamed._fields)\n    self.assertFalse('bar' in renamed._fields)\n    with self.assertRaises(ValueError):\n        kt.rename({'foo': 'bar'})\n    with self.assertRaises(ValueError):\n        kt.rename({'bar': 'a', 'baz': 'a'})\n    with self.assertRaises(LookupError):\n        kt.rename({'hello': 'a'})"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_distinct",
+    "line": 940,
+    "body": "def test_distinct(self):\n    t1 = hl.Table.parallelize([{'a': 'foo', 'b': 1}, {'a': 'bar', 'b': 2}, {'a': 'bar', 'b': 2}, {'a': 'bar', 'b': 3}, {'a': 'bar', 'b': 3}, {'a': 'baz', 'b': 2}, {'a': 'baz', 'b': 0}, {'a': 'baz', 'b': 0}, {'a': 'foo', 'b': 0}, {'a': '1', 'b': 0}, {'a': '2', 'b': 0}, {'a': '3', 'b': 0}], hl.tstruct(a=hl.tstr, b=hl.tint32), key='a', n_partitions=4)\n    dist = t1.distinct().collect_by_key()\n    self.assertTrue(dist.all(hl.len(dist.values) == 1))\n    self.assertEqual(dist.count(), len(t1.aggregate(hl.agg.collect_as_set(t1.a))))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_group_by_key",
+    "line": 966,
+    "body": "@test_timeout(batch=6 * 60)\ndef test_group_by_key(self):\n    t1 = hl.Table.parallelize([{'a': 'foo', 'b': 1}, {'a': 'bar', 'b': 2}, {'a': 'bar', 'b': 2}, {'a': 'bar', 'b': 3}, {'a': 'bar', 'b': 3}, {'a': 'baz', 'b': 2}, {'a': 'baz', 'b': 0}, {'a': 'baz', 'b': 0}, {'a': 'foo', 'b': 0}, {'a': '1', 'b': 0}, {'a': '2', 'b': 0}, {'a': '3', 'b': 0}], hl.tstruct(a=hl.tstr, b=hl.tint32), key='a', n_partitions=4)\n    g = t1.collect_by_key().explode('values')\n    g = g.transmute(**g.values)\n    self.assertTrue(g._same(t1))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_str_annotation_regression",
+    "line": 990,
+    "body": "def test_str_annotation_regression(self):\n    t = hl.Table.parallelize([{'alleles': ['A', 'T']}], hl.tstruct(alleles=hl.tarray(hl.tstr)))\n    t = t.annotate(ref=t.alleles[0])\n    t._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_range_table",
+    "line": 995,
+    "body": "def test_range_table(self):\n    t = hl.utils.range_table(26, n_partitions=5)\n    self.assertEqual(t.globals.dtype, hl.tstruct())\n    self.assertEqual(t.row.dtype, hl.tstruct(idx=hl.tint32))\n    self.assertEqual(t.row_value.dtype, hl.tstruct())\n    self.assertEqual(list(t.key), ['idx'])\n    self.assertEqual([r.idx for r in t.collect()], list(range(26)))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_range_table_zero",
+    "line": 1004,
+    "body": "def test_range_table_zero(self):\n    t = hl.utils.range_table(0)\n    self.assertEqual(t._force_count(), 0)\n    self.assertEqual(t.idx.collect(), [])"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_issue_3654",
+    "line": 1009,
+    "body": "def test_issue_3654(self):\n    ht = hl.utils.range_table(10)\n    ht = ht.annotate(x=[1, 2])\n    self.assertEqual(ht.aggregate(hl.agg.array_sum(ht.x) / [2, 2]), [5.0, 10.0])"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_explode_key_error",
+    "line": 1014,
+    "body": "def test_explode_key_error(self):\n    t = hl.utils.range_table(1)\n    t = t.key_by(a=['a', 'b', 'c'])\n    with self.assertRaises(ValueError):\n        t.explode('a')"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_explode_on_set",
+    "line": 1020,
+    "body": "def test_explode_on_set(self):\n    t = hl.utils.range_table(1)\n    t = t.annotate(a=hl.set(['a', 'b', 'c']))\n    t = t.explode('a')\n    self.assertEqual(set(t.collect()), hl.eval(hl.set([hl.struct(idx=0, a='a'), hl.struct(idx=0, a='b'), hl.struct(idx=0, a='c')])))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_explode_nested",
+    "line": 1029,
+    "body": "def test_explode_nested(self):\n    t = hl.utils.range_table(2)\n    t = t.annotate(foo=hl.case().when(t.idx == 1, hl.struct(bar=[1, 2, 3])).or_missing())\n    t = t.explode(t.foo.bar)\n    assert t.foo.bar.collect() == [1, 2, 3]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_value_error",
+    "line": 1035,
+    "body": "def test_value_error(self):\n    t = hl.utils.range_table(2)\n    t = t.annotate(foo=hl.struct(bar=[1, 2, 3]))\n    with pytest.raises(ValueError):\n        t.explode(t.foo.bar, name='baz')"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_export",
+    "line": 1041,
+    "body": "def test_export(self):\n    t = hl.utils.range_table(1).annotate(foo=3)\n    tmp_file = new_temp_file()\n    t.export(tmp_file)\n    with hl.hadoop_open(tmp_file, 'r') as f_in:\n        assert f_in.read() == 'idx\\tfoo\\n0\\t3\\n'"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_export_delim",
+    "line": 1049,
+    "body": "def test_export_delim(self):\n    t = hl.utils.range_table(1).annotate(foo=3)\n    tmp_file = new_temp_file()\n    t.export(tmp_file, delimiter=',')\n    with hl.hadoop_open(tmp_file, 'r') as f_in:\n        assert f_in.read() == 'idx,foo\\n0,3\\n'"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_export_parallel_manifest",
+    "line": 1057,
+    "body": "def test_export_parallel_manifest(self):\n    t = hl.utils.range_table(10, n_partitions=8).key_by()\n    values = t.collect()\n    fs = hl.current_backend().fs\n    tmp_file = new_temp_file()\n    t.export(tmp_file, parallel='separate_header')\n    with fs.open(f'{tmp_file}/shard-manifest.txt') as lines:\n        manifest_files = [os.path.join(tmp_file, line.strip()) for line in lines]\n    ht2 = hl.import_table(manifest_files, types={'idx': hl.tint32})\n    assert ht2.collect() == values\n    tmp_file2 = new_temp_file()\n    t.export(tmp_file2, parallel='header_per_shard')\n    with fs.open(f'{tmp_file2}/shard-manifest.txt') as lines:\n        manifest_files = [os.path.join(tmp_file2, line.strip()) for line in lines]\n    ht3 = hl.import_table(manifest_files, types={'idx': hl.tint32})\n    assert ht3.collect() == values"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_write_stage_locally",
+    "line": 1078,
+    "body": "def test_write_stage_locally(self):\n    t = hl.utils.range_table(5)\n    f = new_temp_file(extension='ht')\n    t.write(f, stage_locally=True)\n    t2 = hl.read_table(f)\n    self.assertTrue(t._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_write_no_parts",
+    "line": 1085,
+    "body": "def test_write_no_parts(self):\n    ht = hl.utils.range_table(10, n_partitions=2).filter(False)\n    path = new_temp_file(extension='ht')\n    path2 = new_temp_file(extension='ht')\n    assert ht.checkpoint(path)._same(ht)\n    hl.read_table(path).write(path2)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_min_partitions",
+    "line": 1092,
+    "body": "def test_min_partitions(self):\n    assert hl.import_table(resource('variantAnnotations.tsv'), min_partitions=50).n_partitions() == 50"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_read_back_same_as_exported",
+    "line": 1095,
+    "body": "def test_read_back_same_as_exported(self):\n    t, _ = create_all_values_datasets()\n    tmp_file = new_temp_file(prefix='test', extension='.tsv')\n    t.export(tmp_file)\n    t_read_back = hl.import_table(tmp_file, types=dict(t.row.dtype)).key_by('idx')\n    self.assertTrue(t.select_globals()._same(t_read_back, tolerance=0.0001, absolute=True))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indexed_read_1",
+    "line": 1102,
+    "body": "def test_indexed_read_1(self):\n    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)\n    t2 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _intervals=[hl.Interval(start=150, end=250, includes_start=True, includes_end=False), hl.Interval(start=250, end=500, includes_start=True, includes_end=False)], _create_row_uids=True)\n    self.assertEqual(t2.n_partitions(), 2)\n    self.assertEqual(t2.count(), 350)\n    self.assertEqual(t2._force_count(), 350)\n    self.assertTrue(t1.filter((t1.idx >= 150) & (t1.idx < 500))._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indexed_read_2",
+    "line": 1117,
+    "body": "def test_indexed_read_2(self):\n    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)\n    t2 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _intervals=[hl.Interval(start=150, end=250, includes_start=True, includes_end=False), hl.Interval(start=250, end=500, includes_start=True, includes_end=False)], _filter_intervals=True, _create_row_uids=True)\n    self.assertEqual(t2.n_partitions(), 3)\n    self.assertTrue(t1.filter((t1.idx >= 150) & (t1.idx < 500))._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indexed_read_3",
+    "line": 1131,
+    "body": "def test_indexed_read_3(self):\n    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)\n    t2 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _intervals=[hl.Interval(start=150, end=250, includes_start=False, includes_end=True), hl.Interval(start=250, end=500, includes_start=False, includes_end=True)], _create_row_uids=True)\n    self.assertEqual(t2.n_partitions(), 2)\n    self.assertEqual(t2.count(), 350)\n    self.assertEqual(t2._force_count(), 350)\n    self.assertTrue(t1.filter((t1.idx > 150) & (t1.idx <= 500))._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indexed_read_4",
+    "line": 1146,
+    "body": "def test_indexed_read_4(self):\n    t1 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _create_row_uids=True)\n    t2 = hl.read_table(resource('range-table-2000-with-10-parts.ht'), _intervals=[hl.Interval(start=150, end=250, includes_start=False, includes_end=True), hl.Interval(start=250, end=500, includes_start=False, includes_end=True)], _filter_intervals=True, _create_row_uids=True)\n    self.assertEqual(t2.n_partitions(), 3)\n    self.assertTrue(t1.filter((t1.idx > 150) & (t1.idx <= 500))._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_order_by_parsing",
+    "line": 1160,
+    "body": "def test_order_by_parsing(self):\n    hl.utils.range_table(1).annotate(**{'a b c': 5}).order_by('a b c')._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_take_order",
+    "line": 1163,
+    "body": "def test_take_order(self):\n    t = hl.utils.range_table(20, n_partitions=2)\n    t = t.key_by(rev_idx=-t.idx)\n    assert t.take(10) == [hl.Struct(idx=idx, rev_idx=-idx) for idx in range(19, 9, -1)]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_filter_partitions",
+    "line": 1169,
+    "body": "@test_timeout(batch=5 * 60)\ndef test_filter_partitions(self):\n    ht = hl.utils.range_table(23, n_partitions=8)\n    self.assertEqual(ht.n_partitions(), 8)\n    self.assertEqual(ht._filter_partitions([0, 1, 4]).n_partitions(), 3)\n    self.assertEqual(ht._filter_partitions(range(3)).n_partitions(), 3)\n    self.assertEqual(ht._filter_partitions([4, 5, 7], keep=False).n_partitions(), 5)\n    self.assertTrue(ht._same(hl.Table.union(ht._filter_partitions([0, 3, 7]), ht._filter_partitions([0, 3, 7], keep=False))))\n    self.assertEqual(ht._filter_partitions([0, 7]).idx.collect(), [0, 1, 2, 21, 22])"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_localize_entries",
+    "line": 1181,
+    "body": "def test_localize_entries(self):\n    ref_schema = hl.tstruct(row_idx=hl.tint32, __entries=hl.tarray(hl.tstruct(v=hl.tint32)))\n    ref_data = [{'row_idx': i, '__entries': [{'v': i + j} for j in range(6)]} for i in range(8)]\n    ref_tab = hl.Table.parallelize(ref_data, ref_schema).key_by('row_idx')\n    ref_tab = ref_tab.select_globals(__cols=[hl.struct(col_idx=i) for i in range(6)])\n    mt = hl.utils.range_matrix_table(8, 6)\n    mt = mt.annotate_entries(v=mt.row_idx + mt.col_idx)\n    t = mt._localize_entries('__entries', '__cols')\n    self.assertTrue(t._same(ref_tab))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_localize_self_join",
+    "line": 1191,
+    "body": "def test_localize_self_join(self):\n    ref_schema = hl.tstruct(row_idx=hl.tint32, __entries=hl.tarray(hl.tstruct(v=hl.tint32)))\n    ref_data = [{'row_idx': i, '__entries': [{'v': i + j} for j in range(6)]} for i in range(8)]\n    ref_tab = hl.Table.parallelize(ref_data, ref_schema).key_by('row_idx')\n    ref_tab = ref_tab.join(ref_tab, how='outer')\n    mt = hl.utils.range_matrix_table(8, 6)\n    mt = mt.annotate_entries(v=mt.row_idx + mt.col_idx)\n    t = mt._localize_entries('__entries', '__cols').drop('__cols')\n    t = t.join(t, how='outer')\n    self.assertTrue(t._same(ref_tab))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_union",
+    "line": 1202,
+    "body": "def test_union(self):\n    t1 = hl.utils.range_table(5, 2)\n    t2 = hl.utils.range_table(5, 2)\n    t2 = t2.key_by(idx=t2.idx + 5)\n    t3 = hl.utils.range_table(5, 2)\n    t3 = t3.key_by(idx=t3.idx + 10)\n    self.assertTrue(t1.union(t2, t3)._same(hl.utils.range_table(15)))\n    no_key = t1.key_by().union(t2.key_by(), t3.key_by())\n    assert no_key.n_partitions() == 6\n    self.assertTrue(no_key._same(hl.utils.range_table(15).key_by()))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_nested_union_100",
+    "line": 1226,
+    "body": "def test_nested_union_100(self):\n    self.nested_union(10, 100)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_nested_union_200",
+    "line": 1230,
+    "body": "@pytest.mark.xfail(reason='causes intermittent stack overflow in compiler', strict=False)\ndef test_nested_union_200(self):\n    self.nested_union(10, 200)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_union_unify",
+    "line": 1233,
+    "body": "def test_union_unify(self):\n    t1 = hl.utils.range_table(2)\n    t2 = t1.annotate(x=hl.int32(1), y='A')\n    t3 = t1.annotate(z=(1, 2, 3), x=hl.float64(1.5))\n    t4 = t1.key_by(idx=t1.idx + 10)\n    u = t1.union(t2, t3, t4, unify=True)\n    assert u.x.dtype == hl.tfloat64\n    assert list(u.row) == ['idx', 'x', 'y', 'z']\n    assert u.collect() == [hl.utils.Struct(idx=0, x=None, y=None, z=None), hl.utils.Struct(idx=0, x=1.0, y='A', z=None), hl.utils.Struct(idx=0, x=1.5, y=None, z=(1, 2, 3)), hl.utils.Struct(idx=1, x=None, y=None, z=None), hl.utils.Struct(idx=1, x=1.0, y='A', z=None), hl.utils.Struct(idx=1, x=1.5, y=None, z=(1, 2, 3)), hl.utils.Struct(idx=10, x=None, y=None, z=None), hl.utils.Struct(idx=11, x=None, y=None, z=None)]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_order_by_head_rewrite",
+    "line": 1255,
+    "body": "def test_table_order_by_head_rewrite(self):\n    rt = hl.utils.range_table(10, 2)\n    rt = rt.annotate(x=10 - rt.idx)\n    expected = list(range(10))[::-1]\n    self.assertEqual(rt.order_by('x').idx.take(10), expected)\n    self.assertEqual(rt.order_by('x').idx.collect(), expected)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_order_by_expr",
+    "line": 1262,
+    "body": "def test_order_by_expr(self):\n    ht = hl.utils.range_table(10, 3)\n    ht = ht.annotate(xs=hl.range(0, 1).map(lambda x: hl.int(hl.rand_unif(0, 100))))\n    asc = ht.order_by(ht.xs[0])\n    desc = ht.order_by(hl.desc(ht.xs[0]))\n    res = ht.xs[0].collect()\n    res_asc = sorted(res)\n    res_desc = sorted(res, reverse=True)\n    assert asc.xs[0].collect() == res_asc\n    assert desc.xs[0].collect() == res_desc\n    assert [s['xs'][0] for s in desc.take(5)] == res_desc[:5]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_null_joins",
+    "line": 1278,
+    "body": "def test_null_joins(self):\n    tr = hl.utils.range_table(7, 1)\n    table1 = tr.key_by(new_key=hl.if_else((tr.idx == 3) | (tr.idx == 5), hl.missing(hl.tint32), tr.idx), key2=1)\n    table1 = table1.select(idx1=table1.idx)\n    table2 = tr.key_by(new_key=hl.if_else((tr.idx == 4) | (tr.idx == 6), hl.missing(hl.tint32), tr.idx), key2=1)\n    table2 = table2.select(idx2=table2.idx)\n    left_join = table1.join(table2, 'left')\n    right_join = table1.join(table2, 'right')\n    inner_join = table1.join(table2, 'inner')\n    outer_join = table1.join(table2, 'outer')\n\n    def row(new_key, idx1, idx2):\n        return hl.Struct(new_key=new_key, key2=1, idx1=idx1, idx2=idx2)\n    left_join_expected = [row(0, 0, 0), row(1, 1, 1), row(2, 2, 2), row(4, 4, None), row(6, 6, None), row(None, 3, None), row(None, 5, None)]\n    right_join_expected = [row(0, 0, 0), row(1, 1, 1), row(2, 2, 2), row(3, None, 3), row(5, None, 5), row(None, None, 4), row(None, None, 6)]\n    inner_join_expected = [row(0, 0, 0), row(1, 1, 1), row(2, 2, 2)]\n    outer_join_expected = [row(0, 0, 0), row(1, 1, 1), row(2, 2, 2), row(3, None, 3), row(4, 4, None), row(5, None, 5), row(6, 6, None), row(None, 3, None), row(None, 5, None), row(None, None, 4), row(None, None, 6)]\n    self.assertEqual(left_join.collect(), left_join_expected)\n    self.assertEqual(right_join.collect(), right_join_expected)\n    self.assertEqual(inner_join.collect(), inner_join_expected)\n    self.assertEqual(outer_join.collect(), outer_join_expected)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_null_joins_2",
+    "line": 1334,
+    "body": "def test_null_joins_2(self):\n    tr = hl.utils.range_table(7, 1)\n    table1 = tr.key_by(new_key=hl.if_else((tr.idx == 3) | (tr.idx == 5), hl.missing(hl.tint32), tr.idx), key2=tr.idx)\n    table1 = table1.select(idx1=table1.idx)\n    table2 = tr.key_by(new_key=hl.if_else((tr.idx == 4) | (tr.idx == 6), hl.missing(hl.tint32), tr.idx), key2=tr.idx)\n    table2 = table2.select(idx2=table2.idx)\n    left_join = table1.join(table2, 'left')\n    right_join = table1.join(table2, 'right')\n    inner_join = table1.join(table2, 'inner')\n    outer_join = table1.join(table2, 'outer')\n\n    def row(new_key, key2, idx1, idx2):\n        return hl.Struct(new_key=new_key, key2=key2, idx1=idx1, idx2=idx2)\n    left_join_expected = [row(0, 0, 0, 0), row(1, 1, 1, 1), row(2, 2, 2, 2), row(4, 4, 4, None), row(6, 6, 6, None), row(None, 3, 3, None), row(None, 5, 5, None)]\n    right_join_expected = [row(0, 0, 0, 0), row(1, 1, 1, 1), row(2, 2, 2, 2), row(3, 3, None, 3), row(5, 5, None, 5), row(None, 4, None, 4), row(None, 6, None, 6)]\n    inner_join_expected = [row(0, 0, 0, 0), row(1, 1, 1, 1), row(2, 2, 2, 2)]\n\n    def check_outer(actual):\n        assert actual[:7] == [row(0, 0, 0, 0), row(1, 1, 1, 1), row(2, 2, 2, 2), row(3, 3, None, 3), row(4, 4, 4, None), row(5, 5, None, 5), row(6, 6, 6, None)]\n        assert set(actual[7:]) == {row(None, 3, 3, None), row(None, 4, None, 4), row(None, 5, 5, None), row(None, 6, None, 6)}\n    self.assertEqual(left_join.collect(), left_join_expected)\n    self.assertEqual(right_join.collect(), right_join_expected)\n    self.assertEqual(inner_join.collect(), inner_join_expected)\n    check_outer(outer_join.collect())"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_joins_one_null",
+    "line": 1397,
+    "body": "def test_joins_one_null(self):\n    tr = hl.utils.range_table(7, 1)\n    table1 = tr.key_by(new_key=tr.idx)\n    table1 = table1.select(idx1=table1.idx)\n    table2 = tr.key_by(new_key=hl.if_else((tr.idx == 4) | (tr.idx == 6), hl.missing(hl.tint32), tr.idx))\n    table2 = table2.select(idx2=table2.idx)\n    left_join = table1.join(table2, 'left')\n    right_join = table1.join(table2, 'right')\n    inner_join = table1.join(table2, 'inner')\n    outer_join = table1.join(table2, 'outer')\n\n    def row(new_key, idx1, idx2):\n        return hl.Struct(new_key=new_key, idx1=idx1, idx2=idx2)\n    left_join_expected = [row(0, 0, 0), row(1, 1, 1), row(2, 2, 2), row(3, 3, 3), row(4, 4, None), row(5, 5, 5), row(6, 6, None)]\n    right_join_expected = [row(0, 0, 0), row(1, 1, 1), row(2, 2, 2), row(3, 3, 3), row(5, 5, 5), row(None, None, 4), row(None, None, 6)]\n    inner_join_expected = [row(0, 0, 0), row(1, 1, 1), row(2, 2, 2), row(3, 3, 3), row(5, 5, 5)]\n    outer_join_expected = [row(0, 0, 0), row(1, 1, 1), row(2, 2, 2), row(3, 3, 3), row(4, 4, None), row(5, 5, 5), row(6, 6, None), row(None, None, 4), row(None, None, 6)]\n    self.assertEqual(left_join.collect(), left_join_expected)\n    self.assertEqual(right_join.collect(), right_join_expected)\n    self.assertEqual(inner_join.collect(), inner_join_expected)\n    self.assertEqual(outer_join.collect(), outer_join_expected)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_ht1_is_what_we_expect",
+    "line": 1461,
+    "body": "def test_join_types_ht1_is_what_we_expect(self):\n    ht1, _ = self.get_test_join_types_hts()\n    assert ht1.idx.collect() == [1, *[2] * 2, *[3] * 3]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_ht2_is_what_we_expect",
+    "line": 1465,
+    "body": "def test_join_types_ht2_is_what_we_expect(self):\n    _, ht2 = self.get_test_join_types_hts()\n    assert ht2.idx.collect() == [*[2] * 2, *[3] * 3, *[4] * 4]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_left",
+    "line": 1469,
+    "body": "def test_join_types_left(self):\n    ht1, ht2 = self.get_test_join_types_hts()\n    left = ht1.join(ht2, 'left')\n    assert left.idx.collect() == [1, *[2] * 4, *[3] * 9]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_right",
+    "line": 1474,
+    "body": "def test_join_types_right(self):\n    ht1, ht2 = self.get_test_join_types_hts()\n    right = ht1.join(ht2, 'right')\n    assert right.idx.collect() == [*[2] * 4, *[3] * 9, *[4] * 4]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_inner",
+    "line": 1479,
+    "body": "def test_join_types_inner(self):\n    ht1, ht2 = self.get_test_join_types_hts()\n    inner = ht1.join(ht2, 'inner')\n    assert inner.idx.collect() == [*[2] * 4, *[3] * 9]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_outer",
+    "line": 1484,
+    "body": "def test_join_types_outer(self):\n    ht1, ht2 = self.get_test_join_types_hts()\n    outer = ht1.join(ht2, 'outer')\n    assert outer.idx.collect() == [1, *[2] * 4, *[3] * 9, *[4] * 4]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_partitioning_rewrite",
+    "line": 1489,
+    "body": "def test_partitioning_rewrite(self):\n    ht = hl.utils.range_table(10, 3)\n    ht1 = ht.annotate(x=hl.rand_unif(0, 1))\n    self.assertEqual(ht1.x.collect()[:5], ht1.head(5).x.collect())\n    self.assertEqual(ht1.x.collect()[-5:], ht1.tail(5).x.collect())"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_flatten",
+    "line": 1495,
+    "body": "def test_flatten(self):\n    t1 = hl.utils.range_table(10)\n    t1 = t1.key_by(x=hl.struct(a=t1.idx, b=0)).flatten()\n    t2 = hl.utils.range_table(10).key_by()\n    t2 = t2.annotate(**{'x.a': t2.idx, 'x.b': 0})\n    self.assertTrue(t1._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expand_types",
+    "line": 1502,
+    "body": "def test_expand_types(self):\n    t1 = hl.utils.range_table(10)\n    t1 = t1.key_by(x=hl.locus('1', t1.idx + 1)).expand_types()\n    t2 = hl.utils.range_table(10).key_by()\n    t2 = t2.annotate(x=hl.struct(contig='1', position=t2.idx + 1))\n    self.assertTrue(t1._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expand_types_ordering",
+    "line": 1509,
+    "body": "def test_expand_types_ordering(self):\n    ht = hl.utils.range_table(10)\n    ht = ht.key_by(x=9 - ht.idx)\n    assert ht.expand_types().x.collect() == list(range(10))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expand_types_on_all_types",
+    "line": 1514,
+    "body": "def test_expand_types_on_all_types(self):\n    t = create_all_values_table()\n    t.expand_types()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_mangling",
+    "line": 1518,
+    "body": "def test_join_mangling(self):\n    t1 = hl.utils.range_table(10).annotate_globals(glob1=5).annotate(row1=5)\n    j = t1.join(t1, 'inner')\n    assert j.row.dtype == hl.tstruct(idx=hl.tint32, row1=hl.tint32, row1_1=hl.tint32)\n    assert j.globals.dtype == hl.tstruct(glob1=hl.tint32, glob1_1=hl.tint32)\n    j._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_with_filter_intervals",
+    "line": 1525,
+    "body": "def test_join_with_filter_intervals(self):\n    ht = hl.utils.range_table(100, 5)\n    ht = ht.key_by(idx2=ht.idx // 2)\n    f1 = new_temp_file(extension='ht')\n    f2 = new_temp_file(extension='ht')\n    ht.write(f1)\n    ht.write(f2)\n    ht1 = hl.read_table(f1)\n    ht2 = hl.read_table(f2)\n    ht3 = ht1.join(ht2)\n    assert ht3.filter(ht3.idx2 == 10).count() == 4"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_key_by_aggregate_rewriting",
+    "line": 1541,
+    "body": "def test_key_by_aggregate_rewriting(self):\n    ht = hl.utils.range_table(10)\n    ht = ht.group_by(x=ht.idx % 5).aggregate(aggr=hl.agg.count())\n    assert ht.count() == 5"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_field_method_assignment",
+    "line": 1546,
+    "body": "def test_field_method_assignment(self):\n    ht = hl.utils.range_table(10)\n    ht = ht.annotate(sample=1)\n    ht = ht.annotate(_row=2)\n    assert ht['sample'].dtype == hl.tint32\n    assert ht['_row'].dtype == hl.tint32"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_refs_with_process_joins",
+    "line": 1553,
+    "body": "def test_refs_with_process_joins(self):\n    ht = hl.utils.range_table(10).annotate(foo=5)\n    ht.annotate(a_join=ht[ht.key], a_literal=hl.literal(['a']), the_row_failure=hl.if_else(True, ht.row, hl.missing(ht.row.dtype)), the_global_failure=hl.if_else(True, ht.globals, hl.missing(ht.globals.dtype))).count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate_localize_false",
+    "line": 1562,
+    "body": "def test_aggregate_localize_false(self):\n    ht = hl.utils.range_table(10)\n    ht = ht.annotate(y=ht.idx + ht.aggregate(hl.agg.max(ht.idx), _localize=False))\n    assert ht.y.collect() == [x + 9 for x in range(10)]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_collect_localize_false",
+    "line": 1567,
+    "body": "def test_collect_localize_false(self):\n    ht = hl.utils.range_table(10)\n    assert hl.eval(ht.collect(_localize=False)) == ht.collect()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_take_localize_false",
+    "line": 1571,
+    "body": "def test_take_localize_false(self):\n    ht = hl.utils.range_table(10)\n    assert hl.eval(ht.take(3, _localize=False)) == ht.take(3)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expr_collect_localize_false",
+    "line": 1575,
+    "body": "def test_expr_collect_localize_false(self):\n    ht = hl.utils.range_table(10)\n    assert hl.eval(ht.idx.collect(_localize=False)) == ht.idx.collect()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expr_collect",
+    "line": 1579,
+    "body": "def test_expr_collect(self):\n    t = hl.utils.range_table(3)\n    globe = 'the globe!'\n    keys = ['Bob', 'Alice', 'David']\n    fields = [1, 0, 3]\n    t = t.annotate_globals(globe=globe)\n    t = t.annotate(k=hl.array(keys)[t.idx], field=hl.array(fields)[t.idx])\n    t = t.key_by(t.k)\n    rows = [hl.Struct(k=k, field=field) for k, field in zip(keys, fields)]\n    ordered_rows = sorted(rows, key=lambda x: x.k)\n    assert t.globe.collect() == [globe]\n    assert t.row.collect() == sorted([hl.Struct(idx=i, **r) for i, r in enumerate(rows)], key=lambda x: x.k)\n    assert t.key.collect() == [hl.Struct(k=r.k) for r in ordered_rows]\n    assert t.k.collect() == [r.k for r in ordered_rows]\n    assert (t.k + '1').collect() == [r.k + '1' for r in ordered_rows]\n    assert (t.field + 1).collect() == [r.field + 1 for r in ordered_rows]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expr_take_localize_false",
+    "line": 1602,
+    "body": "def test_expr_take_localize_false(self):\n    ht = hl.utils.range_table(10)\n    assert hl.eval(ht.idx.take(3, _localize=False)) == ht.idx.take(3)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_empty_show",
+    "line": 1606,
+    "body": "def test_empty_show(self):\n    hl.utils.range_table(1).filter(False).show()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_no_row_fields_show",
+    "line": 1609,
+    "body": "def test_no_row_fields_show(self):\n    hl.utils.range_table(5).key_by().select().show()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_equal",
+    "line": 1612,
+    "body": "def test_same_equal(self):\n    t1 = hl.utils.range_table(1)\n    self.assertTrue(t1._same(t1))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_within_tolerance",
+    "line": 1616,
+    "body": "def test_same_within_tolerance(self):\n    t = hl.utils.range_table(1)\n    t1 = t.annotate(x=1.0)\n    t2 = t.annotate(x=1.0 + 1e-07)\n    self.assertTrue(t1._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_different_type",
+    "line": 1622,
+    "body": "def test_same_different_type(self):\n    t1 = hl.utils.range_table(1)\n    t2 = t1.annotate_globals(x=7)\n    self.assertFalse(t1._same(t2))\n    t3 = t1.annotate(x=7)\n    self.assertFalse(t1._same(t3))\n    t4 = t1.key_by()\n    self.assertFalse(t1._same(t4))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_different_global",
+    "line": 1634,
+    "body": "def test_same_different_global(self):\n    t1 = hl.utils.range_table(1).annotate_globals(x=7)\n    t2 = t1.annotate_globals(x=8)\n    self.assertFalse(t1._same(t2))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_different_rows",
+    "line": 1639,
+    "body": "def test_same_different_rows(self):\n    t1 = hl.utils.range_table(2).annotate(x=7)\n    t2 = t1.annotate(x=8)\n    self.assertFalse(t1._same(t2))\n    t3 = t1.filter(t1.idx == 0)\n    self.assertFalse(t1._same(t3))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_rvd_key_write",
+    "line": 1648,
+    "body": "def test_rvd_key_write(self):\n    with hl.TemporaryDirectory(suffix='.ht', ensure_exists=False) as tempfile:\n        ht1 = hl.utils.range_table(1).key_by(foo='a', bar='b')\n        ht1.write(tempfile)\n        ht1 = hl.read_table(tempfile)\n        ht2 = hl.utils.range_table(1).annotate(foo='a')\n        assert ht2.annotate(x=ht1.key_by('foo')[ht2.foo])._force_count() == 1"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_show_long_field_names",
+    "line": 1657,
+    "body": "def test_show_long_field_names(self):\n    hl.utils.range_table(1).annotate(**{'a' * 256: 5}).show()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_show__various_types",
+    "line": 1660,
+    "body": "def test_show__various_types(self):\n    ht = hl.utils.range_table(1)\n    ht = ht.annotate(x1=[1], x2=[hl.struct(y=[1])], x3={1}, x4={1: 'foo'}, x5={hl.struct(foo=5): 'bar'}, x6=hl.tuple(()), x7=hl.tuple(('3',)), x8=hl.tuple(('3', 3)), x9=4.2, x10=hl.dict({'hello': 3, 'bar': 5}), x11=(True, False))\n    result = ht.show(handler=str)\n    assert result == '+-------+--------------+--------------------------------+------------+\\n|   idx | x1           | x2                             | x3         |\\n+-------+--------------+--------------------------------+------------+\\n| int32 | array<int32> | array<struct{y: array<int32>}> | set<int32> |\\n+-------+--------------+--------------------------------+------------+\\n|     0 | [1]          | [([1])]                        | {1}        |\\n+-------+--------------+--------------------------------+------------+\\n\\n+------------------+-------------------------------+---------+------------+\\n| x4               | x5                            | x6      | x7         |\\n+------------------+-------------------------------+---------+------------+\\n| dict<int32, str> | dict<struct{foo: int32}, str> | tuple() | tuple(str) |\\n+------------------+-------------------------------+---------+------------+\\n| {1:\"foo\"}        | {(5):\"bar\"}                   | ()      | (\"3\")      |\\n+------------------+-------------------------------+---------+------------+\\n\\n+-------------------+----------+---------------------+-------------------+\\n| x8                |       x9 | x10                 | x11               |\\n+-------------------+----------+---------------------+-------------------+\\n| tuple(str, int32) |  float64 | dict<str, int32>    | tuple(bool, bool) |\\n+-------------------+----------+---------------------+-------------------+\\n| (\"3\",3)           | 4.20e+00 | {\"bar\":5,\"hello\":3} | (True,False)      |\\n+-------------------+----------+---------------------+-------------------+\\n'"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_import_filter_replace",
+    "line": 1704,
+    "body": "def test_import_filter_replace(self):\n\n    def assert_filter_equals(filter, find_replace, to):\n        assert hl.import_table(resource('filter_replace.txt'), filter=filter, find_replace=find_replace)['HEADER1'].collect() == to\n    assert_filter_equals('Foo', None, ['(Baz),(Qux)('])\n    assert_filter_equals(None, (',', ''), ['(Foo(Bar))', '(Baz)(Qux)('])\n    assert_filter_equals(None, ('\\\\((\\\\w+)\\\\)', '$1'), ['(Foo,Bar)', 'Baz,Qux('])"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_import_multiple_missing",
+    "line": 1717,
+    "body": "def test_import_multiple_missing(self):\n    ht = hl.import_table(resource('global_list.txt'), missing=['gene1', 'gene2'], no_header=True)\n    assert ht.f0.collect() == [None, None, 'gene5', 'gene4', 'gene3']"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_unicode_ordering",
+    "line": 1722,
+    "body": "def test_unicode_ordering(self):\n    a = hl.literal(['\u00e9', 'e'])\n    ht = hl.utils.range_table(1, 1)\n    ht = ht.annotate(fd=hl.sorted(a))\n    assert ht.fd.collect()[0] == ['e', '\u00e9']"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_physical_key_truncation",
+    "line": 1728,
+    "body": "def test_physical_key_truncation(self):\n    path = new_temp_file(extension='ht')\n    hl.import_vcf(resource('sample.vcf')).rows().key_by('locus').write(path)\n    hl.read_table(path).select()._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_repartition_empty_key",
+    "line": 1734,
+    "body": "@test_timeout(batch=5 * 60)\ndef test_repartition_empty_key(self):\n    data = [{'x': i} for i in range(1000)]\n    ht = hl.Table.parallelize(data, hl.tstruct(x=hl.tint32), key=None, n_partitions=11)\n    assert ht.naive_coalesce(4)._same(ht)\n    assert ht.repartition(3, shuffle=False)._same(ht)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_read_with_partitions",
+    "line": 1740,
+    "body": "def test_read_with_partitions(self):\n    tmp = new_temp_file()\n    ht = hl.utils.range_table(444)\n    ht.write(tmp)\n    ht2 = hl.read_table(tmp, _n_partitions=50)\n    assert ht2.idx.collect() == list(range(444))\n    assert ht2.n_partitions() == 50"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_path_collision_error",
+    "line": 1748,
+    "body": "def test_path_collision_error(self):\n    path = new_temp_file(extension='ht')\n    ht = hl.utils.range_table(10)\n    ht.write(path)\n    ht = hl.read_table(path)\n    with pytest.raises(hl.utils.FatalError) as exc:\n        ht.write(path)\n    assert 'both an input and output source' in str(exc.value)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_large_number_of_fields",
+    "line": 1758,
+    "body": "def test_large_number_of_fields():\n    ht = hl.utils.range_table(100)\n    ht = ht.annotate(**{str(k): k for k in range(1000)})\n    with hl.TemporaryDirectory(ensure_exists=False) as f:\n        assert_time(lambda: ht.count(), 5)\n        assert_time(lambda: ht.write(str(f)), 5)\n        ht = assert_time(lambda: hl.read_table(str(f)), 5)\n        assert_time(lambda: ht.count(), 5)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_import_many_fields",
+    "line": 1768,
+    "body": "def test_import_many_fields():\n    assert_time(lambda: hl.import_table(resource('many_cols.txt')), 5)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_segfault",
+    "line": 1772,
+    "body": "def test_segfault():\n    t = hl.utils.range_table(1)\n    t2 = hl.utils.range_table(3)\n    t = t.annotate(foo=[0])\n    t2 = t2.annotate(foo=[0])\n    joined = t.key_by('foo').join(t2.key_by('foo'))\n    joined = joined.filter(hl.is_missing(joined.idx))\n    assert joined.collect() == []"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_maybe_flexindex_table_by_expr_direct_match",
+    "line": 1782,
+    "body": "def test_maybe_flexindex_table_by_expr_direct_match():\n    t1 = hl.utils.range_table(1)\n    t2 = hl.utils.range_table(1)\n    match_key = t1._maybe_flexindex_table_by_expr(t2.key)\n    t2.annotate(foo=match_key)._force_count()\n    match_idx = t1._maybe_flexindex_table_by_expr(t2.idx)\n    t2.annotate(foo=match_idx)._force_count()\n    mt1 = hl.utils.range_matrix_table(1, 1)\n    match_row_key = t1._maybe_flexindex_table_by_expr(mt1.row_key)\n    mt1.annotate_rows(match=match_row_key)._force_count_rows()\n    match_row_idx = t1._maybe_flexindex_table_by_expr(mt1.row_idx)\n    mt1.annotate_rows(match=match_row_idx)._force_count_rows()\n    assert t1._maybe_flexindex_table_by_expr(t2.idx * 3.0) is None\n    assert t1._maybe_flexindex_table_by_expr(hl.str(t2.key)) is None\n    assert t1._maybe_flexindex_table_by_expr(hl.str(mt1.row_key)) is None"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_maybe_flexindex_table_by_expr_prefix_match",
+    "line": 1801,
+    "body": "def test_maybe_flexindex_table_by_expr_prefix_match():\n    t1 = hl.utils.range_table(1)\n    t2 = hl.utils.range_table(1)\n    t2 = t2.key_by(idx=t2.idx, idx2=t2.idx)\n    match_key = t1._maybe_flexindex_table_by_expr(t2.key)\n    t2.annotate(foo=match_key)._force_count()\n    match_expr = t1._maybe_flexindex_table_by_expr((t2.idx, t2.idx2))\n    t2.annotate(foo=match_expr)._force_count()\n    mt1 = hl.utils.range_matrix_table(1, 1)\n    mt1 = mt1.key_rows_by(row_idx=mt1.row_idx, str_row_idx=hl.str(mt1.row_idx))\n    match_row_key = t1._maybe_flexindex_table_by_expr(mt1.row_key)\n    mt1.annotate_rows(match=match_row_key)._force_count_rows()\n    match_row_expr = t1._maybe_flexindex_table_by_expr((mt1.row_idx, hl.str(mt1.row_idx)))\n    mt1.annotate_rows(match=match_row_expr)._force_count_rows()\n    assert t1._maybe_flexindex_table_by_expr((hl.str(mt1.row_idx), mt1.row_idx)) is None"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_maybe_flexindex_table_by_expr_direct_interval_match",
+    "line": 1820,
+    "body": "def test_maybe_flexindex_table_by_expr_direct_interval_match():\n    t1 = hl.utils.range_table(1)\n    t1 = t1.key_by(interval=hl.interval(t1.idx, t1.idx + 1))\n    t2 = hl.utils.range_table(1)\n    match_key = t1._maybe_flexindex_table_by_expr(t2.key)\n    t2.annotate(foo=match_key)._force_count()\n    match_expr = t1._maybe_flexindex_table_by_expr(t2.idx)\n    t2.annotate(foo=match_expr)._force_count()\n    mt1 = hl.utils.range_matrix_table(1, 1)\n    match_row_key = t1._maybe_flexindex_table_by_expr(mt1.row_key)\n    mt1.annotate_rows(match=match_row_key)._force_count_rows()\n    match_row_idx = t1._maybe_flexindex_table_by_expr(mt1.row_idx)\n    mt1.annotate_rows(match=match_row_idx)._force_count_rows()\n    assert t1._maybe_flexindex_table_by_expr(t2.idx * 3.0) is None\n    assert t1._maybe_flexindex_table_by_expr(hl.str(t2.key)) is None\n    assert t1._maybe_flexindex_table_by_expr(hl.str(mt1.row_key)) is None"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_maybe_flexindex_table_by_expr_prefix_interval_match",
+    "line": 1840,
+    "body": "def test_maybe_flexindex_table_by_expr_prefix_interval_match():\n    t1 = hl.utils.range_table(1)\n    t1 = t1.key_by(interval=hl.interval(t1.idx, t1.idx + 1))\n    t2 = hl.utils.range_table(1)\n    t2 = t2.key_by(idx=t2.idx, idx2=t2.idx)\n    match_key = t1._maybe_flexindex_table_by_expr(t2.key)\n    t2.annotate(foo=match_key)._force_count()\n    match_expr = t1._maybe_flexindex_table_by_expr((t2.idx, t2.idx2))\n    t2.annotate(foo=match_expr)._force_count()\n    mt1 = hl.utils.range_matrix_table(1, 1)\n    mt1 = mt1.key_rows_by(row_idx=mt1.row_idx, str_row_idx=hl.str(mt1.row_idx))\n    match_row_key = t1._maybe_flexindex_table_by_expr(mt1.row_key)\n    mt1.annotate_rows(match=match_row_key)._force_count_rows()\n    match_row_expr = t1._maybe_flexindex_table_by_expr((mt1.row_idx, hl.str(mt1.row_idx)))\n    mt1.annotate_rows(match=match_row_expr)._force_count_rows()\n    assert t1._maybe_flexindex_table_by_expr((hl.str(mt1.row_idx), mt1.row_idx)) is None"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_can_process_wide_tables",
+    "line": 1862,
+    "body": "@pytest.mark.parametrize('width', [256, 512, 1024, 2048, pytest.param(3072, marks=pytest.mark.xfail(strict=True))])\n@test_timeout(6 * 60)\ndef test_can_process_wide_tables(width):\n    path = resource(f'width_scale_tests/{width}.tsv')\n    ht = hl.import_table(path, impute=False)\n    out_path = new_temp_file(extension='ht')\n    ht.write(out_path)\n    ht = hl.read_table(out_path)\n    ht.annotate(another_field=5)._force_count()\n    ht.annotate_globals(g=ht.collect(_localize=False))._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_join_with_key_prefix",
+    "line": 1903,
+    "body": "@test_timeout(batch=6 * 60)\ndef test_join_with_key_prefix():\n    t = hl.utils.range_table(20, 2)\n    t = t.annotate(pk=1)\n    t = t.key_by('pk', 'idx')\n    t2 = hl.utils.range_table(20, 2)\n    t2 = t2.annotate(foo=t2.idx)\n    t = t.annotate(foo=t2[t.pk].foo)\n    assert t.aggregate(hl.agg.all(t.foo == 1))\n    assert t.n_partitions() == 2"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_join_distinct_preserves_count",
+    "line": 1914,
+    "body": "def test_join_distinct_preserves_count():\n    left_pos = [1, 2, 4, 4, 5, 5, 9, 13, 13, 14, 15]\n    right_pos = [1, 1, 1, 3, 4, 4, 6, 6, 8, 9, 13, 15]\n    left_table = hl.Table.parallelize([hl.struct(i=i) for i in left_pos], key='i')\n    right_table = hl.Table.parallelize([hl.struct(i=i) for i in right_pos], key='i')\n    joined = left_table.annotate(r=right_table.index(left_table.i))\n    n_defined, keys = joined.aggregate((hl.agg.count_where(hl.is_defined(joined.r)), hl.agg.collect(joined.i)))\n    assert n_defined == 7\n    assert keys == left_pos\n    right_table_2 = hl.utils.range_table(1).filter(False)\n    joined_2 = left_table.annotate(r=right_table_2.index(left_table.i))\n    n_defined_2, keys_2 = joined_2.aggregate((hl.agg.count_where(hl.is_defined(joined_2.r)), hl.agg.collect(joined_2.i)))\n    assert n_defined_2 == 0\n    assert keys_2 == left_pos"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_write_table_containing_ndarray",
+    "line": 1934,
+    "body": "def test_write_table_containing_ndarray():\n    t = hl.utils.range_table(5)\n    t = t.annotate(n=hl.nd.arange(t.idx))\n    f = new_temp_file(extension='ht')\n    t.write(f)\n    t2 = hl.read_table(f)\n    assert t._same(t2)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_group_within_partitions",
+    "line": 1944,
+    "body": "@test_timeout(batch=6 * 60)\ndef test_group_within_partitions():\n    t = hl.utils.range_table(10).repartition(2)\n    t = t.annotate(sq=t.idx ** 2)\n    grouped1_collected = t._group_within_partitions('grouped_fields', 1).collect()\n    grouped2_collected = t._group_within_partitions('grouped_fields', 2).collect()\n    grouped3_collected = t._group_within_partitions('grouped_fields', 3).collect()\n    grouped5_collected = t._group_within_partitions('grouped_fields', 5).collect()\n    grouped6_collected = t._group_within_partitions('grouped_fields', 6).collect()\n    assert len(grouped1_collected) == 10\n    assert len(grouped2_collected) == 6\n    assert len(grouped3_collected) == 4\n    assert len(grouped5_collected) == 2\n    assert grouped5_collected == grouped6_collected\n    assert grouped3_collected == [hl.Struct(idx=0, grouped_fields=[hl.Struct(idx=0, sq=0.0), hl.Struct(idx=1, sq=1.0), hl.Struct(idx=2, sq=4.0)]), hl.Struct(idx=3, grouped_fields=[hl.Struct(idx=3, sq=9.0), hl.Struct(idx=4, sq=16.0)]), hl.Struct(idx=5, grouped_fields=[hl.Struct(idx=5, sq=25.0), hl.Struct(idx=6, sq=36.0), hl.Struct(idx=7, sq=49.0)]), hl.Struct(idx=8, grouped_fields=[hl.Struct(idx=8, sq=64.0), hl.Struct(idx=9, sq=81.0)])]\n    ht = hl.utils.range_table(100).naive_coalesce(10)\n    filter_then_group = ht.filter(ht.idx % 2 == 0)._group_within_partitions('grouped_fields', 5).collect()\n    assert filter_then_group[0] == hl.Struct(idx=0, grouped_fields=[hl.Struct(idx=0), hl.Struct(idx=2), hl.Struct(idx=4), hl.Struct(idx=6), hl.Struct(idx=8)])\n    assert 'foo' in t._group_within_partitions('foo', 1).collect()[0]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_group_within_partitions_after_explode",
+    "line": 1979,
+    "body": "def test_group_within_partitions_after_explode():\n    t = hl.utils.range_table(10).repartition(2)\n    t = t.annotate(arr=hl.range(0, 20))\n    t = t.explode(t.arr)\n    t = t._group_within_partitions('grouped_fields', 10)\n    assert t._force_count() == 20"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_group_within_partitions_after_import_vcf",
+    "line": 1987,
+    "body": "def test_group_within_partitions_after_import_vcf():\n    gt_mt = hl.import_vcf(resource('small-gt.vcf'))\n    ht = gt_mt.rows()\n    ht = ht._group_within_partitions('grouped_fields', 16)\n    ht.collect()\n    assert True"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_range_annotate_range",
+    "line": 1995,
+    "body": "def test_range_annotate_range():\n    ht1 = hl.utils.range_table(10)\n    ht2 = hl.utils.range_table(5).annotate(x=1)\n    ht1.annotate(x=ht2[ht1.idx].x)._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_read_write_all_types",
+    "line": 2003,
+    "body": "@test_timeout(batch=5 * 60)\ndef test_read_write_all_types():\n    ht = create_all_values_table()\n    tmp_file = new_temp_file()\n    ht.write(tmp_file)\n    assert hl.read_table(tmp_file)._same(ht)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_map_partitions_flatmap",
+    "line": 2010,
+    "body": "def test_map_partitions_flatmap():\n    ht = hl.utils.range_table(2)\n    ht2 = ht._map_partitions(lambda rows: rows.flatmap(lambda r: hl._stream_range(2).map(lambda x: r.annotate(x=x))))\n    assert ht2.collect() == [hl.Struct(idx=0, x=0), hl.Struct(idx=0, x=1), hl.Struct(idx=1, x=0), hl.Struct(idx=1, x=1)]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_map_partitions_errors",
+    "line": 2016,
+    "body": "def test_map_partitions_errors():\n    ht = hl.utils.range_table(2)\n    with pytest.raises(TypeError, match='expected return type expression of type stream<struct>'):\n        ht._map_partitions(lambda rows: 5)\n    with pytest.raises(ValueError, match='must preserve key fields'):\n        ht._map_partitions(lambda rows: rows.map(lambda r: r.drop('idx')))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_map_partitions_indexed",
+    "line": 2024,
+    "body": "def test_map_partitions_indexed():\n    tmp_file = new_temp_file()\n    hl.utils.range_table(100, 8).write(tmp_file)\n    ht = hl.read_table(tmp_file, _intervals=[hl.Interval(start=hl.Struct(idx=11), end=hl.Struct(idx=55))])\n    ht = ht.key_by()._map_partitions(lambda partition: hl.array([hl.struct(foo=partition.to_array())])._to_stream())\n    assert [inner.idx for outer in ht.foo.collect() for inner in outer] == list(range(11, 55))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_keys_before_scans",
+    "line": 2032,
+    "body": "def test_keys_before_scans():\n    ht = hl.utils.range_table(6)\n    ht = ht.annotate(rev_idx=-ht.idx)\n    ht = ht.key_by(ht.rev_idx)\n    ht = ht.annotate(idx_scan=hl.scan.collect(ht.idx))\n    ht = ht.key_by(ht.idx)\n    assert ht.idx_scan.collect() == [[5, 4, 3, 2, 1], [5, 4, 3, 2], [5, 4, 3], [5, 4], [5], []]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_lowered_persist",
+    "line": 2045,
+    "body": "@qobtest\n@lower_only()\ndef test_lowered_persist():\n    ht = hl.utils.range_table(100, 10).persist()\n    assert ht.count() == 100\n    assert ht.filter(ht.idx == 55).count() == 1"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_lowered_shuffle",
+    "line": 2053,
+    "body": "@qobtest\n@lower_only()\ndef test_lowered_shuffle():\n    ht = hl.utils.range_table(100, 10)\n    ht = ht.order_by(-ht.idx)\n    assert ht.aggregate(hl.agg.take(ht.idx, 3)) == [99, 98, 97]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_read_partitions",
+    "line": 2059,
+    "body": "def test_read_partitions():\n    ht = hl.utils.range_table(100, 3)\n    path = new_temp_file()\n    ht.write(path)\n    assert hl.read_table(path, _n_partitions=10).n_partitions() == 10"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_read_partitions_with_missing_key",
+    "line": 2066,
+    "body": "def test_read_partitions_with_missing_key():\n    ht = hl.utils.range_table(100, 3).key_by(idx=hl.missing(hl.tint32))\n    path = new_temp_file()\n    ht.write(path)\n    assert hl.read_table(path, _n_partitions=10).n_partitions() == 1"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_empty_tree_aggregate",
+    "line": 2073,
+    "body": "def test_empty_tree_aggregate():\n    ht = hl.utils.range_table(100, 3)\n    path = new_temp_file()\n    ht = ht.checkpoint(path).filter(False)\n    assert ht.aggregate(hl.agg.counter(ht.idx)) == {}"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_interval_filter_partitions",
+    "line": 2081,
+    "body": "@qobtest\ndef test_interval_filter_partitions():\n    ht = hl.utils.range_table(100, 3)\n    path = new_temp_file()\n    ht.write(path)\n    intervals = [hl.Interval(hl.Struct(idx=5), hl.Struct(idx=10)), hl.Interval(hl.Struct(idx=12), hl.Struct(idx=13)), hl.Interval(hl.Struct(idx=15), hl.Struct(idx=17)), hl.Interval(hl.Struct(idx=19), hl.Struct(idx=20))]\n    assert hl.read_table(path, _intervals=intervals, _filter_intervals=True).n_partitions() == 1\n    intervals = [hl.Interval(hl.Struct(idx=5), hl.Struct(idx=10)), hl.Interval(hl.Struct(idx=12), hl.Struct(idx=13)), hl.Interval(hl.Struct(idx=15), hl.Struct(idx=17)), hl.Interval(hl.Struct(idx=45), hl.Struct(idx=50)), hl.Interval(hl.Struct(idx=52), hl.Struct(idx=53)), hl.Interval(hl.Struct(idx=55), hl.Struct(idx=57)), hl.Interval(hl.Struct(idx=75), hl.Struct(idx=80)), hl.Interval(hl.Struct(idx=82), hl.Struct(idx=83)), hl.Interval(hl.Struct(idx=85), hl.Struct(idx=87))]\n    assert hl.read_table(path, _intervals=intervals, _filter_intervals=True).n_partitions() == 3"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_grouped_flatmap_streams",
+    "line": 2108,
+    "body": "def test_grouped_flatmap_streams():\n    ht = hl.import_vcf(resource('sample.vcf')).rows()\n    ht = ht.annotate(x=hl.str(ht.locus))\n    ht = ht._map_partitions(lambda part: part.grouped(8).flatmap(lambda group: group._to_stream().map(lambda x: x.annotate(z=1))))\n    ht._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_head_and_tail",
+    "line": 2128,
+    "body": "@pytest.mark.parametrize('table_name,num_parts,n,truncator_name,counter_name', head_tail_test_ids)\ndef test_table_head_and_tail(table_name, num_parts, n, truncator_name, counter_name):\n    if table_name == 'rt':\n        table = hl.utils.range_table(10, n_partitions=num_parts)\n    elif table_name == 'par':\n        table = hl.Table.parallelize([hl.Struct(x=x) for x in range(10)], schema='struct{x: int32}', n_partitions=num_parts)\n    elif table_name == 'rtcache':\n        table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n    else:\n        assert table_name == 'chkpt'\n        table = hl.utils.range_table(10, n_partitions=num_parts).checkpoint(new_temp_file(extension='ht'))\n    truncator = getattr(hl.Table, truncator_name)\n    counter = getattr(hl.Table, counter_name)\n    assert counter(truncator(table, n)) == min(10, n)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas",
+    "line": 2146,
+    "body": "def test_to_pandas():\n    ht = hl.utils.range_table(3)\n    strs = ['foo', 'bar', 'baz']\n    ht = ht.annotate(s=hl.array(strs)[ht.idx], nested=hl.struct(foo=ht.idx, bar=hl.range(ht.idx)))\n    df_from_hail = ht.to_pandas(flatten=False)\n    python_data = {'idx': pd.Series([0, 1, 2], dtype='Int32'), 's': pd.Series(['foo', 'bar', 'baz'], dtype='string'), 'nested': pd.Series([hl.Struct(foo=0, bar=[]), hl.Struct(foo=1, bar=[0]), hl.Struct(foo=2, bar=[0, 1])], dtype=object)}\n    df_from_python = pd.DataFrame(python_data)\n    pd.testing.assert_frame_equal(df_from_hail, df_from_python)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_types_type_to_type",
+    "line": 2164,
+    "body": "def test_to_pandas_types_type_to_type():\n    ht = hl.utils.range_table(3)\n    ht = ht.annotate(s=hl.array(['foo', 'bar', 'baz'])[ht.idx], nested=hl.struct(foo=ht.idx, bar=hl.range(ht.idx)))\n    actual = dict(ht.to_pandas(types={hl.tint32: 'Int64'}).dtypes)\n    assert isinstance(actual['idx'], pd.Int64Dtype)\n    assert isinstance(actual['s'], pd.StringDtype)\n    assert isinstance(actual['nested.foo'], pd.Int64Dtype)\n    assert actual['nested.bar'] == np.dtype('O')"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_types_column_to_type",
+    "line": 2174,
+    "body": "def test_to_pandas_types_column_to_type():\n    ht = hl.utils.range_table(3)\n    ht = ht.annotate(s=hl.array(['foo', 'bar', 'baz'])[ht.idx], nested=hl.struct(foo=ht.idx, bar=hl.range(ht.idx)))\n    actual = dict(ht.to_pandas(types={'nested.foo': 'Int64'}).dtypes)\n    assert isinstance(actual['idx'], pd.Int32Dtype)\n    assert isinstance(actual['s'], pd.StringDtype)\n    assert isinstance(actual['nested.foo'], pd.Int64Dtype)\n    assert actual['nested.bar'] == np.dtype('O')"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_flatten",
+    "line": 2184,
+    "body": "def test_to_pandas_flatten():\n    ht = hl.utils.range_table(3)\n    strs = ['foo', 'bar', 'baz']\n    ht = ht.annotate(s=hl.array(strs)[ht.idx], nested=hl.struct(foo=ht.idx, bar=hl.range(ht.idx)))\n    df_from_hail = ht.to_pandas(flatten=True)\n    python_data = {'idx': pd.Series([0, 1, 2], dtype='Int32'), 's': pd.Series(['foo', 'bar', 'baz'], dtype='string'), 'nested.foo': pd.Series([0, 1, 2], dtype='Int32'), 'nested.bar': pd.Series([[], [0], [0, 1]], dtype=object)}\n    df_from_python = pd.DataFrame(python_data)\n    pd.testing.assert_frame_equal(df_from_hail, df_from_python)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_null_ints",
+    "line": 2201,
+    "body": "def test_to_pandas_null_ints():\n    ht = hl.utils.range_table(3)\n    ht = ht.annotate(missing_int32=hl.or_missing(ht.idx == 0, ht.idx), missing_int64=hl.or_missing(ht.idx == 0, hl.int64(ht.idx)), missing_float32=hl.or_missing(ht.idx == 0, hl.float32(ht.idx)), missing_float64=hl.or_missing(ht.idx == 0, hl.float64(ht.idx)), missing_bool=hl.or_missing(ht.idx == 0, True), missing_str=hl.or_missing(ht.idx == 0, 'foo'))\n    df_from_hail = ht.to_pandas()\n    python_data = {'idx': pd.Series([0, 1, 2], dtype='Int32'), 'missing_int32': pd.Series([0, None, None], dtype='Int32'), 'missing_int64': pd.Series([0, None, None], dtype='Int64'), 'missing_float32': pd.Series([0, None, None], dtype='Float32'), 'missing_float64': pd.Series([0, None, None], dtype='Float64'), 'missing_bool': pd.Series([True, None, None], dtype='boolean'), 'missing_str': pd.Series(['foo', None, None], dtype='string')}\n    df_from_python = pd.DataFrame(python_data)\n    pd.testing.assert_frame_equal(df_from_hail, df_from_python)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_nd_array",
+    "line": 2227,
+    "body": "def test_to_pandas_nd_array():\n    import numpy as np\n    ht = hl.utils.range_table(3)\n    ht = ht.annotate(nd=hl.nd.arange(3))\n    df_from_hail = ht.to_pandas()\n    python_data = {'idx': pd.Series([0, 1, 2], dtype='Int32'), 'nd': pd.Series([np.arange(3), np.arange(3), np.arange(3)])}\n    df_from_python = pd.DataFrame(python_data)\n    pd.testing.assert_frame_equal(df_from_hail, df_from_python)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_literal_of_numpy_int64",
+    "line": 2243,
+    "body": "def test_literal_of_numpy_int64():\n    t = hl.utils.range_table(10)\n    x = t.key_by(idx=hl.int64(t.idx)).to_pandas().idx.tolist()\n    hl.eval(hl.literal(x))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_literal_of_numpy_int32",
+    "line": 2249,
+    "body": "def test_literal_of_numpy_int32():\n    t = hl.utils.range_table(10)\n    x = t.key_by(idx=t.idx).to_pandas().idx.tolist()\n    hl.eval(hl.literal(x))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_literal_of_pandas_NA_and_numpy_int64",
+    "line": 2255,
+    "body": "def test_literal_of_pandas_NA_and_numpy_int64():\n    import hail as hl\n    t = hl.utils.range_table(10)\n    x = t.key_by(idx=hl.or_missing(t.idx == 5, hl.int64(t.idx))).to_pandas().idx.tolist()\n    hl.eval(hl.literal(x))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_literal_of_pandas_NA_and_numpy_int32",
+    "line": 2263,
+    "body": "def test_literal_of_pandas_NA_and_numpy_int32():\n    import hail as hl\n    t = hl.utils.range_table(10)\n    x = t.key_by(idx=hl.or_missing(t.idx == 5, t.idx)).to_pandas().idx.tolist()\n    hl.eval(hl.literal(x))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_write_many",
+    "line": 2272,
+    "body": "@test_timeout(batch=5 * 60)\ndef test_write_many():\n    t = hl.utils.range_table(5)\n    t = t.annotate(a=t.idx, b=t.idx * t.idx, c=hl.str(t.idx))\n    with hl.TemporaryDirectory(ensure_exists=False) as f:\n        t.write_many(f, fields=('a', 'b', 'c'))\n        assert hl.read_table(f + '/a').collect() == [hl.Struct(idx=0, a=0), hl.Struct(idx=1, a=1), hl.Struct(idx=2, a=2), hl.Struct(idx=3, a=3), hl.Struct(idx=4, a=4)]\n        assert hl.read_table(f + '/b').collect() == [hl.Struct(idx=0, b=0), hl.Struct(idx=1, b=1), hl.Struct(idx=2, b=4), hl.Struct(idx=3, b=9), hl.Struct(idx=4, b=16)]\n        assert hl.read_table(f + '/c').collect() == [hl.Struct(idx=0, c='0'), hl.Struct(idx=1, c='1'), hl.Struct(idx=2, c='2'), hl.Struct(idx=3, c='3'), hl.Struct(idx=4, c='4')]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_indexed_read_boundaries",
+    "line": 2304,
+    "body": "@pytest.mark.parametrize('branching_factor', [2, 3, 5, 7, 121])\ndef test_indexed_read_boundaries(branching_factor):\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n        t = hl.utils.range_table(1000, 4)\n        t = t.filter(t.idx % 5 != 0)\n        f = new_temp_file(extension='ht')\n        t.write(f)\n        t1 = hl.read_table(f, _intervals=[hl.Interval(start=140, end=145, includes_start=True, includes_end=True), hl.Interval(start=151, end=153, includes_start=False, includes_end=False)])\n        assert t1.idx.collect() == [141, 142, 143, 144, 152]"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_table",
+    "line": 2331,
+    "body": "def test_table_randomness_range_table():\n    t = hl.utils.range_table(10, 3)\n    assert_contains_node(t, ir.TableRange)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_matrix_rows_table",
+    "line": 2337,
+    "body": "def test_table_randomness_range_matrix_rows_table():\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n    t = mt.rows()\n    assert_contains_node(t, ir.MatrixRowsTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_join",
+    "line": 2344,
+    "body": "def test_table_randomness_join():\n    t1 = hl.utils.range_table(12, 3)\n    t1 = t1.key_by(k=t1.idx // 2 * 2)\n    t2 = hl.utils.range_table(8, 3)\n    t2 = t2.key_by(k=t2.idx // 2 * 3)\n    t = t1.join(t2, how='outer')\n    assert_contains_node(t, ir.TableJoin)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_left_join_right_distinct",
+    "line": 2354,
+    "body": "def test_table_randomness_left_join_right_distinct():\n    t1 = hl.utils.range_table(12, 3)\n    t1 = t1.key_by(k=t1.idx // 2 * 2)\n    t2 = hl.utils.range_table(4, 3)\n    t2 = t2.key_by(k=t2.idx * 3)\n    t = t1.annotate(x=t2[t1.k].idx)\n    assert_contains_node(t, ir.TableLeftJoinRightDistinct)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_interval_join",
+    "line": 2364,
+    "body": "def test_table_randomness_interval_join():\n    t1 = hl.utils.range_table(12, 3)\n    t2 = hl.utils.range_table(4, 3)\n    t2 = t2.key_by(k=hl.interval(t2.idx * 3, (t2.idx + 1) * 3))\n    t = t1.annotate(x=t2[t1.idx].idx)\n    assert_contains_node(t, ir.TableIntervalJoin)\n    assert_unique_uids(t)\n    t = t1.annotate(x=t2.index(t1.idx, all_matches=True).idx)\n    assert_contains_node(t, ir.TableIntervalJoin)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_union",
+    "line": 2376,
+    "body": "def test_table_randomness_union():\n    t1 = hl.utils.range_table(12, 3)\n    t2 = hl.utils.range_table(4, 3)\n    t2 = t2.key_by(idx=t2.idx * 3)\n    t = t1.union(t2)\n    assert_contains_node(t, ir.TableUnion)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_with_body_randomness",
+    "line": 2385,
+    "body": "def test_table_randomness_map_globals_with_body_randomness():\n    rt = hl.utils.range_table(5)\n    t1 = rt.annotate_globals(x=hl.rand_int64())\n    assert_contains_node(t1, ir.TableMapGlobals)\n    t1._force_count()\n    assert_unique_uids(t1)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_without_body_randomness",
+    "line": 2393,
+    "body": "def test_table_randomness_map_globals_without_body_randomness():\n    rt = hl.utils.range_table(5)\n    t2 = rt.annotate_globals(x=1)\n    assert_contains_node(t2, ir.TableMapGlobals)\n    assert_unique_uids(t2)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_explode",
+    "line": 2400,
+    "body": "def test_table_randomness_explode():\n    t = hl.utils.range_table(5)\n    t = t.annotate(s=hl.struct(a=hl.range(t.idx)))\n    t = t.explode(t.s.a)\n    assert_contains_node(t, ir.TableExplode)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by",
+    "line": 2408,
+    "body": "def test_table_randomness_key_by():\n    t = hl.utils.range_table(12, 3)\n    t = t.key_by(k=t.idx // 4)\n    assert_contains_node(t, ir.TableKeyBy)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_body_randomness",
+    "line": 2415,
+    "body": "def test_table_randomness_map_rows_with_body_randomness():\n    rt = hl.utils.range_table(12, 3)\n    t = rt.annotate(x=hl.rand_int64())\n    assert_contains_node(t, ir.TableMapRows)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_scan_randomness",
+    "line": 2423,
+    "body": "def test_table_randomness_map_rows_with_scan_randomness():\n    rt = hl.utils.range_table(12, 3)\n    t = rt.annotate(x=hl.scan.sum(hl.rand_int64()))\n    assert_contains_node(t, ir.TableMapRows)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_without_body_randomness",
+    "line": 2430,
+    "body": "def test_table_randomness_map_rows_without_body_randomness():\n    rt = hl.utils.range_table(12, 3)\n    t = rt.annotate(x=1)\n    assert_contains_node(t, ir.TableMapRows)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_partitions",
+    "line": 2437,
+    "body": "def test_table_randomness_map_partitions():\n    rt = hl.utils.range_table(10, 3)\n    t = rt.annotate(x=hl.rand_int64())\n    t = t._map_partitions(lambda part: part.map(lambda row: row.annotate(x=row.x / 2)))\n    assert_contains_node(t, ir.TableMapPartitions)\n    t._force_count()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_read",
+    "line": 2445,
+    "body": "def test_table_randomness_read():\n    rt = hl.utils.range_table(10, 3)\n    path = new_temp_file()\n    rt.write(path)\n    t = hl.read_table(path)\n    assert_contains_node(t, ir.TableRead)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_entries_table",
+    "line": 2454,
+    "body": "def test_table_randomness_matrix_entries_table():\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n    t = mt.entries()\n    assert_contains_node(t, ir.MatrixEntriesTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_with_cond_randomness",
+    "line": 2461,
+    "body": "def test_table_randomness_filter_with_cond_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.filter(hl.rand_int64() % 2 == 0)\n    assert_contains_node(t, ir.TableFilter)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_without_cond_randomness",
+    "line": 2469,
+    "body": "def test_table_randomness_filter_without_cond_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.filter(rt.idx < 100)\n    assert_contains_node(t, ir.TableFilter)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+    "line": 2476,
+    "body": "def test_table_randomness_key_by_and_aggregate_with_body_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.group_by(k=rt.idx % 5).aggregate(x=hl.agg.sum(rt.idx) + hl.rand_int64())\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+    "line": 2484,
+    "body": "def test_table_randomness_key_by_and_aggregate_with_agg_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.group_by(k=rt.idx % 5).aggregate(x=hl.agg.sum(hl.rand_int64()))\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+    "line": 2492,
+    "body": "def test_table_randomness_key_by_and_aggregate_without_body_randomness():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.group_by(k=rt.idx % 5).aggregate(x=hl.agg.sum(rt.idx))\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_aggregate_by_key",
+    "line": 2499,
+    "body": "def test_table_randomness_aggregate_by_key():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.key_by(k=rt.idx % 5)\n    t = t.collect_by_key()\n    assert_contains_node(t, ir.TableAggregateByKey)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_cols_table",
+    "line": 2507,
+    "body": "def test_table_randomness_matrix_cols_table():\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n    t = mt.cols()\n    assert_contains_node(t, ir.MatrixColsTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_with_body_randomness",
+    "line": 2514,
+    "body": "def test_table_randomness_parallelize_with_body_randomness():\n    t = hl.Table.parallelize(hl.array([1, 2, 3]).map(lambda x: hl.struct(x=x, r=hl.rand_int64())))\n    assert_contains_node(t, ir.TableParallelize)\n    t._force_count()\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_without_body_randomness",
+    "line": 2521,
+    "body": "def test_table_randomness_parallelize_without_body_randomness():\n    t = hl.Table.parallelize(hl.array([1, 2, 3]).map(lambda x: hl.struct(x=x)))\n    assert_contains_node(t, ir.TableParallelize)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_head",
+    "line": 2527,
+    "body": "def test_table_randomness_head():\n    t = hl.utils.range_table(20, 3)\n    t = t.head(10)\n    assert_contains_node(t, ir.TableHead)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_tail",
+    "line": 2534,
+    "body": "def test_table_randomness_tail():\n    t = hl.utils.range_table(20, 3)\n    t = t.tail(10)\n    assert_contains_node(t, ir.TableTail)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_order_by",
+    "line": 2541,
+    "body": "def test_table_randomness_order_by():\n    t = hl.utils.range_table(10, 3)\n    t = t.order_by(-t.idx)\n    assert_contains_node(t, ir.TableOrderBy)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_distinct",
+    "line": 2548,
+    "body": "def test_table_randomness_distinct():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.key_by(k=rt.idx % 5)\n    t = t.distinct()\n    assert_contains_node(t, ir.TableDistinct)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_repartition",
+    "line": 2556,
+    "body": "def test_table_randomness_repartition():\n    if not hl.current_backend().requires_lowering:\n        rt = hl.utils.range_table(20, 3)\n        t = rt.repartition(5)\n        print(t._tir)\n        assert_contains_node(t, ir.TableRepartition)\n        assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_cast_matrix_to_table",
+    "line": 2565,
+    "body": "def test_table_randomness_cast_matrix_to_table():\n    mt = hl.utils.range_matrix_table(10, 10, 3)\n    t = mt._localize_entries('entries', 'cols')\n    assert_contains_node(t, ir.CastMatrixToTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_rename",
+    "line": 2572,
+    "body": "def test_table_randomness_rename():\n    rt = hl.utils.range_table(20, 3)\n    t = rt.rename({'idx': 'index'})\n    assert_contains_node(t, ir.TableRename)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_multi_way_zip_join",
+    "line": 2579,
+    "body": "def test_table_randomness_multi_way_zip_join():\n    t1 = hl.utils.range_table(12, 3)\n    t1 = t1.key_by(k=t1.idx // 2 * 2)\n    t2 = hl.utils.range_table(12, 3)\n    t2 = t2.key_by(k=t2.idx // 3 * 3)\n    t3 = hl.utils.range_table(12, 3)\n    t3 = t3.key_by(k=t3.idx // 4 * 4)\n    t = hl.Table.multi_way_zip_join([t1, t2, t3], 'data', 'globals')\n    assert_contains_node(t, ir.TableMultiWayZipJoin)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_intervals",
+    "line": 2591,
+    "body": "def test_table_randomness_filter_intervals():\n    rt = hl.utils.range_table(20, 3)\n    intervals = [hl.interval(0, 5), hl.interval(10, 15)]\n    t = hl.filter_intervals(rt, intervals)\n    assert_contains_node(t, ir.TableFilterIntervals)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_block_matrix_to_table",
+    "line": 2599,
+    "body": "def test_table_randomness_block_matrix_to_table():\n    bm = hl.linalg.BlockMatrix.fill(10, 10, 0)\n    t = bm.entries()\n    assert_contains_node(t, ir.BlockMatrixToTable)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_table_gen",
+    "line": 2606,
+    "body": "def test_table_randomness_table_gen():\n    t = hl.Table._generate(contexts=hl.repeat(hl.rand_int64, 2), globals=hl.struct(k=hl.rand_int64()), partitions=2, rowfn=lambda c, g: hl.repeat(hl.struct(a=c * g.k * hl.rand_int64()), 2))\n    assert_contains_node(t, ir.TableGen)\n    assert_unique_uids(t)"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_order_by_desc",
+    "line": 2617,
+    "body": "def test_order_by_desc():\n    t = hl.utils.range_table(10000, n_partitions=10)\n    t = t.order_by(-t.idx)\n    assert t._force_count() == 10000"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_errors",
+    "line": 2632,
+    "body": "def test_query_table_errors(query_table_table):\n    with pytest.raises(ValueError, match='key mismatch: cannot use'):\n        hl.query_table(query_table_table, hl.interval('1', '2'))\n    with pytest.raises(ValueError, match='key mismatch: cannot use'):\n        hl.query_table(query_table_table, '1')\n    with pytest.raises(ValueError, match='query point value cannot be an empty struct'):\n        hl.query_table(query_table_table, hl.struct())\n    with pytest.raises(ValueError, match='query point type has 2 field'):\n        hl.query_table(query_table_table, hl.struct(idx=5, foo='s'))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table",
+    "line": 2684,
+    "body": "@pytest.mark.parametrize('query, expected', [(50, [hl.Struct(idx=50, s='50')]), (hl.struct(idx=50), [hl.Struct(idx=50, s='50')]), (55, []), (5, []), (-1, []), (205, []), (hl.interval(27, 66), [hl.Struct(idx=30, s='30'), hl.Struct(idx=40, s='40'), hl.Struct(idx=50, s='50'), hl.Struct(idx=60, s='60')]), (hl.interval(276, 33333), []), (hl.interval(-22276, -5), []), (hl.interval(hl.struct(idx=27), hl.struct(idx=66)), [hl.Struct(idx=30, s='30'), hl.Struct(idx=40, s='40'), hl.Struct(idx=50, s='50'), hl.Struct(idx=60, s='60')]), (hl.interval(40, 80, includes_end=True), [hl.Struct(idx=40, s='40'), hl.Struct(idx=50, s='50'), hl.Struct(idx=60, s='60'), hl.Struct(idx=70, s='70'), hl.Struct(idx=80, s='80')])])\ndef test_query_table(query_table_table, query, expected):\n    assert hl.eval(hl.query_table(query_table_table, query)) == expected"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_randomness",
+    "line": 2688,
+    "body": "def test_query_table_randomness(query_table_table):\n    i1 = hl.interval(27, 45)\n    i2 = hl.interval(45, 80, includes_end=True)\n    rows = hl.query_table(query_table_table, i1).extend(hl.query_table(query_table_table, i2))\n    x = hl.eval(rows.aggregate(lambda _: hl.struct(r=hl.agg.collect_as_set(hl.rand_int64()), n=hl.agg.count())))\n    assert len(x.r) == x.n"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_compound_key",
+    "line": 2713,
+    "body": "@pytest.mark.parametrize('query, expected', [(50, [hl.Struct(idx=50, idx2=10, s='50')]), (hl.struct(idx=50), [hl.Struct(idx=50, idx2=10, s='50')]), (hl.interval(hl.struct(idx=50, idx2=11), hl.struct(idx=60, idx2=-1)), [])])\ndef test_query_table_compound_key(compound_key_table, query, expected):\n    assert hl.eval(hl.query_table(compound_key_table, query)) == expected"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_interval_key",
+    "line": 2736,
+    "body": "@pytest.mark.parametrize('query, expected', [(hl.interval(20, 70), [hl.Struct(idx=20, interval=hl.Interval(20, 70))]), (hl.interval(20, 0), []), (hl.struct(interval=hl.interval(20, 0)), []), (hl.interval(hl.interval(15, 10), hl.interval(20, 71)), [hl.Struct(idx=20, interval=hl.Interval(20, 70))])])\ndef test_query_table_interval_key(interval_key_table, query, expected):\n    assert hl.eval(hl.query_table(interval_key_table, query)) == expected"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_large_number_of_partitions",
+    "line": 2741,
+    "body": "@test_timeout(600)\ndef test_large_number_of_partitions():\n    ht = hl.utils.range_table(1500, n_partitions=1500)\n    ht.collect()"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_range_table_biggest_int",
+    "line": 2746,
+    "body": "def test_range_table_biggest_int():\n    biggest_int32 = (1 << 31) - 1\n    ht = hl.utils.range_table(biggest_int32)\n    n = biggest_int32 - 1\n    expected_sum = n * (n + 1) // 2\n    assert expected_sum == ht.aggregate(hl.agg.sum(hl.int64(ht.idx)))"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_group_by_aggregate_doesnt_clobber_global_field",
+    "line": 2755,
+    "body": "def test_group_by_aggregate_doesnt_clobber_global_field():\n    ht = hl.utils.range_table(10).annotate_globals(x=1)\n    with pytest.raises(ExpressionException):\n        ht = ht.group_by(a=ht.idx < 5).aggregate(x=2)"
+  }
+]
