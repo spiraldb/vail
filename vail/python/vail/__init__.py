@@ -1545,6 +1545,15 @@ def eval(expression):
     data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
     return decode_rows(data, tstruct(value=expr.dtype))[0].value
 
+def eval_typed(expression):
+    """Evaluate an unindexed expression and return its value and Vail type.
+
+    Python values are converted to expressions using the same rules as
+    :func:`eval`. Expressions may refer to Table or MatrixTable globals.
+    """
+    expr = as_expr(expression)
+    return eval(expr), expr.dtype
+
 from . import nd
 
 _stream_range = _stream_range
