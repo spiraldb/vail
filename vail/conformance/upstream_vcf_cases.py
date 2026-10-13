@@ -19,6 +19,7 @@ from unittest import mock
 
 import pytest
 import vail as hl
+from upstream_paths import FixtureModule
 
 SOURCE = Path('/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_impex.py')
 RESOURCES = SOURCE.parents[4] / 'hail/test/resources'
@@ -37,7 +38,7 @@ def run(case=None, all_tests=False):
         def new_temp_file(prefix=None, extension=None):
             import uuid
             return str(Path(temp) / ((prefix or 'tmp') + uuid.uuid4().hex + ('.' + extension if extension else '')))
-        scope = dict(hl=hl, json=json, os=os, re=re, shutil=shutil, unittest=unittest, mock=mock,
+        scope = dict(hl=FixtureModule(hl, RESOURCES, Path(temp) / 'fixtures'), json=json, os=os, re=re, shutil=shutil, unittest=unittest, mock=mock,
                      pytest=pytest, resource=lambda name: str(RESOURCES / name),
                      new_temp_file=new_temp_file, new_local_temp_file=new_temp_file,
                      FatalError=(RuntimeError, ValueError), HailUserError=(RuntimeError, ValueError),

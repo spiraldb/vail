@@ -45,6 +45,19 @@ def pytest_runtest_logreport(report):
 
 CONFTEST = '''
 import pytest
+@pytest.fixture(scope='session', autouse=True)
+def vail_sample_snapshots(tmp_path_factory):
+    import os
+    import vail as hl
+    from upstream_paths import FixtureModule
+    original = hl.read_matrix_table
+    adapter = FixtureModule(hl, os.environ['HAIL_TEST_RESOURCES_DIR'],
+                            tmp_path_factory.mktemp('sample-snapshots'))
+    hl.read_matrix_table = adapter.read_matrix_table
+    try:
+        yield
+    finally:
+        hl.read_matrix_table = original
 def init_hail_scope(fixture_name, config):
     return 'session'
 @pytest.fixture(scope='session')
@@ -98,6 +111,7 @@ def main():
                 node.body = ast.parse('return lambda f: f').body
         helper.write_text('choose_backend = lambda *args: "vail"\n' + ast.unparse(ast.fix_missing_locations(tree)))
         (target / 'conftest.py').write_text(CONFTEST)
+        shutil.copyfile(Path(__file__).with_name('upstream_paths.py'), root / 'upstream_paths.py')
         (root / 'vail_pytest_reporter.py').write_text(PLUGIN)
         env = dict(os.environ)
         env['PYTHONPATH'] = str(root) + os.pathsep + env.get('PYTHONPATH', '')

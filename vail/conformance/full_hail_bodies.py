@@ -16,12 +16,17 @@ import subprocess
 import sys
 import tempfile
 import traceback
-from upstream_paths import doctest_data_dir
+from types import SimpleNamespace
+from upstream_paths import doctest_data_dir, resource_path, FixtureModule
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 
 def worker(source, name, output, suite):
     import vail as hl
+    # Original tests catch Hail's user execution error. Native Vail kernels
+    # expose execution failures as RuntimeError; retain their message checks.
+    if not hasattr(hl.utils, 'HailUserError'):
+        hl.utils.HailUserError = RuntimeError
     import numpy as np
     import pandas as pd
     import pytest
@@ -34,6 +39,7 @@ def worker(source, name, output, suite):
         output.write_text(json.dumps(report, indent=2))
     with tempfile.TemporaryDirectory(prefix='vail-body-') as folder:
         temporary = Path(folder)
+        hl = FixtureModule(hl, suite.parents[2] / 'hail/test/resources', temporary / 'fixtures')
         def new_temp_file(prefix='', extension=None):
             return str(temporary / (prefix + next(tempfile._get_candidate_names()) + ('.' + extension if extension else '')))
         def no_decorator(*args, **kwargs):
@@ -43,14 +49,17 @@ def worker(source, name, output, suite):
                      operator=operator, unittest=unittest, string=string, re=re,
                      shutil=shutil, json=json, os=os, Path=Path, timer=timer,
                      new_temp_file=new_temp_file, new_temp_dir=lambda: str(temporary),
-                     resource=lambda f: str(suite.parents[2] / 'hail/test/resources' / f),
+                     resource=lambda f: resource_path(suite.parents[2] / 'hail/test/resources', f, temporary / 'fixtures'),
                      ir=BackendDependency('ir'), Env=BackendDependency('Env'),
                      ExpressionException=hl.ExpressionException,
                      hl_init_for_test=lambda **kw: None, hl_stop_for_test=lambda: None,
                      with_flags=no_decorator, test_timeout=no_decorator,
                      __name__='vail_upstream_bodies', _dataset=None)
         scope['_doctest_dir'] = doctest_data_dir(suite)
-        scope.update({n: getattr(hl, n) for n in dir(hl) if n.startswith('t')})
+        from vail.types import is_type
+        scope.update({n: getattr(hl, n) for n in dir(hl)
+                      if n.startswith('t') and (is_type(getattr(hl, n))
+                                               or isinstance(getattr(hl, n), type))})
         def compile_node(node, filename):
             node = copy.deepcopy(node)
             outer = [node] + (node.body if isinstance(node, ast.ClassDef) else [])
@@ -67,6 +76,36 @@ def worker(source, name, output, suite):
                     compile_node(node, helpers)
                 except Exception:
                     pass
+        # Retain original directory-local fixture bodies (including ht/mt in
+        # extract_intervals) instead of substituting synthetic test datasets.
+        # Compile only fixtures: Hail initialization and conftest imports are
+        # managed by this adapter's existing scope.
+        fixture_directories = [suite] + [suite.joinpath(*source.parent.relative_to(suite).parts[:i])
+                                         for i in range(1, len(source.parent.relative_to(suite).parts) + 1)]
+        fixture_parameters = {}
+        for directory in fixture_directories:
+            fixture_source = directory / 'conftest.py'
+            if not fixture_source.exists():
+                continue
+            for node in ast.parse(fixture_source.read_text()).body:
+                if not isinstance(node, ast.FunctionDef):
+                    continue
+                if not any((isinstance(d, ast.Call) and isinstance(d.func, ast.Attribute)
+                            and d.func.attr == 'fixture')
+                           or (isinstance(d, ast.Attribute) and d.attr == 'fixture')
+                           for d in node.decorator_list):
+                    continue
+                if node.name.startswith('init_hail'):
+                    continue
+                try:
+                    compile_node(node, fixture_source)
+                    for decorator in node.decorator_list:
+                        if isinstance(decorator, ast.Call):
+                            for keyword in decorator.keywords:
+                                if keyword.arg == 'params':
+                                    fixture_parameters[node.name] = eval(compile(ast.Expression(keyword.value), str(fixture_source), 'eval'), scope)
+                except Exception as exc:
+                    report['setup_errors'].append(f'{fixture_source}: {node.name}: {exc}')
         # Import non-Hail dependencies and bind available public Vail symbols.
         for node in tree.body:
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith('hail'):
@@ -116,6 +155,21 @@ def worker(source, name, output, suite):
                             value = (value,)
                         variants.append(dict(zip(names, value)))
                     parameters = [dict(a, **b) for a, b in itertools.product(parameters, variants)]
+            def fixture_dependencies(name, visited):
+                if name in visited or name not in scope:
+                    return
+                visited.add(name)
+                for dependency in inspect.signature(scope[name]).parameters:
+                    if dependency != 'request':
+                        fixture_dependencies(dependency, visited)
+            dependencies = set()
+            for name in inspect.signature(target).parameters:
+                if not all(name in variant for variant in parameters):
+                    fixture_dependencies(name, dependencies)
+            for name in sorted(dependencies):
+                if name in fixture_parameters:
+                    parameters = [dict(variant, **{'__fixture_param_' + name: value})
+                                  for variant, value in itertools.product(parameters, fixture_parameters[name])]
         except BaseException as exc:
             report.update(status='blocked', phase='setup_or_parameters', error_type=type(exc).__name__, error=str(exc), traceback=traceback.format_exc())
             save()
@@ -124,13 +178,17 @@ def worker(source, name, output, suite):
         def fixture(name):
             if name not in cache:
                 factory = scope[name]
-                cache[name] = factory(**{p: fixture(p) for p in inspect.signature(factory).parameters})
+                cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])
+                                       if p == 'request' and '__fixture_param_' + name in params
+                                       else fixture(p)
+                                       for p in inspect.signature(factory).parameters})
             return cache[name]
         for params in parameters:
+            cache = dict(init_hail=None, tmp_path=temporary, tmpdir=temporary)
             phase = 'fixture'
             outcome = dict(status='passed', parameters={k: repr(v)[:300] for k,v in params.items()})
             try:
-                kwargs = dict(params)
+                kwargs = {key: value for key, value in params.items() if not key.startswith('__fixture_param_')}
                 for key, parameter in inspect.signature(target).parameters.items():
                     if key not in kwargs and parameter.default is inspect.Parameter.empty:
                         kwargs[key] = fixture(key)
