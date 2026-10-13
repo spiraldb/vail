@@ -32,7 +32,7 @@ nodes += [n for n in module.body if isinstance(n, ast.FunctionDef) and n.name ==
 nodes += [vcf_class]
 
 
-def run(case=None):
+def run(case=None, all_tests=False):
     with tempfile.TemporaryDirectory(prefix='vail-vcf-upstream-') as temp:
         def new_temp_file(prefix=None, extension=None):
             import uuid
@@ -44,7 +44,7 @@ def run(case=None):
                      with_flags=lambda **kwargs: lambda function: function)
         exec(compile(ast.fix_missing_locations(ast.Module(body=nodes, type_ignores=[])), str(SOURCE), 'exec'), scope)
         instance = scope['VCFTests']()
-        cases = [case] if case else [n.name for n in vcf_class.body if isinstance(n, ast.FunctionDef) and (n.name.startswith('test_import_vcf') or n.name in {
+        cases = [case] if case else [n.name for n in vcf_class.body if isinstance(n, ast.FunctionDef) and (all_tests and n.name.startswith('test_') or n.name.startswith('test_import_vcf') or n.name in {
             'test_info_char','test_info_float64','test_glob','test_undeclared_info','test_can_import_bad_number_flag',
             'test_malformed','test_not_identical_headers','test_filter','test_find_replace','test_haploid','test_call_fields',
             'test_vcf_unsorted_alleles','test_vcf_unsorted_alleles_no_codegen','test_import_gvcfs','test_import_gvcfs_long_line',
@@ -71,8 +71,9 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--case')
+    parser.add_argument('--all', action='store_true', help='Attempt every VCFTests definition, including export and combiner tests')
     parser.add_argument('--output', type=Path, default=Path('/private/tmp/vail-vcf-upstream.json'))
     args = parser.parse_args()
-    report = run(args.case)
+    report = run(args.case, args.all)
     args.output.write_text(json.dumps(report, indent=2) + '\n')
     print(sum(r['status'] == 'passed' for r in report['results']), '/', len(report['results']))

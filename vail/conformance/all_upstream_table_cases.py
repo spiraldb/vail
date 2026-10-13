@@ -22,6 +22,7 @@ import time
 from timeit import default_timer as timer
 import traceback
 import unittest
+from upstream_paths import doctest_data_dir
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT.parent / 'hail/hail/python/test/hail/table/test_table.py'
@@ -65,6 +66,7 @@ def worker(test_id, output):
                   new_temp_file=new_temp_file,
                   resource=lambda name: str(ROOT.parent / 'hail/hail/hail/test/resources' / name),
                   __name__='vail_all_upstream_table_bodies')
+        ns['_doctest_dir'] = doctest_data_dir(SOURCE.parent.parent)
         ns.update({name: getattr(hl, name) for name in dir(hl) if name.startswith('t')})
         helpers = SOURCE.parent.parent / 'helpers.py'
         for node in ast.parse(helpers.read_text()).body:
@@ -72,6 +74,7 @@ def worker(test_id, output):
                 'convert_struct_to_dict', 'create_all_values', 'prefix_struct',
                 'create_all_values_table', 'create_all_values_matrix_table',
                 'create_all_values_datasets', 'assert_time', 'schema_eq',
+                'doctest_resource',
             }:
                 compile_node(node, ns, str(helpers))
         for node in tree.body:
