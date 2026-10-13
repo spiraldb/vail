@@ -1,0 +1,37 @@
+bool	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+int32	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+int64	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+float_array_signed_zero	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+float32_signed_zero	eq,ne,lt,le,gt,ge=[Some(true), Some(false), Some(false), Some(true), Some(false), Some(true)]	groups=1	order=[0, 1]	join_matches=4
+float64_signed_zero	eq,ne,lt,le,gt,ge=[Some(true), Some(false), Some(false), Some(true), Some(false), Some(true)]	groups=1	order=[0, 1]	join_matches=4
+float64_signaling_nan	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+float32_nan_payload	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+float_view_outer_missing	eq,ne,lt,le,gt,ge=[None, None, None, None, None, None]	groups=2	order=[0, 1]	join_matches=1
+float64_signed_zero_reversed	eq,ne,lt,le,gt,ge=[Some(true), Some(false), Some(false), Some(true), Some(false), Some(true)]	groups=1	order=[1, 0]	join_matches=4
+float64_nan_payload	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+float32_nan_sign	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+string	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+array	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+array_nested_missing	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+array_outer_missing	eq,ne,lt,le,gt,ge=[None, None, None, None, None, None]	groups=2	order=[0, 1]	join_matches=1
+struct	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+struct_nested_missing	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+tuple	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+empty_struct	UNSUPPORTED: Join Error
+caused by
+External error: task 957 panicked with message "dictionary re-encode during emit: ArrowError(InvalidArgumentError(\"use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly\"), Some(\"\"))"
+empty_tuple	eq,ne,lt,le,gt,ge=[Some(true), Some(false), Some(false), Some(true), Some(false), Some(true)]	groups=1	order=[0, 1]	join_matches=4
+set_raw	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+set_sorted	eq,ne,lt,le,gt,ge=[Some(true), Some(false), Some(false), Some(true), Some(false), Some(true)]	groups=1	order=[0, 1]	join_matches=4
+set_map_missing_member	eq,ne,lt,le,gt,ge=[Some(true), Some(false), Some(false), Some(true), Some(false), Some(true)]	groups=1	order=[0, 1]	join_matches=4
+empty_struct_tagged	eq,ne,lt,le,gt,ge=[Some(true), Some(false), Some(false), Some(true), Some(false), Some(true)]	groups=1	order=[0, 1]	join_matches=4
+dict_raw	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+dict_sorted	eq,ne,lt,le,gt,ge=[Some(true), Some(false), Some(false), Some(true), Some(false), Some(true)]	groups=1	order=[0, 1]	join_matches=4
+interval	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+call_raw	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+call_packed	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(false), Some(false), Some(true), Some(true)]	groups=2	order=[1, 0]	join_matches=2
+ndarray_raw	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+ndarray_shape_first	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(false), Some(false), Some(true), Some(true)]	groups=2	order=[1, 0]	join_matches=2
+locus	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+float32_wrapped	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2
+float64_wrapped	eq,ne,lt,le,gt,ge=[Some(false), Some(true), Some(true), Some(true), Some(false), Some(false)]	groups=2	order=[0, 1]	join_matches=2

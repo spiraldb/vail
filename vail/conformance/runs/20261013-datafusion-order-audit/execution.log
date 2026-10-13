@@ -1,0 +1,16 @@
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:307:31
+    |
+307 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: `vail-table` (lib) generated 1 warning
+   Compiling vail-table v0.1.0 (/Users/danielking/projects/vail/vail/crates/vail-table)
+    Finished `release` profile [optimized] target(s) in 33.04s
+     Running `vail/target/release/examples/datafusion_order_audit`
+
+thread 'tokio-rt-worker' (83084110) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/aggregates/group_values/multi_group_by/row_backed.rs:224:14:
+dictionary re-encode during emit: ArrowError(InvalidArgumentError("use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly"), Some(""))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
