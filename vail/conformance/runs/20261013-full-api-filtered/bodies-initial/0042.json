@@ -1,0 +1,114 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_from_entry_expr_options",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "False",
+        "center": "False",
+        "normalize": "False",
+        "mk_expected": "<function <lambda> at 0x10fa10c20>"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "field access requires a struct expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 137, in test_from_entry_expr_options\n    mt = mt.annotate_entries(x=xs[mt.s])\n                               ~~^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 358, in __getitem__\n    raise TypeError(\"field access requires a struct expression\")\nTypeError: field access requires a struct expression\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "False",
+        "center": "False",
+        "normalize": "True",
+        "mk_expected": "<function <lambda> at 0x10fa10ae0>"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "field access requires a struct expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 137, in test_from_entry_expr_options\n    mt = mt.annotate_entries(x=xs[mt.s])\n                               ~~^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 358, in __getitem__\n    raise TypeError(\"field access requires a struct expression\")\nTypeError: field access requires a struct expression\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "False",
+        "center": "True",
+        "normalize": "False",
+        "mk_expected": "<function <lambda> at 0x10fa10cc0>"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "field access requires a struct expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 137, in test_from_entry_expr_options\n    mt = mt.annotate_entries(x=xs[mt.s])\n                               ~~^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 358, in __getitem__\n    raise TypeError(\"field access requires a struct expression\")\nTypeError: field access requires a struct expression\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "False",
+        "center": "True",
+        "normalize": "True",
+        "mk_expected": "<function <lambda> at 0x10fa10d60>"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "field access requires a struct expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 137, in test_from_entry_expr_options\n    mt = mt.annotate_entries(x=xs[mt.s])\n                               ~~^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 358, in __getitem__\n    raise TypeError(\"field access requires a struct expression\")\nTypeError: field access requires a struct expression\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "mean_impute": "True",
+        "center": "False",
+        "normalize": "False",
+        "mk_expected": "<function <lambda> at 0x10fa10e00>"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 141, in test_from_entry_expr_options\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "mean_impute": "True",
+        "center": "False",
+        "normalize": "True",
+        "mk_expected": "<function <lambda> at 0x10fa10ea0>"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 141, in test_from_entry_expr_options\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "mean_impute": "True",
+        "center": "True",
+        "normalize": "False",
+        "mk_expected": "<function <lambda> at 0x10fa10f40>"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 141, in test_from_entry_expr_options\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "mean_impute": "True",
+        "center": "True",
+        "normalize": "True",
+        "mk_expected": "<function <lambda> at 0x10fa10fe0>"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 141, in test_from_entry_expr_options\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.linalg'"
+  ],
+  "status": "failed_or_blocked"
+}

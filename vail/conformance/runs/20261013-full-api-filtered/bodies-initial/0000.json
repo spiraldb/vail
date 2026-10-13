@@ -1,0 +1,18 @@
+{
+  "module": "experimental/test_local_whitening.py",
+  "name": "test_local_whitening",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "field access requires a struct expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/experimental/test_local_whitening.py\", line 35, in test_local_whitening\n    run_local_whitening_test(\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/experimental/test_local_whitening.py\", line 24, in run_local_whitening_test\n    mt = mt.annotate_entries(x=mt.data[mt.row_idx, mt.col_idx])\n                               ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 358, in __getitem__\n    raise TypeError(\"field access requires a struct expression\")\nTypeError: field access requires a struct expression\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'"
+  ],
+  "status": "failed_or_blocked"
+}

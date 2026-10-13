@@ -1,0 +1,18 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_from_entry_expr_raises_when_values_missing",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "Regex pattern did not match.\n  Expected regex: 'Cannot construct an ndarray with missing values'\n  Actual message: \"name 'BlockMatrix' is not defined\"",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 151, in test_from_entry_expr_raises_when_values_missing\n    with pytest.raises(Exception, match='Cannot construct an ndarray with missing values'):\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/_pytest/raises.py\", line 711, in __exit__\n    raise AssertionError(self._fail_reason) from None\nAssertionError: Regex pattern did not match.\n  Expected regex: 'Cannot construct an ndarray with missing values'\n  Actual message: \"name 'BlockMatrix' is not defined\"\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.linalg'"
+  ],
+  "status": "failed_or_blocked"
+}

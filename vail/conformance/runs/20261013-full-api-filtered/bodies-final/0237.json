@@ -1,0 +1,31 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_query_table_compound_key",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "50",
+        "expected": "[Struct(idx=50, idx2=10, s='50')]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.StructExpression object at 0x120a22340>",
+        "expected": "[Struct(idx=50, idx2=10, s='50')]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x120a2fd60>",
+        "expected": "[]"
+      }
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "passed"
+}

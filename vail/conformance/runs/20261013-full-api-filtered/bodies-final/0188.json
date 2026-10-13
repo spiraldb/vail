@@ -1,0 +1,18 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_show__various_types",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "keywords must be strings",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1662, in test_show__various_types\n    ht = ht.annotate(\n         ^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py\", line 535, in annotate\n    expr = as_expr(value)\n           ^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 51, in as_expr\n    return StructExpression(value)\n           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 764, in __init__\n    dtype = tstruct(**{name: expr.dtype for name, expr in field_exprs.items()})\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: keywords must be strings\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

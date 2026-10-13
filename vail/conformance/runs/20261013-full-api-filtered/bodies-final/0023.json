@@ -1,0 +1,19 @@
+{
+  "module": "methods/test_qc.py",
+  "name": "Tests.test_concordance",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "FileNotFoundError",
+      "error": "[Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_qc.py\", line 157, in test_concordance\n    dataset = get_dataset()\n              ^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/helpers.py\", line 85, in get_dataset\n    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/upstream_paths.py\", line 24, in read_matrix_table\n    return self._read_matrix_table(str(path), *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py\", line 1882, in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'",
+    "No module named 'vail.methods'"
+  ],
+  "status": "failed_or_blocked"
+}

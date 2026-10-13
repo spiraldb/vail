@@ -1,0 +1,67 @@
+FFFFFFFFF                                                                [100%]
+=================================== FAILURES ===================================
+____________________________ test_reference_genome _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:17: in test_reference_genome
+    assert rg.x_contigs == ["X"]
+E   AssertionError: assert ('X',) == ['X']
+E     
+E     Use -v to get more diff
+________________________ test_reference_genome_sequence ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:51: in test_reference_genome_sequence
+    gr4 = ReferenceGenome.from_fasta_file(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/reference_genome.py:237: in from_fasta_file
+    def from_fasta_file(cls, *_args, **_kwargs): raise NotImplementedError("FASTA-backed reference construction is not implemented")
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   NotImplementedError: FASTA-backed reference construction is not implemented
+________________________ test_reference_genome_liftover ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:81: in test_reference_genome_liftover
+    assert not grch37.has_liftover('GRCh38')
+               ^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'ReferenceGenome' object has no attribute 'has_liftover'
+_____________________________ test_liftover_strand _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:144: in test_liftover_strand
+    grch37.add_liftover(resource('grch37_to_grch38_chr20.over.chain.gz'), 'GRCh38')
+    ^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'ReferenceGenome' object has no attribute 'add_liftover'
+______________________ test_read_custom_reference_genome _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:176: in test_read_custom_reference_genome
+    available_rgs = set(hl.current_backend()._references.keys())
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'NativeBackend' object has no attribute '_references'
+_______________________ test_custom_reference_read_write _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:209: in test_custom_reference_read_write
+    with hl.TemporaryDirectory(ensure_exists=False) as foo:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+_______________________ test_locus_from_global_position ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:219: in test_locus_from_global_position
+    max_length = rg.global_positions_dict[rg.contigs[-1]] + rg.lengths[rg.contigs[-1]]
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'ReferenceGenome' object has no attribute 'global_positions_dict'
+_________________ test_locus_from_global_position_negative_pos _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:230: in test_locus_from_global_position_negative_pos
+    hl.get_reference('GRCh37').locus_from_global_position(-1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'ReferenceGenome' object has no attribute 'locus_from_global_position'
+___________________ test_locus_from_global_position_too_long ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py:235: in test_locus_from_global_position_too_long
+    hl.get_reference('GRCh37').locus_from_global_position(2**64 - 1)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'ReferenceGenome' object has no attribute 'locus_from_global_position'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_reference_genome
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_reference_genome_sequence
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_reference_genome_liftover
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_liftover_strand
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_read_custom_reference_genome
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_custom_reference_read_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_locus_from_global_position
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_locus_from_global_position_negative_pos
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_reference_genome.py::test_locus_from_global_position_too_long
+9 failed, 1 warning in 0.09s

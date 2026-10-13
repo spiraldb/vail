@@ -1,0 +1,18 @@
+{
+  "module": "utils/test_deduplicate.py",
+  "name": "test_deduplicate_max_attempts",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'deduplicate' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/utils/test_deduplicate.py\", line 20, in test_deduplicate_max_attempts\n    deduplicate(['0', '0_1', '0'], max_attempts=1)\n    ^^^^^^^^^^^\nNameError: name 'deduplicate' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.utils.deduplicate'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,43 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_row_intervals_1",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {
+        "starts": "[0, 1, 2, 3, 4, 5, 6, 7]",
+        "stops": "[1, 2, 3, 4, 5, 6, 7, 8]"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 838, in test_row_intervals_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "starts": "[0, 0, 5, 3, 4, 5, 8, 2]",
+        "stops": "[9, 0, 5, 3, 4, 5, 9, 5]"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 838, in test_row_intervals_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "starts": "[0, 5, 10, 8, 7, 6, 5, 4]",
+        "stops": "[0, 5, 10, 9, 8, 7, 6, 5]"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 838, in test_row_intervals_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.linalg'"
+  ],
+  "status": "failed_or_blocked"
+}

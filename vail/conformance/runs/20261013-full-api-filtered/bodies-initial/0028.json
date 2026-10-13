@@ -1,0 +1,19 @@
+{
+  "module": "expr/test_types.py",
+  "name": "Tests.test_tlocus_schema_from_rg_matches_scala",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'tlocus' has no attribute '_schema_from_rg'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/expr/test_types.py\", line 175, in test_tlocus_schema_from_rg_matches_scala\n    assert tlocus._schema_from_rg(None) == locus_from_import_vcf(None)\n           ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'tlocus' has no attribute '_schema_from_rg'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.expr' has no attribute 'coercer_from_dtype'",
+    "module 'vail.types' has no attribute 'HailType'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_group_within_partitions_after_import_vcf",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "PanicException",
+      "error": "called `Result::unwrap()` on an `Err` value: InvalidArgumentError(\"use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly\")",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1991, in test_group_within_partitions_after_import_vcf\n    ht.collect()  # Just testing import without segault\n    ^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py\", line 1030, in collect\n    return decode_rows(self._native.collect_arrow(), self._schema)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\npyo3_runtime.PanicException: called `Result::unwrap()` on an `Err` value: InvalidArgumentError(\"use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly\")\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

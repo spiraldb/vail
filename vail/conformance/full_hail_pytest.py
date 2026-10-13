@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import time
 from upstream_paths import doctest_data_dir
 
 PLUGIN = '''
@@ -27,7 +28,19 @@ def emit(value):
 def pytest_collectreport(report):
     if report.failed:
         emit(dict(kind='collection', nodeid=report.nodeid, outcome='failed', error=str(report.longrepr)))
-def pytest_collection_modifyitems(items):
+def pytest_collection_modifyitems(config, items):
+    selection = os.environ.get('VAIL_TEST_SELECTION')
+    if selection:
+        manifest = json.loads(Path(selection).read_text())
+        allowed = {(r['module'], r['name']) for r in manifest['included']}
+        kept, excluded = [], []
+        for item in items:
+            module = str(Path(item.path).relative_to(os.environ['VAIL_UPSTREAM_ROOT']))
+            parts = item.nodeid.split('::')[1:]
+            parts[-1] = parts[-1].split('[')[0]
+            (kept if (module, '.'.join(parts)) in allowed else excluded).append(item)
+        items[:] = kept
+        config.hook.pytest_deselected(items=excluded)
     emit(dict(kind='inventory', items=[i.nodeid for i in items]))
 def pytest_runtest_setup(item):
     emit(dict(kind='started', nodeid=item.nodeid))
@@ -72,10 +85,46 @@ def uninitialized():
 '''
 
 
+def run_module(command, env, cwd, log, events, module_timeout, per_test_timeout):
+    """Enforce a deadline outside native execution, where SIGALRM can stall."""
+    process = subprocess.Popen(command, env=env, cwd=cwd, stdout=log, stderr=log)
+    started = time.monotonic()
+    active = None
+    active_since = None
+    offset = 0
+    pending = b''
+    while process.poll() is None:
+        now = time.monotonic()
+        if events.exists():
+            with events.open('rb') as file:
+                file.seek(offset)
+                pending += file.read()
+                offset = file.tell()
+            lines = pending.split(b'\n')
+            pending = lines.pop()
+            for line in lines:
+                event = json.loads(line)
+                if event['kind'] == 'started':
+                    active, active_since = event['nodeid'], now
+                elif event['kind'] == 'test' and event['when'] == 'teardown' and event['nodeid'] == active:
+                    active, active_since = None, None
+        test_expired = per_test_timeout and active_since is not None and now-active_since > per_test_timeout+5
+        module_expired = module_timeout and now-started > module_timeout
+        if test_expired or module_expired:
+            process.kill()
+            process.wait()
+            return dict(timeout=True, timeout_scope='test' if test_expired else 'module',
+                        nodeid=active, elapsed_seconds=now-(active_since if test_expired else started),
+                        declared_limit_seconds=per_test_timeout if test_expired else module_timeout)
+        time.sleep(0.2)
+    return dict(exit_code=process.returncode)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--selection', type=Path, help='Explicit included/excluded definition manifest')
     parser.add_argument('--module', help='Run only the test module at this path relative to --source')
     parser.add_argument('--module-timeout', type=int, default=300,
                         help='Per-module timeout in seconds; 0 disables it (default: 300)')
@@ -93,6 +142,10 @@ def main():
         files = [p for p in files if p.relative_to(source) == requested]
         if not files:
             parser.error(f'no eligible test module matches {args.module!r}')
+    allowed = None
+    if args.selection:
+        allowed = {(r['module'], r['name']) for r in json.loads(args.selection.read_text())['included']}
+        files = [p for p in files if any(module == str(p.relative_to(source)) for module, _ in allowed)]
     inventory = []
     for file in files:
         tree = ast.parse(file.read_text())
@@ -101,6 +154,8 @@ def main():
             for member in members:
                 if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)) and member.name.startswith('test_'):
                     name = (node.name + '.' if isinstance(node, ast.ClassDef) else '') + member.name
+                    if allowed is not None and (str(file.relative_to(source)), name) not in allowed:
+                        continue
                     inventory.append(dict(module=str(file.relative_to(source)), name=name,
                                           line=member.lineno, body=ast.unparse(member)))
     (output / 'definition-inventory.json').write_text(json.dumps(inventory, indent=2))
@@ -136,6 +191,11 @@ def main():
         test_package = root / 'test'
         test_package.mkdir()
         (test_package / '__init__.py').write_text('')
+        # Load upstream immutable-value helpers without exposing the Hail
+        # runtime package on PYTHONPATH.
+        hailtop = root / 'hailtop'
+        hailtop.mkdir()
+        (hailtop / '__init__.py').write_text('__path__ = [' + repr(str(source.parents[1] / 'hailtop')) + ']')
         (test_package / 'hail').symlink_to(target, target_is_directory=True)
         (root / 'vail_pytest_reporter.py').write_text(PLUGIN)
         env = dict(os.environ)
@@ -144,6 +204,9 @@ def main():
         env['HAIL_DOCTEST_DATA_DIR'] = doctest_data_dir(source)
         env['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
         env['VAIL_PER_TEST_TIMEOUT'] = str(args.per_test_timeout)
+        if args.selection:
+            env['VAIL_TEST_SELECTION'] = str(args.selection.resolve())
+            env['VAIL_UPSTREAM_ROOT'] = str(target)
         for index, file in enumerate(files):
             relative = file.relative_to(source)
             label = str(relative).replace('/', '__')
@@ -156,12 +219,8 @@ def main():
             for nodeid in args.deselect:
                 command.extend(['--deselect', nodeid])
             with (output / (label + '.log')).open('w') as log:
-                try:
-                    proc = subprocess.run(command, env=env, cwd=root, stdout=log,
-                                          stderr=log, timeout=args.module_timeout or None)
-                    result = dict(module=str(relative), exit_code=proc.returncode)
-                except subprocess.TimeoutExpired:
-                    result = dict(module=str(relative), timeout=True)
+                result = dict(module=str(relative), **run_module(
+                    command, env, root, log, events, args.module_timeout, args.per_test_timeout))
             result['source_sha256'] = hashlib.sha256(file.read_bytes()).hexdigest()
             results.append(result)
             (output / 'modules.json').write_text(json.dumps(results, indent=2))

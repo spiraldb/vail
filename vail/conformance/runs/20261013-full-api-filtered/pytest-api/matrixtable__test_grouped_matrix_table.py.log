@@ -1,0 +1,391 @@
+F.FFF..                                                                  [100%]
+=================================== FAILURES ===================================
+______________________ Tests.test_errors_caught_correctly ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_grouped_matrix_table.py:43: in test_errors_caught_correctly
+    self.assertRaises(ExpressionException, mt.group_rows_by, mt['group1'] + 1)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1524: in group_rows_by
+    return GroupedMatrixTable(self, "row", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2005: in __init__
+    raise ValueError("positional grouping requires field references")
+E   ValueError: positional grouping requires field references
+______________________ Tests.test_group_cols_by_aggregate ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_grouped_matrix_table.py:266: in test_group_cols_by_aggregate
+    .result()
+     ^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2176: in result
+    core.annotate(**{_CELLS: array_range(length(groups)).map(cell)}),
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2160: in cell
+    **{
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2161: in <dictcomp>
+    n: reduce_list(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:339: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in <dictcomp>
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in <dictcomp>
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in <dictcomp>
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:203: in walk
+    values = mapped(items, node["value"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:105: in mapped
+    return typed(items.map(lambda ctx: raw(bind(node, ctx))))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:67: in typed
+    probe = base.key_by()._project([("__matrix_type_probe", raw(node))], keys=())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:512: in _project
+    native, expressions = _resolve_lookups(self._native, [expr for _, expr in projections])
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:89: in resolve
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:89: in <listcomp>
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+                                                      ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:84: in rewrite
+    native = native.lookup_json(targets[reference], json.dumps(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "50c251c3ad804a059633f5fe96663adf"
+______________________ Tests.test_group_rows_by_aggregate ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_grouped_matrix_table.py:222: in test_group_rows_by_aggregate
+    .result()
+     ^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2101: in result
+    grouped = base.group_by(**keys).aggregate(**fields, **{_CELLS: cells})
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1405: in aggregate
+    native, resolved = _resolve_lookups(table._native, [expr for _, expr in keys] + list(expressions.values()))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:89: in resolve
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:89: in <listcomp>
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+                                                      ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:73: in rewrite
+    return [rewrite(child) for child in node]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:73: in <listcomp>
+    return [rewrite(child) for child in node]
+            ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:73: in rewrite
+    return [rewrite(child) for child in node]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:73: in <listcomp>
+    return [rewrite(child) for child in node]
+            ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:73: in rewrite
+    return [rewrite(child) for child in node]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:73: in <listcomp>
+    return [rewrite(child) for child in node]
+            ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:73: in rewrite
+    return [rewrite(child) for child in node]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:73: in <listcomp>
+    return [rewrite(child) for child in node]
+            ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:84: in rewrite
+    native = native.lookup_json(targets[reference], json.dumps(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "00215980152149fdae4a7d907018d734"
+_______________________ Tests.test_joins_work_correctly ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_grouped_matrix_table.py:161: in test_joins_work_correctly
+    .aggregate(sum=hl.agg.sum(mt2[mt.row_idx, mt.col_idx].x + mt.glob) + mt.glob - 15)
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2049: in aggregate
+    return self.aggregate_entries(**fields).result()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2176: in result
+    core.annotate(**{_CELLS: array_range(length(groups)).map(cell)}),
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2160: in cell
+    **{
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2161: in <dictcomp>
+    n: reduce_list(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:339: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in <dictcomp>
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in <dictcomp>
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:203: in walk
+    values = mapped(items, node["value"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:105: in mapped
+    return typed(items.map(lambda ctx: raw(bind(node, ctx))))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:67: in typed
+    probe = base.key_by()._project([("__matrix_type_probe", raw(node))], keys=())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:512: in _project
+    native, expressions = _resolve_lookups(self._native, [expr for _, expr in projections])
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:89: in resolve
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:89: in <listcomp>
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+                                                      ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:87: in <dictcomp>
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/lookups.py:84: in rewrite
+    native = native.lookup_json(targets[reference], json.dumps(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "b507c246c1e242188bfc7d346e0baab1"
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_errors_caught_correctly
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_group_cols_by_aggregate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_group_rows_by_aggregate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_joins_work_correctly
+4 failed, 3 passed, 1 deselected, 1 warning in 0.89s

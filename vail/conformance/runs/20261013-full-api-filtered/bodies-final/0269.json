@@ -1,0 +1,20 @@
+{
+  "module": "vds/test_combiner.py",
+  "name": "test_combiner_run",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'parse_locus_interval'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/vds/test_combiner.py\", line 192, in test_combiner_run\n    parts = hl.eval([hl.parse_locus_interval('chr22:start-end', reference_genome='GRCh38')])\n                     ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'parse_locus_interval'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'"
+  ],
+  "status": "failed_or_blocked"
+}

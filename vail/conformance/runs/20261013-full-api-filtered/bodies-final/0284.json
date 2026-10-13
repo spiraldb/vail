@@ -1,0 +1,19 @@
+{
+  "module": "vds/test_vds.py",
+  "name": "test_impute_sex_chr_ploidy_from_interval_coverage",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'parse_locus_interval'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/vds/test_vds.py\", line 330, in test_impute_sex_chr_ploidy_from_interval_coverage\n    norm_interval_1 = hl.parse_locus_interval('20:10-30', reference_genome='GRCh37')\n                      ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'parse_locus_interval'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'"
+  ],
+  "status": "failed_or_blocked"
+}

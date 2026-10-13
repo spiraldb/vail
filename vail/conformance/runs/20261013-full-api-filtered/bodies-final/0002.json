@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_pca.py",
+  "name": "test_blanczos_against_numpy",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "n_alt_alleles",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 76, in test_blanczos_against_numpy\n    mt = mt.annotate_rows(AC=hl.agg.sum(mt.GT.n_alt_alleles()), n_called=hl.agg.count_where(hl.is_defined(mt.GT)))\n                                        ^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 664, in __getattr__\n    raise AttributeError(name)\nAttributeError: n_alt_alleles\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'"
+  ],
+  "status": "failed_or_blocked"
+}

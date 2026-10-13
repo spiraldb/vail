@@ -1,0 +1,35 @@
+{
+  "module": "ggplot/test_ggplot.py",
+  "name": "test_histogram",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'ggplot' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/ggplot/test_ggplot.py\", line 89, in test_histogram\n    fig = ggplot(ht, aes(x=ht.idx)) + geom_histogram(aes(fill=ht.mod_3), alpha=0.5, position=position, bins=10)\n          ^^^^^^\nNameError: name 'ggplot' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'"
+  ],
+  "status": "failed_or_blocked"
+}

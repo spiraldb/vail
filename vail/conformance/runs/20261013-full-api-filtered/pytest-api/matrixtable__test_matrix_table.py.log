@@ -1,0 +1,513 @@
+.......F.FF....F...F...F...FF.........F..................F...F.....FF.FF [ 39%]
+F..FFF...FF....x.F.F.F.FF.....FFFFF...FFF.F.FF.......................... [ 79%]
+.........F.FF.F.FF...................                                    [100%]
+=================================== FAILURES ===================================
+_____________________ Tests.test_aggregate_cols_by_init_op _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:402: in test_aggregate_cols_by_init_op
+    cs = mt.group_cols_by(mt.s).aggregate(cs=hl.agg.call_stats(mt.GT, mt.alleles))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2049: in aggregate
+    return self.aggregate_entries(**fields).result()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2176: in result
+    core.annotate(**{_CELLS: array_range(length(groups)).map(cell)}),
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2160: in cell
+    **{
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:2163: in <dictcomp>
+    m._validate(v, "entry", aggregate=True),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:366: in _validate
+    check_initializers(expr.to_ir())
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:356: in check_initializers
+    raise NotImplementedError(
+E   NotImplementedError: matrix-axis aggregate initialization requires native Table support for group-dependent initializers
+__________________ Tests.test_aggregate_cols_scope_violation ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:406: in test_aggregate_cols_scope_violation
+    mt = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:49: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1882: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_________________________ Tests.test_aggregate_entries _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:248: in test_aggregate_entries
+    hl.Struct(x=agg.filter(False, agg.collect(mt.y1)), y=agg.filter(hl.rand_bool(0.1), agg.collect(mt.GT)))
+                                                                    ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_bool'
+_____________________ Tests.test_aggregate_rows_bn_counter _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:258: in test_aggregate_rows_bn_counter
+    r = hl.balding_nichols_model(3, 10, 10).rows()
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+_____________________ Tests.test_annotate_col_agg_lowering _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1737: in test_annotate_col_agg_lowering
+    mt = mt.annotate_cols(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:681: in annotate_cols
+    return self._annotate("col", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:615: in _annotate
+    return self._project_axis(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:574: in _project_axis
+    prepared = [
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:577: in <listcomp>
+    self._axis_aggregates(v, axis, base)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:520: in _axis_aggregates
+    return Expression(expr.dtype, self, _IR(rewrite(expr.to_ir()), refs, lookups))
+                                            ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:502: in rewrite
+    native = native.grouped_aggregate_json(
+E   ValueError: invalid TableIR: row fields must be inside an aggregator in Table.aggregate
+______________________ Tests.test_choose_cols_vs_explode _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:737: in test_choose_cols_vs_explode
+    self.assertTrue(ds.choose_cols(sorted(list(range(ds.count_cols())) * 2))._same(ds2))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1551: in _same
+    return self.localize_entries(entries_name, columns_name)._same(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1163: in _same
+    same, diagnostic = self._native.same(other._native, tolerance, absolute, reorder_fields)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   pyo3_runtime.PanicException: called `Option::unwrap()` on a `None` value
+----------------------------- Captured stderr call -----------------------------
+
+thread '<unnamed>' (83515801) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/arrow-select-59.2.0/src/take.rs:682:83:
+called `Option::unwrap()` on a `None` value
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+________________________ Tests.test_collect_cols_by_key ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:436: in test_collect_cols_by_key
+    col_dict = hl.literal({0: [1], 1: [2, 3], 2: [4, 5, 6]})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:789: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:544: in infer_type
+    return tstruct(**{name: infer_type(field) for name, field in value.items()})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+___________________ Tests.test_collect_cols_by_key_with_rand ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:463: in test_collect_cols_by_key_with_rand
+    mt = mt.annotate_cols(x=hl.rand_norm())
+                            ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_norm'
+________________________ Tests.test_entry_filter_stats _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1724: in test_entry_filter_stats
+    assert mt.aggregate_rows(hl.agg.all(mt.entry_stats_row == row_expected[mt.row_idx % 4 == 0]))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:250: in __eq__
+    def __eq__(self, other): return self._compare(other, "eq")
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:202: in _compare
+    _check_comparable(self.dtype, other.dtype, operator)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:1131: in _check_comparable
+    raise TypeError(f"incompatible comparison types: {left} and {right}")
+E   TypeError: incompatible comparison types: struct{n_filtered: int64, n_remaining: int64, fraction_filtered: float64} and struct{n_filtered: int32, n_remaining: int32, fraction_filtered: float32}
+_______________________ Tests.test_fix3307_read_mt_wrong _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1086: in test_fix3307_read_mt_wrong
+    mt = hl.split_multi_hts(mt)
+         ^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/variant.py:61: in split_multi_hts
+    variant=_min_rep(split.locus,split.alleles[0],split.alleles[split.a_index])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/variant.py:31: in _min_rep
+    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:482: in _array_filter
+    predicate = as_expr(f(variable))
+                        ^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/variant.py:31: in <lambda>
+    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:316: in __getitem__
+    return slice_(self, name) if isinstance(name, slice) else index(self, name)
+                                                              ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:104: in index
+    text = _bmp_literal(value)
+           ^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:69: in _bmp_literal
+    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')
+E   NotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported
+________________________ Tests.test_hardy_weinberg_test ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1350: in test_hardy_weinberg_test
+    mt_two_sided = mt.select_rows(**hl.agg.hardy_weinberg_test(mt.GT, one_sided=False))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:690: in select_rows
+    return self._select("row", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:640: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:574: in _project_axis
+    prepared = [
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:577: in <listcomp>
+    self._axis_aggregates(v, axis, base)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:486: in _axis_aggregates
+    return reduce_list(self, expr, base, self._row_contexts(base))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:339: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:330: in <dictcomp>
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:322: in walk
+    raise NotImplementedError(
+E   NotImplementedError: matrix list aggregation requires a native per-list hardy_weinberg_test reducer
+_______________________ Tests.test_hw_func_and_agg_agree _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1394: in test_hw_func_and_agg_agree
+    mt_two_sided = mt.annotate_rows(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:678: in annotate_rows
+    return self._annotate("row", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:615: in _annotate
+    return self._project_axis(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:574: in _project_axis
+    prepared = [
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:577: in <listcomp>
+    self._axis_aggregates(v, axis, base)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:486: in _axis_aggregates
+    return reduce_list(self, expr, base, self._row_contexts(base))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:339: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrix_list_aggregates.py:322: in walk
+    raise NotImplementedError(
+E   NotImplementedError: matrix list aggregation requires a native per-list hardy_weinberg_test reducer
+_______________________________ Tests.test_index _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:719: in test_index
+    for i, struct in enumerate(ds.rows().select('rowidx').collect()):
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1030: in collect
+    return decode_rows(self._native.collect_arrow(), self._schema)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Join Error
+E   caused by
+E   External error: task 879 panicked with message "partition not used yet"
+----------------------------- Captured stderr call -----------------------------
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515806) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515806) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515806) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515806) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515806) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+
+thread 'tokio-rt-worker' (83515807) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/datafusion-physical-plan-55.0.0/src/repartition/mod.rs:1688:22:
+partition not used yet
+___________________________ Tests.test_indexed_read ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:996: in test_indexed_read
+    self.assertEqual(mt2.n_partitions(), 2)
+E   AssertionError: 1 != 2
+_________________________ Tests.test_indexed_read_vcf __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1027: in test_indexed_read_vcf
+    self.assertEqual(mt.n_partitions(), 2)
+E   AssertionError: 1 != 2
+____________________ Tests.test_interval_filter_partitions _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1042: in test_interval_filter_partitions
+    assert hl.read_matrix_table(path, _intervals=intervals, _filter_intervals=True).n_partitions() == 1
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1905: in read_matrix_table
+    kept = filter_intervals(public, _intervals)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1456: in filter_intervals
+    raise TypeError("interval point type must match the first key or a non-empty key prefix")
+E   TypeError: interval point type must match the first key or a non-empty key prefix
+____________________ Tests.test_invalid_field_ref_annotate _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1876: in test_invalid_field_ref_annotate
+    mt = hl.balding_nichols_model(2, 5, 5)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+______________________ Tests.test_invalid_field_ref_error ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1870: in test_invalid_field_ref_error
+    mt = hl.balding_nichols_model(2, 5, 5)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+_________________________ Tests.test_invalid_metadata __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1829: in test_invalid_metadata
+    hl.read_matrix_table(resource('0.1-1fd5cc7.vds'))
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1882: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/0.1-1fd5cc7.vds/_vail_matrix.json'
+________________ Tests.test_legacy_files_with_required_globals _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1832: in test_legacy_files_with_required_globals
+    hl.read_table(resource('required_globals.ht'))._force_count()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1494: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+_________________________ Tests.test_literals_rebuild __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:606: in test_literals_rebuild
+    x=hl.if_else(hl.literal([1, 2, 3])[mt.row_idx] < hl.rand_unif(10, 11), mt.globals, hl.struct())
+                                                     ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_unif'
+___________________ Tests.test_make_table_empty_entry_field ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1276: in test_make_table_empty_entry_field
+    mt = mt.select_entries(**{'': mt.row_idx * mt.col_idx})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:696: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:640: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:540: in _project_axis
+    raise ValueError("field names must be nonempty strings")
+E   ValueError: field names must be nonempty strings
+____________________ Tests.test_make_table_row_equivalence _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1295: in test_make_table_row_equivalence
+    mt = mt.annotate_rows(r1=hl.rand_norm(), r2=hl.rand_norm())
+                             ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_norm'
+_____________________ Tests.test_matrix_multi_write_range ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1847: in test_matrix_multi_write_range
+    hl.experimental.write_matrix_tables(mts, f)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+_______________________ Tests.test_matrix_type_equality ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1698: in test_matrix_type_equality
+    assert mt._type == mt._type
+           ^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:270: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _type
+____________________________ Tests.test_multi_write ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1690: in test_multi_write
+    paths = hl.experimental.write_matrix_tables(mts, prefix)
+            ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+________________________ Tests.test_order_by_intervals _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1228: in test_order_by_intervals
+    ht = ht.annotate_globals(ilist=intervals)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:439: in annotate_globals
+    expressions = {name: as_expr(value) for name, value in named_exprs.items()}
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:439: in <dictcomp>
+    expressions = {name: as_expr(value) for name, value in named_exprs.items()}
+                         ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:51: in as_expr
+    return StructExpression(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:764: in __init__
+    dtype = tstruct(**{name: expr.dtype for name, expr in field_exprs.items()})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+_____________________________ Tests.test_overwrite _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1823: in test_overwrite
+    mt.write(f)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1807: in write
+    raise FileExistsError(output)
+E   FileExistsError: /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/zW7QoKJudRkcLtFnscKPwK.mt
+_________________________ Tests.test_partitioned_write _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1796: in test_partitioned_write
+    test_parts([(0, 40, True, False)])
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1790: in test_parts
+    mt.write(tmp, _partitions=parts)
+E   TypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'
+_____________________ Tests.test_partitioned_write_coerce ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1808: in test_partitioned_write_coerce
+    mt.write(tmp, _partitions=parts)
+E   TypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'
+_______________________________ Tests.test_range _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1121: in test_range
+    et = ds.annotate_entries(entry_idx=10 * ds.row_idx + ds.col_idx).entries().add_index()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: add_index
+_________________________ Tests.test_read_stored_cols __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:965: in test_read_stored_cols
+    t = hl.read_table(f + '/cols')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1494: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+________________________ Tests.test_read_stored_globals ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:981: in test_read_stored_globals
+    t = hl.read_table(f + '/globals')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1494: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+_________________________ Tests.test_read_stored_rows __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:973: in test_read_stored_rows
+    t = hl.read_table(f + '/rows')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1494: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+______________________________ Tests.test_rename _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1099: in test_rename
+    self.assertEqual(renamed1['locus2']._type, dataset['locus']._type)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _type
+______________________ Tests.test_row_joins_into_table_2 _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1544: in test_row_joins_into_table_2
+    with self.assertRaises(hl.expr.ExpressionException):
+E   AssertionError: ExpressionException not raised
+______________________ Tests.test_row_key_field_show_runs ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:40: in test_row_key_field_show_runs
+    ds.locus.show()
+    ^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: show
+________________________ Tests.test_write_stage_locally ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1425: in test_write_stage_locally
+    mt.write(f, stage_locally=True)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1795: in write
+    raise NotImplementedError("matrix codecs and staging are not implemented")
+E   NotImplementedError: matrix codecs and staging are not implemented
+__________________________ test_read_write_all_types ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1911: in test_read_write_all_types
+    mt = create_all_values_matrix_table()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:71: in create_all_values_matrix_table
+    all_values = create_all_values()
+                 ^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:61: in create_all_values
+    return hl.struct(f32=hl.float32(3.14), i64=hl.int64(-9), m=hl.missing(hl.tfloat64), astruct=hl.struct(a=hl.missing(hl.tint32), b=5.5), mstruct=hl.missing(hl.tstruct(x=hl.tint32, y=hl.tstr)), aset=hl.set(['foo', 'bar', 'baz']), mset=hl.missing(hl.tset(hl.tfloat64)), d=hl.dict({hl.array(['a', 'b']): 0.5, hl.array(['x', hl.missing(hl.tstr), 'z']): 0.3}), md=hl.missing(hl.tdict(hl.tint32, hl.tstr)), h38=hl.locus('chr22', 33878978, 'GRCh38'), ml=hl.missing(hl.tlocus('GRCh37')), i=hl.interval(hl.locus('1', 999), hl.locus('1', 1001)), c=hl.call(0, 1), mc=hl.missing(hl.tcall), t=hl.tuple([hl.call(1, 2, phased=True), 'foo', hl.missing(hl.tstr)]), mt=hl.missing(hl.ttuple(hl.tlocus('GRCh37'), hl.tbool)), nd=hl.nd.arange(0, 10).reshape((2, 5)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: reshape
+____________________ test_read_write_balding_nichols_model _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1918: in test_read_write_balding_nichols_model
+    mt = hl.balding_nichols_model(3, 10, 10)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+______________________ test_filter_against_invalid_contig ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:1932: in test_filter_against_invalid_contig
+    mt = hl.balding_nichols_model(3, 5, 20)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+_____________________________ test_sample_entries ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:2360: in test_sample_entries
+    ht = ht.sample(0.5)
+         ^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: sample
+________________________ test_struct_of_arrays_encoding ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py:2367: in test_struct_of_arrays_encoding
+    p=hl.or_missing(hl.rand_bool(0.6), hl.rand_bool(0.5)),
+                    ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_bool'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:108
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:108: PytestUnknownMarkWarning: Unknown pytest.mark.timeout - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    return pytest.mark.timeout(timeout)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_aggregate_cols_by_init_op
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_aggregate_cols_scope_violation
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_aggregate_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_aggregate_rows_bn_counter
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_annotate_col_agg_lowering
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_choose_cols_vs_explode
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_collect_cols_by_key
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_collect_cols_by_key_with_rand
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_entry_filter_stats
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_fix3307_read_mt_wrong
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_hardy_weinberg_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_hw_func_and_agg_agree
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_index
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_indexed_read
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_indexed_read_vcf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_interval_filter_partitions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_invalid_field_ref_annotate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_invalid_field_ref_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_invalid_metadata
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_legacy_files_with_required_globals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_literals_rebuild
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_make_table_empty_entry_field
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_make_table_row_equivalence
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_matrix_multi_write_range
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_matrix_type_equality
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_multi_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_order_by_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_overwrite
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_partitioned_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_partitioned_write_coerce
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_range
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_cols
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_globals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_rows
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_rename
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_row_joins_into_table_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_row_key_field_show_runs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_write_stage_locally
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::test_read_write_all_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::test_read_write_balding_nichols_model
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::test_filter_against_invalid_contig
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::test_sample_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table.py::test_struct_of_arrays_encoding
+43 failed, 137 passed, 49 deselected, 1 xfailed, 2 warnings in 33.50s

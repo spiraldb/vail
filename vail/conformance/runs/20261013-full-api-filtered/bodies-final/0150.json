@@ -1,0 +1,18 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_table_matrix_join_combinations",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 497, in test_table_matrix_join_combinations\n    n_C1589 = m.filter_cols(m.s[:5] == 'C1589').count_cols()\n                            ~~~^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 316, in __getitem__\n    return slice_(self, name) if isinstance(name, slice) else index(self, name)\n           ^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py\", line 95, in slice_\n    _bmp_literal(value)\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py\", line 69, in _bmp_literal\n    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')\nNotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

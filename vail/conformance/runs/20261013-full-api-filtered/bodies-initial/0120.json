@@ -1,0 +1,13 @@
+{
+  "module": "matrixtable/test_file_formats.py",
+  "name": "test_backward_compatability_mt",
+  "variants": [],
+  "setup_errors": [
+    "line 90: ModuleNotFoundError: No module named 'hailtop'"
+  ],
+  "status": "blocked",
+  "phase": "setup_or_parameters",
+  "error_type": "NameError",
+  "error": "name 'mt_paths' is not defined",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 174, in worker\n    for value in evaluate(decorator.args[1]):\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 170, in <lambda>\n    evaluate = lambda node: eval(compile(ast.Expression(node), str(source), 'eval'), scope)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 93, in <module>\n    @pytest.mark.parametrize(\"path\", mt_paths)\n                                     ^^^^^^^^\nNameError: name 'mt_paths' is not defined\n"
+}

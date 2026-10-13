@@ -1,0 +1,18 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_sum_with_sparsify",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 689, in test_sum_with_sparsify\n    bm = BlockMatrix.from_ndarray(hnd, block_size=2).sparsify_rectangles([[2, 4, 4, 6]])\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.linalg'"
+  ],
+  "status": "failed_or_blocked"
+}

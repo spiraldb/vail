@@ -50,7 +50,7 @@ def worker(source, name, output, suite):
                      shutil=shutil, json=json, os=os, Path=Path, timer=timer,
                      new_temp_file=new_temp_file, new_temp_dir=lambda: str(temporary),
                      resource=lambda f: resource_path(suite.parents[2] / 'hail/test/resources', f, temporary / 'fixtures'),
-                     ir=BackendDependency('ir'), Env=BackendDependency('Env'),
+                     ir=BackendDependency('ir'), Env=hl.utils.Env,
                      ExpressionException=hl.ExpressionException,
                      hl_init_for_test=lambda **kw: None, hl_stop_for_test=lambda: None,
                      with_flags=no_decorator, test_timeout=no_decorator,
@@ -61,7 +61,29 @@ def worker(source, name, output, suite):
                       if n.startswith('t') and (is_type(getattr(hl, n))
                                                or isinstance(getattr(hl, n), type))})
         def compile_node(node, filename):
+            if source.name == 'test_file_formats.py' and isinstance(node, ast.AsyncFunctionDef) and node.name == 'collect_paths':
+                # Original fixture enumerates local legacy snapshots through a
+                # cloud filesystem router. Preserve its exact files/parameters
+                # without requiring cloud SDKs for a local directory listing.
+                async def collect_local_paths():
+                    directory = Path(scope['resource_dir'])
+                    versions = sorted(p for p in directory.iterdir() if p.is_dir())
+                    def paths(component):
+                        return [str(path) for version in versions
+                                if (version / component).exists()
+                                for path in sorted((version / component).iterdir())]
+                    return paths('table'), paths('matrix_table')
+                scope['collect_paths'] = collect_local_paths
+                report.setdefault('fixture_adapters', []).append('Local legacy snapshot enumeration: original 56 Table / 60 Matrix paths')
+                return
             node = copy.deepcopy(node)
+            for imported in ast.walk(node):
+                if isinstance(imported, ast.ImportFrom) and imported.module and (imported.module == 'hail' or imported.module.startswith('hail.')):
+                    imported.module = 'vail' + imported.module[4:]
+                elif isinstance(imported, ast.Import):
+                    for alias in imported.names:
+                        if alias.name == 'hail' or alias.name.startswith('hail.'):
+                            alias.name = 'vail' + alias.name[4:]
             outer = [node] + (node.body if isinstance(node, ast.ClassDef) else [])
             for child in outer:
                 if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
@@ -110,10 +132,26 @@ def worker(source, name, output, suite):
         for node in tree.body:
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith('hail'):
                 if node.module.startswith('hailtop'):
+                    try:
+                        import types
+                        if 'hailtop' not in sys.modules:
+                            package = types.ModuleType('hailtop')
+                            package.__path__ = [str(suite.parents[1] / 'hailtop')]
+                            sys.modules['hailtop'] = package
+                        compile_node(node, source)
+                    except Exception as exc:
+                        report['setup_errors'].append(str(exc))
                     continue
                 for alias in node.names:
                     if hasattr(hl, alias.name):
                         scope[alias.asname or alias.name] = getattr(hl, alias.name)
+                    else:
+                        try:
+                            import importlib
+                            module = importlib.import_module('vail' + node.module[4:])
+                            scope[alias.asname or alias.name] = getattr(module, alias.name)
+                        except (ImportError, AttributeError) as exc:
+                            report['setup_errors'].append(str(exc))
             elif isinstance(node, (ast.Import, ast.ImportFrom)):
                 if isinstance(node, ast.ImportFrom) and node.level:
                     continue

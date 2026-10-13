@@ -1,0 +1,32 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+______________________________ test_mt_eq[locus] _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_full_key.py:6: in test_mt_eq
+    assert expr.n_partitions() == 1
+E   assert 20 == 1
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x10fe87fd0>.n_partitions
+______________________________ test_ht_eq[locus] _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_full_key.py:14: in test_ht_eq
+    assert expr.n_partitions() == 1
+E   assert 20 == 1
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.Table object at 0x10811f910>.n_partitions
+______________________________ test_mt_eq[Locus] _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_full_key.py:6: in test_mt_eq
+    assert expr.n_partitions() == 1
+E   assert 20 == 1
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x10fe84350>.n_partitions
+______________________________ test_ht_eq[Locus] _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_full_key.py:14: in test_ht_eq
+    assert expr.n_partitions() == 1
+E   assert 20 == 1
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.Table object at 0x10de26210>.n_partitions
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_full_key.py::test_mt_eq[locus]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_full_key.py::test_ht_eq[locus]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_full_key.py::test_mt_eq[Locus]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_full_key.py::test_ht_eq[Locus]
+4 failed in 7.91s

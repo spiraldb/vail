@@ -1,0 +1,50 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_slicing_0",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {
+        "indices": "(0, 0)"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 707, in test_slicing_0\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "indices": "(5, 7)"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 707, in test_slicing_0\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "indices": "(-3, 9)"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 707, in test_slicing_0\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "indices": "(-8, -10)"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 707, in test_slicing_0\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.linalg'"
+  ],
+  "status": "failed_or_blocked"
+}

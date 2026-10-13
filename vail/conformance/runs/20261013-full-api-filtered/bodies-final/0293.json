@@ -1,0 +1,19 @@
+{
+  "module": "vds/test_vds.py",
+  "name": "test_read_dense_mt_and_to_dense_mt_equivalence",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'vds'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/vds/test_vds.py\", line 664, in test_read_dense_mt_and_to_dense_mt_equivalence\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n          ^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'vds'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'"
+  ],
+  "status": "failed_or_blocked"
+}

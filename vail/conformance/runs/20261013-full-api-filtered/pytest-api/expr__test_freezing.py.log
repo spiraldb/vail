@@ -1,0 +1,17 @@
+
+==================================== ERRORS ====================================
+______________________ ERROR collecting test_freezing.py _______________________
+ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_freezing.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/danielking/.local/share/uv/python/cpython-3.11.13-macos-aarch64-none/lib/python3.11/importlib/__init__.py:126: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_freezing.py:5: in <module>
+    from hailtop.hail_frozenlist import frozenlist
+/Users/danielking/projects/vail/hail/hail/python/hailtop/hail_frozenlist.py:3: in <module>
+    from frozenlist import FrozenList as _FrozenList
+E   ModuleNotFoundError: No module named 'frozenlist'
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_freezing.py
+1 error in 0.04s

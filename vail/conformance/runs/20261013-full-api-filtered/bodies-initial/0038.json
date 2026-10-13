@@ -1,0 +1,35 @@
+{
+  "module": "ggplot/test_ggplot.py",
+  "name": "test_weighted_bar",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'ggplot' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/ggplot/test_ggplot.py\", line 144, in test_weighted_bar\n    fig = ggplot(ht) + geom_bar(aes(x=ht.x, weight=ht.w))\n          ^^^^^^\nNameError: name 'ggplot' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'"
+  ],
+  "status": "failed_or_blocked"
+}

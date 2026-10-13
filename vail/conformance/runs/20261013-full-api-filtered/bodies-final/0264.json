@@ -1,0 +1,24 @@
+{
+  "module": "utils/test_utils.py",
+  "name": "test_struct_rich_comparison",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "contig 10 is not in reference genome GRCh37",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/utils/test_utils.py\", line 440, in test_struct_rich_comparison\n    struct = hl.Struct(locus=hl.Locus(contig=10, position=60515, reference_genome='GRCh37'), alleles=['C', 'T'])\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 6, in __init__\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/reference_genome.py\", line 33, in __post_init__\n    raise ValueError(f\"contig {self.contig!r} is not in reference genome {self.reference_genome.name}\")\nValueError: contig 10 is not in reference genome GRCh37\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.utils' has no attribute 'frozendict'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "module 'vail.utils' has no attribute 'with_local_temp_file'",
+    "No module named 'vail.utils.linkedlist'",
+    "module 'vail.utils.misc' has no attribute 'escape_id'",
+    "module 'vail.utils.misc' has no attribute 'escape_str'"
+  ],
+  "status": "failed_or_blocked"
+}

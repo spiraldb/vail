@@ -1,0 +1,9 @@
+{"kind": "inventory", "items": ["test_math.py::test_logit", "test_math.py::test_expit"]}
+{"kind": "started", "nodeid": "test_math.py::test_logit"}
+{"kind": "test", "nodeid": "test_math.py::test_logit", "when": "setup", "outcome": "passed", "duration": 0.0013743340969085693, "error": ""}
+{"kind": "test", "nodeid": "test_math.py::test_logit", "when": "call", "outcome": "failed", "duration": 8.033402264118195e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_math.py:7: in test_logit\n    assert hl.eval(hl.logit(0.5)) == 0.0\n                   ^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'logit'"}
+{"kind": "test", "nodeid": "test_math.py::test_logit", "when": "teardown", "outcome": "passed", "duration": 0.000114459078758955, "error": ""}
+{"kind": "started", "nodeid": "test_math.py::test_expit"}
+{"kind": "test", "nodeid": "test_math.py::test_expit", "when": "setup", "outcome": "passed", "duration": 0.00015287497080862522, "error": ""}
+{"kind": "test", "nodeid": "test_math.py::test_expit", "when": "call", "outcome": "failed", "duration": 6.758421659469604e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_math.py:14: in test_expit\n    assert hl.eval(hl.expit(0.0)) == 0.5\n                   ^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'expit'"}
+{"kind": "test", "nodeid": "test_math.py::test_expit", "when": "teardown", "outcome": "passed", "duration": 8.9708948507905e-05, "error": ""}

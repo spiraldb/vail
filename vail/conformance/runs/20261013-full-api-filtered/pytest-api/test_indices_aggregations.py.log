@@ -1,0 +1,140 @@
+FFFFFFFFFFFF                                                             [100%]
+=================================== FAILURES ===================================
+_____________________________ test_array_slice_end _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:7: in test_array_slice_end
+    ht = ht.annotate_rows(c=hl.array([1, 2, 3])[: ht.col_idx])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:678: in annotate_rows
+    return self._annotate("row", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:615: in _annotate
+    return self._project_axis(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:523: in _project_axis
+    fields = [
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:526: in <listcomp>
+    self._validate(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:341: in _validate
+    raise ExpressionException(
+E   vail.expressions.ExpressionException: scope violation: row expression uses incompatible axes: ['col']
+
+During handling of the above exception, another exception occurred:
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:10: in test_array_slice_end
+    assert "'col_idx' (indices ['column'])" in exc.args[0]
+E   assert "'col_idx' (indices ['column'])" in "scope violation: row expression uses incompatible axes: ['col']"
+____________________________ test_array_slice_start ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:18: in test_array_slice_start
+    ht = ht.annotate_rows(c=hl.array([1, 2, 3])[ht.col_idx :])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:678: in annotate_rows
+    return self._annotate("row", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:615: in _annotate
+    return self._project_axis(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:523: in _project_axis
+    fields = [
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:526: in <listcomp>
+    self._validate(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:341: in _validate
+    raise ExpressionException(
+E   vail.expressions.ExpressionException: scope violation: row expression uses incompatible axes: ['col']
+
+During handling of the above exception, another exception occurred:
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:21: in test_array_slice_start
+    assert "'col_idx' (indices ['column'])" in exc.args[0]
+E   assert "'col_idx' (indices ['column'])" in "scope violation: row expression uses incompatible axes: ['col']"
+____________________________ test_array_slice_step _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:29: in test_array_slice_step
+    ht = ht.annotate_rows(c=hl.array([1, 2, 3])[:: ht.col_idx])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:678: in annotate_rows
+    return self._annotate("row", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:615: in _annotate
+    return self._project_axis(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:523: in _project_axis
+    fields = [
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:526: in <listcomp>
+    self._validate(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:341: in _validate
+    raise ExpressionException(
+E   vail.expressions.ExpressionException: scope violation: row expression uses incompatible axes: ['col']
+
+During handling of the above exception, another exception occurred:
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:32: in test_array_slice_step
+    assert "'col_idx' (indices ['column'])" in exc.args[0]
+E   assert "'col_idx' (indices ['column'])" in "scope violation: row expression uses incompatible axes: ['col']"
+_________________________________ test_matmul __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:42: in test_matmul
+    ht = ht.annotate_rows(c=ht.b @ ht.a)
+                            ^^^^^^^^^^^
+E   TypeError: unsupported operand type(s) for @: 'Expression' and 'Expression'
+______________________________ test_ndarray_index ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:54: in test_ndarray_index
+    ht = ht.annotate_rows(c=ht.b[ht.col_idx])
+                            ^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:358: in __getitem__
+    raise TypeError("field access requires a struct expression")
+E   TypeError: field access requires a struct expression
+_______________________ test_ndarray_index_with_slice_1 ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:66: in test_ndarray_index_with_slice_1
+    ht = ht.annotate_rows(c=ht.b[ht.col_idx, :])
+                            ^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:358: in __getitem__
+    raise TypeError("field access requires a struct expression")
+E   TypeError: field access requires a struct expression
+_______________________ test_ndarray_index_with_slice_2 ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:78: in test_ndarray_index_with_slice_2
+    ht = ht.annotate_rows(c=ht.b[:, ht.col_idx])
+                            ^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:358: in __getitem__
+    raise TypeError("field access requires a struct expression")
+E   TypeError: field access requires a struct expression
+________________________ test_ndarray_index_with_None_1 ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:90: in test_ndarray_index_with_None_1
+    ht = ht.annotate_rows(c=ht.b[ht.col_idx, None])
+                            ^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:358: in __getitem__
+    raise TypeError("field access requires a struct expression")
+E   TypeError: field access requires a struct expression
+________________________ test_ndarray_index_with_None_2 ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:102: in test_ndarray_index_with_None_2
+    ht = ht.annotate_rows(c=ht.b[None, ht.col_idx])
+                            ^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:358: in __getitem__
+    raise TypeError("field access requires a struct expression")
+E   TypeError: field access requires a struct expression
+____________________________ test_ndarray_reshape_1 ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:114: in test_ndarray_reshape_1
+    ht = ht.annotate_rows(c=ht.b.reshape((ht.col_idx, 1)))
+                            ^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: reshape
+____________________________ test_ndarray_reshape_2 ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:126: in test_ndarray_reshape_2
+    ht = ht.annotate_rows(c=ht.b.reshape((1, ht.col_idx)))
+                            ^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: reshape
+__________________________ test_ndarray_reshape_tuple __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py:139: in test_ndarray_reshape_tuple
+    ht = ht.annotate_rows(c=ht.b.reshape(ht.a))
+                            ^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: reshape
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_array_slice_end
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_array_slice_start
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_array_slice_step
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_matmul
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_ndarray_index
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_ndarray_index_with_slice_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_ndarray_index_with_slice_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_ndarray_index_with_None_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_ndarray_index_with_None_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_ndarray_reshape_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_ndarray_reshape_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/test_indices_aggregations.py::test_ndarray_reshape_tuple
+12 failed in 0.50s

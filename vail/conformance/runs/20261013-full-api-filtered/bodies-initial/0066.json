@@ -1,0 +1,98 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_tree_matmul",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'m.tree_matmul(m.T, splits=2)'",
+        "y": "'nm @ nm.T'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 639, in test_tree_matmul\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'m.tree_matmul(nm.T, splits=2)'",
+        "y": "'nm @ nm.T'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 639, in test_tree_matmul\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'row.tree_matmul(row.T, splits=2)'",
+        "y": "'nrow @ nrow.T'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 639, in test_tree_matmul\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'row.tree_matmul(nrow.T, splits=2)'",
+        "y": "'nrow @ nrow.T'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 639, in test_tree_matmul\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'m.T.tree_matmul(m, splits=2)'",
+        "y": "'nm.T @ nm'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 639, in test_tree_matmul\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'m.T.tree_matmul(nm, splits=2)'",
+        "y": "'nm.T @ nm'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 639, in test_tree_matmul\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'row.T.tree_matmul(row, splits=2)'",
+        "y": "'nrow.T @ nrow'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 639, in test_tree_matmul\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'row.T.tree_matmul(nrow, splits=2)'",
+        "y": "'nrow.T @ nrow'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 639, in test_tree_matmul\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.linalg'"
+  ],
+  "status": "failed_or_blocked"
+}

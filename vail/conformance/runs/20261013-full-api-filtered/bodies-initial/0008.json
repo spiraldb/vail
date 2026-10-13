@@ -1,0 +1,16 @@
+{
+  "module": "expr/test_freezing.py",
+  "name": "test_collect_as_set_struct_of_list",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/expr/test_freezing.py\", line 49, in test_collect_as_set_struct_of_list\n    assert result == {(hl.Struct(bad=frozenlist(['hello']), good=3))}\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

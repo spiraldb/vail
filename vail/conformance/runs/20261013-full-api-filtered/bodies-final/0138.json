@@ -1,0 +1,16 @@
+{
+  "module": "plot/test_plot.py",
+  "name": "test_manhattan",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'balding_nichols_model'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/plot/test_plot.py\", line 56, in test_manhattan\n    ht = hl.balding_nichols_model(1, n_variants=100, n_samples=1).rows()\n         ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'balding_nichols_model'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

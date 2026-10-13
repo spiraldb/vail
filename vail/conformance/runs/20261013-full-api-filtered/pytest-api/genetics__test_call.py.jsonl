@@ -1,0 +1,25 @@
+{"kind": "inventory", "items": ["test_call.py::Tests::test_haploid", "test_call.py::Tests::test_het", "test_call.py::Tests::test_hom_ref", "test_call.py::Tests::test_hom_var", "test_call.py::Tests::test_zeroploid", "test_call.py::test_call_rich_comparison"]}
+{"kind": "started", "nodeid": "test_call.py::Tests::test_haploid"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_haploid", "when": "setup", "outcome": "passed", "duration": 0.0017830829601734877, "error": ""}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_haploid", "when": "call", "outcome": "failed", "duration": 0.00011691683903336525, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_call.py:63: in test_haploid\n    self.assertTrue(c_haploid.is_haploid())\n                    ^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'Call' object has no attribute 'is_haploid'"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_haploid", "when": "teardown", "outcome": "passed", "duration": 7.950002327561378e-05, "error": ""}
+{"kind": "started", "nodeid": "test_call.py::Tests::test_het"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_het", "when": "setup", "outcome": "passed", "duration": 0.00023908307775855064, "error": ""}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_het", "when": "call", "outcome": "failed", "duration": 9.454204700887203e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_call.py:30: in test_het\n    self.assertFalse(c_het_phased.is_haploid())\n                     ^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'Call' object has no attribute 'is_haploid'"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_het", "when": "teardown", "outcome": "passed", "duration": 5.533290095627308e-05, "error": ""}
+{"kind": "started", "nodeid": "test_call.py::Tests::test_hom_ref"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_hom_ref", "when": "setup", "outcome": "passed", "duration": 0.00014199991710484028, "error": ""}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_hom_ref", "when": "call", "outcome": "failed", "duration": 7.954193279147148e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_call.py:13: in test_hom_ref\n    self.assertFalse(c_hom_ref.is_haploid())\n                     ^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'Call' object has no attribute 'is_haploid'"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_hom_ref", "when": "teardown", "outcome": "passed", "duration": 4.6958914026618004e-05, "error": ""}
+{"kind": "started", "nodeid": "test_call.py::Tests::test_hom_var"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_hom_var", "when": "setup", "outcome": "passed", "duration": 0.00011179200373589993, "error": ""}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_hom_var", "when": "call", "outcome": "failed", "duration": 6.716698408126831e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_call.py:46: in test_hom_var\n    self.assertFalse(c_hom_var.is_haploid())\n                     ^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'Call' object has no attribute 'is_haploid'"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_hom_var", "when": "teardown", "outcome": "passed", "duration": 4.179193638265133e-05, "error": ""}
+{"kind": "started", "nodeid": "test_call.py::Tests::test_zeroploid"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_zeroploid", "when": "setup", "outcome": "passed", "duration": 0.00011566607281565666, "error": ""}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_zeroploid", "when": "call", "outcome": "failed", "duration": 7.070810534060001e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/genetics/test_call.py:79: in test_zeroploid\n    self.assertFalse(c_zeroploid.is_haploid())\n                     ^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'Call' object has no attribute 'is_haploid'"}
+{"kind": "test", "nodeid": "test_call.py::Tests::test_zeroploid", "when": "teardown", "outcome": "passed", "duration": 5.3625088185071945e-05, "error": ""}
+{"kind": "started", "nodeid": "test_call.py::test_call_rich_comparison"}
+{"kind": "test", "nodeid": "test_call.py::test_call_rich_comparison", "when": "setup", "outcome": "passed", "duration": 0.00010474980808794498, "error": ""}
+{"kind": "test", "nodeid": "test_call.py::test_call_rich_comparison", "when": "call", "outcome": "passed", "duration": 0.059074291959404945, "error": ""}
+{"kind": "test", "nodeid": "test_call.py::test_call_rich_comparison", "when": "teardown", "outcome": "passed", "duration": 8.066697046160698e-05, "error": ""}

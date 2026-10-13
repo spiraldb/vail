@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py", line 282, in <module>
+    main()
+  File "/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py", line 246, in main
+    worker(args.worker_source, args.worker_name, args.output, args.suite)
+  File "/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py", line 137, in worker
+    scope[alias.asname or alias.name] = getattr(module, alias.name)
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/utils/java.py", line 17, in __getattr__
+    raise NotImplementedError(f'vail.utils.java.{name} requires Hail JVM support')
+NotImplementedError: vail.utils.java.choose_backend requires Hail JVM support

@@ -1,0 +1,62 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_sparse_transposition",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {
+        "block_list": "[1, 2]",
+        "nrows": "4",
+        "ncols": "4",
+        "block_size": "2"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 1333, in test_sparse_transposition\n    bm = BlockMatrix.from_numpy(np_square, block_size=block_size)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "block_list": "[4, 8, 10, 12, 13, 14]",
+        "nrows": "15",
+        "ncols": "15",
+        "block_size": "4"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 1333, in test_sparse_transposition\n    bm = BlockMatrix.from_numpy(np_square, block_size=block_size)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "block_list": "[2, 5, 8, 10, 11]",
+        "nrows": "10",
+        "ncols": "15",
+        "block_size": "4"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 1333, in test_sparse_transposition\n    bm = BlockMatrix.from_numpy(np_square, block_size=block_size)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "block_list": "[2, 5, 8, 10, 11]",
+        "nrows": "15",
+        "ncols": "11",
+        "block_size": "4"
+      },
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'BlockMatrix' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 1333, in test_sparse_transposition\n    bm = BlockMatrix.from_numpy(np_square, block_size=block_size)\n         ^^^^^^^^^^^\nNameError: name 'BlockMatrix' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.linalg'"
+  ],
+  "status": "failed_or_blocked"
+}

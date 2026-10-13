@@ -1,0 +1,38 @@
+EEEE                                                                     [100%]
+==================================== ERRORS ====================================
+_________________ ERROR at setup of test_ibd_default_arguments _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/methods/relatedness/test_identity_by_descent.py:15: in ds
+    dataset = hl.balding_nichols_model(1, 100, 100)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+______________________ ERROR at setup of test_ibd_0_and_1 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/methods/relatedness/test_identity_by_descent.py:15: in ds
+    dataset = hl.balding_nichols_model(1, 100, 100)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+_______ ERROR at setup of test_ibd_does_not_error_with_dummy_maf_float64 _______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/methods/relatedness/test_identity_by_descent.py:15: in ds
+    dataset = hl.balding_nichols_model(1, 100, 100)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+_______ ERROR at setup of test_ibd_does_not_error_with_dummy_maf_float32 _______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/methods/relatedness/test_identity_by_descent.py:15: in ds
+    dataset = hl.balding_nichols_model(1, 100, 100)
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:108
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:108: PytestUnknownMarkWarning: Unknown pytest.mark.timeout - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    return pytest.mark.timeout(timeout)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/methods/relatedness/test_identity_by_descent.py::test_ibd_default_arguments
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/methods/relatedness/test_identity_by_descent.py::test_ibd_0_and_1
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/methods/relatedness/test_identity_by_descent.py::test_ibd_does_not_error_with_dummy_maf_float64
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/methods/relatedness/test_identity_by_descent.py::test_ibd_does_not_error_with_dummy_maf_float32
+1 deselected, 2 warnings, 4 errors in 0.05s

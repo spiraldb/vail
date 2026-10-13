@@ -1,0 +1,38 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_query_table_interval_key",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x10df2fb20>",
+        "expected": "[Struct(idx=20, interval=Interval(start=20, end=70, includes_start=True, includes_end=False, point_type=int32))]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x10df2fb80>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.StructExpression object at 0x10df22340>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x10df2fac0>",
+        "expected": "[Struct(idx=20, interval=Interval(start=20, end=70, includes_start=True, includes_end=False, point_type=int32))]"
+      }
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "passed"
+}

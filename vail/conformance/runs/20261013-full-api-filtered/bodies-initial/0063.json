@@ -1,0 +1,39 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_block_matrix_raises",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "expr": "\"x + np.array(['one'], dtype=str)\"",
+        "expectation": "RaisesExc(TypeError)"
+      }
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'m @ m '",
+        "expectation": "RaisesExc(ValueError)"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "locals must be a mapping",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 590, in test_block_matrix_raises\n    eval(expr, {'np': np}, block_matrix_bindings)\nTypeError: locals must be a mapping\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'m @ nm'",
+        "expectation": "RaisesExc(ValueError)"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "locals must be a mapping",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/linalg/test_linalg.py\", line 590, in test_block_matrix_raises\n    eval(expr, {'np': np}, block_matrix_bindings)\nTypeError: locals must be a mapping\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.linalg'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,37 @@
+{"kind": "inventory", "items": ["test_show.py::test_show_1", "test_show.py::test_show_2", "test_show.py::test_show_3", "test_show.py::test_show_4", "test_show.py::test_show_5", "test_show.py::test_show_rows_table", "test_show.py::test_show_negative", "test_show.py::test_show_mt_duplicate_col_key", "test_show.py::test_show_mt_fewer_cols"]}
+{"kind": "started", "nodeid": "test_show.py::test_show_1"}
+{"kind": "test", "nodeid": "test_show.py::test_show_1", "when": "setup", "outcome": "passed", "duration": 0.001428249990567565, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_1", "when": "call", "outcome": "failed", "duration": 7.162499241530895e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_show.py:5: in test_show_1\n    mt = hl.balding_nichols_model(3, 10, 10)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'balding_nichols_model'"}
+{"kind": "test", "nodeid": "test_show.py::test_show_1", "when": "teardown", "outcome": "passed", "duration": 7.183291018009186e-05, "error": ""}
+{"kind": "started", "nodeid": "test_show.py::test_show_2"}
+{"kind": "test", "nodeid": "test_show.py::test_show_2", "when": "setup", "outcome": "passed", "duration": 0.0001464590895920992, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_2", "when": "call", "outcome": "failed", "duration": 5.929195322096348e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_show.py:11: in test_show_2\n    mt = hl.balding_nichols_model(3, 10, 10)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'balding_nichols_model'"}
+{"kind": "test", "nodeid": "test_show.py::test_show_2", "when": "teardown", "outcome": "passed", "duration": 4.679197445511818e-05, "error": ""}
+{"kind": "started", "nodeid": "test_show.py::test_show_3"}
+{"kind": "test", "nodeid": "test_show.py::test_show_3", "when": "setup", "outcome": "passed", "duration": 0.0001163750421255827, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_3", "when": "call", "outcome": "failed", "duration": 5.533313378691673e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_show.py:17: in test_show_3\n    mt = hl.balding_nichols_model(3, 10, 10)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'balding_nichols_model'"}
+{"kind": "test", "nodeid": "test_show.py::test_show_3", "when": "teardown", "outcome": "passed", "duration": 4.3084146454930305e-05, "error": ""}
+{"kind": "started", "nodeid": "test_show.py::test_show_4"}
+{"kind": "test", "nodeid": "test_show.py::test_show_4", "when": "setup", "outcome": "passed", "duration": 0.00010833400301635265, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_4", "when": "call", "outcome": "failed", "duration": 4.424992948770523e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_show.py:23: in test_show_4\n    mt = hl.balding_nichols_model(3, 10, 10)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'balding_nichols_model'"}
+{"kind": "test", "nodeid": "test_show.py::test_show_4", "when": "teardown", "outcome": "passed", "duration": 4.0499959141016006e-05, "error": ""}
+{"kind": "started", "nodeid": "test_show.py::test_show_5"}
+{"kind": "test", "nodeid": "test_show.py::test_show_5", "when": "setup", "outcome": "passed", "duration": 0.00010208413004875183, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_5", "when": "call", "outcome": "failed", "duration": 4.691607318818569e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_show.py:29: in test_show_5\n    mt = hl.balding_nichols_model(3, 10, 10)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'balding_nichols_model'"}
+{"kind": "test", "nodeid": "test_show.py::test_show_5", "when": "teardown", "outcome": "passed", "duration": 4.079216159880161e-05, "error": ""}
+{"kind": "started", "nodeid": "test_show.py::test_show_rows_table"}
+{"kind": "test", "nodeid": "test_show.py::test_show_rows_table", "when": "setup", "outcome": "passed", "duration": 0.00010154210031032562, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_rows_table", "when": "call", "outcome": "failed", "duration": 4.187505692243576e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_show.py:35: in test_show_rows_table\n    t = hl.balding_nichols_model(3, 10, 10).rows()\n        ^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'balding_nichols_model'"}
+{"kind": "test", "nodeid": "test_show.py::test_show_rows_table", "when": "teardown", "outcome": "passed", "duration": 3.783288411796093e-05, "error": ""}
+{"kind": "started", "nodeid": "test_show.py::test_show_negative"}
+{"kind": "test", "nodeid": "test_show.py::test_show_negative", "when": "setup", "outcome": "passed", "duration": 9.650015272200108e-05, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_negative", "when": "call", "outcome": "passed", "duration": 0.057832041988149285, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_negative", "when": "teardown", "outcome": "passed", "duration": 6.158300675451756e-05, "error": ""}
+{"kind": "started", "nodeid": "test_show.py::test_show_mt_duplicate_col_key"}
+{"kind": "test", "nodeid": "test_show.py::test_show_mt_duplicate_col_key", "when": "setup", "outcome": "passed", "duration": 0.0001701659057289362, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_mt_duplicate_col_key", "when": "call", "outcome": "failed", "duration": 0.05200529214926064, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_show.py:51: in test_show_mt_duplicate_col_key\n    assert len(showobj.table_show.table.row) == len(mt.row) + shown_cols\n               ^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'str' object has no attribute 'table_show'"}
+{"kind": "test", "nodeid": "test_show.py::test_show_mt_duplicate_col_key", "when": "teardown", "outcome": "passed", "duration": 7.083313539624214e-05, "error": ""}
+{"kind": "started", "nodeid": "test_show.py::test_show_mt_fewer_cols"}
+{"kind": "test", "nodeid": "test_show.py::test_show_mt_fewer_cols", "when": "setup", "outcome": "passed", "duration": 0.00012874999083578587, "error": ""}
+{"kind": "test", "nodeid": "test_show.py::test_show_mt_fewer_cols", "when": "call", "outcome": "failed", "duration": 0.049803457921370864, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_show.py:61: in test_show_mt_fewer_cols\n    assert len(showobj.table_show.table.row) == len(mt.row) + mt.count_cols()\n               ^^^^^^^^^^^^^^^^^^\nE   AttributeError: 'str' object has no attribute 'table_show'"}
+{"kind": "test", "nodeid": "test_show.py::test_show_mt_fewer_cols", "when": "teardown", "outcome": "passed", "duration": 0.0001074580941349268, "error": ""}

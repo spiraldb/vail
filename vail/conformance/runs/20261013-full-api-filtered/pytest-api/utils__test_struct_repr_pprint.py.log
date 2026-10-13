@@ -1,0 +1,99 @@
+...F.FF...F.FFFF.F                                                       [100%]
+=================================== FAILURES ===================================
+_____________________ test_repr_non_identifier_key_struct ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:19: in test_repr_non_identifier_key_struct
+    assert repr(hl.Struct(**{'x': 3, 'y ': 3})) == "Struct(**{'x': 3, 'y ': 3})"
+E   assert 'Struct(x=3, y =3)' == "Struct(**{'x': 3, 'y ': 3})"
+E     
+E     - Struct(**{'x': 3, 'y ': 3})
+E     + Struct(x=3, y =3)
+_______________ test_repr_struct_in_struct_some_non_identifiers1 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:27: in test_repr_struct_in_struct_some_non_identifiers1
+    assert repr(hl.Struct(x=3, y=3, z=hl.Struct(**{'a ': 5}))) == "Struct(x=3, y=3, z=Struct(**{'a ': 5}))"
+E   assert 'Struct(x=3, ...Struct(a =5))' == "Struct(x=3, ...**{'a ': 5}))"
+E     
+E     - Struct(x=3, y=3, z=Struct(**{'a ': 5}))
+E     ?                           ----  ^^^ -
+E     + Struct(x=3, y=3, z=Struct(a =5))
+E     ?                             ^
+_______________ test_repr_struct_in_struct_some_non_identifiers2 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:31: in test_repr_struct_in_struct_some_non_identifiers2
+    assert repr(hl.Struct(**{'x': 3, 'y ': 3, 'z': hl.Struct(a=5)})) == "Struct(**{'x': 3, 'y ': 3, 'z': Struct(a=5)})"
+E   assert 'Struct(x=3, ...=Struct(a=5))' == "Struct(**{'x...Struct(a=5)})"
+E     
+E     - Struct(**{'x': 3, 'y ': 3, 'z': Struct(a=5)})
+E     ?        ---- ^^^   -  ^^^   - ^^^           -
+E     + Struct(x=3, y =3, z=Struct(a=5))
+E     ?         ^     ^    ^
+____________________ test_pformat_non_identifier_key_struct ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:47: in test_pformat_non_identifier_key_struct
+    assert pformat(hl.Struct(**{'x': 3, 'y ': 3})) == "Struct(**{'x': 3, 'y ': 3})"
+E   assert 'Struct(x=3, y =3)' == "Struct(**{'x': 3, 'y ': 3})"
+E     
+E     - Struct(**{'x': 3, 'y ': 3})
+E     + Struct(x=3, y =3)
+_____________ test_pformat_struct_in_struct_some_non_identifiers1 ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:55: in test_pformat_struct_in_struct_some_non_identifiers1
+    assert pformat(hl.Struct(x=3, y=3, z=hl.Struct(**{'a ': 5}))) == "Struct(x=3, y=3, z=Struct(**{'a ': 5}))"
+E   assert 'Struct(x=3, ...Struct(a =5))' == "Struct(x=3, ...**{'a ': 5}))"
+E     
+E     - Struct(x=3, y=3, z=Struct(**{'a ': 5}))
+E     ?                           ----  ^^^ -
+E     + Struct(x=3, y=3, z=Struct(a =5))
+E     ?                             ^
+_____________ test_pformat_struct_in_struct_some_non_identifiers2 ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:59: in test_pformat_struct_in_struct_some_non_identifiers2
+    assert (
+E   assert 'Struct(x=3, ...=Struct(a=5))' == "Struct(**{'x...Struct(a=5)})"
+E     
+E     - Struct(**{'x': 3, 'y ': 3, 'z': Struct(a=5)})
+E     ?        ---- ^^^   -  ^^^   - ^^^           -
+E     + Struct(x=3, y =3, z=Struct(a=5))
+E     ?         ^     ^    ^
+___________________ test_pformat_small_struct_in_big_struct ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:74: in test_pformat_small_struct_in_big_struct
+    assert pformat(x) == expected
+E   assert "Struct(a0=0,...b3='nanana'))" == "Struct(a0=0,...b3='nanana'))"
+E     
+E     + Struct(a0=0, a1=1, a2=2, a3=3, a4=4, a5=Struct(b0='', b1='na', b2='nana', b3='nanana'))
+E     - Struct(a0=0,
+E     -        a1=1,
+E     -        a2=2,
+E     -        a3=3,
+E     -        a4=4,
+E     -        a5=Struct(b0='', b1='na', b2='nana', b3='nanana'))
+___________________ test_pformat_big_struct_in_small_struct ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:86: in test_pformat_big_struct_in_small_struct
+    assert pformat(x) == expected
+E   assert "Struct(a5=St...djksfhdsjk'))" == "Struct(a5=St...djksfhdsjk'))"
+E     
+E     + Struct(a5=Struct(b0='', b1='na', b2='nana', b3='nanana', b5='ndasdfhjwafdhjskfdshjkfhdjksfhdsjk'))
+E     - Struct(a5=Struct(b0='',
+E     -                  b1='na',
+E     -                  b2='nana',
+E     -                  b3='nanana',
+E     -                  b5='ndasdfhjwafdhjskfdshjkfhdjksfhdsjk'))
+_____________________ test_array_of_struct_non_identifier ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py:118: in test_array_of_struct_non_identifier
+    assert pformat([hl.Struct(**{'x': 3243, 'y ': 123}) for _ in range(10)]) == expected
+E   assert '[Struct(x=32...243, y =123)]' == "[Struct(**{'... 'y ': 123})]"
+E     
+E     - [Struct(**{'x': 3243, 'y ': 123}),
+E     ?         ---- ^^^      -  ^^^   -
+E     + [Struct(x=3243, y =123),
+E     ?          ^        ^
+E     -  Struct(**{'x': 3243, 'y ': 123}),
+E     ?         ---- ^^^      -  ^^^   -...
+E     
+E     ...Full output truncated (34 lines hidden), use '-vv' to show
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_repr_non_identifier_key_struct
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_repr_struct_in_struct_some_non_identifiers1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_repr_struct_in_struct_some_non_identifiers2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_pformat_non_identifier_key_struct
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_pformat_struct_in_struct_some_non_identifiers1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_pformat_struct_in_struct_some_non_identifiers2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_pformat_small_struct_in_big_struct
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_pformat_big_struct_in_small_struct
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/utils/test_struct_repr_pprint.py::test_array_of_struct_non_identifier
+9 failed, 9 passed in 0.06s

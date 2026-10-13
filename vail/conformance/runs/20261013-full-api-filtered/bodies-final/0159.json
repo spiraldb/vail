@@ -1,0 +1,18 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_rename",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "_indices",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 926, in test_rename\n    self.assertEqual(renamed['bar2']._indices, renamed._row_indices)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 664, in __getattr__\n    raise AttributeError(name)\nAttributeError: _indices\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

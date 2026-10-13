@@ -1,0 +1,74 @@
+FFFFFFFFFF                                                               [100%]
+=================================== FAILURES ===================================
+__________________________________ test_mt_lt __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:6: in test_mt_lt
+    assert expr.n_partitions() == 15
+E   assert 20 == 15
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x107815110>.n_partitions
+__________________________________ test_mt_le __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:12: in test_mt_le
+    assert expr.n_partitions() == 15
+E   assert 20 == 15
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x10bf67690>.n_partitions
+__________________________________ test_mt_eq __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:18: in test_mt_eq
+    assert expr.n_partitions() == 1
+E   assert 20 == 1
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x105a576d0>.n_partitions
+__________________________________ test_mt_ge __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:26: in test_mt_ge
+    assert expr.n_partitions() == 6
+E   assert 20 == 6
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x10bf66650>.n_partitions
+__________________________________ test_mt_gt __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:32: in test_mt_gt
+    assert expr.n_partitions() == 6
+E   assert 20 == 6
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x12895b1d0>.n_partitions
+__________________________________ test_ht_lt __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:38: in test_ht_lt
+    assert expr.n_partitions() == 15
+E   assert 20 == 15
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.Table object at 0x128db2e90>.n_partitions
+__________________________________ test_ht_le __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:44: in test_ht_le
+    assert expr.n_partitions() == 15
+E   assert 20 == 15
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.Table object at 0x10bf65810>.n_partitions
+__________________________________ test_ht_eq __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:50: in test_ht_eq
+    assert expr.n_partitions() == 1
+E   assert 20 == 1
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.Table object at 0x128db0450>.n_partitions
+__________________________________ test_ht_ge __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:96: in test_ht_ge
+    assert expr.n_partitions() == 6
+E   assert 20 == 6
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.Table object at 0x12895a190>.n_partitions
+__________________________________ test_ht_gt __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py:102: in test_ht_gt
+    assert expr.n_partitions() == 6
+E   assert 20 == 6
+E    +  where 20 = n_partitions()
+E    +    where n_partitions = <vail.Table object at 0x108aef150>.n_partitions
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_mt_lt
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_mt_le
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_mt_eq
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_mt_ge
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_mt_gt
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_ht_lt
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_ht_le
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_ht_eq
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_ht_ge
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/extract_intervals/test_locus_position.py::test_ht_gt
+10 failed in 7.84s

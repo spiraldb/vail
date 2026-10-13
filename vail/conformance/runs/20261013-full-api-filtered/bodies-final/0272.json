@@ -1,0 +1,20 @@
+{
+  "module": "vds/test_combiner.py",
+  "name": "test_custom_call_fields",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'TemporaryDirectory'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/vds/test_combiner.py\", line 287, in test_custom_call_fields\n    with hl.TemporaryDirectory() as tmpdir:\n         ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'TemporaryDirectory'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'"
+  ],
+  "status": "failed_or_blocked"
+}

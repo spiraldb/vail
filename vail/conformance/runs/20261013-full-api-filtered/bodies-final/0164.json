@@ -1,0 +1,18 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_write_stage_locally",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "staging and custom codecs are not supported",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 1081, in test_write_stage_locally\n    t.write(f, stage_locally=True)\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py\", line 480, in write\n    raise NotImplementedError(\"staging and custom codecs are not supported\")\nNotImplementedError: staging and custom codecs are not supported\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

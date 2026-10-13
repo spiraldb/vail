@@ -1,0 +1,19 @@
+{
+  "module": "genetics/test_pedigree.py",
+  "name": "Tests.test_trios",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'Trio' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/genetics/test_pedigree.py\", line 11, in test_trios\n    t1 = Trio('kid1', pat_id='dad1', is_female=True)\n         ^^^^\nNameError: name 'Trio' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.genetics' has no attribute 'Pedigree'",
+    "module 'vail.genetics' has no attribute 'Trio'"
+  ],
+  "status": "failed_or_blocked"
+}

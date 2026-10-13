@@ -1,0 +1,18 @@
+........FF....                                                           [100%]
+=================================== FAILURES ===================================
+_____________________ test_raises_when_no_rows_and_entries _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table_from_parts.py:118: in test_raises_when_no_rows_and_entries
+    hl.MatrixTable.from_parts(cols=TestData.cols)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1015: in from_parts
+    raise ValueError(
+E   ValueError: provide row and column dimensions through rows, cols, or entries
+_____________________ test_raises_when_no_cols_and_entries _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table_from_parts.py:123: in test_raises_when_no_cols_and_entries
+    hl.MatrixTable.from_parts(rows=TestData.rows)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:1015: in from_parts
+    raise ValueError(
+E   ValueError: provide row and column dimensions through rows, cols, or entries
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table_from_parts.py::test_raises_when_no_rows_and_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/matrixtable/test_matrix_table_from_parts.py::test_raises_when_no_cols_and_entries
+2 failed, 12 passed in 0.59s

@@ -1,0 +1,1238 @@
+FF.FF.........FF...F....F..F.FF..FFFF....F..........FF.........F.F.F..FF [ 26%]
+FF.FFFFFFFF.FF.F.FF.FF..F.F.FF.F.F..FFFF.FFF.FFFFFF..........F.......... [ 53%]
+.F.F.FF.F.FFFFFFFF.FFF..FF.FFFFFFFFFFFFFFFFF................FFFFFFF...FF [ 80%]
+.F.FFFFF.FFFF.FFFFFF.FEEEE.F.FFFFFFFFFFFFFFFFFFFFFFFFF                   [100%]
+==================================== ERRORS ====================================
+_______________ ERROR at setup of test_approx_cdf_accuracy[True] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4229: in cdf_test_data
+    with hl.TemporaryDirectory(ensure_exists=False) as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+___________________ ERROR at setup of test_cdf_combine[True] ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4229: in cdf_test_data
+    with hl.TemporaryDirectory(ensure_exists=False) as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+______________ ERROR at setup of test_approx_cdf_accuracy[False] _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4229: in cdf_test_data
+    with hl.TemporaryDirectory(ensure_exists=False) as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+__________________ ERROR at setup of test_cdf_combine[False] ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4229: in cdf_test_data
+    with hl.TemporaryDirectory(ensure_exists=False) as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+=================================== FAILURES ===================================
+________________________________ Tests.test_abs ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2939: in test_abs
+    self.assertEqual(hl.eval(hl.abs(-5)), 5)
+                             ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'abs'
+_____________________________ Tests.test_addition ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1972: in test_addition
+    _test_many_equal_typed([
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:31: in _test_many_equal_typed
+    actuals, actual_type = hl.eval_typed(hl.tuple(expressions))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1562: in eval_typed
+    return eval(expr), expr.dtype
+           ^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: incompatible types Array { array: Primitive(Float32) } and Array { array: Primitive(Float64) }
+_______________________ Tests.test_agg_array_agg_errors ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:747: in test_agg_array_agg_errors
+    ht.aggregate(hl.agg.array_agg(lambda x: hl.agg.sum(x), ht.a))
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1132: in aggregate
+    return eval(result)
+           ^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: array_agg requires equal array lengths, found 0 and 1
+_____________________ Tests.test_agg_array_agg_sum_vs_sum ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:740: in test_agg_array_agg_sum_vs_sum
+    ht = hl.utils.range_table(25).annotate(x=hl.range(0, 10).map(lambda _: hl.rand_bool(0.5)))
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:740: in <lambda>
+    ht = hl.utils.range_table(25).annotate(x=hl.range(0, 10).map(lambda _: hl.rand_bool(0.5)))
+                                                                           ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_bool'
+____________________ Tests.test_agg_collect_all_types_runs _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:830: in test_agg_collect_all_types_runs
+    hl.agg.collect(hl.call(0, 0, phased=ht.x)),
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:1155: in call
+    return literal(Call(tuple(alleles), phased))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:202: in __init__
+    raise TypeError("phased must be bool")
+E   TypeError: phased must be bool
+_____________________________ Tests.test_agg_corr ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1475: in test_agg_corr
+    tests=hl.range(0, 10).map(
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1477: in <lambda>
+    x=hl.if_else(hl.rand_bool(0.1), hl.missing(hl.tfloat64), hl.rand_unif(-10, 10)),
+                 ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_bool'
+__________________________ Tests.test_agg_group_by_1 ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:943: in test_agg_group_by_1
+    assert aggregate == expected
+E   assert {0: [5, 7, 1,..., 4, 8, 6, 0]} == {0: [1, 3, 5,... 6, 8, 10, 0]}
+E     
+E     Differing items:
+E     {0: [5, 7, 1, 9, 3, 0]} != {0: [1, 3, 5, 7, 9, 0]}
+E     {1: [10, 2, 4, 8, 6, 0]} != {1: [2, 4, 6, 8, 10, 0]}
+E     Use -v to get more diff
+_________________________ Tests.test_agg_prev_nonnull __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1702: in test_agg_prev_nonnull
+    hl._values_similar(
+    ^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_values_similar'
+____________________________ Tests.test_aggfold_agg ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:587: in test_aggfold_agg
+    self.assertEqual(sum_and_product, hl.Struct(x=4950, y=9.332621544394414e157))
+E   AssertionError: Struct(x=4950, y=9.33262154439441e+157) != Struct(x=4950, y=9.332621544394414e+157)
+______________________ Tests.test_aggregator_any_and_all _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1677: in test_aggregator_any_and_all
+    ).cache()
+      ^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: cache
+________________________ Tests.test_aggregator_bindings ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1051: in test_aggregator_bindings
+    with self.assertRaises(hl.expr.ExpressionException):
+E   AssertionError: ExpressionException not raised
+_________________ Tests.test_aggregator_group_by_sorts_result __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1470: in test_aggregator_group_by_sorts_result
+    self.assertEqual(grouped_expr, hl.eval(hl.sorted(grouped_expr)))
+                                           ^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/collections.py:344: in sorted_
+    raise NotImplementedError("array_sort is not yet enabled for this element type")
+E   NotImplementedError: array_sort is not yet enabled for this element type
+_______________________ Tests.test_aggregator_info_score _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1426: in test_aggregator_info_score
+    mt = hl.import_gen(gen_file, sample_file=sample_file)
+         ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'
+___________ Tests.test_aggregator_info_score_works_with_bgen_import ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1450: in test_aggregator_info_score_works_with_bgen_import
+    bgenmt = hl.import_bgen(resource('random.bgen'), ['GT', 'GP'], resource('random.sample'))
+             ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'
+_________________________ Tests.test_aggregator_scope __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1007: in test_aggregator_scope
+    t.aggregate(hl.agg.explode(lambda elt: hl.agg.sum(elt) + elt, [t.idx, t.idx + 1]))
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1127: in aggregate
+    native = native.aggregate_globals_json(
+E   ValueError: invalid expression: unbound lambda variable "f2b1469d8b714461886914bddc4af482"
+________________________ Tests.test_aggregators_linreg _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1354: in test_aggregators_linreg
+    t = t.add_index()
+        ^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:393: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: add_index
+_________________________ Tests.test_argmin_and_argmax _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2956: in test_argmin_and_argmax
+    self.assertEqual(hl.eval(hl.argmax(a)), 3)
+                             ^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'argmax'
+_____________________ Tests.test_array_and_if_requiredness _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3919: in test_array_and_if_requiredness
+    hl.tuple((mt.AD, mt.PL)).show()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: show
+___________________________ Tests.test_array_methods ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2729: in test_array_methods
+    hl.flatmap(lambda x: hl.set(hl.range(0, x.length()).map(lambda i: x[i])), {"ABC", "AAa", "BD"}),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/collection_functions.py:110: in flatmap
+    return ops.flatmap(value, f) if isinstance(value.dtype, tset) else value._array_flatmap(f)
+           ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/collections.py:282: in flatmap
+    mapped = value._array_map(callback)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/collections.py:278: in callback
+    result = as_expr(f(item))
+                     ^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2729: in <lambda>
+    hl.flatmap(lambda x: hl.set(hl.range(0, x.length()).map(lambda i: x[i])), {"ABC", "AAa", "BD"}),
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2729: in <lambda>
+    hl.flatmap(lambda x: hl.set(hl.range(0, x.length()).map(lambda i: x[i])), {"ABC", "AAa", "BD"}),
+                                                                      ^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:316: in __getitem__
+    return slice_(self, name) if isinstance(name, slice) else index(self, name)
+                                                              ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:104: in index
+    text = _bmp_literal(value)
+           ^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:69: in _bmp_literal
+    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')
+E   NotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported
+___________________________ Tests.test_array_slicing ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:306: in test_array_slicing
+    hl.eval(ha[::0])
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: invalid expression: step cannot be 0 for array slice
+___________________________ Tests.test_binary_search ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4069: in test_binary_search
+    assert hl.eval(hl.map(lambda x: hl.binary_search(a, x), values)) == expected
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/collection_functions.py:56: in map
+    return ops.set_map(value, f) if isinstance(value.dtype, tset) else value._array_map(f)
+                                                                       ^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4069: in <lambda>
+    assert hl.eval(hl.map(lambda x: hl.binary_search(a, x), values)) == expected
+                                    ^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'binary_search'
+___________________________ Tests.test_bit_ops_types ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3944: in test_bit_ops_types
+    assert hl.bit_and(1, 1).dtype == hl.tint32
+           ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'bit_and'
+_______________________ Tests.test_bit_shift_edge_cases ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3975: in test_bit_shift_edge_cases
+    assert hl.eval(hl.bit_lshift(hl.int(1), 32)) == 0
+                   ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'bit_lshift'
+_________________________ Tests.test_bit_shift_errors __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3989: in test_bit_shift_errors
+    hl.eval(hl.bit_lshift(1, -1))
+            ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'bit_lshift'
+____________________________ Tests.test_bit_shifts _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3966: in test_bit_shifts
+    assert hl.eval(hl.bit_lshift(hl.int(8), 2)) == 32
+                   ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'bit_lshift'
+__________________________ Tests.test_bools_can_math ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2327: in test_bools_can_math
+    (b1 * b2, 0),
+     ^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:232: in __mul__
+    return self._binary(other, "mul")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:179: in _binary
+    result_type = _numeric_result_type(self.dtype, other.dtype, operator)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:1078: in _numeric_result_type
+    _require_numeric(left, "arithmetic")
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:1070: in _require_numeric
+    raise TypeError(f"{operation} requires a numeric expression")
+E   TypeError: arithmetic requires a numeric expression
+_______________________________ Tests.test_call ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2470: in test_call
+    call_expr_2 = hl.call(a0, a1, phased=phased)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:1157: in call
+    raise TypeError("call requires at most two alleles and a Boolean phased flag")
+E   TypeError: call requires at most two alleles and a Boolean phased flag
+_______________________ Tests.test_call_contains_allele ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2561: in test_call_contains_allele
+    c1.contains_allele(1),
+    ^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: contains_allele
+__________________________ Tests.test_call_stats_init __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3298: in test_call_stats_init
+    ht = ht.annotate(GT=hl.unphased_diploid_gt_index_call(ht.idx))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'unphased_diploid_gt_index_call'
+___________________________ Tests.test_call_unphase ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2545: in test_call_unphase
+    assert hl.eval(hl.literal(calls).map(lambda x: x.unphase())) == expected
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2545: in <lambda>
+    assert hl.eval(hl.literal(calls).map(lambda x: x.unphase())) == expected
+                                                   ^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: unphase
+___________________ Tests.test_call_unphase_diploid_gt_index ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2591: in test_call_unphase_diploid_gt_index
+    gt_idx = tuple(c[0].unphased_diploid_gt_index() for c in calls_and_indices)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2591: in <genexpr>
+    gt_idx = tuple(c[0].unphased_diploid_gt_index() for c in calls_and_indices)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: unphased_diploid_gt_index
+_______________________________ Tests.test_case ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1543: in test_case
+    with pytest.raises(hl.utils.java.HailUserError) as exc:
+                       ^^^^^^^^^^^^^
+E   AttributeError: module 'vail.utils' has no attribute 'java'
+_________________________ Tests.test_chi_squared_test __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3578: in test_chi_squared_test
+    res = hl.eval(hl.chi_squared_test(0, 0, 0, 0))
+                  ^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'chi_squared_test'
+___________________ Tests.test_cochran_mantel_haenszel_test ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3619: in test_cochran_mantel_haenszel_test
+    result = hl.eval(hl.cochran_mantel_haenszel_test(a, b, c, d))
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'cochran_mantel_haenszel_test'
+________________________ Tests.test_collection_getitem _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4049: in test_collection_getitem
+    assert hl.eval(a.b.inner) == [[1, 2], [3]]
+                   ^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: inner
+____________________________ Tests.test_comparisons ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2301: in test_comparisons
+    _test_many_equal_typed([
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:40: in _test_many_equal_typed
+    assert actual == expected, (actual, expected)
+E   AssertionError: (True, False)
+E   assert True == False
+______________________ Tests.test_contingency_table_test _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3604: in test_contingency_table_test
+    res = hl.eval(hl.contingency_table_test(51, 43, 22, 92, 22))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'contingency_table_test'
+______________________________ Tests.test_counter ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:563: in test_counter
+    assert bc == [([], 2), ([1, 2], 1), ([1, 2, 3], 2), (None, 1)]
+E   assert [([], 2), ([1...1), (None, 1)] == [([], 2), ([1...2), (None, 1)]
+E     
+E     At index 1 diff: ([1, 2, 3], 2) != ([1, 2], 1)
+E     Use -v to get more diff
+__________________________ Tests.test_cumulative_sum ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3893: in test_cumulative_sum
+    self.assertValueEqual(hl.cumulative_sum([1, 2, 3, 4]), [1, 3, 6, 10], tarray(tint32))
+                          ^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'cumulative_sum'
+______________________________ Tests.test_dchisq _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3549: in test_dchisq
+    self.assert_evals_to(hl.dchisq(10, 5), 0.028334555341734464)
+                         ^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'dchisq'
+_________________________ Tests.test_dict_conversions __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2632: in test_dict_conversions
+    self.assertEqual(sorted(hl.eval(hl.array({1: 1, 2: 2}))), [(1, 1), (2, 2)])
+                                    ^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:852: in array
+    raise TypeError("array expects a list or an array expression")
+E   TypeError: array expects a list or an array expression
+________________________ Tests.test_dict_keyed_by_dict _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3846: in test_dict_keyed_by_dict
+    assert hl.eval(dict_with_dict_key) == {hl.utils.frozendict({1: 2, 3: 5}): 4}
+                                           ^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.utils' has no attribute 'frozendict'
+___________________________ Tests.test_dict_methods ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:319: in test_dict_methods
+    x3=kt.a.keys().contains('rabbit'),
+       ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'KeysView' object has no attribute 'contains'
+________________________ Tests.test_dict_missing_error _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:350: in test_dict_missing_error
+    hl.eval(d[hl.missing(hl.tstr)])
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: DataFusion expression failed: Execution error: dictionary key is missing
+_______________________________ Tests.test_dnorm _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3530: in test_dnorm
+    self.assert_evals_to(hl.dnorm(0), 0.3989422804014327)
+                         ^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'dnorm'
+______________________ Tests.test_downsample_in_array_agg ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1417: in test_downsample_in_array_agg
+    mt = mt.annotate_rows(y=hl.rand_unif(0, 1))
+                            ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rand_unif'
+________________________ Tests.test_export_genetic_data ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2986: in test_export_genetic_data
+    mt = hl.balding_nichols_model(1, 3, 3)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'balding_nichols_model'
+___________________________ Tests.test_expr_persist ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4130: in test_expr_persist
+    with hl.TemporaryDirectory(ensure_exists=False) as f:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+__________________________ Tests.test_first_match_in ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:461: in test_first_match_in
+    self.assertTrue(hl.eval(string.first_match_in("([^:]*)[:\\t](\\d+)[\\-\\t](\\d+)")) == ['1', '25', '100'])
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:219: in reject
+    raise NotImplementedError(f'DataFusion has no Hail-compatible {name} implementation')
+E   NotImplementedError: DataFusion has no Hail-compatible Java regex capture groups implementation
+_________________________ Tests.test_fisher_exact_test _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3591: in test_fisher_exact_test
+    res = hl.eval(hl.fisher_exact_test(0, 0, 0, 0))
+                  ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'fisher_exact_test'
+__________________________ Tests.test_floor_division ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1904: in test_floor_division
+    _test_many_equal_typed([
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:31: in _test_many_equal_typed
+    actuals, actual_type = hl.eval_typed(hl.tuple(expressions))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1562: in eval_typed
+    return eval(expr), expr.dtype
+           ^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: incompatible types Array { array: Primitive(Float32) } and Array { array: Primitive(Float64) }
+______________________________ Tests.test_format _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3810: in test_format
+    self.assertEqual(hl.eval(hl.format("%.4f %s %.3e", 0.25, 'hello', 0.114)), '0.2500 hello 1.140e-01')
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:219: in reject
+    raise NotImplementedError(f'DataFusion has no Hail-compatible {name} implementation')
+E   NotImplementedError: DataFusion has no Hail-compatible Java printf formatting implementation
+_______________________ Tests.test_frozendict_as_literal _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3849: in test_frozendict_as_literal
+    fd = hl.utils.frozendict({"a": 4, "b": 8})
+         ^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.utils' has no attribute 'frozendict'
+_______________________ Tests.test_genetics_constructors _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:386: in test_genetics_constructors
+    i1=hl.parse_locus_interval("1:51-56", reference_genome=rg),
+       ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'parse_locus_interval'
+_____________________________ Tests.test_gp_dosage _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2452: in test_gp_dosage
+    self.assertAlmostEqual(hl.eval(hl.gp_dosage([1.0, 0.0, 0.0])), 0.0)
+                                   ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'gp_dosage'
+______________________________ Tests.test_hamming ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2446: in test_hamming
+    (hl.hamming('A', 'T'), 1),
+     ^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:219: in reject
+    raise NotImplementedError(f'DataFusion has no Hail-compatible {name} implementation')
+E   NotImplementedError: DataFusion has no Hail-compatible hamming implementation
+_______________________ Tests.test_hardy_weinberg_agg_1 ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3680: in test_hardy_weinberg_agg_1
+    hl.literal(row_idx_col_idx_to_call).get((mt.row_idx, mt.col_idx)), one_sided=False
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:789: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:544: in infer_type
+    return tstruct(**{name: infer_type(field) for name, field in value.items()})
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:544: in <dictcomp>
+    return tstruct(**{name: infer_type(field) for name, field in value.items()})
+                            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:571: in infer_type
+    raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
+E   TypeError: cannot infer a Vail type for Expression
+_______________________ Tests.test_hardy_weinberg_agg_2 ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3723: in test_hardy_weinberg_agg_2
+    x_two_sided=hl.scan.hardy_weinberg_test(hl.literal(calls)[ht.idx % 5], one_sided=False),
+                                            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:789: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:548: in infer_type
+    types = [infer_type(x) for x in value if x is not None]
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:548: in <listcomp>
+    types = [infer_type(x) for x in value if x is not None]
+             ^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:571: in infer_type
+    raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
+E   TypeError: cannot infer a Vail type for Expression
+________________________ Tests.test_hardy_weinberg_test ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3655: in test_hardy_weinberg_test
+    two_sided_res = hl.eval(hl.hardy_weinberg_test(1, 2, 1, one_sided=False))
+                            ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'hardy_weinberg_test'
+___________________________ Tests.test_interval_ops ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3047: in test_interval_ops
+    li = hl.parse_locus_interval('1:100-110')
+         ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'parse_locus_interval'
+_______________________________ Tests.test_iter ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1618: in test_iter
+    self.assertRaises(hl.expr.ExpressionException, lambda: hl.eval(list(a)))
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1618: in <lambda>
+    self.assertRaises(hl.expr.ExpressionException, lambda: hl.eval(list(a)))
+                                                                   ^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:675: in __iter__
+    raise TypeError("only struct expressions can be expanded as mappings")
+E   TypeError: only struct expressions can be expanded as mappings
+_______________________ Tests.test_large_allele_encoding _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2549: in test_large_allele_encoding
+    encoded = hl.tcall._to_encoding(call)
+              ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: '_PrimitiveType' object has no attribute '_to_encoding'
+___________________ Tests.test_literal_with_empty_struct_key ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3854: in test_literal_with_empty_struct_key
+    assert hl.eval(hl.literal(original)) == original
+                   ^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:789: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:544: in infer_type
+    return tstruct(**{name: infer_type(field) for name, field in value.items()})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+_____________________ Tests.test_literal_with_nested_expr ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3806: in test_literal_with_nested_expr
+    self.assertEqual(hl.eval(hl.literal(hl.set(['A', 'B']))), {'A', 'B'})
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:789: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:571: in infer_type
+    raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
+E   TypeError: cannot infer a Vail type for Expression
+____________________ Tests.test_locus_interval_constructors ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3065: in test_locus_interval_constructors
+    li_contig_start = hl.locus_interval('1', 0, 2, False, False, invalid_missing=True)
+                      ^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'locus_interval'
+___________________________ Tests.test_locus_window ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2611: in test_locus_window
+    zeros=lit.window(0, 0), ones=lit.window(1, 1), big_windows=lit.window(1_000_000_000, 1_000_000_000)
+          ^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: window
+_________________________ Tests.test_locus_window_type _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3115: in test_locus_window_type
+    i = locus.window(10, 10)
+        ^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: window
+______________________________ Tests.test_matches ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:451: in test_matches
+    self.assertTrue(hl.eval(string.matches('\\d+')))
+                            ^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:584: in <lambda>
+    return lambda *args, **kwargs: methods[name](self, *args, **kwargs)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:142: in matches
+    pattern = _literal_regex(regex)
+              ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:135: in _literal_regex
+    raise NotImplementedError('Java regular-expression semantics differ from DataFusion; only literal patterns are supported')
+E   NotImplementedError: Java regular-expression semantics differ from DataFusion; only literal patterns are supported
+________________________________ Tests.test_max ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2844: in test_max
+    (hl.nanmax(0, 1.0, 2), 2.0),
+     ^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'nanmax'
+_________________________ Tests.test_mendel_error_code _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3394: in test_mendel_error_code
+    values = arg_list.map(lambda args: hl.mendel_error_code(*args))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3394: in <lambda>
+    values = arg_list.map(lambda args: hl.mendel_error_code(*args))
+                                       ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'mendel_error_code'
+________________________________ Tests.test_min ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2900: in test_min
+    (hl.nanmin(0, 1.0, 2), 0.0),
+     ^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'nanmin'
+______________________________ Tests.test_min_rep ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3407: in test_min_rep
+    assert_min_reps_to(['TAA', 'TA'], ['TA', 'T'])
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3403: in assert_min_reps_to
+    hl.eval(hl.min_rep(hl.locus('1', 10), old)),
+            ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'min_rep'
+___________________________ Tests.test_min_rep_error ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3419: in test_min_rep_error
+    hl.eval(hl.min_rep(hl.locus('1', 100), ['A', hl.missing('str')]))
+            ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'min_rep'
+______________________________ Tests.test_modulus ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2244: in test_modulus
+    _test_many_equal_typed([
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:31: in _test_many_equal_typed
+    actuals, actual_type = hl.eval_typed(hl.tuple(expressions))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1562: in eval_typed
+    return eval(expr), expr.dtype
+           ^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: incompatible types Array { array: Primitive(Float32) } and Array { array: Primitive(Float64) }
+__________________________ Tests.test_multiplication ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2108: in test_multiplication
+    _test_many_equal_typed([
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:31: in _test_many_equal_typed
+    actuals, actual_type = hl.eval_typed(hl.tuple(expressions))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1562: in eval_typed
+    return eval(expr), expr.dtype
+           ^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: incompatible types Array { array: Primitive(Float32) } and Array { array: Primitive(Float64) }
+__________________________ Tests.test_nan_inf_checks ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3902: in test_nan_inf_checks
+    assert hl.eval(hl.is_finite(finite)) is True
+                   ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'is_finite'
+_________________________ Tests.test_numpy_conversions _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4100: in test_numpy_conversions
+    assert hl.eval(np.int32(3)) == 3
+           ^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1541: in eval
+    expr = as_expr(expression)
+           ^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:56: in as_expr
+    return literal(value)
+           ^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:789: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py:571: in infer_type
+    raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
+E   TypeError: cannot infer a Vail type for int32
+_____________________________ Tests.test_operators _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:182: in test_operators
+    x53=hl.tuple([True, 1.0]) < (1.0, 0.0),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:257: in __lt__
+    return self._compare(other, "lt")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:202: in _compare
+    _check_comparable(self.dtype, other.dtype, operator)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:1131: in _check_comparable
+    raise TypeError(f"incompatible comparison types: {left} and {right}")
+E   TypeError: incompatible comparison types: ttuple(types=(bool, float64)) and ttuple(types=(float64, float64))
+________________________________ Tests.test_pF _________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3572: in test_pF
+    self.assert_evals_to(hl.pF(0, 3, 10), 0.0)
+                         ^^^^^
+E   AttributeError: module 'vail' has no attribute 'pF'
+________________________________ Tests.test_pT _________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3566: in test_pT
+    self.assert_evals_to(hl.pT(0, 10), 0.5)
+                         ^^^^^
+E   AttributeError: module 'vail' has no attribute 'pT'
+____________________________ Tests.test_parse_json _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4122: in test_parse_json
+    hl.locus_interval('1', 10000, 10005),
+    ^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'locus_interval'
+___________________________ Tests.test_parse_variant ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2595: in test_parse_variant
+    self.assertEqual(hl.eval(hl.parse_variant('1:1:A:T')), hl.Struct(locus=hl.Locus('1', 1), alleles=['A', 'T']))
+                             ^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'parse_variant'
+____________________________ Tests.test_pchisqtail _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3554: in test_pchisqtail
+    self.assert_evals_to(hl.pchisqtail(10, 5), 0.07523524614651216)
+                         ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'pchisqtail'
+_____________________________ Tests.test_pl_dosage _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3782: in test_pl_dosage
+    self.assertAlmostEqual(hl.eval(hl.pl_dosage([0, 20, 100])), 0.009900990296049406)
+                                   ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'pl_dosage'
+_____________________________ Tests.test_pl_to_gp ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3776: in test_pl_to_gp
+    res = hl.eval(hl.pl_to_gp([0, 10, 100]))
+                  ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'pl_to_gp'
+_______________________________ Tests.test_pnorm _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3535: in test_pnorm
+    self.assert_evals_to(hl.pnorm(0), 0.5)
+                         ^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'pnorm'
+___________________________ Tests.test_prev_non_null ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4009: in test_prev_non_null
+    assert ht.aggregate((hl.agg._prev_nonnull(ht.idx))) == 0
+                         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.agg' has no attribute '_prev_nonnull'
+____________________________ Tests.test_qchisqtail _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3560: in test_qchisqtail
+    self.assertAlmostEqual(hl.eval(hl.qchisqtail(hl.pchisqtail(10, 5), 5)), 10.0)
+                                   ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'qchisqtail'
+_______________________________ Tests.test_qnorm _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3542: in test_qnorm
+    self.assert_evals_to(hl.qnorm(hl.pnorm(0)), 0.0)
+                         ^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'qnorm'
+_______________________________ Tests.test_range _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:91: in test_range
+    hl.eval(hl.range(0, 1, 0))
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: step can't be 0 for function range(start [, stop, step])
+__________________________ Tests.test_rbind_multiple ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:414: in test_rbind_multiple
+    self.assertEqual(hl.eval(hl.rbind(2, 3, lambda x, y: x * y)), 6)
+                             ^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rbind'
+__________________________ Tests.test_rbind_placement __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:418: in test_rbind_placement
+    self.assertEqual(hl.eval(5 / hl.rbind(5, lambda x: x)), 1.0)
+                                 ^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rbind'
+_______________________ Tests.test_reference_genome_fns ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3129: in test_reference_genome_fns
+    assert hl.eval(hl.contig_length('5', 'GRCh37') == 180915260)
+                   ^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'contig_length'
+________________________ Tests.test_reverse_complement _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:437: in test_reverse_complement
+    assert hl.eval(hl.literal(strs).map(lambda s: hl.reverse_complement(s))) == [
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:437: in <lambda>
+    assert hl.eval(hl.literal(strs).map(lambda s: hl.reverse_complement(s))) == [
+                                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:208: in reverse_complement
+    _bmp_literal(value)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:69: in _bmp_literal
+    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')
+E   NotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported
+_____________________________ Tests.test_reversed ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3931: in test_reversed
+    assert hl.eval(hl.reversed(a)) == ['c', 'b', 'a']
+                   ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'reversed'
+______________________ Tests.test_shadowed_struct_fields _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1586: in test_shadowed_struct_fields
+    assert 'foo' not in s._warn_on_shadowed_name
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _warn_on_shadowed_name
+__________________________ Tests.test_show_expression __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2969: in test_show_expression
+    result = ds.col_idx.show(handler=str)
+             ^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: show
+______________________ Tests.test_show_row_key_regression ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2965: in test_show_row_key_regression
+    ds.col_idx.show(3)
+    ^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: show
+_______________________________ Tests.test_sign ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2945: in test_sign
+    self.assertEqual(hl.eval(hl.sign(-5)), -1)
+                             ^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'sign'
+______________________________ Tests.test_sort_by ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2788: in test_sort_by
+    hl.eval(hl._sort_by(["c", "aaa", "bb", hl.missing(hl.tstr)], lambda l, r: hl.len(l) < hl.len(r))),
+            ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_sort_by'
+______________________________ Tests.test_sorted _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2771: in test_sorted
+    self.assertEqual(hl.eval(hl.sorted([0, 1, 4, 3, 2], lambda x: x % 2)), [0, 4, 2, 1, 3])
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/collections.py:340: in sorted_
+    raise NotImplementedError("expression-valued sorted keys are not yet implemented")
+E   NotImplementedError: expression-valued sorted keys are not yet implemented
+____________________________ Tests.test_split_line _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4193: in test_split_line
+    assert hl.eval(hl.str(s1)._split_line(r'\s+', ['NA'], quote=None, regex=True)) == s1.split(' ')
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:573: in <lambda>
+    return lambda *args, **kwargs: split_line(self, *args, **kwargs)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/text.py:93: in split_line
+    _byte(delimiter, 'delimiter')
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/text.py:48: in _byte
+    raise ValueError(f'{name} must be a single ASCII character')
+E   ValueError: delimiter must be a single ASCII character
+____________________________ Tests.test_str_parsing ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1778: in test_str_parsing
+    *[
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1779: in <listcomp>
+    (hl.is_nan(f(sgn + x)), True)
+     ^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'is_nan'
+____________________________ Tests.test_string_join ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:468: in test_string_join
+    with pytest.raises(TypeError, match="Expected str collection, int32 found"):
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'Expected str collection, int32 found'
+E     Actual message: 'join requires an array or set of strings'
+__________________________ Tests.test_string_reverse ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:457: in test_string_reverse
+    assert hl.eval(hl.literal(inputs, 'array<str>').map(lambda s: s.reverse())) == ['', None, 'TATA', 'oof']
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:455: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:457: in <lambda>
+    assert hl.eval(hl.literal(inputs, 'array<str>').map(lambda s: s.reverse())) == ['', None, 'TATA', 'oof']
+                                                                  ^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:584: in <lambda>
+    return lambda *args, **kwargs: methods[name](self, *args, **kwargs)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:76: in reverse
+    _bmp_literal(value)
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:69: in _bmp_literal
+    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')
+E   NotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported
+_____________________ Tests.test_struct_collection_getattr _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4062: in test_struct_collection_getattr
+    with pytest.raises(AttributeError, match="has no field"):
+E   AssertionError: Regex pattern did not match.
+E     Expected regex: 'has no field'
+E     Actual message: 'y'
+___________________ Tests.test_struct_expression_expr_rename ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4142: in test_struct_expression_expr_rename
+    assert hl.eval(s.rename({'f1': 'foo'})) == hl.Struct(f2=2, f3=3, foo=1)
+                   ^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: rename
+____________________________ Tests.test_struct_ops _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1562: in test_struct_ops
+    assert_typed(s.select('f1', 'f2'), hl.Struct(f1=1, f2=2), tstruct(f1=tint32, f2=tint32))
+                 ^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: select
+___________________________ Tests.test_struct_slice ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4090: in test_struct_slice
+    assert hl.eval(hl.struct(x=3, y=4, z=5, a=10)[1:]) == hl.Struct(y=4, z=5, a=10)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:771: in __getitem__
+    return self._fields[name]
+           ^^^^^^^^^^^^^^^^^^
+E   TypeError: unhashable type: 'slice'
+____________________________ Tests.test_subtraction ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:2040: in test_subtraction
+    _test_many_equal_typed([
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:31: in _test_many_equal_typed
+    actuals, actual_type = hl.eval_typed(hl.tuple(expressions))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1562: in eval_typed
+    return eval(expr), expr.dtype
+           ^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/__init__.py:1552: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: incompatible types Array { array: Primitive(Float32) } and Array { array: Primitive(Float64) }
+__________________________ Tests.test_summarize_runs ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4027: in test_summarize_runs
+    mt.summarize()
+    ^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/matrixtable.py:274: in __getattr__
+    raise AttributeError(name) from None
+E   AttributeError: summarize
+______________________________ Tests.test_switch _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:1524: in test_switch
+    with pytest.raises(hl.utils.java.HailUserError) as exc:
+                       ^^^^^^^^^^^^^
+E   AttributeError: module 'vail.utils' has no attribute 'java'
+_____________________________ Tests.test_translate _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:429: in test_translate
+    hl.eval(hl.str('foo').translate({'foo': 'bar'}))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:584: in <lambda>
+    return lambda *args, **kwargs: methods[name](self, *args, **kwargs)
+                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/strings.py:180: in translate
+    raise ValueError('translate mapping keys must be one UTF-16 character')
+E   ValueError: translate mapping keys must be one UTF-16 character
+_____________________________ Tests.test_tuple_ops _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3034: in test_tuple_ops
+    self.assertTrue(hl.eval(hl.len(t0) == 0))
+                            ^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/collections.py:174: in length
+    raise TypeError("len requires an array, set, or dictionary expression")
+E   TypeError: len requires an array, set, or dictionary expression
+_____________________________ Tests.test_uniroot_1 _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3500: in test_uniroot_1
+    self.assertAlmostEqual(hl.eval(hl.uniroot(lambda x: x - 1, 0, hl.missing('float'), tolerance=tol)), None)
+                                   ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'uniroot'
+_____________________________ Tests.test_uniroot_2 _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3506: in test_uniroot_2
+    self.assertAlmostEqual(hl.eval(hl.uniroot(lambda x: x - 1, 0, 3, tolerance=tol)), 1)
+                                   ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'uniroot'
+_____________________________ Tests.test_uniroot_3 _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3513: in test_uniroot_3
+    hl.eval(hl.uniroot(lambda x: hl.missing('float'), 0, 1))
+            ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'uniroot'
+______________________ Tests.test_uniroot_multiple_roots _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:3526: in test_uniroot_multiple_roots
+    result = hl.eval(hl.uniroot(multiple_roots, 0, 5.5, tolerance=tol))
+                     ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'uniroot'
+____________________________ Tests.test_variant_str ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4033: in test_variant_str
+    hl.eval(hl.variant_str(hl.struct(locus=hl.locus('1', 10000), alleles=['A', 'T', 'CCC'])))
+            ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'variant_str'
+_______________________________ Tests.test_zeros _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:95: in test_zeros
+    evaled = hl.eval(hl.zeros(size))
+                     ^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'zeros'
+_______________________________ test_approx_cdf ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4212: in test_approx_cdf
+    table.aggregate(hl.agg.approx_cdf(table.i))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/agg_numeric.py:85: in approx_cdf
+    raise NotImplementedError(
+E   NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable
+________________________ test_approx_cdf_col_aggregate _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4258: in test_approx_cdf_col_aggregate
+    mt = mt.annotate_cols(bar=hl.agg.approx_cdf(mt.foo))
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/agg_numeric.py:85: in approx_cdf
+    raise NotImplementedError(
+E   NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable
+_____________________________ test_error_from_cdf ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4273: in test_error_from_cdf
+    cdf = hl.agg.approx_cdf(table.i)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/agg_numeric.py:85: in approx_cdf
+    raise NotImplementedError(
+E   NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable
+__________________________ test_approx_cdf_array_agg ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4293: in test_approx_cdf_array_agg
+    mt = mt.group_cols_by(mt.col_idx).aggregate(cdf=hl.agg.approx_cdf(mt.x))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/agg_numeric.py:85: in approx_cdf
+    raise NotImplementedError(
+E   NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable
+________________________ test_export_entry[True-NA-\t] _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+_________________________ test_export_entry[True-NA-,] _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+_________________________ test_export_entry[True-NA-@] _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+_______________________ test_export_entry[True-null-\t] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+________________________ test_export_entry[True-null-,] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+________________________ test_export_entry[True-null-@] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+________________________ test_export_entry[False-NA-\t] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+________________________ test_export_entry[False-NA-,] _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+________________________ test_export_entry[False-NA-@] _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+_______________________ test_export_entry[False-null-\t] _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+_______________________ test_export_entry[False-null-,] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+_______________________ test_export_entry[False-null-@] ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4306: in test_export_entry
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+___________________________ test_keyed_intersection ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4466: in test_keyed_intersection
+    assert hl.eval(hl.keyed_intersection(a1, a2, key=['a'])) == [
+                   ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'keyed_intersection'
+_______________________________ test_keyed_union _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4484: in test_keyed_union
+    assert hl.eval(hl.keyed_union(a1, a2, key=['a'])) == [
+                   ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'keyed_union'
+_____________________ test_to_relational_row_and_col_refs ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4499: in test_to_relational_row_and_col_refs
+    assert mt.row._to_relational_preserving_rows_and_cols('x')[1].row.dtype == hl.tstruct(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _to_relational_preserving_rows_and_cols
+_____________________________ test_locus_addition ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4515: in test_locus_addition
+    assert hl.eval((loc + 10) == hl.locus('1', 15, reference_genome='GRCh37'))
+                    ^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:213: in __add__
+    return self._binary(other, "add")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:179: in _binary
+    result_type = _numeric_result_type(self.dtype, other.dtype, operator)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:1078: in _numeric_result_type
+    _require_numeric(left, "arithmetic")
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:1070: in _require_numeric
+    raise TypeError(f"{operation} requires a numeric expression")
+E   TypeError: arithmetic requires a numeric expression
+_____________________ test_reservoir_sampling_pointer_type _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4522: in test_reservoir_sampling_pointer_type
+    assert ht.aggregate(hl.agg._reservoir_sample(hl.str(ht.idx), 1000).all(lambda x: hl.str(hl.int(x)) == x))
+                        ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.agg' has no attribute '_reservoir_sample'
+___________________________ test_reservoir_sampling ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4526: in test_reservoir_sampling
+    ht = hl.Table._generate(
+         ^^^^^^^^^^^^^^^^^^
+E   AttributeError: type object 'Table' has no attribute '_generate'
+________________________ test_struct_expr_rename_order _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4557: in test_struct_expr_rename_order
+    renamed_expr = struct_expr.rename(mapping)
+                   ^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: rename
+________________________________ test_local_agg ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4565: in test_local_agg
+    assert hl.eval(x.aggregate(lambda x: hl.agg.sum(x))) == 10
+                   ^^^^^^^^^^^
+/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py:664: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: aggregate
+_______________________________ test_local_scan ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4570: in test_local_scan
+    res = hl.eval(x._aggregate_scan(lambda x: hl.scan.sum(x)).to_array())
+                  ^^^^^^^^^^^^^^^^^
+E   AttributeError: 'StreamExpression' object has no attribute '_aggregate_scan'
+_____________________ test_cannot_aggregate_in_local_scan ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4577: in test_cannot_aggregate_in_local_scan
+    _ = x._aggregate_scan(lambda e: hl.agg.sum(e))
+        ^^^^^^^^^^^^^^^^^
+E   AttributeError: 'StreamExpression' object has no attribute '_aggregate_scan'
+___________________________ test_zip_join_producers ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py:4582: in test_zip_join_producers
+    zj = hl._zip_join_producers(
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_zip_join_producers'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:101: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:108
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/helpers.py:108: PytestUnknownMarkWarning: Unknown pytest.mark.timeout - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    return pytest.mark.timeout(timeout)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_abs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_addition
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_agg_array_agg_errors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_agg_array_agg_sum_vs_sum
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_agg_collect_all_types_runs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_agg_corr
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_agg_group_by_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_agg_prev_nonnull
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_aggfold_agg
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_aggregator_any_and_all
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_aggregator_bindings
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_aggregator_group_by_sorts_result
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_aggregator_info_score
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_aggregator_info_score_works_with_bgen_import
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_aggregator_scope
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_aggregators_linreg
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_argmin_and_argmax
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_array_and_if_requiredness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_array_methods
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_array_slicing
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_binary_search
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_bit_ops_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_bit_shift_edge_cases
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_bit_shift_errors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_bit_shifts
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_bools_can_math
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_call
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_call_contains_allele
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_call_stats_init
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_call_unphase
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_call_unphase_diploid_gt_index
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_case
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_chi_squared_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_cochran_mantel_haenszel_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_collection_getitem
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_comparisons
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_contingency_table_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_counter
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_cumulative_sum
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_dchisq
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_dict_conversions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_dict_keyed_by_dict
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_dict_methods
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_dict_missing_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_dnorm
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_downsample_in_array_agg
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_export_genetic_data
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_expr_persist
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_first_match_in
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_fisher_exact_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_floor_division
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_format
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_frozendict_as_literal
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_genetics_constructors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_gp_dosage
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_hamming
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_hardy_weinberg_agg_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_hardy_weinberg_agg_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_hardy_weinberg_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_interval_ops
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_iter
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_large_allele_encoding
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_literal_with_empty_struct_key
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_literal_with_nested_expr
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_locus_interval_constructors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_locus_window
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_locus_window_type
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_matches
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_max
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_mendel_error_code
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_min
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_min_rep
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_min_rep_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_modulus
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_multiplication
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_nan_inf_checks
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_numpy_conversions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_operators
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_pF
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_pT
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_parse_json
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_parse_variant
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_pchisqtail
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_pl_dosage
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_pl_to_gp
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_pnorm
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_prev_non_null
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_qchisqtail
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_qnorm
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_range
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_rbind_multiple
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_rbind_placement
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_reference_genome_fns
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_reverse_complement
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_reversed
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_shadowed_struct_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_show_expression
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_show_row_key_regression
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_sign
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_sort_by
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_sorted
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_split_line
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_str_parsing
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_string_join
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_string_reverse
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_struct_collection_getattr
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_struct_expression_expr_rename
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_struct_ops
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_struct_slice
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_subtraction
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_summarize_runs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_switch
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_translate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_tuple_ops
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_uniroot_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_uniroot_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_uniroot_3
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_uniroot_multiple_roots
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_variant_str
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::Tests::test_zeros
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_approx_cdf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_approx_cdf_col_aggregate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_error_from_cdf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_approx_cdf_array_agg
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[True-NA-\t]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[True-NA-,]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[True-NA-@]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[True-null-\t]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[True-null-,]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[True-null-@]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[False-NA-\t]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[False-NA-,]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[False-NA-@]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[False-null-\t]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[False-null-,]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_export_entry[False-null-@]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_keyed_intersection
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_keyed_union
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_to_relational_row_and_col_refs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_locus_addition
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_reservoir_sampling_pointer_type
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_reservoir_sampling
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_struct_expr_rename_order
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_local_agg
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_local_scan
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_cannot_aggregate_in_local_scan
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_zip_join_producers
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_approx_cdf_accuracy[True]
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_cdf_combine[True]
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_approx_cdf_accuracy[False]
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_ehgqt16/upstream_hail/expr/test_expr.py::test_cdf_combine[False]
+147 failed, 119 passed, 7 deselected, 2 warnings, 4 errors in 16.01s

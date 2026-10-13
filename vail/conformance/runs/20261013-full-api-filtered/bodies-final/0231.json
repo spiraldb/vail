@@ -1,0 +1,18 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_literal_of_pandas_NA_and_numpy_int32",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "cannot infer a Vail type for NAType",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/table/test_table.py\", line 2268, in test_literal_of_pandas_NA_and_numpy_int32\n    hl.eval(hl.literal(x))\n            ^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 789, in literal\n    dtype = infer_type(value)\n            ^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py\", line 548, in infer_type\n    types = [infer_type(x) for x in value if x is not None]\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py\", line 548, in <listcomp>\n    types = [infer_type(x) for x in value if x is not None]\n             ^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/types.py\", line 571, in infer_type\n    raise TypeError(f\"cannot infer a Vail type for {type(value).__name__}\")\nTypeError: cannot infer a Vail type for NAType\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

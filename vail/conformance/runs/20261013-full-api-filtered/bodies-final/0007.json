@@ -1,0 +1,30 @@
+{
+  "module": "methods/test_pca.py",
+  "name": "test_spectra_3",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "triplet": "(20, 1000, 1000)"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "field access requires a struct expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 281, in test_spectra_3\n    spectra_helper(spec3, triplet)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 214, in spectra_helper\n    mt_A = matrix_table_from_numpy(A)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 125, in matrix_table_from_numpy\n    mt = mt.annotate_entries(ent=mt.entries_global[mt.row_idx, mt.col_idx])\n                                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 358, in __getitem__\n    raise TypeError(\"field access requires a struct expression\")\nTypeError: field access requires a struct expression\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "triplet": "(10, 100, 200)"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "field access requires a struct expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/projects/vail/vail/conformance/full_hail_bodies.py\", line 223, in worker\n    target(**kwargs)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 281, in test_spectra_3\n    spectra_helper(spec3, triplet)\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 214, in spectra_helper\n    mt_A = matrix_table_from_numpy(A)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/projects/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 125, in matrix_table_from_numpy\n    mt = mt.annotate_entries(ent=mt.entries_global[mt.row_idx, mt.col_idx])\n                                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/private/tmp/vail-columnar-benchmark/lib/python3.11/site-packages/vail/expressions.py\", line 358, in __getitem__\n    raise TypeError(\"field access requires a struct expression\")\nTypeError: field access requires a struct expression\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'"
+  ],
+  "status": "failed_or_blocked"
+}

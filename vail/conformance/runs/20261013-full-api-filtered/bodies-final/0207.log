@@ -1,0 +1,4 @@
+
+thread '<unnamed>' (83546446) panicked at /Users/danielking/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/arrow-array-59.2.0/src/array/struct_array.rs:91:46:
+called `Result::unwrap()` on an `Err` value: InvalidArgumentError("use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
