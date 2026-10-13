@@ -749,6 +749,9 @@ def column(source, name, dtype):
 def literal(value, dtype=None):
     if dtype is None:
         dtype = infer_type(value)
+    elif isinstance(dtype, str):
+        from .types import dtype as parse_dtype
+        dtype = parse_dtype(dtype)
     elif not _valid_type(dtype):
         raise TypeError(f"literal dtype must be a Vail type, found {dtype!r}")
     return Expression(dtype, None, {"op": "literal", "dtype": type_to_wire(dtype), "value": encode_value(value, dtype)})
