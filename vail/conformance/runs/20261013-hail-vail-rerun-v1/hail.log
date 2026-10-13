@@ -1,0 +1,99 @@
+2026-10-13 15:33:00.616 WARN  NativeCodeLoader:60 - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+2026-10-13 15:33:01.184 WARN  SparkConf:72 - Note that spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone/kubernetes and LOCAL_DIRS in YARN).
+hail: table_range_force_count {'rows': 100000000}
+[Stage 0:>                                                        (0 + 14) / 14]                                                                                  0.454974s
+  0.491224s
+  0.365643s
+  0.454068s
+  0.302918s
+hail: table_key_by_shuffle {'rows': 1000000}
+[Stage 8:>                                                        (0 + 14) / 14][Stage 8:================>                                        (4 + 10) / 14]                                                                                WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.apache.spark.util.SizeEstimator$ (file:/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/pyspark/jars/spark-core_2.12-3.5.9.jar) to field java.lang.ref.Reference.referent
+WARNING: Please consider reporting this to the maintainers of org.apache.spark.util.SizeEstimator$
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+[Stage 9:>                                                        (0 + 14) / 14][Stage 10:>                                                       (0 + 14) / 14][Stage 10:====>                                                   (1 + 13) / 14]                                                                                [Stage 11:>                                                       (0 + 14) / 14]                                                                                [Stage 12:>                                                       (0 + 14) / 14][Stage 13:>                                                       (0 + 14) / 14][Stage 13:========>                                               (2 + 12) / 14]                                                                                [Stage 14:========>                                               (2 + 12) / 14]                                                                                [Stage 18:>                                                       (0 + 14) / 14]                                                                                  2.295292s
+  1.616695s
+  1.517082s
+  1.489738s
+[Stage 30:====================================================>   (13 + 1) / 14]                                                                                  1.811166s
+hail: table_group_sorted {'rows': 10000000, 'group_width': 1000}
+[Stage 32:>                                                       (0 + 14) / 14][Stage 32:====================>                                    (5 + 9) / 14][Stage 32:============================>                            (7 + 7) / 14][Stage 32:========================================>               (10 + 4) / 14]                                                                                [Stage 34:>                                                       (0 + 14) / 14][Stage 34:========================================>               (10 + 4) / 14]                                                                                [Stage 36:>                                                       (0 + 14) / 14][Stage 36:====>                                                   (1 + 13) / 14][Stage 36:============>                                           (3 + 11) / 14]                                                                                [Stage 38:====================>                                    (5 + 9) / 14]                                                                                  1.395346s
+[Stage 40:========================>                                (6 + 8) / 14]                                                                                  1.400667s
+[Stage 42:============================>                            (7 + 7) / 14]                                                                                  1.468690s
+[Stage 44:>                                                       (0 + 14) / 14][Stage 44:====>                                                   (1 + 13) / 14][Stage 44:================>                                       (4 + 10) / 14]                                                                                  1.867436s
+  0.856339s
+hail: table_group_unsorted {'rows': 10000000, 'group_width': 1000}
+  1.531689s
+  1.092068s
+[Stage 63:>                                                       (0 + 14) / 14]                                                                                  1.977229s
+  0.876709s
+  0.807086s
+hail: table_annotate_100_fields {'rows': 1000000, 'fields': 100}
+  0.359478s
+  0.318795s
+  0.246601s
+  0.271532s
+  0.311209s
+hail: table_stats {'rows': 10000000}
+  0.247544s
+  0.268018s
+  0.230953s
+  0.272594s
+  0.201635s
+hail: table_inner_join {'left_rows': 1000000, 'right_rows': 1000000}
+  0.347701s
+  0.254961s
+  0.300124s
+  0.347441s
+  0.335574s
+hail: table_foreign_key_lookup {'rows': 1000000, 'target_rows': 1000}
+[Stage 97:>                                                       (0 + 14) / 14][Stage 97:========>                                               (2 + 12) / 14][Stage 98:>                                                       (0 + 14) / 14]                                                                                [Stage 100:>                                                      (0 + 14) / 14][Stage 100:===================================================>   (13 + 1) / 14]                                                                                [Stage 104:>                                                      (0 + 14) / 14][Stage 104:===========================================>           (11 + 3) / 14]                                                                                [Stage 106:>                                                      (0 + 14) / 14][Stage 106:===>                                                   (1 + 13) / 14]                                                                                [Stage 110:===>                                                   (1 + 13) / 14]                                                                                [Stage 112:===========>                                           (3 + 11) / 14]                                                                                [Stage 116:>                                                      (0 + 14) / 14][Stage 116:========================>                               (6 + 8) / 14]                                                                                [Stage 118:>                                                      (0 + 14) / 14][Stage 118:===>                                                   (1 + 13) / 14]                                                                                  3.235358s
+[Stage 122:>                                                      (0 + 14) / 14][Stage 122:===========>                                           (3 + 11) / 14]                                                                                [Stage 124:>                                                      (0 + 14) / 14]                                                                                  2.687239s
+[Stage 128:>                                                      (0 + 14) / 14][Stage 128:===========>                                           (3 + 11) / 14]                                                                                [Stage 130:>                                                      (0 + 14) / 14][Stage 130:====================================>                   (9 + 5) / 14]                                                                                  3.342173s
+[Stage 134:>                                                      (0 + 14) / 14][Stage 134:===========>                                           (3 + 11) / 14]                                                                                [Stage 136:===>                                                   (1 + 13) / 14]                                                                                  2.414858s
+[Stage 140:>                                                      (0 + 14) / 14]                                                                                [Stage 142:>                                                      (0 + 14) / 14]                                                                                  2.698270s
+hail: table_scan_sum {'rows': 1000000}
+  0.383160s
+  0.217861s
+  0.232794s
+  0.180974s
+  0.153659s
+hail: table_write {'rows': 1000000, 'int32_columns': 2}
+[Stage 160:>                                                      (0 + 14) / 14]                                                                                  0.798426s
+  0.601423s
+  0.596726s
+  0.836939s
+  0.820632s
+hail: table_read {'rows': 1000000, 'int32_columns': 2}
+  0.179237s
+  0.157901s
+  0.296724s
+  0.155998s
+  0.146343s
+hail: matrix_force_count_rows {'rows': 100000, 'columns': 10}
+  0.075693s
+  0.070623s
+  0.075403s
+  0.065639s
+  0.056159s
+hail: matrix_entry_sum {'rows': 100000, 'columns': 10}
+  0.102949s
+  0.110779s
+  0.197203s
+  0.075133s
+  0.133691s
+hail: matrix_filter_rows_columns {'rows': 100000, 'columns': 10}
+  0.114367s
+  0.158175s
+  0.130034s
+  0.179233s
+  0.184775s
+hail: vcf_import_entry_sum {'rows': 50000, 'samples': 10}
+  0.244925s
+  0.259488s
+  0.230755s
+  0.264332s
+  0.222324s
