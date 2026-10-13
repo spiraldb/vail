@@ -33,3 +33,23 @@ def test_scope_and_source_failures_are_catchable_through_public_namespace():
         matrix.annotate_entries(value=matrix.row_idx*other.col_idx)
     with pytest.raises(hl.expr.ExpressionException,match='source mismatch'):
         matrix.annotate_rows(value=other.row_idx)
+def test_existing_implementations_at_hail_import_paths():
+    import vail as hl
+    from vail.expr.types import tint32, tstruct
+    from vail.expr.aggregators import sum as aggregate_sum
+    from vail.expr.functions import coalesce, range as expression_range
+    from vail.expr.expressions.base_expression import ExpressionException
+    from vail.genetics import Call, Locus, ReferenceGenome
+
+    assert tint32 is hl.tint32
+    assert tstruct is hl.tstruct
+    assert aggregate_sum is hl.agg.sum
+    assert hl.expr.aggregators is hl.agg
+    assert coalesce is hl.coalesce
+    assert expression_range is hl.range
+    assert ExpressionException is hl.ExpressionException
+    assert (Call, Locus, ReferenceGenome) == (hl.Call, hl.Locus, hl.ReferenceGenome)
+    assert hl.genetics.Call is hl.Call
+    assert hl.eval(coalesce(hl.missing(tint32), 7)) == 7
+    table = hl.range_table(4)
+    assert table.aggregate(aggregate_sum(table.idx)) == 6

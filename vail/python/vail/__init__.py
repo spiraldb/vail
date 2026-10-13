@@ -1565,3 +1565,4 @@ from .expressions import coalesce, approx_equal
 from .backend import current_backend
 from .vcf_export import export_vcf
 from .variant import split_multi_hts
+from . import genetics
