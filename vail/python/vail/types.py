@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-import builtins
 import math
 import struct
 
@@ -190,24 +189,32 @@ def _value_matches_type(value, dtype):
     return False
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, init=False)
 class Call:
-    alleles: tuple
+    _alleles: tuple
     phased: bool = False
 
-    def __post_init__(self):
-        object.__setattr__(self, "alleles", tuple(self.alleles))
-        if len(self.alleles) > 2 or any(type(a) is not int or a < 0 for a in self.alleles):
+    def __init__(self, alleles, phased=False):
+        alleles = tuple(alleles)
+        if len(alleles) > 2 or any(type(a) is not int or a < 0 for a in alleles):
             raise ValueError("calls require zero, one, or two nonnegative integer alleles")
-        if type(self.phased) is not bool:
+        if type(phased) is not bool:
             raise TypeError("phased must be bool")
-        if not self.phased:
-            object.__setattr__(self, "alleles", tuple(sorted(self.alleles)))
+        object.__setattr__(self, "_alleles", alleles if phased else tuple(sorted(alleles)))
+        object.__setattr__(self, "phased", phased)
         _pack_call(self)
 
     @property
+    def alleles(self):
+        """Return the alleles as a list without exposing mutable hash state."""
+        return list(self._alleles)
+
+    def __repr__(self):
+        return f"Call(alleles={self.alleles!r}, phased={self.phased!r})"
+
+    @property
     def ploidy(self):
-        return len(self.alleles)
+        return len(self._alleles)
 
     def __getitem__(self, i):
         return self.alleles[i]
@@ -325,71 +332,133 @@ def is_type(value):
 
 
 def dtype(type_string):
-    """Parse the primitive, array, and struct subset used by the frontend."""
-    if not builtins.isinstance(type_string, builtins.str):
-        raise TypeError("dtype expects a string")
-    return _parse_type(type_string.strip())
+    """Parse a Hail type string, or return an existing Vail type unchanged."""
+    if is_type(type_string):
+        return type_string
+    if not isinstance(type_string, str):
+        raise TypeError("dtype expects a type string or Vail type")
+    parser = _TypeParser(type_string)
+    result = parser.parse_type()
+    parser.skip_space()
+    if parser.position != len(type_string):
+        parser.error("unexpected trailing input")
+    return result
 
 
-def _split_type_fields(body):
-    fields = []
-    start = 0
-    depth = 0
-    for i, char in enumerate(body):
-        if char in "<{[":
-            depth += 1
-        elif char in ">}]":
-            depth -= 1
-        elif char == "," and depth == 0:
-            fields.append(body[start:i].strip())
-            start = i + 1
-    tail = body[start:].strip()
-    if tail:
-        fields.append(tail)
-    return fields
+class _TypeParser:
+    """Recursive descent over the concrete types supported by Vail."""
+    def __init__(self, text):
+        self.text = text
+        self.position = 0
 
+    def error(self, message):
+        raise ValueError(f"invalid type string at position {self.position}: {message}: {self.text!r}")
 
-def _parse_type(text):
-    aliases = {
-        "int": tint32, "int32": tint32, "int64": tint64,
-        "float": tfloat64, "float32": tfloat32, "float64": tfloat64,
-        "bool": tbool, "str": tstr, "call": tcall,
-    }
-    if text in aliases:
-        return aliases[text]
-    if text.startswith("dict<") and text.endswith(">"):
-        k, v = _split_type_fields(text[5:-1])
-        return tdict(_parse_type(k), _parse_type(v))
-    if text.startswith("ndarray<") and text.endswith(">"):
-        element, rank = _split_type_fields(text[8:-1])
-        return tndarray(_parse_type(element), int(rank))
-    if text.startswith("interval<") and text.endswith(">"):
-        return tinterval(_parse_type(text[9:-1].strip()))
-    if text.startswith("locus<") and text.endswith(">"):
-        return tlocus(text[6:-1].strip())
-    if text.startswith("array<") and text.endswith(">"):
-        return tarray(_parse_type(text[6:-1].strip()))
-    if text.startswith("set<") and text.endswith(">"):
-        return tset(_parse_type(text[4:-1].strip()))
-    if text.startswith("struct{") and text.endswith("}"):
-        fields = {}
-        for decl in _split_type_fields(text[7:-1]):
-            depth = 0
-            colon = None
-            for i, char in enumerate(decl):
-                if char in "<{[": depth += 1
-                elif char in ">}]": depth -= 1
-                elif char == ":" and depth == 0:
-                    colon = i
-                    break
-            if colon is None:
-                raise ValueError(f"invalid struct field type declaration: {decl!r}")
-            name = decl[:colon].strip()
-            if not name or name in fields:
-                raise ValueError(f"invalid or duplicate struct field name: {name!r}")
-            fields[name] = _parse_type(decl[colon + 1:].strip())
-        return tstruct(**fields)
-    raise NotImplementedError(f"unsupported type string: {text!r}")
+    def skip_space(self):
+        while self.position < len(self.text) and self.text[self.position].isspace():
+            self.position += 1
+
+    def accept(self, token):
+        self.skip_space()
+        if self.text.startswith(token, self.position):
+            self.position += len(token)
+            return True
+        return False
+
+    def expect(self, token):
+        if not self.accept(token):
+            self.error(f"expected {token!r}")
+
+    def identifier(self):
+        self.skip_space()
+        if self.accept("`"):
+            start = self.position
+            escaped = False
+            while self.position < len(self.text):
+                char = self.text[self.position]
+                if char == "`" and not escaped:
+                    encoded = self.text[start:self.position]
+                    self.position += 1
+                    # Match Hail's parsable identifier escaping (including Unicode).
+                    try:
+                        return bytes(encoded.replace("\\`", "`"), "utf-8").decode("unicode_escape")
+                    except UnicodeDecodeError:
+                        self.error("invalid escaped identifier")
+                self.position += 1
+                escaped = char == "\\" and not escaped
+            self.error("unterminated escaped identifier")
+        start = self.position
+        while self.position < len(self.text):
+            char = self.text[self.position]
+            if not (char.isalnum() or char == "_"):
+                break
+            self.position += 1
+        if start == self.position:
+            self.error("expected identifier")
+        return self.text[start:self.position]
+
+    def parse_type(self):
+        name = self.identifier()
+        aliases = {
+            "int": tint32, "int32": tint32, "int64": tint64,
+            "float": tfloat64, "float32": tfloat32, "float64": tfloat64,
+            "bool": tbool, "str": tstr, "call": tcall,
+        }
+        # Hail accepts both 'array' and 'tarray', and the analogous primitive names.
+        if name.startswith("t") and name[1:] in (*aliases, "array", "set", "dict", "tuple", "struct", "interval", "locus", "ndarray"):
+            name = name[1:]
+        if name in aliases:
+            return aliases[name]
+        if name == "tuple":
+            self.expect("(")
+            elements = []
+            if not self.accept(")"):
+                elements.append(self.parse_type())
+                while self.accept(","):
+                    elements.append(self.parse_type())
+                self.expect(")")
+            return ttuple(*elements)
+        if name == "struct":
+            self.expect("{")
+            fields = {}
+            if not self.accept("}"):
+                while True:
+                    field = self.identifier()
+                    if field in fields:
+                        self.error(f"duplicate struct field {field!r}")
+                    self.expect(":")
+                    fields[field] = self.parse_type()
+                    if not self.accept(","):
+                        break
+                self.expect("}")
+            return tstruct(**fields)
+        if name == "locus":
+            self.expect("<")
+            reference = self.identifier()
+            self.expect(">")
+            return tlocus(reference)
+        if name in ("array", "set", "interval", "dict", "ndarray"):
+            self.expect("<")
+            element = self.parse_type()
+            if name == "dict":
+                self.expect(",")
+                value = self.parse_type()
+                self.expect(">")
+                return tdict(element, value)
+            if name == "ndarray":
+                self.expect(",")
+                self.skip_space()
+                start = self.position
+                while self.position < len(self.text) and self.text[self.position] in "0123456789":
+                    self.position += 1
+                if start == self.position:
+                    self.error("expected nonnegative ndarray rank")
+                rank = int(self.text[start:self.position])
+                self.expect(">")
+                return tndarray(element, rank)
+            self.expect(">")
+            return {"array": tarray, "set": tset, "interval": tinterval}[name](element)
+        self.error(f"unknown or unsupported type {name!r}")
 
 
 def type_to_wire(dtype):

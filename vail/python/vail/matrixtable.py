@@ -339,7 +339,7 @@ class MatrixTable:
         actual = _axes(expr.to_ir(), outside_aggregates=aggregate)
         if not actual <= allowed:
             raise ExpressionException(
-                f"{axis} expression uses incompatible axes: {sorted(actual - allowed)}"
+                f"scope violation: {axis} expression uses incompatible axes: {sorted(actual - allowed)}"
             )
         if not aggregate and _has_aggregate(expr.to_ir()):
             raise ExpressionException(
@@ -835,7 +835,7 @@ class MatrixTable:
         actual = _axes(expr.to_ir())
         allowed = {"row": {"row"}, "col": {"col"}, "entry": {"row", "col"}}[axis]
         if not actual <= allowed:
-            raise ExpressionException("aggregation uses incompatible axes")
+            raise ExpressionException("scope violation: aggregation uses incompatible axes")
         table = self._context(axis)
         if axis == "col" and self._mir.col_key:
             table = table.order_by(
@@ -1190,6 +1190,10 @@ class MatrixTable:
         return result
 
     def _lookup_axis(self, axis, expressions, all_matches):
+        if not getattr(self._mir, axis + "_key"):
+            raise ExpressionException(
+                f"Cannot index MatrixTable {axis}s: MatrixTable {axis} key: <<<empty key>>>"
+            )
         table = self.rows() if axis == "row" else self.cols()
         return table.index(*expressions, all_matches=all_matches)
 

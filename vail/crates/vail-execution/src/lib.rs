@@ -24,6 +24,7 @@ use datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeE
 use thiserror::Error;
 
 mod aggregate_identity;
+mod array_fold;
 pub mod aggregates;
 pub mod calls;
 pub mod collect_aggregate;

@@ -182,7 +182,7 @@ def _check_value(value, dtype, name):
             raise TypeError(f"field {name!r} requires an interval with point type {dtype.point_type}")
     elif isinstance(dtype, ttuple):
         dtype._validate_value(value)
-        for index, (item, item_type) in enumerate(zip(value, dtype.types)):
+        for index, (item, item_type) in builtins.enumerate(builtins.zip(value, dtype.types)):
             _check_value(item, item_type, f"{name}[{index}]")
     elif isinstance(dtype, tdict):
         if not isinstance(value, Mapping):
@@ -324,13 +324,13 @@ class Table:
                 raise TypeError("schema must be a vail.tstruct")
             expression = input_expression(rows, tarray(schema))
             return cls._parallelize_expression(expression, schema, key, n_partitions, globals)
-        if any(not isinstance(row, Mapping) for row in rows):
+        if builtins.any(not isinstance(row, Mapping) for row in rows):
             raise TypeError("rows must be dictionaries or Struct values")
         if schema is None:
             if not rows:
                 raise ValueError("provide schema for an empty table")
             names = list(rows[0])
-            if any(builtins.set(row) != builtins.set(names) for row in rows):
+            if builtins.any(builtins.set(row) != builtins.set(names) for row in rows):
                 raise ValueError("all rows must have the same fields")
             schema = tstruct(**{name: _infer_type([row[name] for row in rows]) for name in names})
         if isinstance(schema, builtins.str):
@@ -510,7 +510,7 @@ class Table:
     def _project(self, projections, keys=None):
         projections = list(projections)
         native, expressions = _resolve_lookups(self._native, [expr for _, expr in projections])
-        projections = [(name, expr) for (name, _), expr in zip(projections, expressions)]
+        projections = [(name, expr) for (name, _), expr in builtins.zip(projections, expressions)]
         projections_json = _json.dumps([[name, expr.to_ir()] for name, expr in projections])
         native = native.project_json(projections_json, _global_bindings(expressions))
         schema = {
@@ -635,7 +635,7 @@ class Table:
         all_names = builtins.set(self._schema) | builtins.set(self._global_schema)
         if builtins.set(mapping) - all_names:
             raise ValueError(f"found rename rules for fields not present in table: {list(builtins.set(mapping) - all_names)}")
-        if any(not isinstance(old, builtins.str) or not isinstance(new, builtins.str) or not new for old, new in mapping.items()):
+        if builtins.any(not isinstance(old, builtins.str) or not isinstance(new, builtins.str) or not new for old, new in mapping.items()):
             raise TypeError("rename field names must be non-empty strings")
         for scope in (self._schema, self._global_schema):
             names = [mapping.get(name, name) for name in scope]
@@ -867,7 +867,7 @@ class Table:
                 raise TypeError("union arguments must be Tables")
             if result._keys != other._keys:
                 raise ValueError("union tables must have identical key names and types")
-            if any(result._schema.get(key) != other._schema.get(key) for key in result._keys):
+            if builtins.any(result._schema.get(key) != other._schema.get(key) for key in result._keys):
                 raise ValueError("union tables must have identical key names and types")
             fields = builtins.dict(result._schema.items())
             if unify:
@@ -910,8 +910,8 @@ class Table:
         if left_types != right_types:
             raise ValueError(
                 "'join': key mismatch:\n"
-                f"  left:  [{', '.join(map(builtins.str, left_types))}]\n"
-                f"  right: [{', '.join(map(builtins.str, right_types))}]"
+                f"  left:  [{', '.join(builtins.map(builtins.str, left_types))}]\n"
+                f"  right: [{', '.join(builtins.map(builtins.str, right_types))}]"
             )
 
         # Hail exposes row and global names in one field namespace. Rename
@@ -964,8 +964,8 @@ class Table:
             raise ValueError(
                 f"{method}: cannot join: table must have a key of the same type(s) "
                 "and be the same length or shorter:\n"
-                f"   Left key: {', '.join(map(builtins.str, left_types))}\n"
-                f"  Right key: {', '.join(map(builtins.str, right_types))}"
+                f"   Left key: {', '.join(builtins.map(builtins.str, left_types))}\n"
+                f"  Right key: {', '.join(builtins.map(builtins.str, right_types))}"
             )
         native = self._native.join(other._native, "anti" if anti else "semi", builtins.len(other._keys))
         return Table(native, _schema_from_native(native), _keys_from_native(native))
@@ -978,7 +978,7 @@ class Table:
         tables = list(tables)
         if not tables:
             raise ValueError("multi_way_zip_join must have at least one table as an argument")
-        if any(not isinstance(table, Table) for table in tables):
+        if builtins.any(not isinstance(table, Table) for table in tables):
             raise TypeError("all inputs to multi_way_zip_join must be Tables")
         if not isinstance(data_field_name, builtins.str) or not data_field_name:
             raise TypeError("data_field_name must be a non-empty string")
@@ -986,11 +986,11 @@ class Table:
             raise TypeError("global_field_name must be a non-empty string")
         head = tables[0]
         key_types = [(name, head._schema[name]) for name in head._keys]
-        if any([(name, table._schema[name]) for name in table._keys] != key_types for table in tables[1:]):
+        if builtins.any([(name, table._schema[name]) for name in table._keys] != key_types for table in tables[1:]):
             raise TypeError("All input tables to multi_way_zip_join must have the same key type")
-        if any(table._schema != head._schema for table in tables[1:]):
+        if builtins.any(table._schema != head._schema for table in tables[1:]):
             raise TypeError("All input tables to multi_way_zip_join must have the same row type")
-        if any(table._global_schema != head._global_schema for table in tables[1:]):
+        if builtins.any(table._global_schema != head._global_schema for table in tables[1:]):
             raise TypeError("All input tables to multi_way_zip_join must have the same global type")
         native = _native_session().multi_way_zip_join(
             [table._native for table in tables], data_field_name, global_field_name
@@ -1202,7 +1202,7 @@ class Table:
         if not isinstance(parts, Sequence) or isinstance(parts, (builtins.str, bytes, bytearray)):
             raise TypeError("parts must be a sequence of integers")
         parts = list(parts)
-        if any(isinstance(part, builtins.bool) or not isinstance(part, builtins.int) for part in parts):
+        if builtins.any(isinstance(part, builtins.bool) or not isinstance(part, builtins.int) for part in parts):
             raise TypeError("parts must contain integers")
         if type(keep) is not builtins.bool:
             raise TypeError("keep must be a bool")
@@ -1292,9 +1292,9 @@ def _validate_aggregate_ir(node):
                 return False
             if value.get("op") in ("aggregate", "agg_filter", "agg_explode", "agg_group_by", "agg_array", "aggregate_fold"):
                 return True
-            return any(has_aggregate(child) for child in value.values())
+            return builtins.any(has_aggregate(child) for child in value.values())
         if isinstance(value, list):
-            return any(has_aggregate(child) for child in value)
+            return builtins.any(has_aggregate(child) for child in value)
         return False
 
     def visit(value, row_allowed=False):
@@ -1358,13 +1358,13 @@ def _ir_has_aggregate(node):
                         return False
                     if value.get("op") == "aggregate" and (value.get("options") or {}).get("__vail_scan"):
                         return True
-                    return any(has_scan(child) for child in value.values())
-                return isinstance(value, list) and any(has_scan(child) for child in value)
+                    return builtins.any(has_scan(child) for child in value.values())
+                return isinstance(value, list) and builtins.any(has_scan(child) for child in value)
             if not has_scan(node):
                 return True
-        return any(_ir_has_aggregate(child) for child in node.values())
+        return builtins.any(_ir_has_aggregate(child) for child in node.values())
     if isinstance(node, list):
-        return any(_ir_has_aggregate(child) for child in node)
+        return builtins.any(_ir_has_aggregate(child) for child in node)
     return False
 
 
@@ -1404,8 +1404,8 @@ class GroupedTable:
         expressions = {name: as_expr(value) for name, value in fields.items()}
         native, resolved = _resolve_lookups(table._native, [expr for _, expr in keys] + list(expressions.values()))
         resolved_keys, resolved_fields = resolved[:builtins.len(keys)], resolved[builtins.len(keys):]
-        key_json = _json.dumps([[name, expr.to_ir()] for (name, _), expr in zip(keys, resolved_keys)])
-        fields_json = _json.dumps([[name, expr.to_ir()] for name, expr in zip(expressions, resolved_fields)])
+        key_json = _json.dumps([[name, expr.to_ir()] for (name, _), expr in builtins.zip(keys, resolved_keys)])
+        fields_json = _json.dumps([[name, expr.to_ir()] for name, expr in builtins.zip(expressions, resolved_fields)])
         native = native.grouped_aggregate_json(key_json, fields_json, _global_bindings(resolved))
         if self._npartitions is not None:
             native = native.repartition(self._npartitions, "shuffle")
@@ -1430,7 +1430,7 @@ def filter_intervals(ds, intervals, keep=True):
         intervals = eval(intervals)
         if intervals is None:
             raise TypeError("intervals cannot be a missing array")
-    elif isinstance(intervals, (list, builtins.tuple)) and any(
+    elif isinstance(intervals, (list, builtins.tuple)) and builtins.any(
             isinstance(value, Expression) for value in intervals):
         intervals = eval(array(list(intervals)))
         if intervals is None:
@@ -1438,12 +1438,12 @@ def filter_intervals(ds, intervals, keep=True):
     if not isinstance(intervals, (list, builtins.tuple)):
         raise TypeError("intervals must be a list, tuple, or unindexed array expression")
     intervals = list(intervals)
-    if any(not isinstance(value, Interval) for value in intervals):
+    if builtins.any(not isinstance(value, Interval) for value in intervals):
         raise TypeError("intervals cannot contain missing or non-Interval values")
     if not intervals and declared_point_type is None:
         return ds if not keep else ds.filter(False)
     point_type = intervals[0].point_type if intervals else declared_point_type
-    if any(value.point_type != point_type for value in intervals):
+    if builtins.any(value.point_type != point_type for value in intervals):
         raise TypeError("all intervals must have the same point type")
     first = ds._keys[0]
     if point_type == ds._schema[first]:
@@ -1508,16 +1508,16 @@ def read_table(path, *, _intervals=None, _filter_intervals=False, _n_partitions=
             raise ValueError("_intervals requires a keyed table")
         intervals = list(_intervals)
         if intervals:
-            if any(not isinstance(value, Interval) for value in intervals):
+            if builtins.any(not isinstance(value, Interval) for value in intervals):
                 raise TypeError("_intervals must contain Interval values")
             point_type = intervals[0].point_type
-            if any(value.point_type != point_type for value in intervals):
+            if builtins.any(value.point_type != point_type for value in intervals):
                 raise TypeError("all intervals must have the same point type")
             if isinstance(point_type, tstruct):
                 point_fields = list(point_type.items())
                 if not point_fields or builtins.len(point_fields) > builtins.len(keys):
                     raise TypeError("interval point struct must be a non-empty prefix of the table key")
-                for (field_name, field_type), key_name in zip(point_fields, keys):
+                for (field_name, field_type), key_name in builtins.zip(point_fields, keys):
                     if field_name != key_name or field_type != schema[key_name]:
                         raise TypeError("interval point struct must match a prefix of the table key")
             elif builtins.len(keys) != 1 or point_type != schema[keys[0]]:
@@ -1552,6 +1552,15 @@ def eval(expression):
     data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
     return decode_rows(data, tstruct(value=expr.dtype))[0].value
 
+def eval_typed(expression):
+    """Evaluate an unindexed expression and return its value and Vail type.
+
+    Python values are converted to expressions using the same rules as
+    :func:`eval`. Expressions may refer to Table or MatrixTable globals.
+    """
+    expr = as_expr(expression)
+    return eval(expr), expr.dtype
+
 from . import nd
 
 _stream_range = _stream_range
@@ -1561,7 +1570,7 @@ float = float64
 bool = _bool_cast
 
 from .collections import sorted_ as sorted
-from .queries import query_table
+from .queries import query_table, query_matrix_table_rows
 
 from .expressions import bind
 from .matrixtable import MatrixTable, GroupedMatrixTable, range_matrix_table, read_matrix_table
@@ -1572,3 +1581,14 @@ from .expressions import coalesce, approx_equal
 from .backend import current_backend
 from .vcf_export import export_vcf
 from .variant import split_multi_hts
+from .allele_functions import (
+    allele_type, numeric_allele_type, is_snp, is_mnp, is_insertion,
+    is_deletion, is_indel, is_complex, is_star, is_symbolic,
+    is_transition, is_transversion, is_strand_ambiguous,
+)
+from . import genetics
+from .builders import switch
+from .array_methods import fold, array_scan, mean, median, group_by
+
+from .collection_functions import (zip, map, starmap, any, all, find, filter, flatmap,
+                                   flatten, enumerate, zip_with_index, corr, or_else)

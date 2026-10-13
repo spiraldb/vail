@@ -1,0 +1,29 @@
+"""Hail-compatible import path for implemented public frontend functions."""
+import types as _types
+import vail as _vail
+
+__all__ = [name for name, value in vars(_vail).items()
+           if not name.startswith('_') and isinstance(value, _types.FunctionType)]
+
+
+def __getattr__(name):
+    value = getattr(_vail, name, None)
+    if not name.startswith('_') and isinstance(value, _types.FunctionType):
+        return value
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
+
+
+def __dir__():
+    return sorted(set(globals()) | set(__all__))
+
+
+def _cdf_combine(*args, **kwargs):
+    raise NotImplementedError('vail.expr.functions._cdf_combine is not implemented')
+
+
+def _error_from_cdf(*args, **kwargs):
+    raise NotImplementedError('vail.expr.functions._error_from_cdf is not implemented')
+
+
+def _result_from_raw_cdf(*args, **kwargs):
+    raise NotImplementedError('vail.expr.functions._result_from_raw_cdf is not implemented')

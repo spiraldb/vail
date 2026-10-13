@@ -26,6 +26,7 @@ import time
 import traceback
 import unittest
 from uuid import uuid4
+from upstream_paths import doctest_data_dir
 
 CASES = (
     "test_range_count",
@@ -198,6 +199,7 @@ def execute(source, name, temp_root, output):
         resource=lambda filename: str(resources / filename),
         ir=BackendDependency("ir"),
         Env=BackendDependency("Env"),
+        _doctest_dir=doctest_data_dir(source.parent.parent),
     )
     # Copy relevant original shared helpers; do not substitute simplified fixtures.
     helpers = ast.parse((source.parents[1] / "helpers.py").read_text())
@@ -208,6 +210,7 @@ def execute(source, name, temp_root, output):
         "prefix_struct",
         "create_all_values_matrix_table",
         "get_dataset",
+        "doctest_resource",
     }
     helper_nodes = [
         n for n in helpers.body if isinstance(n, ast.FunctionDef) and n.name in wanted

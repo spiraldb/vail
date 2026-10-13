@@ -41,7 +41,7 @@ def _merge_sources(left, right):
         return right
     if right is None or left is right:
         return left
-    raise ExpressionException("expression source mismatch: fields belong to different Tables")
+    raise ExpressionException("Found fields from 2 objects: expression source mismatch: fields belong to different datasets")
 
 
 def as_expr(value):
@@ -611,6 +611,42 @@ class Expression:
                     return ops.unsupported(name)
         if name == "flatmap" and isinstance(dtype, tarray):
             return object.__getattribute__(self, "_array_flatmap")
+        if isinstance(dtype, tarray):
+            from . import collections as ops
+            if name in ("fold", "scan", "group_by"):
+                from .array_methods import fold, array_scan, group_by
+                if name == "group_by": return lambda f: group_by(f, self)
+                operation = fold if name == "fold" else array_scan
+                return lambda f, zero: operation(f, zero, self)
+            if name == "extend":
+                def extend(other):
+                    other = as_expr(other)
+                    if other.dtype != dtype:
+                        raise TypeError("array.extend requires the same array type")
+                    result = ops._function("array_concat", [self, other], dtype)
+                    return if_else(is_missing(self) | is_missing(other), missing(dtype), result)
+                return extend
+            if name == "starmap":
+                def starmap(f):
+                    if not callable(f) or not isinstance(dtype.element_type, ttuple):
+                        raise TypeError("array.starmap requires a callable and tuple elements")
+                    return self._array_map(lambda item: f(*(item[i] for i in range(len(item.dtype.types)))))
+                return starmap
+            if name == "any": return lambda f: ops.predicate(self, f)
+            if name == "all": return lambda f: ~ops.predicate(self, lambda item: ~as_expr(f(item)))
+            if name == "find": return lambda f: ops.predicate(self, f, first=True)
+            if name == "first": return lambda: ops.predicate(self, lambda item: literal(True), first=True)
+            if name == "last":
+                return lambda: if_else(self._array_length() > 0, self[self._array_length() - 1], missing(dtype.element_type))
+            if name == "index":
+                def index(value):
+                    from .streams import stream_range
+                    indices = stream_range(self._array_length()).to_array()
+                    return ops.predicate(indices, lambda i: value(self[i]) if callable(value) else self[i] == value, first=True)
+                return index
+            if isinstance(dtype.element_type, tstruct):
+                if name in dtype.element_type:
+                    return self._array_map(lambda item: item[name])
         if name == "filter" and isinstance(dtype, tarray):
             return object.__getattribute__(self, "_array_filter")
         if name == "map" and isinstance(dtype, (tarray, tset, tdict)):
@@ -623,6 +659,8 @@ class Expression:
             return object.__getattribute__(self, "_interval_contains")
         if name == "overlaps" and isinstance(dtype, tinterval):
             return object.__getattribute__(self, "_interval_overlaps")
+        if isinstance(dtype, tarray) and isinstance(dtype.element_type, tstruct):
+            raise AttributeError(f"ArrayStructExpression instance has no field, method, or property {name!r}")
         raise AttributeError(name)
 
     def __contains__(self, item):
@@ -749,6 +787,9 @@ def column(source, name, dtype):
 def literal(value, dtype=None):
     if dtype is None:
         dtype = infer_type(value)
+    elif isinstance(dtype, str):
+        from .types import dtype as parse_dtype
+        dtype = parse_dtype(dtype)
     elif not _valid_type(dtype):
         raise TypeError(f"literal dtype must be a Vail type, found {dtype!r}")
     return Expression(dtype, None, {"op": "literal", "dtype": type_to_wire(dtype), "value": encode_value(value, dtype)})
@@ -882,10 +923,15 @@ def missing(dtype):
     return literal(None, dtype)
 
 
-def if_else(condition, consequent, alternate):
+def if_else(condition, consequent, alternate, missing_false=False):
+    """Select a branch, optionally treating a missing condition as false."""
+    if type(missing_false) is not bool:
+        raise TypeError("missing_false must be a bool")
     condition = as_expr(condition)
     if condition.dtype != tbool:
         raise TypeError("if_else condition must have bool type")
+    if missing_false:
+        condition = if_else(is_missing(condition), False, condition)
     consequent = as_expr(consequent)
     alternate = as_expr(alternate)
     result_type = unify_types(consequent.dtype, alternate.dtype)
