@@ -34,7 +34,9 @@ fn table_error(error: TableError) -> PyErr {
                 TableError::Invalid(_) | TableError::Arrow(_) => return value_error(table),
                 TableError::Expression(expr) => {
                     return match expr {
-                        vail_execution::expressions::ExprError::Unsupported(_) => PyNotImplementedError::new_err(expr.to_string()),
+                        vail_execution::expressions::ExprError::Unsupported(_) => {
+                            PyNotImplementedError::new_err(expr.to_string())
+                        }
                         vail_execution::expressions::ExprError::DataFusion(_) => {
                             PyRuntimeError::new_err(expr.to_string())
                         }
@@ -503,7 +505,7 @@ impl NativeTable {
         serde_json::to_string(&encoded).map_err(value_error)
     }
     fn is_read_source(&self) -> bool {
-        matches!(self.ir.node(), vail_table::TableNode::Read { .. })
+        self.ir.can_pushdown_interval_read()
     }
 
     fn filter_intervals_arrow(&self, data: &[u8], filter: bool) -> PyResult<Self> {
@@ -745,6 +747,12 @@ impl NativeTable {
         Ok(Self {
             runtime: self.runtime.clone(),
             ir: self.ir.key_by(keys).map_err(table_error)?,
+        })
+    }
+    fn with_keys(&self, keys: Vec<String>) -> PyResult<Self> {
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self.ir.with_keys(keys).map_err(table_error)?,
         })
     }
     fn order_by(&self, keys: Vec<(String, bool)>) -> PyResult<Self> {

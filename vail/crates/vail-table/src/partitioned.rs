@@ -604,7 +604,9 @@ impl ExecutionPlan for PartitionSetExec {
                     .checked_sub(1)
                     .ok_or_else(|| DataFusionError::Internal("partition tag is absent".into()))?;
                 columns[index] = Arc::new(UInt64Array::from_value(p as u64, batch.num_rows()));
-                let columns = columns.iter().zip(schema.fields())
+                let columns = columns
+                    .iter()
+                    .zip(schema.fields())
                     .map(|(array, field)| arrow_cast::cast(array, field.data_type()))
                     .collect::<std::result::Result<Vec<_>, _>>()?;
                 RecordBatch::try_new(schema, columns).map_err(Into::into)
@@ -1057,14 +1059,7 @@ async fn shuffle(
             crate::partitioning::key_ranges(ordered.clone(), keys, total, n, context).await?;
         input = prepare_legacy(child.clone()).await?;
         let ordered = input.ordered();
-        let range = RangePartitioning::try_new(
-            LexOrdering::new(vec![PhysicalSortExpr::new(
-                ranges.expression,
-                SortOptions::default(),
-            )])
-            .unwrap(),
-            ranges.splits,
-        )?;
+        let range = RangePartitioning::try_new(ranges.ordering, ranges.splits)?;
         (plan::ordinal(ordered), range)
     };
     // Each input partition independently labels its rows with a stable global
@@ -1385,7 +1380,8 @@ mod expression_source_tests {
             count: Arc::new(AtomicUsize::new(0)),
             resets: resets.clone(),
         });
-        let dag: PhysicalPlan = Arc::new(OrderedConcatExec::new(vec![input.clone(), input], schema));
+        let dag: PhysicalPlan =
+            Arc::new(OrderedConcatExec::new(vec![input.clone(), input], schema));
         let first = super::reset_plan_states(dag.clone()).unwrap();
         assert_eq!(resets.load(Ordering::SeqCst), 1);
         assert!(Arc::ptr_eq(first.children()[0], first.children()[1]));
@@ -1393,5 +1389,4 @@ mod expression_source_tests {
         assert_eq!(resets.load(Ordering::SeqCst), 2);
         assert!(!Arc::ptr_eq(first.children()[0], second.children()[0]));
     }
-
 }

@@ -1,6 +1,6 @@
-//! Table joins use DataFusion's join operators and Vail's shared key encoding.
-//! Missing top-level key components never match, even though canonical ordering
-//! assigns them a position. Nested missing values remain part of a present key.
+//! Table joins use DataFusion's join operators and native typed key comparisons.
+//! Missing top-level key components never match; nested missing values remain
+//! part of a present key.
 use crate::{
     Result, ScalarIR, TableError, TableIR, TableJoinKind, TableNode, TableRef,
     globals::{GlobalBindings, GlobalsIR, GlobalsRef},
@@ -243,15 +243,14 @@ fn combined_globals(left: &GlobalsRef, right: &GlobalsRef) -> Result<GlobalsRef>
 }
 fn match_key(input: &PhysicalPlan, name: &str) -> Result<Arc<dyn PhysicalExpr>> {
     let value = column(input, input.schema().index_of(name)?);
-    let key = vail_execution::ordering::canonical_key(value.clone());
-    let missing = ScalarValue::try_from(key.data_type(input.schema().as_ref())?)?;
+    let missing = ScalarValue::try_from(value.data_type(input.schema().as_ref())?)?;
     Ok(Arc::new(CaseExpr::try_new(
         None,
         vec![(
             Arc::new(IsNullExpr::new(value.clone())),
             Arc::new(Literal::new(missing)),
         )],
-        Some(key),
+        Some(value),
     )?))
 }
 fn prefer_left(
@@ -374,7 +373,7 @@ pub(crate) fn lower(
         TableJoinKind::Semi => JoinType::LeftSemi,
         TableJoinKind::Anti => JoinType::LeftAnti,
     };
-    // Canonical match keys preserve nested values and IEEE total ordering.
+    // Typed match keys preserve nested values and native Arrow ordering.
     let options = arrow_schema::SortOptions {
         descending: false,
         nulls_first: false,

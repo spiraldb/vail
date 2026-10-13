@@ -264,12 +264,7 @@ fn distinct_keys(input: PhysicalPlan, keys: &[String]) -> Result<PhysicalPlan> {
         )]
     } else {
         keys.iter()
-            .map(|name| {
-                Ok((
-                    vail_execution::ordering::canonical_key(column(&input, schema.index_of(name)?)),
-                    name.clone(),
-                ))
-            })
+            .map(|name| Ok((column(&input, schema.index_of(name)?), name.clone())))
             .collect::<Result<Vec<_>>>()?
     };
     Ok(Arc::new(AggregateExec::try_new(
@@ -396,6 +391,18 @@ impl PhysicalExpr for DifferentExpr {
             .iter()
             .map(|arg| arg.evaluate(batch)?.into_array(batch.num_rows()))
             .collect::<datafusion_common::Result<Vec<_>>>()?;
+        let start = if self.presence { 2 } else { 0 };
+        let comparators = arrays[start..]
+            .chunks_exact(2)
+            .take(self.exact_pairs)
+            .map(|pair| {
+                arrow_ord::ord::make_comparator(
+                    pair[0].as_ref(),
+                    pair[1].as_ref(),
+                    arrow_schema::SortOptions::default(),
+                )
+            })
+            .collect::<std::result::Result<Vec<_>, _>>()?;
         let mut result = Vec::with_capacity(batch.num_rows());
         for row in 0..batch.num_rows() {
             let mut different = self.presence && (arrays[0].is_null(row) || arrays[1].is_null(row));
@@ -404,11 +411,7 @@ impl PhysicalExpr for DifferentExpr {
                 for (i, pair) in arrays[start..].chunks_exact(2).enumerate() {
                     let exact = i < self.exact_pairs;
                     let same = if exact {
-                        let left = vail_ordering::encode_value(pair[0].as_ref(), row)
-                            .map_err(|e| DataFusionError::Execution(e.to_string()))?;
-                        let right = vail_ordering::encode_value(pair[1].as_ref(), row)
-                            .map_err(|e| DataFusionError::Execution(e.to_string()))?;
-                        left == right
+                        comparators[i](row, row) == std::cmp::Ordering::Equal
                     } else {
                         values_similar(
                             pair[0].as_ref(),

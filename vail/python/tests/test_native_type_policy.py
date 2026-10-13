@@ -118,3 +118,40 @@ def test_packed_call_accessors_at_representation_boundaries():
                           phase=call_field(table.c, '__vail_call_phased', hl.tbool)).collect()
     assert [r.a for r in rows] == [list(c.alleles) if c is not None else None for c in calls]
     assert [r.phase for r in rows] == [c.phased if c is not None else None for c in calls]
+
+
+def test_array_keys_use_native_grouping_distinct_and_exact_table_comparison():
+    schema = hl.tstruct(k=hl.tarray(hl.tint32), v=hl.tint32)
+    table = hl.Table.parallelize(
+        [dict(k=[1], v=2), dict(k=[1], v=3), dict(k=[1, 2], v=4), dict(k=None, v=5)],
+        schema=schema,
+        n_partitions=2,
+    ).key_by('k')
+    groups = table.group_by(k=table.k).aggregate(n=hl.agg.count()).collect()
+    assert [(row.k, row.n) for row in groups] == [([1], 2), ([1, 2], 1), (None, 1)]
+    assert table.distinct().count() == 3
+    assert table._same(table)
+    changed = table.annotate(v=table.v + 1)
+    assert not table._same(changed)
+
+
+def test_empty_struct_group_key_preserves_rows_and_missingness():
+    table = hl.range_table(3).annotate(k=hl.struct())
+    rows = table.group_by('k').aggregate(n=hl.agg.count()).collect()
+    assert len(rows) == 1
+    assert rows[0].k == hl.Struct()
+    assert rows[0].n == 3
+
+    table = table.annotate(k=hl.or_missing(table.idx != 0, table.k))
+    rows = table.group_by('k').aggregate(n=hl.agg.count()).collect()
+    assert [(row.k, row.n) for row in rows] == [(hl.Struct(), 2), (None, 1)]
+
+    # Scoped aggregates use the physical aggregate path and collect nested
+    # values into a Dict whose key itself is the zero-field struct.
+    counts = table.aggregate(hl.agg.group_by(table.k, hl.agg.count()))
+    assert counts == {hl.Struct(): 2, None: 1}
+
+    arrays = table.aggregate(
+        hl.agg.group_by(table.k, hl.agg.array_sum(hl.array([table.idx])))
+    )
+    assert arrays == {hl.Struct(): [3], None: [0]}

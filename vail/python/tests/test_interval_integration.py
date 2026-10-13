@@ -82,6 +82,18 @@ def test_interval_point_types_roundtrip(tmp_path, point_type, start, end):
         table.write(tmp_path / 'unkeyed-intervals')
         assert hl.read_table(tmp_path / 'unkeyed-intervals')._same(table)
         return
+    if isinstance(point_type, hl.tndarray):
+        with pytest.raises(NotImplementedError, match='ndarray'):
+            table.key_by('region')
+        table.write(tmp_path / 'unkeyed-intervals')
+        assert hl.read_table(tmp_path / 'unkeyed-intervals')._same(table)
+        point = hl.literal(start, point_type)
+        singleton = hl.interval(point, point, includes_end=True)
+        with pytest.raises(NotImplementedError, match='ndarray'):
+            hl.eval(singleton.contains(point))
+        with pytest.raises(NotImplementedError, match='ndarray'):
+            hl.eval(singleton.overlaps(singleton))
+        return
     table = table.key_by('region')
     assert isinstance(table.collect()[0].region, hl.Interval)
     path = tmp_path / 'intervals'

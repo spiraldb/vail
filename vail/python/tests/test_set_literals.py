@@ -87,6 +87,26 @@ def test_set_same_ignores_order_but_checks_missingness_and_collection_type():
     assert not first._same(as_array)
 
 
+def test_set_same_canonicalizes_runtime_array_distinct_values():
+    first = hl.range_table(1).annotate(values=hl.set(hl.array([3, 1, 2])))
+    reordered = hl.range_table(1).annotate(values=hl.set(hl.array([2, 3, 1])))
+    assert first._same(reordered)
+
+
+def test_set_same_canonicalizes_nested_sets_and_unordered_globals():
+    nested_type = hl.tset(hl.tint32)
+    outer_type = hl.tset(nested_type)
+    first_nested = hl.literal({frozenset({1, 2}), frozenset({4})}, outer_type)
+    reordered_nested = hl.literal({frozenset({4}), frozenset({2, 1})}, outer_type)
+    first = hl.range_table(1).annotate(values=first_nested)
+    reordered = hl.range_table(1).annotate(values=reordered_nested)
+    assert first._same(reordered)
+
+    first_global = hl.range_table(0).annotate_globals(members=hl.literal({1, 3, 2}))
+    reordered_global = hl.range_table(0).annotate_globals(members=hl.literal({2, 1, 3}))
+    assert first_global._same(reordered_global)
+
+
 def test_parallelize_typed_set_fields_keep_set_dtype_and_missingness():
     table = hl.Table.parallelize(
         [{"values": {2, None, 2}}, {"values": set()}, {"values": None}],

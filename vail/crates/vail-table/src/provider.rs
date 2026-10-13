@@ -25,7 +25,7 @@ use datafusion::physical_plan::{
 };
 use futures::TryStreamExt;
 use std::{fmt, sync::Arc};
-use vail_storage::fragment_index::{Endpoint, KeyType, KeyValue, QueryInterval, compare_keys};
+use vail_storage::fragment_index::{Endpoint, KeyField, KeyValue, QueryInterval, compare_keys};
 use vail_storage::local_table::LocalRead;
 
 /// Build the DataFusion scan for a leaf `TableIR`. The scan preserves the
@@ -132,7 +132,7 @@ impl TableProvider for VailSourceProvider {
                 let mut queries = vec![QueryInterval::default()];
                 let mut constrained = false;
                 for filter in filters {
-                    if let Some(ranges) = intervals_for_filter(filter, &self.table) {
+                    if let Some(ranges) = intervals_for_filter(filter, &self.table)? {
                         constrained = true;
                         queries = intersect_intervals(&queries, &ranges, source)?;
                     }
@@ -171,16 +171,14 @@ impl TableProvider for VailSourceProvider {
         &self,
         filters: &[&Expr],
     ) -> DFResult<Vec<TableProviderFilterPushDown>> {
-        let statuses = filters
-            .iter()
-            .map(|filter| {
-                if intervals_for_filter(filter, &self.table).is_some() {
-                    TableProviderFilterPushDown::Inexact
-                } else {
-                    TableProviderFilterPushDown::Unsupported
-                }
-            })
-            .collect::<Vec<_>>();
+        let mut statuses = Vec::with_capacity(filters.len());
+        for filter in filters {
+            statuses.push(if intervals_for_filter(filter, &self.table)?.is_some() {
+                TableProviderFilterPushDown::Inexact
+            } else {
+                TableProviderFilterPushDown::Unsupported
+            });
+        }
         Ok(statuses)
     }
 }
@@ -196,58 +194,75 @@ fn make_source_parts(table: &TableRef, schema: SchemaRef) -> DFResult<Arc<dyn Ex
     Ok(Arc::new(PartitionSetExec::new(partitions, schema)))
 }
 
-fn intervals_for_filter(expression: &Expr, table: &TableRef) -> Option<Vec<QueryInterval>> {
+fn intervals_for_filter(
+    expression: &Expr,
+    table: &TableRef,
+) -> DFResult<Option<Vec<QueryInterval>>> {
     let TableNode::Read { source } = table.node() else {
-        return None;
+        return Ok(None);
     };
     if table.keys().len() != 1 {
-        return None;
+        return Ok(None);
     }
-    let binding = source.index_binding().ok()?;
+    let binding = source
+        .index_binding()
+        .map_err(|error| DataFusionError::External(Box::new(error)))?;
     if binding.key_fields.len() != 1 {
-        return None;
+        return Ok(None);
     }
     let key = &binding.key_fields[0];
     let name = &table.keys()[0];
     fn visit_bound(
         expression: &Expr,
         name: &str,
-        key_type: &KeyType,
+        key: &KeyField,
         descending: bool,
         binding: &vail_storage::fragment_index::IndexBinding,
-    ) -> Option<Vec<QueryInterval>> {
+    ) -> DFResult<Option<Vec<QueryInterval>>> {
         let Expr::BinaryExpr(binary) = expression else {
-            return None;
+            return Ok(None);
         };
         if binary.op == Operator::And || binary.op == Operator::Or {
-            let left = visit_bound(&binary.left, name, key_type, descending, binding)?;
-            let right = visit_bound(&binary.right, name, key_type, descending, binding)?;
+            let Some(left) = visit_bound(&binary.left, name, key, descending, binding)? else {
+                return Ok(None);
+            };
+            let Some(right) = visit_bound(&binary.right, name, key, descending, binding)? else {
+                return Ok(None);
+            };
             if binary.op == Operator::Or {
-                return Some(left.into_iter().chain(right).collect());
+                return Ok(Some(left.into_iter().chain(right).collect()));
             }
-            return Some(
-                left.iter()
-                    .flat_map(|a| {
-                        right
-                            .iter()
-                            .filter_map(move |b| intersect_pair(a, b, binding))
-                    })
-                    .collect(),
-            );
+            let mut intersections = Vec::new();
+            for a in &left {
+                for b in &right {
+                    if let Some(interval) = intersect_pair(a, b, binding)? {
+                        intersections.push(interval);
+                    }
+                }
+            }
+            return Ok(Some(intersections));
         }
         let (mut operator, scalar) = match (&*binary.left, &*binary.right) {
             (Expr::Column(column), Expr::Literal(value, _)) if column.name == name => {
                 (binary.op, value)
             }
             (Expr::Literal(value, _), Expr::Column(column)) if column.name == name => {
-                (reverse_operator(binary.op)?, value)
+                let Some(operator) = reverse_operator(binary.op) else {
+                    return Ok(None);
+                };
+                (operator, value)
             }
-            _ => return None,
+            _ => return Ok(None),
         };
         if descending {
-            operator = reverse_operator(operator)?;
+            let Some(reversed) = reverse_operator(operator) else {
+                return Ok(None);
+            };
+            operator = reversed;
         }
-        let value = scalar_to_key(scalar, key_type)?;
+        let Some(value) = scalar_to_key(scalar, key) else {
+            return Ok(None);
+        };
         let point = || QueryInterval {
             lower: Some(Endpoint {
                 key: vec![value.clone()],
@@ -272,16 +287,16 @@ fn intervals_for_filter(expression: &Expr, table: &TableRef) -> Option<Vec<Query
                 inclusive,
             }),
         };
-        Some(vec![match operator {
+        Ok(Some(vec![match operator {
             Operator::Eq => point(),
             Operator::Gt => lower(false),
             Operator::GtEq => lower(true),
             Operator::Lt => upper(false),
             Operator::LtEq => upper(true),
-            _ => return None,
-        }])
+            _ => return Ok(None),
+        }]))
     }
-    visit_bound(expression, name, &key.data_type, key.descending, &binding)
+    visit_bound(expression, name, key, key.descending, &binding)
 }
 
 fn intersect_intervals(
@@ -292,47 +307,62 @@ fn intersect_intervals(
     let binding = source
         .index_binding()
         .map_err(|e| DataFusionError::External(Box::new(e)))?;
-    Ok(left
-        .iter()
-        .flat_map(|a| right.iter().filter_map(|b| intersect_pair(a, b, &binding)))
-        .collect())
+    let mut intersections = Vec::new();
+    for a in left {
+        for b in right {
+            if let Some(interval) = intersect_pair(a, b, &binding)? {
+                intersections.push(interval);
+            }
+        }
+    }
+    Ok(intersections)
 }
 
 fn intersect_pair(
     left: &QueryInterval,
     right: &QueryInterval,
     binding: &vail_storage::fragment_index::IndexBinding,
-) -> Option<QueryInterval> {
+) -> DFResult<Option<QueryInterval>> {
     let lower = match (&left.lower, &right.lower) {
         (None, bound) | (bound, None) => bound.clone(),
-        (Some(a), Some(b)) => Some(match compare_keys(binding, &a.key, &b.key) {
-            std::cmp::Ordering::Less => b.clone(),
-            std::cmp::Ordering::Greater => a.clone(),
-            std::cmp::Ordering::Equal => Endpoint {
-                key: a.key.clone(),
-                inclusive: a.inclusive && b.inclusive,
+        (Some(a), Some(b)) => Some(
+            match compare_keys(binding, &a.key, &b.key)
+                .map_err(|error| DataFusionError::External(Box::new(error)))?
+            {
+                std::cmp::Ordering::Less => b.clone(),
+                std::cmp::Ordering::Greater => a.clone(),
+                std::cmp::Ordering::Equal => Endpoint {
+                    key: a.key.clone(),
+                    inclusive: a.inclusive && b.inclusive,
+                },
             },
-        }),
+        ),
     };
     let upper = match (&left.upper, &right.upper) {
         (None, bound) | (bound, None) => bound.clone(),
-        (Some(a), Some(b)) => Some(match compare_keys(binding, &a.key, &b.key) {
-            std::cmp::Ordering::Less => a.clone(),
-            std::cmp::Ordering::Greater => b.clone(),
-            std::cmp::Ordering::Equal => Endpoint {
-                key: a.key.clone(),
-                inclusive: a.inclusive && b.inclusive,
+        (Some(a), Some(b)) => Some(
+            match compare_keys(binding, &a.key, &b.key)
+                .map_err(|error| DataFusionError::External(Box::new(error)))?
+            {
+                std::cmp::Ordering::Less => a.clone(),
+                std::cmp::Ordering::Greater => b.clone(),
+                std::cmp::Ordering::Equal => Endpoint {
+                    key: a.key.clone(),
+                    inclusive: a.inclusive && b.inclusive,
+                },
             },
-        }),
+        ),
     };
     if let (Some(lower), Some(upper)) = (&lower, &upper) {
-        match compare_keys(binding, &lower.key, &upper.key) {
-            std::cmp::Ordering::Greater => return None,
-            std::cmp::Ordering::Equal if !(lower.inclusive && upper.inclusive) => return None,
+        match compare_keys(binding, &lower.key, &upper.key)
+            .map_err(|error| DataFusionError::External(Box::new(error)))?
+        {
+            std::cmp::Ordering::Greater => return Ok(None),
+            std::cmp::Ordering::Equal if !(lower.inclusive && upper.inclusive) => return Ok(None),
             _ => (),
         }
     }
-    Some(QueryInterval { lower, upper })
+    Ok(Some(QueryInterval { lower, upper }))
 }
 
 fn reverse_operator(operator: Operator) -> Option<Operator> {
@@ -346,33 +376,14 @@ fn reverse_operator(operator: Operator) -> Option<Operator> {
     })
 }
 
-fn scalar_to_key(value: &ScalarValue, key_type: &KeyType) -> Option<KeyValue> {
-    if let KeyType::Canonical(logical_type) = key_type {
-        // The index stores order-preserving Vail encodings. Keep metadata
-        // pruning to primitive non-float types whose DataFusion comparison
-        // order matches the certified Vail order; float predicates stay on
-        // the residual path because NaN comparison semantics need special care.
-        if !matches!(logical_type.as_str()?, "bool" | "int32" | "int64" | "str") {
-            return None;
-        }
-        let array = value.to_array_of_size(1).ok()?;
-        let bytes =
-            vail_ordering::encode_typed_value(array.as_ref(), 0, Some(logical_type)).ok()?;
-        return Some(KeyValue::Canonical(bytes));
-    }
-    Some(match (value, key_type) {
-        (ScalarValue::Int32(None), KeyType::Int32) => KeyValue::Missing,
-        (ScalarValue::Int64(None), KeyType::Int64) => KeyValue::Missing,
-        (ScalarValue::Boolean(None), KeyType::Bool) => KeyValue::Missing,
-        (ScalarValue::Utf8(None), KeyType::AsciiString) => KeyValue::Missing,
-        (ScalarValue::Int32(Some(value)), KeyType::Int32) => KeyValue::Int32(*value),
-        (ScalarValue::Int64(Some(value)), KeyType::Int64) => KeyValue::Int64(*value),
-        (ScalarValue::Boolean(Some(value)), KeyType::Bool) => KeyValue::Bool(*value),
-        (ScalarValue::Utf8(Some(value)), KeyType::AsciiString) if value.is_ascii() => {
-            KeyValue::AsciiString(value.clone())
-        }
-        _ => return None,
-    })
+fn scalar_to_key(value: &ScalarValue, key: &KeyField) -> Option<KeyValue> {
+    let array = value.to_array_of_size(1).ok()?;
+    let array =
+        vail_storage::fragment_index::normalize_typed_key_component(&array, &key.physical_type)
+            .ok()?;
+    vail_storage::fragment_index::encode_typed_key_component(&array)
+        .ok()
+        .map(KeyValue::ArrowIpc)
 }
 
 #[derive(Debug)]
@@ -619,5 +630,65 @@ impl ExecutionPlan for PartitionSetExec {
             }
         });
         Ok(Box::pin(RecordBatchStreamAdapter::new(schema, stream)))
+    }
+}
+
+#[cfg(test)]
+mod interval_intersection_tests {
+    use super::*;
+    use vail_storage::fragment_index::{IndexBinding, KeyType};
+
+    fn binding() -> vail_storage::fragment_index::IndexBinding {
+        IndexBinding {
+            table_uuid: uuid::Uuid::from_u128(1),
+            snapshot_id: 1,
+            schema_id: 1,
+            comparator_version: "test".into(),
+            live_files_sha256: "test".into(),
+            key_fields: vec![KeyField {
+                field_id: 1,
+                data_type: KeyType::Int32,
+                physical_type: arrow_schema::DataType::Int32,
+                descending: false,
+                nulls_last: true,
+            }],
+        }
+    }
+
+    fn point(value: KeyValue) -> QueryInterval {
+        QueryInterval {
+            lower: Some(Endpoint {
+                key: vec![value.clone()],
+                inclusive: true,
+            }),
+            upper: Some(Endpoint {
+                key: vec![value],
+                inclusive: true,
+            }),
+        }
+    }
+
+    #[test]
+    fn malformed_key_comparison_is_an_error_not_an_empty_intersection() {
+        let error = intersect_pair(
+            &point(KeyValue::Int32(1)),
+            &point(KeyValue::Int64(2)),
+            &binding(),
+        )
+        .expect_err("wrong key type must not be treated as a disjoint interval");
+        assert!(error.to_string().contains("typed key component differs"));
+    }
+
+    #[test]
+    fn valid_disjoint_intersection_is_empty() {
+        assert_eq!(
+            intersect_pair(
+                &point(KeyValue::Int32(1)),
+                &point(KeyValue::Int32(2)),
+                &binding(),
+            )
+            .unwrap(),
+            None
+        );
     }
 }

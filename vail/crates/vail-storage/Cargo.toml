@@ -11,7 +11,8 @@ async-stream = "0.3"
 arrow-cast = "=59.2.0"
 tempfile = "3"
 arrow-array = "=59.2.0"
-arrow-schema = "=59.2.0"
+arrow-schema = { version = "=59.2.0", features = ["serde"] }
+arrow-ord = "=59.2.0"
 futures = "0.3"
 iceberg = { path = "../../patches/iceberg-rust/crates/iceberg" }
 serde = { version = "1", features = ["derive"] }
@@ -20,8 +21,8 @@ sha2 = "0.10"
 thiserror = "2"
 tokio = { version = "1", features = ["fs", "rt", "macros"] }
 uuid = { version = "1", features = ["v7"] }
-vail-ordering = { path = "../vail-ordering" }
+vail-execution = { path = "../vail-execution" }
 vortex = { version = "=0.86.1", features = ["tokio"] }
 
 [dev-dependencies]
-vail-execution = { path = "../vail-execution" }
+vail-ordering = { path = "../vail-ordering" }

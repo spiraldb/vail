@@ -4,7 +4,7 @@ use crate::{Result, TableError, TableNode, TableRef};
 use arrow_schema::{DataType, Schema};
 use datafusion_common::{NullHandling, ScalarValue, UnnestOptions};
 use datafusion_expr::{
-    AggregateUDF, Expr as DFExpr, ExprSchemable, JoinType, LogicalPlan, LogicalPlanBuilder, lit,
+    AggregateUDF, Expr as DFExpr, JoinType, LogicalPlan, LogicalPlanBuilder, lit,
 };
 use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Literal};
 use std::{
@@ -12,7 +12,7 @@ use std::{
     sync::Arc,
 };
 use vail_execution::expressions::Expr;
-use vail_execution::logical_expr::{canonical_key_logical, lower_logical_with_bindings};
+use vail_execution::logical_expr::lower_logical_with_bindings;
 
 // API field names are literal identifiers, not SQL text to parse/normalize.
 fn col(name: impl AsRef<str>) -> DFExpr {
@@ -82,10 +82,20 @@ fn scope_plan(
     table: &TableRef,
     group: &Group,
     key_names: &[String],
-    encoded_names: &[String],
+    group_names: &[String],
     used: &mut HashSet<String>,
     bindings: &BTreeMap<String, usize>,
 ) -> Result<(LogicalPlan, BTreeMap<String, ScalarValue>, String)> {
+    let key_types = key_names
+        .iter()
+        .map(|name| {
+            Ok(input
+                .schema()
+                .field_with_unqualified_name(name)?
+                .data_type()
+                .clone())
+        })
+        .collect::<Result<Vec<_>>>()?;
     let mut scope = BTreeMap::new();
     for step in &group.steps {
         match step {
@@ -181,48 +191,28 @@ fn scope_plan(
         );
         aggregates.push(udf.call(vec![logical_value]).alias(&reducer.name));
     }
-    let mut representative_types = BTreeMap::new();
-    for name in key_names {
-        let dtype = input
-            .schema()
-            .field_with_unqualified_name(name)?
-            .data_type()
-            .clone();
-        representative_types.insert(name.clone(), dtype.clone());
-        aggregates.push(
-            datafusion_functions_aggregate::any_value::any_value_udaf()
-                .call(vec![col(name).cast_to(
-                    &vail_ordering::without_type_metadata(&dtype),
-                    input.schema(),
-                )?])
-                .alias(name),
-        );
-    }
     let presence = unique(used, "__vail_scope_presence");
     aggregates.push(
         datafusion_functions_aggregate::count::count_udaf()
             .call(vec![lit(1i64)])
             .alias(&presence),
     );
-    let groups = encoded_names.iter().map(col).collect::<Vec<_>>();
+    let groups = group_names.iter().map(col).collect::<Vec<_>>();
     let result = LogicalPlanBuilder::from(input)
         .aggregate(groups, aggregates)?
         .build()?;
-    let projection = result
-        .schema()
-        .columns()
-        .into_iter()
-        .map(|column| {
-            let name = column.name.clone();
-            let value = DFExpr::Column(column);
-            match representative_types.get(&name) {
-                Some(dtype) => {
-                    vail_execution::logical_expr::restore_type(value, dtype.clone()).alias(&name)
-                }
-                None => value,
-            }
+    // Native grouping retains the typed key itself; no representative
+    // accumulator is necessary, including for zero-field structs.
+    let mut projection = columns(&result);
+    let restored_keys = group_names
+        .iter()
+        .zip(key_names)
+        .zip(&key_types)
+        .map(|((group, value), dtype)| {
+            Ok(crate::aggregation::logical_restore_group_key(col(group), dtype)?.alias(value))
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
+    projection.extend(restored_keys);
     let result = LogicalPlanBuilder::from(result)
         .project(projection)?
         .build()?;
@@ -290,7 +280,7 @@ pub(crate) fn lower_logical_grouped(
         keys.clone()
     };
     let mut key_names = Vec::new();
-    let mut encoded_names = Vec::new();
+    let mut group_names = Vec::new();
     let mut projections = columns(&child);
     for (_, expr) in &grouping {
         let name = unique(&mut used, "__vail_logical_group_value");
@@ -305,12 +295,19 @@ pub(crate) fn lower_logical_grouped(
         .build()?;
     let mut projections = columns(&projected);
     for ((_, expr), name) in grouping.iter().zip(&key_names) {
-        let encoded = unique(&mut used, "__vail_logical_group_key");
+        let group_key = unique(&mut used, "__vail_logical_group_key");
         let dtype =
             expr.dtype_with_globals(projected.schema().as_arrow(), table.globals().schema())?;
         dtype.ensure_keyable()?;
-        projections.push(canonical_key_logical(col(name), &dtype, false)?.alias(&encoded));
-        encoded_names.push(encoded);
+        if !dtype.native_key() {
+            return Err(TableError::Invalid(
+                "grouping requires a native DataFusion key type".into(),
+            ));
+        }
+        projections.push(
+            crate::aggregation::logical_group_key(col(name), &dtype.to_arrow()?)?.alias(&group_key),
+        );
+        group_names.push(group_key);
     }
     projected = LogicalPlanBuilder::from(projected)
         .project(projections)?
@@ -320,7 +317,7 @@ pub(crate) fn lower_logical_grouped(
         table,
         &anchor,
         &key_names,
-        &encoded_names,
+        &group_names,
         &mut used,
         &indices,
     )?;
@@ -330,15 +327,15 @@ pub(crate) fn lower_logical_grouped(
             table,
             &group,
             &key_names,
-            &encoded_names,
+            &group_names,
             &mut used,
             &indices,
         )?;
-        let right_keys = encoded_names
+        let right_keys = group_names
             .iter()
             .map(|_| unique(&mut used, "__vail_scope_join_key"))
             .collect::<Vec<_>>();
-        let mut projection = encoded_names
+        let mut projection = group_names
             .iter()
             .zip(&right_keys)
             .map(|(l, r)| col(l).alias(r))
@@ -353,7 +350,7 @@ pub(crate) fn lower_logical_grouped(
             .join_detailed(
                 right,
                 JoinType::Left,
-                (encoded_names.clone(), right_keys),
+                (group_names.clone(), right_keys),
                 None,
                 datafusion_common::NullEquality::NullEqualsNull,
             )?

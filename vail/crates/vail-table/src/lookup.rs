@@ -235,7 +235,7 @@ fn keyed_input(
             .ok_or_else(|| TableError::Invalid("interval lookup requires one key".into()))?
             .clone()
     } else if let Some(missing) = missing {
-        let key = vail_execution::ordering::canonical_key(key_struct);
+        let key = key_struct;
         let null = ScalarValue::try_from(key.data_type(bound.schema().as_ref())?)?;
         Arc::new(CaseExpr::try_new(
             None,

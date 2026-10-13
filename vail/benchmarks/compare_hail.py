@@ -27,6 +27,8 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--workdir', type=Path, required=True)
     parser.add_argument('--scale', type=float, default=1.0)
+    parser.add_argument('--matrix-rows', type=int, default=100_000)
+    parser.add_argument('--matrix-columns', type=int, default=10)
     parser.add_argument('--iterations', type=int, default=3)
     parser.add_argument('--warmups', type=int, default=1)
     parser.add_argument('--cores', type=int, default=14)
@@ -58,7 +60,8 @@ def main():
     n = size(1_000_000)
     big = size(10_000_000)
     range_n = size(100_000_000)
-    matrix_n = size(100_000)
+    matrix_n = size(args.matrix_rows)
+    matrix_cols = args.matrix_columns
     cols = 10
     rt = hl.utils.range_table
     rm = hl.utils.range_matrix_table
@@ -103,20 +106,20 @@ def main():
         assert table.annotate(prefix=hl.scan.sum(table.idx))._force_count() == n
 
     def matrix_force():
-        assert rm(matrix_n, cols, cores)._force_count_rows() == matrix_n
+        assert rm(matrix_n, matrix_cols, cores)._force_count_rows() == matrix_n
 
     def matrix_entries():
-        matrix = rm(matrix_n, cols, cores)
+        matrix = rm(matrix_n, matrix_cols, cores)
         matrix = matrix.annotate_entries(value=matrix.row_idx + matrix.col_idx)
-        expected = cols * matrix_n * (matrix_n - 1) // 2 + matrix_n * cols * (cols - 1) // 2
+        expected = matrix_cols * matrix_n * (matrix_n - 1) // 2 + matrix_n * matrix_cols * (matrix_cols - 1) // 2
         assert matrix.aggregate_entries(hl.agg.sum(hl.int64(matrix.value))) == expected
 
     def matrix_filtered():
-        matrix = rm(matrix_n, cols, cores)
+        matrix = rm(matrix_n, matrix_cols, cores)
         matrix = matrix.filter_rows(matrix.row_idx % 2 == 0)
         matrix = matrix.filter_cols(matrix.col_idx % 2 == 0)
         assert matrix._force_count_rows() == (matrix_n + 1) // 2
-        assert matrix.count_cols() == (cols + 1) // 2
+        assert matrix.count_cols() == (matrix_cols + 1) // 2
 
     vcf_rows = size(50_000)
     vcf = args.workdir / 'synthetic.vcf'
@@ -153,9 +156,9 @@ def main():
         'table_scan_sum': (scan, {'rows': n}),
         'table_write': (write, {'rows': n, 'int32_columns': 2}),
         'table_read': (read, {'rows': n, 'int32_columns': 2}),
-        'matrix_force_count_rows': (matrix_force, {'rows': matrix_n, 'columns': cols}),
-        'matrix_entry_sum': (matrix_entries, {'rows': matrix_n, 'columns': cols}),
-        'matrix_filter_rows_columns': (matrix_filtered, {'rows': matrix_n, 'columns': cols}),
+        'matrix_force_count_rows': (matrix_force, {'rows': matrix_n, 'columns': matrix_cols}),
+        'matrix_entry_sum': (matrix_entries, {'rows': matrix_n, 'columns': matrix_cols}),
+        'matrix_filter_rows_columns': (matrix_filtered, {'rows': matrix_n, 'columns': matrix_cols}),
         'vcf_import_entry_sum': (vcf_sum, {'rows': vcf_rows, 'samples': cols}),
     }
     selected = args.case or list(cases)

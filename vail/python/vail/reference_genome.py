@@ -29,6 +29,8 @@ class Locus:
 
     def __post_init__(self):
         object.__setattr__(self, "reference_genome", resolve_reference(self.reference_genome))
+        if isinstance(self.contig, int):
+            object.__setattr__(self, "contig", str(self.contig))
         if not isinstance(self.contig, str) or self.contig not in self.reference_genome.lengths:
             raise ValueError(f"contig {self.contig!r} is not in reference genome {self.reference_genome.name}")
         if type(self.position) is not int or not 1 <= self.position <= self.reference_genome.lengths[self.contig]:

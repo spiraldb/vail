@@ -76,7 +76,7 @@ def median(collection):
 
 
 def group_by(f, collection):
-    """Group collection elements by their canonical Hail key equality."""
+    """Group collection elements using DataFusion's native key equality."""
     from . import collections as ops
     if not callable(f):
         raise TypeError('group_by requires a callable')
@@ -84,12 +84,18 @@ def group_by(f, collection):
     if not isinstance(collection.dtype, (tarray, tset)):
         raise TypeError('group_by requires an array or set')
     pairs = collection._array_map(lambda item: struct(key=f(item), value=item))
-    keys = pairs._array_map(lambda pair: ops._canonical_key(pair.key))
+    _ensure_group_key(pairs.dtype.element_type["key"])
+    keys = pairs._array_map(lambda pair: pair.key)
     unique = ops._function('array_distinct', [keys], keys.dtype)
     def grouped(key):
-        matches = pairs._array_filter(lambda pair: ops._canonical_key(pair.key) == key)
+        matches = pairs._array_filter(lambda pair: ops._equal(pair.key, key))
         values = matches._array_map(lambda pair: pair.value)
         if isinstance(collection.dtype, tset):
             values = ops.set_(values)
         return struct(key=matches.first().key, value=values)
     return ops.dict_(unique._array_map(grouped))
+
+
+def _ensure_group_key(dtype):
+    from .collections import _ensure_key_supported
+    _ensure_key_supported(dtype)

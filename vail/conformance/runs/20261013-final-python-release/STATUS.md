@@ -1,0 +1,9 @@
+# Full Python validation — optimized release wheel — 2026-10-13
+
+The full local Python suite passed against the final optimized release wheel: **1,026 passed, 1 skipped, 19 subtests passed**, with 0 failures/errors in 62.08 seconds. Pytest reported the slowest test as `test_matrix_table.py::test_row_aligned_views_and_transformations_do_not_index_rows` at 27.29 seconds; the next slowest took 2.26 seconds. The full 50-test duration report is in `stdout.log`; machine-readable results are in `junit.xml`.
+
+The matched environment uses Python 3.11.13, Vail 0.1.0a1, NumPy 2.4.6, PyArrow 26.0.0, pandas 3.0.6, and pytest 9.1.1. Pytest and pandas were installed as test-only dependencies into this environment; the Vail wheel and native extension were unchanged. All 42 installed Vail Python source files matched the workspace source hashes before the run, and the package imported from `/private/tmp/vail-matrix-benchmark/lib/python3.11/site-packages/vail/` without a `PYTHONPATH` override.
+
+Wheel SHA-256: `71bac3f412e444701fac6ea50537a28c404a57a425ebb77dbe01f78b1faf5d33`. Native extension SHA-256: `0ea9e6446a0592417a865faf1876eb849dd65d2e92864c196a0d58c61ce9c44b`. The tests were run from repository HEAD `523b6e19fa6f8d62521e88001827cabd416100da` with the working-tree changes under validation. Group’s provider/partition fixes were included in the native build; their focused validation also passed 70/70 storage and interval tests, 2/2 provider tests, and the exact upstream `test_interval_filter_partitions` case.
+
+An initial collection attempt did not run tests because pandas was absent from the benchmark environment. After installing the declared `pandas` dev extra (without replacing the wheel or extension), the complete suite passed. Raw logs and the JUnit report are retained in this folder.

@@ -46,6 +46,39 @@ def test_scan_sum_vectorized_finish_preserves_nulls_overflow_and_empty_partition
     assert empty.annotate(prefix=hl.scan.sum(empty.i)).collect() == []
 
 
+def test_native_sum_and_count_scan_prefixes_skip_state_accumulator_rows():
+    table = hl.Table.parallelize(
+        [{"x": None}, {"x": 3}, {"x": None}, {"x": 5}],
+        schema=hl.tstruct(x=hl.tint64),
+        n_partitions=3,
+    )
+    scanned = table.annotate(count=hl.scan.count(), total=hl.scan.sum(table.x))
+    rows = scanned.collect()
+    assert [row.count for row in rows] == [0, 1, 2, 3]
+    assert [row.total for row in rows] == [0, 0, 3, 3]
+    assert "vail_scan_state" not in scanned._native.physical_plan()
+
+
+def test_native_prefix_sum_covers_range_table_int32_and_float32():
+    # This is the exact input shape used by benchmarks/compare_hail.py:
+    # range_table.idx is Int32, so the fast path must cover SUM(Int32).
+    table = hl.range_table(8, n_partitions=3)
+    scanned = table.annotate(prefix=hl.scan.sum(table.idx))
+    assert [row.prefix for row in scanned.collect()] == [0, 0, 1, 3, 6, 10, 15, 21]
+    assert scanned.prefix.dtype == hl.tint64
+    assert "vail_scan_state" not in scanned._native.physical_plan()
+
+    floats = hl.Table.parallelize(
+        [{"x": value} for value in [1.25, None, 2.5, -0.5]],
+        schema=hl.tstruct(x=hl.tfloat32),
+        n_partitions=3,
+    )
+    float_scan = floats.annotate(prefix=hl.scan.sum(floats.x))
+    assert [row.prefix for row in float_scan.collect()] == [0.0, 1.25, 1.25, 3.75]
+    assert float_scan.prefix.dtype == hl.tfloat64
+    assert "vail_scan_state" not in float_scan._native.physical_plan()
+
+
 def test_scan_row_windows_use_datafusion_partitioned_execution():
     table = hl.Table.parallelize([{"x": i} for i in range(12)], n_partitions=3)
     scanned = table.annotate(prefix=hl.scan.sum(table.x))
@@ -280,6 +313,8 @@ def test_scan_genomic_reducers_reuse_aggregate_states():
 def test_scan_explode_filters_and_nested_collections():
     table = hl.Table.parallelize([{"i": i, "a": a} for i, a in enumerate([[1, None, 2], [], None, [3], [4, 5]])],
                                 schema=hl.tstruct(i=hl.tint32, a=hl.tarray(hl.tint32)), n_partitions=3)
+    exploded_sum = table.annotate(prefix=hl.scan.explode(lambda x: hl.scan.sum(x), table.a))
+    assert "vail_scan_state" in exploded_sum._native.physical_plan()
     _assert_scan_matches_prefix_aggregates(table,
         lambda t: hl.scan.explode(lambda x: hl.scan.sum(x), t.a),
         lambda t: hl.agg.explode(lambda x: hl.agg.sum(x), t.a))

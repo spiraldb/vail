@@ -24,14 +24,13 @@ use datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeE
 use thiserror::Error;
 
 mod aggregate_identity;
-mod array_fold;
 pub mod aggregates;
+mod array_fold;
 pub mod calls;
 pub mod collect_aggregate;
 pub mod csv_line;
 pub mod expressions;
 pub mod logical_expr;
-pub mod ordering;
 pub mod reference;
 pub mod scan_scopes;
 pub mod scan_state;
@@ -121,7 +120,7 @@ impl OrderRequirement {
                 },
             ));
             sort_exprs.push(PhysicalSortExpr::new(
-                ordering::canonical_key(column),
+                column,
                 SortOptions {
                     descending: key.descending,
                     nulls_first: false,

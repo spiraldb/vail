@@ -21,10 +21,69 @@ def _function(name, args, dtype):
                                      "args": [arg.to_ir() for arg in args], "dtype": type_to_wire(dtype)})
 
 
+def _native_sort(value):
+    return _function("array_sort", [value, literal("ASC"), literal("NULLS LAST")], value.dtype)
+
+
+def _contains_unordered_or_ndarray(dtype, *, include_ndarray=True):
+    from .types import tinterval, tndarray
+    if isinstance(dtype, (tset, tdict)):
+        return True
+    if isinstance(dtype, tndarray):
+        return include_ndarray
+    if isinstance(dtype, (tarray, tinterval)):
+        return _contains_unordered_or_ndarray(
+            dtype.element_type if isinstance(dtype, tarray) else dtype.point_type,
+            include_ndarray=include_ndarray,
+        )
+    if isinstance(dtype, tstruct):
+        return builtins.any(
+            _contains_unordered_or_ndarray(dtype[name], include_ndarray=include_ndarray)
+            for name in dtype
+        )
+    if isinstance(dtype, ttuple):
+        return builtins.any(
+            _contains_unordered_or_ndarray(ty, include_ndarray=include_ndarray)
+            for ty in dtype.types
+        )
+    return False
+
+
+def _native_equality_value(value):
+    """Replace unordered collection levels with values DataFusion can compare."""
+    dtype = value.dtype
+    from .types import tinterval, tndarray
+    if isinstance(dtype, tndarray):
+        raise NotImplementedError("ndarray equality is unavailable in DataFusion")
+    if isinstance(dtype, tset):
+        array = _cast(value, tarray(dtype.element_type))
+        mapped = array._array_map(_native_equality_value)
+        result = _native_sort(mapped)
+    elif isinstance(dtype, tdict):
+        _ensure_key_supported(dtype.key_type)
+        entries = value._array_map(
+            lambda entry: struct(key=entry.key, value=_native_equality_value(entry.value))
+        )
+        result = _native_sort(entries)
+    elif isinstance(dtype, tarray):
+        result = value._array_map(_native_equality_value)
+    elif isinstance(dtype, tstruct):
+        result = struct(**{name: _native_equality_value(value[name]) for name in dtype})
+    elif isinstance(dtype, ttuple):
+        from .expressions import tuple_
+        result = tuple_(_native_equality_value(value[i]) for i in builtins.range(len(dtype.types)))
+    elif isinstance(dtype, tinterval):
+        result = value
+    else:
+        return value
+    return if_else(is_missing(value), missing(result.dtype), result)
+
+
 def _distinct_supported(dtype):
-    # DataFusion normalizes signed float zeros. RowConverter does not canonicalize
-    # nested sets/dictionaries using Vail's logical key equivalence, either.
-    if dtype in (tfloat32, tfloat64) or isinstance(dtype, (tset, tdict)):
+    # Use DataFusion's native distinct semantics for supported scalar/struct
+    # values. Nested unordered collections need logical equality support that
+    # array_distinct does not provide.
+    if isinstance(dtype, (tset, tdict)):
         return False
     if isinstance(dtype, tarray):
         return _distinct_supported(dtype.element_type)
@@ -70,6 +129,7 @@ def dict_(collection):
         key_type = array(list(collection.keys())).dtype.element_type
         value_type = array(list(collection.values())).dtype.element_type
         if not builtins.any(isinstance(item, Expression) for pair in collection.items() for item in pair):
+            _ensure_key_supported(key_type)
             return literal(collection, tdict(key_type, value_type))
         entries = array([struct(key=_coerce(key, key_type), value=_coerce(value, value_type))
                          for key, value in collection.items()])
@@ -96,10 +156,20 @@ def dict_(collection):
     return _dict_from_entries(entries, key_type, value_type, last_wins=literal_array)
 
 
-def _canonical_key(value):
-    return Expression(tstr, value.source,
-                      {"op": "nested_function", "function": "canonical_key",
-                       "args": [value.to_ir()], "dtype": type_to_wire(tstr)})
+def _ensure_key_supported(dtype):
+    from .types import tinterval, tndarray
+    if isinstance(dtype, (tset, tdict, tndarray)):
+        raise NotImplementedError("Set/Dictionary/ndarray ordering and keying are unsupported")
+    if isinstance(dtype, tarray):
+        _ensure_key_supported(dtype.element_type)
+    elif isinstance(dtype, tstruct):
+        for name in dtype:
+            _ensure_key_supported(dtype[name])
+    elif isinstance(dtype, ttuple):
+        for item in dtype.types:
+            _ensure_key_supported(item)
+    elif isinstance(dtype, tinterval):
+        _ensure_key_supported(dtype.point_type)
 
 
 def _literal_container_ir(node):
@@ -136,13 +206,13 @@ def _direct_literal_array(value):
 
 
 def _dict_from_entries(entries, key_type, value_type, *, last_wins=False):
-    """Sort and deduplicate canonical keys using Hail's source-dependent tie behavior."""
-    keys = entries._array_map(lambda entry: _canonical_key(entry.key))
-    keys = _function("array_distinct", [keys], keys.dtype)
-    keys = _function("array_sort", [keys, literal("ASC"), literal("NULLS LAST")], keys.dtype)
+    """Deduplicate keys with DataFusion's native equality while preserving entries."""
+    _ensure_key_supported(key_type)
+    keys = entries._array_map(lambda entry: entry.key)
+    keys = _native_sort(_function("array_distinct", [keys], keys.dtype))
 
     def selected_entry(key):
-        matches = entries._array_filter(lambda entry: _canonical_key(entry.key) == key)
+        matches = entries._array_filter(lambda entry: _equal(entry.key, key))
         index = -1 if last_wins else 1
         return _function("array_element", [matches, literal(index, tint64)], entries.dtype.element_type)
 
@@ -151,6 +221,7 @@ def _dict_from_entries(entries, key_type, value_type, *, last_wins=False):
 
 
 def empty_dict(key_type, value_type):
+    _ensure_key_supported(key_type)
     return literal({}, tdict(key_type, value_type))
 
 
@@ -158,7 +229,8 @@ def to_array(value):
     if isinstance(value.dtype, tarray):
         return value
     if isinstance(value.dtype, tset):
-        return _cast(value, tarray(value.dtype.element_type))
+        _ensure_key_supported(value.dtype.element_type)
+        return _native_sort(_cast(value, tarray(value.dtype.element_type)))
     if isinstance(value.dtype, tdict):
         return value._array_map(lambda entry: as_expr((entry.key, entry.value)))
     raise TypeError("array conversion requires an array, set, or dictionary")
@@ -187,9 +259,13 @@ def _coerce(value, dtype):
 
 
 def _equal(left, right):
-    # The key codec defines equality recursively, including missing children,
-    # signed zero, and canonical set/dictionary representations.
-    return _canonical_key(left) == _canonical_key(right)
+    # Collection membership and grouping use key equality, where two missing
+    # values are equal. Keep ordinary expression equality null-propagating.
+    return if_else(
+        is_missing(left),
+        is_missing(right),
+        if_else(is_missing(right), literal(False, tbool), left == right),
+    )
 
 
 def contains(value, key):
@@ -244,15 +320,17 @@ def set_binary(left, right, operation):
     if _distinct_supported(left.dtype.element_type):
         function = {'difference': 'array_except', 'intersection': 'array_intersect', 'union': 'array_union'}[operation]
         return _function(function, [left, right], left.dtype)
-    # Built-in SQL set kernels merge signed zeros. Compose DataFusion's filter,
-    # comparison and concat expressions to retain the existing key equivalence.
+    # Nested unordered values cannot use DataFusion's distinct kernels. Compose
+    # operations from native equality and filtering for those element types.
     if operation == 'difference':
         result = left._array_filter(lambda item: ~contains(right, item))
     elif operation == 'intersection':
         result = left._array_filter(lambda item: contains(right, item))
     else:
         extra = right._array_filter(lambda item: ~contains(left, item))
-        result = _function('array_concat', [left, extra], left.dtype)
+        left_array = _cast(left, tarray(left.dtype.element_type))
+        result = _function('array_concat', [left_array, extra], tarray(left.dtype.element_type))
+    result = _cast(result, left.dtype)
     # SQL set kernels propagate missing inputs; the composed path must do so too.
     return if_else(is_missing(left) | is_missing(right), missing(left.dtype), result)
 

@@ -74,6 +74,11 @@ def worker(output, iterations, warmups, workload="annotate"):
                 table = hl.utils.range_table(10_000_000, 14)
                 expression = hl.agg.stats(hl.float64(table.idx))
                 expected = 10_000_000
+            elif workload == 'table-inner-join':
+                left = hl.utils.range_table(1_000_000, 14)
+                right = hl.utils.range_table(1_000_000, 14).annotate(payload=7)
+                table = left.join(right, 'inner')
+                expected = 1_000_000
             else:
                 table = hl.utils.range_table(1_000_000, 14)
                 table = table.annotate(prefix=hl.scan.sum(table.idx))
@@ -85,7 +90,7 @@ def worker(output, iterations, warmups, workload="annotate"):
                 assert result.min == 0 and result.max == expected - 1
                 assert abs(result.mean - (expected - 1) / 2) < 1e-6
                 result = expected
-            elif workload == 'annotate' or workload == 'prefix-sum-scan':
+            elif workload in ('annotate', 'prefix-sum-scan', 'table-inner-join'):
                 result = table._force_count()
             else:
                 result = table.aggregate_entries(expression)
@@ -175,7 +180,7 @@ def monitor(output, python, iterations, warmups, profile, workload="annotate"):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--worker', action='store_true')
-    parser.add_argument('--workload', choices=['annotate', 'matrix-entry-sum', 'prefix-sum-scan', 'numeric-stats'], default='annotate')
+    parser.add_argument('--workload', choices=['annotate', 'matrix-entry-sum', 'prefix-sum-scan', 'numeric-stats', 'table-inner-join'], default='annotate')
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--python', default='/private/tmp/vail-release-benchmark/bin/python')
     parser.add_argument('--iterations', type=int, default=5)

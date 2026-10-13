@@ -108,11 +108,12 @@ def test_float32_keys_keep_payloads_at_the_declared_width():
     np.testing.assert_array_equal(result, bits)
 
 
-def test_ndarray_shape_precedes_row_major_elements():
+def test_ndarray_ordering_is_not_supported():
     dtype = hl.tndarray(hl.tfloat64, 1)
     table = hl.Table.parallelize([
         {'k': np.array([-100.0, -100.0]), 'i': 2},
         {'k': np.array([float64(BITS[-1])]), 'i': 1},
         {'k': np.array([float64(BITS[0])]), 'i': 0},
     ], schema=hl.tstruct(k=dtype, i=hl.tint32))
-    assert [row.i for row in table.key_by('k').collect()] == [0, 1, 2]
+    with pytest.raises(NotImplementedError, match='ndarray'):
+        table.key_by('k')

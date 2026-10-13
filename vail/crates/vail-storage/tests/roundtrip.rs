@@ -13,13 +13,17 @@ use iceberg::{
 use serde_json::json;
 use vail_execution::{OrderKey, OrderRequirement, ordered_collect};
 use vail_storage::fragment_index::{
-    Endpoint, KeyField, KeyType, KeyValue, PRIMITIVE_COMPARATOR_V1, QueryInterval,
-    TOTAL_ORDER_COMPARATOR_V3,
+    ARROW_TYPED_COMPARATOR_V4, Endpoint, KeyField, KeyType, KeyValue, QueryInterval,
 };
 use vail_storage::{
     StorageError, VailSemantics, read_current, read_snapshot_range, stream_snapshot_intervals,
     write_initial_ordered_files, write_initial_table,
 };
+
+fn int32_key(value: i32) -> KeyValue {
+    let array = Arc::new(Int32Array::from(vec![Some(value)])) as arrow_array::ArrayRef;
+    KeyValue::ArrowIpc(vail_storage::fragment_index::encode_typed_key_component(&array).unwrap())
+}
 
 #[tokio::test]
 async fn ordered_snapshot_reads_three_real_vortex_files_in_key_order() {
@@ -62,16 +66,17 @@ async fn ordered_snapshot_reads_three_real_vortex_files_in_key_order() {
         vec![batch(vec![2, 3, 4, 5])],
     ];
     let semantics = VailSemantics {
-        row_type: json!({"x":"int32"}),
+        row_type: json!([["x", "int32"]]),
         global_type: json!({}),
         globals: json!({}),
         key_field_ids: vec![1],
-        comparator_version: PRIMITIVE_COMPARATOR_V1.into(),
+        comparator_version: ARROW_TYPED_COMPARATOR_V4.into(),
         reference_genomes: json!({}),
     };
     let key_fields = vec![KeyField {
         field_id: 1,
-        data_type: KeyType::Int32,
+        data_type: KeyType::Arrow(json!("int32")),
+        physical_type: DataType::Int32,
         descending: false,
         nulls_last: true,
     }];
@@ -127,11 +132,11 @@ async fn ordered_snapshot_reads_three_real_vortex_files_in_key_order() {
     assert_eq!(values(full), vec![1, 2, 2, 2, 3, 4, 5, 5, 6]);
     let query = QueryInterval {
         lower: Some(Endpoint {
-            key: vec![KeyValue::Int32(2)],
+            key: vec![int32_key(2)],
             inclusive: true,
         }),
         upper: Some(Endpoint {
-            key: vec![KeyValue::Int32(5)],
+            key: vec![int32_key(5)],
             inclusive: false,
         }),
     };
@@ -143,21 +148,21 @@ async fn ordered_snapshot_reads_three_real_vortex_files_in_key_order() {
     let intervals = [
         QueryInterval {
             lower: Some(Endpoint {
-                key: vec![KeyValue::Int32(1)],
+                key: vec![int32_key(1)],
                 inclusive: true,
             }),
             upper: Some(Endpoint {
-                key: vec![KeyValue::Int32(1)],
+                key: vec![int32_key(1)],
                 inclusive: true,
             }),
         },
         QueryInterval {
             lower: Some(Endpoint {
-                key: vec![KeyValue::Int32(4)],
+                key: vec![int32_key(4)],
                 inclusive: true,
             }),
             upper: Some(Endpoint {
-                key: vec![KeyValue::Int32(4)],
+                key: vec![int32_key(4)],
                 inclusive: true,
             }),
         },
@@ -245,12 +250,13 @@ async fn canonical_float_bounds_select_across_two_vortex_files() {
         global_type: json!({}),
         globals: json!({}),
         key_field_ids: vec![1],
-        comparator_version: TOTAL_ORDER_COMPARATOR_V3.into(),
+        comparator_version: ARROW_TYPED_COMPARATOR_V4.into(),
         reference_genomes: json!({}),
     };
     let key_fields = vec![KeyField {
         field_id: 1,
-        data_type: KeyType::Canonical(json!("float64")),
+        data_type: KeyType::Arrow(json!("float64")),
+        physical_type: DataType::Float64,
         descending: false,
         nulls_last: true,
     }];
@@ -267,8 +273,9 @@ async fn canonical_float_bounds_select_across_two_vortex_files() {
     .into_table();
     let id = reopened.metadata().current_snapshot_id().unwrap();
     let key = |value| {
-        KeyValue::Canonical(
-            vail_ordering::encode_value(&Float64Array::from(vec![Some(value)]), 0).unwrap(),
+        let array = Arc::new(Float64Array::from(vec![Some(value)])) as arrow_array::ArrayRef;
+        KeyValue::ArrowIpc(
+            vail_storage::fragment_index::encode_typed_key_component(&array).unwrap(),
         )
     };
     let query = QueryInterval {
@@ -363,13 +370,19 @@ async fn interval_bounds_select_across_two_vortex_files() {
         )
         .await
         .unwrap();
-    let DataType::Struct(fields) = dtype else {
+    let physical_type = iceberg::arrow::schema_to_arrow_schema(table.metadata().current_schema())
+        .unwrap()
+        .field_with_name("region")
+        .unwrap()
+        .data_type()
+        .clone();
+    let DataType::Struct(ref fields) = dtype else {
         unreachable!()
     };
     // The split falls between [1,3] and (1,3). Physical fields are start,
     // start_exclusive, end, end_inclusive, preserving interval key order.
     let intervals = StructArray::new(
-        fields,
+        fields.clone(),
         vec![
             Arc::new(Int32Array::from(vec![1, 1, 1, 2])),
             Arc::new(BooleanArray::from(vec![false, false, true, false])),
@@ -391,12 +404,13 @@ async fn interval_bounds_select_across_two_vortex_files() {
         global_type: json!({}),
         globals: json!({}),
         key_field_ids: vec![1],
-        comparator_version: TOTAL_ORDER_COMPARATOR_V3.into(),
+        comparator_version: ARROW_TYPED_COMPARATOR_V4.into(),
         reference_genomes: json!({}),
     };
     let key_fields = vec![KeyField {
         field_id: 1,
-        data_type: KeyType::Canonical(logical.clone()),
+        data_type: KeyType::Arrow(logical.clone()),
+        physical_type: physical_type.clone(),
         descending: false,
         nulls_last: true,
     }];
@@ -418,8 +432,12 @@ async fn interval_bounds_select_across_two_vortex_files() {
     .unwrap()
     .into_table();
     let key = |row| {
-        vec![KeyValue::Canonical(
-            vail_ordering::encode_typed_value(&intervals, row, Some(&logical)).unwrap(),
+        let array = Arc::new(intervals.slice(row, 1)) as arrow_array::ArrayRef;
+        let array =
+            vail_storage::fragment_index::normalize_typed_key_component(&array, &physical_type)
+                .unwrap();
+        vec![KeyValue::ArrowIpc(
+            vail_storage::fragment_index::encode_typed_key_component(&array).unwrap(),
         )]
     };
     let query = QueryInterval {

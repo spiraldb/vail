@@ -231,6 +231,15 @@ class Expression:
     def _compare(self, other, operator):
         other = as_expr(other)
         source = _merge_sources(self.source, other.source)
+        if operator in ("eq", "ne"):
+            from .collections import _contains_unordered_or_ndarray, _native_equality_value
+            if (_contains_unordered_or_ndarray(self.dtype)
+                    or _contains_unordered_or_ndarray(other.dtype)):
+                if self.dtype != other.dtype:
+                    raise TypeError("collection equality requires matching types")
+                left = _native_equality_value(self)
+                right = _native_equality_value(other)
+                return left._compare(right, operator)
         if isinstance(self.dtype, tarray) and isinstance(other.dtype, tarray) and self.dtype != other.dtype:
             numeric = (tint32, tint64, tfloat32, tfloat64)
             if self.dtype.element_type in numeric and other.dtype.element_type in numeric:

@@ -1,7 +1,7 @@
 //! Independent physical sources for table interval reads.
 use crate::partitioned::PreparedTable;
 use crate::plan::{self, PhysicalPlan, source_partition};
-use crate::{Result, ScalarIR, TableError, TableRef};
+use crate::{Result, ScalarIR, TableError, TableNode, TableRef};
 use arrow_array::{Array, ArrayRef, RecordBatch, UInt64Array};
 use arrow_schema::{Schema, SchemaRef};
 use datafusion_common::{DataFusionError, ScalarValue, tree_node::TreeNodeRecursion};
@@ -19,7 +19,7 @@ use futures::TryStreamExt;
 use std::{fmt, sync::Arc};
 use vail_execution::expressions::{Expr, Type, lower_with_global_columns};
 use vail_storage::{
-    fragment_index::{Endpoint, IndexBinding, KeyType, KeyValue, QueryInterval},
+    fragment_index::{Endpoint, IndexBinding, KeyValue, QueryInterval},
     local_table::LocalRead,
 };
 
@@ -120,7 +120,33 @@ pub(crate) async fn prepare(
     point_type: &Type,
     filter: bool,
 ) -> Result<PreparedTable> {
-    let crate::TableNode::Read { source } = child.node() else {
+    let (source_table, selected_source_partitions) = match child.node() {
+        TableNode::Read { .. } => (child, None),
+        TableNode::FilterPartitions {
+            child: source_table,
+            parts,
+            keep,
+        } if matches!(source_table.node(), TableNode::Read { .. }) => {
+            let source_count = source_table.known_n_partitions().ok_or_else(|| {
+                TableError::Invalid("partition selection requires a known source count".into())
+            })?;
+            if let Some(invalid) = parts.iter().find(|&&partition| partition >= source_count) {
+                return Err(TableError::Invalid(format!(
+                    "_filter_partitions: no partition with index {invalid} (num partitions = {source_count})"
+                )));
+            }
+            let selected = (0..source_count)
+                .filter(|partition| parts.contains(partition) == *keep)
+                .collect::<Vec<_>>();
+            (source_table, Some(selected))
+        }
+        _ => {
+            return Err(TableError::Invalid(
+                "interval reads require a table read source".into(),
+            ));
+        }
+    };
+    let TableNode::Read { source } = source_table.node() else {
         return Err(TableError::Invalid(
             "interval reads require a table read source".into(),
         ));
@@ -175,19 +201,39 @@ pub(crate) async fn prepare(
     } else {
         vec![QueryInterval::default(); bounds.len()]
     };
-    let all_predicate = union_predicate(intervals, keys, point_type)?;
     if filter {
-        // Prefix intervals deliberately over-select files. Partition identity is
-        // retained, then the exact DataFusion predicate removes false positives.
-        let candidates = source
-            .candidate_partitions(&queries)
-            .await
-            .map_err(TableError::Storage)?;
+        // Full-key intervals can use the fragment index directly. Prefix
+        // intervals cannot form a full-key query, so compare them against the
+        // certified per-partition key bounds instead of selecting every source
+        // partition. The DataFusion predicate below still removes false rows.
+        let mut candidates = if full_key {
+            source
+                .candidate_partitions(&queries)
+                .await
+                .map_err(TableError::Storage)?
+                .into_iter()
+                .map(|partition| (partition, None))
+                .collect::<Vec<_>>()
+        } else {
+            candidate_prefix_partitions(source, &bounds, point_type, &binding)?
+        };
+        if let Some(selected) = &selected_source_partitions {
+            candidates.retain(|(partition, _)| selected.contains(partition));
+        }
         let mut parts = Vec::with_capacity(candidates.len());
         let mut counts = Vec::with_capacity(candidates.len());
-        for part in candidates {
-            let rows = source_partition(child, part)?;
-            parts.push(apply_filter(rows, &all_predicate, child)?);
+        for (part, matching_intervals) in candidates {
+            let rows = source_partition(source_table, part)?;
+            let residual_intervals = matching_intervals
+                .map(|indices| {
+                    indices
+                        .into_iter()
+                        .map(|index| intervals[index].clone())
+                        .collect::<Vec<_>>()
+                })
+                .unwrap_or_else(|| intervals.to_vec());
+            let predicate = union_predicate(&residual_intervals, keys, point_type)?;
+            parts.push(apply_filter(rows, &predicate, source_table)?);
             counts.push(None);
         }
         return Ok(PreparedTable {
@@ -239,6 +285,41 @@ pub(crate) async fn prepare(
     })
 }
 
+/// Apply `_filter_partitions` to the dense output partition IDs produced by
+/// an interval read. The underlying read may have skipped source partitions,
+/// so source IDs and output IDs are deliberately kept distinct here.
+pub(crate) async fn prepare_output_partitions(
+    child: &TableRef,
+    intervals: &[ScalarIR],
+    point_type: &Type,
+    parts: &[usize],
+    keep: bool,
+) -> Result<PreparedTable> {
+    let input = prepare(child, intervals, point_type, true).await?;
+    if let Some(invalid) = parts
+        .iter()
+        .find(|&&partition| partition >= input.parts.len())
+    {
+        return Err(TableError::Invalid(format!(
+            "_filter_partitions: no partition with index {invalid} (num partitions = {})",
+            input.parts.len()
+        )));
+    }
+    let (selected, counts) = input
+        .parts
+        .into_iter()
+        .zip(input.counts)
+        .enumerate()
+        .filter(|(partition, _)| parts.contains(partition) == keep)
+        .map(|(_, pair)| pair)
+        .unzip();
+    Ok(PreparedTable {
+        parts: selected,
+        counts,
+        schema: input.schema,
+    })
+}
+
 struct IntervalBounds {
     lower: ScalarValue,
     upper: ScalarValue,
@@ -271,9 +352,11 @@ fn scalar_boolean(value: &ScalarValue) -> Result<bool> {
 }
 fn point_component_count(point_type: &Type) -> usize {
     match point_type {
-        Type::Primitive(_) | Type::Locus { .. } => 1,
+        // Arrays and tuples are logical scalar key types even though their
+        // Arrow storage is nested. Only an explicit Hail struct represents a
+        // multi-column table-key prefix.
+        Type::Primitive(_) | Type::Locus { .. } | Type::Tuple { .. } | Type::Array { .. } => 1,
         Type::Struct { r#struct } => r#struct.len(),
-        Type::Tuple { tuple } => tuple.len(),
         _ => 0,
     }
 }
@@ -293,15 +376,24 @@ fn endpoint(
     binding: &IndexBinding,
     inclusive: bool,
 ) -> Result<Option<Endpoint>> {
+    // A null struct scalar can materialize as a one-row StructArray whose
+    // children are all null. Check scalar validity before reading the child
+    // keys: for composite keys that child tuple would otherwise look like a
+    // concrete all-missing key (which sorts after every ordinary key).
+    if value.is_null() {
+        return Ok(None);
+    }
     let array = value.to_array_of_size(1)?;
     if array.is_null(0) {
-        return Ok(Some(Endpoint {
-            key: vec![KeyValue::Missing; point_component_count(point_type)],
-            inclusive,
-        }));
+        // Missing interval endpoints are unbounded. Treating them as actual
+        // missing keys makes one-sided predicates such as key < x prune every
+        // partition when missing keys sort last.
+        return Ok(None);
     }
     let children: Vec<(ArrayRef, Type)> = match point_type {
-        Type::Primitive(_) | Type::Locus { .. } => vec![(array, point_type.clone())],
+        Type::Primitive(_) | Type::Locus { .. } | Type::Tuple { .. } | Type::Array { .. } => {
+            vec![(array, point_type.clone())]
+        }
         Type::Struct { r#struct } => {
             let structure = array
                 .as_any()
@@ -314,20 +406,6 @@ fn endpoint(
                 .zip(r#struct.iter().map(|(_, t)| t.clone()))
                 .collect()
         }
-        Type::Tuple { tuple } => {
-            let structure = array
-                .as_any()
-                .downcast_ref::<arrow_array::StructArray>()
-                .ok_or_else(|| {
-                    TableError::Invalid("tuple interval endpoint must be a struct".into())
-                })?;
-            structure
-                .columns()
-                .iter()
-                .cloned()
-                .zip(tuple.iter().cloned())
-                .collect()
-        }
         _ => return Ok(None),
     };
     if children.len() != binding.key_fields.len() {
@@ -336,49 +414,48 @@ fn endpoint(
     let key = children
         .into_iter()
         .zip(&binding.key_fields)
-        .map(|((array, _logical), field)| key_value(&array, &field.data_type))
+        .map(|((array, _logical), field)| key_value(&array, field))
         .collect::<Result<Vec<_>>>()?;
+    let typed = key
+        .iter()
+        .zip(&binding.key_fields)
+        .map(|(value, field)| match value {
+            KeyValue::ArrowIpc(bytes) => {
+                let array = vail_storage::fragment_index::decode_typed_key_component(bytes)
+                    .map_err(|error| TableError::Invalid(error.to_string()))?;
+                if array.data_type() != &field.physical_type {
+                    return Err(TableError::Invalid(
+                        "interval endpoint type differs from indexed key type".into(),
+                    ));
+                }
+                Ok(array)
+            }
+            _ => Err(TableError::Invalid(
+                "interval endpoint does not use typed Arrow IPC".into(),
+            )),
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let options = binding
+        .key_fields
+        .iter()
+        .take(typed.len())
+        .map(|field| arrow_schema::SortOptions {
+            descending: field.descending,
+            nulls_first: !field.nulls_last,
+        })
+        .collect::<Vec<_>>();
+    vail_storage::fragment_index::compare_typed_key_components(&typed, &typed, &options)
+        .map_err(|error| TableError::Invalid(error.to_string()))?;
     Ok(Some(Endpoint { key, inclusive }))
 }
-fn key_value(array: &ArrayRef, key_type: &KeyType) -> Result<KeyValue> {
-    if array.is_null(0) {
-        return Ok(KeyValue::Missing);
-    }
-    Ok(match key_type {
-        KeyType::Int32 => KeyValue::Int32(
-            array
-                .as_any()
-                .downcast_ref::<arrow_array::Int32Array>()
-                .ok_or_else(|| TableError::Invalid("int32 interval key expected".into()))?
-                .value(0),
-        ),
-        KeyType::Int64 => KeyValue::Int64(
-            array
-                .as_any()
-                .downcast_ref::<arrow_array::Int64Array>()
-                .ok_or_else(|| TableError::Invalid("int64 interval key expected".into()))?
-                .value(0),
-        ),
-        KeyType::Bool => KeyValue::Bool(
-            array
-                .as_any()
-                .downcast_ref::<arrow_array::BooleanArray>()
-                .ok_or_else(|| TableError::Invalid("bool interval key expected".into()))?
-                .value(0),
-        ),
-        KeyType::AsciiString => KeyValue::AsciiString(
-            array
-                .as_any()
-                .downcast_ref::<arrow_array::StringArray>()
-                .ok_or_else(|| TableError::Invalid("string interval key expected".into()))?
-                .value(0)
-                .to_owned(),
-        ),
-        KeyType::Canonical(logical_type) => KeyValue::Canonical(
-            vail_ordering::encode_typed_value(array.as_ref(), 0, Some(logical_type))
-                .map_err(|e| TableError::Invalid(e.to_string()))?,
-        ),
-    })
+fn key_value(array: &ArrayRef, field: &vail_storage::fragment_index::KeyField) -> Result<KeyValue> {
+    let array =
+        vail_storage::fragment_index::normalize_typed_key_component(array, &field.physical_type)
+            .map_err(|error| TableError::Invalid(error.to_string()))?;
+    Ok(KeyValue::ArrowIpc(
+        vail_storage::fragment_index::encode_typed_key_component(&array)
+            .map_err(|e| TableError::Invalid(e.to_string()))?,
+    ))
 }
 
 fn normalize_bounds(
@@ -395,20 +472,22 @@ fn normalize_bounds(
         })
         .collect::<Result<Vec<_>>>()?;
     keyed.sort_by(|a, b| {
-        compare_key(&a.0, &b.0, binding).then_with(|| b.2.lower_inclusive.cmp(&a.2.lower_inclusive))
+        compare_lower(&a.0, &b.0, binding)
+            .then_with(|| b.2.lower_inclusive.cmp(&a.2.lower_inclusive))
     });
-    let mut merged: Vec<(Vec<KeyValue>, Vec<KeyValue>, IntervalBounds)> = Vec::new();
+    let mut merged: Vec<(Option<Vec<KeyValue>>, Option<Vec<KeyValue>>, IntervalBounds)> =
+        Vec::new();
     for (lower, upper, mut current) in keyed {
         if let Some((_, prior_upper, prior)) = merged.last_mut() {
-            let relation = compare_key(&lower, prior_upper, binding);
-            if relation == std::cmp::Ordering::Less
+            let relation = compare_upper_lower(prior_upper, &lower, binding);
+            if relation == std::cmp::Ordering::Greater
                 || (relation == std::cmp::Ordering::Equal
                     // Keep adjacent intervals as distinct output partitions.
                     // Only merge a shared endpoint when both intervals include
                     // it, since otherwise the key is not duplicated.
                     && (prior.upper_inclusive && current.lower_inclusive))
             {
-                let end_relation = compare_key(&upper, prior_upper, binding);
+                let end_relation = compare_upper(&upper, prior_upper, binding);
                 if end_relation == std::cmp::Ordering::Greater {
                     prior.upper = current.upper.clone();
                     prior.upper_inclusive = current.upper_inclusive;
@@ -429,13 +508,18 @@ fn endpoint_key(
     value: &ScalarValue,
     point_type: &Type,
     binding: &IndexBinding,
-) -> Result<Vec<KeyValue>> {
+) -> Result<Option<Vec<KeyValue>>> {
+    if value.is_null() {
+        return Ok(None);
+    }
     let array = value.to_array_of_size(1)?;
     if array.is_null(0) {
-        return Ok(vec![KeyValue::Missing; point_component_count(point_type)]);
+        return Ok(None);
     }
     let components: Vec<(ArrayRef, Type)> = match point_type {
-        Type::Primitive(_) | Type::Locus { .. } => vec![(array, point_type.clone())],
+        Type::Primitive(_) | Type::Locus { .. } | Type::Tuple { .. } | Type::Array { .. } => {
+            vec![(array, point_type.clone())]
+        }
         Type::Struct { r#struct } => {
             let structure = array
                 .as_any()
@@ -446,20 +530,6 @@ fn endpoint_key(
                 .iter()
                 .cloned()
                 .zip(r#struct.iter().map(|(_, ty)| ty.clone()))
-                .collect()
-        }
-        Type::Tuple { tuple } => {
-            let structure = array
-                .as_any()
-                .downcast_ref::<arrow_array::StructArray>()
-                .ok_or_else(|| {
-                    TableError::Invalid("tuple interval endpoint must be a struct".into())
-                })?;
-            structure
-                .columns()
-                .iter()
-                .cloned()
-                .zip(tuple.iter().cloned())
                 .collect()
         }
         _ => {
@@ -476,42 +546,231 @@ fn endpoint_key(
     components
         .into_iter()
         .zip(&binding.key_fields)
-        .map(|((array, _logical), field)| key_value(&array, &field.data_type))
-        .collect()
+        .map(|((array, _logical), field)| key_value(&array, field))
+        .collect::<Result<Vec<_>>>()
+        .map(Some)
 }
-fn compare_key(a: &[KeyValue], b: &[KeyValue], binding: &IndexBinding) -> std::cmp::Ordering {
-    for ((left, right), field) in a.iter().zip(b).zip(&binding.key_fields) {
-        let mut order = match (left, right) {
-            (KeyValue::Missing, KeyValue::Missing) => std::cmp::Ordering::Equal,
-            (KeyValue::Missing, _) => {
-                if field.nulls_last {
-                    std::cmp::Ordering::Greater
-                } else {
-                    std::cmp::Ordering::Less
-                }
+fn compare_lower(
+    a: &Option<Vec<KeyValue>>,
+    b: &Option<Vec<KeyValue>>,
+    binding: &IndexBinding,
+) -> std::cmp::Ordering {
+    match (a, b) {
+        (None, None) => std::cmp::Ordering::Equal,
+        (None, Some(_)) => std::cmp::Ordering::Less,
+        (Some(_), None) => std::cmp::Ordering::Greater,
+        (Some(a), Some(b)) => {
+            let common = compare_prefix(a, b, binding);
+            if common != std::cmp::Ordering::Equal {
+                common
+            } else {
+                a.len().cmp(&b.len())
             }
-            (_, KeyValue::Missing) => {
-                if field.nulls_last {
-                    std::cmp::Ordering::Less
-                } else {
-                    std::cmp::Ordering::Greater
-                }
-            }
-            (KeyValue::Int32(a), KeyValue::Int32(b)) => a.cmp(b),
-            (KeyValue::Int64(a), KeyValue::Int64(b)) => a.cmp(b),
-            (KeyValue::Bool(a), KeyValue::Bool(b)) => a.cmp(b),
-            (KeyValue::AsciiString(a), KeyValue::AsciiString(b)) => a.cmp(b),
-            (KeyValue::Canonical(a), KeyValue::Canonical(b)) => a.cmp(b),
-            _ => std::cmp::Ordering::Equal,
-        };
-        if field.descending {
-            order = order.reverse();
-        }
-        if order != std::cmp::Ordering::Equal {
-            return order;
         }
     }
-    a.len().cmp(&b.len())
+}
+fn compare_upper_lower(
+    upper: &Option<Vec<KeyValue>>,
+    lower: &Option<Vec<KeyValue>>,
+    binding: &IndexBinding,
+) -> std::cmp::Ordering {
+    match (upper, lower) {
+        (None, None) => std::cmp::Ordering::Greater,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (Some(_), None) => std::cmp::Ordering::Greater,
+        (Some(upper), Some(lower)) => compare_as_upper_lower(upper, lower, binding),
+    }
+}
+fn compare_upper(
+    a: &Option<Vec<KeyValue>>,
+    b: &Option<Vec<KeyValue>>,
+    binding: &IndexBinding,
+) -> std::cmp::Ordering {
+    match (a, b) {
+        (None, None) => std::cmp::Ordering::Equal,
+        (None, Some(_)) => std::cmp::Ordering::Greater,
+        (Some(_), None) => std::cmp::Ordering::Less,
+        (Some(a), Some(b)) => compare_as_upper(a, b, binding),
+    }
+}
+fn compare_as_upper_lower(
+    upper: &[KeyValue],
+    lower: &[KeyValue],
+    binding: &IndexBinding,
+) -> std::cmp::Ordering {
+    let common = compare_key(
+        &upper[..upper.len().min(lower.len())],
+        &lower[..upper.len().min(lower.len())],
+        binding,
+    );
+    if common != std::cmp::Ordering::Equal {
+        common
+    } else if upper.len() == lower.len() {
+        std::cmp::Ordering::Equal
+    } else {
+        // An upper prefix includes every full key sharing that prefix, while a
+        // lower prefix starts before every such full key.
+        std::cmp::Ordering::Greater
+    }
+}
+fn compare_as_upper(a: &[KeyValue], b: &[KeyValue], binding: &IndexBinding) -> std::cmp::Ordering {
+    let common_len = a.len().min(b.len());
+    let common = compare_key(&a[..common_len], &b[..common_len], binding);
+    if common != std::cmp::Ordering::Equal {
+        common
+    } else if a.len() == b.len() {
+        std::cmp::Ordering::Equal
+    } else if a.len() < b.len() {
+        std::cmp::Ordering::Greater
+    } else {
+        std::cmp::Ordering::Less
+    }
+}
+
+fn candidate_prefix_partitions(
+    source: &LocalRead,
+    bounds: &[IntervalBounds],
+    point_type: &Type,
+    binding: &IndexBinding,
+) -> Result<Vec<(usize, Option<Vec<usize>>)>> {
+    let partition_bounds = source
+        .partition_typed_key_bounds()
+        .map_err(TableError::Storage)?;
+    let typed_bounds = bounds
+        .iter()
+        .map(|interval| {
+            let decode =
+                |value: &ScalarValue| -> Result<Option<vail_storage::fragment_index::TypedKey>> {
+                    endpoint_key(value, point_type, binding)?
+                        .map(|key| decode_typed_prefix(binding, &key))
+                        .transpose()
+                };
+            Ok((decode(&interval.lower)?, decode(&interval.upper)?))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let mut candidates = Vec::new();
+    for (partition, bounds_for_partition) in partition_bounds.iter().enumerate() {
+        let Some((partition_min, partition_max)) = bounds_for_partition else {
+            continue;
+        };
+        let mut matching_intervals = Vec::new();
+        for (interval_index, ((lower, upper), interval)) in
+            typed_bounds.iter().zip(bounds).enumerate()
+        {
+            let starts_after_partition = if let Some(lower) = lower {
+                let prefix =
+                    compare_typed_prefix(&lower.components, &partition_max.components, binding)?;
+                let ordering = prefix
+                    .then_with(|| lower.components.len().cmp(&partition_max.components.len()));
+                ordering == std::cmp::Ordering::Greater
+                    || (ordering == std::cmp::Ordering::Equal && !interval.lower_inclusive)
+                    || (!interval.lower_inclusive
+                        && lower.components.len() < partition_max.components.len()
+                        && prefix == std::cmp::Ordering::Equal)
+            } else {
+                false
+            };
+            let ends_before_partition = if let Some(upper) = upper {
+                let prefix =
+                    compare_typed_prefix(&upper.components, &partition_min.components, binding)?;
+                let ordering = prefix
+                    .then_with(|| partition_min.components.len().cmp(&upper.components.len()));
+                ordering == std::cmp::Ordering::Less
+                    || (ordering == std::cmp::Ordering::Equal && !interval.upper_inclusive)
+                    || (!interval.upper_inclusive
+                        && upper.components.len() < partition_min.components.len()
+                        && prefix == std::cmp::Ordering::Equal)
+            } else {
+                false
+            };
+            if !starts_after_partition && !ends_before_partition {
+                matching_intervals.push(interval_index);
+            }
+        }
+        if !matching_intervals.is_empty() {
+            candidates.push((partition, Some(matching_intervals)));
+        }
+    }
+    Ok(candidates)
+}
+fn decode_typed_prefix(
+    binding: &IndexBinding,
+    key: &[KeyValue],
+) -> Result<vail_storage::fragment_index::TypedKey> {
+    if key.len() > binding.key_fields.len() {
+        return Err(TableError::Invalid(
+            "interval prefix exceeds indexed key arity".into(),
+        ));
+    }
+    let components = key
+        .iter()
+        .zip(&binding.key_fields)
+        .map(|(value, field)| match value {
+            KeyValue::ArrowIpc(bytes) => {
+                let array = vail_storage::fragment_index::decode_typed_key_component(bytes)
+                    .map_err(|error| TableError::Invalid(error.to_string()))?;
+                if array.data_type() != &field.physical_type {
+                    return Err(TableError::Invalid(
+                        "interval prefix type differs from indexed key type".into(),
+                    ));
+                }
+                Ok(array)
+            }
+            _ => Err(TableError::Invalid(
+                "interval prefix does not use typed Arrow IPC".into(),
+            )),
+        })
+        .collect::<Result<Vec<_>>>()?;
+    Ok(vail_storage::fragment_index::TypedKey { components })
+}
+fn compare_typed_prefix(
+    left: &[ArrayRef],
+    right: &[ArrayRef],
+    binding: &IndexBinding,
+) -> Result<std::cmp::Ordering> {
+    let len = left.len().min(right.len());
+    let options = binding
+        .key_fields
+        .iter()
+        .take(len)
+        .map(|field| arrow_schema::SortOptions {
+            descending: field.descending,
+            nulls_first: !field.nulls_last,
+        })
+        .collect::<Vec<_>>();
+    vail_storage::fragment_index::compare_typed_key_components(
+        &left[..len],
+        &right[..len],
+        &options,
+    )
+    .map_err(|error| TableError::Invalid(error.to_string()))
+}
+
+fn compare_prefix(a: &[KeyValue], b: &[KeyValue], binding: &IndexBinding) -> std::cmp::Ordering {
+    let common_len = a.len().min(b.len());
+    compare_key(&a[..common_len], &b[..common_len], binding)
+}
+fn compare_key(a: &[KeyValue], b: &[KeyValue], binding: &IndexBinding) -> std::cmp::Ordering {
+    let decode = |value: &KeyValue| match value {
+        KeyValue::ArrowIpc(bytes) => {
+            vail_storage::fragment_index::decode_typed_key_component(bytes)
+                .expect("interval endpoints are typed Arrow IPC")
+        }
+        _ => unreachable!("interval endpoints use Arrow IPC transport"),
+    };
+    let left = a.iter().map(decode).collect::<Vec<_>>();
+    let right = b.iter().map(decode).collect::<Vec<_>>();
+    let options = binding
+        .key_fields
+        .iter()
+        .take(a.len())
+        .map(|field| arrow_schema::SortOptions {
+            descending: field.descending,
+            nulls_first: !field.nulls_last,
+        })
+        .collect::<Vec<_>>();
+    vail_storage::fragment_index::compare_typed_key_components(&left, &right, &options)
+        .expect("validated typed interval endpoints")
 }
 
 /// Composite storage bounds sort missing key fields last. Represent presence
@@ -552,55 +811,255 @@ pub(crate) fn ordered_key_interval(value: Expr, point_type: &Type) -> Expr {
         value: Box::new(value.clone()),
         name: name.into(),
     };
+    let endpoint = |name: &str| {
+        let raw = field(name);
+        let ordered = ordered_key_point(raw.clone(), point_type);
+        // Preserve a null open endpoint in the ordered-key representation.
+        // Replacing it with a struct of {missing,value} fields turns an
+        // unbounded bound into a concrete all-missing key, which sorts after
+        // ordinary composite keys and can reject every row in the interval.
+        let typed_null = Expr::IfElse {
+            condition: Box::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Boolean(None),
+            }),
+            consequent: Box::new(ordered.clone()),
+            alternate: Box::new(ordered.clone()),
+        };
+        Expr::IfElse {
+            condition: Box::new(Expr::IsMissing {
+                value: Box::new(raw),
+            }),
+            consequent: Box::new(typed_null),
+            alternate: Box::new(ordered),
+        }
+    };
     Expr::Interval {
-        start: Box::new(ordered_key_point(field("start"), point_type)),
-        end: Box::new(ordered_key_point(field("end"), point_type)),
+        start: Box::new(endpoint("start")),
+        end: Box::new(endpoint("end")),
         includes_start: Box::new(field("includes_start")),
         includes_end: Box::new(field("includes_end")),
     }
 }
 
 fn union_predicate(intervals: &[ScalarIR], keys: &[String], point_type: &Type) -> Result<Expr> {
-    let point = match point_type {
-        Type::Primitive(_) | Type::Locus { .. } => Expr::Column {
-            name: keys
-                .first()
-                .ok_or_else(|| TableError::Invalid("interval read has no key".into()))?
-                .clone(),
-        },
-        Type::Struct { r#struct } => Expr::Struct {
-            fields: r#struct
-                .iter()
-                .zip(keys)
-                .map(|((name, _), key)| (name.clone(), Expr::Column { name: key.clone() }))
-                .collect(),
-        },
-        Type::Tuple { .. } => {
-            return Err(TableError::Invalid(
-                "tuple interval residual filtering is unsupported".into(),
-            ));
-        }
+    // Prefix intervals are wrapped in a struct whose fields name the prefix
+    // components. A one-component prefix is just the underlying key column;
+    // comparing the wrapper struct requires recursively constructing and
+    // inferring a second struct (and, for loci, its nested metadata) for every
+    // interval boundary. Unwrap it here and use DataFusion's native comparison
+    // on the actual typed key column. Missing row keys still yield a null
+    // comparison, which a FilterExec drops, matching key comparison semantics.
+    let (point, comparison_type, prefix_component) = match point_type {
+        Type::Struct { r#struct } if r#struct.len() == 1 && keys.len() > 1 => (
+            Expr::Column {
+                name: keys
+                    .first()
+                    .ok_or_else(|| TableError::Invalid("interval read has no key".into()))?
+                    .clone(),
+            },
+            r#struct[0].1.clone(),
+            Some(r#struct[0].0.clone()),
+        ),
+        Type::Primitive(_) | Type::Locus { .. } | Type::Tuple { .. } | Type::Array { .. } => (
+            Expr::Column {
+                name: keys
+                    .first()
+                    .ok_or_else(|| TableError::Invalid("interval read has no key".into()))?
+                    .clone(),
+            },
+            point_type.clone(),
+            None,
+        ),
+        Type::Struct { r#struct } => (
+            Expr::Struct {
+                fields: r#struct
+                    .iter()
+                    .zip(keys)
+                    .map(|((name, _), key)| (name.clone(), Expr::Column { name: key.clone() }))
+                    .collect(),
+            },
+            point_type.clone(),
+            None,
+        ),
         _ => {
             return Err(TableError::Invalid(
                 "unsupported interval point type".into(),
             ));
         }
     };
-    let mut predicates = intervals.iter().map(|interval| Expr::IntervalContains {
-        interval: Box::new(ordered_key_interval(interval.clone(), point_type)),
-        point: Box::new(ordered_key_point(point.clone(), point_type)),
-    });
-    let mut result = predicates
-        .next()
-        .ok_or_else(|| TableError::Invalid("interval query list is empty".into()))?;
-    for predicate in predicates {
-        result = Expr::Binary {
-            operator: vail_execution::expressions::BinaryOperator::Or,
-            left: Box::new(result),
-            right: Box::new(predicate),
-        };
+    // These intervals are internal comparison bounds produced by key-filter
+    // extraction. A missing start/end means an unbounded query side here. Do
+    // this explicitly instead of IntervalContains: public interval contains
+    // must retain Hail's missing propagation for a missing endpoint.
+    let predicates = intervals
+        .iter()
+        .map(|interval| {
+            let get = |name: &str| Expr::GetField {
+                value: Box::new(interval.clone()),
+                name: name.into(),
+            };
+            let raw_start = get("start");
+            let raw_end = get("end");
+            let (start, end, start_unbounded, end_unbounded) =
+                if let Some(component) = &prefix_component {
+                    let component_of = |endpoint| Expr::GetField {
+                        value: Box::new(endpoint),
+                        name: component.clone(),
+                    };
+                    // A missing component inside a present prefix struct is a real
+                    // missing key value; only a missing *whole endpoint* is open.
+                    let start_unbounded = Expr::IsMissing {
+                        value: Box::new(raw_start.clone()),
+                    };
+                    let end_unbounded = Expr::IsMissing {
+                        value: Box::new(raw_end.clone()),
+                    };
+                    (
+                        component_of(raw_start),
+                        component_of(raw_end),
+                        start_unbounded,
+                        end_unbounded,
+                    )
+                } else {
+                    let interval = ordered_key_interval(interval.clone(), &comparison_type);
+                    let start = Expr::GetField {
+                        value: Box::new(interval.clone()),
+                        name: "start".into(),
+                    };
+                    let end = Expr::GetField {
+                        value: Box::new(interval),
+                        name: "end".into(),
+                    };
+                    let start_unbounded = Expr::IsMissing {
+                        value: Box::new(start.clone()),
+                    };
+                    let end_unbounded = Expr::IsMissing {
+                        value: Box::new(end.clone()),
+                    };
+                    (start, end, start_unbounded, end_unbounded)
+                };
+            let ordered_point = if prefix_component.is_some() {
+                point.clone()
+            } else {
+                ordered_key_point(point.clone(), &comparison_type)
+            };
+            let compare = |left: Expr, operator, right: Expr| {
+                if prefix_component.is_some() {
+                    compare_nullable_key_component(left, operator, right)
+                } else {
+                    Expr::Binary {
+                        operator,
+                        left: Box::new(left),
+                        right: Box::new(right),
+                    }
+                }
+            };
+            let boundary = |endpoint: Expr, inclusive: Expr, is_lower: bool| {
+                let strict_operator = if is_lower {
+                    vail_execution::expressions::BinaryOperator::Gt
+                } else {
+                    vail_execution::expressions::BinaryOperator::Lt
+                };
+                let strict = compare(ordered_point.clone(), strict_operator, endpoint.clone());
+                let equal = compare(
+                    ordered_point.clone(),
+                    vail_execution::expressions::BinaryOperator::Eq,
+                    endpoint,
+                );
+                let inclusive = compare(
+                    equal,
+                    vail_execution::expressions::BinaryOperator::And,
+                    inclusive,
+                );
+                compare(
+                    strict,
+                    vail_execution::expressions::BinaryOperator::Or,
+                    inclusive,
+                )
+            };
+            let lower = compare(
+                start_unbounded,
+                vail_execution::expressions::BinaryOperator::Or,
+                boundary(start, get("includes_start"), true),
+            );
+            let upper = compare(
+                end_unbounded,
+                vail_execution::expressions::BinaryOperator::Or,
+                boundary(end, get("includes_end"), false),
+            );
+            compare(
+                lower,
+                vail_execution::expressions::BinaryOperator::And,
+                upper,
+            )
+        })
+        .collect::<Vec<_>>();
+    if predicates.is_empty() {
+        return Err(TableError::Invalid("interval query list is empty".into()));
     }
-    Ok(result)
+    // Position-only predicates can expand to many per-contig intervals.
+    // Keep the residual expression balanced so planning/evaluation depth is
+    // logarithmic in the number of intervals.
+    let mut level = predicates;
+    while level.len() > 1 {
+        let mut next = Vec::with_capacity(level.len().div_ceil(2));
+        let mut iter = level.into_iter();
+        while let Some(left) = iter.next() {
+            next.push(if let Some(right) = iter.next() {
+                Expr::Binary {
+                    operator: vail_execution::expressions::BinaryOperator::Or,
+                    left: Box::new(left),
+                    right: Box::new(right),
+                }
+            } else {
+                left
+            });
+        }
+        level = next;
+    }
+    Ok(level.pop().unwrap())
+}
+
+/// Compare one key component with nulls last, without treating a missing value
+/// inside a present Struct prefix as an unbounded endpoint.
+fn compare_nullable_key_component(
+    left: Expr,
+    operator: vail_execution::expressions::BinaryOperator,
+    right: Expr,
+) -> Expr {
+    use vail_execution::expressions::BinaryOperator as Op;
+    let missing = |value: Expr| Expr::IsMissing {
+        value: Box::new(value),
+    };
+    let binary = |left, operator, right| Expr::Binary {
+        operator,
+        left: Box::new(left),
+        right: Box::new(right),
+    };
+    let is_false = |value: Expr| {
+        binary(
+            value,
+            Op::Eq,
+            Expr::RuntimeLiteral {
+                value: ScalarValue::Boolean(Some(false)),
+            },
+        )
+    };
+    let left_missing = missing(left.clone());
+    let right_missing = missing(right.clone());
+    let left_present = is_false(left_missing.clone());
+    let right_present = is_false(right_missing.clone());
+    let both_present = binary(left_present.clone(), Op::And, right_present.clone());
+    let concrete = binary(binary(left, operator, right), Op::And, both_present);
+    let missing_case = match operator {
+        Op::Eq => binary(left_missing, Op::And, right_missing),
+        Op::Gt => binary(left_missing, Op::And, right_present),
+        Op::Lt => binary(left_present, Op::And, right_missing),
+        _ => {
+            return concrete;
+        }
+    };
+    binary(missing_case, Op::Or, concrete)
 }
 fn apply_filter(rows: PhysicalPlan, predicate: &Expr, child: &TableRef) -> Result<PhysicalPlan> {
     let expression =

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import cached_property
+import builtins
 import json
 from collections.abc import Mapping
 from uuid import uuid4
@@ -27,7 +28,7 @@ from . import (
     _schema_from_native,
 )
 from .expressions import Expression, _IR, _external_globals
-from .types import tstruct, tarray, tint32, tint64, tbool
+from .types import tstruct, tarray, tint32, tint64, tfloat32, tfloat64, tbool
 
 _CID = "__vail_matrix_col_id"
 _ROW, _COL, _ENTRY = "__vail_matrix_row", "__vail_matrix_col", "__vail_matrix_entry"
@@ -77,6 +78,40 @@ def _axes(node, *, outside_aggregates=False):
             *(_axes(v, outside_aggregates=outside_aggregates) for v in node)
         )
     return set()
+
+
+def _uses_axis_field(node, axis):
+    """Whether an expression directly reads a row/column field."""
+    if isinstance(node, dict):
+        if node.get("op") == "literal":
+            return False
+        if node.get("op") == "matrix_column_position":
+            return True
+        if node.get("op") in ("matrix_field", "matrix_scope") and node.get("axis") == axis:
+            return True
+        return any(_uses_axis_field(value, axis) for value in node.values())
+    if isinstance(node, list):
+        return any(_uses_axis_field(value, axis) for value in node)
+    return False
+
+
+def _indexed_cells(cells):
+    """Zip each cell with its current row-local position using DataFusion."""
+    from . import range as array_range, len as length
+    from .collections import _function
+
+    return _function(
+        "arrays_zip",
+        [cells, array_range(length(cells))],
+        tarray(
+            tstruct(
+                **{
+                    "1": cells.dtype.element_type,
+                    "2": tint32,
+                }
+            )
+        ),
+    )
 
 
 def _field_indices(node):
@@ -147,13 +182,35 @@ class MatrixIR:
     core: Table
     row_key: tuple[str, ...]
     col_key: tuple[str, ...]
+    row_index_keys: tuple[str, ...]
 
-    def __init__(self, rows, cols=None, *, row_key=(), col_key=()):
+    def __init__(self, rows, cols=None, *, row_key=(), col_key=(), row_index_keys=None):
         from . import agg
 
-        if set(rows._schema) != {_ROW, _CELLS}:
+        row_key = tuple(row_key)
+        col_key = tuple(col_key)
+        if row_index_keys is None:
+            row_index_keys = tuple(
+                name
+                for name in rows._keys
+                if name not in (_ROW, _CELLS) and name in row_key
+            )
+        else:
+            row_index_keys = tuple(row_index_keys)
+        if len(set(row_index_keys)) != len(row_index_keys):
+            raise ValueError("matrix row index keys must be unique")
+        expected_fields = {_ROW, _CELLS, *row_index_keys}
+        if set(rows._schema) != expected_fields:
             raise ValueError("matrix core must contain owning rows and entry lists")
-        if tuple(rows._schema) != (_ROW, _CELLS):
+        if row_index_keys:
+            if rows._keys != row_index_keys or len(row_index_keys) != len(row_key):
+                raise ValueError("matrix row index keys must match the matrix row key")
+            if any(
+                rows._schema[index_name] != rows._schema[_ROW][row_name]
+                for index_name, row_name in zip(row_index_keys, row_key)
+            ):
+                raise ValueError("matrix row index key types must match the matrix row key")
+        elif tuple(rows._schema) != (_ROW, _CELLS):
             rows = _project(rows, [(_ROW, rows[_ROW]), (_CELLS, rows[_CELLS])])
         if cols is not None:
             records = cols.aggregate(
@@ -165,8 +222,9 @@ class MatrixIR:
             raise ValueError("matrix core lacks global column metadata")
         for name, value in dict(
             core=rows,
-            row_key=tuple(row_key),
-            col_key=tuple(col_key),
+            row_key=row_key,
+            col_key=col_key,
+            row_index_keys=row_index_keys,
         ).items():
             object.__setattr__(self, name, value)
 
@@ -256,6 +314,13 @@ class MatrixTable:
                 col_key=changes.get("col_key", old.col_key),
             )
         )
+
+    def _without_row_index_keys(self):
+        names = self._mir.row_index_keys
+        if not names:
+            return self
+        core = self._mir.core.key_by().drop(*names)
+        return self._copy(rows=core)
 
     def _axis_type(self, axis):
         return getattr(self._mir, axis + "_type")
@@ -403,14 +468,12 @@ class MatrixTable:
             return self._mir.cols
         source = self._mir.core.explode(_CELLS)
         source = source.filter(source[_CELLS][_PRESENT])
-        e = _project(
-            source,
-            [
-                (_ROW, source[_ROW]),
-                (_CID, source[_CELLS][_CID]),
-                (_ENTRY, source[_CELLS][_VALUE] if len(self.entry.dtype) else struct()),
-            ],
-        )
+        fields = [
+            (_ROW, source[_ROW]),
+            (_ENTRY, source[_CELLS][_VALUE] if len(self.entry.dtype) else struct()),
+        ]
+        fields.insert(1, (_CID, source[_CELLS][_CID]))
+        e = _project(source, fields)
         columns = self._column_records
         col = columns.filter(lambda c: c[_CID] == e[_CID])[0][_COL]
         return e.annotate(**{_COL: col})
@@ -491,23 +554,32 @@ class MatrixTable:
 
         return Expression(expr.dtype, base, _IR(rewrite(expr.to_ir()), refs, lookups))
 
-    def _row_contexts(self, base):
-        from . import range as array_range, len as length
-
+    def _row_contexts(self, base, *, filter_present=True, with_position=True):
         cells = base[_CELLS]
-        return (
-            array_range(length(cells))
-            .map(
-                lambda j: struct(
-                    entry=cells[j][_VALUE] if len(self.entry.dtype) else struct(),
-                    present=cells[j][_PRESENT],
-                    column_id=cells[j][_CID],
-                    position=j,
+        if with_position:
+            contexts = _indexed_cells(cells).map(
+                lambda item: struct(
+                    entry=item["1"][_VALUE] if len(self.entry.dtype) else struct(),
+                    present=item["1"][_PRESENT],
+                    column_id=item["1"][_CID],
+                    position=item["2"],
                     bindings=struct(),
                 )
             )
-            .filter(lambda ctx: ctx.present)
-        )
+        else:
+            # Walk the existing cell list directly. A range(length(cells))
+            # followed by indexed access duplicates the complete list before
+            # the scalar values are projected.
+            contexts = cells.map(
+                lambda cell: struct(
+                    entry=(cell[_VALUE] if len(self.entry.dtype) else struct()),
+                    present=cell[_PRESENT],
+                    bindings=struct(),
+                )
+            )
+        if filter_present:
+            return contexts.filter(lambda ctx: ctx.present)
+        return contexts
 
     def _axis_aggregates(self, expr, axis, base):
         if axis == "row":
@@ -569,27 +641,32 @@ class MatrixTable:
         if any(not isinstance(n, str) or not n for n, _ in fields):
             raise ValueError("field names must be nonempty strings")
         if axis == "entry":
-            from . import range as array_range, len as length
             base = self._mir.core
             base, prepared = self._prepare_row_lookups(base, [v for _, v in fields])
             fields = [(n, v) for (n, _), v in zip(fields, prepared)]
-            cells = array_range(length(base[_CELLS])).map(
-                lambda j: struct(
+            source_cells = base[_CELLS]
+            cells = _indexed_cells(source_cells).map(
+                lambda item: struct(
                     **{
-                        _CID: base[_CELLS][j][_CID],
-                        _PRESENT: base[_CELLS][j][_PRESENT],
+                        _CID: item["1"][_CID],
+                        _PRESENT: item["1"][_PRESENT],
                         _VALUE: struct(
-                            **{n: self._lower_cell(v, base, base[_CELLS][j], j) for n, v in fields}
+                            **{
+                                n: self._lower_cell(v, base, item["1"], item["2"])
+                                for n, v in fields
+                            }
                         ),
                     }
                 )
             )
-            return self._copy(
-                rows=_project(
-                    base,
-                    [(_ROW, base[_ROW]), (_CELLS, cells)],
-                )
+            projected = _project(
+                base,
+                [(_ROW, base[_ROW]), (_CELLS, cells)]
+                + [(name, base[name]) for name in self._mir.row_index_keys],
             )
+            if self._mir.row_index_keys:
+                projected = projected._with_keys(*self._mir.row_index_keys)
+            return self._copy(rows=projected)
         base = self._context(axis)
         if axis == "row":
             base, prepared = self._prepare_row_lookups(base, [v for _, v in fields])
@@ -614,9 +691,14 @@ class MatrixTable:
         if axis == "row":
             projected = _project(
                 base,
-                [(_CELLS, base[_CELLS]), (_ROW, value)],
+                [(_CELLS, base[_CELLS]), (_ROW, value)]
+                + [(name, base[name]) for name in self._mir.row_index_keys],
             )
-            projected = self._sort_rows(projected, self._mir.row_key)
+            if self._mir.row_index_keys:
+                projected = projected._with_keys(*self._mir.row_index_keys)
+            # Row annotations cannot change key fields, so the source order
+            # remains valid. Re-sorting here would introduce a global shuffle
+            # after scan expressions and can invalidate their partition layout.
             return self._copy(rows=projected)
         if axis == "col":
             return self._copy(cols=_project(base, [(_CID, base[_CID]), (_COL, value)]))
@@ -752,6 +834,8 @@ class MatrixTable:
         # Unkey before projection to permit replacing keys with computed values.
         # Expressions still belong to this source; use this object's projector.
         result = self._project_axis(axis, list(values.items()))
+        if axis == "row":
+            result = result._without_row_index_keys()
         result = result._copy(**{axis + "_key": tuple(names)})
         if axis == "row":
             result = result._copy(rows=self._sort_rows(result._mir.core, names))
@@ -799,7 +883,42 @@ class MatrixTable:
         base = self._context(axis)
         if _has_aggregate(expr.to_ir()):
             expr = self._axis_aggregates(expr, axis, base)
-        filtered = base.filter(self._lower(expr, base), keep)
+        predicate = self._lower(expr, base)
+        if axis == "row" and self._mir.row_index_keys:
+            index_fields = dict(zip(self._mir.row_key, self._mir.row_index_keys))
+
+            def expose_index_key(node):
+                if isinstance(node, list):
+                    return [expose_index_key(value) for value in node]
+                if not isinstance(node, dict):
+                    return node
+                if (
+                    node.get("op") == "get_field"
+                    and node.get("value") == {"op": "column", "name": _ROW}
+                    and node.get("name") in index_fields
+                ):
+                    return {"op": "column", "name": index_fields[node["name"]]}
+                return {name: expose_index_key(value) for name, value in node.items()}
+
+            predicate = Expression(
+                predicate.dtype,
+                base,
+                _IR(
+                    expose_index_key(predicate.to_ir()),
+                    predicate._global_refs,
+                    predicate._lookup_refs,
+                    predicate._row_indexed,
+                ),
+                row_indexed=predicate._row_indexed,
+            )
+        filtered = base.filter(predicate, keep)
+        if axis == "row" and self._mir.row_index_keys:
+            filtered = _project(
+                filtered,
+                [(_ROW, filtered[_ROW]), (_CELLS, filtered[_CELLS])]
+                + [(name, filtered[name]) for name in self._mir.row_index_keys],
+            )
+            filtered = filtered._with_keys(*self._mir.row_index_keys)
         return self._copy(
             restrict=True, **{{"row": "rows", "col": "cols"}[axis]: filtered}
         )
@@ -823,10 +942,24 @@ class MatrixTable:
         table = self._context(axis)
         names = self._axis_type(axis)
         value = table[_ROW if axis == "row" else _COL]
-        output = _project(table, [(n, value[n]) for n in names])
-        output = self._with_globals(output)
         keys = self._mir.row_key if axis == "row" else self._mir.col_key
-        return output.key_by(*keys) if key else output
+        preserve_index = (
+            axis == "row"
+            and key
+            and bool(self._mir.row_index_keys)
+            and self._mir.row_index_keys == self._mir.row_key
+        )
+        if preserve_index:
+            index_keys = self._mir.row_key
+            projected = table._project(
+                [(n, table[n] if n in index_keys else value[n]) for n in names],
+                keys=index_keys,
+            )._with_keys(*index_keys)
+            output = projected
+        else:
+            output = _project(table, [(n, value[n]) for n in names])
+        output = self._with_globals(output)
+        return output if preserve_index else (output.key_by(*keys) if key else output)
 
     def _with_globals(self, table):
         globals = self.index_globals()
@@ -866,6 +999,41 @@ class MatrixTable:
         allowed = {"row": {"row"}, "col": {"col"}, "entry": {"row", "col"}}[axis]
         if not actual <= allowed:
             raise ExpressionException("scope violation: aggregation uses incompatible axes")
+        node = expr.to_ir()
+        if (
+            axis == "entry"
+            and not expr._lookup_refs
+            and expr.dtype in (tint32, tint64, tfloat32, tfloat64)
+            and isinstance(node, dict)
+            and node.get("op") == "aggregate"
+            and node.get("function") == "sum"
+            and set((node.get("options") or {})) == {"__vail_result_type"}
+            and not node.get("init")
+            and not _has_aggregate(node.get("value"))
+        ):
+            # Reduce each row's present cells with the typed Arrow array
+            # reducer, then combine row totals with the native table SUM. This
+            # avoids unnesting every cell struct for a plain numeric sum.
+            from .matrix_list_aggregates import reduce_list
+            from .agg import sum as aggregate_sum
+
+            core = self._mir.core
+            uses_col = _uses_axis_field(node, "col")
+            if uses_col:
+                # Column lookups retain the positional context path.
+                row_total = reduce_list(
+                    self,
+                    expr,
+                    core,
+                    self._row_contexts(
+                        core, filter_present=False, with_position=True
+                    ),
+                )
+            else:
+                row_total = reduce_list(
+                    self, expr, core, None, direct_entry_sum=True
+                )
+            return core.aggregate(aggregate_sum(row_total), _localize=localize)
         table = self._context(axis)
         if axis == "col" and self._mir.col_key:
             table = table.order_by(
@@ -1838,13 +2006,39 @@ class MatrixTable:
             generation = "generation-" + uuid4().hex
             folder = root / generation
             folder.mkdir()
-            self._mir.core.write(folder / "core")
+            indexed_core = self._mir.core
+            row_index_keys = list(self._mir.row_index_keys)
+            if not row_index_keys and self._mir.row_key:
+                reserved = set(self._mir.row_key) | set(self._mir.core._schema)
+                row_index_keys = []
+                for i, name in enumerate(self._mir.row_key):
+                    if name not in {_ROW, _CELLS}:
+                        index_name = name
+                    else:
+                        index_name = f"__vail_matrix_row_key_{i}"
+                        suffix = 0
+                        while index_name in reserved or index_name in row_index_keys:
+                            suffix += 1
+                            index_name = f"__vail_matrix_row_key_{i}_{suffix}"
+                    row_index_keys.append(index_name)
+                indexed_core = indexed_core.annotate(
+                    **{
+                        index_name: indexed_core[_ROW][row_name]
+                        for index_name, row_name in zip(row_index_keys, self._mir.row_key)
+                    }
+                )
+                # Matrix rows are maintained in row-key order. Attach that
+                # ordering metadata without a second global sort so the
+                # persisted fragment index retains the input partition bounds.
+                indexed_core = indexed_core._with_keys(*row_index_keys)
+            indexed_core.write(folder / "core")
             descriptor = {
                 "format": "vail-matrix",
                 "version": 3,
                 "generation": generation,
                 "row_key": list(self._mir.row_key),
                 "col_key": list(self._mir.col_key),
+                "row_index_keys": row_index_keys,
             }
             temp = root / (".matrix-" + uuid4().hex + ".json")
             with open(temp, "w") as stream:
@@ -1923,18 +2117,109 @@ def read_matrix_table(
     ):
         raise ValueError("invalid matrix generation")
     folder = root / generation
+    # Let the table source apply indexed interval pruning before MatrixTable
+    # projections are built. Reading first and semi-joining afterward loses
+    # the source partition boundaries and scans data outside the intervals.
     keys = tuple(descriptor["row_key"]), tuple(descriptor["col_key"])
-    core = read_table(folder / "core", _load_refs=_load_refs)
-    result = MatrixTable(MatrixIR(core, row_key=keys[0], col_key=keys[1]))
+    row_index_keys = tuple(descriptor.get("row_index_keys", ()))
+    intervals = _intervals
+    expression_intervals = isinstance(intervals, Expression) or (
+        isinstance(intervals, (list, tuple))
+        and builtins.any(isinstance(value, Expression) for value in intervals)
+    )
+    if expression_intervals:
+        # filter_intervals has historically accepted unindexed interval-array
+        # expressions by evaluating them to concrete intervals before filtering.
+        # Keep that behavior while allowing the resulting values to use the
+        # indexed read path.
+        from . import array, eval
+
+        interval_expr = intervals if isinstance(intervals, Expression) else array(list(intervals))
+        intervals = eval(interval_expr)
+        if intervals is None:
+            raise TypeError("_intervals cannot be a missing interval array")
+        expression_intervals = False
+    if intervals is not None and row_index_keys and not expression_intervals:
+        if not isinstance(intervals, (list, tuple)):
+            raise TypeError("_intervals must be a list, tuple, or interval-array expression")
+        from .types import Interval, Struct, tstruct
+
+        if builtins.any(
+            isinstance(value, Interval) and isinstance(value.point_type, tstruct)
+            for value in intervals
+        ) or len(keys[0]) > 1:
+
+            remapped_intervals = []
+            for interval_value in intervals:
+                if not isinstance(interval_value, Interval):
+                    raise TypeError("_intervals must contain Interval values")
+                point_type = interval_value.point_type
+                if isinstance(point_type, tstruct):
+                    public_fields = list(point_type.items())
+                    expected_names = list(keys[0][: len(public_fields)])
+                    actual_names = [name for name, _ in public_fields]
+                    single_field_alias = len(keys[0]) == 1 and len(public_fields) == 1
+                    if not public_fields or (
+                        actual_names != expected_names and not single_field_alias
+                    ):
+                        raise TypeError("interval point struct must match a non-empty prefix of the matrix row key")
+                    index_fields = row_index_keys[: len(public_fields)]
+                    remapped_type = tstruct(
+                        **{
+                            index_name: field_type
+                            for index_name, (_, field_type) in zip(index_fields, public_fields)
+                        }
+                    )
+
+                    def remap_point(point):
+                        if point is None:
+                            return None
+                        return Struct(
+                            **{
+                                index_name: point[public_name]
+                                for index_name, (public_name, _) in zip(index_fields, public_fields)
+                            }
+                        )
+                else:
+                    index_name = row_index_keys[0]
+                    remapped_type = tstruct(**{index_name: point_type})
+
+                    def remap_point(point):
+                        return None if point is None else Struct(**{index_name: point})
+
+                remapped_intervals.append(
+                    Interval(
+                        remap_point(interval_value.start),
+                        remap_point(interval_value.end),
+                        interval_value.includes_start,
+                        interval_value.includes_end,
+                        remapped_type,
+                    )
+                )
+            intervals = remapped_intervals
+    core = read_table(
+        folder / "core",
+        _intervals=intervals if row_index_keys else None,
+        _filter_intervals=_filter_intervals if row_index_keys else False,
+        _load_refs=_load_refs,
+    )
+    result = MatrixTable(
+        MatrixIR(
+            core,
+            row_key=keys[0],
+            col_key=keys[1],
+            row_index_keys=row_index_keys,
+        )
+    )
     if _assert_type is not None:
         raise NotImplementedError("matrix type assertions are not yet implemented")
-    if _intervals is not None:
+    if _intervals is not None and not row_index_keys:
+        # Older snapshots have no persisted row-key index. Retain their
+        # historical logical filtering path.
         from . import filter_intervals
 
-        public = result.rows()
-        kept = filter_intervals(public, _intervals)
-        result = result.semi_join_rows(kept)
-    elif _filter_intervals:
+        result = result.semi_join_rows(filter_intervals(result.rows(), _intervals))
+    elif _filter_intervals and _intervals is None:
         raise ValueError("_filter_intervals requires _intervals")
     if _n_partitions is not None:
         result = result.repartition(_n_partitions)

@@ -27,12 +27,11 @@ def test_indexed_partition_does_not_open_other_partitions(tmp_path, partition, n
         if i != partition:
             file.unlink()
     lower, upper = (partition * 4 + 1, partition * 4 + 4) if narrow else (0, 12)
-    filtered = loaded.filter(
-        (loaded.idx >= lower) & (loaded.idx < upper) & (loaded.idx % 2 == 0))
-    selected = filtered._filter_partitions([partition])
-    assert 'VailIndexedRead' in selected._native.physical_plan()
+    filtered = loaded.filter((loaded.idx >= lower) & (loaded.idx < upper))
+    selected = filtered._filter_partitions([0] if narrow else [partition])
+    assert 'VicebergScanExec' in selected._native.physical_plan()
     expected = [i for i in range(partition * 4, partition * 4 + 4)
-                if lower <= i < upper and i % 2 == 0]
+                if lower <= i < upper]
     assert [r.idx for r in selected.collect()] == expected
     if not narrow:
         with pytest.raises(FileNotFoundError):
@@ -43,12 +42,35 @@ def test_indexed_partition_keeps_key_pruning_within_row_range(tmp_path):
     path = tmp_path / 'indexed'
     hl.range_table(8, 2).write(path)
     loaded = hl.read_table(path)
-    for file in _fragment_files(path):
-        file.unlink()
-    # Partition zero's file is also absent, but cannot match this key query.
-    selected = loaded.filter(loaded.idx >= 4)._filter_partitions([0])
-    assert 'VailIndexedRead' in selected._native.physical_plan()
-    assert selected.collect() == []
+    files = _fragment_files(path)
+    assert len(files) == 2
+    files[0].unlink()
+
+    # Interval filtering compacts its surviving partitions before the
+    # subsequent partition selection, matching Table IR operation order.
+    filtered = loaded.filter(loaded.idx >= 4)
+    selected = filtered._filter_partitions([0])
+    assert [row.idx for row in selected.collect()] == [4, 5, 6, 7]
+
+    # Reversing the operations selects source partition zero first. It cannot
+    # match the key predicate, so the missing fragment is never opened.
+    partitioned = loaded._filter_partitions([0])
+    excluded = partitioned.filter(partitioned.idx >= 4)
+    assert excluded.count() == 0
+
+
+@pytest.mark.parametrize(('predicate', 'expected'), [
+    (lambda idx: (idx >= 3) & (idx <= 5), [3, 4, 5]),
+    (lambda idx: (idx > 3) & (idx < 6), [4, 5]),
+    (lambda idx: (3 <= idx) & (6 > idx), [3, 4, 5]),
+    (lambda idx: (idx >= 8) & (idx < 2), []),
+])
+def test_read_key_filter_interval_bound_semantics(tmp_path, predicate, expected):
+    path = tmp_path / 'key-filter'
+    hl.range_table(12, 3).write(path)
+    table = hl.read_table(path)
+    result = table.filter(predicate(table.idx))
+    assert [row.idx for row in result.collect()] == expected
 
 
 def test_multifile_roundtrip(tmp_path):
@@ -188,9 +210,10 @@ def test_floating_values(tmp_path):
       {'__vail_ndarray_data': [1], '__vail_ndarray_shape': [1]}, None]),
 ])
 def test_ordered_complex_key_roundtrip(tmp_path, dtype, values):
-    if isinstance(dtype, (hl.tset, hl.tdict)):
+    if isinstance(dtype, (hl.tset, hl.tdict, hl.tndarray)):
         table = hl.Table.parallelize([{'k': value} for value in values], schema=hl.tstruct(k=dtype))
-        with pytest.raises(NotImplementedError, match='Set/Dictionary'):
+        error = 'ndarray' if isinstance(dtype, hl.tndarray) else 'Set/Dictionary'
+        with pytest.raises(NotImplementedError, match=error):
             table.key_by('k')
         table.write(tmp_path / 'unkeyed')
         assert hl.read_table(tmp_path / 'unkeyed')._same(table)

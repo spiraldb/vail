@@ -11,6 +11,7 @@ datafusion-session = "=55.0.0"
 async-trait = "0.1"
 tokio.workspace = true
 arrow-cast = "=59.2.0"
+arrow-ord = "=59.2.0"
 arrow-buffer.workspace = true
 datafusion-functions-nested.workspace = true
 datafusion-functions.workspace = true
@@ -25,6 +26,7 @@ datafusion-datasource-json.workspace = true
 datafusion-execution.workspace = true
 datafusion-physical-plan.workspace = true
 arrow-array.workspace = true
+arrow-data = "=59.2.0"
 arrow-schema.workspace = true
 arrow-select.workspace = true
 arrow-csv.workspace = true
@@ -45,3 +47,4 @@ vail-vcf = { path = "../vail-vcf" }
 [dev-dependencies]
 tokio.workspace = true
 tempfile = "3"
+uuid.workspace = true

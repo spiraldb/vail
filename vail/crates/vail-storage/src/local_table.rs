@@ -164,28 +164,27 @@ pub async fn write_local_stream_with_globals(
     let mut key_fields = Vec::new();
     for name in keys {
         let index = canonical.index_of(&name)?;
-        let data_type = if vail_ordering::supports(canonical.field(index).data_type()) {
-            let logical_type = row_type
-                .as_array()
-                .and_then(|fields| {
-                    fields
-                        .iter()
-                        .find(|field| field[0] == name)
-                        .map(|field| field[1].clone())
-                })
-                .ok_or_else(|| {
-                    StorageError::Invalid(format!("logical type for key {name:?} is missing"))
-                })?;
-            KeyType::Canonical(logical_type)
-        } else {
+        let logical_type = row_type
+            .as_array()
+            .and_then(|fields| {
+                fields
+                    .iter()
+                    .find(|field| field[0] == name)
+                    .map(|field| field[1].clone())
+            })
+            .ok_or_else(|| {
+                StorageError::Invalid(format!("logical type for key {name:?} is missing"))
+            })?;
+        let physical_type = canonical.field(index).data_type();
+        if !super::fragment_index::is_certifiable_key_type(&logical_type, physical_type) {
             return Err(StorageError::Unsupported(format!(
-                "ordered storage key type {}",
-                canonical.field(index).data_type()
+                "ordered storage key type {logical_type} with Arrow type {physical_type}"
             )));
-        };
+        }
         key_fields.push(KeyField {
             field_id: iceberg_schema.as_struct().fields()[index].id,
-            data_type,
+            data_type: KeyType::Arrow(logical_type),
+            physical_type: physical_type.clone(),
             descending: false,
             nulls_last: true,
         });
@@ -200,8 +199,10 @@ pub async fn write_local_stream_with_globals(
     }
     if existed {
         let entry: Entry = serde_json::from_slice(&fs::read(root.join(ENTRY))?)?;
-        if entry.version != 1 {
-            return Err(StorageError::Unsupported("local table version".into()));
+        if entry.version != 2 {
+            return Err(StorageError::Unsupported(
+                "local table version 1 used byte-encoded ordered keys; rewrite the table with the Arrow-typed index format".into(),
+            ));
         }
     }
     fs::create_dir_all(&root)?;
@@ -305,13 +306,13 @@ pub async fn write_local_stream_with_globals(
             global_type,
             globals,
             key_field_ids: key_fields.iter().map(|k| k.field_id).collect(),
-            comparator_version: super::fragment_index::TOTAL_ORDER_COMPARATOR_V3.into(),
+            comparator_version: super::fragment_index::ARROW_TYPED_COMPARATOR_V4.into(),
             reference_genomes,
         };
         let ordered = (!key_fields.is_empty()).then_some(key_fields);
         let committed = super::write_initial_file_stream(&catalog, &table, files, semantics, ordered).await?;
         let entry = Entry {
-            version: 1,
+            version: 2,
             metadata: committed
                 .metadata_location()
                 .ok_or_else(|| StorageError::Invalid("commit has no metadata location".into()))?
@@ -448,11 +449,7 @@ impl LocalRead {
                 "fragment index binding mismatch".into(),
             ));
         }
-        let rebuilt = FragmentIndex::new(binding.clone(), stored.fragments().to_vec())
-            .map_err(|error| StorageError::Invalid(error.to_string()))?;
-        if rebuilt.fragments() != stored.fragments()
-            || rebuilt.fragments().len() != self.descriptor.files.len()
-        {
+        if stored.fragments().len() != self.descriptor.files.len() {
             return Err(StorageError::Invalid(
                 "fragment index order or count mismatch".into(),
             ));
@@ -474,7 +471,42 @@ impl LocalRead {
             )>,
         >,
     > {
-        use super::fragment_index::{FragmentIndex, QueryInterval};
+        use super::fragment_index::encode_typed_key_component;
+        self.partition_typed_key_bounds()?
+            .into_iter()
+            .map(|bounds| {
+                bounds
+                    .map(|(first, last)| {
+                        let encode = |key: super::fragment_index::TypedKey| {
+                            key.components
+                                .iter()
+                                .map(|component| {
+                                    encode_typed_key_component(component)
+                                        .map(super::fragment_index::KeyValue::ArrowIpc)
+                                        .map_err(|error| StorageError::Invalid(error.to_string()))
+                                })
+                                .collect::<Result<Vec<_>>>()
+                        };
+                        Ok((encode(first)?, encode(last)?))
+                    })
+                    .transpose()
+            })
+            .collect()
+    }
+
+    /// Typed Arrow view of each original source partition's certified key
+    /// bounds. Components are one-row arrays in key-field order.
+    pub fn partition_typed_key_bounds(
+        &self,
+    ) -> Result<
+        Vec<
+            Option<(
+                super::fragment_index::TypedKey,
+                super::fragment_index::TypedKey,
+            )>,
+        >,
+    > {
+        use super::fragment_index::{FragmentIndex, QueryInterval, TypedKey};
         use std::collections::HashMap;
 
         let binding = self.index_binding()?;
@@ -494,23 +526,24 @@ impl LocalRead {
                 "fragment index checksum mismatch".into(),
             ));
         }
-        let stored: FragmentIndex = serde_json::from_slice(&bytes)?;
-        if stored.binding() != &binding {
+        let index: FragmentIndex = serde_json::from_slice(&bytes)?;
+        if index.binding() != &binding {
             return Err(StorageError::Invalid(
                 "fragment index binding mismatch".into(),
             ));
         }
-        let all = stored
+        let fragments = index
             .select(&binding, &QueryInterval::default())
-            .map_err(|e| StorageError::Invalid(e.to_string()))?;
-        if all.len() != self.descriptor.files.len() {
+            .map_err(|error| StorageError::Invalid(error.to_string()))?;
+        if fragments.len() != self.descriptor.files.len() {
             return Err(StorageError::Invalid(
                 "index and descriptor file counts differ".into(),
             ));
         }
-        let by_path = all
+        let typed_by_path = fragments
             .into_iter()
-            .map(|fragment| (fragment.identity.file_path.as_str(), fragment))
+            .zip(index.typed_fragment_bounds())
+            .map(|(fragment, bounds)| (fragment.identity.file_path.as_str(), (fragment, bounds)))
             .collect::<HashMap<_, _>>();
         let mut file_ranges = Vec::with_capacity(self.descriptor.files.len());
         let mut offset = 0u64;
@@ -518,9 +551,10 @@ impl LocalRead {
             let end = offset
                 .checked_add(file.row_count)
                 .ok_or_else(|| StorageError::Invalid("file row offset overflow".into()))?;
-            let fragment = by_path.get(file.path.as_str()).ok_or_else(|| {
-                StorageError::Invalid("descriptor file is absent from fragment index".into())
-            })?;
+            let (fragment, (first, last)) =
+                typed_by_path.get(file.path.as_str()).ok_or_else(|| {
+                    StorageError::Invalid("descriptor file is absent from fragment index".into())
+                })?;
             if fragment.row_count != file.row_count
                 || fragment.identity.content_sha256 != file.sha256
             {
@@ -528,12 +562,7 @@ impl LocalRead {
                     "fragment identity differs from descriptor".into(),
                 ));
             }
-            file_ranges.push((
-                offset,
-                end,
-                fragment.first_key.clone(),
-                fragment.last_key.clone(),
-            ));
+            file_ranges.push((offset, end, first.clone(), last.clone()));
             offset = end;
         }
         let total = self
@@ -549,29 +578,26 @@ impl LocalRead {
                 "partition and file row counts differ".into(),
             ));
         }
+        let compare = |left: &TypedKey, right: &TypedKey| {
+            super::fragment_index::compare_typed_keys(&binding, &left.components, &right.components)
+                .map_err(|error| StorageError::Invalid(error.to_string()))
+        };
         let mut result = Vec::with_capacity(self.entry.partition_rows.len());
         let mut start = 0u64;
         for &rows in &self.entry.partition_rows {
             let end = start + rows as u64;
-            let mut bounds: Option<(
-                super::fragment_index::CompositeKey,
-                super::fragment_index::CompositeKey,
-            )> = None;
+            let mut bounds: Option<(TypedKey, TypedKey)> = None;
             for (file_start, file_end, first, last) in &file_ranges {
                 if start < end && *file_start < end && start < *file_end {
                     bounds = Some(match bounds {
                         None => (first.clone(), last.clone()),
                         Some((old_first, old_last)) => (
-                            if super::fragment_index::compare_keys(&binding, first, &old_first)
-                                .is_lt()
-                            {
+                            if compare(first, &old_first)?.is_lt() {
                                 first.clone()
                             } else {
                                 old_first
                             },
-                            if super::fragment_index::compare_keys(&binding, last, &old_last)
-                                .is_gt()
-                            {
+                            if compare(last, &old_last)?.is_gt() {
                                 last.clone()
                             } else {
                                 old_last
@@ -742,8 +768,10 @@ impl LocalRead {
 pub async fn open_local(path: &str) -> Result<LocalRead> {
     let root = directory(path)?;
     let entry: Entry = serde_json::from_slice(&fs::read(root.join(ENTRY))?)?;
-    if entry.version != 1 {
-        return Err(StorageError::Unsupported("local table version".into()));
+    if entry.version != 2 {
+        return Err(StorageError::Unsupported(
+            "local table version 1 used byte-encoded ordered keys; rewrite the table with the Arrow-typed index format".into(),
+        ));
     }
     let table = StaticTable::from_metadata_file(
         &entry.metadata,
@@ -948,9 +976,10 @@ mod tests {
         assert!(later.exists(), "descriptor path {:?} does not exist", later);
         fs::remove_file(later).unwrap();
         let key = Int32Array::from(vec![1]);
+        let key = Arc::new(key) as arrow_array::ArrayRef;
         let point = crate::fragment_index::Endpoint {
-            key: vec![crate::fragment_index::KeyValue::Canonical(
-                vail_ordering::encode_typed_value(&key, 0, Some(&json!("int32"))).unwrap(),
+            key: vec![crate::fragment_index::KeyValue::ArrowIpc(
+                crate::fragment_index::encode_typed_key_component(&key).unwrap(),
             )],
             inclusive: true,
         };

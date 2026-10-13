@@ -74,6 +74,19 @@ def test_join_empty_inputs_zero_key_cross_product_and_prefix_suffix_keys():
     assert (row.a, row.b, row.v, row.y, row.w) == (1, "left", 10, "right", 20)
 
 
+def test_range_join_with_unequal_partition_counts_and_empty_partitions():
+    left = hl.range_table(11, n_partitions=4)
+    right = hl.Table.parallelize(
+        [{"idx": i} for i in range(11)],
+        schema=hl.tstruct(idx=hl.tint32),
+        key="idx",
+        n_partitions=16,
+    ).annotate(payload=7)
+    joined = left.join(right)
+    assert joined.count() == 11
+    assert [(row.idx, row.payload) for row in joined.take(3)] == [(0, 7), (1, 7), (2, 7)]
+
+
 def test_join_mangles_right_row_and_global_names_and_keeps_left_key():
     left = keyed(
         [{"k": 1, "same": "L"}], schema=hl.tstruct(k=hl.tint32, same=hl.tstr),

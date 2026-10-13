@@ -436,7 +436,10 @@ mod tests {
         let fast = finish_sum_states(&carry, &local, &descriptor.output)?;
         let generic = finish_generic_states(&descriptor, &carry, &local)?;
         assert_eq!(
-            fast.as_any().downcast_ref::<Float64Array>().unwrap().values(),
+            fast.as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap()
+                .values(),
             generic
                 .as_any()
                 .downcast_ref::<Float64Array>()

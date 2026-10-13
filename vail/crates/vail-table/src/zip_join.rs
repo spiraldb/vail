@@ -130,12 +130,12 @@ pub(crate) fn lower(
                     })
                     .collect(),
             };
-            let canonical = vail_execution::ordering::canonical_key(lower_with_bindings(
+            let canonical = lower_with_bindings(
                 &key_struct,
                 &schema,
                 table.globals().schema(),
                 &Default::default(),
-            )?);
+            )?;
             let mut any_missing: Option<Arc<dyn PhysicalExpr>> = None;
             for index in &key_indices {
                 let is_missing: Arc<dyn PhysicalExpr> =

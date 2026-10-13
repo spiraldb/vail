@@ -8,30 +8,29 @@ use crate::{
     partitioned::{OrderedConcatExec, PreparedTable},
     plan::{self, PhysicalPlan, column},
 };
-use arrow_array::Array;
-use arrow_schema::{DataType, SchemaRef};
-use datafusion_common::{ScalarValue, config::ConfigOptions};
+use arrow_array::{Array, ArrayRef, Int32Array};
+use arrow_schema::{SchemaRef, SortOptions};
+use datafusion_common::ScalarValue;
 use datafusion_execution::TaskContext;
 use datafusion_expr::Operator;
-use datafusion_physical_expr::{
-    PhysicalExpr, ScalarFunctionExpr,
-    expressions::{BinaryExpr, CaseExpr, Literal},
-};
+use datafusion_physical_expr::PhysicalExpr;
+use datafusion_physical_expr::expressions::{BinaryExpr, IsNullExpr, Literal, NotExpr};
 use datafusion_physical_plan::filter::FilterExec;
 use futures::TryStreamExt;
+use std::cmp::Ordering;
 use std::sync::Arc;
-use vail_storage::fragment_index::{CompositeKey, KeyValue};
+use vail_storage::fragment_index::compare_typed_key_components;
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug)]
 struct Bound {
-    first: Vec<u8>,
-    last: Vec<u8>,
+    first: Vec<ArrayRef>,
+    last: Vec<ArrayRef>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug)]
 enum Cell {
-    Point(Vec<u8>),
-    Between(Vec<u8>, Vec<u8>),
+    Point(Vec<ArrayRef>),
+    Between(Vec<ArrayRef>, Vec<ArrayRef>),
 }
 
 /// Prepare a normal join as disjoint key cells. Every cell executes a DataFusion
@@ -47,7 +46,7 @@ pub(crate) async fn prepare(
     let right_input = crate::partitioned::prepare_legacy(right.clone()).await?;
     let left_bounds = bounds(left, &left_input, join_key).await?;
     let right_bounds = bounds(right, &right_input, join_key).await?;
-    let cells = cells(&left_bounds, &right_bounds);
+    let cells = cells(&left_bounds, &right_bounds)?;
     let mut parts = Vec::with_capacity(cells.len());
     for cell in cells {
         let left_parts = clipped_parts(&left_input.parts, &left_bounds, &cell, left, join_key)?;
@@ -151,7 +150,7 @@ pub(crate) async fn prepare_zip(
         all_bounds.extend(bounds.iter().cloned());
         inputs.push((table.clone(), prepared, bounds));
     }
-    let cells = cells(&all_bounds, &[]);
+    let cells = cells(&all_bounds, &[])?;
     let mut parts = Vec::with_capacity(cells.len());
     for cell in cells {
         let mut local_tables = Vec::with_capacity(inputs.len());
@@ -193,20 +192,20 @@ fn clipped_parts(
     let mut selected = Vec::new();
     for (part, bound) in parts.iter().zip(bounds) {
         let Some(bound) = bound else { continue };
-        if !overlaps(bound, cell) {
+        if !overlaps(bound, cell)? {
             continue;
         }
         if join_key == 0 {
             selected.push(reset(part.clone())?);
             continue;
         }
-        let key = key_expression(part, &table.keys()[..join_key])?;
+        let key = key_expressions(part, &table.keys()[..join_key])?;
         let predicate = match cell {
-            Cell::Point(value) => compare(key, Operator::Eq, value.clone()),
+            Cell::Point(value) => tuple_compare_expr(&key, value, Operator::Eq)?,
             Cell::Between(lower, upper) => Arc::new(BinaryExpr::new(
-                compare(key.clone(), Operator::Gt, lower.clone()),
+                tuple_compare_expr(&key, lower, Operator::Gt)?,
                 Operator::And,
-                compare(key, Operator::Lt, upper.clone()),
+                tuple_compare_expr(&key, upper, Operator::Lt)?,
             )) as Arc<dyn PhysicalExpr>,
         };
         selected
@@ -218,25 +217,27 @@ fn clipped_parts(
 fn clipped_bounds_parts(
     parts: &[PhysicalPlan],
     bounds: &[Option<Bound>],
-    lower: &[u8],
-    upper: &[u8],
+    lower: &[ArrayRef],
+    upper: &[ArrayRef],
     table: &TableRef,
     join_key: usize,
 ) -> Result<Vec<PhysicalPlan>> {
     let mut selected = Vec::new();
     for (part, bound) in parts.iter().zip(bounds) {
         let Some(bound) = bound else { continue };
-        if bound.last.as_slice() < lower || bound.first.as_slice() > upper {
+        if compare_keys(&bound.last, lower)? == Ordering::Less
+            || compare_keys(&bound.first, upper)? == Ordering::Greater
+        {
             continue;
         }
         if join_key == 0 {
             selected.push(reset(part.clone())?);
         } else {
-            let key = key_expression(part, &table.keys()[..join_key])?;
+            let key = key_expressions(part, &table.keys()[..join_key])?;
             let predicate: Arc<dyn PhysicalExpr> = Arc::new(BinaryExpr::new(
-                compare(key.clone(), Operator::GtEq, lower.to_vec()),
+                tuple_compare_expr(&key, lower, Operator::GtEq)?,
                 Operator::And,
-                compare(key, Operator::LtEq, upper.to_vec()),
+                tuple_compare_expr(&key, upper, Operator::LtEq)?,
             ));
             selected.push(
                 Arc::new(FilterExec::try_new(predicate, reset(part.clone())?)?) as PhysicalPlan,
@@ -246,44 +247,51 @@ fn clipped_bounds_parts(
     Ok(selected)
 }
 
-fn compare(key: Arc<dyn PhysicalExpr>, op: Operator, value: Vec<u8>) -> Arc<dyn PhysicalExpr> {
-    Arc::new(BinaryExpr::new(
-        key,
-        op,
-        Arc::new(Literal::new(ScalarValue::Binary(Some(value)))),
-    ))
-}
-
-fn overlaps(bound: &Bound, cell: &Cell) -> bool {
+fn overlaps(bound: &Bound, cell: &Cell) -> Result<bool> {
     match cell {
-        Cell::Point(key) => {
-            bound.first.as_slice() <= key.as_slice() && key.as_slice() <= bound.last.as_slice()
-        }
-        Cell::Between(lower, upper) => {
-            bound.last.as_slice() > lower.as_slice() && bound.first.as_slice() < upper.as_slice()
-        }
+        Cell::Point(key) => Ok(compare_keys(&bound.first, key)? != Ordering::Greater
+            && compare_keys(key, &bound.last)? != Ordering::Greater),
+        Cell::Between(lower, upper) => Ok(compare_keys(&bound.last, lower)? == Ordering::Greater
+            && compare_keys(&bound.first, upper)? == Ordering::Less),
     }
 }
 
-fn cells(left: &[Option<Bound>], right: &[Option<Bound>]) -> Vec<Cell> {
+fn cells(left: &[Option<Bound>], right: &[Option<Bound>]) -> Result<Vec<Cell>> {
     let mut boundaries = left
         .iter()
         .chain(right)
         .filter_map(Option::as_ref)
         .flat_map(|bound| [bound.first.clone(), bound.last.clone()])
         .collect::<Vec<_>>();
-    boundaries.sort();
-    boundaries.dedup();
-    let mut result = Vec::with_capacity(boundaries.len().saturating_mul(2));
-    for (index, boundary) in boundaries.iter().enumerate() {
+    for index in 1..boundaries.len() {
+        let mut current = index;
+        while current > 0
+            && compare_keys(&boundaries[current - 1], &boundaries[current])? == Ordering::Greater
+        {
+            boundaries.swap(current - 1, current);
+            current -= 1;
+        }
+    }
+    let mut unique: Vec<Vec<ArrayRef>> = Vec::with_capacity(boundaries.len());
+    for boundary in boundaries {
+        let is_new = match unique.last() {
+            Some(previous) => compare_keys(previous, &boundary)? != Ordering::Equal,
+            None => true,
+        };
+        if is_new {
+            unique.push(boundary);
+        }
+    }
+    let mut result = Vec::with_capacity(unique.len().saturating_mul(2));
+    for (index, boundary) in unique.iter().enumerate() {
         result.push(Cell::Point(boundary.clone()));
-        if let Some(next) = boundaries.get(index + 1) {
-            if boundary < next {
+        if let Some(next) = unique.get(index + 1) {
+            if compare_keys(boundary, next)? == Ordering::Less {
                 result.push(Cell::Between(boundary.clone(), next.clone()));
             }
         }
     }
-    result
+    Ok(result)
 }
 
 async fn bounds(
@@ -317,18 +325,44 @@ fn inherited_bounds(table: &TableRef, join_key: usize) -> Result<Option<Vec<Opti
         TableNode::Read { source }
             if table.keys().len() >= join_key && source.keys == table.keys() =>
         {
-            let source_bounds = source.partition_key_bounds()?;
+            let source_bounds = source.partition_typed_key_bounds()?;
             let mut result = Vec::with_capacity(source_bounds.len());
             for pair in source_bounds {
                 result.push(
                     pair.map(|(first, last)| -> Result<Bound> {
+                        if first.components.len() < join_key || last.components.len() < join_key {
+                            return Err(TableError::Invalid(
+                                "indexed key has fewer fields than join prefix".into(),
+                            ));
+                        }
                         Ok(Bound {
-                            first: encode_prefix(&first, join_key, table)?,
-                            last: encode_prefix(&last, join_key, table)?,
+                            first: first.components[..join_key].to_vec(),
+                            last: last.components[..join_key].to_vec(),
                         })
                     })
                     .transpose()?,
                 );
+            }
+            Ok(Some(result))
+        }
+        // A range table's source partitions are exact, contiguous Int32 key
+        // intervals. Reuse those known bounds instead of encoding every row
+        // just to rediscover each partition's endpoints.
+        TableNode::Range { n, n_partitions }
+            if join_key == 1 && table.keys().first().is_some_and(|key| key == "idx") =>
+        {
+            let mut result = Vec::with_capacity(*n_partitions);
+            for partition in 0..*n_partitions {
+                let start = *n / *n_partitions * partition + partition.min(*n % *n_partitions);
+                let end = start + *n / *n_partitions + usize::from(partition < *n % *n_partitions);
+                result.push(if start == end {
+                    None
+                } else {
+                    Some(Bound {
+                        first: vec![Arc::new(Int32Array::from(vec![start as i32])) as ArrayRef],
+                        last: vec![Arc::new(Int32Array::from(vec![(end - 1) as i32])) as ArrayRef],
+                    })
+                });
             }
             Ok(Some(result))
         }
@@ -366,28 +400,27 @@ fn inherited_bounds(table: &TableRef, join_key: usize) -> Result<Option<Vec<Opti
 async fn scan_bounds(prepared: &PreparedTable, keys: &[String]) -> Result<Vec<Option<Bound>>> {
     let mut result = Vec::with_capacity(prepared.parts.len());
     for part in &prepared.parts {
-        let expr = key_expression(part, keys)?;
+        let indices = keys
+            .iter()
+            .map(|name| part.schema().index_of(name).map_err(TableError::from))
+            .collect::<Result<Vec<_>>>()?;
         let mut stream = reset(part.clone())?.execute(0, Arc::new(TaskContext::default()))?;
-        let mut first: Option<Vec<u8>> = None;
-        let mut last: Option<Vec<u8>> = None;
+        let mut first: Option<Vec<ArrayRef>> = None;
+        let mut last: Option<Vec<ArrayRef>> = None;
         while let Some(batch) = stream.try_next().await? {
-            let encoded = expr.evaluate(&batch)?.into_array(batch.num_rows())?;
-            let encoded = encoded
-                .as_any()
-                .downcast_ref::<arrow_array::BinaryArray>()
-                .ok_or_else(|| TableError::Invalid("join canonical key is not binary".into()))?;
-            for row in 0..encoded.len() {
-                let key = encoded.value(row).to_vec();
-                if let Some(previous) = &last {
-                    if previous > &key {
-                        return Err(TableError::Invalid(
-                            "join input partition is not sorted by its key".into(),
-                        ));
-                    }
-                }
-                first.get_or_insert_with(|| key.clone());
-                last = Some(key);
+            if batch.num_rows() == 0 {
+                continue;
             }
+            let row_key = |row: usize| {
+                indices
+                    .iter()
+                    .map(|&i| batch.column(i).slice(row, 1))
+                    .collect::<Vec<_>>()
+            };
+            if first.is_none() {
+                first = Some(row_key(0));
+            }
+            last = Some(row_key(batch.num_rows() - 1));
         }
         result.push(first.zip(last).map(|(first, last)| Bound { first, last }));
     }
@@ -398,168 +431,260 @@ fn reset(plan: PhysicalPlan) -> Result<PhysicalPlan> {
     Ok(crate::partitioned::reset_plan_states(plan)?)
 }
 
-fn key_expression(input: &PhysicalPlan, keys: &[String]) -> Result<Arc<dyn PhysicalExpr>> {
-    let mut args = Vec::<Arc<dyn PhysicalExpr>>::new();
-    for (index, name) in keys.iter().enumerate() {
-        args.push(Arc::new(Literal::new(ScalarValue::Utf8(Some(format!(
-            "__key_{index}"
-        ))))));
-        let field_index = input.schema().index_of(name)?;
-        let value = column(input, field_index);
-        // Bounds must use the same equivalence classes as native scalar join
-        // keys. Normalize only the scalar zero boundary with DataFusion CASE.
-        let zero = match input.schema().field(field_index).data_type() {
-            DataType::Float32 => Some(ScalarValue::Float32(Some(0.0))),
-            DataType::Float64 => Some(ScalarValue::Float64(Some(0.0))),
-            _ => None,
+fn key_sort_options(arity: usize) -> Vec<SortOptions> {
+    vec![
+        SortOptions {
+            descending: false,
+            nulls_first: false
         };
-        args.push(if let Some(zero) = zero {
-            let zero = Arc::new(Literal::new(zero)) as Arc<dyn PhysicalExpr>;
-            let condition = Arc::new(BinaryExpr::new(value.clone(), Operator::Eq, zero.clone()))
-                as Arc<dyn PhysicalExpr>;
-            Arc::new(CaseExpr::try_new(
-                None,
-                vec![(condition, zero)],
-                Some(value),
-            )?) as Arc<dyn PhysicalExpr>
-        } else {
-            value
-        });
-    }
-    let key = Arc::new(ScalarFunctionExpr::try_new(
-        datafusion_functions::core::named_struct(),
-        args,
-        &input.schema(),
-        Arc::new(ConfigOptions::default()),
-    )?) as Arc<dyn PhysicalExpr>;
-    let dtype = vail_execution::expressions::Type::from_arrow(&key.data_type(&input.schema())?)?;
-    let logical = serde_json::to_value(dtype)
-        .map_err(|e| TableError::Invalid(format!("invalid join bound type: {e}")))?;
-    Ok(vail_execution::ordering::storage_bound_key(key, logical))
+        arity
+    ]
 }
 
-fn encode_prefix(key: &CompositeKey, length: usize, table: &TableRef) -> Result<Vec<u8>> {
-    if key.len() < length {
-        return Err(TableError::Invalid(
-            "indexed key has fewer fields than join prefix".into(),
-        ));
+fn compare_keys(left: &[ArrayRef], right: &[ArrayRef]) -> Result<Ordering> {
+    if left.len() != right.len() {
+        return Err(TableError::Invalid("join key arity mismatch".into()));
     }
-    let mut encoded = vec![1];
-    for (index, value) in key[..length].iter().enumerate() {
-        match value {
-            KeyValue::Missing => encoded.push(2),
-            KeyValue::Canonical(bytes) => {
-                let dtype = table
-                    .schema()
-                    .field_with_name(&table.keys()[index])?
-                    .data_type();
-                let zeros = match dtype {
-                    DataType::Float32 => Some((
-                        ScalarValue::Float32(Some(-0.0)),
-                        ScalarValue::Float32(Some(0.0)),
-                    )),
-                    DataType::Float64 => Some((
-                        ScalarValue::Float64(Some(-0.0)),
-                        ScalarValue::Float64(Some(0.0)),
-                    )),
-                    _ => None,
-                };
-                if let Some((negative, positive)) = zeros {
-                    if bytes == &encode_scalar(negative)? {
-                        encoded.extend_from_slice(&encode_scalar(positive)?);
-                        continue;
-                    }
-                }
-                encoded.extend_from_slice(bytes);
-            }
-            KeyValue::Int32(value) => {
-                encoded.extend_from_slice(&encode_scalar(ScalarValue::Int32(Some(*value)))?)
-            }
-            KeyValue::Int64(value) => {
-                encoded.extend_from_slice(&encode_scalar(ScalarValue::Int64(Some(*value)))?)
-            }
-            KeyValue::Bool(value) => {
-                encoded.extend_from_slice(&encode_scalar(ScalarValue::Boolean(Some(*value)))?)
-            }
-            KeyValue::AsciiString(value) => {
-                encoded.extend_from_slice(&encode_scalar(ScalarValue::Utf8(Some(value.clone())))?)
-            }
+    let options = key_sort_options(left.len());
+    for ((left, right), options) in left.iter().zip(right).zip(options) {
+        let left_scalar = ScalarValue::try_from_array(left, 0)?;
+        let right_scalar = ScalarValue::try_from_array(right, 0)?;
+        // DataFusion equates signed zeros in join predicates even though
+        // Arrow's total-order comparator places them at distinct sort points.
+        // Cell boundaries must follow join equality or the same zero rows can
+        // be selected into two adjacent cells and emit duplicate matches.
+        let equal_native_float = match (&left_scalar, &right_scalar) {
+            (ScalarValue::Float32(Some(left)), ScalarValue::Float32(Some(right))) => left == right,
+            (ScalarValue::Float64(Some(left)), ScalarValue::Float64(Some(right))) => left == right,
+            _ => false,
+        };
+        if equal_native_float {
+            continue;
+        }
+        let ordering = compare_typed_key_components(
+            std::slice::from_ref(left),
+            std::slice::from_ref(right),
+            &[options],
+        )
+        .map_err(|error| TableError::Invalid(error.to_string()))?;
+        if ordering != Ordering::Equal {
+            return Ok(ordering);
         }
     }
-    Ok(encoded)
+    Ok(Ordering::Equal)
 }
 
-fn encode_scalar(value: ScalarValue) -> Result<Vec<u8>> {
-    let array = value.to_array_of_size(1)?;
-    Ok(vail_ordering::encode_typed_value(array.as_ref(), 0, None)
-        .map_err(|e| TableError::Invalid(e.to_string()))?)
+fn key_expressions(input: &PhysicalPlan, keys: &[String]) -> Result<Vec<Arc<dyn PhysicalExpr>>> {
+    keys.iter()
+        .map(|name| {
+            let index = input.schema().index_of(name)?;
+            Ok(column(input, index))
+        })
+        .collect()
+}
+
+fn tuple_compare_expr(
+    keys: &[Arc<dyn PhysicalExpr>],
+    values: &[ArrayRef],
+    op: Operator,
+) -> Result<Arc<dyn PhysicalExpr>> {
+    if keys.len() != values.len() {
+        return Err(TableError::Invalid("join key arity mismatch".into()));
+    }
+    let mut equal_prefix: Option<Arc<dyn PhysicalExpr>> = None;
+    let mut less_terms = Vec::with_capacity(keys.len());
+    let mut greater_terms = Vec::with_capacity(keys.len());
+    for (key, array) in keys.iter().zip(values) {
+        let value = ScalarValue::try_from_array(array, 0)?;
+        let literal: Arc<dyn PhysicalExpr> = Arc::new(Literal::new(value));
+        let key_null: Arc<dyn PhysicalExpr> = Arc::new(IsNullExpr::new(key.clone()));
+        let literal_null: Arc<dyn PhysicalExpr> = Arc::new(IsNullExpr::new(literal.clone()));
+        let equal = or_expr(
+            and_expr(key_null.clone(), literal_null.clone()),
+            and_expr(
+                not_expr(key_null.clone()),
+                and_expr(
+                    not_expr(literal_null.clone()),
+                    binary(key.clone(), Operator::Eq, literal.clone()),
+                ),
+            ),
+        );
+        let less = or_expr(
+            and_expr(not_expr(key_null.clone()), literal_null.clone()),
+            and_expr(
+                not_expr(key_null.clone()),
+                and_expr(
+                    not_expr(literal_null.clone()),
+                    binary(key.clone(), Operator::Lt, literal.clone()),
+                ),
+            ),
+        );
+        let greater = or_expr(
+            and_expr(key_null.clone(), not_expr(literal_null.clone())),
+            and_expr(
+                not_expr(key_null.clone()),
+                and_expr(
+                    not_expr(literal_null.clone()),
+                    binary(key.clone(), Operator::Gt, literal.clone()),
+                ),
+            ),
+        );
+        less_terms.push(match &equal_prefix {
+            Some(prefix) => and_expr(prefix.clone(), less),
+            None => less,
+        });
+        greater_terms.push(match &equal_prefix {
+            Some(prefix) => and_expr(prefix.clone(), greater),
+            None => greater,
+        });
+        equal_prefix = Some(match equal_prefix {
+            Some(prefix) => and_expr(prefix, equal),
+            None => equal,
+        });
+    }
+    let less = less_terms
+        .into_iter()
+        .reduce(or_expr)
+        .unwrap_or_else(|| bool_literal(false));
+    let greater = greater_terms
+        .into_iter()
+        .reduce(or_expr)
+        .unwrap_or_else(|| bool_literal(false));
+    let equal = equal_prefix.unwrap_or_else(|| bool_literal(true));
+    Ok(match op {
+        Operator::Eq => equal,
+        Operator::Lt => less,
+        Operator::LtEq => or_expr(less, equal),
+        Operator::Gt => greater,
+        Operator::GtEq => or_expr(greater, equal),
+        _ => {
+            return Err(TableError::Invalid(
+                "unsupported key comparison operator".into(),
+            ));
+        }
+    })
+}
+
+fn binary(
+    left: Arc<dyn PhysicalExpr>,
+    op: Operator,
+    right: Arc<dyn PhysicalExpr>,
+) -> Arc<dyn PhysicalExpr> {
+    Arc::new(BinaryExpr::new(left, op, right))
+}
+fn and_expr(left: Arc<dyn PhysicalExpr>, right: Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
+    binary(left, Operator::And, right)
+}
+fn or_expr(left: Arc<dyn PhysicalExpr>, right: Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
+    binary(left, Operator::Or, right)
+}
+fn not_expr(value: Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
+    Arc::new(NotExpr::new(value))
+}
+fn bool_literal(value: bool) -> Arc<dyn PhysicalExpr> {
+    Arc::new(Literal::new(ScalarValue::Boolean(Some(value))))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    fn key(value: i32) -> Vec<ArrayRef> {
+        vec![Arc::new(Int32Array::from(vec![value])) as ArrayRef]
+    }
+    fn bound(first: i32, last: i32) -> Option<Bound> {
+        Some(Bound {
+            first: key(first),
+            last: key(last),
+        })
+    }
+    fn float_key(value: f64) -> Vec<ArrayRef> {
+        vec![Arc::new(arrow_array::Float64Array::from(vec![value])) as ArrayRef]
+    }
+    fn point_values(cells: &[Cell]) -> Vec<i32> {
+        cells
+            .iter()
+            .filter_map(|cell| match cell {
+                Cell::Point(value) => match ScalarValue::try_from_array(&value[0], 0).unwrap() {
+                    ScalarValue::Int32(Some(value)) => Some(value),
+                    _ => panic!("expected Int32 key"),
+                },
+                _ => None,
+            })
+            .collect()
+    }
+
     #[test]
     fn cells_are_disjoint_points_and_open_gaps() {
-        let left = vec![Some(Bound {
-            first: b"a".to_vec(),
-            last: b"m".to_vec(),
-        })];
-        let right = vec![Some(Bound {
-            first: b"m".to_vec(),
-            last: b"z".to_vec(),
-        })];
+        let left = vec![bound(1, 5)];
+        let right = vec![bound(5, 9)];
+        let planned = cells(&left, &right).unwrap();
+        assert_eq!(point_values(&planned), vec![1, 5, 9]);
         assert_eq!(
-            cells(&left, &right),
-            vec![
-                Cell::Point(b"a".to_vec()),
-                Cell::Between(b"a".to_vec(), b"m".to_vec()),
-                Cell::Point(b"m".to_vec()),
-                Cell::Between(b"m".to_vec(), b"z".to_vec()),
-                Cell::Point(b"z".to_vec()),
-            ]
+            planned
+                .iter()
+                .filter(|c| matches!(c, Cell::Between(_, _)))
+                .count(),
+            2
         );
-        assert!(overlaps(
-            &left[0].clone().unwrap(),
-            &Cell::Point(b"m".to_vec())
-        ));
-        assert!(!overlaps(
-            &left[0].clone().unwrap(),
-            &Cell::Between(b"m".to_vec(), b"z".to_vec())
-        ));
+        assert!(overlaps(&left[0].clone().unwrap(), &Cell::Point(key(5))).unwrap());
+        assert!(!overlaps(&left[0].clone().unwrap(), &Cell::Between(key(5), key(9))).unwrap());
     }
 
     #[test]
     fn missing_bounds_and_duplicate_prefixes_keep_a_single_boundary_cell() {
-        let left = vec![
-            Some(Bound {
-                first: vec![1, 1],
-                last: vec![1, 2],
-            }),
-            Some(Bound {
-                first: vec![1, 2],
-                last: vec![1, 3],
-            }),
-        ];
-        let right = vec![
-            None,
-            Some(Bound {
-                first: vec![1, 2],
-                last: vec![1, 4],
-            }),
-        ];
-        let planned = cells(&left, &right);
+        let left = vec![bound(1, 2), bound(2, 3)];
+        let right = vec![None, bound(2, 4)];
+        let planned = cells(&left, &right).unwrap();
         assert_eq!(
-            planned
-                .iter()
-                .filter(|c| **c == Cell::Point(vec![1, 2]))
-                .count(),
+            point_values(&planned).iter().filter(|&&v| v == 2).count(),
             1
         );
         assert!(planned.iter().all(|c| match c {
-            Cell::Between(a, b) => a < b,
+            Cell::Between(a, b) => compare_keys(a, b).unwrap() == Ordering::Less,
             _ => true,
         }));
-        assert_eq!(cells(&[None], &[None]), Vec::<Cell>::new());
+        assert!(cells(&[None], &[None]).unwrap().is_empty());
+    }
+
+    #[test]
+    fn join_cells_merge_boundaries_equal_under_native_float_join_semantics() {
+        let left = vec![Some(Bound {
+            first: float_key(-0.0),
+            last: float_key(-0.0),
+        })];
+        let right = vec![Some(Bound {
+            first: float_key(0.0),
+            last: float_key(0.0),
+        })];
+        let planned = cells(&left, &right).unwrap();
+        assert_eq!(planned.len(), 1);
+        assert!(matches!(planned[0], Cell::Point(_)));
+        assert!(overlaps(&left[0].clone().unwrap(), &planned[0]).unwrap());
+        assert!(overlaps(&right[0].clone().unwrap(), &planned[0]).unwrap());
+    }
+
+    #[test]
+    fn range_table_bounds_are_derived_without_scanning_rows() {
+        let table = TableIR::range(10, 3).unwrap();
+        let bounds = inherited_bounds(&table, 1).unwrap().unwrap();
+        let expected = [(0, 3), (4, 6), (7, 9)];
+        assert_eq!(bounds.len(), expected.len());
+        for (bound, (first, last)) in bounds.into_iter().zip(expected) {
+            let bound = bound.unwrap();
+            assert_eq!(
+                ScalarValue::try_from_array(&bound.first[0], 0).unwrap(),
+                ScalarValue::Int32(Some(first))
+            );
+            assert_eq!(
+                ScalarValue::try_from_array(&bound.last[0], 0).unwrap(),
+                ScalarValue::Int32(Some(last))
+            );
+        }
+
+        let mostly_empty = TableIR::range(2, 4).unwrap();
+        let bounds = inherited_bounds(&mostly_empty, 1).unwrap().unwrap();
+        assert_eq!(bounds.len(), 2);
+        assert!(bounds.iter().all(Option::is_some));
     }
 }

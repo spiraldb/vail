@@ -1,13 +1,14 @@
 //! Bounded partition metadata planning; DataFusion performs redistribution.
 use crate::RepartitionStrategy;
 use crate::plan::{PhysicalPlan, column};
-use arrow_array::Array;
-use datafusion_common::{DataFusionError, ScalarValue, SplitPoint, config::ConfigOptions};
+use arrow_array::ArrayRef;
+use arrow_schema::SortOptions;
+use datafusion_common::{DataFusionError, ScalarValue, SplitPoint};
 use datafusion_execution::TaskContext;
-use datafusion_physical_expr::ScalarFunctionExpr;
-use datafusion_physical_expr::{PhysicalExpr, expressions::Literal};
+use datafusion_physical_expr::{LexOrdering, PhysicalSortExpr};
 use futures::TryStreamExt;
 use std::sync::Arc;
+use vail_storage::fragment_index::make_typed_key_comparators;
 
 pub(crate) fn coalesce_ends(
     counts: &[(usize, usize)],
@@ -54,32 +55,9 @@ pub(crate) fn coalesce_ends(
     }
     ends
 }
-/// Range keys always use Vail's canonical encoder, including nested values,
-/// missing values and IEEE totalOrder floats; Arrow's native float comparator
-/// is deliberately not used to choose or route split points.
 pub(crate) struct KeyRanges {
-    pub expression: Arc<dyn PhysicalExpr>,
+    pub ordering: LexOrdering,
     pub splits: Vec<SplitPoint>,
-}
-pub(crate) fn key_expression(
-    input: &PhysicalPlan,
-    keys: &[String],
-) -> datafusion_common::Result<Arc<dyn PhysicalExpr>> {
-    let schema = input.schema();
-    let mut args = Vec::<Arc<dyn PhysicalExpr>>::new();
-    for name in keys {
-        args.push(Arc::new(Literal::new(ScalarValue::Utf8(Some(
-            name.clone(),
-        )))));
-        args.push(column(input, schema.index_of(name)?));
-    }
-    let value = Arc::new(ScalarFunctionExpr::try_new(
-        datafusion_functions::core::named_struct(),
-        args,
-        &schema,
-        Arc::new(ConfigOptions::default()),
-    )?);
-    Ok(vail_execution::ordering::range_key(value))
 }
 pub(crate) async fn key_ranges(
     input: PhysicalPlan,
@@ -88,74 +66,126 @@ pub(crate) async fn key_ranges(
     n: usize,
     context: Arc<TaskContext>,
 ) -> datafusion_common::Result<KeyRanges> {
-    let expression = key_expression(&input, keys)?;
+    let indices = keys
+        .iter()
+        .map(|name| input.schema().index_of(name).map_err(DataFusionError::from))
+        .collect::<datafusion_common::Result<Vec<_>>>()?;
+    let ordering = LexOrdering::new(
+        indices
+            .iter()
+            .map(|&index| {
+                PhysicalSortExpr::new(
+                    column(&input, index),
+                    SortOptions {
+                        descending: false,
+                        nulls_first: false,
+                    },
+                )
+            })
+            .collect::<Vec<_>>(),
+    )
+    .ok_or_else(|| DataFusionError::Plan("range partitioning requires at least one key".into()))?;
     let mut stream = input.execute(0, context)?;
     let mut ordinal = 0usize;
     let mut next = 1usize;
-    let mut previous: Option<Vec<u8>> = None;
+    let mut previous: Option<(Vec<ArrayRef>, usize)> = None;
     let mut splits = Vec::new();
     while let Some(batch) = stream.try_next().await? {
-        let encoded = expression.evaluate(&batch)?.into_array(batch.num_rows())?;
-        let encoded = encoded
-            .as_any()
-            .downcast_ref::<arrow_array::BinaryArray>()
-            .ok_or_else(|| {
-                DataFusionError::Execution("canonical key expression did not produce binary".into())
-            })?;
+        if batch.num_rows() == 0 {
+            continue;
+        }
+        let columns = indices
+            .iter()
+            .map(|&i| batch.column(i).clone())
+            .collect::<Vec<_>>();
+        let options = sort_options(keys.len());
+        let within = make_typed_key_comparators(&columns, &columns, &options)
+            .map_err(|error| DataFusionError::Execution(error.to_string()))?;
+        let across = previous
+            .as_ref()
+            .map(|(old, _)| make_typed_key_comparators(old, &columns, &options))
+            .transpose()
+            .map_err(|error| DataFusionError::Execution(error.to_string()))?;
         for row in 0..batch.num_rows() {
-            let key = encoded.value(row);
-            let changed = previous.as_deref() != Some(key);
+            let ordering = if row > 0 {
+                compare_rows(&within, row - 1, row)
+            } else if let (Some((_, previous_row)), Some(comparators)) = (&previous, &across) {
+                compare_rows(comparators, *previous_row, row)
+            } else {
+                None
+            };
+            if ordering == Some(std::cmp::Ordering::Greater) {
+                return Err(DataFusionError::Execution(
+                    "range partition input is not sorted by its key".into(),
+                ));
+            }
+            let changed = ordering != Some(std::cmp::Ordering::Equal);
             let target = next < n && ordinal >= (total as u128 * next as u128 / n as u128) as usize;
             if changed && target && ordinal > 0 {
-                splits.push(SplitPoint::new(vec![ScalarValue::Binary(Some(
-                    key.to_vec(),
-                ))]));
+                let values = indices
+                    .iter()
+                    .map(|&i| ScalarValue::try_from_array(batch.column(i), row))
+                    .collect::<datafusion_common::Result<Vec<_>>>()?;
+                splits.push(SplitPoint::new(values));
                 while next < n && ordinal >= (total as u128 * next as u128 / n as u128) as usize {
                     next += 1;
                 }
             }
-            if changed {
-                previous = Some(key.to_vec());
-            }
             ordinal += 1;
         }
+        previous = Some((columns, batch.num_rows() - 1));
     }
     if ordinal != total {
         return Err(DataFusionError::Execution(
             "input cardinality changed during range partition planning".into(),
         ));
     }
-    Ok(KeyRanges { expression, splits })
+    Ok(KeyRanges { ordering, splits })
 }
 
-/// Count distinct sorted keys while retaining only the previous encoded key.
+/// Count distinct sorted keys while retaining only the previous typed key row.
 /// This is metadata planning, not a Table distinct/aggregation implementation.
 pub(crate) async fn distinct_key_positions(
     input: PhysicalPlan,
     keys: &[String],
     wanted: &[usize],
 ) -> datafusion_common::Result<(usize, Vec<(usize, Vec<ScalarValue>)>)> {
-    let expression = key_expression(&input, keys)?;
     let fields = keys
         .iter()
         .map(|k| input.schema().index_of(k))
         .collect::<std::result::Result<Vec<_>, _>>()?;
     let mut stream = input.execute(0, Arc::new(TaskContext::default()))?;
-    let mut previous: Option<Vec<u8>> = None;
+    let mut previous: Option<(Vec<ArrayRef>, usize)> = None;
     let mut index = 0usize;
     let mut values = Vec::new();
     while let Some(batch) = stream.try_next().await? {
-        let encoded = expression.evaluate(&batch)?.into_array(batch.num_rows())?;
-        let encoded = encoded
-            .as_any()
-            .downcast_ref::<arrow_array::BinaryArray>()
-            .ok_or_else(|| DataFusionError::Execution("canonical key must be binary".into()))?;
+        if batch.num_rows() == 0 {
+            continue;
+        }
+        let columns = fields
+            .iter()
+            .map(|&i| batch.column(i).clone())
+            .collect::<Vec<_>>();
+        let options = sort_options(keys.len());
+        let within = make_typed_key_comparators(&columns, &columns, &options)
+            .map_err(|error| DataFusionError::Execution(error.to_string()))?;
+        let across = previous
+            .as_ref()
+            .map(|(old, _)| make_typed_key_comparators(old, &columns, &options))
+            .transpose()
+            .map_err(|error| DataFusionError::Execution(error.to_string()))?;
         for row in 0..batch.num_rows() {
-            let key = encoded.value(row);
-            if previous.as_deref() == Some(key) {
+            let ordering = if row > 0 {
+                compare_rows(&within, row - 1, row)
+            } else if let (Some((_, previous_row)), Some(comparators)) = (&previous, &across) {
+                compare_rows(comparators, *previous_row, row)
+            } else {
+                None
+            };
+            if ordering == Some(std::cmp::Ordering::Equal) {
                 continue;
             }
-            if previous.as_deref().is_some_and(|p| p > key) {
+            if ordering == Some(std::cmp::Ordering::Greater) {
                 return Err(DataFusionError::Execution(
                     "partition planner input is not in key order".into(),
                 ));
@@ -169,11 +199,35 @@ pub(crate) async fn distinct_key_positions(
                         .collect::<datafusion_common::Result<Vec<_>>>()?,
                 ));
             }
-            previous = Some(key.to_vec());
             index = index
                 .checked_add(1)
                 .ok_or_else(|| DataFusionError::Execution("distinct key count overflow".into()))?;
         }
+        previous = Some((columns, batch.num_rows() - 1));
     }
     Ok((index, values))
+}
+
+fn sort_options(n: usize) -> Vec<SortOptions> {
+    vec![
+        SortOptions {
+            descending: false,
+            nulls_first: false
+        };
+        n
+    ]
+}
+
+fn compare_rows(
+    comparators: &[arrow_ord::ord::DynComparator],
+    left: usize,
+    right: usize,
+) -> Option<std::cmp::Ordering> {
+    for comparator in comparators {
+        let ordering = comparator(left, right);
+        if ordering != std::cmp::Ordering::Equal {
+            return Some(ordering);
+        }
+    }
+    Some(std::cmp::Ordering::Equal)
 }

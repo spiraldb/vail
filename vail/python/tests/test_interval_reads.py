@@ -13,6 +13,18 @@ def test_interval_read_multiple_files_and_endpoint_semantics(tmp_path):
     assert read._keys == table._keys
 
 
+@pytest.mark.parametrize("start,end", [(None, 5), (3, None)])
+def test_public_interval_apis_reject_missing_endpoints(tmp_path, start, end):
+    table = hl.range_table(10, n_partitions=2)
+    path = tmp_path / "table"
+    table.write(path)
+    interval = hl.Interval(start, end, point_type=hl.tint32)
+    with pytest.raises(hl.ExpressionException, match="missing endpoint"):
+        hl.read_table(path, _intervals=[interval])
+    with pytest.raises(hl.ExpressionException, match="missing endpoint"):
+        hl.filter_intervals(hl.read_table(path), [interval])
+
+
 def test_adjacent_intervals_keep_separate_output_partitions(tmp_path):
     table = hl.range_table(20, n_partitions=4)
     path = tmp_path / "table"
@@ -95,6 +107,43 @@ def test_filter_intervals_selects_source_partitions(tmp_path):
     assert filtered.n_partitions() <= ordinary.n_partitions()
 
 
+def test_key_comparison_filter_prunes_read_partitions(tmp_path):
+    table = hl.range_table(100, n_partitions=10)
+    path = tmp_path / "table"
+    table.write(path)
+    read = hl.read_table(path)
+
+    less = read.filter(read.idx < 30)
+    greater = read.filter(read.idx >= 70)
+    assert [row.idx for row in less.collect()] == list(range(30))
+    assert [row.idx for row in greater.collect()] == list(range(70, 100))
+    assert less.n_partitions() < read.n_partitions()
+    assert greater.n_partitions() < read.n_partitions()
+
+    # Anti-filters and predicates on computed non-key fields stay on the
+    # ordinary path, preserving all source partitions and exact row behavior.
+    anti = read.filter(read.idx < 30, keep=False)
+    transformed = read.annotate(copy=read.idx)
+    transformed = transformed.filter(transformed.copy < 30)
+    assert [row.idx for row in anti.collect()] == list(range(30, 100))
+    assert anti.n_partitions() == read.n_partitions()
+    assert [row.idx for row in transformed.collect()] == list(range(30))
+    assert transformed.n_partitions() == read.n_partitions()
+
+
+def test_full_composite_key_equality_filter_prunes_read_partitions(tmp_path):
+    table = hl.Table.parallelize(
+        [{"a": a, "b": b} for a in range(10) for b in range(10)],
+        schema=hl.tstruct(a=hl.tint32, b=hl.tint32), key=("a", "b"), n_partitions=10,
+    )
+    path = tmp_path / "table"
+    table.write(path)
+    read = hl.read_table(path)
+    matched = read.filter(read.key == hl.struct(a=4, b=5))
+    assert matched.collect() == [hl.Struct(a=4, b=5)]
+    assert matched.n_partitions() == 1
+
+
 def test_interval_read_composite_key_prefix(tmp_path):
     table = hl.Table.parallelize(
         [{"a": a, "b": b, "value": f"{a}:{b}"} for a in range(3) for b in range(4)],
@@ -106,6 +155,23 @@ def test_interval_read_composite_key_prefix(tmp_path):
     prefix_ranges = [hl.Interval(hl.Struct(a=1), hl.Struct(a=2))]
     read = hl.read_table(path, _intervals=prefix_ranges)
     assert [(row.a, row.b) for row in read.collect()] == [(1, b) for b in range(4)]
+
+
+def test_filtered_composite_key_prefix_prunes_source_partitions(tmp_path):
+    table = hl.Table.parallelize(
+        [{"a": a, "b": b} for a in range(6) for b in range(4)],
+        schema=hl.tstruct(a=hl.tint32, b=hl.tint32),
+        key=("a", "b"), n_partitions=6,
+    )
+    path = tmp_path / "table"
+    table.write(path)
+    read = hl.read_table(path)
+    interval = hl.Interval(hl.Struct(a=2), hl.Struct(a=4))
+
+    filtered = hl.filter_intervals(read, [interval])
+
+    assert [(row.a, row.b) for row in filtered.collect()] == [(a, b) for a in (2, 3) for b in range(4)]
+    assert filtered.n_partitions() == 1
 
 
 @pytest.mark.parametrize("kwargs, exception", [

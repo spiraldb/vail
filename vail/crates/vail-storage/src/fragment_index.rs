@@ -8,14 +8,20 @@
 use std::cmp::Ordering;
 use std::collections::HashSet;
 
+use arrow_array::new_null_array;
+use arrow_array::{ArrayRef, RecordBatch};
+use arrow_ord::ord::make_comparator;
+use arrow_schema::{DataType, Field, Schema, SortOptions};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use thiserror::Error;
 use uuid::Uuid;
 
-/// Comparator implemented by this bounded primitive-key planner.
+/// Legacy scalar comparator metadata used by test-only interval fixtures.
 pub const PRIMITIVE_COMPARATOR_V1: &str = "vail-primitive-key-v1";
 pub const HAIL_COMPARATOR_V2: &str = "vail-hail-key-v2";
 pub const TOTAL_ORDER_COMPARATOR_V3: &str = "vail-total-order-key-v3";
+pub const ARROW_TYPED_COMPARATOR_V4: &str = "vail-arrow-typed-key-v4";
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum KeyType {
@@ -23,7 +29,7 @@ pub enum KeyType {
     Int64,
     Bool,
     AsciiString,
-    Canonical(serde_json::Value),
+    Arrow(serde_json::Value),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -33,15 +39,145 @@ pub enum KeyValue {
     Int64(i64),
     Bool(bool),
     AsciiString(String),
-    Canonical(Vec<u8>),
+    /// Opaque Arrow IPC scalar payload. It is transport only; comparisons
+    /// always decode this value to its physical Arrow type first.
+    ArrowIpc(Vec<u8>),
 }
 
 pub type CompositeKey = Vec<KeyValue>;
+
+/// A typed, decoded key. Each component is a one-row Arrow array, preserving
+/// its physical Arrow type and null validity.
+#[derive(Clone, Debug)]
+pub struct TypedKey {
+    pub components: Vec<ArrayRef>,
+}
+
+/// Compare two typed composite keys with Arrow's native value comparators.
+pub fn compare_typed_key_components(
+    left: &[ArrayRef],
+    right: &[ArrayRef],
+    options: &[SortOptions],
+) -> Result<Ordering> {
+    let comparators = make_typed_key_comparators(left, right, options)?;
+    for comparator in comparators {
+        let ordering = comparator(0, 0);
+        if ordering != Ordering::Equal {
+            return Ok(ordering);
+        }
+    }
+    Ok(Ordering::Equal)
+}
+
+/// Build Arrow comparators once for two typed key column sets. Callers that
+/// compare many row positions in the same arrays should retain these closures.
+pub fn make_typed_key_comparators(
+    left: &[ArrayRef],
+    right: &[ArrayRef],
+    options: &[SortOptions],
+) -> Result<Vec<arrow_ord::ord::DynComparator>> {
+    if left.len() != right.len() || left.len() != options.len() {
+        return Err(IndexError::Invalid("typed key arity mismatch".into()));
+    }
+    left.iter()
+        .zip(right)
+        .zip(options)
+        .map(|((left, right), options)| {
+            make_comparator(left.as_ref(), right.as_ref(), *options)
+                .map_err(|error| IndexError::Invalid(error.to_string()))
+        })
+        .collect()
+}
+
+pub fn compare_typed_keys(
+    binding: &IndexBinding,
+    left: &[ArrayRef],
+    right: &[ArrayRef],
+) -> Result<Ordering> {
+    if left.len() != binding.key_fields.len() {
+        return Err(IndexError::Invalid(
+            "typed key arity differs from binding".into(),
+        ));
+    }
+    let options = binding
+        .key_fields
+        .iter()
+        .map(|field| SortOptions {
+            descending: field.descending,
+            nulls_first: !field.nulls_last,
+        })
+        .collect::<Vec<_>>();
+    compare_typed_key_components(left, right, &options)
+}
+
+pub fn typed_key_from_transport(binding: &IndexBinding, key: &CompositeKey) -> Result<TypedKey> {
+    if key.len() != binding.key_fields.len() {
+        return Err(IndexError::Invalid(
+            "composite key arity differs from binding".into(),
+        ));
+    }
+    let components = key
+        .iter()
+        .zip(&binding.key_fields)
+        .map(|(value, field)| key_value_array(value, field))
+        .collect::<Result<Vec<_>>>()?;
+    compare_typed_keys(binding, &components, &components)?;
+    Ok(TypedKey { components })
+}
+
+/// Encode one typed scalar as Arrow IPC. The bytes are never ordered or
+/// compared; they only make the index metadata persistable.
+pub fn encode_typed_key_component(array: &ArrayRef) -> Result<Vec<u8>> {
+    if array.len() != 1 {
+        return Err(IndexError::Invalid(
+            "typed key component must contain exactly one row".into(),
+        ));
+    }
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "key",
+        array.data_type().clone(),
+        true,
+    )]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![array.clone()])
+        .map_err(|error| IndexError::Invalid(error.to_string()))?;
+    let mut bytes = Vec::new();
+    {
+        let mut writer = arrow_ipc::writer::StreamWriter::try_new(&mut bytes, &schema)
+            .map_err(|error| IndexError::Invalid(error.to_string()))?;
+        writer
+            .write(&batch)
+            .map_err(|error| IndexError::Invalid(error.to_string()))?;
+        writer
+            .finish()
+            .map_err(|error| IndexError::Invalid(error.to_string()))?;
+    }
+    Ok(bytes)
+}
+
+/// Decode an opaque Arrow IPC key component once when loading an index.
+pub fn decode_typed_key_component(bytes: &[u8]) -> Result<ArrayRef> {
+    let cursor = std::io::Cursor::new(bytes);
+    let mut reader = arrow_ipc::reader::StreamReader::try_new(cursor, None)
+        .map_err(|error| IndexError::Invalid(format!("invalid typed key IPC: {error}")))?;
+    let batch = reader
+        .next()
+        .transpose()
+        .map_err(|error| IndexError::Invalid(format!("invalid typed key IPC: {error}")))?
+        .ok_or_else(|| IndexError::Invalid("typed key IPC has no batch".into()))?;
+    if batch.num_rows() != 1 || batch.num_columns() != 1 || reader.next().is_some() {
+        return Err(IndexError::Invalid(
+            "typed key IPC must contain one scalar value".into(),
+        ));
+    }
+    Ok(batch.column(0).clone())
+}
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct KeyField {
     pub field_id: i32,
     pub data_type: KeyType,
+    /// Exact physical Arrow type, including nested field metadata.
+    pub physical_type: DataType,
     pub descending: bool,
     pub nulls_last: bool,
 }
@@ -98,20 +234,46 @@ pub type Result<T> = std::result::Result<T, IndexError>;
 
 /// Sorted interval dictionary for the monotone, non-interior-overlapping profile.
 /// Construction sorts fragment metadata; no row data is touched or reordered.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize)]
 pub struct FragmentIndex {
     binding: IndexBinding,
     fragments: Vec<FragmentInterval>,
+    #[serde(skip)]
+    typed_bounds: Vec<(TypedKey, TypedKey)>,
+}
+
+impl<'de> Deserialize<'de> for FragmentIndex {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        struct WireIndex {
+            binding: IndexBinding,
+            fragments: Vec<FragmentInterval>,
+        }
+
+        let wire = WireIndex::deserialize(deserializer)?;
+        let serialized_fragments = wire.fragments.clone();
+        let index = Self::new(wire.binding, wire.fragments).map_err(serde::de::Error::custom)?;
+        if index.fragments != serialized_fragments {
+            return Err(serde::de::Error::custom(
+                "fragment index metadata is not stored in certified key order",
+            ));
+        }
+        Ok(index)
+    }
 }
 
 impl FragmentIndex {
-    pub fn new(binding: IndexBinding, mut fragments: Vec<FragmentInterval>) -> Result<Self> {
+    pub fn new(binding: IndexBinding, fragments: Vec<FragmentInterval>) -> Result<Self> {
         validate_binding(&binding)?;
         let mut paths = HashSet::new();
-        for fragment in &fragments {
+        let mut typed_fragments = Vec::with_capacity(fragments.len());
+        for fragment in fragments {
             if fragment.identity.file_path.is_empty()
                 || !is_sha256(&fragment.identity.content_sha256)
-                || !paths.insert(fragment.identity.file_path.as_str())
+                || !paths.insert(fragment.identity.file_path.clone())
                 || fragment.row_count == 0
             {
                 return Err(IndexError::Invalid(
@@ -120,26 +282,46 @@ impl FragmentIndex {
             }
             validate_key(&binding, &fragment.first_key)?;
             validate_key(&binding, &fragment.last_key)?;
-            if compare_keys(&binding, &fragment.first_key, &fragment.last_key) == Ordering::Greater
+            let first = typed_key_from_transport(&binding, &fragment.first_key)?;
+            let last = typed_key_from_transport(&binding, &fragment.last_key)?;
+            if compare_typed_keys(&binding, &first.components, &last.components)?
+                == Ordering::Greater
             {
                 return Err(IndexError::Invalid(
                     "fragment first key exceeds last key".into(),
                 ));
             }
+            typed_fragments.push((fragment, first, last));
         }
-        fragments.sort_by(|left, right| {
-            compare_keys(&binding, &left.first_key, &right.first_key)
-                .then_with(|| compare_keys(&binding, &left.last_key, &right.last_key))
-                .then_with(|| left.identity.file_path.cmp(&right.identity.file_path))
-        });
-        for pair in fragments.windows(2) {
-            if compare_keys(&binding, &pair[0].last_key, &pair[1].first_key) == Ordering::Greater {
+        typed_fragments.sort_by(
+            |(left, left_first, left_last), (right, right_first, right_last)| {
+                compare_typed_keys(&binding, &left_first.components, &right_first.components)
+                    .expect("decoded typed keys match binding")
+                    .then_with(|| {
+                        compare_typed_keys(&binding, &left_last.components, &right_last.components)
+                            .expect("decoded typed keys match binding")
+                    })
+                    .then_with(|| left.identity.file_path.cmp(&right.identity.file_path))
+            },
+        );
+        for pair in typed_fragments.windows(2) {
+            if compare_typed_keys(&binding, &pair[0].2.components, &pair[1].1.components)?
+                == Ordering::Greater
+            {
                 return Err(IndexError::Invalid(
                     "fragment intervals overlap in their interior".into(),
                 ));
             }
         }
-        Ok(Self { binding, fragments })
+        let (fragments, typed_bounds): (Vec<_>, Vec<_>) = typed_fragments
+            .into_iter()
+            .map(|(fragment, first, last)| (fragment, (first, last)))
+            .unzip();
+        Ok(Self {
+            binding,
+            fragments,
+            typed_bounds,
+        })
     }
 
     pub fn binding(&self) -> &IndexBinding {
@@ -148,6 +330,10 @@ impl FragmentIndex {
 
     pub fn fragments(&self) -> &[FragmentInterval] {
         &self.fragments
+    }
+
+    pub fn typed_fragment_bounds(&self) -> &[(TypedKey, TypedKey)] {
+        &self.typed_bounds
     }
 
     /// Selects possible whole-file matches in key-interval order. Independently
@@ -160,14 +346,24 @@ impl FragmentIndex {
         if &self.binding != expected_binding {
             return Err(IndexError::BindingMismatch);
         }
-        if let Some(lower) = &query.lower {
+        let lower_key = if let Some(lower) = &query.lower {
             validate_key(&self.binding, &lower.key)?;
-        }
-        if let Some(upper) = &query.upper {
+            Some(typed_key_from_transport(&self.binding, &lower.key)?)
+        } else {
+            None
+        };
+        let upper_key = if let Some(upper) = &query.upper {
             validate_key(&self.binding, &upper.key)?;
-        }
+            Some(typed_key_from_transport(&self.binding, &upper.key)?)
+        } else {
+            None
+        };
         if let (Some(lower), Some(upper)) = (&query.lower, &query.upper) {
-            let ordering = compare_keys(&self.binding, &lower.key, &upper.key);
+            let ordering = compare_typed_keys(
+                &self.binding,
+                &lower_key.as_ref().unwrap().components,
+                &upper_key.as_ref().unwrap().components,
+            )?;
             if ordering == Ordering::Greater
                 || (ordering == Ordering::Equal && (!lower.inclusive || !upper.inclusive))
             {
@@ -177,16 +373,27 @@ impl FragmentIndex {
 
         // Primary-profile last keys are monotone, so one binary search can
         // skip every fragment entirely before the lower bound.
-        let start = self.fragments.partition_point(|fragment| {
+        let start = self.typed_bounds.partition_point(|(_, last)| {
             query.lower.as_ref().is_some_and(|lower| {
-                let ordering = compare_keys(&self.binding, &fragment.last_key, &lower.key);
+                let ordering = compare_typed_keys(
+                    &self.binding,
+                    &last.components,
+                    &lower_key.as_ref().unwrap().components,
+                )
+                .expect("typed interval keys match binding");
                 ordering == Ordering::Less || (ordering == Ordering::Equal && !lower.inclusive)
             })
         });
         let mut selected = Vec::new();
-        for fragment in &self.fragments[start..] {
+        for (index, fragment) in self.fragments[start..].iter().enumerate() {
             if query.upper.as_ref().is_some_and(|upper| {
-                let ordering = compare_keys(&self.binding, &fragment.first_key, &upper.key);
+                let first = &self.typed_bounds[start + index].0;
+                let ordering = compare_typed_keys(
+                    &self.binding,
+                    &first.components,
+                    &upper_key.as_ref().unwrap().components,
+                )
+                .expect("typed interval keys match binding");
                 ordering == Ordering::Greater || (ordering == Ordering::Equal && !upper.inclusive)
             }) {
                 break;
@@ -203,7 +410,7 @@ fn validate_binding(binding: &IndexBinding) -> Result<()> {
         || binding.schema_id < 0
         || !matches!(
             binding.comparator_version.as_str(),
-            PRIMITIVE_COMPARATOR_V1 | TOTAL_ORDER_COMPARATOR_V3
+            PRIMITIVE_COMPARATOR_V1 | ARROW_TYPED_COMPARATOR_V4
         )
         || !is_sha256(&binding.live_files_sha256)
         || binding.key_fields.is_empty()
@@ -216,9 +423,9 @@ fn validate_binding(binding: &IndexBinding) -> Result<()> {
     if binding.key_fields.iter().any(|field| {
         field.field_id <= 0
             || !field_ids.insert(field.field_id)
-            || (binding.comparator_version == TOTAL_ORDER_COMPARATOR_V3)
-                != matches!(field.data_type, KeyType::Canonical(_))
-            || matches!(&field.data_type, KeyType::Canonical(logical) if !logical_type_is_certifiable(logical))
+            || (binding.comparator_version == ARROW_TYPED_COMPARATOR_V4)
+                != matches!(field.data_type, KeyType::Arrow(_))
+            || matches!(&field.data_type, KeyType::Arrow(logical) if !logical_type_matches_arrow(logical, &field.physical_type))
     }) {
         return Err(IndexError::Invalid(
             "duplicate or invalid key field ID".into(),
@@ -227,32 +434,62 @@ fn validate_binding(binding: &IndexBinding) -> Result<()> {
     Ok(())
 }
 
-fn logical_type_is_certifiable(logical: &serde_json::Value) -> bool {
-    if logical.get("locus").is_some() {
-        // Coordinate definitions are captured in the logical key type. The
-        // canonical encoder validates each coordinate and its contig ordinal.
-        return logical["locus"].is_object();
-    }
-    if let Some(point) = logical.get("interval") {
-        return logical_type_is_certifiable(point);
-    }
-    for key in ["array", "set"] {
-        if let Some(element) = logical.get(key) {
-            return logical_type_is_certifiable(element);
+fn logical_type_matches_arrow(logical: &serde_json::Value, physical: &DataType) -> bool {
+    let Ok(logical) = serde_json::from_value::<vail_execution::expressions::Type>(logical.clone())
+    else {
+        return false;
+    };
+    logical.ensure_keyable().is_ok()
+        && logical
+            .to_arrow()
+            .is_ok_and(|expected| arrow_types_same_layout(&expected, physical))
+        && make_comparator(
+            new_null_array(physical, 1).as_ref(),
+            new_null_array(physical, 1).as_ref(),
+            SortOptions::default(),
+        )
+        .is_ok()
+}
+
+fn arrow_types_same_layout(left: &DataType, right: &DataType) -> bool {
+    match (left, right) {
+        (DataType::Struct(left), DataType::Struct(right)) => {
+            left.len() == right.len()
+                && left.iter().zip(right).all(|(left, right)| {
+                    left.name() == right.name()
+                        && arrow_types_same_layout(left.data_type(), right.data_type())
+                })
         }
+        (DataType::List(left), DataType::List(right))
+        | (DataType::LargeList(left), DataType::LargeList(right)) => {
+            arrow_types_same_layout(left.data_type(), right.data_type())
+        }
+        (DataType::FixedSizeList(left, left_size), DataType::FixedSizeList(right, right_size)) => {
+            left_size == right_size && arrow_types_same_layout(left.data_type(), right.data_type())
+        }
+        _ => left == right,
     }
-    if let Some(fields) = logical.get("struct").or_else(|| logical.get("tuple")) {
-        return fields.as_array().is_some_and(|fields| {
-            fields.iter().all(|field| {
-                let ty = if field.is_array() { &field[1] } else { field };
-                logical_type_is_certifiable(ty)
-            })
-        });
+}
+
+/// Normalize a logically typed key component to the canonical physical Arrow
+/// type stored in the snapshot. Iceberg may drop Vail extension metadata and
+/// rename list child fields while preserving the actual value layout.
+pub fn normalize_typed_key_component(array: &ArrayRef, physical: &DataType) -> Result<ArrayRef> {
+    if array.data_type() == physical {
+        return Ok(array.clone());
     }
-    if let Some(types) = logical.get("dict").and_then(serde_json::Value::as_array) {
-        return types.iter().all(logical_type_is_certifiable);
+    if !arrow_types_same_layout(array.data_type(), physical) {
+        return Err(IndexError::Invalid(format!(
+            "key endpoint Arrow layout {:?} differs from stored layout {:?}",
+            array.data_type(),
+            physical
+        )));
     }
-    true
+    arrow_cast::cast(array, physical).map_err(|error| IndexError::Invalid(error.to_string()))
+}
+
+pub fn is_certifiable_key_type(logical: &serde_json::Value, physical: &DataType) -> bool {
+    logical_type_matches_arrow(logical, physical)
 }
 
 fn is_sha256(value: &str) -> bool {
@@ -268,12 +505,14 @@ fn validate_key(binding: &IndexBinding, key: &CompositeKey) -> Result<()> {
     for (value, field) in key.iter().zip(&binding.key_fields) {
         let valid = matches!(
             (value, &field.data_type),
-            (KeyValue::Missing, _)
-                | (KeyValue::Int32(_), KeyType::Int32)
+            (
+                KeyValue::Missing,
+                KeyType::Int32 | KeyType::Int64 | KeyType::Bool | KeyType::AsciiString
+            ) | (KeyValue::Int32(_), KeyType::Int32)
                 | (KeyValue::Int64(_), KeyType::Int64)
                 | (KeyValue::Bool(_), KeyType::Bool)
         ) || matches!((value, &field.data_type), (KeyValue::AsciiString(s), KeyType::AsciiString) if s.is_ascii())
-            || matches!((value, &field.data_type), (KeyValue::Canonical(bytes), KeyType::Canonical(_)) if binding.comparator_version == TOTAL_ORDER_COMPARATOR_V3 && bytes.first() == Some(&1));
+            || matches!((value, &field.data_type), (KeyValue::ArrowIpc(bytes), _) if binding.comparator_version == ARROW_TYPED_COMPARATOR_V4 && !bytes.is_empty());
         if !valid {
             return Err(IndexError::Invalid(format!(
                 "field {} has mismatched or non-ASCII key value",
@@ -284,48 +523,88 @@ fn validate_key(binding: &IndexBinding, key: &CompositeKey) -> Result<()> {
     Ok(())
 }
 
-pub fn compare_keys(binding: &IndexBinding, left: &CompositeKey, right: &CompositeKey) -> Ordering {
-    for ((left, right), field) in left.iter().zip(right).zip(&binding.key_fields) {
-        let ordering = match (left, right) {
-            (KeyValue::Missing, KeyValue::Missing) => Ordering::Equal,
-            (KeyValue::Missing, _) => {
-                if field.nulls_last {
-                    Ordering::Greater
-                } else {
-                    Ordering::Less
-                }
-            }
-            (_, KeyValue::Missing) => {
-                if field.nulls_last {
-                    Ordering::Less
-                } else {
-                    Ordering::Greater
-                }
-            }
-            (KeyValue::Int32(a), KeyValue::Int32(b)) => directional(a.cmp(b), field.descending),
-            (KeyValue::Int64(a), KeyValue::Int64(b)) => directional(a.cmp(b), field.descending),
-            (KeyValue::Bool(a), KeyValue::Bool(b)) => directional(a.cmp(b), field.descending),
-            (KeyValue::AsciiString(a), KeyValue::AsciiString(b)) => {
-                directional(a.cmp(b), field.descending)
-            }
-            (KeyValue::Canonical(a), KeyValue::Canonical(b)) => {
-                directional(a.cmp(b), field.descending)
-            }
-            _ => unreachable!("keys were validated against the binding"),
-        };
-        if ordering != Ordering::Equal {
-            return ordering;
-        }
+fn key_array_type_matches(data_type: &DataType, field: &KeyField) -> bool {
+    if data_type != &field.physical_type {
+        return false;
     }
-    Ordering::Equal
+    let key_type = &field.data_type;
+    match key_type {
+        KeyType::Int32 => *data_type == arrow_schema::DataType::Int32,
+        KeyType::Int64 => *data_type == arrow_schema::DataType::Int64,
+        KeyType::Bool => *data_type == arrow_schema::DataType::Boolean,
+        KeyType::AsciiString => matches!(data_type, arrow_schema::DataType::Utf8),
+        KeyType::Arrow(_) => true,
+    }
 }
 
-fn directional(ordering: Ordering, descending: bool) -> Ordering {
-    if descending {
-        ordering.reverse()
-    } else {
-        ordering
+pub fn compare_keys(
+    binding: &IndexBinding,
+    left: &CompositeKey,
+    right: &CompositeKey,
+) -> Result<Ordering> {
+    if left.len() != binding.key_fields.len() || right.len() != binding.key_fields.len() {
+        return Err(IndexError::Invalid(
+            "composite key arity differs from binding".into(),
+        ));
     }
+    let left = left
+        .iter()
+        .zip(&binding.key_fields)
+        .map(|(value, field)| key_value_array(value, field))
+        .collect::<Result<Vec<_>>>()?;
+    let right = right
+        .iter()
+        .zip(&binding.key_fields)
+        .map(|(value, field)| key_value_array(value, field))
+        .collect::<Result<Vec<_>>>()?;
+    compare_typed_keys(binding, &left, &right)
+}
+
+fn key_value_array(value: &KeyValue, field: &KeyField) -> Result<ArrayRef> {
+    let array = match value {
+        KeyValue::Missing => {
+            let data_type = match &field.data_type {
+                KeyType::Int32 => arrow_schema::DataType::Int32,
+                KeyType::Int64 => arrow_schema::DataType::Int64,
+                KeyType::Bool => arrow_schema::DataType::Boolean,
+                KeyType::AsciiString => arrow_schema::DataType::Utf8,
+                KeyType::Arrow(_) => {
+                    return Err(IndexError::Invalid(
+                        "missing complex key must use typed Arrow IPC null".into(),
+                    ));
+                }
+            };
+            new_null_array(&data_type, 1)
+        }
+        KeyValue::Int32(value) if field.data_type == KeyType::Int32 => {
+            Arc::new(arrow_array::Int32Array::from(vec![Some(*value)]))
+        }
+        KeyValue::Int64(value) if field.data_type == KeyType::Int64 => {
+            Arc::new(arrow_array::Int64Array::from(vec![Some(*value)]))
+        }
+        KeyValue::Bool(value) if field.data_type == KeyType::Bool => {
+            Arc::new(arrow_array::BooleanArray::from(vec![Some(*value)]))
+        }
+        KeyValue::AsciiString(value) if field.data_type == KeyType::AsciiString => {
+            Arc::new(arrow_array::StringArray::from(vec![Some(value.as_str())]))
+        }
+        KeyValue::ArrowIpc(bytes) => {
+            let array = decode_typed_key_component(bytes)?;
+            if !key_array_type_matches(array.data_type(), field) {
+                return Err(IndexError::Invalid(format!(
+                    "typed key Arrow type {} differs from its index binding",
+                    array.data_type()
+                )));
+            }
+            array
+        }
+        _ => {
+            return Err(IndexError::Invalid(
+                "typed key component differs from its index binding".into(),
+            ));
+        }
+    };
+    Ok(array)
 }
 
 #[cfg(test)]
@@ -333,9 +612,20 @@ mod tests {
     use super::*;
 
     fn field(field_id: i32, data_type: KeyType, descending: bool) -> KeyField {
+        let physical_type = match &data_type {
+            KeyType::Int32 => DataType::Int32,
+            KeyType::Int64 => DataType::Int64,
+            KeyType::Bool => DataType::Boolean,
+            KeyType::AsciiString => DataType::Utf8,
+            KeyType::Arrow(logical) => match logical.as_str() {
+                Some("float64") => DataType::Float64,
+                _ => DataType::Int32,
+            },
+        };
         KeyField {
             field_id,
             data_type,
+            physical_type,
             descending,
             nulls_last: true,
         }
@@ -368,26 +658,158 @@ mod tests {
     fn retired_hail_comparator_is_not_a_total_order_certificate() {
         let mut value = binding(vec![field(
             1,
-            KeyType::Canonical(serde_json::json!("float64")),
+            KeyType::Arrow(serde_json::json!("float64")),
             false,
         )]);
         value.comparator_version = HAIL_COMPARATOR_V2.into();
         assert!(FragmentIndex::new(value.clone(), vec![]).is_err());
         value.comparator_version = TOTAL_ORDER_COMPARATOR_V3.into();
+        assert!(FragmentIndex::new(value.clone(), vec![]).is_err());
+        value.comparator_version = ARROW_TYPED_COMPARATOR_V4.into();
         assert!(FragmentIndex::new(value, vec![]).is_ok());
     }
 
     #[test]
-    fn canonical_storage_certification_rejects_unimplemented_loci() {
-        assert!(!logical_type_is_certifiable(
-            &serde_json::json!({"locus":"GRCh37"})
+    fn typed_ipc_bounds_compare_as_arrow_values_and_validate_physical_type() {
+        use arrow_array::Float64Array;
+
+        let mut binding = binding(vec![field(
+            1,
+            KeyType::Arrow(serde_json::json!("float64")),
+            false,
+        )]);
+        binding.comparator_version = ARROW_TYPED_COMPARATOR_V4.into();
+        let bound = |value: f64| {
+            let array = Arc::new(Float64Array::from(vec![Some(value)])) as ArrayRef;
+            vec![KeyValue::ArrowIpc(
+                encode_typed_key_component(&array).unwrap(),
+            )]
+        };
+        let index = FragmentIndex::new(
+            binding.clone(),
+            vec![
+                fragment("a", bound(-0.0), bound(1.0)),
+                fragment("b", bound(2.0), bound(3.0)),
+            ],
+        )
+        .unwrap();
+        assert_eq!(index.typed_fragment_bounds().len(), 2);
+        let encoded = serde_json::to_vec(&index).unwrap();
+        let decoded: FragmentIndex = serde_json::from_slice(&encoded).unwrap();
+        assert_eq!(decoded.typed_fragment_bounds().len(), 2);
+        assert_eq!(
+            decoded
+                .select(
+                    &binding,
+                    &QueryInterval {
+                        lower: Some(Endpoint {
+                            key: bound(2.0),
+                            inclusive: true
+                        }),
+                        upper: Some(Endpoint {
+                            key: bound(2.0),
+                            inclusive: true
+                        }),
+                    }
+                )
+                .unwrap()
+                .len(),
+            1,
+        );
+
+        let mut invalid: serde_json::Value = serde_json::from_slice(&encoded).unwrap();
+        invalid["binding"]["key_fields"][0]["physical_type"] = serde_json::json!("Utf8");
+        assert!(serde_json::from_value::<FragmentIndex>(invalid).is_err());
+
+        let wrong_type = Arc::new(arrow_array::Int32Array::from(vec![Some(1)])) as ArrayRef;
+        let malformed = vec![KeyValue::ArrowIpc(
+            encode_typed_key_component(&wrong_type).unwrap(),
+        )];
+        assert!(
+            FragmentIndex::new(
+                binding.clone(),
+                vec![fragment("wrong", malformed.clone(), malformed)]
+            )
+            .is_err()
+        );
+        let malformed = vec![KeyValue::ArrowIpc(vec![0xff, 0x00])];
+        assert!(
+            FragmentIndex::new(
+                binding,
+                vec![fragment("bad-ipc", malformed.clone(), malformed)]
+            )
+            .is_err()
+        );
+    }
+
+    #[test]
+    fn certification_rejects_unordered_or_mismatched_logical_key_types() {
+        let set = serde_json::json!({"set":"int32"});
+        let set_type = serde_json::from_value::<vail_execution::expressions::Type>(set.clone())
+            .unwrap()
+            .to_arrow()
+            .unwrap();
+        assert!(!is_certifiable_key_type(&set, &set_type));
+        assert!(!is_certifiable_key_type(
+            &serde_json::json!({"dict":["int32","str"]}),
+            &set_type
         ));
-        assert!(!logical_type_is_certifiable(
-            &serde_json::json!({"locus":"custom"})
+        assert!(!is_certifiable_key_type(
+            &serde_json::json!({"unknown":"int32"}),
+            &DataType::Int32
         ));
-        assert!(!logical_type_is_certifiable(&serde_json::json!({
-            "array":{"interval":{"locus":"custom"}}
-        })));
+        assert!(!is_certifiable_key_type(
+            &serde_json::json!("float64"),
+            &DataType::Int32
+        ));
+
+        let reference = serde_json::json!({
+            "name": "test",
+            "contigs": ["chr1"],
+            "lengths": {"chr1": 100},
+            "x_contigs": [],
+            "y_contigs": [],
+            "mt_contigs": [],
+            "par": []
+        });
+        let locus = serde_json::json!({"locus": reference});
+        let locus_type = serde_json::from_value::<vail_execution::expressions::Type>(locus.clone())
+            .unwrap()
+            .to_arrow()
+            .unwrap();
+        let DataType::Struct(ref fields) = locus_type else {
+            panic!("locus key type must be a struct")
+        };
+        let canonical_locus = DataType::Struct(
+            fields
+                .iter()
+                .map(|field| {
+                    Arc::new(Field::new(
+                        field.name(),
+                        field.data_type().clone(),
+                        field.is_nullable(),
+                    ))
+                })
+                .collect(),
+        );
+        assert!(is_certifiable_key_type(&locus, &canonical_locus));
+        assert!(!is_certifiable_key_type(&locus, &DataType::Int32));
+        let logical_array = new_null_array(&locus_type, 1);
+        let normalized = normalize_typed_key_component(&logical_array, &canonical_locus).unwrap();
+        assert_eq!(normalized.data_type(), &canonical_locus);
+        assert!(normalize_typed_key_component(&logical_array, &DataType::Int32).is_err());
+
+        for logical in [
+            serde_json::json!("call"),
+            serde_json::json!({"interval":"int32"}),
+        ] {
+            let arrow =
+                serde_json::from_value::<vail_execution::expressions::Type>(logical.clone())
+                    .unwrap()
+                    .to_arrow()
+                    .unwrap();
+            assert!(is_certifiable_key_type(&logical, &arrow));
+        }
     }
 
     fn i32_key(value: i32) -> CompositeKey {

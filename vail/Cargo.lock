@@ -376,6 +376,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e6fed2ca0d1eade57e811cbe73b98ad50cc08a1183e13b2d2aa43a7df593f40e"
 dependencies = [
  "bitflags 2.13.2",
+ "serde",
  "serde_core",
  "serde_json",
 ]
@@ -5297,7 +5298,6 @@ dependencies = [
 name = "vail-ordering"
 version = "0.1.0"
 dependencies = [
- "arrow-array",
  "arrow-schema",
  "serde_json",
  "thiserror",
@@ -5329,6 +5329,7 @@ dependencies = [
  "arrow-array",
  "arrow-cast",
  "arrow-ipc",
+ "arrow-ord",
  "arrow-schema",
  "async-stream",
  "futures",
@@ -5353,7 +5354,9 @@ dependencies = [
  "arrow-buffer",
  "arrow-cast",
  "arrow-csv",
+ "arrow-data",
  "arrow-json",
+ "arrow-ord",
  "arrow-schema",
  "arrow-select",
  "async-stream",
@@ -5381,6 +5384,7 @@ dependencies = [
  "thiserror",
  "tokio",
  "tokio-util",
+ "uuid",
  "vail-execution",
  "vail-ordering",
  "vail-storage",

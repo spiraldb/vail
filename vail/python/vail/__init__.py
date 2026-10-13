@@ -16,6 +16,7 @@ from ._native import NativeSession
 from .expressions import (
     Expression,
     ExpressionException,
+    _IR,
     _external_globals,
     _global_bindings,
     Field as _Field,
@@ -244,10 +245,11 @@ def _keys_from_native(native):
 class Table:
     """A lazy native Table for the explicitly supported initial operation subset."""
 
-    def __init__(self, native, schema, keys=()):
+    def __init__(self, native, schema, keys=(), key_sources=None):
         object.__setattr__(self, "_native", native)
         object.__setattr__(self, "_schema", schema)
         object.__setattr__(self, "_keys", builtins.tuple(keys))
+        object.__setattr__(self, "_key_sources", builtins.dict(key_sources or ((name, name) for name in keys)))
         object.__setattr__(self, "_global_schema", tstruct(**{
             name: type_from_wire(ty) for name, ty in _json.loads(native.global_schema_json())
         }))
@@ -433,7 +435,7 @@ class Table:
                 raise ExpressionException("global expressions cannot reference table rows")
         native = self._native.project_globals_json(_json.dumps([[name, expr.to_ir()] for name, expr in fields]),
                                                    _global_bindings(expr for _, expr in fields))
-        return Table(native, self._schema, self._keys)
+        return Table(native, self._schema, self._keys, self._key_sources)
 
     def annotate_globals(self, **named_exprs):
         expressions = {name: as_expr(value) for name, value in named_exprs.items()}
@@ -520,7 +522,9 @@ class Table:
                 for field_name, field_type in _json.loads(native.schema_json())
             )
         }
-        return Table(native, tstruct(**schema), self._keys if keys is None else keys)
+        projected_keys = self._keys if keys is None else keys
+        key_sources = self._key_sources if keys is None else None
+        return Table(native, tstruct(**schema), projected_keys, key_sources)
 
     def annotate(self, **named_exprs):
         if not named_exprs:
@@ -754,6 +758,16 @@ class Table:
             table = table._project(projections)
         return Table(table._native.key_by(names), table._schema, names)
 
+    def _with_keys(self, *keys):
+        """Attach key metadata without sorting; caller must guarantee key order."""
+        keys = builtins.tuple(keys)
+        if builtins.len(builtins.set(keys)) != builtins.len(keys):
+            raise ValueError("duplicate key fields")
+        for name in keys:
+            if not isinstance(name, builtins.str) or name not in self._schema:
+                raise ValueError(f"unknown key field {name!r}")
+        return Table(self._native.with_keys(list(keys)), self._schema, keys)
+
     def group_by(self, *keys, **named_keys):
         """Create a lazy grouped aggregation builder."""
         key_fields = []
@@ -817,11 +831,21 @@ class Table:
             raise TypeError(f"filter predicate must be bool, got {expr.dtype}")
         native, expressions = _resolve_lookups(self._native, [expr])
         expression = expressions[0]
+        # A key comparison on a local read can be represented as an interval
+        # read. This lets the source's key index prune partitions before the
+        # residual predicate is evaluated. Keep this deliberately narrow:
+        # only key-preserving projections can expose the same source key;
+        # OR predicates, non-key expressions, and anti-filters use the usual
+        # DataFusion Filter path.
+        if keep and not expr._lookup_refs and native.is_read_source():
+            intervals = _key_filter_intervals(self, expression)
+            if intervals is not None:
+                return filter_intervals(self, intervals, _internal=True)
         native = native.filter_json(_json.dumps(expression.to_ir()), keep, _global_bindings(expressions))
         if expr._lookup_refs:
             native = native.project_json(_json.dumps([[name, {"op": "column", "name": name}]
                                                       for name in self._schema]))
-        return Table(native, self._schema, self._keys)
+        return Table(native, self._schema, self._keys, self._key_sources)
 
     def explode(self, field, name=None):
         """Replace an array or set field with one row per element."""
@@ -1171,7 +1195,36 @@ class Table:
             raise TypeError("tolerance must be numeric or None")
         if type(absolute) is not builtins.bool or type(reorder_fields) is not builtins.bool:
             raise TypeError("absolute and reorder_fields must be bool")
-        same, diagnostic = self._native.same(other._native, tolerance, absolute, reorder_fields)
+        left, right = self, other
+        # Validate the original logical types before replacing unordered
+        # values with comparable arrays. A Set and an Array remain different
+        # types even when their physical values happen to match.
+        def matching_schema(a, b):
+            return (builtins.dict(a.items()) == builtins.dict(b.items())
+                    if reorder_fields else builtins.list(a.items()) == builtins.list(b.items()))
+
+        if (self._keys == other._keys
+                and matching_schema(self._schema, other._schema)
+                and matching_schema(self._global_schema, other._global_schema)):
+            from .collections import _contains_unordered_or_ndarray, _native_equality_value
+
+            def normalized(table):
+                fields = {
+                    name: _native_equality_value(table[name])
+                    for name, dtype in table._schema.items()
+                    if _contains_unordered_or_ndarray(dtype, include_ndarray=False)
+                }
+                if fields:
+                    table = table.annotate(**fields)
+                globals_ = {
+                    name: _native_equality_value(table._global_field(name))
+                    for name, dtype in table._global_schema.items()
+                    if _contains_unordered_or_ndarray(dtype, include_ndarray=False)
+                }
+                return table.annotate_globals(**globals_) if globals_ else table
+
+            left, right = normalized(self), normalized(other)
+        same, diagnostic = left._native.same(right._native, tolerance, absolute, reorder_fields)
         if diagnostic is not None:
             print(diagnostic)
         return same
@@ -1425,7 +1478,280 @@ class GroupedTable:
         return Table(native, schema, [name for name, _ in keys])
 
 
-def filter_intervals(ds, intervals, keep=True):
+def _key_filter_intervals(table, expression):
+    """Recognize a simple comparison of a read table's key to a scalar value."""
+    from .types import Interval
+
+    ir = expression.to_ir()
+    keys = table._keys
+    source_keys = [table._key_sources.get(name, name) for name in keys]
+    if not keys:
+        return None
+
+    if builtins.len(keys) == 1:
+        key_ir = {"op": "column", "name": keys[0]}
+        point_type = table._schema[keys[0]]
+    else:
+        key_ir = {"op": "struct", "fields": [[name, {"op": "column", "name": name}]
+                                               for name in keys]}
+        point_type = tstruct(**{
+            source_name: table._schema[name]
+            for name, source_name in builtins.zip(keys, source_keys)
+        })
+    locus_type = table._schema[keys[0]]
+    locus_key_ir = {"op": "column", "name": keys[0]}
+    position_ir = ({"op": "locus_op", "operation": "position", "value": locus_key_ir}
+                   if isinstance(locus_type, tlocus) else None)
+    contig_ir = ({"op": "locus_op", "operation": "contig", "value": locus_key_ir}
+                 if isinstance(locus_type, tlocus) else None)
+    position_key = isinstance(locus_type, tlocus)
+
+    def is_key_struct(node):
+        """Recognize full-key structs whose labels may be public aliases."""
+        if builtins.len(keys) == 1:
+            return node == key_ir
+        if not isinstance(node, builtins.dict) or node.get("op") != "struct":
+            return False
+        fields = node.get("fields", [])
+        return (builtins.len(fields) == builtins.len(keys)
+                and builtins.all(value == {"op": "column", "name": name}
+                                 for (_, value), name in builtins.zip(fields, keys)))
+
+    def is_defined_guard(node):
+        return (isinstance(node, builtins.dict) and node.get("op") == "unary"
+                and node.get("operator") == "not"
+                and isinstance(node.get("value"), builtins.dict)
+                and node["value"].get("op") == "is_missing"
+                and node["value"].get("value") == key_ir)
+
+    clauses = []
+    def flatten_and(node):
+        if isinstance(node, builtins.dict) and node.get("op") == "binary" and node.get("operator") == "and":
+            return flatten_and(node["left"]) and flatten_and(node["right"])
+        clauses.append(node)
+        return True
+
+    flatten_and(ir)
+    comparisons = []
+    for clause in clauses:
+        if is_defined_guard(clause):
+            continue
+        if not isinstance(clause, builtins.dict) or clause.get("op") != "binary":
+            return None
+        operator, left, right = clause.get("operator"), clause.get("left"), clause.get("right")
+        if operator not in ("eq", "lt", "le", "gt", "ge"):
+            return None
+        if is_key_struct(left):
+            value_ir = right
+            mode = "key"
+        elif position_key and left == position_ir:
+            value_ir = right
+            mode = "position"
+        elif position_key and left == contig_ir:
+            value_ir = right
+            mode = "contig"
+        elif is_key_struct(right):
+            value_ir = left
+            mode = "key"
+            operator = {"lt": "gt", "le": "ge", "gt": "lt", "ge": "le"}.get(operator, operator)
+        elif position_key and right == position_ir:
+            value_ir = left
+            mode = "position"
+            operator = {"lt": "gt", "le": "ge", "gt": "lt", "ge": "le"}.get(operator, operator)
+        elif position_key and right == contig_ir:
+            value_ir = left
+            mode = "contig"
+            operator = {"lt": "gt", "le": "ge", "gt": "lt", "ge": "le"}.get(operator, operator)
+        else:
+            return None
+        if _referenced_columns(value_ir):
+            return None
+        comparisons.append((operator, value_ir, mode))
+    if builtins.len(comparisons) not in (1, 2):
+        return None
+
+    def ir_type(node):
+        if not isinstance(node, builtins.dict):
+            return None
+        op = node.get("op")
+        if op in ("literal", "external_global"):
+            return type_from_wire(node["dtype"])
+        if op == "locus":
+            return type_from_wire({"locus": node["reference"]})
+        if op == "array":
+            return tarray(type_from_wire(node["element_type"]))
+        if op == "struct":
+            return tstruct(**{name: ir_type(value) for name, value in node["fields"]})
+        if op == "tuple":
+            from .types import ttuple
+            return ttuple(*[ir_type(value) for value in node["elements"]])
+        if op == "get_field":
+            parent = ir_type(node["value"])
+            return parent[node["name"]] if isinstance(parent, tstruct) else None
+        return None
+
+    restricted_contigs = None
+    if builtins.len(comparisons) == 2:
+        contig_comparison = next((c for c in comparisons if c[2] == "contig"), None)
+        position_comparison = next((c for c in comparisons if c[2] == "position"), None)
+        if contig_comparison is not None and position_comparison is not None:
+            if contig_comparison[0] != "eq":
+                return None
+            contig_type = ir_type(contig_comparison[1])
+            position_type = ir_type(position_comparison[1])
+            if contig_type != tstr or position_type != tint32:
+                return None
+            try:
+                contig_value = eval(Expression(
+                    contig_type, None, _IR(contig_comparison[1], expression._global_refs, {})
+                ))
+            except (TypeError, ValueError, ExpressionException):
+                return None
+            if contig_value is None:
+                return None
+            restricted_contigs = [contig_value]
+            comparisons = [position_comparison]
+        elif builtins.len(keys) == 1 and builtins.all(c[2] == "key" for c in comparisons):
+            lower = next((c for c in comparisons if c[0] in ("gt", "ge")), None)
+            upper = next((c for c in comparisons if c[0] in ("lt", "le")), None)
+            if lower is None or upper is None:
+                return None
+            try:
+                lower_value = eval(Expression(
+                    point_type, None, _IR(lower[1], expression._global_refs, {})
+                ))
+                upper_value = eval(Expression(
+                    point_type, None, _IR(upper[1], expression._global_refs, {})
+                ))
+                if lower_value is None or upper_value is None:
+                    return None
+                return [Interval(
+                    lower_value,
+                    upper_value,
+                    lower[0] == "ge",
+                    upper[0] == "le",
+                    point_type,
+                )]
+            except (TypeError, ValueError, ExpressionException):
+                # Leave unsupported or contradictory predicates on the normal
+                # row-filter path; interval extraction must never change results.
+                return None
+        else:
+            return None
+    operator, value_ir, mode = comparisons[0]
+    value_type = ir_type(value_ir)
+    if mode == "position":
+        if value_type != tint32:
+            return None
+    elif value_type != point_type:
+        # Matrix row-key expressions retain public field labels around the
+        # original hidden source-key columns. Full-key equality is equivalent
+        # by position when every field type matches.
+        if (mode != "key" or not isinstance(value_type, tstruct)
+                or builtins.len(value_type) != builtins.len(keys)
+                or [ty for _, ty in value_type.items()]
+                != [table._schema[name] for name in keys]):
+            return None
+    value_expr = Expression(value_type, None, _IR(value_ir, expression._global_refs, {}))
+    try:
+        value = eval(value_expr)
+    except (TypeError, ValueError, ExpressionException):
+        return None
+    if value is None:
+        return None
+
+    if mode == "key" and builtins.len(keys) > 1:
+        try:
+            value = Struct(**{
+                source_name: value[public_name]
+                for source_name, (public_name, _) in builtins.zip(source_keys, value_type.items())
+            })
+        except (KeyError, TypeError):
+            return None
+
+    if mode == "position":
+        reference = locus_type.reference_genome
+        from .reference_genome import Locus
+        intervals = []
+        contigs = reference.contigs if restricted_contigs is None else restricted_contigs
+        for contig in contigs:
+            if contig not in reference.lengths:
+                continue
+            length = reference.lengths[contig]
+            if operator == "eq":
+                if 1 <= value <= length:
+                    start = end = Locus(contig, value, reference)
+                    includes_start = includes_end = True
+                else:
+                    continue
+            elif operator == "lt":
+                if value <= 1:
+                    continue
+                start = Locus(contig, 1, reference)
+                if value > length:
+                    end = Locus(contig, length, reference)
+                    includes_end = True
+                else:
+                    end = Locus(contig, value, reference)
+                    includes_end = False
+                includes_start = True
+            elif operator == "le":
+                if value < 1:
+                    continue
+                start = Locus(contig, 1, reference)
+                if value >= length:
+                    end = Locus(contig, length, reference)
+                    includes_end = True
+                else:
+                    end = Locus(contig, value, reference)
+                    includes_end = True
+                includes_start = True
+            elif operator == "ge":
+                if value > length:
+                    continue
+                end = Locus(contig, length, reference)
+                if value <= 1:
+                    start = Locus(contig, 1, reference)
+                    includes_start = True
+                else:
+                    start = Locus(contig, value, reference)
+                    includes_start = True
+                includes_end = True
+            else:  # gt
+                if value >= length:
+                    continue
+                end = Locus(contig, length, reference)
+                if value < 1:
+                    start = Locus(contig, 1, reference)
+                    includes_start = True
+                else:
+                    start = Locus(contig, value, reference)
+                    includes_start = False
+                includes_end = True
+            intervals.append(Interval(start, end, includes_start, includes_end, locus_type))
+        return intervals
+    if operator == "eq":
+        start = end = value
+        includes_start = includes_end = True
+    elif operator == "lt":
+        start, end = None, value
+        includes_start, includes_end = True, False
+    elif operator == "le":
+        start, end = None, value
+        includes_start, includes_end = True, True
+    elif operator == "gt":
+        start, end = value, None
+        includes_start, includes_end = False, True
+    else:  # ge
+        start, end = value, None
+        includes_start, includes_end = True, True
+    try:
+        return [Interval(start, end, includes_start, includes_end, point_type)]
+    except (TypeError, ValueError):
+        return None
+
+
+def filter_intervals(ds, intervals, keep=True, *, _internal=False):
     """Filter keyed rows by a union of intervals, preserving key order."""
     if not isinstance(ds, Table):
         raise TypeError("filter_intervals requires a Table")
@@ -1451,19 +1777,32 @@ def filter_intervals(ds, intervals, keep=True):
     intervals = list(intervals)
     if builtins.any(not isinstance(value, Interval) for value in intervals):
         raise TypeError("intervals cannot contain missing or non-Interval values")
+    if not _internal and builtins.any(
+            value.start is None or value.end is None for value in intervals):
+        raise ExpressionException(
+            "cannot impute an indexed point from an interval with a missing endpoint"
+        )
     if not intervals and declared_point_type is None:
         return ds if not keep else ds.filter(False)
     point_type = intervals[0].point_type if intervals else declared_point_type
     if builtins.any(value.point_type != point_type for value in intervals):
         raise TypeError("all intervals must have the same point type")
     first = ds._keys[0]
-    if point_type == ds._schema[first]:
-        point_type = tstruct(**{first: point_type})
-        intervals = [Interval(Struct(**{first: value.start}), Struct(**{first: value.end}),
+    source_keys = [ds._key_sources.get(name, name) for name in ds._keys]
+    scalar_single_key = point_type == ds._schema[first] and builtins.len(ds._keys) == 1
+    if point_type == ds._schema[first] and not scalar_single_key:
+        first_source = source_keys[0]
+        point_type = tstruct(**{first_source: point_type})
+        intervals = [Interval(None if value.start is None else Struct(**{first_source: value.start}),
+                              None if value.end is None else Struct(**{first_source: value.end}),
                               value.includes_start, value.includes_end, point_type)
                      for value in intervals]
-    if not isinstance(point_type, tstruct) or builtins.len(point_type) == 0 or list(point_type.items()) != [
-            (name, ds._schema[name]) for name in ds._keys[:builtins.len(point_type)]]:
+    if not scalar_single_key and (
+            not isinstance(point_type, tstruct) or builtins.len(point_type) == 0
+            or list(point_type.items()) != [
+                (source_name, ds._schema[name])
+                for name, source_name in list(builtins.zip(ds._keys, source_keys))[:builtins.len(point_type)]
+            ]):
         raise TypeError("interval point type must match the first key or a non-empty key prefix")
     if not intervals:
         return ds if not keep else ds.filter(False)
@@ -1472,9 +1811,12 @@ def filter_intervals(ds, intervals, keep=True):
         native = ds._native.filter_intervals_arrow(
             rows_to_ipc([{"interval": value} for value in intervals],
                         tstruct(interval=tinterval(point_type))), True)
-        return Table(native, ds._schema, ds._keys)
+        return Table(native, ds._schema, ds._keys, ds._key_sources)
     from .inputs import arrow_literal
-    point = struct(**{name: ds[name] for name in point_type})
+    point = ds[first] if scalar_single_key else struct(**{
+        source_name: ds[name]
+        for name, source_name in list(builtins.zip(ds._keys, source_keys))[:builtins.len(point_type)]
+    })
     predicate = arrow_literal(intervals[0], tinterval(point_type)).contains(point)
     for interval in intervals[1:]:
         predicate = predicate | arrow_literal(interval, tinterval(point_type)).contains(point)
@@ -1521,6 +1863,11 @@ def read_table(path, *, _intervals=None, _filter_intervals=False, _n_partitions=
         if intervals:
             if builtins.any(not isinstance(value, Interval) for value in intervals):
                 raise TypeError("_intervals must contain Interval values")
+            if builtins.any(
+                    value.start is None or value.end is None for value in intervals):
+                raise ExpressionException(
+                    "cannot impute an indexed point from an interval with a missing endpoint"
+                )
             point_type = intervals[0].point_type
             if builtins.any(value.point_type != point_type for value in intervals):
                 raise TypeError("all intervals must have the same point type")

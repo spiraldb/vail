@@ -238,7 +238,6 @@ struct IndexedInner {
     groups: Option<Box<dyn GroupValues>>,
     children: GroupsAccumulatorAdapter,
     keys: Vec<ScalarValue>,
-    encoded: Vec<ScalarValue>,
     length: Option<usize>,
 }
 impl fmt::Debug for IndexedInner {
@@ -258,12 +257,11 @@ impl IndexedSpec {
                 None
             } else {
                 Some(new_group_values(
-                    Arc::new(Schema::new(vec![Field::new("key", DataType::Utf8, false)])),
+                    Arc::new(Schema::new(vec![Field::new("key", self.key.clone(), true)])),
                     &GroupOrdering::None,
                 )?)
             },
             keys: vec![],
-            encoded: vec![],
             length: None,
         })
     }
@@ -271,7 +269,6 @@ impl IndexedSpec {
         DataType::Struct(
             vec![
                 Field::new("key", self.key.clone(), true),
-                Field::new("encoded", DataType::Utf8, false),
                 Field::new("state", self.child.state_type(), true),
             ]
             .into(),
@@ -284,7 +281,7 @@ pub fn indexed(
     key: DataType,
     output: DataType,
     array: bool,
-) -> Arc<AggregateUDF> {
+) -> Result<Arc<AggregateUDF>> {
     let spec = IndexedSpec {
         child,
         key,
@@ -295,7 +292,7 @@ pub fn indexed(
         DataType::Int64,
         DataType::List(Arc::new(Field::new("item", spec.entries_type(), true))),
     ];
-    udf(
+    Ok(udf(
         if array { "array" } else { "group" },
         input,
         output,
@@ -305,22 +302,20 @@ pub fn indexed(
                 inner: std::sync::Mutex::new(spec.accumulator()?),
             }))
         }),
-    )
+    ))
 }
 impl IndexedInner {
-    fn intern(&mut self, encoded: ArrayRef, keys: &ArrayRef) -> Result<Vec<usize>> {
+    fn intern(&mut self, keys: &ArrayRef) -> Result<Vec<usize>> {
         let mut indices = Vec::new();
         self.groups
             .as_mut()
             .ok_or_else(|| error("array scan cannot intern keyed groups"))?
-            .intern(&[encoded.clone()], &mut indices)?;
+            .intern(&[keys.clone()], &mut indices)?;
         for (row, &index) in indices.iter().enumerate() {
             if index == self.keys.len() {
                 self.keys.push(
                     crate::expressions::scalar_at(keys, row).map_err(|e| error(&e.to_string()))?,
                 );
-                self.encoded
-                    .push(ScalarValue::try_from_array(encoded.as_ref(), row)?);
             }
         }
         Ok(indices)
@@ -374,9 +369,9 @@ impl IndexedInner {
             }
         } else {
             let packed = structure(&values[0])?;
-            let indices = self.intern(packed.column(1).clone(), packed.column(0))?;
+            let indices = self.intern(packed.column(0))?;
             self.children.update_batch(
-                &[packed.column(2).clone()],
+                &[packed.column(1).clone()],
                 &indices,
                 None,
                 self.count(),
@@ -394,25 +389,10 @@ impl IndexedInner {
         } else {
             ScalarValue::iter_to_array(self.keys.clone())?
         };
-        let encoded = if self.spec.array {
-            Arc::new(arrow_array::StringArray::from_iter_values(
-                (0..count).map(|i| i.to_string()),
-            )) as ArrayRef
-        } else {
-            if self.encoded.is_empty() {
-                arrow_array::new_empty_array(&DataType::Utf8)
-            } else {
-                ScalarValue::iter_to_array(self.encoded.clone())?
-            }
-        };
         let DataType::Struct(fields) = self.spec.entries_type() else {
             unreachable!()
         };
-        let entries: ArrayRef = Arc::new(StructArray::try_new(
-            fields,
-            vec![keys, encoded, states],
-            None,
-        )?);
+        let entries: ArrayRef = Arc::new(StructArray::try_new(fields, vec![keys, states], None)?);
         Ok(vec![
             ScalarValue::Int64(self.length.map(|n| n as i64)),
             list_scalar(entries),
@@ -436,9 +416,9 @@ impl IndexedInner {
             let indices = if self.spec.array {
                 (0..batch.len()).collect()
             } else {
-                self.intern(batch.column(1).clone(), batch.column(0))?
+                self.intern(batch.column(0))?
             };
-            let nested = structure(batch.column(2))?;
+            let nested = structure(batch.column(1))?;
             self.children
                 .merge_batch(nested.columns(), &indices, self.count())?;
         }
@@ -456,17 +436,12 @@ impl IndexedInner {
         let output = if self.spec.array {
             values
         } else {
-            let encoded = if self.encoded.is_empty() {
-                arrow_array::new_empty_array(&DataType::Utf8)
-            } else {
-                ScalarValue::iter_to_array(self.encoded.clone())?
-            };
-            let order = arrow_ord::sort::sort_to_indices(encoded.as_ref(), None, None)?;
             let keys = if self.keys.is_empty() {
                 arrow_array::new_empty_array(&self.spec.key)
             } else {
                 ScalarValue::iter_to_array(self.keys.clone())?
             };
+            let order = arrow_ord::sort::sort_to_indices(keys.as_ref(), None, None)?;
             let DataType::Struct(fields) = item.data_type() else {
                 return Err(error("dictionary scan requires entry struct"));
             };
@@ -540,13 +515,11 @@ mod tests {
         );
         DataType::List(Arc::new(Field::new("item", entry, true)))
     }
-    use arrow_array::{Int64Array, StringArray};
+    use arrow_array::Int64Array;
 
     fn group_input(child: &ScanState, keys: &[i64], values: &[i64]) -> Result<ArrayRef> {
-        let encoded = keys.iter().map(ToString::to_string).collect::<Vec<_>>();
         let fields = vec![
             Arc::new(Field::new("key", DataType::Int64, true)),
-            Arc::new(Field::new("encoded", DataType::Utf8, false)),
             Arc::new(Field::new("input", child.input_type(), true)),
         ]
         .into();
@@ -554,7 +527,6 @@ mod tests {
             fields,
             vec![
                 Arc::new(Int64Array::from(keys.to_vec())),
-                Arc::new(StringArray::from(encoded)),
                 Arc::new(Int64Array::from(values.to_vec())),
             ],
             None,

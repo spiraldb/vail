@@ -387,11 +387,11 @@ impl TableIR {
                 "interval reads require a keyed table".into(),
             ));
         }
-        if !matches!(self.node, TableNode::Read { .. }) {
+        let Some(child) = self.push_interval_read(&intervals, &point_type, filter) else {
             return Err(TableError::Invalid(
-                "interval read options require a read source".into(),
+                "interval read options require a read source or key-preserving projections".into(),
             ));
-        }
+        };
         for interval in &intervals {
             let expected = Type::Interval {
                 interval: Box::new(point_type.clone()),
@@ -400,17 +400,94 @@ impl TableIR {
                 return Err(TableError::Invalid("invalid interval endpoint type".into()));
             }
         }
-        Ok(Self::new(
+        Ok(child)
+    }
+    fn push_interval_read(
+        self: &Arc<Self>,
+        intervals: &[ScalarIR],
+        point_type: &Type,
+        filter: bool,
+    ) -> Option<TableRef> {
+        let node = match &self.node {
+            TableNode::Read { .. } => TableNode::IntervalRead {
+                child: self.clone(),
+                intervals: intervals.to_vec(),
+                point_type: point_type.clone(),
+                filter,
+            },
+            TableNode::MapRows {
+                child,
+                fields,
+                bindings,
+            } if self.keys == child.keys
+                && self.keys.iter().all(|key| {
+                    fields.iter().any(|(name, expression)| {
+                    name == key
+                        && matches!(expression, ScalarIR::Column { name: source } if source == key)
+                })
+                }) =>
+            {
+                TableNode::MapRows {
+                    child: child.push_interval_read(intervals, point_type, filter)?,
+                    fields: fields.clone(),
+                    bindings: bindings.clone(),
+                }
+            }
+            // A plain MapGlobals preserves key identity. `with_keys` is also
+            // represented by MapGlobals, but may attach different key names;
+            // intervals expressed in this node's key space cannot be passed
+            // through that metadata boundary safely.
+            TableNode::MapGlobals { child } if self.keys == child.keys => TableNode::MapGlobals {
+                child: child.push_interval_read(intervals, point_type, filter)?,
+            },
+            // Keep the partition selection below the interval read. The
+            // interval planner will intersect its candidate source IDs with
+            // this selection, preserving operation order and avoiding opens
+            // for source partitions excluded by the filter.
+            TableNode::FilterPartitions { child, .. }
+                if self.keys == child.keys && child.can_pushdown_interval_read() =>
+            {
+                TableNode::IntervalRead {
+                    child: self.clone(),
+                    intervals: intervals.to_vec(),
+                    point_type: point_type.clone(),
+                    filter,
+                }
+            }
+            _ => return None,
+        };
+        Some(Self::new(
             self.schema.clone(),
             self.keys.clone(),
             self.globals.clone(),
-            TableNode::IntervalRead {
-                child: self.clone(),
-                intervals,
-                point_type,
-                filter,
-            },
+            node,
         ))
+    }
+    pub fn can_pushdown_interval_read(&self) -> bool {
+        match &self.node {
+            TableNode::Read { .. } => true,
+            TableNode::MapRows {
+                child,
+                fields,
+                ..
+            } => {
+                self.keys == child.keys
+                    && self.keys.iter().all(|key| {
+                        fields.iter().any(|(name, expression)| {
+                            name == key
+                                && matches!(expression, ScalarIR::Column { name: source } if source == key)
+                        })
+                    })
+                    && child.can_pushdown_interval_read()
+            }
+            TableNode::MapGlobals { child } => {
+                self.keys == child.keys && child.can_pushdown_interval_read()
+            }
+            TableNode::FilterPartitions { child, .. } => {
+                self.keys == child.keys && child.can_pushdown_interval_read()
+            }
+            _ => false,
+        }
     }
     pub async fn calculate_new_partitions(
         self: &Arc<Self>,
@@ -1083,6 +1160,26 @@ impl TableIR {
             TableNode::KeyBy {
                 child: self.clone(),
                 keys,
+            },
+        ))
+    }
+    /// Attach key metadata to rows that are already ordered by `keys`.
+    ///
+    /// This does not sort or repartition the input. Callers must establish the
+    /// ordering invariant before using this method (for example, MatrixTable
+    /// row keys are sorted by construction).
+    pub fn with_keys(self: &Arc<Self>, keys: Vec<String>) -> Result<TableRef> {
+        for name in &keys {
+            let i = self.schema.index_of(name)?;
+            vail_execution::expressions::Type::from_arrow(self.schema.field(i).data_type())?
+                .ensure_keyable()?;
+        }
+        Ok(Self::new(
+            self.schema.clone(),
+            keys,
+            self.globals.clone(),
+            TableNode::MapGlobals {
+                child: self.clone(),
             },
         ))
     }

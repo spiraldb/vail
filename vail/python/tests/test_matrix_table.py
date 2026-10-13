@@ -43,6 +43,50 @@ def test_annotations_actions_globals_and_native_plan():
         hl.eval(m.x)
 
 
+def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
+    mt = hl.range_matrix_table(3, 5, 2).choose_cols([4, 1, 3])
+    mt = mt.filter_cols(mt.col_idx != 3)
+
+    def cell_index_count(node):
+        if isinstance(node, dict):
+            is_cell_index = (
+                node.get("op") == "array_index"
+                and node.get("value")
+                == {"op": "column", "name": "__vail_matrix_cells"}
+            )
+            return int(is_cell_index) + sum(cell_index_count(value) for value in node.values())
+        if isinstance(node, list):
+            return sum(cell_index_count(value) for value in node)
+        return 0
+
+    previous_cell_index_count = cell_index_count(
+        json.loads(mt._mir.core._native.ir_json())
+    )
+    mt = mt.annotate_entries(
+        base_value=hl.if_else(
+            mt.row_idx == 1,
+            hl.missing(hl.tint32),
+            hl.int32(mt.row_idx * 100 + mt.col_idx),
+        )
+    )
+    mt = mt.annotate_entries(
+        value=mt.base_value + mt.row_idx + mt.col_idx
+    )
+
+    # The remaining column order is [4, 1]. The projected entry values must
+    # use the current cell position for column lookup, not the original ID.
+    assert mt.col_idx.collect() == [4, 1]
+    assert [row.value for row in mt.entries().collect()] == [2, 8, None, None, 204, 210]
+    assert mt.aggregate_entries(hl.agg.sum(mt.value)) == 424
+    core_ir = mt._mir.core._native.ir_json()
+    assert '"function":"arrays_zip"' in core_ir
+    assert cell_index_count(json.loads(core_ir)) == previous_cell_index_count
+
+    empty = hl.range_matrix_table(2, 0, 1).annotate_entries(value=hl.int32(1))
+    assert empty.entries().count() == 0
+    assert empty.aggregate_entries(hl.agg.sum(empty.value)) == 0
+
+
 def test_expression_scope_and_source_errors():
     m = matrix(2, 2)
     with pytest.raises(hl.ExpressionException):
@@ -70,6 +114,126 @@ def test_expression_scope_and_source_errors():
         m.count_rows(_localize=3)
     with pytest.raises(TypeError):
         m.foo = 2
+
+
+def test_matrix_indexed_write_preserves_sorted_source_partitions(tmp_path):
+    matrix = hl.range_matrix_table(20, 5, 4)
+    path = tmp_path / "matrix.mt"
+    matrix.write(path)
+
+    descriptor = json.loads((path / "_vail_matrix.json").read_text())
+    core = hl.read_table(path / descriptor["generation"] / "core")
+    index_key = descriptor["row_index_keys"][0]
+    assert index_key == "row_idx"
+    assert core._keys == (index_key,)
+    assert core.n_partitions() == 4
+    assert core[index_key].collect() == list(range(20))
+    assert set(core._schema) == {"__vail_matrix_row", "__vail_matrix_cells", "row_idx"}
+
+    intervals = [
+        hl.Interval(2, 7, includes_start=True, includes_end=False),
+        hl.Interval(7, 12, includes_start=True, includes_end=False),
+    ]
+    interval_read = hl.read_matrix_table(path, _intervals=intervals)
+    assert interval_read.n_partitions() == 2
+    pruned_read = hl.read_matrix_table(path, _intervals=intervals, _filter_intervals=True)
+    assert pruned_read.n_partitions() == 3
+    assert pruned_read.row_idx.collect() == list(range(2, 12))
+
+    source = hl.read_matrix_table(path)
+    filtered = source.filter_rows(source.row_idx >= 11)
+    assert filtered.n_partitions() == 2
+    assert filtered.row_idx.collect() == list(range(11, 20))
+
+    rows = source.rows()
+    assert set(rows._schema) == {"row_idx"}
+    assert rows.annotate(extra=rows.row_idx + 1).extra.collect() == list(range(1, 21))
+    assert rows.select(extra=rows.row_idx + 2).extra.collect() == list(range(2, 22))
+    pandas_rows = rows.to_pandas(flatten=False)
+    assert list(pandas_rows.columns) == ["row_idx"]
+    rows_path = tmp_path / "rows.ht"
+    rows.write(rows_path)
+    reloaded_rows = hl.read_table(rows_path)
+    assert set(reloaded_rows._schema) == {"row_idx"}
+    assert reloaded_rows.row_idx.collect() == list(range(20))
+
+
+def test_matrix_reserved_row_key_aliases_are_collision_free(tmp_path):
+    matrix = hl.range_matrix_table(5, 2, 2)
+    matrix = matrix.key_rows_by(
+        __vail_matrix_row=matrix.row_idx,
+        __vail_matrix_row_key_0=matrix.row_idx + 10,
+    )
+    path = tmp_path / "reserved-keys.mt"
+    matrix.write(path)
+
+    descriptor = json.loads((path / "_vail_matrix.json").read_text())
+    assert descriptor["row_index_keys"] == ["__vail_matrix_row_key_0_1", "__vail_matrix_row_key_0"]
+    result = hl.read_matrix_table(path)
+    assert result.rows().collect() == [
+        hl.Struct(row_idx=i, __vail_matrix_row=i, __vail_matrix_row_key_0=i + 10)
+        for i in range(5)
+    ]
+
+
+def test_matrix_indexed_read_maps_composite_open_prefix_intervals(tmp_path):
+    matrix = hl.range_matrix_table(12, 2, 4)
+    matrix = matrix.key_rows_by(group=matrix.row_idx // 4, row_idx=matrix.row_idx)
+    path = tmp_path / "composite.mt"
+    matrix.write(path)
+
+    full_key_type = hl.tstruct(group=hl.tint32, row_idx=hl.tint32)
+    prefix_type = hl.tstruct(group=hl.tint32)
+    open_before = hl.Interval(
+        None,
+        hl.Struct(group=1, row_idx=6),
+        includes_start=True,
+        includes_end=True,
+        point_type=full_key_type,
+    )
+    open_after = hl.Interval(
+        hl.Struct(group=1),
+        None,
+        includes_start=True,
+        includes_end=False,
+        point_type=prefix_type,
+    )
+
+    with pytest.raises(hl.ExpressionException, match="missing endpoint"):
+        hl.read_matrix_table(path, _intervals=[open_before])
+    with pytest.raises(hl.ExpressionException, match="missing endpoint"):
+        hl.read_matrix_table(path, _intervals=[open_after])
+
+    bounded_key = hl.Interval(
+        hl.Struct(group=0, row_idx=0),
+        hl.Struct(group=1, row_idx=6),
+        includes_start=True,
+        includes_end=True,
+        point_type=full_key_type,
+    )
+    bounded_prefix = hl.Interval(
+        hl.Struct(group=1),
+        hl.Struct(group=2),
+        includes_start=True,
+        includes_end=False,
+        point_type=prefix_type,
+    )
+    assert hl.read_matrix_table(path, _intervals=[bounded_key]).row_idx.collect() == list(range(7))
+    assert hl.read_matrix_table(path, _intervals=[bounded_prefix]).row_idx.collect() == list(range(4, 8))
+
+
+def test_matrix_indexed_read_preserves_expression_intervals(tmp_path):
+    matrix = hl.range_matrix_table(8, 2, 4)
+    path = tmp_path / "expression-intervals.mt"
+    matrix.write(path)
+    interval_type = hl.tarray(hl.tinterval(hl.tint32))
+    intervals = hl.literal(
+        [hl.Interval(2, 5, includes_start=True, includes_end=False)], interval_type
+    )
+
+    assert hl.read_matrix_table(path, _intervals=intervals).row_idx.collect() == [2, 3, 4]
+    filtered = hl.read_matrix_table(path, _intervals=intervals, _filter_intervals=True)
+    assert filtered.row_idx.collect() == [2, 3, 4]
 
 
 def test_filtered_cells_distinct_from_missing_and_dimensions_retained():

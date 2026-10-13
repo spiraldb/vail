@@ -13,11 +13,10 @@ use std::collections::{HashMap, HashSet};
 use std::ops::Range;
 use std::path::{Path, PathBuf};
 
-use arrow_array::{Array, BooleanArray, Int32Array, Int64Array, RecordBatch, StringArray};
+use arrow_array::{Array, RecordBatch};
 use fragment_index::{
-    CompositeKey, FragmentIdentity, FragmentIndex, FragmentInterval, IndexBinding, KeyField,
-    KeyType, KeyValue, PRIMITIVE_COMPARATOR_V1, QueryInterval, TOTAL_ORDER_COMPARATOR_V3,
-    compare_keys,
+    ARROW_TYPED_COMPARATOR_V4, CompositeKey, FragmentIdentity, FragmentIndex, FragmentInterval,
+    IndexBinding, KeyField, KeyType, KeyValue, QueryInterval,
 };
 use futures::{StreamExt, TryStreamExt};
 use iceberg::Catalog;
@@ -33,7 +32,7 @@ use uuid::Uuid;
 use vortex::VortexSessionDefault;
 use vortex::session::VortexSession;
 
-const FORMAT_VERSION: u32 = 1;
+const FORMAT_VERSION: u32 = 2;
 const PROP_PATH: &str = "vail.descriptor.path";
 const PROP_SHA256: &str = "vail.descriptor.sha256";
 const PROP_VERSION: &str = "vail.format.version";
@@ -133,7 +132,7 @@ pub async fn write_initial_ordered_files(
 ) -> Result<Table> {
     if !matches!(
         semantics.comparator_version.as_str(),
-        PRIMITIVE_COMPARATOR_V1 | TOTAL_ORDER_COMPARATOR_V3
+        ARROW_TYPED_COMPARATOR_V4
     ) || key_fields
         .iter()
         .map(|field| field.field_id)
@@ -176,7 +175,7 @@ async fn write_initial_file_stream(
     if let Some(fields) = &key_fields {
         if !matches!(
             semantics.comparator_version.as_str(),
-            PRIMITIVE_COMPARATOR_V1 | TOTAL_ORDER_COMPARATOR_V3
+            ARROW_TYPED_COMPARATOR_V4
         ) || fields.iter().map(|f| f.field_id).collect::<Vec<_>>() != semantics.key_field_ids
         {
             return Err(StorageError::Invalid(
@@ -441,7 +440,7 @@ pub fn snapshot_descriptor(table: &Table, snapshot_id: i64) -> Result<SnapshotDe
     let descriptor_uri = props
         .get(PROP_PATH)
         .ok_or_else(|| StorageError::Invalid("missing Vail descriptor".into()))?;
-    if props.get(PROP_VERSION).map(String::as_str) != Some("1") {
+    if props.get(PROP_VERSION).map(String::as_str) != Some(FORMAT_VERSION.to_string().as_str()) {
         return Err(StorageError::Invalid(
             "unsupported Vail format version".into(),
         ));
@@ -454,6 +453,20 @@ pub fn snapshot_descriptor(table: &Table, snapshot_id: i64) -> Result<SnapshotDe
         return Err(StorageError::Invalid("descriptor checksum mismatch".into()));
     }
     let descriptor: SnapshotDescriptor = serde_json::from_slice(&descriptor_bytes)?;
+    if descriptor.format_version == 1 {
+        return Err(StorageError::Unsupported(
+            "snapshot format version 1 uses byte-encoded ordered-key bounds; rewrite with the Arrow-typed index format".into(),
+        ));
+    }
+    if matches!(
+        descriptor.semantics.comparator_version.as_str(),
+        fragment_index::TOTAL_ORDER_COMPARATOR_V3
+    ) && !descriptor.semantics.key_field_ids.is_empty()
+    {
+        return Err(StorageError::Unsupported(
+            "snapshot uses byte-encoded ordered-key bounds; rewrite with the Arrow-typed index format".into(),
+        ));
+    }
     if descriptor.semantics.comparator_version == fragment_index::HAIL_COMPARATOR_V2
         && !descriptor.semantics.key_field_ids.is_empty()
     {
@@ -628,6 +641,7 @@ async fn stream_snapshot_internal(
     let snapshot = table.metadata().snapshot_by_id(snapshot_id).unwrap();
     let props = &snapshot.summary().additional_properties;
     let snapshot_schema = snapshot.schema(table.metadata())?;
+    let snapshot_arrow_schema = schema_to_arrow_schema(&snapshot_schema)?;
     let mut key_ids = HashSet::new();
     for id in &descriptor.semantics.key_field_ids {
         if !key_ids.insert(*id)
@@ -680,7 +694,7 @@ async fn stream_snapshot_internal(
                     "fragment index binding mismatch".into(),
                 ));
             }
-            if binding.comparator_version == TOTAL_ORDER_COMPARATOR_V3 {
+            if binding.comparator_version == ARROW_TYPED_COMPARATOR_V4 {
                 for key in &binding.key_fields {
                     let name = snapshot_schema
                         .as_struct()
@@ -689,6 +703,10 @@ async fn stream_snapshot_internal(
                         .find(|field| field.id == key.field_id)
                         .map(|field| field.name.as_str())
                         .ok_or_else(|| StorageError::Invalid("unknown key field ID".into()))?;
+                    let physical_type = snapshot_arrow_schema
+                        .field_with_name(name)
+                        .map(|field| field.data_type().clone())
+                        .map_err(|_| StorageError::Invalid("unknown key field ID".into()))?;
                     let logical_type = descriptor
                         .semantics
                         .row_type
@@ -696,18 +714,16 @@ async fn stream_snapshot_internal(
                         .and_then(|fields| fields.iter().find(|field| field[0] == name))
                         .map(|field| field[1].clone())
                         .ok_or_else(|| StorageError::Invalid("missing logical key type".into()))?;
-                    if key.data_type != KeyType::Canonical(logical_type) {
+                    if key.data_type != KeyType::Arrow(logical_type)
+                        || key.physical_type != physical_type
+                    {
                         return Err(StorageError::Invalid(
                             "fragment key type differs from logical schema".into(),
                         ));
                     }
                 }
             }
-            let rebuilt = FragmentIndex::new(binding.clone(), stored.fragments().to_vec())
-                .map_err(|e| StorageError::Invalid(e.to_string()))?;
-            if rebuilt.fragments() != stored.fragments()
-                || rebuilt.fragments().len() != descriptor.files.len()
-            {
+            if stored.fragments().len() != descriptor.files.len() {
                 return Err(StorageError::Invalid(
                     "fragment index order or count mismatch".into(),
                 ));
@@ -958,12 +974,45 @@ pub async fn read_current(table: &Table) -> Result<(Vec<RecordBatch>, SnapshotDe
     read_snapshot(table, snapshot_id).await
 }
 
-fn key_for_row(
+fn certify_file(
+    binding: &IndexBinding,
+    _schema: &arrow_schema::Schema,
+    field_ids: &[i32],
+    batches: &[RecordBatch],
+) -> Result<(CompositeKey, CompositeKey, u64)> {
+    let mut first: Option<Vec<arrow_array::ArrayRef>> = None;
+    let mut previous: Option<Vec<arrow_array::ArrayRef>> = None;
+    let mut count = 0;
+    for batch in batches {
+        for row in 0..batch.num_rows() {
+            let key = typed_key_for_row(batch, field_ids, binding, row)?;
+            if previous.as_ref().is_some_and(|last| {
+                fragment_index::compare_typed_keys(binding, last, &key)
+                    .expect("certification keys share the input schema")
+                    == Ordering::Greater
+            }) {
+                return Err(StorageError::Invalid(
+                    "Vortex file rows are not sorted by bound key".into(),
+                ));
+            }
+            if first.is_none() {
+                first = Some(key.clone());
+            }
+            previous = Some(key);
+            count += 1;
+        }
+    }
+    let first = first.ok_or_else(|| StorageError::Invalid("empty ordered file".into()))?;
+    let last = previous.expect("nonempty file has last key");
+    Ok((persist_typed_key(&first)?, persist_typed_key(&last)?, count))
+}
+
+fn typed_key_for_row(
     batch: &RecordBatch,
     field_ids: &[i32],
     binding: &IndexBinding,
     row: usize,
-) -> Result<CompositeKey> {
+) -> Result<Vec<arrow_array::ArrayRef>> {
     binding
         .key_fields
         .iter()
@@ -977,95 +1026,36 @@ fn key_for_row(
                         field.field_id
                     ))
                 })?;
-            let column = batch.column(position);
-            if column.is_null(row) {
-                return Ok(KeyValue::Missing);
-            }
-            let value = match &field.data_type {
-                KeyType::Int32 => KeyValue::Int32(
-                    column
-                        .as_any()
-                        .downcast_ref::<Int32Array>()
-                        .ok_or_else(|| StorageError::Invalid("key type differs from index".into()))?
-                        .value(row),
-                ),
-                KeyType::Int64 => KeyValue::Int64(
-                    column
-                        .as_any()
-                        .downcast_ref::<Int64Array>()
-                        .ok_or_else(|| StorageError::Invalid("key type differs from index".into()))?
-                        .value(row),
-                ),
-                KeyType::Bool => KeyValue::Bool(
-                    column
-                        .as_any()
-                        .downcast_ref::<BooleanArray>()
-                        .ok_or_else(|| StorageError::Invalid("key type differs from index".into()))?
-                        .value(row),
-                ),
-                KeyType::AsciiString => {
-                    let value = column
-                        .as_any()
-                        .downcast_ref::<StringArray>()
-                        .ok_or_else(|| StorageError::Invalid("key type differs from index".into()))?
-                        .value(row);
-                    if !value.is_ascii() {
-                        return Err(StorageError::Invalid("non-ASCII key is unsupported".into()));
-                    }
-                    KeyValue::AsciiString(value.to_owned())
-                }
-                KeyType::Canonical(logical_type) => KeyValue::Canonical(
-                    vail_ordering::encode_typed_value(column.as_ref(), row, Some(logical_type))
-                        .map_err(|e| StorageError::Invalid(e.to_string()))?,
-                ),
-            };
-            Ok(value)
+            Ok(batch.column(position).slice(row, 1))
         })
         .collect()
 }
 
-fn certify_file(
-    binding: &IndexBinding,
-    _schema: &arrow_schema::Schema,
-    field_ids: &[i32],
-    batches: &[RecordBatch],
-) -> Result<(CompositeKey, CompositeKey, u64)> {
-    let mut first = None;
-    let mut previous = None;
-    let mut count = 0;
-    for batch in batches {
-        for row in 0..batch.num_rows() {
-            let key = key_for_row(batch, field_ids, binding, row)?;
-            if previous
-                .as_ref()
-                .is_some_and(|last| compare_keys(binding, last, &key) == Ordering::Greater)
-            {
-                return Err(StorageError::Invalid(
-                    "Vortex file rows are not sorted by bound key".into(),
-                ));
-            }
-            if first.is_none() {
-                first = Some(key.clone());
-            }
-            previous = Some(key);
-            count += 1;
-        }
-    }
-    Ok((
-        first.ok_or_else(|| StorageError::Invalid("empty ordered file".into()))?,
-        previous.unwrap(),
-        count,
-    ))
+fn persist_typed_key(key: &[arrow_array::ArrayRef]) -> Result<CompositeKey> {
+    key.iter()
+        .map(|component| {
+            fragment_index::encode_typed_key_component(component)
+                .map(KeyValue::ArrowIpc)
+                .map_err(|error| StorageError::Invalid(error.to_string()))
+        })
+        .collect()
 }
 
-fn key_in_range(binding: &IndexBinding, key: &CompositeKey, query: &QueryInterval) -> bool {
-    let lower = query.lower.as_ref().is_none_or(|end| {
-        let comparison = compare_keys(binding, key, &end.key);
-        comparison == Ordering::Greater || (comparison == Ordering::Equal && end.inclusive)
+fn key_in_range(
+    binding: &IndexBinding,
+    key: &[arrow_array::ArrayRef],
+    lower_endpoint: Option<(&[arrow_array::ArrayRef], bool)>,
+    upper_endpoint: Option<(&[arrow_array::ArrayRef], bool)>,
+) -> bool {
+    let lower = lower_endpoint.is_none_or(|(endpoint, inclusive)| {
+        let comparison = fragment_index::compare_typed_keys(binding, key, endpoint)
+            .expect("interval endpoint types match source key");
+        comparison == Ordering::Greater || (comparison == Ordering::Equal && inclusive)
     });
-    let upper = query.upper.as_ref().is_none_or(|end| {
-        let comparison = compare_keys(binding, key, &end.key);
-        comparison == Ordering::Less || (comparison == Ordering::Equal && end.inclusive)
+    let upper = upper_endpoint.is_none_or(|(endpoint, inclusive)| {
+        let comparison = fragment_index::compare_typed_keys(binding, key, endpoint)
+            .expect("interval endpoint types match source key");
+        comparison == Ordering::Less || (comparison == Ordering::Equal && inclusive)
     });
     lower && upper
 }
@@ -1077,13 +1067,36 @@ fn filter_batch_range(
     binding: &IndexBinding,
     query: &QueryInterval,
 ) -> Result<RecordBatch> {
+    let lower = query
+        .lower
+        .as_ref()
+        .map(|endpoint| {
+            fragment_index::typed_key_from_transport(binding, &endpoint.key)
+                .map(|key| (key, endpoint.inclusive))
+                .map_err(|error| StorageError::Invalid(error.to_string()))
+        })
+        .transpose()?;
+    let upper = query
+        .upper
+        .as_ref()
+        .map(|endpoint| {
+            fragment_index::typed_key_from_transport(binding, &endpoint.key)
+                .map(|key| (key, endpoint.inclusive))
+                .map_err(|error| StorageError::Invalid(error.to_string()))
+        })
+        .transpose()?;
     let mut first = None;
     let mut last = 0;
     for row in 0..batch.num_rows() {
         if key_in_range(
             binding,
-            &key_for_row(batch, field_ids, binding, row)?,
-            query,
+            &typed_key_for_row(batch, field_ids, binding, row)?,
+            lower
+                .as_ref()
+                .map(|(key, inclusive)| (key.components.as_slice(), *inclusive)),
+            upper
+                .as_ref()
+                .map(|(key, inclusive)| (key.components.as_slice(), *inclusive)),
         ) {
             first.get_or_insert(row);
             last = row + 1;

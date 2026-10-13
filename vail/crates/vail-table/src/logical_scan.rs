@@ -2,6 +2,7 @@
 //! partition summaries use DataFusion windows/aggregates; accumulator states
 //! flow between partitions through the shared aggregate UDAFs.
 use crate::{Result, TableError, TableRef};
+use arrow_schema::DataType;
 use datafusion_common::{Column, ScalarValue};
 use datafusion_expr::{
     Expr, ExprSchemable, JoinType, LogicalPlan, LogicalPlanBuilder, WindowFrame, WindowFrameBound,
@@ -193,6 +194,288 @@ fn frame() -> WindowFrame {
     frame
 }
 
+fn native_prefix_kind(expr: &VExpr) -> Option<(&'static str, Option<&VExpr>)> {
+    let VExpr::Aggregate {
+        function,
+        value,
+        options,
+        init,
+    } = expr
+    else {
+        return None;
+    };
+    if !init.is_empty()
+        || options
+            .get("__vail_exploded")
+            .and_then(serde_json::Value::as_bool)
+            == Some(true)
+        || options.as_object().is_some_and(|options| {
+            options
+                .keys()
+                .any(|key| !matches!(key.as_str(), "__vail_scan" | "__vail_result_type"))
+        })
+    {
+        return None;
+    }
+    match function.as_str() {
+        "count" if value.is_none() => Some(("count", None)),
+        "sum" => Some(("sum", Some(value.as_deref()?))),
+        _ => None,
+    }
+}
+
+fn replace_native_scans(
+    expr: &VExpr,
+    scans: &[(VExpr, String)],
+) -> std::result::Result<VExpr, vail_execution::expressions::ExprError> {
+    if let Some((_, name)) = scans.iter().find(|(scan, _)| scan == expr) {
+        return Ok(VExpr::Column { name: name.clone() });
+    }
+    expr.try_map_children(&mut |child: &VExpr| replace_native_scans(child, scans))
+}
+
+/// Fast path for plain numeric sums and row counts. It keeps values as native
+/// DataFusion window aggregates; the generic ScanState path remains for custom,
+/// filtered, and nested scan scopes.
+fn lower_native_prefix(
+    table: &TableRef,
+    child: &TableRef,
+    input: LogicalPlan,
+    fields: &[(String, VExpr)],
+    nodes: &[(VExpr, Option<VExpr>)],
+    bindings: &std::collections::BTreeMap<String, usize>,
+    part_index: usize,
+) -> Result<Option<LogicalPlan>> {
+    let kinds = nodes
+        .iter()
+        .map(|(node, filter)| {
+            if filter.is_some() {
+                return None;
+            }
+            let (kind, value) = native_prefix_kind(node)?;
+            if let Some(value) = value {
+                let dtype = value
+                    .dtype_with_globals(input.schema().as_arrow(), child.globals().schema())
+                    .ok()?
+                    .to_arrow()
+                    .ok()?;
+                // DataFusion widens SUM(Int32) to Int64 and SUM(Float32) to
+                // Float64, matching Hail's scan.sum result types. Include the
+                // narrow input types used by range_table(idx), while leaving
+                // unsupported numeric layouts on the generic scan path.
+                if kind == "sum"
+                    && !matches!(
+                        dtype,
+                        DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64
+                    )
+                {
+                    return None;
+                }
+            }
+            Some((kind, value))
+        })
+        .collect::<Option<Vec<_>>>();
+    let Some(kinds) = kinds else {
+        return Ok(None);
+    };
+    if kinds.is_empty() {
+        return Ok(None);
+    }
+
+    let mut used = input
+        .schema()
+        .fields()
+        .iter()
+        .map(|field| field.name().clone())
+        .chain(fields.iter().map(|(name, _)| name.clone()))
+        .collect::<HashSet<_>>();
+    let part = column(&input, part_index);
+    let part_name = input.schema().field(part_index).name().clone();
+    let ordinal_name = unique(&mut used, "__scan_native_ordinal");
+    let mut local_ordinal = WindowFunction::new(
+        WindowFunctionDefinition::WindowUDF(
+            datafusion_functions_window::row_number::row_number_udwf(),
+        ),
+        vec![],
+    );
+    local_ordinal.params.partition_by = vec![part.clone()];
+    local_ordinal.params.window_frame = WindowFrame::new(Some(true));
+    let mut local = LogicalPlanBuilder::from(input.clone())
+        .window(vec![
+            Expr::WindowFunction(Box::new(local_ordinal)).alias(&ordinal_name),
+        ])?
+        .build()?;
+
+    let mut local_windows = Vec::with_capacity(nodes.len());
+    let mut local_names = Vec::with_capacity(nodes.len());
+    let mut total_aggregates = Vec::with_capacity(nodes.len());
+    let mut total_names = Vec::with_capacity(nodes.len());
+    for (i, (kind, value)) in kinds.iter().enumerate() {
+        // A row count is the sum of one per input row; the same native sum
+        // kernel handles its exclusive local prefix and partition total.
+        let udf = match *kind {
+            "sum" | "count" => datafusion_functions_aggregate::sum::sum_udaf(),
+            _ => unreachable!(),
+        };
+        let mut arg = match value {
+            Some(value) => vail_execution::logical_expr::lower_logical_with_bindings(
+                value,
+                input.schema(),
+                child.globals().schema(),
+                bindings,
+            )?,
+            None => datafusion_expr::lit(1_i64),
+        };
+        if *kind == "sum" {
+            let value = value.expect("sum prefix has an argument");
+            let dtype = value
+                .dtype_with_globals(input.schema().as_arrow(), child.globals().schema())?
+                .to_arrow()?;
+            let widened = match dtype {
+                DataType::Int32 => Some(DataType::Int64),
+                DataType::Float32 => Some(DataType::Float64),
+                _ => None,
+            };
+            if let Some(dtype) = widened {
+                // DataFusion's SUM kernel accepts Int64 and Float64, and
+                // Hail widens narrower numeric sums to those same result types.
+                arg = Expr::Cast(datafusion_expr::expr::Cast::new(Box::new(arg), dtype));
+            }
+        }
+        let local_name = unique(&mut used, &format!("__scan_native_local_{i}"));
+        let mut local_window = WindowFunction::new(
+            WindowFunctionDefinition::AggregateUDF(udf.clone()),
+            vec![arg.clone()],
+        );
+        local_window.params.partition_by = vec![part.clone()];
+        local_window.params.order_by = vec![datafusion_expr::col(&ordinal_name).sort(true, true)];
+        local_window.params.window_frame = frame();
+        local_windows.push(Expr::WindowFunction(Box::new(local_window)).alias(&local_name));
+        local_names.push(local_name);
+
+        let total_name = unique(&mut used, &format!("__scan_native_total_{i}"));
+        total_aggregates.push(udf.call(vec![arg]).alias(&total_name));
+        total_names.push(total_name);
+    }
+    local = LogicalPlanBuilder::from(local)
+        .window(local_windows)?
+        .build()?;
+
+    let summary_part = unique(&mut used, "__scan_native_partition");
+    let summary = LogicalPlanBuilder::from(input)
+        .aggregate(vec![part.alias(&summary_part)], total_aggregates)?
+        .build()?;
+    let mut carry_windows = Vec::with_capacity(total_names.len());
+    let mut carry_names = Vec::with_capacity(total_names.len());
+    for (i, (kind, _)) in kinds.iter().enumerate() {
+        // Partition totals are already sums or counts. Add the totals to form
+        // the exclusive prefix across partitions.
+        let udf = match *kind {
+            "sum" | "count" => datafusion_functions_aggregate::sum::sum_udaf(),
+            _ => unreachable!(),
+        };
+        let carry_name = unique(&mut used, &format!("__scan_native_carry_{i}"));
+        let mut carry = WindowFunction::new(
+            WindowFunctionDefinition::AggregateUDF(udf),
+            vec![datafusion_expr::col(&total_names[i])],
+        );
+        carry.params.order_by = vec![datafusion_expr::col(&summary_part).sort(true, true)];
+        carry.params.window_frame = frame();
+        carry_windows.push(Expr::WindowFunction(Box::new(carry)).alias(&carry_name));
+        carry_names.push(carry_name);
+    }
+    let summary = LogicalPlanBuilder::from(summary)
+        .window(carry_windows)?
+        .build()?;
+    let right_key = unique(&mut used, "__scan_native_right_partition");
+    let mut right_projection = vec![datafusion_expr::col(&summary_part).alias(&right_key)];
+    right_projection.extend(carry_names.iter().map(datafusion_expr::col));
+    let right = LogicalPlanBuilder::from(summary)
+        .project(right_projection)?
+        .build()?;
+    let joined = LogicalPlanBuilder::from(local)
+        .join(
+            right,
+            JoinType::Left,
+            (vec![part_name.clone()], vec![right_key]),
+            None,
+        )?
+        .build()?;
+
+    let mut completed = joined
+        .schema()
+        .columns()
+        .into_iter()
+        .map(Expr::Column)
+        .collect::<Vec<_>>();
+    let mut scans = Vec::with_capacity(nodes.len());
+    for (i, ((node, _), _)) in nodes.iter().zip(kinds.iter()).enumerate() {
+        let total_type = joined
+            .schema()
+            .field_with_name(None, &local_names[i])?
+            .data_type()
+            .clone();
+        let zero = match total_type {
+            DataType::Int64 => ScalarValue::Int64(Some(0)),
+            DataType::Float64 => ScalarValue::Float64(Some(0.0)),
+            other => {
+                return Err(TableError::Invalid(format!(
+                    "native scan prefix does not support output type {other:?}"
+                )));
+            }
+        };
+        let local_value = datafusion_expr::col(&local_names[i]);
+        let local = datafusion_expr::when(
+            local_value.clone().is_null(),
+            datafusion_expr::lit(zero.clone()),
+        )
+        .otherwise(local_value)?;
+        let carry_value = datafusion_expr::col(&carry_names[i]);
+        let carry =
+            datafusion_expr::when(carry_value.clone().is_null(), datafusion_expr::lit(zero))
+                .otherwise(carry_value)?;
+        let output_name = unique(&mut used, &format!("__scan_native_value_{i}"));
+        completed.push((carry + local).alias(&output_name));
+        scans.push((node.clone(), output_name));
+    }
+    let completed = LogicalPlanBuilder::from(joined)
+        .project(completed)?
+        .build()?;
+    let completed = LogicalPlanBuilder::from(completed)
+        .sort(vec![
+            datafusion_expr::col(&part_name).sort(true, true),
+            datafusion_expr::col(&ordinal_name).sort(true, true),
+        ])?
+        .build()?;
+    let completed = crate::logical::restore_partitions(
+        completed,
+        part_name,
+        table.known_n_partitions().unwrap_or(1).max(1),
+    );
+    let rewritten = fields
+        .iter()
+        .map(|(name, expr)| Ok((name.clone(), replace_native_scans(expr, &scans)?)))
+        .collect::<Result<Vec<_>>>()?;
+    let mut output = rewritten
+        .iter()
+        .map(|(name, expr)| {
+            Ok(vail_execution::logical_expr::lower_logical_with_bindings(
+                expr,
+                completed.schema(),
+                child.globals().schema(),
+                bindings,
+            )?
+            .alias(name))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    output.push(column(&completed, part_index));
+    Ok(Some(
+        LogicalPlanBuilder::from(completed)
+            .project(output)?
+            .build()?,
+    ))
+}
+
 fn guard_argument(
     argument: Expr,
     filter: Option<&VExpr>,
@@ -247,6 +530,18 @@ pub(crate) fn lower(
     {
         return Ok(None); // The existing serial lowering reports the unsupported initializer.
     }
+    let part_index = child.globals().schema().fields().len() + child.schema().fields().len();
+    if let Some(plan) = lower_native_prefix(
+        table,
+        child,
+        input.clone(),
+        fields,
+        &nodes,
+        bindings,
+        part_index,
+    )? {
+        return Ok(Some(plan));
+    }
     let mut used = input
         .schema()
         .fields()
@@ -254,7 +549,6 @@ pub(crate) fn lower(
         .map(|field| field.name().clone())
         .chain(fields.iter().map(|(name, _)| name.clone()))
         .collect::<HashSet<_>>();
-    let part_index = child.globals().schema().fields().len() + child.schema().fields().len();
     let part = column(&input, part_index);
     let part_name = input.schema().field(part_index).name().clone();
 

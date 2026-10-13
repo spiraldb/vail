@@ -1031,15 +1031,7 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             } else {
                 group_names
                     .iter()
-                    .map(|name| {
-                        Ok((
-                            vail_execution::ordering::canonical_key(column(
-                                &input,
-                                input_schema.index_of(name)?,
-                            )),
-                            name.clone(),
-                        ))
-                    })
+                    .map(|name| Ok((column(&input, input_schema.index_of(name)?), name.clone())))
                     .collect::<Result<Vec<_>>>()?
             };
             let mut row_args = Vec::with_capacity(child.schema().fields().len() * 2);

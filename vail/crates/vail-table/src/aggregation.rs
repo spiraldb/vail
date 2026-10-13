@@ -4,8 +4,11 @@
 use crate::globals::GlobalBindings;
 use crate::plan::{PhysicalPlan, bind_external, column};
 use crate::{Result, TableError, TableRef};
+use arrow_array::{Array, ArrayRef, StructArray, make_array};
+use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{NullHandling, ScalarValue, UnnestOptions};
+use datafusion_expr::ColumnarValue;
 use datafusion_physical_expr::{
     PhysicalExpr, aggregate::AggregateExprBuilder, expressions::Literal,
 };
@@ -17,9 +20,182 @@ use datafusion_physical_plan::{
 };
 use std::{
     collections::{BTreeMap, HashSet},
+    hash::{Hash, Hasher},
     sync::Arc,
 };
 use vail_execution::expressions::{Expr, PrimitiveType, Type, lower_with_bindings};
+
+fn empty_struct_scalar(missing: bool) -> ScalarValue {
+    let nulls = missing.then(|| NullBuffer::new_null(1));
+    ScalarValue::Struct(Arc::new(StructArray::new_empty_fields(1, nulls)))
+}
+
+/// Restore a logical Arrow field type when the physical buffers already have
+/// the same layout. Arrow's cast kernel cannot cast every zero-field nested
+/// struct (notably the List<Dict> shape produced by grouped collection), while
+/// changing only field metadata/names does not require touching those buffers.
+fn retag_array(array: &ArrayRef, dtype: &DataType) -> datafusion_common::Result<ArrayRef> {
+    if vail_ordering::same_layout(array.data_type(), dtype) {
+        fn retag_data(
+            data: arrow_data::ArrayData,
+            dtype: &DataType,
+        ) -> datafusion_common::Result<arrow_data::ArrayData> {
+            let child_types = match dtype {
+                DataType::List(field)
+                | DataType::LargeList(field)
+                | DataType::FixedSizeList(field, _) => vec![field.data_type()],
+                DataType::Struct(fields) => fields.iter().map(|field| field.data_type()).collect(),
+                _ => Vec::new(),
+            };
+            let children = data
+                .child_data()
+                .iter()
+                .zip(child_types)
+                .map(|(child, child_type)| retag_data(child.clone(), child_type))
+                .collect::<datafusion_common::Result<Vec<_>>>()?;
+            Ok(data
+                .into_builder()
+                .data_type(dtype.clone())
+                .child_data(children)
+                .build()?)
+        }
+        return Ok(make_array(retag_data(array.to_data(), dtype)?));
+    }
+    Ok(arrow_cast::cast(array.as_ref(), dtype)?)
+}
+
+#[derive(Debug)]
+struct RetagExpr {
+    input: Arc<dyn PhysicalExpr>,
+    dtype: DataType,
+}
+
+impl RetagExpr {
+    fn new(input: Arc<dyn PhysicalExpr>, dtype: DataType) -> Self {
+        Self { input, dtype }
+    }
+}
+
+impl PartialEq for RetagExpr {
+    fn eq(&self, other: &Self) -> bool {
+        self.input.as_ref().dyn_eq(other.input.as_ref()) && self.dtype == other.dtype
+    }
+}
+impl Eq for RetagExpr {}
+impl Hash for RetagExpr {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.input.hash(state);
+        self.dtype.hash(state);
+    }
+}
+impl std::fmt::Display for RetagExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Retag({})", self.input)
+    }
+}
+impl PhysicalExpr for RetagExpr {
+    fn fmt_sql(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self}")
+    }
+    fn data_type(&self, _: &Schema) -> datafusion_common::Result<DataType> {
+        Ok(self.dtype.clone())
+    }
+    fn nullable(&self, schema: &Schema) -> datafusion_common::Result<bool> {
+        self.input.nullable(schema)
+    }
+    fn children(&self) -> Vec<&Arc<dyn PhysicalExpr>> {
+        vec![&self.input]
+    }
+    fn with_new_children(
+        self: Arc<Self>,
+        mut children: Vec<Arc<dyn PhysicalExpr>>,
+    ) -> datafusion_common::Result<Arc<dyn PhysicalExpr>> {
+        if children.len() != 1 {
+            return Err(datafusion_common::DataFusionError::Internal(
+                "retag expression child count mismatch".into(),
+            ));
+        }
+        Ok(Arc::new(Self::new(children.remove(0), self.dtype.clone())))
+    }
+    fn evaluate(
+        &self,
+        batch: &arrow_array::RecordBatch,
+    ) -> datafusion_common::Result<ColumnarValue> {
+        let array = self.input.evaluate(batch)?.into_array(batch.num_rows())?;
+        Ok(ColumnarValue::Array(retag_array(&array, &self.dtype)?))
+    }
+}
+
+pub(crate) fn logical_group_key(
+    value: datafusion_expr::Expr,
+    dtype: &DataType,
+) -> Result<datafusion_expr::Expr> {
+    if matches!(dtype, DataType::Struct(fields) if fields.is_empty()) {
+        return Ok(datafusion_expr::expr_fn::when(
+            value.is_null(),
+            datafusion_expr::lit(ScalarValue::Boolean(None)),
+        )
+        .otherwise(datafusion_expr::lit(ScalarValue::Boolean(Some(true))))?);
+    }
+    Ok(value)
+}
+
+pub(crate) fn logical_restore_group_key(
+    value: datafusion_expr::Expr,
+    dtype: &DataType,
+) -> Result<datafusion_expr::Expr> {
+    if matches!(dtype, DataType::Struct(fields) if fields.is_empty()) {
+        return Ok(datafusion_expr::expr_fn::when(
+            value.is_null(),
+            datafusion_expr::lit(empty_struct_scalar(true)),
+        )
+        .otherwise(datafusion_expr::lit(empty_struct_scalar(false)))?);
+    }
+    Ok(vail_execution::logical_expr::restore_type(
+        value,
+        dtype.clone(),
+    ))
+}
+
+fn physical_group_key(input: &PhysicalPlan, name: &str) -> Result<Arc<dyn PhysicalExpr>> {
+    let schema = input.schema();
+    let key: Arc<dyn PhysicalExpr> = column(input, schema.index_of(name)?);
+    let DataType::Struct(fields) = schema.field_with_name(name)?.data_type() else {
+        return Ok(key);
+    };
+    if !fields.is_empty() {
+        return Ok(key);
+    }
+    use datafusion_physical_expr::expressions::{CaseExpr, IsNullExpr};
+    Ok(Arc::new(CaseExpr::try_new(
+        None,
+        vec![(
+            Arc::new(IsNullExpr::new(key)),
+            Arc::new(Literal::new(ScalarValue::Boolean(None))),
+        )],
+        Some(Arc::new(Literal::new(ScalarValue::Boolean(Some(true))))),
+    )?))
+}
+
+fn restore_physical_group_key(
+    value: Arc<dyn PhysicalExpr>,
+    dtype: &DataType,
+) -> Result<Arc<dyn PhysicalExpr>> {
+    if matches!(dtype, DataType::Struct(fields) if fields.is_empty()) {
+        use datafusion_physical_expr::expressions::{CaseExpr, IsNullExpr};
+        return Ok(Arc::new(CaseExpr::try_new(
+            None,
+            vec![(
+                Arc::new(IsNullExpr::new(value)),
+                Arc::new(Literal::new(empty_struct_scalar(true))),
+            )],
+            Some(Arc::new(Literal::new(empty_struct_scalar(false)))),
+        )?));
+    }
+    Ok(Arc::new(
+        datafusion_physical_expr::expressions::CastExpr::new(value, dtype.clone(), None),
+    ))
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) enum Step {
@@ -410,28 +586,8 @@ fn lower_bound_scope(
     }
     let grouping = keys
         .iter()
-        .map(|(name, _)| {
-            Ok((
-                vail_execution::ordering::canonical_key(column(&input, schema.index_of(name)?)),
-                name.clone(),
-            ))
-        })
+        .map(|(name, _)| Ok((physical_group_key(&input, name)?, name.clone())))
         .collect::<Result<Vec<_>>>()?;
-    let mut representatives = Vec::new();
-    for (name, _) in keys {
-        let aggregate = AggregateExprBuilder::new(
-            datafusion_functions_aggregate::any_value::any_value_udaf(),
-            vec![datafusion_physical_expr::expressions::cast(
-                column(&input, schema.index_of(name)?),
-                &schema,
-                vail_ordering::without_type_metadata(schema.field_with_name(name)?.data_type()),
-            )?],
-        )
-        .schema(schema.clone())
-        .alias(&format!("__vail_representative_{name}"))
-        .build()?;
-        representatives.push(Arc::new(aggregate));
-    }
     if aggregates.is_empty() && keys.is_empty() {
         // DataFusion's zero-column aggregate batch cannot represent its one
         // output row. Carry a private count until the result projection.
@@ -449,8 +605,6 @@ fn lower_bound_scope(
         .iter()
         .map(|(name, _)| Ok(schema.field_with_name(name)?.data_type().clone()))
         .collect::<Result<Vec<_>>>()?;
-    representatives.extend(aggregates);
-    let aggregates = representatives;
     let filters = vec![None; aggregates.len()];
     let mut result: PhysicalPlan = Arc::new(AggregateExec::try_new(
         AggregateMode::Single,
@@ -460,25 +614,19 @@ fn lower_bound_scope(
         input,
         schema,
     )?);
-    // The GROUP BY columns are encoded bytes. Restore representative Hail
-    // values before any nested-scope join so both sides use the same logical
-    // type when the shared key expression is applied again.
+    // Native grouping preserves the typed keys directly.
     let key_count = keys.len();
     let mut restored = keys
         .iter()
         .enumerate()
         .map(|(i, (name, _))| {
-            (
-                Arc::new(datafusion_physical_expr::expressions::CastExpr::new(
-                    column(&result, key_count + i),
-                    representative_types[i].clone(),
-                    None,
-                )) as Arc<dyn PhysicalExpr>,
+            Ok((
+                restore_physical_group_key(column(&result, i), &representative_types[i])?,
                 name.clone(),
-            )
+            ))
         })
-        .collect::<Vec<_>>();
-    for i in (key_count * 2)..result.schema().fields().len() {
+        .collect::<Result<Vec<_>>>()?;
+    for i in key_count..result.schema().fields().len() {
         restored.push((column(&result, i), result.schema().field(i).name().clone()));
     }
     result = Arc::new(ProjectionExec::try_new(restored, result)?);
@@ -803,12 +951,7 @@ pub fn lower_grouped(
             .map(|f| f.name().clone())
             .collect::<Vec<_>>();
         let on = (0..private_keys.len())
-            .map(|i| {
-                (
-                    vail_execution::ordering::canonical_key(column(&input, i)),
-                    vail_execution::ordering::canonical_key(column(&right, i)),
-                )
-            })
+            .map(|i| (column(&input, i), column(&right, i)))
             .collect();
         let joined: PhysicalPlan = Arc::new(HashJoinExec::try_new(
             input,
@@ -904,14 +1047,18 @@ fn join_results(
     ));
     let right: PhysicalPlan = Arc::new(ProjectionExec::try_new(right_projection, right)?);
     let marker_index = offset + right.schema().fields().len() - 1;
+    let left_schema = left.schema();
+    let right_schema = right.schema();
     let on = (0..key_count)
         .map(|i| {
-            (
-                vail_execution::ordering::canonical_key(column(&left, i)),
-                vail_execution::ordering::canonical_key(column(&right, i)),
-            )
+            let left_name = left_schema.field(i).name();
+            let right_name = right_schema.field(i).name();
+            Ok((
+                physical_group_key(&left, left_name)?,
+                physical_group_key(&right, right_name)?,
+            ))
         })
-        .collect();
+        .collect::<Result<Vec<_>>>()?;
     let joined: PhysicalPlan = Arc::new(HashJoinExec::try_new(
         left,
         right,
@@ -1168,7 +1315,6 @@ fn collect_nested(
     output_type: DataType,
     name: &str,
 ) -> Result<(PhysicalPlan, ScalarValue)> {
-    use datafusion_physical_expr::expressions::cast;
     let schema = input.schema();
     let function = vail_execution::collect_aggregate::collect_udf(&value.data_type(&schema)?);
     let aggregate = AggregateExprBuilder::new(function, vec![value])
@@ -1177,45 +1323,23 @@ fn collect_nested(
         .build()?;
     let default = aggregate.create_accumulator()?.evaluate()?;
     let default = vail_execution::expressions::scalar_at(
-        &arrow_cast::cast(&default.to_array_of_size(1)?, &output_type)?,
+        &retag_array(&default.to_array_of_size(1)?, &output_type)?,
         0,
     )?;
     let groups = keys
         .iter()
-        .map(|(name, _)| {
-            Ok((
-                vail_execution::ordering::canonical_key(column(&input, schema.index_of(name)?)),
-                name.clone(),
-            ))
-        })
-        .collect::<Result<Vec<_>>>()?;
-    let mut representatives = keys
-        .iter()
-        .map(|(name, _)| {
-            let aggregate = AggregateExprBuilder::new(
-                datafusion_functions_aggregate::any_value::any_value_udaf(),
-                vec![datafusion_physical_expr::expressions::cast(
-                    column(&input, schema.index_of(name)?),
-                    &schema,
-                    vail_ordering::without_type_metadata(schema.field_with_name(name)?.data_type()),
-                )?],
-            )
-            .schema(schema.clone())
-            .alias(&format!("__vail_representative_{name}"))
-            .build()?;
-            Ok(Arc::new(aggregate))
-        })
+        .map(|(name, _)| Ok((physical_group_key(&input, name)?, name.clone())))
         .collect::<Result<Vec<_>>>()?;
     let representative_types = keys
         .iter()
         .map(|(name, _)| Ok(schema.field_with_name(name)?.data_type().clone()))
         .collect::<Result<Vec<_>>>()?;
-    representatives.push(Arc::new(aggregate));
+    let aggregates = vec![Arc::new(aggregate)];
     let result: PhysicalPlan = Arc::new(AggregateExec::try_new(
         AggregateMode::Single,
         PhysicalGroupBy::new_single(groups),
-        representatives,
-        vec![None; keys.len() + 1],
+        aggregates,
+        vec![None],
         input,
         schema,
     )?);
@@ -1223,22 +1347,14 @@ fn collect_nested(
         .iter()
         .enumerate()
         .map(|(i, (name, _))| {
-            (
-                Arc::new(datafusion_physical_expr::expressions::CastExpr::new(
-                    column(&result, keys.len() + i),
-                    representative_types[i].clone(),
-                    None,
-                )) as Arc<dyn PhysicalExpr>,
+            Ok((
+                restore_physical_group_key(column(&result, i), &representative_types[i])?,
                 name.clone(),
-            )
+            ))
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
     projection.push((
-        cast(
-            column(&result, keys.len() * 2),
-            &result.schema(),
-            output_type,
-        )?,
+        Arc::new(RetagExpr::new(column(&result, keys.len()), output_type)),
         name.into(),
     ));
     Ok((
@@ -1296,49 +1412,32 @@ fn lower_array_aggregation(
     .build()?;
     let group_exprs = keys
         .iter()
-        .map(|(name, _)| {
-            Ok((
-                vail_execution::ordering::canonical_key(column(
-                    &input,
-                    input.schema().index_of(name)?,
-                )),
-                name.clone(),
-            ))
-        })
+        .map(|(name, _)| Ok((physical_group_key(&input, name)?, name.clone())))
         .collect::<Result<Vec<_>>>()?;
-    let mut length_aggregates = keys
-        .iter()
-        .map(|(name, _)| {
-            let aggregate = AggregateExprBuilder::new(
-                datafusion_functions_aggregate::any_value::any_value_udaf(),
-                vec![column(&input, input.schema().index_of(name)?)],
-            )
-            .schema(input.schema())
-            .alias(&format!("__vail_representative_{name}"))
-            .build()?;
-            Ok(Arc::new(aggregate))
-        })
-        .collect::<Result<Vec<_>>>()?;
-    length_aggregates.push(Arc::new(aggregate));
+    let length_aggregates = vec![Arc::new(aggregate)];
     let lengths: PhysicalPlan = Arc::new(AggregateExec::try_new(
         AggregateMode::Single,
         PhysicalGroupBy::new_single(group_exprs),
         length_aggregates,
-        vec![None; keys.len() + 1],
+        vec![None],
         input.clone(),
         input.schema(),
     )?);
-    let lengths: PhysicalPlan = Arc::new(ProjectionExec::try_new(
-        keys.iter()
-            .enumerate()
-            .map(|(i, (name, _))| (column(&lengths, keys.len() + i), name.clone()))
-            .chain(std::iter::once((
-                column(&lengths, keys.len() * 2),
-                length_name.clone(),
-            )))
-            .collect::<Vec<_>>(),
-        lengths,
-    )?);
+    let mut length_projection = keys
+        .iter()
+        .enumerate()
+        .map(|(i, (name, _))| {
+            Ok((
+                restore_physical_group_key(
+                    column(&lengths, i),
+                    input.schema().field_with_name(name)?.data_type(),
+                )?,
+                name.clone(),
+            ))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    length_projection.push((column(&lengths, keys.len()), length_name.clone()));
+    let lengths: PhysicalPlan = Arc::new(ProjectionExec::try_new(length_projection, lengths)?);
     let length = Arc::new(ScalarFunctionExpr::try_new(
         datafusion_functions_nested::length::array_length_udf(),
         vec![value.clone()],

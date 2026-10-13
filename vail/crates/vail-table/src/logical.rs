@@ -709,12 +709,16 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                                 let dtype = vail_execution::expressions::Type::from_arrow(
                                     field.data_type(),
                                 )?;
-                                Ok(vail_execution::logical_expr::canonical_key_logical(
-                                    Expr::Column(datafusion_common::Column::new_unqualified(name)),
-                                    &dtype,
-                                    false,
-                                )?
-                                .sort(true, false))
+                                dtype.ensure_keyable()?;
+                                if !dtype.native_key() {
+                                    return Err(TableError::Invalid(
+                                        "sorting requires a native DataFusion key type".into(),
+                                    ));
+                                }
+                                Ok(
+                                    Expr::Column(datafusion_common::Column::new_unqualified(name))
+                                        .sort(true, false),
+                                )
                             })
                             .collect::<Result<Vec<_>>>()?;
                         LogicalPlanBuilder::from(plan).sort(sorts)?.build()?
@@ -1096,6 +1100,24 @@ impl ExtensionPlanner for VailExtensionPlanner {
         let Some(node) = node.as_any().downcast_ref::<VailNode>() else {
             return Ok(None);
         };
+        // Interval reads prune source partitions and expose the survivors as
+        // a dense output partition sequence. Apply the user's partition IDs
+        // to that output sequence, retaining the corresponding source plans.
+        if let TableNode::FilterPartitions { child, parts, keep } = &node.table.node()
+            && let TableNode::IntervalRead {
+                child: source,
+                intervals,
+                point_type,
+                filter: true,
+            } = child.node()
+        {
+            let prepared = crate::interval_read::prepare_output_partitions(
+                source, intervals, point_type, parts, *keep,
+            )
+            .await
+            .map_err(|error| DataFusionError::External(Box::new(error)))?;
+            return Ok(Some(prepared.physical_plan()));
+        }
         // Prepared children become private inputs of deferred partition plans.
         // Finalize them before that boundary: the outer optimizer cannot reach
         // them to enforce window ordering/distribution or select a join mode.

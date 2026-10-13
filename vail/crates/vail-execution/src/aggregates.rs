@@ -7,9 +7,9 @@ use arrow_array::{
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{
+    Accumulator, AggregateUDF, Volatility,
     expr_fn::create_udaf,
     function::{AccumulatorArgs, StateFieldsArgs},
-    Accumulator, AggregateUDF, Volatility,
 };
 
 use crate::expressions::ExprError;
@@ -32,12 +32,11 @@ impl Accumulator for StableStddev {
             .downcast_ref::<Float64Array>()
             .ok_or_else(|| DataFusionError::Internal("stddev cast must produce Float64".into()))?;
         if self.origin.is_none() {
-            self.origin =
-                values
-                    .iter()
-                    .flatten()
-                    .next()
-                    .map(|value| if value.is_finite() { value } else { 0. });
+            self.origin = values
+                .iter()
+                .flatten()
+                .next()
+                .map(|value| if value.is_finite() { value } else { 0. });
         }
         // Variance is translation invariant. Centering also protects the
         // library's running mean when the original offset is near an f64 ULP.
@@ -274,7 +273,7 @@ impl HailAccumulator {
             _ => {
                 return Err(DataFusionError::Internal(
                     "min/max accumulator state type mismatch".into(),
-                ))
+                ));
             }
         })
     }

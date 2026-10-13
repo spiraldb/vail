@@ -18,6 +18,7 @@ def test_dictionary_views_size_map_values_and_conversion():
 
 
 def test_dictionary_get_missing_value_missing_key_and_default():
+    assert hl.eval(hl.missing(hl.tint32) == hl.missing(hl.tint32)) is None
     d = hl.literal({'a': 1, 'b': None, None: 3}, hl.tdict(hl.tstr, hl.tint32))
     assert hl.eval(d.get('a')) == 1
     assert hl.eval(d.get('b', 42)) is None
@@ -74,6 +75,18 @@ def test_set_membership_updates_and_operators():
     assert hl.eval({1, 2} | s) == {1, 2, None}
     assert hl.eval({1, 2} ^ s) == {2, None}
     assert hl.eval(s.size()) == hl.eval(s.length()) == hl.eval(hl.len(s)) == 2
+
+
+def test_nested_set_membership_and_algebra_use_native_equality():
+    inner = hl.tset(hl.tint32)
+    outer = hl.tset(inner)
+    left = hl.literal({frozenset({1, 2}), frozenset({5})}, outer)
+    right = hl.literal({frozenset({2, 1}), frozenset({3})}, outer)
+    assert hl.eval(left.contains(hl.literal({2, 1}, inner))) is True
+    assert hl.eval(left.contains(hl.literal({1, 3}, inner))) is False
+    assert hl.eval(left.union(right)) == {frozenset({1, 2}), frozenset({3}), frozenset({5})}
+    assert hl.eval(left.intersection(right)) == {frozenset({1, 2})}
+    assert hl.eval(left.difference(right)) == {frozenset({5})}
 
 
 def test_set_subset_and_superset():
@@ -139,10 +152,10 @@ def test_collection_operations_in_lazy_table_with_globals(tmp_path):
 
 
 def test_explicit_datafusion_gaps():
-    with pytest.raises(NotImplementedError, match='key equality'):
-        hl.set(hl.array([-0.0, 0.0]))
-    with pytest.raises(NotImplementedError, match='key equality'):
-        hl.literal({1}).map(lambda x: hl.float64(x))
+    # Collection distinctness and key equality follow DataFusion's native
+    # float semantics, including its treatment of signed zero.
+    assert hl.eval(hl.set(hl.array([-0.0, 0.0]))) == {0.0}
+    assert hl.eval(hl.literal({1}).map(lambda x: hl.float64(x))) == {1.0}
     assert hl.eval(hl.dict(hl.array([('a', 1), ('a', 2)]))) == {'a': 2}
     with pytest.raises(NotImplementedError, match='fold'):
         hl.literal({1}).fold(lambda a, b: a + b, 0)
@@ -184,15 +197,35 @@ def test_dictionary_construction_canonical_keys_and_duplicate_wins():
     assert hl.eval(struct_keys) == {hl.Struct(a=1, b=None): 20}
 
 
-def test_dictionary_keys_use_canonical_set_and_dict_order():
-    set_keys = hl.dict(hl.array([(hl.set(hl.array([1, 2])), 10),
-                                 (hl.set(hl.array([2, 1])), 20)]))
-    assert hl.eval(set_keys) == {frozenset({1, 2}): 10}
+def test_unordered_collection_equality_uses_native_normalized_arrays():
+    left = hl.dict(hl.array([('a', 1), ('b', 2)]))
+    reordered = hl.dict(hl.array([('b', 2), ('a', 1)]))
+    changed = hl.dict(hl.array([('b', 3), ('a', 1)]))
+    assert hl.eval(left == reordered) is True
+    assert hl.eval(left != changed) is True
+    assert hl.eval(hl.missing(left.dtype) == hl.missing(left.dtype)) is None
+
+    first = hl.literal([1, 2], hl.tset(hl.tint32))
+    second = hl.literal([2, 1], hl.tset(hl.tint32))
+    assert hl.eval(first == second) is True
+    assert hl.eval(hl.missing(first.dtype) == hl.missing(first.dtype)) is None
+    left_values = hl.dict(hl.array([('x', first)]))
+    right_values = hl.dict(hl.array([('x', second)]))
+    assert hl.eval(left_values == right_values) is True
+
+    left_nested = hl.array([hl.array([first])])
+    right_nested = hl.array([hl.array([second])])
+    assert hl.eval(left_nested == right_nested) is True
+
+
+def test_dictionary_rejects_set_and_dict_keys_without_native_keying():
+    with pytest.raises(NotImplementedError, match='Set/Dictionary/ndarray ordering and keying'):
+        hl.dict(hl.array([(hl.set(hl.array([1, 2])), 10),
+                          (hl.set(hl.array([2, 1])), 20)]))
     first = hl.literal({1: 10, 2: 20}, hl.tdict(hl.tint32, hl.tint32))
     reordered = hl.literal({2: 20, 1: 10}, hl.tdict(hl.tint32, hl.tint32))
-    dict_keys = hl.dict(hl.array([(first, 10), (reordered, 20)]))
-    assert len(hl.eval(dict_keys)) == 1
-    assert next(iter(hl.eval(dict_keys).values())) == 20
+    with pytest.raises(NotImplementedError, match='Set/Dictionary/ndarray ordering and keying'):
+        hl.dict(hl.array([(first, 10), (reordered, 20)]))
     cast_keys = hl.dict(hl.array([(hl.int64(1), 10), (hl.int64(1), 20)]))
     assert hl.eval(cast_keys) == {1: 20}
     arithmetic_keys = hl.dict(hl.array([(hl.int32(1) + 0, 10), (hl.int32(1), 20)]))
@@ -228,24 +261,23 @@ def test_set_integer_min_max():
     assert hl.eval(hl.max(value)) == 2**60 + 1
 
 
-def test_set_float_algebra_preserves_total_order_keys():
+def test_set_float_algebra_uses_datafusion_native_equality():
     import math
     import struct
     nan1 = struct.unpack('>d', bytes.fromhex('7ff8000000000001'))[0]
     nan2 = struct.unpack('>d', bytes.fromhex('7ff8000000000002'))[0]
     left = hl.literal([-0.0, nan1, None], hl.tset(hl.tfloat64))
     right = hl.literal([0.0, nan2, None], hl.tset(hl.tfloat64))
-    assert hl.eval(left.contains(0.0)) is False
+    assert hl.eval(left.contains(0.0)) is True
     assert hl.eval(left.contains(-0.0)) is True
     assert hl.eval(left.contains(nan1)) is True
     assert hl.eval(left.contains(nan2)) is False
-    assert hl.eval(hl.len(left.union(right))) == 5
-    assert hl.eval(hl.array(left.intersection(right))) == [None]
+    union = hl.eval(hl.array(left.union(right)))
+    assert len(union) == 4 and sum(math.isnan(x) for x in union if x is not None) == 2
+    assert hl.eval(hl.array(left.intersection(right))) == [0.0, None]
     difference = hl.eval(hl.array(left.difference(right)))
-    assert len(difference) == 2
-    assert math.copysign(1, difference[0]) == -1
-    assert struct.pack('>d', difference[1]).hex() == '7ff8000000000001'
-    assert hl.eval(hl.len(left.add(0.0))) == 4
+    assert len(difference) == 1 and math.isnan(difference[0])
+    assert hl.eval(hl.len(left.add(0.0))) == 3
     assert hl.eval(hl.len(left.remove(nan1))) == 2
     assert hl.eval(left.is_subset(left.union(right))) is True
     assert hl.eval(hl.len(left.union(hl.missing(left.dtype)))) is None

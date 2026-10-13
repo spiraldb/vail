@@ -10,11 +10,13 @@ use std::hash::Hash;
 use std::sync::Arc;
 
 use crate::reference::ReferenceDefinition;
+use arrow_array::types::{Float32Type, Float64Type, Int32Type, Int64Type};
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
     RecordBatch, RecordBatchOptions, StringArray, StructArray, UInt32Array, new_null_array,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer};
+use arrow_ord::sort::{SortColumn, SortOptions, lexsort_to_indices, sort_to_indices};
 use arrow_schema::{ArrowError, DataType, Field, Schema, SchemaRef};
 use arrow_select::{concat::concat, nullif::nullif, take::take};
 use datafusion_common::{DataFusionError, ScalarValue, config::ConfigOptions};
@@ -81,20 +83,27 @@ impl Type {
         }
     }
     pub fn ensure_keyable(&self) -> Result<(), ExprError> {
-        if self.contains_unordered() {
+        if self.contains_unordered() || self.contains_ndarray() {
             Err(ExprError::Unsupported(
-                "Set/Dictionary ordering and keying".into(),
+                "Set/Dictionary/ndarray ordering and keying".into(),
             ))
         } else {
             Ok(())
         }
     }
+    fn contains_ndarray(&self) -> bool {
+        match self {
+            Self::Ndarray { .. } => true,
+            Self::Struct { r#struct: fields } => fields.iter().any(|(_, t)| t.contains_ndarray()),
+            Self::Tuple { tuple } => tuple.iter().any(Self::contains_ndarray),
+            Self::Array { array } | Self::Interval { interval: array } => array.contains_ndarray(),
+            _ => false,
+        }
+    }
     pub fn native_key(&self) -> bool {
         match self {
             Self::Set { .. } | Self::Dict { .. } | Self::Ndarray { .. } => false,
-            Self::Struct { r#struct: fields } => {
-                !fields.is_empty() && fields.iter().all(|(_, t)| t.native_key())
-            }
+            Self::Struct { r#struct: fields } => fields.iter().all(|(_, t)| t.native_key()),
             Self::Tuple { tuple } => tuple.iter().all(Self::native_key),
             Self::Array { array } | Self::Interval { interval: array } => array.native_key(),
             _ => true,
@@ -1200,15 +1209,6 @@ impl Expr {
                 args,
                 dtype,
             } => {
-                if function == "canonical_key" {
-                    if args.len() != 1 || *dtype != Type::Primitive(PrimitiveType::Str) {
-                        return Err(ExprError::Invalid(
-                            "canonical_key requires one argument and string output".into(),
-                        ));
-                    }
-                    args[0].dtype_scoped(schema, globals, scope)?;
-                    return Ok(dtype.clone());
-                }
                 // Validate the declared result against DataFusion's own type inference.
                 let udf = nested_function(function)?;
                 let args = args
@@ -1218,6 +1218,7 @@ impl Expr {
                 let expected = if function == "array_sort" {
                     3
                 } else if function == "array_element"
+                    || function == "arrays_zip"
                     || matches!(
                         function.as_str(),
                         "array_union" | "array_intersect" | "array_except" | "array_concat"
@@ -1243,7 +1244,7 @@ impl Expr {
                     ));
                 }
                 if expected == 2
-                    && function != "array_element"
+                    && !matches!(function.as_str(), "array_element" | "arrays_zip")
                     && !same_collection_storage(&args[0], &args[1])
                 {
                     return Err(ExprError::Invalid(
@@ -2062,62 +2063,85 @@ fn validate_literal(value: &Value, dtype: &Type) -> Result<(), ExprError> {
     }
     Ok(())
 }
-/// Canonical set ingestion: normalize nested values, then sort and deduplicate
-/// using the declared element type (including float32 rounding and missingness).
-/// The canonical order lets the existing recursive equality compare sets.
-pub fn canonical_set_elements(value: &Value, element_type: &Type) -> Result<Vec<Value>, ExprError> {
+/// Deduplicate set literals with Arrow's typed scalar equality, then use Arrow's
+/// native ordering to give set values their canonical iteration order.
+pub fn unique_set_elements(value: &Value, element_type: &Type) -> Result<Vec<Value>, ExprError> {
     let items = value
         .as_array()
         .ok_or_else(|| ExprError::Invalid("set requires a JSON array".into()))?;
-    let mut items = items
+    let mut unique = Vec::with_capacity(items.len());
+    let mut scalars = Vec::with_capacity(items.len());
+    for item in items {
+        let array = literal_array(item, element_type, 1)?;
+        let scalar = scalar_at(&array, 0)?;
+        if !scalars.contains(&scalar) {
+            unique.push(item.clone());
+            scalars.push(scalar);
+        }
+    }
+    if unique.len() < 2 {
+        return Ok(unique);
+    }
+    let values = unique
         .iter()
-        .map(|v| canonical_literal(v, element_type))
-        .collect::<Result<Vec<_>, _>>()?;
-    let logical =
-        serde_json::to_value(element_type).map_err(|e| ExprError::Invalid(e.to_string()))?;
-    let mut keyed = items
-        .drain(..)
-        .map(|value| {
-            let array = literal_array(&value, element_type, 1)?;
-            let key = vail_ordering::encode_typed_value(array.as_ref(), 0, Some(&logical))
-                .map_err(|e| ExprError::Invalid(e.to_string()))?;
-            Ok((key, value))
+        .map(|item| {
+            let array = literal_array(item, element_type, 1)?;
+            scalar_at(&array, 0)
         })
         .collect::<Result<Vec<_>, ExprError>>()?;
-    keyed.sort_by(|a, b| a.0.cmp(&b.0));
-    keyed.dedup_by(|a, b| a.0 == b.0);
-    Ok(keyed.into_iter().map(|(_, value)| value).collect())
+    let array = ScalarValue::iter_to_array(values)?;
+    let order = set_literal_sort_indices(array.as_ref())?;
+    let sorted = (0..order.len())
+        .map(|i| unique[order.value(i) as usize].clone())
+        .collect();
+    Ok(sorted)
 }
 
-fn canonical_literal(value: &Value, dtype: &Type) -> Result<Value, ExprError> {
-    validate_literal(value, dtype)?;
-    if value.is_null() {
-        return Ok(Value::Null);
+fn set_literal_sort_indices(array: &dyn Array) -> Result<UInt32Array, ExprError> {
+    fn columns(array: &dyn Array, output: &mut Vec<SortColumn>) -> Result<(), ExprError> {
+        if let Some(structure) = array.as_any().downcast_ref::<StructArray>() {
+            // A missing struct sorts after present structs, including a present
+            // struct whose fields are all missing.
+            output.push(SortColumn {
+                values: Arc::new(BooleanArray::from(
+                    (0..array.len())
+                        .map(|i| array.is_valid(i))
+                        .collect::<Vec<_>>(),
+                )),
+                options: Some(SortOptions {
+                    descending: true,
+                    nulls_first: false,
+                }),
+            });
+            for child in structure.columns() {
+                columns(child.as_ref(), output)?;
+            }
+        } else {
+            output.push(SortColumn {
+                values: arrow_array::make_array(array.to_data()),
+                options: Some(SortOptions {
+                    descending: false,
+                    nulls_first: false,
+                }),
+            });
+        }
+        Ok(())
     }
-    Ok(match dtype {
-        Type::Interval { interval } => json!({
-            "start": canonical_literal(&value["start"], interval)?,
-            "end": canonical_literal(&value["end"], interval)?,
-            "includes_start": value["includes_start"],
-            "includes_end": value["includes_end"]
-        }),
-        Type::Set { set } => Value::Array(canonical_set_elements(value, set)?),
-        Type::Array { array } => Value::Array(
-            value
-                .as_array()
-                .unwrap()
-                .iter()
-                .map(|v| canonical_literal(v, array))
-                .collect::<Result<_, _>>()?,
-        ),
-        Type::Struct { r#struct: fields } => Value::Object(
-            fields
-                .iter()
-                .map(|(name, ty)| Ok((name.clone(), canonical_literal(&value[name], ty)?)))
-                .collect::<Result<_, ExprError>>()?,
-        ),
-        _ => value.clone(),
-    })
+
+    if array.as_any().is::<StructArray>() {
+        let mut keys = Vec::new();
+        columns(array, &mut keys)?;
+        Ok(lexsort_to_indices(&keys, None)?)
+    } else {
+        Ok(sort_to_indices(
+            array,
+            Some(SortOptions {
+                descending: false,
+                nulls_first: false,
+            }),
+            None,
+        )?)
+    }
 }
 
 fn float_json(v: &Value) -> Result<f64, ExprError> {
@@ -2277,10 +2301,10 @@ pub(crate) fn literal_array(v: &Value, t: &Type, len: usize) -> Result<ArrayRef,
             }
         }
         Type::Array { array } | Type::Set { set: array } => {
-            let canonical;
+            let unique;
             let items = if matches!(t, Type::Set { .. }) {
-                canonical = canonical_set_elements(v, array)?;
-                &canonical
+                unique = unique_set_elements(v, array)?;
+                &unique
             } else {
                 v.as_array().unwrap()
             };
@@ -2640,9 +2664,48 @@ fn array_reduce(
     dtype: &DataType,
 ) -> Result<ArrayRef, ExprError> {
     let lists = list_array(array)?;
+    if operation == ArrayReduction::Sum {
+        // Arrow's typed aggregate uses vectorized, wrapping arithmetic for
+        // primitive sums. Preserve Hail's empty/all-null identity and the
+        // filter_missing=false behavior at the list boundary.
+        macro_rules! sum_rows {
+            ($array_ty:ty, $marker:ty) => {{
+                let mut out: Vec<
+                    Option<<$marker as arrow_array::types::ArrowPrimitiveType>::Native>,
+                > = Vec::with_capacity(lists.len());
+                for row in 0..lists.len() {
+                    if lists.is_null(row) {
+                        out.push(None);
+                        continue;
+                    }
+                    let child = lists.value(row);
+                    let values = child.as_any().downcast_ref::<$array_ty>().ok_or_else(|| {
+                        ExprError::Invalid("array reduction child type mismatch".into())
+                    })?;
+                    if !filter_missing && values.null_count() > 0 {
+                        out.push(None);
+                    } else {
+                        let sum =
+                            arrow_arith::aggregate::sum::<$marker>(values).unwrap_or_default();
+                        out.push(Some(sum));
+                    }
+                }
+                Ok(Arc::new(<$array_ty>::from(out)) as ArrayRef)
+            }};
+        }
+        return match dtype {
+            DataType::Int32 => sum_rows!(Int32Array, Int32Type),
+            DataType::Int64 => sum_rows!(Int64Array, Int64Type),
+            DataType::Float32 => sum_rows!(Float32Array, Float32Type),
+            DataType::Float64 => sum_rows!(Float64Array, Float64Type),
+            _ => Err(ExprError::Invalid(
+                "array reduction requires numeric array".into(),
+            )),
+        };
+    }
     // Hail folds in the element's native type from typed 0/1 identities.
-    // DataFusion array_sum/product widen and return NULL on empty/all-null,
-    // so these four small typed folds preserve Hail precision and identities.
+    // Keep product/min/max in that scalar fold; sum uses Arrow's aggregate
+    // kernel above to retain the same precision and identity semantics.
     macro_rules! fold {
         ($array_ty:ty, $value_ty:ty, $zero:expr, $one:expr, $add:expr, $mul:expr, $min:expr, $max:expr) => {{
             let mut out: Vec<Option<$value_ty>> = Vec::with_capacity(lists.len());
@@ -3936,10 +3999,7 @@ pub(crate) fn string_function(
 
 fn datafusion_distinct_compatible(dtype: &Type) -> bool {
     match dtype {
-        Type::Primitive(PrimitiveType::Float32 | PrimitiveType::Float64)
-        | Type::Set { .. }
-        | Type::Dict { .. }
-        | Type::Ndarray { .. } => false,
+        Type::Set { .. } | Type::Dict { .. } | Type::Ndarray { .. } => false,
         Type::Array { array } => datafusion_distinct_compatible(array),
         Type::Struct { r#struct } => r#struct
             .iter()
@@ -3970,6 +4030,7 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
         "array_except" => nested::except::array_except_udf(),
         "array_element" => nested::extract::array_element_udf(),
         "array_concat" => nested::concat::array_concat_udf(),
+        "arrays_zip" => nested::arrays_zip::arrays_zip_udf(),
         "array_compact" => nested::array_compact::array_compact_udf(),
         "flatten" => nested::flatten::flatten_udf(),
         "array_sum" => nested::array_sum::array_sum_udf(),
@@ -4094,21 +4155,6 @@ fn lower_scoped(
             ))
         }
         Expr::NestedFunction { function, args, .. } => {
-            let canonical_type = if function == "canonical_key" {
-                if args.len() != 1 {
-                    return Err(ExprError::Invalid(
-                        "canonical_key requires one argument".into(),
-                    ));
-                }
-                Some(
-                    serde_json::to_value(args[0].dtype_scoped(schema, globals.schema(), scope)?)
-                        .map_err(|e| {
-                            ExprError::Invalid(format!("invalid canonical key type: {e}"))
-                        })?,
-                )
-            } else {
-                None
-            };
             let args = args
                 .iter()
                 .map(|arg| {
@@ -4123,20 +4169,6 @@ fn lower_scoped(
                     )?)
                 })
                 .collect::<Result<Vec<_>, ExprError>>()?;
-            if function == "canonical_key" {
-                let canonical =
-                    crate::ordering::canonical_key_typed(args[0].clone(), canonical_type.unwrap());
-                let encoding = Arc::new(ScalarFunctionExpr::try_new(
-                    datafusion_functions::encoding::encode(),
-                    vec![
-                        canonical,
-                        Arc::new(Literal::new(ScalarValue::Utf8(Some("hex".into())))),
-                    ],
-                    schema,
-                    Arc::new(ConfigOptions::default()),
-                )?);
-                return Ok(cast(encoding, schema, dtype.clone())?);
-            }
             let function = Arc::new(ScalarFunctionExpr::try_new(
                 nested_function(function)?,
                 args,
@@ -4673,24 +4705,19 @@ fn lower_scoped(
             else {
                 unreachable!("validated interval")
             };
-            let logical = serde_json::to_value(&*point_type)
-                .map_err(|e| ExprError::Invalid(e.to_string()))?;
+            point_type.ensure_keyable()?;
+            if !point_type.native_key() {
+                return Err(ExprError::Unsupported(format!(
+                    "interval comparison for {point_type:?}"
+                )));
+            }
             let get = |name: &str| Expr::GetField {
                 value: interval.clone(),
                 name: name.into(),
             };
-            let start = crate::ordering::canonical_key_nullable(
-                lower_scoped(&get("start"), schema, globals, scope)?,
-                logical.clone(),
-            );
-            let end = crate::ordering::canonical_key_nullable(
-                lower_scoped(&get("end"), schema, globals, scope)?,
-                logical.clone(),
-            );
-            let point = crate::ordering::canonical_key_nullable(
-                lower_scoped(point, schema, globals, scope)?,
-                logical,
-            );
+            let start = lower_scoped(&get("start"), schema, globals, scope)?;
+            let end = lower_scoped(&get("end"), schema, globals, scope)?;
+            let point = lower_scoped(point, schema, globals, scope)?;
             let includes_start = lower_scoped(&get("includes_start"), schema, globals, scope)?;
             let includes_end = lower_scoped(&get("includes_end"), schema, globals, scope)?;
             let start_gt = binary(point.clone(), Operator::Gt, start.clone(), schema)?;
@@ -4718,28 +4745,20 @@ fn lower_scoped(
             else {
                 unreachable!("validated interval")
             };
-            let logical = serde_json::to_value(&*point_type)
-                .map_err(|e| ExprError::Invalid(e.to_string()))?;
+            point_type.ensure_keyable()?;
+            if !point_type.native_key() {
+                return Err(ExprError::Unsupported(format!(
+                    "interval comparison for {point_type:?}"
+                )));
+            }
             let get = |value: &Expr, name: &str| Expr::GetField {
                 value: Box::new(value.clone()),
                 name: name.into(),
             };
-            let l_start = crate::ordering::canonical_key_nullable(
-                lower_scoped(&get(left, "start"), schema, globals, scope)?,
-                logical.clone(),
-            );
-            let l_end = crate::ordering::canonical_key_nullable(
-                lower_scoped(&get(left, "end"), schema, globals, scope)?,
-                logical.clone(),
-            );
-            let r_start = crate::ordering::canonical_key_nullable(
-                lower_scoped(&get(right, "start"), schema, globals, scope)?,
-                logical.clone(),
-            );
-            let r_end = crate::ordering::canonical_key_nullable(
-                lower_scoped(&get(right, "end"), schema, globals, scope)?,
-                logical,
-            );
+            let l_start = lower_scoped(&get(left, "start"), schema, globals, scope)?;
+            let l_end = lower_scoped(&get(left, "end"), schema, globals, scope)?;
+            let r_start = lower_scoped(&get(right, "start"), schema, globals, scope)?;
+            let r_end = lower_scoped(&get(right, "end"), schema, globals, scope)?;
             let l_inc_start = lower_scoped(&get(left, "includes_start"), schema, globals, scope)?;
             let l_inc_end = lower_scoped(&get(left, "includes_end"), schema, globals, scope)?;
             let r_inc_start = lower_scoped(&get(right, "includes_start"), schema, globals, scope)?;
@@ -4807,18 +4826,24 @@ fn lower_scoped(
                 | BinaryOperator::Gt
                 | BinaryOperator::Ge => {
                     let common = if lt == rt { lt } else { promote(&lt, &rt)? };
-                    let logical = serde_json::to_value(&common)
-                        .map_err(|e| ExprError::Invalid(e.to_string()))?;
+                    if matches!(operator, BinaryOperator::Eq | BinaryOperator::Ne)
+                        && common.contains_unordered()
+                    {
+                        return Err(ExprError::Unsupported(
+                            "Set/Dictionary equality requires logical collection operators".into(),
+                        ));
+                    }
+                    if !matches!(operator, BinaryOperator::Eq | BinaryOperator::Ne) {
+                        common.ensure_keyable()?;
+                        if !common.native_key() {
+                            return Err(ExprError::Unsupported(format!(
+                                "ordering comparison for {common:?}"
+                            )));
+                        }
+                    }
                     let common_arrow = common.to_arrow()?;
                     l = lower_cast(l, schema, &common_arrow)?;
                     r = lower_cast(r, schema, &common_arrow)?;
-                    if !matches!(operator, BinaryOperator::Eq | BinaryOperator::Ne) {
-                        common.ensure_keyable()?;
-                    }
-                    if !common.native_key() {
-                        l = crate::ordering::canonical_key_nullable(l, logical.clone());
-                        r = crate::ordering::canonical_key_nullable(r, logical);
-                    }
                     let op = match operator {
                         BinaryOperator::Eq => Operator::Eq,
                         BinaryOperator::Ne => Operator::NotEq,
@@ -5012,6 +5037,30 @@ mod tests {
     }
     fn expr(v: Value) -> Expr {
         serde_json::from_value(v).unwrap()
+    }
+
+    #[test]
+    fn arrow_array_sum_keeps_wrapping_identity_and_missing_semantics() {
+        let lists = ListArray::from_iter_primitive::<Int64Type, _, _>(vec![
+            Some(vec![Some(i64::MAX), Some(1)]),
+            Some(vec![None, None]),
+            Some(vec![]),
+            None,
+        ]);
+        let lists: ArrayRef = Arc::new(lists);
+        let filtered = array_reduce(&lists, ArrayReduction::Sum, true, &DataType::Int64).unwrap();
+        let filtered = filtered.as_any().downcast_ref::<Int64Array>().unwrap();
+        assert_eq!(
+            filtered.iter().collect::<Vec<_>>(),
+            [Some(i64::MIN), Some(0), Some(0), None,]
+        );
+
+        let strict = array_reduce(&lists, ArrayReduction::Sum, false, &DataType::Int64).unwrap();
+        let strict = strict.as_any().downcast_ref::<Int64Array>().unwrap();
+        assert_eq!(
+            strict.iter().collect::<Vec<_>>(),
+            [Some(i64::MIN), None, Some(0), None,]
+        );
     }
 
     #[test]
@@ -5486,6 +5535,51 @@ mod tests {
     }
 
     #[test]
+    fn set_literals_use_typed_arrow_equality_without_order_encoding() {
+        let set_type = Type::Set {
+            set: Box::new(Type::Primitive(PrimitiveType::Int64)),
+        };
+        let empty = literal_array(&json!([]), &set_type, 1).unwrap();
+        assert_eq!(empty.len(), 1);
+        assert_eq!(empty.null_count(), 0);
+        let values = literal_array(&json!([1, null, 1, 2]), &set_type, 1).unwrap();
+        let values = values.as_any().downcast_ref::<ListArray>().unwrap();
+        let values = values.value(0);
+        assert_eq!(values.len(), 3);
+        assert_eq!(values.null_count(), 1);
+
+        let nested_type = Type::Set {
+            set: Box::new(Type::Struct {
+                r#struct: vec![("x".into(), Type::Primitive(PrimitiveType::Int32))],
+            }),
+        };
+        let nested = literal_array(&json!([{"x": 1}, {"x": 1}]), &nested_type, 1).unwrap();
+        let nested = nested.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(nested.value(0).len(), 1);
+
+        assert!(set_type.ensure_keyable().is_err());
+        let dict_type = Type::Dict {
+            dict: Box::new((
+                Type::Primitive(PrimitiveType::Int32),
+                Type::Primitive(PrimitiveType::Str),
+            )),
+        };
+        assert!(dict_type.ensure_keyable().is_err());
+        let ndarray_type = Type::Ndarray {
+            ndarray: Box::new((Type::Primitive(PrimitiveType::Int32), 1)),
+        };
+        assert!(!ndarray_type.native_key());
+        assert!(ndarray_type.ensure_keyable().is_err());
+        let ndarray_struct = Type::Struct {
+            r#struct: vec![("x".into(), ndarray_type)],
+        };
+        assert!(ndarray_struct.ensure_keyable().is_err());
+        let empty_struct = Type::Struct { r#struct: vec![] };
+        assert!(empty_struct.ensure_keyable().is_ok());
+        assert!(empty_struct.native_key());
+    }
+
+    #[test]
     fn interval_types_literals_construction_and_field_projection() {
         let interval_type = Type::Interval {
             interval: Box::new(Type::Primitive(PrimitiveType::Int32)),
@@ -5497,11 +5591,6 @@ mod tests {
         let literal = json!({"start": 3, "end": 9, "includes_start": true, "includes_end": false});
         let array = literal_array(&literal, &interval_type, 1).unwrap();
         assert_eq!(array.data_type(), &interval_type.to_arrow().unwrap());
-        assert_eq!(
-            canonical_literal(&literal, &interval_type).unwrap(),
-            literal
-        );
-
         let batch = source(vec![Some(4), Some(11), None]);
         let interval_expr = json!({
             "op":"interval",

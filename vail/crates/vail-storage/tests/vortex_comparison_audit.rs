@@ -4,6 +4,7 @@ use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
     StringArray, StructArray,
 };
+use arrow_schema::SortOptions;
 use arrow_schema::{DataType, Field};
 use std::{cmp::Ordering, sync::Arc};
 use vortex::array::scalar_fn::fns::operators::Operator;
@@ -52,20 +53,36 @@ fn apply(order: Ordering, op: Operator) -> bool {
     }
 }
 
+fn native_order(left: &dyn Array, right: &dyn Array) -> Ordering {
+    arrow_ord::ord::make_comparator(
+        left,
+        right,
+        SortOptions {
+            descending: false,
+            nulls_first: true,
+        },
+    )
+    .unwrap()(0, 0)
+}
+
 fn agree(left: ArrayRef, right: ArrayRef) {
     assert_eq!(left.len(), right.len());
+    let compare = arrow_ord::ord::make_comparator(
+        left.as_ref(),
+        right.as_ref(),
+        SortOptions {
+            descending: false,
+            nulls_first: true,
+        },
+    )
+    .unwrap();
     for op in OPS {
         let expected: Vec<_> = (0..left.len())
             .map(|i| {
                 if left.is_null(i) || right.is_null(i) {
                     None
                 } else {
-                    Some(apply(
-                        vail_ordering::encode_value(left.as_ref(), i)
-                            .unwrap()
-                            .cmp(&vail_ordering::encode_value(right.as_ref(), i).unwrap()),
-                        op,
-                    ))
+                    Some(apply(compare(i, i), op))
                 }
             })
             .collect();
@@ -209,10 +226,7 @@ fn nested_nulls_demonstrate_missing_first_vs_missing_last() {
         comparisons(left.clone(), right.clone(), Operator::Lt),
         vec![Some(true)]
     );
-    assert!(
-        vail_ordering::encode_value(left.as_ref(), 0).unwrap()
-            > vail_ordering::encode_value(right.as_ref(), 0).unwrap()
-    );
+    assert_eq!(native_order(left.as_ref(), right.as_ref()), Ordering::Less);
     let left: ArrayRef = Arc::new(ListArray::from_iter_primitive::<Int32Type, _, _>(vec![
         Some(vec![None]),
     ]));
@@ -223,10 +237,7 @@ fn nested_nulls_demonstrate_missing_first_vs_missing_last() {
         comparisons(left.clone(), right.clone(), Operator::Lt),
         vec![Some(true)]
     );
-    assert!(
-        vail_ordering::encode_value(left.as_ref(), 0).unwrap()
-            > vail_ordering::encode_value(right.as_ref(), 0).unwrap()
-    );
+    assert_eq!(native_order(left.as_ref(), right.as_ref()), Ordering::Less);
 }
 
 #[test]
@@ -256,10 +267,7 @@ fn set_physical_order_is_not_logical_set_equality() {
         comparisons(left.clone(), right.clone(), Operator::Eq),
         vec![Some(false)]
     );
-    assert_eq!(
-        vail_ordering::encode_value(left.as_ref(), 0).unwrap(),
-        vail_ordering::encode_value(right.as_ref(), 0).unwrap()
-    );
+    assert_eq!(native_order(left.as_ref(), right.as_ref()), Ordering::Less);
 }
 
 fn fields(columns: Vec<(&str, ArrayRef)>) -> ArrayRef {
@@ -296,10 +304,7 @@ fn interval_inclusivity_order_matches_physical_struct_order() {
         comparisons(left.clone(), right.clone(), Operator::Lt),
         vec![Some(true)]
     );
-    assert!(
-        vail_ordering::encode_value(left.as_ref(), 0).unwrap()
-            < vail_ordering::encode_value(right.as_ref(), 0).unwrap()
-    );
+    assert_eq!(native_order(left.as_ref(), right.as_ref()), Ordering::Less);
 }
 
 #[test]
@@ -340,9 +345,7 @@ fn interval_struct_order_matches_hail_endpoint_order() {
                 );
             }
             assert_eq!(
-                vail_ordering::encode_value(make(left).as_ref(), 0)
-                    .unwrap()
-                    .cmp(&vail_ordering::encode_value(make(right).as_ref(), 0).unwrap()),
+                native_order(make(left).as_ref(), make(right).as_ref()),
                 expected
             );
         }
@@ -381,10 +384,7 @@ fn call_order_differs_from_physical_allele_order() {
         comparisons(left.clone(), right.clone(), Operator::Lt),
         vec![Some(true)]
     );
-    assert!(
-        vail_ordering::encode_value(left.as_ref(), 0).unwrap()
-            > vail_ordering::encode_value(right.as_ref(), 0).unwrap()
-    );
+    assert_eq!(native_order(left.as_ref(), right.as_ref()), Ordering::Less);
 }
 
 #[test]
@@ -422,10 +422,7 @@ fn ndarray_order_differs_from_physical_data_first_order() {
         comparisons(left.clone(), right.clone(), Operator::Lt),
         vec![Some(true)]
     );
-    assert!(
-        vail_ordering::encode_value(left.as_ref(), 0).unwrap()
-            > vail_ordering::encode_value(right.as_ref(), 0).unwrap()
-    );
+    assert_eq!(native_order(left.as_ref(), right.as_ref()), Ordering::Less);
 }
 
 #[test]
@@ -464,10 +461,7 @@ fn dictionary_entry_order_is_not_logical_dictionary_equality() {
         comparisons(left.clone(), right.clone(), Operator::Eq),
         vec![Some(false)]
     );
-    assert_eq!(
-        vail_ordering::encode_value(left.as_ref(), 0).unwrap(),
-        vail_ordering::encode_value(right.as_ref(), 0).unwrap()
-    );
+    assert_eq!(native_order(left.as_ref(), right.as_ref()), Ordering::Less);
 }
 
 #[tokio::test]

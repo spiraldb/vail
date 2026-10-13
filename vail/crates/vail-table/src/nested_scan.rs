@@ -351,7 +351,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     }
                     .to_arrow()?,
                     true,
-                )
+                )?
             } else {
                 vail_execution::scan_scopes::transformed(
                     descriptor(&child)?,
@@ -401,20 +401,23 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
         }
         Expr::AggGroupBy { key, body } => {
             let child = compose(body, context)?;
-            let encoded = Expr::NestedFunction {
-                function: "canonical_key".into(),
-                args: vec![(**key).clone()],
-                dtype: Type::Primitive(PrimitiveType::Str),
-            };
+            let key_type = context.dtype(key)?;
+            key_type.ensure_keyable()?;
+            let empty_struct =
+                matches!(&key_type, Type::Struct { r#struct } if r#struct.is_empty());
+            if !key_type.native_key() && !empty_struct {
+                return Err(TableError::Invalid(format!(
+                    "scan.group_by does not support native key type {key_type:?}"
+                )));
+            }
+            let key_arrow = key_type.to_arrow()?;
             let argument = Expr::Struct {
                 fields: vec![
                     ("key".into(), (**key).clone()),
-                    ("encoded".into(), encoded),
                     ("value".into(), child.argument.clone()),
                 ],
             };
             let input = context.dtype(&argument)?.to_arrow()?;
-            let key_type = context.dtype(key)?;
             let raw_type = Type::Dict {
                 dict: Box::new((
                     key_type.clone(),
@@ -424,10 +427,10 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
             let udf = vail_execution::scan_scopes::indexed(
                 descriptor(&child)?,
                 input.clone(),
-                key_type.to_arrow()?,
+                key_arrow,
                 raw_type.to_arrow()?,
                 false,
-            );
+            )?;
             let mut result = Built::identity(udf, argument, input);
             let entry_name = symbol();
             let entry = Expr::LambdaVariable {

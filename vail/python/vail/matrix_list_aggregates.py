@@ -8,7 +8,9 @@ from .expressions import Expression, _IR, cast
 from .types import tarray, tbool, tint32, tint64, tfloat64, type_from_wire
 
 
-def reduce_list(matrix, expr, base, contexts, outside=None, bound=None):
+def reduce_list(
+    matrix, expr, base, contexts, outside=None, bound=None, *, direct_entry_sum=False
+):
     from . import struct, literal, missing, if_else, is_defined, len as length
     from . import (
         sum as array_sum,
@@ -20,12 +22,11 @@ def reduce_list(matrix, expr, base, contexts, outside=None, bound=None):
 
     bound = dict(bound or {})
     globals = matrix.index_globals()
-    refs = (
-        dict(expr._global_refs)
-        | dict(contexts._global_refs)
-        | dict(globals._global_refs)
-    )
-    lookups = dict(expr._lookup_refs) | dict(contexts._lookup_refs)
+    refs = dict(expr._global_refs) | dict(globals._global_refs)
+    lookups = dict(expr._lookup_refs)
+    if contexts is not None:
+        refs.update(contexts._global_refs)
+        lookups.update(contexts._lookup_refs)
 
     def raw(node, dtype=tint32):
         return Expression(dtype, base, _IR(node, refs, lookups))
@@ -100,6 +101,55 @@ def reduce_list(matrix, expr, base, contexts, outside=None, bound=None):
         ):
             return context["bindings"][node["name"]].to_ir()
         return {k: bind(v, context) for k, v in node.items()}
+
+    if direct_entry_sum:
+        from . import if_else, missing, sum as array_sum
+        from .matrixtable import _CELLS, _PRESENT, _VALUE
+
+        aggregate = expr.to_ir()
+        if aggregate.get("op") != "aggregate" or aggregate.get("function") != "sum":
+            raise ValueError("direct entry sum requires a plain sum aggregate")
+
+        def bind_entry(node, cell):
+            if isinstance(node, list):
+                return [bind_entry(value, cell) for value in node]
+            if not isinstance(node, dict) or node.get("op") == "literal":
+                return node
+            if node.get("op") == "matrix_scope":
+                return bind_entry(node["value"], cell)
+            if node.get("op") == "matrix_field":
+                axis, name = node["axis"], node["name"]
+                if axis == "global":
+                    value = globals[name]
+                elif axis == "row":
+                    value = base[matrix._ROW_NAME][name]
+                elif axis == "entry":
+                    entry = (
+                        cell[_VALUE]
+                        if len(matrix.entry.dtype)
+                        else struct()
+                    )
+                    value = entry[name]
+                else:
+                    raise ValueError("direct entry sum cannot bind column fields")
+                refs.update(value._global_refs)
+                lookups.update(value._lookup_refs)
+                return value.to_ir()
+            if node.get("op") == "matrix_column_position":
+                raise ValueError("direct entry sum cannot bind column position")
+            return {key: bind_entry(value, cell) for key, value in node.items()}
+
+        result_type = expr.dtype
+        cells = base[_CELLS]
+        values = cells.map(
+            lambda cell: if_else(
+                cell[_PRESENT],
+                cast(raw(bind_entry(aggregate["value"], cell), result_type), result_type),
+                missing(result_type),
+            )
+        )
+        result = array_sum(values)
+        return Expression(expr.dtype, base, _IR(result.to_ir(), refs, lookups))
 
     def mapped(items, node):
         return typed(items.map(lambda ctx: raw(bind(node, ctx))))
@@ -201,6 +251,21 @@ def reduce_list(matrix, expr, base, contexts, outside=None, bound=None):
             if function == "count":
                 return cast(length(items), tint64).to_ir()
             values = mapped(items, node["value"])
+            # Entry-list contexts retain the cell-presence bit so a plain
+            # matrix entry sum can reduce each row without first filtering and
+            # materializing the full cell struct. Missing cells contribute a
+            # missing scalar; Arrow's typed array sum ignores null elements.
+            if function == "sum" and "present" in contexts.dtype.element_type:
+                element_type = values.dtype.element_type
+                values = typed(
+                    items.map(
+                        lambda ctx: if_else(
+                            ctx.present,
+                            raw(bind(node["value"], ctx), element_type),
+                            missing(element_type),
+                        )
+                    )
+                )
             if function == "collect":
                 result = values
             elif function == "collect_as_set":
