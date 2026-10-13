@@ -234,3 +234,40 @@ def test_write_rolls_one_logical_partition_into_multiple_files(tmp_path):
     assert loaded.n_partitions() == 1
     assert [r.idx for r in loaded.take(3)] == [0, 1, 2]
     assert [r.idx for r in loaded.tail(3).collect()] == [n - 3, n - 2, n - 1]
+
+
+def test_snapshot_compression_respects_vortex_edition(tmp_path):
+    # An irregular monotone column makes the unrestricted BtrBlocks compressor
+    # choose Delta, which is not in the default frozen Vortex edition. A small
+    # range_table fixture instead chooses Sequence and misses this failure.
+    import random
+
+    rng = random.Random(7)
+    value = 500_000
+    rows = []
+    for _ in range(8192):
+        value += rng.randint(1, 6)
+        rows.append({'position': value})
+    table = hl.Table.parallelize(
+        rows, schema=hl.tstruct(position=hl.tint32), n_partitions=2,
+    ).key_by('position').repartition(2).annotate_globals(label='edition-safe')
+    path = tmp_path / 'edition_safe'
+    table.write(path)
+    loaded = hl.read_table(path)
+    assert len(_fragment_files(path)) == 2
+    assert loaded.n_partitions() == 2
+    assert loaded.collect() == table.collect()
+    assert hl.eval(loaded.index_globals()) == hl.eval(table.index_globals())
+    lower, upper = rows[4000]['position'], rows[4200]['position']
+    selected = loaded.filter((loaded.position >= lower) & (loaded.position < upper))
+    assert selected.collect() == table.collect()[4000:4200]
+    # A fresh reader process must reconstruct the codec context from disk.
+    result = subprocess.run([
+        sys.executable, '-c',
+        'import sys, vail as hl; t=hl.read_table(sys.argv[1]); '
+        'rows=t.collect(); assert len(rows)==8192; '
+        'assert all(a.position < b.position for a,b in zip(rows,rows[1:])); '
+        'assert hl.eval(t.index_globals()).label=="edition-safe"',
+        str(path),
+    ], capture_output=True, text=True)
+    assert result.returncode == 0, result.stderr

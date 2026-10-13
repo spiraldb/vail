@@ -34,7 +34,7 @@ use vortex::dtype::extension::Matcher;
 use vortex::dtype::{DType, PType};
 use vortex::expr::stats::{Stat, StatsProvider, StatsProviderExt};
 use vortex::extension::datetime::{AnyTemporal, TimeUnit};
-use vortex::file::{WriteOptionsSessionExt, WriteStrategyBuilder, WriteSummary};
+use vortex::file::{WriteOptionsSessionExt, WriteSummary};
 use vortex::io::{IoBuf, VortexWrite};
 use vortex::layout::BufferedBytesTracker;
 use vortex::scalar::Scalar;
@@ -157,14 +157,15 @@ impl VortexWriter {
             .map_err(to_iceberg_error)?;
         let file = self.output_file.writer().await?;
         let bytes_written = Arc::new(AtomicU64::new(0));
-        let strategy = WriteStrategyBuilder::default().build();
 
         let (batches, receiver) = mpsc::channel::<ArrayRef>(1);
         let stream = ArrayStreamAdapter::new(dtype, receiver.map(Ok));
+        // Let Vortex configure compression from the session's enabled editions.
+        // An explicit, unrestricted strategy can emit encodings the file's
+        // serialization context forbids (for example fastlanes.delta).
         let write_options = self
             .session
             .write_options()
-            .with_strategy(strategy)
             .with_metadata_segment(
                 crate::arrow::VORTEX_SCHEMA_KEY,
                 serde_json::to_vec(self.schema.as_ref())?,
