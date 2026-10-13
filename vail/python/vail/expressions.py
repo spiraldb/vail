@@ -36,6 +36,43 @@ class ExpressionException(ValueError):
     """An expression references an incompatible source or index scope."""
 
 
+def _validate_ndarray_scope(base, operands):
+    """Report base-scoped matrix errors before unsupported ndarray kernels.
+
+    A global or literal base has no row/column scope to check. Since these
+    kernels are not implemented, no result expression exists for the enclosing
+    MatrixTable operation to validate in that case.
+    """
+    source = base.source
+    if source is None or not hasattr(source, "_validate"):
+        return
+    axes = set()
+
+    def visit(value):
+        if isinstance(value, dict):
+            if value.get("op") == "matrix_field" and value.get("axis") != "global":
+                axes.add(value["axis"])
+            else:
+                for child in value.values():
+                    visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+
+    visit(base.to_ir())
+    if axes == {"row", "col"}:
+        axis = "entry"
+    elif len(axes) == 1:
+        axis = {"row": "row", "col": "col", "entry": "entry"}.get(
+            next(iter(axes))
+        )
+    else:
+        axis = None
+    if axis is not None:
+        for operand in operands:
+            source._validate(operand, axis)
+
+
 def _merge_sources(left, right):
     if left is None:
         return right
@@ -247,6 +284,20 @@ class Expression:
     def __pow__(self, other): return self._binary(other, "pow")
     def __rpow__(self, other): return self._rbinary(other, "pow")
 
+    def __matmul__(self, other):
+        other = as_expr(other)
+        if not isinstance(self.dtype, tndarray) or not isinstance(other.dtype, tndarray):
+            return NotImplemented
+        _validate_ndarray_scope(self, (other,))
+        raise NotImplementedError("ndarray matrix multiplication is not implemented")
+
+    def reshape(self, shape):
+        if not isinstance(self.dtype, tndarray):
+            raise TypeError("reshape requires an ndarray expression")
+        dimensions = as_expr(shape)
+        _validate_ndarray_scope(self, (dimensions,))
+        raise NotImplementedError("ndarray reshape is not implemented")
+
     def __eq__(self, other): return self._compare(other, "eq")
     def __ne__(self, other): return self._compare(other, "ne")
     def __lt__(self, other):
@@ -327,6 +378,20 @@ class Expression:
             return if_else(contains(self, key), value, error)
         if isinstance(self.dtype, tset) and isinstance(self.dtype.element_type, tstruct):
             return self.map(lambda item: item[name])
+        if isinstance(self.dtype, tndarray):
+            indices = name if isinstance(name, tuple) else (name,)
+            if len([index for index in indices if index is not None]) > self.dtype.ndim:
+                raise IndexError("too many indices for ndarray")
+            operands = []
+            for index in indices:
+                if isinstance(index, slice):
+                    for endpoint in (index.start, index.stop, index.step):
+                        if endpoint is not None:
+                            operands.append(as_expr(endpoint))
+                elif index is not None:
+                    operands.append(as_expr(index))
+            _validate_ndarray_scope(self, operands)
+            raise NotImplementedError("ndarray indexing is not implemented")
         if isinstance(self.dtype, tinterval) and name in ("start", "end", "includes_start", "includes_end"):
             field_type = tbool if name.startswith("includes_") else self.dtype.point_type
             return Expression(field_type, self.source, {"op": "get_field", "value": self.to_ir(), "name": name})

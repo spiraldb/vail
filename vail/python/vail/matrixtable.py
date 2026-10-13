@@ -79,6 +79,26 @@ def _axes(node, *, outside_aggregates=False):
     return set()
 
 
+def _field_indices(node):
+    """Return the matrix fields and axes referenced by an expression IR."""
+    fields = {}
+    axis_names = {"row": "row", "col": "column", "entry": "entry", "global": "global"}
+
+    def visit(value):
+        if isinstance(value, dict):
+            if value.get("op") == "matrix_field":
+                fields.setdefault(value["name"], set()).add(axis_names[value["axis"]])
+                return
+            for child in value.values():
+                visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+
+    visit(node)
+    return fields
+
+
 def _is_scan(node):
     return node.get("op") == "aggregate" and (node.get("options") or {}).get(
         "__vail_scan", False
@@ -338,8 +358,18 @@ class MatrixTable:
         }[axis]
         actual = _axes(expr.to_ir(), outside_aggregates=aggregate)
         if not actual <= allowed:
+            invalid = _field_indices(expr.to_ir())
+            invalid = [
+                f"\n    '{name}' (indices {sorted(indices)})"
+                for name, indices in invalid.items()
+                if (set(indices) - {"global"}) & {
+                    "column" if value == "col" else value
+                    for value in actual - allowed
+                }
+            ]
             raise ExpressionException(
                 f"scope violation: {axis} expression uses incompatible axes: {sorted(actual - allowed)}"
+                + ("\n    Invalid fields:" + "".join(invalid) if invalid else "")
             )
         if not aggregate and _has_aggregate(expr.to_ir()):
             raise ExpressionException(
