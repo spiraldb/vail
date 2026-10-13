@@ -1,0 +1,62 @@
+{
+  "engine": "vail",
+  "package_version": "0.1.0a1",
+  "runtime_version": null,
+  "python": "3.11.13",
+  "architecture": "arm64",
+  "pid": 24465,
+  "cores": 14,
+  "scale": 1.0,
+  "warmups": 3,
+  "iterations": 5,
+  "import_seconds": 0.017501624999567866,
+  "initialization_seconds": 4.998873919248581e-07,
+  "settings": {},
+  "cases": [
+    {
+      "name": "matrix_entry_sum",
+      "parameters": {
+        "rows": 100000,
+        "columns": 10
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.25279816589318216,
+        0.24817391694523394,
+        0.245739416917786,
+        0.2479007081128657,
+        0.2505448751617223
+      ],
+      "load_average_before": [
+        [
+          4.6201171875,
+          4.9736328125,
+          5.01904296875
+        ],
+        [
+          4.6201171875,
+          4.9736328125,
+          5.01904296875
+        ],
+        [
+          4.6201171875,
+          4.9736328125,
+          5.01904296875
+        ],
+        [
+          4.6201171875,
+          4.9736328125,
+          5.01904296875
+        ],
+        [
+          4.6201171875,
+          4.9736328125,
+          5.01904296875
+        ]
+      ],
+      "median_seconds": 0.24817391694523394
+    }
+  ]
+}

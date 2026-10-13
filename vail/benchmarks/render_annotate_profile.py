@@ -89,7 +89,13 @@ def label(name):
     return name
 
 
+def workload_title(folder):
+    worker = json.loads((folder / 'worker.json').read_text())
+    return 'Matrix entry sum / 100K rows × 10 columns' if worker.get('workload') == 'matrix-entry-sum' else 'Annotate 100 fields / 1M rows'
+
+
 def flame(folder, folded, total):
+    title = workload_title(folder)
     # Remove Python/async wrapper frames in the overview; full stacks remain in
     # collapsed.folded and the native profile. Widths use sampled CPU, not idle time.
     root = {'weight': total, 'children': {}}
@@ -114,7 +120,7 @@ def flame(folder, folded, total):
     height = 150 + levels * bar_height
     parts = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
         '<rect width="100%" height="100%" fill="#fff"/>',
-        '<text x="20" y="32" font-family="sans-serif" font-size="24" font-weight="bold">Vail: annotate 100 fields on 1 million rows</text>',
+        f'<text x="20" y="32" font-family="sans-serif" font-size="24" font-weight="bold">Vail: {title}</text>',
         '<text x="20" y="60" font-family="sans-serif" font-size="16">CPU flamegraph · measured runs only · 500 Hz native stack samples</text>',
         '<text x="20" y="85" font-family="sans-serif" font-size="14">Widths = CPU time; warmups and idle threads excluded. Python/async wrappers omitted from this overview.</text>']
     for x, depth, w, name, weight in rectangles:
@@ -144,8 +150,8 @@ def flame(folder, folded, total):
         if w > 45:
             ax.text(x+4, depth+.48, text if len(text)<=n else text[:max(0,n-1)]+'…', va='center', fontsize=8, clip_on=True)
     ax.set_xlim(0,width);ax.set_ylim(-.2,levels+.2);ax.axis('off')
-    fig.suptitle('Vail annotate: CPU flamegraph', x=.04, y=.98, ha='left', fontsize=18, fontweight='bold')
-    fig.text(.04,.90,'100 fields × 1M rows · measured runs only · native samples at 500 Hz\nWidths represent CPU time; Python/async wrapper frames omitted.',fontsize=11,va='top')
+    fig.suptitle('Vail ' + title + ': CPU flamegraph', x=.04, y=.98, ha='left', fontsize=18, fontweight='bold')
+    fig.text(.04,.90,title + ' · measured runs only · native samples at 500 Hz\nWidths represent CPU time; Python/async wrapper frames omitted.',fontsize=11,va='top')
     fig.subplots_adjust(top=.79,bottom=.04,left=.015,right=.995)
     fig.savefig(folder/'flamegraph.png',facecolor='white');plt.close(fig)
 
@@ -171,7 +177,7 @@ def telemetry(folder):
             else:ax.axvline(a,color='black',lw=.6,alpha=.35)
         ax.grid(alpha=.2)
         ax.set_xlim(0,(events[-1]['end_monotonic_ns']-base)/1e9)
-    fig.suptitle('Vail annotate 100 fields / 1M rows: 10-Hz telemetry\nGray = warmups; vertical lines = measured iteration boundaries',fontsize=15)
+    fig.suptitle('Vail ' + workload_title(folder) + ': 10-Hz telemetry\nGray = warmups; vertical lines = measured iteration boundaries',fontsize=15)
     fig.tight_layout(rect=(0,0,1,.94));fig.savefig(folder/'telemetry.png',dpi=150);fig.savefig(folder/'telemetry.svg');plt.close(fig)
     selected=[r for r in metrics if any(e['start_monotonic_ns'] <= int(r['monotonic_ns']) <= e['end_monotonic_ns'] for e in events if e['phase']=='measured')]
     measured=[e for e in events if e['phase']=='measured']

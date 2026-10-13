@@ -4686,8 +4686,21 @@ fn lower_scoped(
                     let common_arrow = common.to_arrow()?;
                     l = lower_cast(l, schema, &common_arrow)?;
                     r = lower_cast(r, schema, &common_arrow)?;
-                    l = crate::ordering::canonical_key_nullable(l, logical.clone());
-                    r = crate::ordering::canonical_key_nullable(r, logical);
+                    // Primitive comparisons have the same null/value semantics
+                    // as DataFusion. Avoid allocating canonical binary keys for
+                    // every element, especially inside collection lambdas.
+                    if !matches!(
+                        common,
+                        Type::Primitive(
+                            PrimitiveType::Bool
+                                | PrimitiveType::Int32
+                                | PrimitiveType::Int64
+                                | PrimitiveType::Str
+                        )
+                    ) {
+                        l = crate::ordering::canonical_key_nullable(l, logical.clone());
+                        r = crate::ordering::canonical_key_nullable(r, logical);
+                    }
                     let op = match operator {
                         BinaryOperator::Eq => Operator::Eq,
                         BinaryOperator::Ne => Operator::NotEq,

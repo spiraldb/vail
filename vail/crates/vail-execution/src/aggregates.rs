@@ -169,6 +169,24 @@ impl Accumulator for HailAccumulator {
         // DataFusion appends ORDER BY expression arrays to aggregate inputs.
         // These reducers are order-insensitive, so consume only the value arg.
         let a = &vals[0];
+        if self.kind == AggregateKind::Sum && int_type(&self.input_type) {
+            // Hail promotes integer sums to int64 and wraps overflow. Arrow's
+            // batch reduction implements both without boxing input elements.
+            let values = arrow_cast::cast(a, &DataType::Int64)?;
+            let values = values
+                .as_any()
+                .downcast_ref::<arrow_array::Int64Array>()
+                .ok_or_else(|| {
+                    DataFusionError::Internal("integer sum cast must produce Int64".into())
+                })?;
+            if let Some(sum) = arrow_arith::aggregate::sum(values) {
+                self.integer_value = self.integer_value.wrapping_add(sum);
+                self.count = self
+                    .count
+                    .wrapping_add((values.len() - values.null_count()) as i64);
+            }
+            return Ok(());
+        }
         for row in 0..a.len() {
             if self.kind == AggregateKind::Fraction {
                 self.count = self.count.wrapping_add(1);

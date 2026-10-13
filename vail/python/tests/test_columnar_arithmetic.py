@@ -55,3 +55,63 @@ def test_float_arithmetic_promotion_nan_signed_zero_and_power():
     assert hl.eval(hl.int32(2)**hl.int32(3)) == 8.0
     assert (hl.int32(1)+hl.float64(0.5)).dtype == hl.tfloat64
     assert hl.eval(hl.int32(1)+hl.float64(0.5)) == 1.5
+
+
+@pytest.mark.parametrize('dtype,values,threshold', [
+    (hl.tint32, [-2, 0, 5, None], 0),
+    (hl.tint64, [-(1 << 63), 1 << 53, (1 << 53) + 1, None], 1 << 53),
+    (hl.tstr, ['A', 'a', 'β', None], 'a'),
+    (hl.tbool, [False, True, None], False),
+])
+def test_primitive_comparisons_in_collection_lambdas(dtype, values, threshold):
+    table = hl.Table.parallelize(
+        [{'values': values, 'threshold': threshold}],
+        schema=hl.tstruct(values=hl.tarray(dtype), threshold=dtype),
+    )
+    result = table.annotate(
+        comparisons=table.values.map(lambda value: hl.struct(
+            eq=value == table.threshold, ne=value != table.threshold,
+            lt=value < table.threshold, le=value <= table.threshold,
+            gt=value > table.threshold, ge=value >= table.threshold,
+        )),
+        filtered=table.values.filter(lambda value: value > table.threshold),
+    ).collect()[0]
+    for value, comparison in zip(values, result.comparisons):
+        expected = dict.fromkeys(['eq', 'ne', 'lt', 'le', 'gt', 'ge']) if value is None else {
+            'eq': value == threshold, 'ne': value != threshold,
+            'lt': value < threshold, 'le': value <= threshold,
+            'gt': value > threshold, 'ge': value >= threshold,
+        }
+        assert dict(comparison) == expected
+    assert result.filtered == [v for v in values if v is not None and v > threshold]
+
+
+def test_collection_float_comparisons_preserve_total_order():
+    table = hl.Table.parallelize(
+        [{'values': [-0.0, 0.0, float('nan'), None]}],
+        schema=hl.tstruct(values=hl.tarray(hl.tfloat64)),
+    )
+    result = table.annotate(
+        equality=table.values.map(lambda x: x == -0.0),
+        greater=table.values.map(lambda x: x > -0.0),
+    ).collect()[0]
+    assert result.equality == [True, False, False, None]
+    assert result.greater == [False, True, True, None]
+
+
+def test_integer_sum_batch_reduction_overflow_nulls_and_partition_merge():
+    high, low = (1 << 63) - 1, -(1 << 63)
+    table = hl.Table.parallelize(
+        [{'x': x} for x in [high, 1, low, -1, None]],
+        schema=hl.tstruct(x=hl.tint64), n_partitions=3,
+    )
+    assert table.aggregate(hl.agg.sum(table.x)) == -1
+    for values in [[], [{'x': None}]]:
+        empty = hl.Table.parallelize(values, schema=hl.tstruct(x=hl.tint64))
+        assert empty.aggregate(hl.agg.sum(empty.x)) == 0
+    # Promote before reducing, rather than wrapping the input's int32 width.
+    narrow = hl.Table.parallelize(
+        [{'x': (1 << 31) - 1}, {'x': (1 << 31) - 1}, {'x': None}],
+        schema=hl.tstruct(x=hl.tint32), n_partitions=3,
+    )
+    assert narrow.aggregate(hl.agg.sum(narrow.x)) == 2 * ((1 << 31) - 1)
