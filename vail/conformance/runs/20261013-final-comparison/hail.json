@@ -1,0 +1,726 @@
+{
+  "engine": "hail",
+  "package_version": "0.2.139",
+  "runtime_version": "0.2.139-5e5eedb87ff8",
+  "python": "3.11.13",
+  "architecture": "arm64",
+  "pid": 90145,
+  "cores": 14,
+  "scale": 1.0,
+  "warmups": 3,
+  "iterations": 5,
+  "import_seconds": 1.0856297090649605,
+  "initialization_seconds": 2.49948349990882,
+  "settings": {
+    "spark_version": "3.5.9",
+    "master": "local[14]",
+    "parallelism": 14,
+    "max_heap_bytes": 51539607552,
+    "spark_conf": {
+      "spark.hadoop.io.compression.codecs": "org.apache.hadoop.io.compress.DefaultCodec,is.hail.io.compress.BGzipCodec,is.hail.io.compress.BGzipCodecTbi,org.apache.hadoop.io.compress.GzipCodec",
+      "spark.master": "local[14]",
+      "spark.executor.extraClassPath": "/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+      "spark.app.submitTime": "1791934546632",
+      "spark.kryo.registrator": "is.hail.kryo.HailKryoRegistrator",
+      "spark.jars": "/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+      "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+      "spark.driver.port": "64175",
+      "spark.driver.extraClassPath": "/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+      "spark.repl.local.jars": "file:///private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/hail/backend/hail-all-spark.jar",
+      "spark.serializer.objectStreamReset": "100",
+      "spark.submit.deployMode": "client",
+      "spark.app.name": "Hail",
+      "spark.driver.extraJavaOptions": "-Djava.net.preferIPv6Addresses=false -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false",
+      "spark.executor.id": "driver",
+      "spark.driver.memory": "48g",
+      "spark.logConf": "true",
+      "spark.local.dir": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/",
+      "spark.driver.host": "daniels-macbook-pro-2.tail306708.ts.net",
+      "spark.executor.memory": "48g",
+      "spark.app.startTime": "1791934546951",
+      "spark.kryoserializer.buffer.max": "1g",
+      "spark.driver.maxResultSize": "8g",
+      "spark.rdd.compress": "True",
+      "spark.sql.shuffle.partitions": "14",
+      "spark.app.initial.jar.urls": "spark://daniels-macbook-pro-2.tail306708.ts.net:64175/jars/hail-all-spark.jar",
+      "spark.executor.extraJavaOptions": "-Djava.net.preferIPv6Addresses=false -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.lang.invoke=ALL-UNNAMED --add-opens=java.base/java.lang.reflect=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED --add-opens=java.base/java.net=ALL-UNNAMED --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/java.util.concurrent.atomic=ALL-UNNAMED --add-opens=java.base/jdk.internal.ref=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.nio.cs=ALL-UNNAMED --add-opens=java.base/sun.security.action=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED --add-opens=java.security.jgss/sun.security.krb5=ALL-UNNAMED -Djdk.reflect.useDirectMethodHandle=false",
+      "spark.ui.enabled": "false",
+      "spark.submit.pyFiles": "",
+      "spark.app.id": "local-1791934547211",
+      "spark.ui.showConsoleProgress": "true"
+    }
+  },
+  "cases": [
+    {
+      "name": "table_range_force_count",
+      "parameters": {
+        "rows": 100000000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.19715725001879036,
+        0.16034800000488758,
+        0.21615866688080132,
+        0.2109453328885138,
+        0.17013845802284777
+      ],
+      "load_average_before": [
+        [
+          1.87353515625,
+          2.73291015625,
+          3.93359375
+        ],
+        [
+          1.87353515625,
+          2.73291015625,
+          3.93359375
+        ],
+        [
+          1.87353515625,
+          2.73291015625,
+          3.93359375
+        ],
+        [
+          1.87353515625,
+          2.73291015625,
+          3.93359375
+        ],
+        [
+          1.87353515625,
+          2.73291015625,
+          3.93359375
+        ]
+      ],
+      "median_seconds": 0.19715725001879036
+    },
+    {
+      "name": "table_key_by_shuffle",
+      "parameters": {
+        "rows": 1000000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.7350512500852346,
+        0.7137504578568041,
+        0.6518461250234395,
+        0.7845700420439243,
+        0.7070665000937879
+      ],
+      "load_average_before": [
+        [
+          2.04345703125,
+          2.75390625,
+          3.93359375
+        ],
+        [
+          2.04345703125,
+          2.75390625,
+          3.93359375
+        ],
+        [
+          3.00048828125,
+          2.9404296875,
+          3.9921875
+        ],
+        [
+          3.00048828125,
+          2.9404296875,
+          3.9921875
+        ],
+        [
+          3.00048828125,
+          2.9404296875,
+          3.9921875
+        ]
+      ],
+      "median_seconds": 0.7137504578568041
+    },
+    {
+      "name": "table_group_sorted",
+      "parameters": {
+        "rows": 10000000,
+        "group_width": 1000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.5858697078656405,
+        0.49333133292384446,
+        0.5626952911261469,
+        0.4758877498097718,
+        0.5385232078842819
+      ],
+      "load_average_before": [
+        [
+          3.00048828125,
+          2.9404296875,
+          3.9921875
+        ],
+        [
+          5.08203125,
+          3.373046875,
+          4.138671875
+        ],
+        [
+          5.08203125,
+          3.373046875,
+          4.138671875
+        ],
+        [
+          5.08203125,
+          3.373046875,
+          4.138671875
+        ],
+        [
+          5.08203125,
+          3.373046875,
+          4.138671875
+        ]
+      ],
+      "median_seconds": 0.5385232078842819
+    },
+    {
+      "name": "table_group_unsorted",
+      "parameters": {
+        "rows": 10000000,
+        "group_width": 1000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.48617725004442036,
+        0.43672775011509657,
+        0.46694724983535707,
+        0.4515210830140859,
+        0.5107189579866827
+      ],
+      "load_average_before": [
+        [
+          5.08203125,
+          3.373046875,
+          4.138671875
+        ],
+        [
+          5.08203125,
+          3.373046875,
+          4.138671875
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ]
+      ],
+      "median_seconds": 0.46694724983535707
+    },
+    {
+      "name": "table_annotate_100_fields",
+      "parameters": {
+        "rows": 1000000,
+        "fields": 100
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.1926522080320865,
+        0.18668166710995138,
+        0.18769316608086228,
+        0.17130491696298122,
+        0.19959495798684657
+      ],
+      "load_average_before": [
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ]
+      ],
+      "median_seconds": 0.18769316608086228
+    },
+    {
+      "name": "table_stats",
+      "parameters": {
+        "rows": 10000000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.16368616605177522,
+        0.18609295901842415,
+        0.1372681250795722,
+        0.19045183318667114,
+        0.1370346660260111
+      ],
+      "load_average_before": [
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ],
+        [
+          5.5556640625,
+          3.49951171875,
+          4.1787109375
+        ]
+      ],
+      "median_seconds": 0.16368616605177522
+    },
+    {
+      "name": "table_inner_join",
+      "parameters": {
+        "left_rows": 1000000,
+        "right_rows": 1000000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.2523356669116765,
+        0.1752123748883605,
+        0.176948957843706,
+        0.20769837498664856,
+        0.1840377920307219
+      ],
+      "load_average_before": [
+        [
+          5.4306640625,
+          3.5078125,
+          4.17724609375
+        ],
+        [
+          5.4306640625,
+          3.5078125,
+          4.17724609375
+        ],
+        [
+          5.4306640625,
+          3.5078125,
+          4.17724609375
+        ],
+        [
+          5.4306640625,
+          3.5078125,
+          4.17724609375
+        ],
+        [
+          5.4306640625,
+          3.5078125,
+          4.17724609375
+        ]
+      ],
+      "median_seconds": 0.1840377920307219
+    },
+    {
+      "name": "table_foreign_key_lookup",
+      "parameters": {
+        "rows": 1000000,
+        "target_rows": 1000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        1.1871895000804216,
+        1.163304208079353,
+        1.2292745420709252,
+        1.187001292128116,
+        1.2911288749892265
+      ],
+      "load_average_before": [
+        [
+          6.43701171875,
+          3.748046875,
+          4.2578125
+        ],
+        [
+          6.43701171875,
+          3.748046875,
+          4.2578125
+        ],
+        [
+          6.43701171875,
+          3.748046875,
+          4.2578125
+        ],
+        [
+          6.43701171875,
+          3.748046875,
+          4.2578125
+        ],
+        [
+          7.92333984375,
+          4.1005859375,
+          4.37890625
+        ]
+      ],
+      "median_seconds": 1.1871895000804216
+    },
+    {
+      "name": "table_scan_sum",
+      "parameters": {
+        "rows": 1000000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.15644787508063018,
+        0.12027116701938212,
+        0.12696775002405047,
+        0.12367445905692875,
+        0.17128770798444748
+      ],
+      "load_average_before": [
+        [
+          7.92333984375,
+          4.1005859375,
+          4.37890625
+        ],
+        [
+          7.92333984375,
+          4.1005859375,
+          4.37890625
+        ],
+        [
+          7.92333984375,
+          4.1005859375,
+          4.37890625
+        ],
+        [
+          7.92333984375,
+          4.1005859375,
+          4.37890625
+        ],
+        [
+          7.92333984375,
+          4.1005859375,
+          4.37890625
+        ]
+      ],
+      "median_seconds": 0.12696775002405047
+    },
+    {
+      "name": "table_write",
+      "parameters": {
+        "rows": 1000000,
+        "int32_columns": 2
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.34954904089681804,
+        0.20157954096794128,
+        0.19279295788146555,
+        0.18233045819215477,
+        0.2600955420639366
+      ],
+      "load_average_before": [
+        [
+          7.92333984375,
+          4.1005859375,
+          4.37890625
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ]
+      ],
+      "median_seconds": 0.20157954096794128
+    },
+    {
+      "name": "table_read",
+      "parameters": {
+        "rows": 1000000,
+        "int32_columns": 2
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.09990249993279576,
+        0.09195283404551446,
+        0.09094445803202689,
+        0.09849387500435114,
+        0.07475270796567202
+      ],
+      "load_average_before": [
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ]
+      ],
+      "median_seconds": 0.09195283404551446
+    },
+    {
+      "name": "matrix_force_count_rows",
+      "parameters": {
+        "rows": 100000,
+        "columns": 10
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.05594624998047948,
+        0.04312449996359646,
+        0.05423162505030632,
+        0.03650758299045265,
+        0.036146249854937196
+      ],
+      "load_average_before": [
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ]
+      ],
+      "median_seconds": 0.04312449996359646
+    },
+    {
+      "name": "matrix_entry_sum",
+      "parameters": {
+        "rows": 100000,
+        "columns": 10
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.14388200012035668,
+        0.07374258385971189,
+        0.06860341690480709,
+        0.06837150012142956,
+        0.07685458310879767
+      ],
+      "load_average_before": [
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ]
+      ],
+      "median_seconds": 0.07374258385971189
+    },
+    {
+      "name": "matrix_filter_rows_columns",
+      "parameters": {
+        "rows": 100000,
+        "columns": 10
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.09283695905469358,
+        0.19121779198758304,
+        0.08462737500667572,
+        0.14198641711845994,
+        0.09760045795701444
+      ],
+      "load_average_before": [
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.72998046875,
+          4.3310546875,
+          4.45849609375
+        ],
+        [
+          8.51123046875,
+          4.3583984375,
+          4.46728515625
+        ],
+        [
+          8.51123046875,
+          4.3583984375,
+          4.46728515625
+        ],
+        [
+          8.51123046875,
+          4.3583984375,
+          4.46728515625
+        ]
+      ],
+      "median_seconds": 0.09760045795701444
+    },
+    {
+      "name": "vcf_import_entry_sum",
+      "parameters": {
+        "rows": 50000,
+        "samples": 10
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": null,
+      "status": "passed",
+      "seconds": [
+        0.12113212491385639,
+        0.12581387488171458,
+        0.14871366694569588,
+        0.1259831660427153,
+        0.1256453339010477
+      ],
+      "load_average_before": [
+        [
+          8.51123046875,
+          4.3583984375,
+          4.46728515625
+        ],
+        [
+          8.51123046875,
+          4.3583984375,
+          4.46728515625
+        ],
+        [
+          8.51123046875,
+          4.3583984375,
+          4.46728515625
+        ],
+        [
+          8.51123046875,
+          4.3583984375,
+          4.46728515625
+        ],
+        [
+          8.51123046875,
+          4.3583984375,
+          4.46728515625
+        ]
+      ],
+      "median_seconds": 0.12581387488171458
+    }
+  ]
+}
