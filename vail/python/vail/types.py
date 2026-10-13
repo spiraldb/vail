@@ -4,6 +4,7 @@ from __future__ import annotations
 from collections.abc import Mapping
 from dataclasses import dataclass
 import math
+import pprint
 import struct
 
 
@@ -318,13 +319,63 @@ class Struct(Mapping):
         raise TypeError("Struct is immutable")
 
     def __repr__(self):
-        return "Struct(" + ", ".join(f"{k}={v!r}" for k, v in self.items()) + ")"
+        if all(name.isidentifier() for name in self._fields):
+            fields = ", ".join(f"{name}={value!r}" for name, value in self.items())
+            return f"Struct({fields})"
+        fields = ", ".join(f"{name!r}: {value!r}" for name, value in self.items())
+        return f"Struct(**{{{fields}}})"
 
     def __eq__(self, other):
         return isinstance(other, Mapping) and dict(self) == dict(other)
 
     def __hash__(self):
         return 37 + hash(tuple(sorted(self._fields.items())))
+
+
+_standard_pretty_printer = pprint.PrettyPrinter
+
+
+class _StructPrettyPrinter(pprint.PrettyPrinter):
+    def _format(self, obj, stream, indent, allowance, context, level, *args, **kwargs):
+        if not isinstance(obj, Struct):
+            return _standard_pretty_printer._format(
+                self, obj, stream, indent, allowance, context, level, *args, **kwargs
+            )
+
+        representation = self._repr(obj, context, level)
+        if len(representation) <= self._width - indent - allowance:
+            stream.write(representation)
+            return
+
+        stream.write("Struct(")
+        indent += len("Struct(")
+        keyword_fields = all(name.isidentifier() for name in obj)
+        if keyword_fields:
+            fields = tuple(obj.items())
+            for index, (name, value) in enumerate(fields):
+                if index:
+                    stream.write(" " * indent)
+                stream.write(name + "=")
+                self._format(value, stream, indent + len(name) + 1, allowance, context, level, *args, **kwargs)
+                if index < len(fields) - 1:
+                    stream.write(",\n")
+        else:
+            stream.write("**{")
+            indent += len("**{")
+            fields = tuple(obj.items())
+            for index, (name, value) in enumerate(fields):
+                if index:
+                    stream.write(" " * indent)
+                key = repr(name)
+                stream.write(key + ": ")
+                self._format(value, stream, indent + len(key) + 2, allowance, context, level, *args, **kwargs)
+                if index < len(fields) - 1:
+                    stream.write(",\n")
+            stream.write("}")
+        stream.write(")")
+
+
+pprint.PrettyPrinter = _StructPrettyPrinter
 
 
 def is_type(value):

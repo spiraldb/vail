@@ -1127,9 +1127,20 @@ class Table:
         native = native.aggregate_globals_json(
             _json.dumps(expressions[0].to_ir()), _global_bindings(expressions))
         result = _external_globals(native, tstruct(value=expr.dtype))["value"]
-        if not _localize:
-            return result
-        return eval(result)
+        try:
+            if not _localize:
+                return result
+            return eval(result)
+        except RuntimeError as error:
+            # Hail exposes array_agg's length invariant as FatalError. The
+            # native bridge currently reports DataFusion execution failures
+            # as RuntimeError, so preserve that one public exception contract.
+            if re.fullmatch(
+                r"(?:Execution error: )?array_agg requires equal array lengths, found \d+ and \d+",
+                builtins.str(error),
+            ):
+                raise utils.FatalError(builtins.str(error)) from error
+            raise
 
     def all(self, expr):
         """Evaluate whether every row satisfies a boolean expression."""

@@ -27,8 +27,12 @@ def test_array_agg_empty_missing_mismatch_and_scopes():
     t = hl.Table.parallelize([dict(xs=[1, None]), dict(xs=None), dict(xs=[3, None])], schema=hl.tstruct(xs=hl.tarray(hl.tint32)))
     assert t.aggregate(hl.agg.array_sum(t.xs)) == [4, 0]
     t = hl.Table.parallelize([dict(xs=[1]), dict(xs=[])], schema=hl.tstruct(xs=hl.tarray(hl.tint32)))
-    with pytest.raises(Exception, match='equal array lengths'):
+    with pytest.raises(hl.utils.FatalError, match=r'array_agg requires equal array lengths, found 1 and 0'):
         t.aggregate(hl.agg.array_sum(t.xs))
+
+    # Other native execution errors retain their ordinary RuntimeError type.
+    with pytest.raises(RuntimeError, match='equal length'):
+        hl.eval(hl.corr([1], [1, 2]))
 
 
 def test_array_agg_within_table_groups_and_nested_dictionary():
