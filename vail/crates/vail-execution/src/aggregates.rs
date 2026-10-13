@@ -1,7 +1,7 @@
 //! Hail-compatible numeric and Boolean DataFusion aggregate UDAFs.
 use std::sync::Arc;
 
-use arrow_array::{Array, ArrayRef, Float64Array, Scalar};
+use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Scalar};
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{
@@ -169,6 +169,14 @@ impl Accumulator for HailAccumulator {
         // DataFusion appends ORDER BY expression arrays to aggregate inputs.
         // These reducers are order-insensitive, so consume only the value arg.
         let a = &vals[0];
+        if self.kind == AggregateKind::CountWhere {
+            let values = a
+                .as_any()
+                .downcast_ref::<BooleanArray>()
+                .ok_or_else(|| DataFusionError::Execution("count_where expects Boolean input".into()))?;
+            self.count = self.count.wrapping_add(values.true_count() as i64);
+            return Ok(());
+        }
         if self.kind == AggregateKind::Sum && int_type(&self.input_type) {
             // Hail promotes integer sums to int64 and wraps overflow. Arrow's
             // batch reduction implements both without boxing input elements.
@@ -602,6 +610,17 @@ pub fn aggregate_udf(
 mod tests {
     use super::*;
     use arrow_array::{BooleanArray, Float64Array, Int64Array};
+    #[test]
+    fn count_where_uses_arrow_true_count_and_ignores_nulls() {
+        let mut accumulator = HailAccumulator::new(AggregateKind::CountWhere, DataType::Boolean);
+        accumulator
+            .update_batch(&[Arc::new(BooleanArray::from(vec![
+                Some(true), Some(false), None, Some(true), None,
+            ]))])
+            .unwrap();
+        assert_eq!(accumulator.evaluate().unwrap(), ScalarValue::Int64(Some(2)));
+    }
+
     #[test]
     fn int64_sum_preserves_bits_and_merges() {
         let mut a = HailAccumulator::new(AggregateKind::Sum, DataType::Int64);
