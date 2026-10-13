@@ -1,0 +1,61 @@
+{
+  "engine": "vail",
+  "package_version": "0.1.0a1",
+  "runtime_version": null,
+  "python": "3.11.13",
+  "architecture": "arm64",
+  "pid": 74718,
+  "cores": 14,
+  "scale": 1.0,
+  "warmups": 3,
+  "iterations": 5,
+  "import_seconds": 0.05408845795318484,
+  "initialization_seconds": 1.0409858077764511e-06,
+  "settings": {},
+  "cases": [
+    {
+      "name": "table_stats",
+      "parameters": {
+        "rows": 10000000
+      },
+      "configured_cores": 14,
+      "source_partitions_requested": 14,
+      "status": "passed",
+      "seconds": [
+        0.7419727500528097,
+        0.7587495830375701,
+        0.7311148750595748,
+        0.7264777920208871,
+        0.7398698749020696
+      ],
+      "load_average_before": [
+        [
+          5.5458984375,
+          7.6298828125,
+          12.8095703125
+        ],
+        [
+          5.5458984375,
+          7.6298828125,
+          12.8095703125
+        ],
+        [
+          5.5458984375,
+          7.6298828125,
+          12.8095703125
+        ],
+        [
+          5.5458984375,
+          7.6298828125,
+          12.8095703125
+        ],
+        [
+          5.341796875,
+          7.552734375,
+          12.751953125
+        ]
+      ],
+      "median_seconds": 0.7398698749020696
+    }
+  ]
+}

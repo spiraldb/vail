@@ -1,0 +1,15 @@
+{
+  "sampling_hz": 10,
+  "profile_hz": 500,
+  "mach_tick_nanoseconds": 41.666666666666664,
+  "counter_api": "proc_pid_rusage RUSAGE_INFO_V4",
+  "cpu_percent_definition": "100% = one fully utilized CPU core",
+  "hardware_counters": [
+    "instructions",
+    "cycles"
+  ],
+  "derived_counters": [
+    "IPC"
+  ],
+  "cache_miss_counters": "not exposed by this API"
+}

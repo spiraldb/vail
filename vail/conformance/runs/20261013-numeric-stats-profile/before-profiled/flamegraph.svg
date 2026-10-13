@@ -1,0 +1,199 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1700" height="375" viewBox="0 0 1700 375">
+<rect width="100%" height="100%" fill="#fff"/>
+<text x="20" y="32" font-family="sans-serif" font-size="24" font-weight="bold">Vail: Numeric statistics / 10M rows</text>
+<text x="20" y="60" font-family="sans-serif" font-size="16">CPU flamegraph · measured runs only · 500 Hz native stack samples</text>
+<text x="20" y="85" font-family="sans-serif" font-size="14">Widths = CPU time; warmups and idle threads excluded. Python/async wrappers omitted from this overview.</text>
+<g><title>Other native / planning
+99.57% of measured CPU; 3.651 sampled CPU seconds</title><rect x="20.00" y="305" width="1652.90" height="24" fill="rgb(255,158,78)" stroke="#fff" stroke-width="0.7"/>
+<text x="24.00" y="322" font-family="monospace" font-size="12">Other native / planning</text>
+</g>
+<g><title>&lt;datafusion_common::scalar::ScalarValue&gt;::try_from_array
+14.91% of measured CPU; 0.547 sampled CPU seconds</title><rect x="20.00" y="280" width="247.57" height="24" fill="rgb(255,181,76)" stroke="#fff" stroke-width="0.7"/>
+<text x="24.00" y="297" font-family="monospace" font-size="12">ScalarValue::try_from_array</text>
+</g>
+<g><title>&lt;vail_execution::aggregates::HailAccumulator as datafusion_expr_common::accumulator::Accumulator&gt;::update_batch
+14.48% of measured CPU; 0.531 sampled CPU seconds</title><rect x="267.57" y="280" width="240.37" height="24" fill="rgb(255,168,73)" stroke="#fff" stroke-width="0.7"/>
+<text x="271.57" y="297" font-family="monospace" font-size="12">update_batch</text>
+</g>
+<g><title>&lt;datafusion_functions_aggregate::variance::VarianceAccumulator as datafusion_expr_common::accumulator::Accumulator&gt;::update_batch
+9.71% of measured CPU; 0.356 sampled CPU seconds</title><rect x="507.94" y="280" width="161.16" height="24" fill="rgb(255,136,66)" stroke="#fff" stroke-width="0.7"/>
+<text x="511.94" y="297" font-family="monospace" font-size="12">update_batch</text>
+</g>
+<g><title>&lt;dyn arrow_array::array::Array as datafusion_common::__private::DowncastArrayHelper&gt;::downcast_array_helper::&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Float64Type&gt;&gt;
+6.30% of measured CPU; 0.231 sampled CPU seconds</title><rect x="669.10" y="280" width="104.54" height="24" fill="rgb(255,164,94)" stroke="#fff" stroke-width="0.7"/>
+<text x="673.10" y="297" font-family="monospace" font-size="12">Arrow: downc…</text>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Int64Type&gt; as arrow_array::array::Array&gt;::is_null
+5.97% of measured CPU; 0.219 sampled CPU seconds</title><rect x="773.64" y="280" width="99.17" height="24" fill="rgb(255,205,75)" stroke="#fff" stroke-width="0.7"/>
+<text x="777.64" y="297" font-family="monospace" font-size="12">Arrow Primit…</text>
+</g>
+<g><title>core::ptr::drop_in_place::&lt;datafusion_common::scalar::ScalarValue&gt;
+5.78% of measured CPU; 0.212 sampled CPU seconds</title><rect x="872.81" y="280" width="95.94" height="24" fill="rgb(255,187,92)" stroke="#fff" stroke-width="0.7"/>
+<text x="876.81" y="297" font-family="monospace" font-size="12">core::ptr::…</text>
+</g>
+<g><title>free_tiny
+4.80% of measured CPU; 0.176 sampled CPU seconds</title><rect x="968.75" y="280" width="79.74" height="24" fill="rgb(255,185,90)" stroke="#fff" stroke-width="0.7"/>
+<text x="972.75" y="297" font-family="monospace" font-size="12">free_tiny</text>
+</g>
+<g><title>vail_execution::aggregates::replace_extreme
+4.38% of measured CPU; 0.161 sampled CPU seconds</title><rect x="1048.49" y="280" width="72.67" height="24" fill="rgb(255,175,80)" stroke="#fff" stroke-width="0.7"/>
+<text x="1052.49" y="297" font-family="monospace" font-size="12">vail_exe…</text>
+</g>
+<g><title>&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt; as arrow_array::array::Array&gt;::is_null
+3.01% of measured CPU; 0.110 sampled CPU seconds</title><rect x="1121.16" y="280" width="49.94" height="24" fill="rgb(255,157,122)" stroke="#fff" stroke-width="0.7"/>
+<text x="1125.16" y="297" font-family="monospace" font-size="12">Arro…</text>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Float64Type&gt;&gt;::value
+2.74% of measured CPU; 0.100 sampled CPU seconds</title><rect x="1171.11" y="280" width="45.43" height="24" fill="rgb(255,157,72)" stroke="#fff" stroke-width="0.7"/>
+<text x="1175.11" y="297" font-family="monospace" font-size="12">Arro…</text>
+</g>
+<g><title>&lt;dyn arrow_array::array::Array as datafusion_common::__private::DowncastArrayHelper&gt;::downcast_array_helper::&lt;arrow_array::array::boolean_array::BooleanArray&gt;
+2.54% of measured CPU; 0.093 sampled CPU seconds</title><rect x="1216.53" y="280" width="42.24" height="24" fill="rgb(255,187,72)" stroke="#fff" stroke-width="0.7"/>
+<text x="1220.53" y="297" font-family="monospace" font-size="12">Arr…</text>
+</g>
+<g><title>&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt; as arrow_array::array::Array&gt;::data_type
+1.97% of measured CPU; 0.072 sampled CPU seconds</title><rect x="1258.77" y="280" width="32.76" height="24" fill="rgb(255,206,121)" stroke="#fff" stroke-width="0.7"/>
+<text x="1262.77" y="297" font-family="monospace" font-size="12">Ar…</text>
+</g>
+<g><title>tiny_malloc_should_clear
+1.93% of measured CPU; 0.071 sampled CPU seconds</title><rect x="1291.53" y="280" width="32.06" height="24" fill="rgb(255,175,80)" stroke="#fff" stroke-width="0.7"/>
+<text x="1295.53" y="297" font-family="monospace" font-size="12">ti…</text>
+</g>
+<g><title>_malloc_zone_malloc
+1.84% of measured CPU; 0.068 sampled CPU seconds</title><rect x="1323.59" y="280" width="30.57" height="24" fill="rgb(255,193,103)" stroke="#fff" stroke-width="0.7"/>
+<text x="1327.59" y="297" font-family="monospace" font-size="12">_m…</text>
+</g>
+<g><title>&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt; as arrow_array::array::Array&gt;::as_any
+1.80% of measured CPU; 0.066 sampled CPU seconds</title><rect x="1354.15" y="280" width="29.92" height="24" fill="rgb(255,138,108)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>_platform_memset
+1.63% of measured CPU; 0.060 sampled CPU seconds</title><rect x="1384.07" y="280" width="26.98" height="24" fill="rgb(255,184,84)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>_free
+1.58% of measured CPU; 0.058 sampled CPU seconds</title><rect x="1411.05" y="280" width="26.23" height="24" fill="rgb(255,146,86)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Float64Type&gt; as arrow_array::array::Array&gt;::as_any
+1.47% of measured CPU; 0.054 sampled CPU seconds</title><rect x="1437.29" y="280" width="24.36" height="24" fill="rgb(255,150,105)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::boolean_array::BooleanArray&gt;::value
+1.42% of measured CPU; 0.052 sampled CPU seconds</title><rect x="1461.65" y="280" width="23.62" height="24" fill="rgb(255,186,81)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::boolean_array::BooleanArray as arrow_array::array::Array&gt;::is_null
+1.17% of measured CPU; 0.043 sampled CPU seconds</title><rect x="1485.27" y="280" width="19.49" height="24" fill="rgb(255,203,68)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>szone_malloc_should_clear
+1.13% of measured CPU; 0.041 sampled CPU seconds</title><rect x="1504.76" y="280" width="18.71" height="24" fill="rgb(255,197,72)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Float64Type&gt;&gt;::unary::&lt;arrow_arith::numeric::float_op&lt;arrow_array::types::Float64Type&gt;::{closure#9}, arrow_array::types::Float64Type&gt;
+1.09% of measured CPU; 0.040 sampled CPU seconds</title><rect x="1523.46" y="280" width="18.17" height="24" fill="rgb(255,143,103)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Float64Type&gt; as core::any::Any&gt;::type_id
+0.92% of measured CPU; 0.034 sampled CPU seconds</title><rect x="1541.64" y="280" width="15.33" height="24" fill="rgb(255,146,71)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Date32Type&gt; as arrow_array::array::Array&gt;::data_type
+0.68% of measured CPU; 0.025 sampled CPU seconds</title><rect x="1556.97" y="280" width="11.26" height="24" fill="rgb(255,159,74)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::boolean_array::BooleanArray as core::any::Any&gt;::type_id
+0.66% of measured CPU; 0.024 sampled CPU seconds</title><rect x="1568.23" y="280" width="10.95" height="24" fill="rgb(255,164,89)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>rack_get_thread_index
+0.62% of measured CPU; 0.023 sampled CPU seconds</title><rect x="1579.17" y="280" width="10.37" height="24" fill="rgb(255,164,84)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>core::ptr::drop_in_place::&lt;datafusion_common::error::DataFusionError&gt;
+0.62% of measured CPU; 0.023 sampled CPU seconds</title><rect x="1589.54" y="280" width="10.29" height="24" fill="rgb(255,198,83)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::boolean_array::BooleanArray as arrow_array::array::Array&gt;::data_type
+0.61% of measured CPU; 0.022 sampled CPU seconds</title><rect x="1599.83" y="280" width="10.15" height="24" fill="rgb(255,153,73)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>0x6766318
+0.52% of measured CPU; 0.019 sampled CPU seconds</title><rect x="1609.98" y="280" width="8.60" height="24" fill="rgb(255,194,109)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>_szone_free
+0.46% of measured CPU; 0.017 sampled CPU seconds</title><rect x="1618.58" y="280" width="7.64" height="24" fill="rgb(255,136,96)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::boolean_array::BooleanArray as arrow_array::array::Array&gt;::as_any
+0.38% of measured CPU; 0.014 sampled CPU seconds</title><rect x="1626.22" y="280" width="6.31" height="24" fill="rgb(255,178,68)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>0x6766314
+0.32% of measured CPU; 0.012 sampled CPU seconds</title><rect x="1632.53" y="280" width="5.32" height="24" fill="rgb(255,196,101)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>__rustc::__rdl_alloc
+0.30% of measured CPU; 0.011 sampled CPU seconds</title><rect x="1637.85" y="280" width="4.93" height="24" fill="rgb(255,152,82)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::UInt64Type&gt;&gt;::from_value
+0.29% of measured CPU; 0.010 sampled CPU seconds</title><rect x="1642.78" y="280" width="4.74" height="24" fill="rgb(255,205,105)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>0x3b978
+0.23% of measured CPU; 0.008 sampled CPU seconds</title><rect x="1647.52" y="280" width="3.79" height="24" fill="rgb(255,139,109)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>__bzero
+0.22% of measured CPU; 0.008 sampled CPU seconds</title><rect x="1651.31" y="280" width="3.58" height="24" fill="rgb(255,155,95)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>madvise
+0.16% of measured CPU; 0.006 sampled CPU seconds</title><rect x="1654.89" y="280" width="2.71" height="24" fill="rgb(255,168,108)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>__rustc::__rust_no_alloc_shim_is_unstable_v2
+0.16% of measured CPU; 0.006 sampled CPU seconds</title><rect x="1657.60" y="280" width="2.67" height="24" fill="rgb(255,159,119)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::UInt64Type&gt;&gt;::from_iter_values::&lt;core::iter::sources::repeat_n::RepeatN&lt;u64&gt;&gt;
+0.11% of measured CPU; 0.004 sampled CPU seconds</title><rect x="1660.27" y="280" width="1.80" height="24" fill="rgb(255,137,117)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>tiny_size
+0.10% of measured CPU; 0.004 sampled CPU seconds</title><rect x="1662.07" y="280" width="1.60" height="24" fill="rgb(255,167,102)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>__rustc::__rdl_dealloc
+0.08% of measured CPU; 0.003 sampled CPU seconds</title><rect x="1663.67" y="280" width="1.41" height="24" fill="rgb(255,133,113)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>arrow_cast::cast::cast_with_options
+0.05% of measured CPU; 0.002 sampled CPU seconds</title><rect x="1665.08" y="280" width="0.90" height="24" fill="rgb(255,149,124)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>datafusion_physical_optimizer::sanity_checker::check_finiteness_requirements
+0.05% of measured CPU; 0.002 sampled CPU seconds</title><rect x="1665.98" y="280" width="0.89" height="24" fill="rgb(255,162,67)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>core::ptr::drop_in_place::&lt;&lt;futures_util::stream::futures_unordered::FuturesUnordered&lt;_&gt; as futures_core::stream::Stream&gt;::poll_next::Bomb&lt;&lt;datafusion::physical_planner::DefaultPhysicalPlanner&gt;::task_helper::{closure#0}&gt;&gt;
+0.05% of measured CPU; 0.002 sampled CPU seconds</title><rect x="1666.87" y="280" width="0.89" height="24" fill="rgb(255,158,108)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;datafusion_physical_plan::projection::ProjectionExec&gt;::try_from_projector
+0.05% of measured CPU; 0.002 sampled CPU seconds</title><rect x="1667.77" y="280" width="0.87" height="24" fill="rgb(255,164,74)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;hashbrown::map::HashMap&lt;alloc::string::String, alloc::sync::Arc&lt;datafusion_expr::udaf::AggregateUDF&gt;, std::hash::random::RandomState&gt;&gt;::insert
+0.05% of measured CPU; 0.002 sampled CPU seconds</title><rect x="1668.64" y="280" width="0.87" height="24" fill="rgb(255,194,79)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;core::hash::sip::Hasher&lt;core::hash::sip::Sip13Rounds&gt; as core::hash::Hasher&gt;::write
+0.05% of measured CPU; 0.002 sampled CPU seconds</title><rect x="1669.51" y="280" width="0.84" height="24" fill="rgb(255,170,115)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;alloc::vec::Vec&lt;&amp;dyn datafusion_physical_plan::execution_plan::ExecutionPlan&gt; as alloc::vec::spec_from_iter::SpecFromIter&lt;&amp;dyn datafusion_physical_plan::execution_plan::ExecutionPlan, core::iter::adapters::map::Map&lt;alloc::vec::into_iter::IntoIter&lt;&amp;alloc::sync::Arc&lt;dyn datafusion_physical_plan::execution_plan::ExecutionPlan&gt;&gt;, &lt;datafusion_physical_plan::distribution_requirements::InputDistributionRequirements&gt;::check_invariants&lt;datafusion_physical_plan::joins::sort_merge_join::exec::SortMergeJoinExec&gt;::{closure#0}&gt;&gt;&gt;::from_iter
+0.05% of measured CPU; 0.002 sampled CPU seconds</title><rect x="1670.35" y="280" width="0.76" height="24" fill="rgb(255,160,60)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Int32Type&gt;&gt;::from_iter_values::&lt;core::iter::adapters::map::Map&lt;core::ops::range::Range&lt;usize&gt;, &lt;vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan&gt;::execute::{closure#0}::{closure#0}&gt;&gt;
+0.03% of measured CPU; 0.001 sampled CPU seconds</title><rect x="1671.10" y="280" width="0.50" height="24" fill="rgb(255,166,66)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;datafusion_physical_expr::projection::Projector&gt;::project_batch
+0.43% of measured CPU; 0.016 sampled CPU seconds</title><rect x="1672.90" y="305" width="7.10" height="24" fill="rgb(255,162,112)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>core::iter::adapters::try_process::&lt;core::iter::adapters::map::Map&lt;core::iter::adapters::enumerate::Enumerate&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;::{closure#0}&gt;, alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;, core::result::Result&lt;core::convert::Infallible, datafusion_common::error::DataFusionError&gt;, &lt;core::result::Result&lt;alloc::vec::Vec&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;&gt;, datafusion_common::error::DataFusionError&gt; as core::iter::traits::collect::FromIterator&lt;core::result::Result&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;, datafusion_common::error::DataFusionError&gt;&gt;&gt;::from_iter&lt;core::iter::adapters::map::Map&lt;core::iter::adapters::enumerate::Enumerate&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;::{closure#0}&gt;&gt;::{closure#0}, alloc::vec::Vec&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;&gt;&gt;
+0.43% of measured CPU; 0.016 sampled CPU seconds</title><rect x="1672.90" y="280" width="7.10" height="24" fill="rgb(255,206,91)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;alloc::vec::Vec&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;&gt; as alloc::vec::spec_from_iter::SpecFromIter&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;, core::iter::adapters::GenericShunt&lt;core::iter::adapters::map::Map&lt;core::iter::adapters::enumerate::Enumerate&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;::{closure#0}&gt;, core::result::Result&lt;core::convert::Infallible, datafusion_common::error::DataFusionError&gt;&gt;&gt;&gt;::from_iter
+0.43% of measured CPU; 0.016 sampled CPU seconds</title><rect x="1672.90" y="255" width="7.10" height="24" fill="rgb(255,197,87)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;core::iter::adapters::map::Map&lt;core::iter::adapters::enumerate::Enumerate&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;::{closure#0}&gt; as core::iter::traits::iterator::Iterator&gt;::try_fold::&lt;(), &lt;core::iter::adapters::GenericShunt&lt;core::iter::adapters::map::Map&lt;core::iter::adapters::enumerate::Enumerate&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics&lt;core::iter::adapters::map::Map&lt;core::slice::iter::Iter&lt;datafusion_physical_expr::projection::ProjectionExpr&gt;, &lt;datafusion_physical_expr::projection::Projector&gt;::project_batch::{closure#0}&gt;&gt;::{closure#0}&gt;, core::result::Result&lt;core::convert::Infallible, datafusion_common::error::DataFusionError&gt;&gt; as core::iter::traits::iterator::Iterator&gt;::try_fold&lt;(), core::iter::traits::iterator::Iterator::try_for_each::call&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;, core::ops::control_flow::ControlFlow&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;&gt;, core::ops::control_flow::ControlFlow&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;&gt;::Break&gt;::{closure#0}, core::ops::control_flow::ControlFlow&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;&gt;&gt;::{closure#0}, core::ops::control_flow::ControlFlow&lt;core::ops::control_flow::ControlFlow&lt;alloc::sync::Arc&lt;dyn arrow_array::array::Array&gt;&gt;&gt;&gt;
+0.43% of measured CPU; 0.016 sampled CPU seconds</title><rect x="1672.90" y="230" width="7.10" height="24" fill="rgb(255,212,72)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;datafusion_physical_expr::expressions::cast::CastExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr&gt;::evaluate
+0.43% of measured CPU; 0.016 sampled CPU seconds</title><rect x="1672.90" y="205" width="7.10" height="24" fill="rgb(255,135,90)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;datafusion_expr_common::columnar_value::ColumnarValue&gt;::cast_to
+0.43% of measured CPU; 0.016 sampled CPU seconds</title><rect x="1672.90" y="180" width="7.10" height="24" fill="rgb(255,159,104)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>arrow_cast::cast::cast_numeric_arrays::&lt;arrow_array::types::Int32Type, arrow_array::types::Float64Type&gt;
+0.43% of measured CPU; 0.016 sampled CPU seconds</title><rect x="1672.90" y="155" width="7.10" height="24" fill="rgb(255,162,117)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>&lt;arrow_array::array::primitive_array::PrimitiveArray&lt;arrow_array::types::Int32Type&gt;&gt;::try_unary::&lt;arrow_cast::cast::try_numeric_cast&lt;arrow_array::types::Int32Type, arrow_array::types::Float64Type&gt;::{closure#0}, arrow_array::types::Float64Type, arrow_schema::error::ArrowError&gt;
+0.43% of measured CPU; 0.016 sampled CPU seconds</title><rect x="1672.90" y="130" width="7.10" height="24" fill="rgb(255,145,115)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<g><title>__bzero
+0.15% of measured CPU; 0.005 sampled CPU seconds</title><rect x="1672.90" y="105" width="2.42" height="24" fill="rgb(255,155,95)" stroke="#fff" stroke-width="0.7"/>
+</g>
+<text x="20" y="363" font-family="sans-serif" font-size="13">Read bottom to top; hover an SVG frame for its full symbol and CPU weight.</text>
+</svg>

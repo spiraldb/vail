@@ -1,13 +1,15 @@
 //! Hail-compatible numeric and Boolean DataFusion aggregate UDAFs.
 use std::sync::Arc;
 
-use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Scalar};
+use arrow_array::{
+    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, Scalar,
+};
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{
-    Accumulator, AggregateUDF, Volatility,
     expr_fn::create_udaf,
     function::{AccumulatorArgs, StateFieldsArgs},
+    Accumulator, AggregateUDF, Volatility,
 };
 
 use crate::expressions::ExprError;
@@ -30,11 +32,12 @@ impl Accumulator for StableStddev {
             .downcast_ref::<Float64Array>()
             .ok_or_else(|| DataFusionError::Internal("stddev cast must produce Float64".into()))?;
         if self.origin.is_none() {
-            self.origin = values
-                .iter()
-                .flatten()
-                .next()
-                .map(|value| if value.is_finite() { value } else { 0. });
+            self.origin =
+                values
+                    .iter()
+                    .flatten()
+                    .next()
+                    .map(|value| if value.is_finite() { value } else { 0. });
         }
         // Variance is translation invariant. Centering also protects the
         // library's running mean when the original offset is near an f64 ULP.
@@ -157,6 +160,146 @@ impl HailAccumulator {
             seen: false,
         }
     }
+    fn update_min_max_batch(&mut self, values: &ArrayRef) -> DfResult<bool> {
+        let is_min = self.kind == AggregateKind::Min;
+        let value = match &self.input_type {
+            DataType::Int32 => {
+                let array = values
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Internal("min/max input type differs from Int32".into())
+                    })?;
+                if is_min {
+                    arrow_arith::aggregate::min(array).map(|value| ScalarValue::Int32(Some(value)))
+                } else {
+                    arrow_arith::aggregate::max(array).map(|value| ScalarValue::Int32(Some(value)))
+                }
+            }
+            DataType::Int64 => {
+                let array = values
+                    .as_any()
+                    .downcast_ref::<Int64Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Internal("min/max input type differs from Int64".into())
+                    })?;
+                if is_min {
+                    arrow_arith::aggregate::min(array).map(|value| ScalarValue::Int64(Some(value)))
+                } else {
+                    arrow_arith::aggregate::max(array).map(|value| ScalarValue::Int64(Some(value)))
+                }
+            }
+            DataType::Float32 => {
+                let array = values
+                    .as_any()
+                    .downcast_ref::<Float32Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Internal("min/max input type differs from Float32".into())
+                    })?;
+                if is_min {
+                    arrow_arith::aggregate::min(array)
+                        .map(|value| ScalarValue::Float32(Some(value)))
+                } else {
+                    arrow_arith::aggregate::max(array)
+                        .map(|value| ScalarValue::Float32(Some(value)))
+                }
+            }
+            DataType::Float64 => {
+                let array = values
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Internal("min/max input type differs from Float64".into())
+                    })?;
+                if is_min {
+                    arrow_arith::aggregate::min(array)
+                        .map(|value| ScalarValue::Float64(Some(value)))
+                } else {
+                    arrow_arith::aggregate::max(array)
+                        .map(|value| ScalarValue::Float64(Some(value)))
+                }
+            }
+            _ => return Ok(false),
+        };
+        if let Some(value) = value {
+            let value = if self.seen {
+                self.combine_min_max_values(&value)?
+            } else {
+                value
+            };
+            self.set_min_max_value(&value)?;
+        }
+        Ok(true)
+    }
+    fn combine_min_max_values(&self, value: &ScalarValue) -> DfResult<ScalarValue> {
+        let is_min = self.kind == AggregateKind::Min;
+        Ok(match (&self.input_type, value) {
+            (DataType::Int32, ScalarValue::Int32(Some(value))) => {
+                let current = self.integer_value as i32;
+                let values = Int32Array::from(vec![current, *value]);
+                let result = if is_min {
+                    arrow_arith::aggregate::min(&values)
+                } else {
+                    arrow_arith::aggregate::max(&values)
+                };
+                ScalarValue::Int32(result)
+            }
+            (DataType::Int64, ScalarValue::Int64(Some(value))) => {
+                let values = Int64Array::from(vec![self.integer_value, *value]);
+                let result = if is_min {
+                    arrow_arith::aggregate::min(&values)
+                } else {
+                    arrow_arith::aggregate::max(&values)
+                };
+                ScalarValue::Int64(result)
+            }
+            (DataType::Float32, ScalarValue::Float32(Some(value))) => {
+                let values = Float32Array::from(vec![self.float_value as f32, *value]);
+                let result = if is_min {
+                    arrow_arith::aggregate::min(&values)
+                } else {
+                    arrow_arith::aggregate::max(&values)
+                };
+                ScalarValue::Float32(result)
+            }
+            (DataType::Float64, ScalarValue::Float64(Some(value))) => {
+                let values = Float64Array::from(vec![self.float_value, *value]);
+                let result = if is_min {
+                    arrow_arith::aggregate::min(&values)
+                } else {
+                    arrow_arith::aggregate::max(&values)
+                };
+                ScalarValue::Float64(result)
+            }
+            _ => {
+                return Err(DataFusionError::Internal(
+                    "min/max accumulator state type mismatch".into(),
+                ))
+            }
+        })
+    }
+    fn set_min_max_value(&mut self, value: &ScalarValue) -> DfResult<()> {
+        self.float_value = num(value)?;
+        self.integer_value = as_i64(value).unwrap_or(0);
+        self.seen = true;
+        Ok(())
+    }
+    fn update_min_max_value(&mut self, value: &ScalarValue) -> DfResult<()> {
+        if !self.seen
+            || replace_extreme(
+                value,
+                self.kind,
+                &self.input_type,
+                self.integer_value,
+                self.float_value,
+            )?
+        {
+            self.float_value = num(value)?;
+            self.integer_value = as_i64(value).unwrap_or(0);
+        }
+        self.seen = true;
+        Ok(())
+    }
 }
 
 impl Accumulator for HailAccumulator {
@@ -170,10 +313,9 @@ impl Accumulator for HailAccumulator {
         // These reducers are order-insensitive, so consume only the value arg.
         let a = &vals[0];
         if self.kind == AggregateKind::CountWhere {
-            let values = a
-                .as_any()
-                .downcast_ref::<BooleanArray>()
-                .ok_or_else(|| DataFusionError::Execution("count_where expects Boolean input".into()))?;
+            let values = a.as_any().downcast_ref::<BooleanArray>().ok_or_else(|| {
+                DataFusionError::Execution("count_where expects Boolean input".into())
+            })?;
             self.count = self.count.wrapping_add(values.true_count() as i64);
             return Ok(());
         }
@@ -193,6 +335,11 @@ impl Accumulator for HailAccumulator {
                     .count
                     .wrapping_add((values.len() - values.null_count()) as i64);
             }
+            return Ok(());
+        }
+        if matches!(self.kind, AggregateKind::Min | AggregateKind::Max)
+            && self.update_min_max_batch(a)?
+        {
             return Ok(());
         }
         for row in 0..a.len() {
@@ -226,20 +373,7 @@ impl Accumulator for HailAccumulator {
                     }
                 }
                 AggregateKind::Min | AggregateKind::Max => {
-                    if !self.seen {
-                        self.float_value = num(&v)?;
-                        self.integer_value = as_i64(&v).unwrap_or(0);
-                        self.seen = true
-                    } else if replace_extreme(
-                        &v,
-                        self.kind,
-                        &self.input_type,
-                        self.integer_value,
-                        self.float_value,
-                    )? {
-                        self.float_value = num(&v)?;
-                        self.integer_value = as_i64(&v).unwrap_or(0);
-                    }
+                    self.update_min_max_value(&v)?;
                 }
                 AggregateKind::Sum | AggregateKind::Product => {
                     if int_type(&self.input_type) {
@@ -609,16 +743,69 @@ pub fn aggregate_udf(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use arrow_array::{BooleanArray, Float64Array, Int64Array};
+    use arrow_array::{BooleanArray, Float64Array, Int32Array, Int64Array};
+
     #[test]
     fn count_where_uses_arrow_true_count_and_ignores_nulls() {
         let mut accumulator = HailAccumulator::new(AggregateKind::CountWhere, DataType::Boolean);
         accumulator
             .update_batch(&[Arc::new(BooleanArray::from(vec![
-                Some(true), Some(false), None, Some(true), None,
+                Some(true),
+                Some(false),
+                None,
+                Some(true),
+                None,
             ]))])
             .unwrap();
         assert_eq!(accumulator.evaluate().unwrap(), ScalarValue::Int64(Some(2)));
+    }
+
+    #[test]
+    fn min_max_arrow_batches_preserve_nulls_and_signed_zero_ties() {
+        let values = Arc::new(Float64Array::from(vec![
+            Some(0.0),
+            Some(-0.0),
+            None,
+            Some(3.5),
+            Some(-2.0),
+        ]));
+        let mut min = HailAccumulator::new(AggregateKind::Min, DataType::Float64);
+        min.update_batch(&[values.clone()]).unwrap();
+        let ScalarValue::Float64(Some(minimum)) = min.evaluate().unwrap() else {
+            panic!("expected Float64 minimum");
+        };
+        assert_eq!(minimum, -2.0);
+
+        let zeros = Arc::new(Float64Array::from(vec![Some(0.0), Some(-0.0)]));
+        let mut min_zero = HailAccumulator::new(AggregateKind::Min, DataType::Float64);
+        min_zero.update_batch(&[zeros.clone()]).unwrap();
+        let mut max_zero = HailAccumulator::new(AggregateKind::Max, DataType::Float64);
+        max_zero.update_batch(&[zeros]).unwrap();
+        let ScalarValue::Float64(Some(minimum)) = min_zero.evaluate().unwrap() else {
+            panic!("expected Float64 minimum");
+        };
+        let ScalarValue::Float64(Some(maximum)) = max_zero.evaluate().unwrap() else {
+            panic!("expected Float64 maximum");
+        };
+        assert!(minimum.is_sign_negative());
+        assert!(!maximum.is_sign_negative());
+    }
+
+    #[test]
+    fn min_max_arrow_batches_preserve_integer_values_and_empty_identity() {
+        let values = Arc::new(Int32Array::from(vec![Some(8), None, Some(-4), Some(3)]));
+        let mut min = HailAccumulator::new(AggregateKind::Min, DataType::Int32);
+        min.update_batch(&[values.clone()]).unwrap();
+        assert_eq!(min.evaluate().unwrap(), ScalarValue::Int32(Some(-4)));
+        let mut max = HailAccumulator::new(AggregateKind::Max, DataType::Int32);
+        max.update_batch(&[values]).unwrap();
+        assert_eq!(max.evaluate().unwrap(), ScalarValue::Int32(Some(8)));
+
+        let mut empty = HailAccumulator::new(AggregateKind::Min, DataType::Int32);
+        empty
+            .update_batch(&[Arc::new(Int32Array::from(Vec::<Option<i32>>::new()))])
+            .unwrap();
+        assert_eq!(empty.evaluate().unwrap(), ScalarValue::Int32(None));
     }
 
     #[test]
@@ -747,7 +934,7 @@ mod tests {
     }
 
     #[test]
-    fn extrema_keep_input_integer_type_and_ignore_nan_when_finite_exists() {
+    fn extrema_use_arrow_native_ordering_across_batches_and_ignore_nulls() {
         let mut i32_min = HailAccumulator::new(AggregateKind::Min, DataType::Int32);
         i32_min
             .update_batch(&[Arc::new(arrow_array::Int32Array::from(vec![5, -2, 7]))])
@@ -756,13 +943,36 @@ mod tests {
         assert_eq!(i32_min.state().unwrap(), vec![ScalarValue::Int32(Some(-2))]);
 
         let mut max = HailAccumulator::new(AggregateKind::Max, DataType::Float64);
-        max.update_batch(&[Arc::new(Float64Array::from(vec![f64::NAN, 2.0, 4.0]))])
+        let input = Float64Array::from(vec![f64::NAN, 2.0, 4.0]);
+        max.update_batch(&[Arc::new(input.clone())]).unwrap();
+        let expected_max = arrow_arith::aggregate::max(&input);
+        assert_eq!(max.evaluate().unwrap(), ScalarValue::Float64(expected_max));
+        let mut split_max = HailAccumulator::new(AggregateKind::Max, DataType::Float64);
+        split_max
+            .update_batch(&[Arc::new(Float64Array::from(vec![f64::NAN]))])
             .unwrap();
-        assert_eq!(max.evaluate().unwrap(), ScalarValue::Float64(Some(4.0)));
+        split_max
+            .update_batch(&[Arc::new(Float64Array::from(vec![2.0, 4.0]))])
+            .unwrap();
+        assert_eq!(
+            split_max.evaluate().unwrap(),
+            ScalarValue::Float64(expected_max)
+        );
         let mut all_nan = HailAccumulator::new(AggregateKind::Min, DataType::Float64);
         all_nan
             .update_batch(&[Arc::new(Float64Array::from(vec![f64::NAN, f64::NAN]))])
             .unwrap();
-        assert!(matches!(all_nan.evaluate().unwrap(), ScalarValue::Float64(Some(x)) if x.is_nan()));
+        assert_eq!(
+            all_nan.evaluate().unwrap(),
+            ScalarValue::Float64(arrow_arith::aggregate::min(&Float64Array::from(vec![
+                f64::NAN,
+                f64::NAN
+            ])))
+        );
+        let mut empty_batch = HailAccumulator::new(AggregateKind::Min, DataType::Float32);
+        empty_batch
+            .update_batch(&[Arc::new(Float32Array::from(vec![None, None]))])
+            .unwrap();
+        assert_eq!(empty_batch.evaluate().unwrap(), ScalarValue::Float32(None));
     }
 }
