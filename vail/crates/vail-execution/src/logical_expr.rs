@@ -484,6 +484,7 @@ fn lower(
             ));
         }
         Expr::Die { .. }
+        | Expr::ArrayFold { .. }
         | Expr::ArrayMap { .. }
         | Expr::ArrayPredicate { .. }
         | Expr::ArrayFilter { .. }
@@ -714,6 +715,8 @@ fn logical_kernel(
 fn kernel_label(expr: &Expr) -> &'static str {
     match expr {
         Expr::Die { .. } => "die",
+        Expr::ArrayFold { scan: true, .. } => "array_scan",
+        Expr::ArrayFold { scan: false, .. } => "array_fold",
         Expr::ArrayMap { .. } => "array_transform",
         Expr::ArrayPredicate { first: true, .. } => "array_find",
         Expr::ArrayPredicate { first: false, .. } => "array_any",

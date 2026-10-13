@@ -404,6 +404,14 @@ pub enum Expr {
         parameter: String,
         body: Box<Expr>,
     },
+    ArrayFold {
+        value: Box<Expr>,
+        zero: Box<Expr>,
+        accumulator: String,
+        parameter: String,
+        body: Box<Expr>,
+        scan: bool,
+    },
     ArrayPredicate {
         value: Box<Expr>,
         parameter: String,
@@ -651,6 +659,13 @@ impl Expr {
                 value.visit(f);
                 body.visit(f);
             }
+            Self::ArrayFold {
+                value, zero, body, ..
+            } => {
+                value.visit(f);
+                zero.visit(f);
+                body.visit(f);
+            }
             Self::ArrayPredicate {
                 value, predicate, ..
             }
@@ -801,6 +816,13 @@ impl Expr {
             }
             Self::AggExplode { value, body, .. } | Self::ArrayMap { value, body, .. } => {
                 **value = f(value)?;
+                **body = f(body)?;
+            }
+            Self::ArrayFold {
+                value, zero, body, ..
+            } => {
+                **value = f(value)?;
+                **zero = f(zero)?;
                 **body = f(body)?;
             }
             Self::ArrayPredicate {
@@ -1224,6 +1246,43 @@ impl Expr {
                     ));
                 }
                 Ok(dtype.clone())
+            }
+            Self::ArrayFold {
+                value,
+                zero,
+                accumulator,
+                parameter,
+                body,
+                scan,
+            } => {
+                let Type::Array { array } = value.dtype_scoped(schema, globals, scope)? else {
+                    return Err(ExprError::Invalid("fold requires an array".into()));
+                };
+                let output = zero.dtype_scoped(schema, globals, scope)?;
+                if accumulator == parameter
+                    || scope
+                        .iter()
+                        .any(|(name, _, _)| name == accumulator || name == parameter)
+                {
+                    return Err(ExprError::Invalid(
+                        "duplicate lambda parameter identity".into(),
+                    ));
+                }
+                let mut nested = scope.to_vec();
+                nested.push((accumulator.clone(), output.clone(), schema.fields().len()));
+                nested.push((parameter.clone(), *array, schema.fields().len() + 1));
+                if body.dtype_scoped(schema, globals, &nested)? != output {
+                    return Err(ExprError::Invalid(
+                        "fold callback type must equal initial value type".into(),
+                    ));
+                }
+                Ok(if *scan {
+                    Type::Array {
+                        array: Box::new(output),
+                    }
+                } else {
+                    output
+                })
             }
             Self::ArrayMap {
                 value,
@@ -4205,6 +4264,38 @@ fn lower_scoped(
                 schema,
                 Arc::new(ConfigOptions::default()),
             )?)
+        }
+        Expr::ArrayFold {
+            value,
+            zero,
+            accumulator,
+            parameter,
+            body,
+            scan,
+        } => {
+            let Type::Array { array } = value.dtype_scoped(schema, globals.schema(), scope)? else {
+                unreachable!()
+            };
+            let accumulator_type = zero.dtype_scoped(schema, globals.schema(), scope)?;
+            let mut fields = schema.fields().to_vec();
+            fields.push(Arc::new(Field::new(
+                accumulator,
+                accumulator_type.to_arrow()?,
+                true,
+            )));
+            fields.push(Arc::new(Field::new(parameter, array.to_arrow()?, true)));
+            let nested_schema = Arc::new(Schema::new(fields));
+            let mut nested = scope.to_vec();
+            nested.push((accumulator.clone(), accumulator_type, schema.fields().len()));
+            nested.push((parameter.clone(), *array, schema.fields().len() + 1));
+            Arc::new(crate::array_fold::ArrayFoldExpr::new(
+                lower_scoped(value, schema, globals, scope)?,
+                lower_scoped(zero, schema, globals, scope)?,
+                lower_scoped(body, &nested_schema, globals, &nested)?,
+                nested_schema,
+                dtype.clone(),
+                *scan,
+            ))
         }
         Expr::ArrayMap {
             value,

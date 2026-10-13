@@ -1581,6 +1581,7 @@ from .allele_functions import (
 )
 from . import genetics
 from .builders import switch
+from .array_methods import fold, array_scan, mean, median, group_by
 
 from .collection_functions import (zip, map, starmap, any, all, find, filter, flatmap,
                                    flatten, enumerate, zip_with_index, corr, or_else)
