@@ -1,0 +1,99 @@
+2026-10-13 11:12:36.297 WARN  NativeCodeLoader:60 - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+2026-10-13 11:12:37.173 WARN  SparkConf:72 - Note that spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone/kubernetes and LOCAL_DIRS in YARN).
+hail: table_range_force_count {'rows': 100000000}
+  0.547259s
+  0.384446s
+  0.432850s
+  0.351674s
+[Stage 7:========================================>                (10 + 4) / 14]                                                                                  0.677132s
+hail: table_key_by_shuffle {'rows': 1000000}
+[Stage 8:>                                                        (0 + 14) / 14][Stage 8:=============================>                            (7 + 7) / 14]                                                                                WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.apache.spark.util.SizeEstimator$ (file:/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/pyspark/jars/spark-core_2.12-3.5.9.jar) to field java.lang.ref.Reference.referent
+WARNING: Please consider reporting this to the maintainers of org.apache.spark.util.SizeEstimator$
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+[Stage 9:>                                                        (0 + 14) / 14][Stage 10:>                                                       (0 + 14) / 14][Stage 10:====>                                                   (1 + 13) / 14]                                                                                [Stage 11:>                                                       (0 + 14) / 14]                                                                                [Stage 18:====================================>                    (9 + 5) / 14]                                                                                  1.609071s
+  1.204207s
+[Stage 24:====================================>                    (9 + 5) / 14]                                                                                  1.528144s
+  1.253350s
+  1.293255s
+hail: table_group_sorted {'rows': 10000000, 'group_width': 1000}
+[Stage 32:>                                                       (0 + 14) / 14]                                                                                  0.769999s
+  0.950397s
+  0.707086s
+  0.784236s
+  0.599203s
+hail: table_group_unsorted {'rows': 10000000, 'group_width': 1000}
+  0.776450s
+  0.873263s
+  0.611832s
+  0.685343s
+  0.842009s
+hail: table_annotate_100_fields {'rows': 1000000, 'fields': 100}
+  0.324391s
+  0.323114s
+  0.297465s
+  0.282546s
+  0.256303s
+hail: table_stats {'rows': 10000000}
+[Stage 82:>                                                       (0 + 14) / 14]                                                                                  0.301297s
+  0.343903s
+  0.278952s
+  0.494863s
+  0.279550s
+hail: table_inner_join {'left_rows': 1000000, 'right_rows': 1000000}
+  0.181532s
+  0.250372s
+  0.328805s
+  0.195129s
+  0.299127s
+hail: table_foreign_key_lookup {'rows': 1000000, 'target_rows': 1000}
+  2.155739s
+[Stage 122:===>                                                   (1 + 13) / 14]                                                                                  2.186022s
+[Stage 130:===============================================>       (12 + 2) / 14]                                                                                  2.019852s
+  1.955197s
+  1.870016s
+hail: table_scan_sum {'rows': 1000000}
+  0.144933s
+  0.215630s
+  0.180614s
+  0.191143s
+  0.284295s
+hail: table_write {'rows': 1000000, 'int32_columns': 2}
+  0.830602s
+  0.667867s
+  0.852470s
+  0.665356s
+  0.479597s
+hail: table_read {'rows': 1000000, 'int32_columns': 2}
+  0.172746s
+  0.111356s
+  0.116407s
+  0.118221s
+  0.107290s
+hail: matrix_force_count_rows {'rows': 100000, 'columns': 10}
+  0.109082s
+  0.177718s
+  0.127115s
+  0.071278s
+  0.220062s
+hail: matrix_entry_sum {'rows': 100000, 'columns': 10}
+  0.127009s
+  0.128607s
+  0.143839s
+  0.148829s
+  0.219332s
+hail: matrix_filter_rows_columns {'rows': 100000, 'columns': 10}
+  0.186586s
+  0.205920s
+  0.231972s
+  0.146116s
+  0.283910s
+hail: vcf_import_entry_sum {'rows': 50000, 'samples': 10}
+  0.228490s
+  0.227671s
+  0.249097s
+  0.237613s
+  0.202083s

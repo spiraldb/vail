@@ -1,0 +1,99 @@
+2026-10-13 11:16:54.550 WARN  NativeCodeLoader:60 - Unable to load native-hadoop library for your platform... using builtin-java classes where applicable
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+2026-10-13 11:16:54.910 WARN  SparkConf:72 - Note that spark.local.dir will be overridden by the value set by the cluster manager (via SPARK_LOCAL_DIRS in mesos/standalone/kubernetes and LOCAL_DIRS in YARN).
+hail: table_range_force_count {'rows': 100000000}
+  0.346769s
+  0.259518s
+  0.297862s
+  0.222804s
+  0.259210s
+hail: table_key_by_shuffle {'rows': 1000000}
+[Stage 8:>                                                        (0 + 14) / 14]                                                                                WARNING: An illegal reflective access operation has occurred
+WARNING: Illegal reflective access by org.apache.spark.util.SizeEstimator$ (file:/private/tmp/vail-stock-hail-benchmark/lib/python3.11/site-packages/pyspark/jars/spark-core_2.12-3.5.9.jar) to field java.lang.ref.Reference.referent
+WARNING: Please consider reporting this to the maintainers of org.apache.spark.util.SizeEstimator$
+WARNING: Use --illegal-access=warn to enable warnings of further illegal reflective access operations
+WARNING: All illegal access operations will be denied in a future release
+[Stage 9:>                                                        (0 + 14) / 14][Stage 10:>                                                       (0 + 14) / 14]                                                                                [Stage 11:>                                                       (0 + 14) / 14]                                                                                  1.179685s
+  1.226673s
+  1.164900s
+  1.188869s
+  1.144476s
+hail: table_group_sorted {'rows': 10000000, 'group_width': 1000}
+[Stage 32:====>                                                   (1 + 13) / 14][Stage 32:============>                                           (3 + 11) / 14]                                                                                  0.701470s
+  0.676090s
+  0.652073s
+  0.657520s
+  0.633722s
+hail: table_group_unsorted {'rows': 10000000, 'group_width': 1000}
+  0.509531s
+  0.666260s
+  0.640898s
+  0.636435s
+  0.478941s
+hail: table_annotate_100_fields {'rows': 1000000, 'fields': 100}
+  0.268076s
+  0.196552s
+  0.215303s
+  0.224006s
+  0.228497s
+hail: table_stats {'rows': 10000000}
+  0.193425s
+  0.171772s
+  0.139340s
+  0.142874s
+  0.206632s
+hail: table_inner_join {'left_rows': 1000000, 'right_rows': 1000000}
+  0.188388s
+  0.174692s
+  0.231685s
+  0.206964s
+  0.203087s
+hail: table_foreign_key_lookup {'rows': 1000000, 'target_rows': 1000}
+[Stage 98:>                                                       (0 + 14) / 14][Stage 98:====================================================>   (13 + 1) / 14]                                                                                [Stage 100:===>                                                   (1 + 13) / 14]                                                                                [Stage 104:============================>                           (7 + 7) / 14]                                                                                [Stage 106:===========>                                           (3 + 11) / 14]                                                                                [Stage 110:>                                                      (0 + 14) / 14]                                                                                [Stage 112:====================================>                   (9 + 5) / 14]                                                                                [Stage 116:===============>                                       (4 + 10) / 14]                                                                                [Stage 118:====================>                                   (5 + 9) / 14]                                                                                  2.493180s
+[Stage 122:>                                                      (0 + 14) / 14]                                                                                [Stage 124:===========================================>           (11 + 3) / 14]                                                                                  2.550374s
+[Stage 128:>                                                      (0 + 14) / 14]                                                                                [Stage 130:============================>                           (7 + 7) / 14]                                                                                  2.381605s
+[Stage 134:===========>                                           (3 + 11) / 14]                                                                                [Stage 136:===============================================>       (12 + 2) / 14]                                                                                  2.682999s
+[Stage 140:>                                                      (0 + 14) / 14]                                                                                [Stage 142:===>                                                   (1 + 13) / 14]                                                                                  2.593823s
+hail: table_scan_sum {'rows': 1000000}
+  0.185328s
+  0.157013s
+  0.127890s
+  0.145028s
+  0.162361s
+hail: table_write {'rows': 1000000, 'int32_columns': 2}
+[Stage 160:>                                                      (0 + 14) / 14]                                                                                  0.480090s
+  0.428567s
+  0.431097s
+  0.391562s
+  0.350398s
+hail: table_read {'rows': 1000000, 'int32_columns': 2}
+  0.211923s
+  0.189167s
+  0.139556s
+  0.168602s
+  0.164300s
+hail: matrix_force_count_rows {'rows': 100000, 'columns': 10}
+  0.077982s
+  0.080334s
+  0.130889s
+  0.059091s
+  0.057209s
+hail: matrix_entry_sum {'rows': 100000, 'columns': 10}
+  0.155897s
+  0.128493s
+  0.087256s
+  0.087329s
+  0.099956s
+hail: matrix_filter_rows_columns {'rows': 100000, 'columns': 10}
+  0.191776s
+  0.487201s
+  0.165335s
+  0.126440s
+  0.106846s
+hail: vcf_import_entry_sum {'rows': 50000, 'samples': 10}
+  0.216328s
+  0.203205s
+  0.237571s
+  0.205742s
+  0.158326s
