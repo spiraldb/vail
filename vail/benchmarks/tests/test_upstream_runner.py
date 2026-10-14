@@ -67,3 +67,30 @@ def test_inventory_binds_every_upstream_argument():
         {"m": 1_000_000_000, "n": 1000},
         {"m": 1_000_000_000, "n": 1_000_000_000},
     ]
+
+
+def crash_worker(case, engine, smoke, data_dir, queue):
+    os.setsid()
+    if case["after_ready"]:
+        queue.put({"status": "ready"})
+        time.sleep(0.3)
+    os._exit(7)
+
+
+@pytest.mark.parametrize("after_ready", [False, True])
+def test_worker_exit_is_reported_without_waiting_for_timeout(monkeypatch, after_ready):
+    context = mp.get_context("spawn")
+
+    class CrashContext:
+        Queue = staticmethod(context.Queue)
+
+        @staticmethod
+        def Process(*, target, args):
+            return context.Process(target=crash_worker, args=args)
+
+    monkeypatch.setattr(coverage.mp, "get_context", lambda method: CrashContext())
+    started = time.monotonic()
+    result = coverage.run_one({"upstream_marks": [], "after_ready": after_ready}, "vail", 60, 60, False, ".")
+    assert result["status"] == "failed"
+    assert result["worker_exitcode"] == 7
+    assert time.monotonic() - started < 5

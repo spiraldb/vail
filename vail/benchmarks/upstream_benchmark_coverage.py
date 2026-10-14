@@ -14,6 +14,7 @@ import hashlib
 import json
 import multiprocessing as mp
 import os
+from queue import Empty
 import shutil
 import signal
 from pathlib import Path
@@ -309,8 +310,6 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
     benchmark_seconds = None
     try:
         import importlib
-        import sys
-        sys.path.insert(0, str(ROOT / "python"))
         if engine == "vail":
             import vail
         if engine == "hail":
@@ -389,6 +388,11 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
 def _stop_worker_tree(process, grace_seconds: float = 5.0) -> None:
     """Terminate and reap the worker and any JVM/Spark descendants."""
     if not process.is_alive():
+        # An aborted Python worker can leave JVM descendants in its group.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            pass
         process.join()
         return
     try:
@@ -405,6 +409,23 @@ def _stop_worker_tree(process, grace_seconds: float = 5.0) -> None:
         process.join(grace_seconds)
 
 
+class WorkerExitedError(RuntimeError):
+    pass
+
+
+def _worker_message(queue, process, timeout):
+    deadline = time.monotonic() + timeout
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise Empty
+        try:
+            return queue.get(timeout=min(0.2, remaining))
+        except Empty:
+            if not process.is_alive():
+                raise WorkerExitedError(f"worker exited with code {process.exitcode} before reporting a result")
+
+
 def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
             smoke: bool, data_dir: str) -> dict:
     upstream_skip = next((mark for mark in case["upstream_marks"] if mark["name"] == "skip"), None)
@@ -415,10 +436,13 @@ def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
     started = time.monotonic()
     process.start()
     try:
-        first = queue.get(timeout=fixture_timeout)
-    except Exception:
+        first = _worker_message(queue, process, fixture_timeout)
+    except Exception as exc:
         _stop_worker_tree(process)
         queue.close()
+        if isinstance(exc, WorkerExitedError):
+            return {"status": "failed", "error": str(exc), "worker_exitcode": process.exitcode,
+                    "phase": "awaiting_fixture_or_start", "elapsed_seconds": round(time.monotonic() - started, 3)}
         return {"status": "fixture_timeout", "fixture_timeout_seconds": fixture_timeout,
                 "elapsed_seconds": round(time.monotonic() - started, 3)}
     if first.get("status") != "ready":
@@ -430,10 +454,13 @@ def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
         return first
     benchmark_started = time.monotonic()
     try:
-        result = queue.get(timeout=timeout)
-    except Exception:
+        result = _worker_message(queue, process, timeout)
+    except Exception as exc:
         _stop_worker_tree(process)
         queue.close()
+        if isinstance(exc, WorkerExitedError):
+            return {"status": "failed", "error": str(exc), "worker_exitcode": process.exitcode,
+                    "phase": "benchmark", "elapsed_seconds": round(time.monotonic() - started, 3)}
         return {"status": "timed_out", "timeout_seconds": timeout,
                 "fixture_seconds": round(benchmark_started - started, 3),
                 "elapsed_seconds": round(time.monotonic() - started, 3)}
