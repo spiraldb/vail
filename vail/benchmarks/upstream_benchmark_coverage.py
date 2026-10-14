@@ -34,8 +34,11 @@ def _parameters(node: ast.FunctionDef) -> list[tuple]:
         if (isinstance(decorator, ast.Call) and isinstance(decorator.func, ast.Attribute)
                 and decorator.func.attr == "parametrize" and len(decorator.args) >= 2):
             values = ast.literal_eval(decorator.args[1])
-            dimensions.append(values)
-    return list(itertools.product(*dimensions)) if dimensions else [()]
+            raw_names = ast.literal_eval(decorator.args[0])
+            names = raw_names.split(",") if isinstance(raw_names, str) else raw_names
+            dimensions.append([(value,) if len(names) == 1 else tuple(value) for value in values])
+    return [tuple(value for dimension in combination for value in dimension)
+            for combination in itertools.product(*dimensions)] if dimensions else [()]
 
 
 def _fixture_parameters() -> dict[str, list]:
@@ -107,6 +110,7 @@ def inventory() -> list[dict]:
                     "args": [arg.arg for arg in node.args.args],
                     "fixtures": fixture_args,
                     "parameters": values,
+                    "arguments": dict(zip(explicit_order, values[:test_parameter_count])),
                     "fixture_parameters": fixture_parameter_values,
                     "upstream_marks": marks,
                 })
@@ -351,9 +355,7 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
             fixture_values = _make_smoke_fixtures(hl, case["fixtures"], Path(fixture_temp.name), case["fixture_parameters"])
         else:
             fixture_values = _make_exact_fixtures(hl, engine, case["fixtures"], Path(data_dir), case["fixture_parameters"])
-        kwargs = {}
-        for arg, value in zip((a for a in case["args"] if a not in {"tmp_path"}), case["parameters"]):
-            kwargs[arg] = value
+        kwargs = dict(case["arguments"])
         kwargs.update(fixture_values)
         with tempfile.TemporaryDirectory(prefix="vail-upstream-bench-") as temp:
             if "tmp_path" in case["args"]:

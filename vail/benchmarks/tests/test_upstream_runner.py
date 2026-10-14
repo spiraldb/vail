@@ -43,3 +43,27 @@ def test_completed_result_survives_slow_shutdown(monkeypatch, result):
     assert actual.items() >= result.items()
     assert actual["worker_cleanup_forced"] is True
     assert not workers[0].is_alive()
+
+
+def test_multi_argument_parameter_rows_are_bound_by_name():
+    import ast
+
+    node = ast.parse('''
+@pytest.mark.parametrize("n,m", [(10, 2), (20, 3)])
+@pytest.mark.parametrize("flag", [True, False])
+def test_case(n, m, flag): pass
+''').body[0]
+    assert coverage._parameters(node) == [(10, 2, True), (10, 2, False), (20, 3, True), (20, 3, False)]
+
+
+def test_inventory_binds_every_upstream_argument():
+    cases = coverage.inventory()
+    assert len(cases) == 108
+    for case in cases:
+        supplied = set(case["arguments"]) | set(case["fixtures"]) | {"tmp_path"}
+        assert set(case["args"]) <= supplied, case["id"]
+    joins = [case for case in cases if case["name"] == "test_table_range_join"]
+    assert [case["arguments"] for case in joins] == [
+        {"m": 1_000_000_000, "n": 1000},
+        {"m": 1_000_000_000, "n": 1_000_000_000},
+    ]
