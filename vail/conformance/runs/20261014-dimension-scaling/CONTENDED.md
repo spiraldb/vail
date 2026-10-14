@@ -1,0 +1,1 @@
+This attempt was stopped because unrelated Rust compilation competed for the host CPU. A process snapshot showed host load 30.85 on 14 logical cores and many rustc processes. Do not use these captures as a controlled scaling series. They are retained for diagnostics. The complete series is rerun separately.
