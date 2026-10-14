@@ -17,7 +17,9 @@ def test_common_reducers_share_one_datafusion_aggregate():
     query = hl.struct(n=hl.agg.count(), total=hl.agg.sum(t.idx),
                       smallest=hl.agg.min(t.idx), largest=hl.agg.max(t.idx))
     physical = plan(t, query)
-    assert physical.count('AggregateExec') == 1
+    assert physical.count('AggregateExec') == 2
+    assert physical.count('mode=Partial') == 1
+    assert physical.count('mode=Final') == 1
     assert 'RangeExec' in physical and 'ProjectionExec' in physical
     assert t.aggregate(query) == hl.Struct(n=n, total=n*(n-1)//2, smallest=0, largest=n-1)
 

@@ -128,7 +128,7 @@ impl NativeSession {
     #[new]
     fn new() -> PyResult<Self> {
         let runtime = Builder::new_multi_thread()
-            .worker_threads(2)
+            .worker_threads(vail_table::EXECUTION_CONCURRENCY)
             .enable_all()
             .build()
             .map_err(|e| PyRuntimeError::new_err(e.to_string()))?;

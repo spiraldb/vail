@@ -77,6 +77,35 @@ fn unique(used: &mut HashSet<String>, base: &str) -> String {
     result
 }
 
+fn needs_order(expression: &Expr) -> bool {
+    let mut ordered = false;
+    expression.visit(&mut |node| {
+        if let Expr::Aggregate { function, .. } = node {
+            ordered |= !matches!(
+                function.as_str(),
+                "count"
+                    | "sum"
+                    | "product"
+                    | "min"
+                    | "max"
+                    | "mean"
+                    | "stats"
+                    | "count_where"
+                    | "fraction"
+                    | "any"
+                    | "all"
+                    | "hist"
+                    | "corr"
+                    | "linreg"
+                    | "hardy_weinberg_test"
+                    | "inbreeding"
+                    | "call_stats"
+            );
+        }
+    });
+    ordered
+}
+
 fn scope_plan(
     mut input: LogicalPlan,
     table: &TableRef,
@@ -247,7 +276,14 @@ pub(crate) fn lower_logical_grouped(
     if specialized {
         return Ok(None);
     }
-    let child = crate::logical_globals::bind_globals(crate::logical::ordered(child), table)?;
+    // Keep partitions independent for associative reductions. Ordered reducers
+    // retain the source boundary, before scope/key columns are appended.
+    let child = if fields.iter().any(|(_, expr)| needs_order(expr)) {
+        crate::logical::ordered(child)
+    } else {
+        child
+    };
+    let child = crate::logical_globals::bind_globals(child, table)?;
     let (child, indices) = crate::logical_globals::bind_external(child, bindings)?;
     let mut used: HashSet<String> = child
         .schema()
@@ -425,7 +461,12 @@ pub(crate) fn lower_logical_total(
     let output = extract(expression, &[], &mut groups, &mut used)?;
     let mut result = LogicalPlanBuilder::empty(true).build()?;
     if !groups.is_empty() {
-        let child = crate::logical_globals::bind_globals(crate::logical::ordered(child), table)?;
+        let child = if needs_order(expression) {
+            crate::logical::ordered(child)
+        } else {
+            child
+        };
+        let child = crate::logical_globals::bind_globals(child, table)?;
         let (child, indices) = crate::logical_globals::bind_external(child, bindings)?;
         for group in groups {
             let (right, _, _) =

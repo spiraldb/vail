@@ -28,6 +28,9 @@ mod vcf_source;
 mod zip_join;
 use globals::{GlobalBindings, GlobalsIR, GlobalsRef, referenced_bindings};
 
+/// Maximum concurrently executing Table partitions for the embedded backend.
+pub const EXECUTION_CONCURRENCY: usize = 32;
+
 use arrow_array::RecordBatch;
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use futures::{StreamExt, TryStreamExt, stream::BoxStream};

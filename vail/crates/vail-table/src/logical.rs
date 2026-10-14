@@ -839,7 +839,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
 
 /// Display the plan DataFusion will optimize and lower for an action.
 pub(crate) fn display(table: &TableRef) -> Result<String> {
-    let state = session_state(max_partitions(table), false);
+    let state = session_state(max_partitions(table));
     Ok(state.optimize(&lower(table)?)?.display_indent().to_string())
 }
 
@@ -866,18 +866,8 @@ pub(crate) async fn physical_plan(
         Arc::new(crate::logical_globals::GlobalsExtensionPlanner),
         Arc::new(crate::logical_same::SameExtensionPlanner),
     ]);
-    // Scans deliberately use partition-local row windows and a compact summary
-    // window. Keep the source partition count available to DataFusion's window
-    // distribution planner rather than coalescing every input window to one.
     use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
-    let mut parallel_scan = false;
-    logical.apply(|node| {
-        if let LogicalPlan::Extension(extension) = node {
-            parallel_scan |= extension.node.as_any().is::<RestorePartitionsNode>();
-        }
-        Ok(TreeNodeRecursion::Continue)
-    })?;
-    let mut state = session_state(target_partitions, parallel_scan);
+    let mut state = session_state(target_partitions);
     let optimized = state.optimize(&logical)?;
     // DF55 physical filter pushdown can inline volatile projection expressions
     // and evaluate a checked cast before an earlier filter. Keep logical scan
@@ -940,20 +930,12 @@ impl datafusion::physical_optimizer::PhysicalOptimizerRule for MetadataCrossJoin
     }
 }
 
-fn session_state(
-    target_partitions: usize,
-    parallel_scan: bool,
-) -> datafusion::execution::SessionState {
+fn session_state(target_partitions: usize) -> datafusion::execution::SessionState {
     // Vail source partitions are observable. DataFusion may otherwise insert
     // a round-robin repartition to the host's core count after a narrow filter.
-    let mut config = SessionConfig::new().with_target_partitions(if parallel_scan {
-        target_partitions.max(1)
-    } else {
-        1
-    });
-    if parallel_scan {
-        config = config.with_round_robin_repartition(false);
-    }
+    let config = SessionConfig::new()
+        .with_target_partitions(target_partitions.clamp(1, crate::EXECUTION_CONCURRENCY))
+        .with_round_robin_repartition(false);
     let state = SessionContext::new_with_config(config).state();
     let mut rules: Vec<
         Arc<dyn datafusion::physical_optimizer::PhysicalOptimizerRule + Send + Sync>,

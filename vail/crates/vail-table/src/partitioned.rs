@@ -16,13 +16,75 @@ use datafusion_physical_expr::{
 };
 use datafusion_physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
-    PlanProperties, SendableRecordBatchStream, execution_plan::EmissionType,
-    limit::GlobalLimitExec, projection::ProjectionExec, repartition::RepartitionExec,
-    sorts::sort::SortExec, stream::RecordBatchStreamAdapter,
+    PlanProperties, SendableRecordBatchStream,
+    execution_plan::EmissionType,
+    limit::GlobalLimitExec,
+    projection::ProjectionExec,
+    repartition::RepartitionExec,
+    sorts::sort::SortExec,
+    stream::{RecordBatchReceiverStreamBuilder, RecordBatchStreamAdapter},
 };
 use futures::{FutureExt, StreamExt, TryStreamExt, future::BoxFuture};
-use std::{fmt, sync::Arc};
-use tokio::sync::OnceCell;
+use std::{collections::VecDeque, fmt, sync::Arc};
+use tokio::sync::{OnceCell, Semaphore};
+
+pub(crate) fn limited_input(
+    input: PhysicalPlan,
+    partition: usize,
+    context: Arc<TaskContext>,
+    concurrency: Arc<Semaphore>,
+) -> SendableRecordBatchStream {
+    let schema = input.schema();
+    Box::pin(RecordBatchStreamAdapter::new(
+        schema,
+        async_stream::try_stream! {
+            let _permit = concurrency.acquire_owned().await.map_err(|_| {
+                DataFusionError::Execution("partition concurrency gate closed".into())
+            })?;
+            let mut stream = input.execute(partition, context)?;
+            while let Some(batch) = stream.try_next().await? { yield batch; }
+        },
+    ))
+}
+
+/// Spawn bounded producers, retaining partition order at the consumer. DF's
+/// receiver stream supplies backpressure, error/panic propagation and aborts
+/// producers when an action is canceled. Each producer buffers two batches;
+/// a slow consumer never forces a whole partition or table into memory.
+fn ordered_partition_streams(
+    parts: Vec<PhysicalPlan>,
+    context: Arc<TaskContext>,
+) -> futures::stream::BoxStream<'static, (usize, SendableRecordBatchStream)> {
+    fn start(part: PhysicalPlan, context: Arc<TaskContext>) -> SendableRecordBatchStream {
+        let mut builder = RecordBatchReceiverStreamBuilder::new(part.schema(), 2);
+        let tx = builder.tx();
+        builder.spawn(async move {
+            let mut input = part.execute(0, context)?;
+            while let Some(batch) = input.next().await {
+                let failed = batch.is_err();
+                if tx.send(batch).await.is_err() || failed {
+                    return Ok(());
+                }
+            }
+            Ok(())
+        });
+        builder.build()
+    }
+    async_stream::stream! {
+        let mut pending = parts.into_iter().enumerate();
+        let mut active = VecDeque::new();
+        for (id, part) in pending.by_ref().take(crate::EXECUTION_CONCURRENCY) {
+            active.push_back((id, start(part, context.clone())));
+        }
+        while let Some(part) = active.pop_front() {
+            yield part;
+            if let Some((id, part)) = pending.next() {
+                active.push_back((id, start(part, context.clone())));
+            }
+        }
+    }
+    .boxed()
+}
 
 pub struct PreparedTable {
     pub parts: Vec<PhysicalPlan>,
@@ -143,6 +205,9 @@ impl ExecutionPlan for ExpressionSourceExec {
     fn benefits_from_input_partitioning(&self) -> Vec<bool> {
         vec![false]
     }
+    fn required_input_distribution(&self) -> Vec<datafusion_physical_plan::Distribution> {
+        vec![datafusion_physical_plan::Distribution::SinglePartition]
+    }
     fn apply_expressions(
         &self,
         _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
@@ -242,10 +307,14 @@ impl ExecutionPlan for ExpressionSourceExec {
 pub fn prepare(table: TableRef) -> BoxFuture<'static, Result<PreparedTable>> {
     async move {
         let physical = crate::logical::physical(&table).await?;
-        let n = physical
-            .properties()
-            .output_partitioning()
-            .partition_count();
+        let n = if table.known_n_partitions() == Some(0) {
+            0
+        } else {
+            physical
+                .properties()
+                .output_partitioning()
+                .partition_count()
+        };
         let schema = physical.schema();
         let known = table.partition_rows();
         let parts: Vec<PhysicalPlan> = (0..n)
@@ -270,6 +339,7 @@ pub(crate) struct PartitionViewExec {
     index: usize,
     cache: Arc<PlanProperties>,
     requirement: Option<OrderingRequirements>,
+    single_input: bool,
 }
 
 /// Preserve an internal sort requirement until the operator that consumes it
@@ -403,6 +473,13 @@ impl ExecutionPlan for ProtectedExec {
     fn required_input_ordering(&self) -> Vec<Option<OrderingRequirements>> {
         vec![self.requirement.clone()]
     }
+    fn required_input_distribution(&self) -> Vec<datafusion_physical_plan::Distribution> {
+        vec![if self.cache.output_partitioning().partition_count() == 1 {
+            datafusion_physical_plan::Distribution::SinglePartition
+        } else {
+            datafusion_physical_plan::Distribution::UnspecifiedDistribution
+        }]
+    }
     fn maintains_input_order(&self) -> Vec<bool> {
         vec![true]
     }
@@ -447,11 +524,13 @@ impl PartitionViewExec {
         let mut cache = (**input.properties()).clone();
         cache.partitioning = Partitioning::UnknownPartitioning(1);
         let requirement = required_ordering(&input);
+        let single_input = input.output_partitioning().partition_count() == 1;
         Self {
             cache: Arc::new(cache),
             input,
             index,
             requirement,
+            single_input,
         }
     }
 }
@@ -472,6 +551,15 @@ impl ExecutionPlan for PartitionViewExec {
     }
     fn benefits_from_input_partitioning(&self) -> Vec<bool> {
         vec![false]
+    }
+    fn required_input_distribution(&self) -> Vec<datafusion_physical_plan::Distribution> {
+        // A view capturing a complete singleton result must not become a view
+        // of only partition zero when later DF rewrites parallelize its input.
+        vec![if self.single_input {
+            datafusion_physical_plan::Distribution::SinglePartition
+        } else {
+            datafusion_physical_plan::Distribution::UnspecifiedDistribution
+        }]
     }
     fn required_input_ordering(&self) -> Vec<Option<OrderingRequirements>> {
         vec![self.requirement.clone()]
@@ -494,7 +582,9 @@ impl ExecutionPlan for PartitionViewExec {
                 "partition view requires one child".into(),
             ));
         }
-        Ok(Arc::new(Self::new(children[0].clone(), self.index)))
+        let mut view = Self::new(children[0].clone(), self.index);
+        view.single_input = self.single_input;
+        Ok(Arc::new(view))
     }
     fn execute(
         &self,
@@ -517,11 +607,12 @@ struct PartitionSetExec {
     parts: Vec<PhysicalPlan>,
     cache: Arc<PlanProperties>,
     requirements: Vec<Option<OrderingRequirements>>,
+    concurrency: Arc<Semaphore>,
 }
 impl PartitionSetExec {
     fn new(parts: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
         let mut cache = (*properties(schema, EmissionType::Incremental)).clone();
-        cache.partitioning = Partitioning::UnknownPartitioning(parts.len());
+        cache.partitioning = Partitioning::UnknownPartitioning(parts.len().max(1));
         if let Some(ordering) = parts
             .first()
             .and_then(|part| part.output_ordering())
@@ -538,6 +629,7 @@ impl PartitionSetExec {
             requirements: parts.iter().map(required_ordering).collect(),
             parts,
             cache: Arc::new(cache),
+            concurrency: Arc::new(Semaphore::new(crate::EXECUTION_CONCURRENCY)),
         }
     }
 }
@@ -588,16 +680,26 @@ impl ExecutionPlan for PartitionSetExec {
         p: usize,
         context: Arc<TaskContext>,
     ) -> datafusion_common::Result<SendableRecordBatchStream> {
-        let input = self
+        if self.parts.is_empty() && p == 0 {
+            return Ok(Box::pin(
+                datafusion_physical_plan::stream::EmptyRecordBatchStream::new(self.schema()),
+            ));
+        }
+        let part = self
             .parts
             .get(p)
             .ok_or_else(|| DataFusionError::Execution(format!("invalid table partition {p}")))?
-            .execute(0, context)?;
+            .clone();
         let schema = self.schema();
         let output_schema = schema.clone();
-        let stream = input.and_then(move |batch| {
-            let schema = output_schema.clone();
-            async move {
+        let concurrency = self.concurrency.clone();
+        let stream = async_stream::try_stream! {
+            let _permit = concurrency.acquire_owned().await.map_err(|_| {
+                DataFusionError::Execution("partition concurrency gate closed".into())
+            })?;
+            let mut input = part.execute(0, context)?;
+            while let Some(batch) = input.try_next().await? {
+                let schema = output_schema.clone();
                 let mut columns = batch.columns().to_vec();
                 let index = columns
                     .len()
@@ -609,9 +711,9 @@ impl ExecutionPlan for PartitionSetExec {
                     .zip(schema.fields())
                     .map(|(array, field)| arrow_cast::cast(array, field.data_type()))
                     .collect::<std::result::Result<Vec<_>, _>>()?;
-                RecordBatch::try_new(schema, columns).map_err(Into::into)
+                yield RecordBatch::try_new(schema, columns)?;
             }
-        });
+        };
         Ok(Box::pin(RecordBatchStreamAdapter::new(schema, stream)))
     }
 }
@@ -687,8 +789,8 @@ impl ExecutionPlan for OrderedConcatExec {
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
-                for (id,part) in parts.iter().enumerate() {
-                    let mut stream=part.execute(0,context.clone())?;
+                let mut inputs = ordered_partition_streams(parts, context);
+                while let Some((id, mut stream)) = inputs.next().await {
                     while let Some(batch)=stream.try_next().await? {
                         let mut columns=batch.columns().to_vec();
                         if !columns.is_empty() {let last=columns.len()-1;columns[last]=Arc::new(UInt64Array::from_iter_values(std::iter::repeat_n(id as u64,batch.num_rows())));}
@@ -1217,9 +1319,9 @@ pub fn execute(table: &TableRef) -> BatchStream {
     async_stream::try_stream!{
         let prepared=prepare(table.clone()).await?;
         let context=Arc::new(TaskContext::default());
-        for part in &prepared.parts {
+        let mut inputs = ordered_partition_streams(prepared.parts, context);
+        while let Some((_, mut input)) = inputs.next().await {
             yield PartitionEvent::StartPartition;
-            let mut input=part.execute(0,context.clone())?;
             while let Some(batch)=input.try_next().await? {
                 if batch.num_rows()==0 {continue;}
                 let row=batch.project(&(0..table.schema().fields().len()).collect::<Vec<_>>())?;
@@ -1227,6 +1329,263 @@ pub fn execute(table: &TableRef) -> BatchStream {
             }
         }
     }.boxed()
+}
+
+#[cfg(test)]
+mod concurrent_partition_tests {
+    use super::*;
+    use arrow_array::Int32Array;
+    use arrow_schema::{DataType, Field, Schema};
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use tokio::sync::Notify;
+
+    #[derive(Debug)]
+    struct Progress {
+        active: AtomicUsize,
+        peak: AtomicUsize,
+        started: AtomicUsize,
+        gate: Semaphore,
+        changed: Notify,
+    }
+    impl Progress {
+        fn new() -> Arc<Self> {
+            Arc::new(Self {
+                active: AtomicUsize::new(0),
+                peak: AtomicUsize::new(0),
+                started: AtomicUsize::new(0),
+                gate: Semaphore::new(0),
+                changed: Notify::new(),
+            })
+        }
+        async fn wait(&self, predicate: impl Fn() -> bool) {
+            tokio::time::timeout(std::time::Duration::from_secs(5), async {
+                loop {
+                    let changed = self.changed.notified();
+                    if predicate() {
+                        break;
+                    }
+                    changed.await;
+                }
+            })
+            .await
+            .expect("partition producers did not make progress");
+        }
+    }
+    struct Active(Arc<Progress>);
+    impl Drop for Active {
+        fn drop(&mut self) {
+            self.0.active.fetch_sub(1, Ordering::SeqCst);
+            self.0.changed.notify_one();
+        }
+    }
+
+    #[derive(Debug, Clone)]
+    struct ProbeExec {
+        id: usize,
+        fail: bool,
+        state: Arc<Progress>,
+        cache: Arc<PlanProperties>,
+    }
+    impl DisplayAs for ProbeExec {
+        fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "ProbeExec: {}", self.id)
+        }
+    }
+    impl ExecutionPlan for ProbeExec {
+        fn name(&self) -> &'static str {
+            "ProbeExec"
+        }
+        fn properties(&self) -> &Arc<PlanProperties> {
+            &self.cache
+        }
+        fn children(&self) -> Vec<&PhysicalPlan> {
+            vec![]
+        }
+        fn apply_expressions(
+            &self,
+            _: &mut dyn FnMut(
+                &Arc<dyn PhysicalExpr>,
+            ) -> datafusion_common::Result<TreeNodeRecursion>,
+        ) -> datafusion_common::Result<TreeNodeRecursion> {
+            Ok(TreeNodeRecursion::Continue)
+        }
+        fn with_new_children(
+            self: Arc<Self>,
+            children: Vec<PhysicalPlan>,
+        ) -> datafusion_common::Result<PhysicalPlan> {
+            assert!(children.is_empty());
+            Ok(self)
+        }
+        fn execute(
+            &self,
+            p: usize,
+            _: Arc<TaskContext>,
+        ) -> datafusion_common::Result<SendableRecordBatchStream> {
+            assert_eq!(p, 0);
+            let (state, id, fail, schema) = (self.state.clone(), self.id, self.fail, self.schema());
+            let output_schema = schema.clone();
+            Ok(Box::pin(RecordBatchStreamAdapter::new(
+                schema,
+                async_stream::try_stream! {
+                    let _active = Active(state.clone());
+                    let active = state.active.fetch_add(1, Ordering::SeqCst) + 1;
+                    state.peak.fetch_max(active, Ordering::SeqCst);
+                    state.started.fetch_add(1, Ordering::SeqCst);
+                    state.changed.notify_one();
+                    let permit = state.gate.acquire().await.unwrap();
+                    permit.forget();
+                    // Later partitions deliberately finish before earlier ones.
+                    tokio::time::sleep(std::time::Duration::from_millis((31-id%32) as u64)).await;
+                    if fail { Err(DataFusionError::Execution("partition probe failure".into()))?; }
+                    yield RecordBatch::try_new(output_schema, vec![
+                        Arc::new(Int32Array::from(vec![id as i32])),
+                        Arc::new(UInt64Array::from(vec![0])),
+                    ])?;
+                },
+            )))
+        }
+    }
+    fn inputs(state: &Arc<Progress>, fail: Option<usize>) -> (SchemaRef, Vec<PhysicalPlan>) {
+        let schema = Arc::new(Schema::new(vec![
+            Field::new("x", DataType::Int32, false),
+            Field::new("partition", DataType::UInt64, false),
+        ]));
+        let parts = (0..40)
+            .map(|id| {
+                Arc::new(ProbeExec {
+                    id,
+                    fail: fail == Some(id),
+                    state: state.clone(),
+                    cache: properties(schema.clone(), EmissionType::Incremental),
+                }) as PhysicalPlan
+            })
+            .collect();
+        (schema, parts)
+    }
+    #[tokio::test]
+    async fn singleton_adapters_keep_all_rows_after_a_parallel_child_rewrite() {
+        use datafusion_datasource::memory::MemorySourceConfig;
+        let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, false)]));
+        let batch = |x| {
+            RecordBatch::try_new(schema.clone(), vec![Arc::new(Int32Array::from(vec![x]))]).unwrap()
+        };
+        let singleton =
+            MemorySourceConfig::try_new_exec(&[vec![batch(0)]], schema.clone(), None).unwrap();
+        let parallel =
+            MemorySourceConfig::try_new_exec(&[vec![batch(0)], vec![batch(1)]], schema, None)
+                .unwrap();
+        let adapters: Vec<PhysicalPlan> = vec![
+            Arc::new(PartitionViewExec::new(singleton.clone(), 0)),
+            Arc::new(ProtectedExec::new(singleton, "test singleton")),
+        ];
+        for adapter in adapters {
+            let rewritten = adapter.with_new_children(vec![parallel.clone()]).unwrap();
+            let state = datafusion::execution::context::SessionContext::new().state();
+            let optimized = datafusion::physical_planner::DefaultPhysicalPlanner::default()
+                .optimize_physical_plan(rewritten, &state, |_, _| {})
+                .unwrap();
+            let batches = datafusion_physical_plan::execution_plan::collect(
+                optimized,
+                Arc::new(TaskContext::default()),
+            )
+            .await
+            .unwrap();
+            let mut values = batches
+                .iter()
+                .flat_map(|b| {
+                    b.column(0)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap()
+                        .values()
+                        .iter()
+                        .copied()
+                })
+                .collect::<Vec<_>>();
+            values.sort_unstable();
+            assert_eq!(values, vec![0, 1]);
+        }
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn ordered_producers_are_concurrent_bounded_and_keep_row_order() {
+        let state = Progress::new();
+        let (schema, parts) = inputs(&state, None);
+        let plan = Arc::new(OrderedConcatExec::new(parts, schema));
+        let action = tokio::spawn(datafusion_physical_plan::execution_plan::collect(
+            plan,
+            Arc::new(TaskContext::default()),
+        ));
+        state
+            .wait(|| state.started.load(Ordering::SeqCst) >= crate::EXECUTION_CONCURRENCY)
+            .await;
+        assert_eq!(
+            state.started.load(Ordering::SeqCst),
+            crate::EXECUTION_CONCURRENCY
+        );
+        state.gate.add_permits(40);
+        let batches = action.await.unwrap().unwrap();
+        let values = batches
+            .iter()
+            .flat_map(|batch| {
+                batch
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap()
+                    .values()
+                    .iter()
+                    .copied()
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(values, (0..40).collect::<Vec<_>>());
+        assert_eq!(
+            state.peak.load(Ordering::SeqCst),
+            crate::EXECUTION_CONCURRENCY
+        );
+        assert_eq!(state.active.load(Ordering::SeqCst), 0);
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn canceling_ordered_output_aborts_prefetched_producers() {
+        let state = Progress::new();
+        let (schema, parts) = inputs(&state, None);
+        let plan = Arc::new(OrderedConcatExec::new(parts, schema));
+        let action = tokio::spawn(datafusion_physical_plan::execution_plan::collect(
+            plan,
+            Arc::new(TaskContext::default()),
+        ));
+        state
+            .wait(|| state.started.load(Ordering::SeqCst) == crate::EXECUTION_CONCURRENCY)
+            .await;
+        action.abort();
+        assert!(action.await.unwrap_err().is_cancelled());
+        state
+            .wait(|| state.active.load(Ordering::SeqCst) == 0)
+            .await;
+        assert_eq!(
+            state.started.load(Ordering::SeqCst),
+            crate::EXECUTION_CONCURRENCY
+        );
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn native_partition_consumers_are_limited_and_propagate_errors() {
+        let state = Progress::new();
+        let (schema, parts) = inputs(&state, Some(5));
+        let plan = Arc::new(PartitionSetExec::new(parts, schema));
+        let action = tokio::spawn(datafusion_physical_plan::execution_plan::collect(
+            plan,
+            Arc::new(TaskContext::default()),
+        ));
+        state
+            .wait(|| state.started.load(Ordering::SeqCst) == crate::EXECUTION_CONCURRENCY)
+            .await;
+        state.gate.add_permits(40);
+        let error = action.await.unwrap().unwrap_err();
+        assert!(error.to_string().contains("partition probe failure"));
+        state
+            .wait(|| state.active.load(Ordering::SeqCst) == 0)
+            .await;
+        assert!(state.peak.load(Ordering::SeqCst) <= crate::EXECUTION_CONCURRENCY);
+    }
 }
 
 #[cfg(test)]

@@ -38,7 +38,10 @@ def test_grouped_multi_batch_and_multiple_files(tmp_path):
     assert len(list(path.rglob('*.vortex'))) >= 2
     t = hl.read_table(str(path))
     result = t.group_by(k=t.idx % 7).aggregate(n=hl.agg.count(), total=hl.agg.sum(t.idx))
-    assert result._native.physical_plan().count('AggregateExec') == 1
+    plan = result._native.physical_plan()
+    assert plan.count('AggregateExec') == 2
+    assert plan.count('mode=Partial') == 1
+    assert plan.count('mode=Final') == 1
     for row in result.collect():
         expected = range(row.k, 200_003, 7)
         assert row.n == len(expected)

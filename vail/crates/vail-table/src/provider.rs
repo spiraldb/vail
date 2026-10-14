@@ -392,6 +392,7 @@ struct ReadKeyFilteredExec {
     table: TableRef,
     schema: SchemaRef,
     queries: Vec<QueryInterval>,
+    concurrency: Arc<tokio::sync::Semaphore>,
     properties: Arc<PlanProperties>,
 }
 
@@ -428,6 +429,7 @@ impl ReadKeyFilteredExec {
             schema,
             queries,
             properties,
+            concurrency: Arc::new(tokio::sync::Semaphore::new(crate::EXECUTION_CONCURRENCY)),
         }
     }
 }
@@ -488,9 +490,13 @@ impl ExecutionPlan for ReadKeyFilteredExec {
         let row_schema = self.table.schema().clone();
         let schema = self.schema.clone();
         let mut batches = source.interval_batches_in_rows(&queries, start..end);
+        let concurrency = self.concurrency.clone();
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
+                let _permit = concurrency.acquire_owned().await.map_err(|_| {
+                    DataFusionError::Execution("partition concurrency gate closed".into())
+                })?;
                 while let Some((offset, batch)) = batches.try_next().await.map_err(|e| DataFusionError::External(Box::new(e)))? {
                     let batch_end = offset.checked_add(batch.num_rows() as u64)
                         .ok_or_else(|| DataFusionError::Execution("batch offset overflow".into()))?;
@@ -521,6 +527,7 @@ struct PartitionSetExec {
     partitions: Vec<PhysicalPlan>,
     schema: SchemaRef,
     properties: Arc<PlanProperties>,
+    concurrency: Arc<tokio::sync::Semaphore>,
 }
 
 impl PartitionSetExec {
@@ -542,7 +549,7 @@ impl PartitionSetExec {
             .unwrap_or_else(|| EquivalenceProperties::new(schema.clone()));
         let properties = Arc::new(PlanProperties::new(
             equivalence,
-            Partitioning::UnknownPartitioning(partitions.len()),
+            Partitioning::UnknownPartitioning(partitions.len().max(1)),
             EmissionType::Incremental,
             Boundedness::Bounded,
         ));
@@ -550,6 +557,7 @@ impl PartitionSetExec {
             partitions,
             schema,
             properties,
+            concurrency: Arc::new(tokio::sync::Semaphore::new(crate::EXECUTION_CONCURRENCY)),
         }
     }
 }
@@ -589,6 +597,9 @@ impl ExecutionPlan for PartitionSetExec {
     fn benefits_from_input_partitioning(&self) -> Vec<bool> {
         vec![false; self.partitions.len()]
     }
+    fn required_input_distribution(&self) -> Vec<datafusion::physical_plan::Distribution> {
+        vec![datafusion::physical_plan::Distribution::SinglePartition; self.partitions.len()]
+    }
 
     fn with_new_children(
         self: Arc<Self>,
@@ -609,10 +620,16 @@ impl ExecutionPlan for PartitionSetExec {
         partition: usize,
         context: Arc<datafusion::execution::TaskContext>,
     ) -> DFResult<SendableRecordBatchStream> {
+        if self.partitions.is_empty() && partition == 0 {
+            return Ok(Box::pin(
+                datafusion::physical_plan::stream::EmptyRecordBatchStream::new(self.schema.clone()),
+            ));
+        }
         let child = self.partitions.get(partition).ok_or_else(|| {
             DataFusionError::Execution(format!("Vail source partition {partition} is out of range"))
         })?;
-        let input = child.execute(0, context)?;
+        let input =
+            crate::partitioned::limited_input(child.clone(), 0, context, self.concurrency.clone());
         let schema = self.schema.clone();
         let output_schema = schema.clone();
         // Each child executes as partition zero locally. Expose its actual
