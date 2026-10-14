@@ -129,7 +129,7 @@ def render(root: Path, output: Path, upstream_vail: Path | None = None,
               '<div class="cards">',
               metric_card("Curated 15-case baseline median sum", baseline_ratio, baseline.get("vail", 0), baseline.get("hail", 0)),
               metric_card(f"Curated {len(curated)} workload configurations median sum", unique_ratio, unique.get("vail", 0), unique.get("hail", 0)),
-              f'<div class="card"><div class="label">Upstream case results</div><div class="big">{len(upstream_ids)} cases</div><div>{esc(" · ".join(f"{k}: {v}" for k, v in sorted(upstream_statuses.items())) or "No upstream reports supplied")}</div></div>',
+              f'<div class="card"><div class="label">Upstream case results</div><div class="big">{len(upstream_ids)} cases</div><div>{esc(" · ".join(f"{name}: {report.get('totals', {}).get('passed', 0)} passed" for name, report in (("Vail", vail_report), ("Hail", hail_report)) if report) or "No upstream reports supplied")}</div></div>',
               "</div>"]
 
     warmups = provenance.get("warmups", "unknown")
@@ -176,6 +176,14 @@ def render(root: Path, output: Path, upstream_vail: Path | None = None,
     parts += ['<h2 id="upstream">Upstream benchmark coverage</h2>',
               '<p class="muted">Original upstream function cases, attempted once per engine. A missing engine report is shown as “not supplied”; statuses are not silently omitted.</p>',
               '<div class="table-wrap"><table id="upstream-table"><thead><tr><th>Upstream case</th><th>Vail status</th><th>Vail · ms</th><th>Hail status</th><th>Hail · ms</th><th>Hail / Vail</th><th>Details</th></tr></thead><tbody>']
+    engine_summaries = []
+    for name, report in (("Vail", vail_report), ("Hail", hail_report)):
+        if report:
+            totals = report.get("totals", {})
+            counts = ", ".join(f"{totals.get(status, 0)} {status.replace('_', ' ')}"
+                               for status in ("passed", "failed", "unsupported", "timed_out", "upstream_skipped"))
+            engine_summaries.append(f"{name}: {len(report.get('cases', []))}/{report.get('discovered', '?')} cases; {counts}")
+    parts[-1] = parts[-1].replace('<thead>', '<caption>' + esc(' · '.join(engine_summaries)) + '</caption><thead>', 1)
     if not upstream_ids:
         parts.append('<tr><td colspan="7">No upstream coverage JSON was supplied. Pass --upstream-vail and/or --upstream-hail to include reports.</td></tr>')
     for case_id in upstream_ids:

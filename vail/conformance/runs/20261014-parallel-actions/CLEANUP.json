@@ -1,0 +1,18 @@
+{
+  "region": "us-east-1",
+  "instance_id": "i-086a7f2749d1c0fec",
+  "security_group_id": "sg-04d49f2d3dd513aec",
+  "key_pair_name": "dk-vail-parallel-20261014-key",
+  "cleanup_status": "shutdown_requested_auth_blocked",
+  "checked_at_utc": "2026-10-14T21:37:54Z",
+  "shutdown_requested_at_utc": "2026-10-14T21:37:54Z",
+  "shutdown_request": "sudo shutdown -h now returned after SSH connection closed by the remote host",
+  "post_request_ssh_check": "SSH port 22 connection refused (exit 255)",
+  "instance_state_verified": false,
+  "terminated_at_utc": null,
+  "security_group_deleted_at_utc": null,
+  "key_pair_deleted_at_utc": null,
+  "root_volume_deletion_verified": false,
+  "remaining_paid_resources_verified": false,
+  "details": "A graceful shutdown was requested over SSH to stop compute charges. The SSH session closed and a subsequent connection was refused, but AWS instance state could not be verified. AWS credential checks failed: default and PowerUserAccess SSO sessions were expired and could not refresh; the alternate static-token profile returned InvalidClientTokenId; the remaining profile's STS endpoint was unreachable. Do not infer termination or EBS deletion. Retry AWS-side cleanup after restoring an authorized us-east-1 AWS session."
+}

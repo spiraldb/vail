@@ -1,0 +1,25 @@
+Upstream runner diagnostics (short excerpts; full raw logs remain on benchmark VM)
+
+Hail
+- Report: upstream-hail.json (108 cases; 103 passed, 4 upstream_skipped, 1 timed_out).
+- test_matrix_multi_write_nothing reached the 120s per-case timeout. No worker-exit or fixture-timeout statuses.
+
+Vail
+- Final report: upstream-vail.json (108 unique/discovered cases: 54 passed, 31 failed, 12 unsupported, 7 timed_out, 4 upstream_skipped); runner and upstream file hashes are embedded in the report. Full runner log retained locally at `/private/tmp/vail-parallel-cloud-20261014/upstream-vail-valid-resume.log`.
+- test_table_range_array_range_force_count emitted:
+  thread 'tokio-rt-worker' panicked at .../arrow-select-59.2.0/src/take.rs:682:83:
+  called Option::unwrap() on a None value
+- test_matrix_table_array_arithmetic failed during setup/body evaluation with `AttributeError: module 'vail' has no attribute 'pl_dosage'`; it did not emit the large-allocation error.
+- test_matrix_table_entries_table was recorded as worker exit code -6 before result, phase benchmark. Its case-local stderr contains no clear cause. `test_matrix_table_scan_count_rows_2` later exited with code -9 during benchmark (cause unknown).
+- test_matrix_table_take_entry, test_matrix_table_entries_show, and test_matrix_table_aggregate_entries exited with worker code -6. The interleaved run log includes `memory allocation of 421149081600 bytes failed`; that allocation message is not attributed to array arithmetic.
+- The resumed log also contains an interleaved Tokio worker panic from patches/iceberg-rust/.../arrow/reader/vortex.rs:154:48, called Result::unwrap() on RecvError(()). It appears after matrix table display output; exact case attribution is uncertain, so it is not assigned to one case here.
+
+Setup-blocked Vail cases (not method-capability evidence):
+- test_table_aggregate_approx_cdf could not create its `random_doubles_mt` fixture because Vail lacks `import_matrix_table` for the upstream wide-TSV input.
+- test_group_by_collect_per_row and test_group_by_take_rekey were blocked creating `gnomad_dp_sim`: the fixture uses unsupported `rand_unif`. They do not establish lack of collect-per-row or take/rekey support. The matrix gnomad coverage/per-row cases share the same fixture blocker.
+
+Final Vail outcomes of note:
+- `test_large_range_matrix_table_sum` timed out at its upstream 250s limit; the input was the original large fixture.
+- `test_mt_localize_and_collect` timed out at 120s after fixture setup.
+- `test_matrix_table_scan_count_rows_2` exited with code -9 after 23.7s during benchmark; no cause is inferred from the exit code alone.
+- `test_kyle_sex_specific_qc`, `test_matrix_multi_write_nothing`, and the three matrix export cases failed on missing APIs (`rand_bool`, `experimental`, `export`).

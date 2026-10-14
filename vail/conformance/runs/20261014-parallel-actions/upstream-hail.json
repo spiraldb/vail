@@ -1,0 +1,2314 @@
+{
+  "runner_sha256": "e55a604a896fbe8269ac1b432fb3d81de9b2d138e8664f79b62b0db550c68b73",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "hail",
+  "timeout_seconds": 120.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/home/ubuntu/hail-benchmark-data",
+  "smoke_fixtures": false,
+  "discovered": 108,
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_key_by_shuffle",
+      "id": "benchmark_table::test_table_key_by_shuffle",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.627354668999942,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.043,
+      "elapsed_seconds": 14.685
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_group_by_aggregate_sorted",
+      "id": "benchmark_table::test_table_group_by_aggregate_sorted",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.101602286999878,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.076,
+      "elapsed_seconds": 14.191
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_group_by_aggregate_unsorted",
+      "id": "benchmark_table::test_table_group_by_aggregate_unsorted",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.592801968999993,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.107,
+      "elapsed_seconds": 14.713
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_force_count",
+      "id": "benchmark_table::test_table_range_force_count",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.9963436680000086,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.058,
+      "elapsed_seconds": 12.07
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_join",
+      "id": "benchmark_table::test_table_range_join[1000000000,1000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000000,
+        1000
+      ],
+      "arguments": {
+        "m": 1000000000,
+        "n": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.2077335180001683,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.111,
+      "elapsed_seconds": 12.334
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_join",
+      "id": "benchmark_table::test_table_range_join[1000000000,1000000000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000000,
+        1000000000
+      ],
+      "arguments": {
+        "m": 1000000000,
+        "n": 1000000000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.5092406939998,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.116,
+      "elapsed_seconds": 13.641
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_python_construction",
+      "id": "benchmark_table::test_table_python_construction",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.8682595700001912,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.117,
+      "elapsed_seconds": 10.999
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_big_aggregate_compilation",
+      "id": "benchmark_table::test_table_big_aggregate_compilation",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 39.25259839599994,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.158,
+      "elapsed_seconds": 49.428
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_big_aggregate_compile_and_execute",
+      "id": "benchmark_table::test_table_big_aggregate_compile_and_execute",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 39.39582584299933,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.292,
+      "elapsed_seconds": 49.705
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_foreign_key_join",
+      "id": "benchmark_table::test_table_foreign_key_join[1000000,1000000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000,
+        1000000
+      ],
+      "arguments": {
+        "m": 1000000,
+        "n": 1000000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.643708888999754,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.16,
+      "elapsed_seconds": 16.819
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_foreign_key_join",
+      "id": "benchmark_table::test_table_foreign_key_join[1000000,1000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000,
+        1000
+      ],
+      "arguments": {
+        "m": 1000000,
+        "n": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 7.044200407999597,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.149,
+      "elapsed_seconds": 17.208
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_array_sum",
+      "id": "benchmark_table::test_table_aggregate_array_sum",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.644866509000167,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.193,
+      "elapsed_seconds": 12.854
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_flat",
+      "id": "benchmark_table::test_table_annotate_many_flat",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.283941609000067,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.121,
+      "elapsed_seconds": 12.418
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_no_dependence",
+      "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "upstream_skipped",
+      "reason": "never finishes"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_dependence_constants",
+      "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "upstream_skipped",
+      "reason": "never finishes"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_dependence",
+      "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "upstream_skipped",
+      "reason": "never finishes"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_read_force_count_ints",
+      "id": "benchmark_table::test_table_read_force_count_ints",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.119074042999273,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 24.242,
+      "elapsed_seconds": 30.378
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_read_force_count_strings",
+      "id": "benchmark_table::test_table_read_force_count_strings",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.0044203289999132,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 16.841,
+      "elapsed_seconds": 22.86
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_ints",
+      "id": "benchmark_table::test_table_import_ints",
+      "args": [
+        "many_ints_tsv"
+      ],
+      "fixtures": [
+        "many_ints_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 15.850686740000128,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.102,
+      "elapsed_seconds": 25.969
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_ints_impute",
+      "id": "benchmark_table::test_table_import_ints_impute",
+      "args": [
+        "many_ints_tsv"
+      ],
+      "fixtures": [
+        "many_ints_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 15.520875406999949,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.158,
+      "elapsed_seconds": 25.693
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_strings",
+      "id": "benchmark_table::test_table_import_strings",
+      "args": [
+        "many_strings_tsv"
+      ],
+      "fixtures": [
+        "many_strings_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 7.951172803999725,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.184,
+      "elapsed_seconds": 18.15
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_int_stats",
+      "id": "benchmark_table::test_table_aggregate_int_stats",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.831857488999958,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.183,
+      "elapsed_seconds": 15.033
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_means",
+      "id": "benchmark_table::test_table_range_means",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.114655710000079,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.147,
+      "elapsed_seconds": 12.277
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_array_range_force_count",
+      "id": "benchmark_table::test_table_range_array_range_force_count",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.655654913000035,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.137,
+      "elapsed_seconds": 12.808
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_approx_cdf",
+      "id": "benchmark_table::test_table_aggregate_approx_cdf",
+      "args": [
+        "random_doubles_mt"
+      ],
+      "fixtures": [
+        "random_doubles_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 5.8845187729993995,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 43.777,
+      "elapsed_seconds": 54.674
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_counter",
+      "id": "benchmark_table::test_table_aggregate_counter",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 7.11327777400038,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.268,
+      "elapsed_seconds": 17.398
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_take_by_strings",
+      "id": "benchmark_table::test_table_aggregate_take_by_strings",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.447974925999915,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.368,
+      "elapsed_seconds": 14.833
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_dense",
+      "id": "benchmark_table::test_table_aggregate_downsample_dense",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 15.017626756999562,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.089,
+      "elapsed_seconds": 25.124
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_worst_case",
+      "id": "benchmark_table::test_table_aggregate_downsample_worst_case",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.5253797059995122,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.165,
+      "elapsed_seconds": 13.707
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_sparse",
+      "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+          "args": []
+        }
+      ],
+      "status": "upstream_skipped",
+      "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_linreg",
+      "id": "benchmark_table::test_table_aggregate_linreg",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 10.013703954000448,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.134,
+      "elapsed_seconds": 20.166
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_take",
+      "id": "benchmark_table::test_table_take",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.272882745000061,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.107,
+      "elapsed_seconds": 12.398
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_show",
+      "id": "benchmark_table::test_table_show",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.537884490999204,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.16,
+      "elapsed_seconds": 13.715
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_expr_take",
+      "id": "benchmark_table::test_table_expr_take",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.2463646500000323,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.119,
+      "elapsed_seconds": 12.382
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[10]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.39657197799988353,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 8.079,
+      "elapsed_seconds": 13.492
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[100]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.6895436000004338,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 8.596,
+      "elapsed_seconds": 14.302
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.9239365610001187,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 11.467,
+      "elapsed_seconds": 17.407
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,1000]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        1000
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.1035134449994075,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.263,
+      "elapsed_seconds": 16.43
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,100]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        100
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 100
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.338226914999723,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.181,
+      "elapsed_seconds": 13.55
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,10]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        10
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 10
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.8687033950000114,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.142,
+      "elapsed_seconds": 13.036
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_with_index",
+      "id": "benchmark_table::test_read_with_index[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {
+        "many_partitions_ht": 1000
+      },
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.191593282000213,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.166,
+      "elapsed_seconds": 14.37
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.5977618840006471,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 8.663,
+      "elapsed_seconds": 14.277
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.443106288999843,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 8.541,
+      "elapsed_seconds": 15.001
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.755697857999621,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 11.226,
+      "elapsed_seconds": 18.999
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.5447465809993446,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 8.549,
+      "elapsed_seconds": 15.111
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.904200646999925,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.123,
+      "elapsed_seconds": 13.045
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.436748240999805,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.131,
+      "elapsed_seconds": 14.586
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.891791237999314,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 11.055,
+      "elapsed_seconds": 18.964
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.176523482999983,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.209,
+      "elapsed_seconds": 14.403
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.7367467980002402,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.059,
+      "elapsed_seconds": 13.815
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.3052749759999642,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.213,
+      "elapsed_seconds": 12.536
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.819853619999776,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.097,
+      "elapsed_seconds": 13.934
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 5.1885222750006506,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.081,
+      "elapsed_seconds": 15.287
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.4990207439996084,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.133,
+      "elapsed_seconds": 13.649
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.75813092000044,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.056,
+      "elapsed_seconds": 12.833
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.21989549600039,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.101,
+      "elapsed_seconds": 14.338
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 5.300673075999839,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.058,
+      "elapsed_seconds": 15.375
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.108766080999885,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.112,
+      "elapsed_seconds": 14.237
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.717759787000432,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.026,
+      "elapsed_seconds": 13.762
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_group_by_collect_per_row",
+      "id": "benchmark_table::test_group_by_collect_per_row",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.8284142749998864,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 9.848,
+      "elapsed_seconds": 15.694
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_group_by_take_rekey",
+      "id": "benchmark_table::test_group_by_take_rekey",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.836173715999394,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.136,
+      "elapsed_seconds": 14.991
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_scan_sum_1k_partitions",
+      "id": "benchmark_table::test_table_scan_sum_1k_partitions",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.720306449000418,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.252,
+      "elapsed_seconds": 13.988
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_scan_prev_non_null",
+      "id": "benchmark_table::test_table_scan_prev_non_null",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.4819734760003485,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.141,
+      "elapsed_seconds": 13.639
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_map_filter_region_memory",
+      "id": "benchmark_table::test_test_map_filter_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.027023126000131,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.066,
+      "elapsed_seconds": 13.107
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_head_and_tail_region_memory",
+      "id": "benchmark_table::test_test_head_and_tail_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.139864886000396,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.165,
+      "elapsed_seconds": 12.32
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_inner_join_region_memory",
+      "id": "benchmark_table::test_test_inner_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.941388833000019,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.195,
+      "elapsed_seconds": 13.149
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_left_join_region_memory",
+      "id": "benchmark_table::test_test_left_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.096002831000078,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.071,
+      "elapsed_seconds": 13.178
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_decode_and_count",
+      "id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.8075781589996041,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 12.811,
+      "elapsed_seconds": 18.635
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_decode_and_count_just_gt",
+      "id": "benchmark_matrix_table::test_matrix_table_decode_and_count_just_gt",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.67345370700059,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.114,
+      "elapsed_seconds": 12.806
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_array_arithmetic",
+      "id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.3867335370005094,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.19,
+      "elapsed_seconds": 13.598
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_table",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_table",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.312096433000079,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.207,
+      "elapsed_seconds": 14.539
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_table_no_key",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_table_no_key",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.2739748169997256,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.187,
+      "elapsed_seconds": 13.478
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_force_count",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_force_count",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.364926082999773,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.159,
+      "elapsed_seconds": 12.542
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_show",
+      "id": "benchmark_matrix_table::test_matrix_table_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.0681715089995123,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.135,
+      "elapsed_seconds": 13.22
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_show",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.003795629999331,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.168,
+      "elapsed_seconds": 13.189
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_cols_show",
+      "id": "benchmark_matrix_table::test_matrix_table_cols_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.9731085050007096,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.092,
+      "elapsed_seconds": 13.082
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_entry",
+      "id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.1723376780000763,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.023,
+      "elapsed_seconds": 13.213
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_show",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.449704478000058,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.019,
+      "elapsed_seconds": 14.487
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_row",
+      "id": "benchmark_matrix_table::test_matrix_table_take_row",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.9219094939999195,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.14,
+      "elapsed_seconds": 13.08
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_col",
+      "id": "benchmark_matrix_table::test_matrix_table_take_col",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.6690698509992217,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.15,
+      "elapsed_seconds": 11.837
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_write_range_matrix_table_p100",
+      "id": "benchmark_matrix_table::test_write_range_matrix_table_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.5621211179995953,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 4.982,
+      "elapsed_seconds": 13.565
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_write_profile_mt",
+      "id": "benchmark_matrix_table::test_write_profile_mt",
+      "args": [
+        "profile25_mt",
+        "tmp_path"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.014313241999844,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.149,
+      "elapsed_seconds": 14.206
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_is_transition",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_is_transition",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.8787082339995322,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.191,
+      "elapsed_seconds": 13.088
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.142836795000221,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.127,
+      "elapsed_seconds": 13.287
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries_unfilter",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries_unfilter",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.0543245549997664,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.183,
+      "elapsed_seconds": 13.254
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_nested_annotate_rows_annotate_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_nested_annotate_rows_annotate_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": []
+        }
+      ],
+      "status": "passed",
+      "benchmark_seconds": 7.318316603999847,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.077,
+      "elapsed_seconds": 17.413
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_many_aggs_row_wise",
+      "id": "benchmark_matrix_table::test_matrix_table_many_aggs_row_wise",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.259402700999999,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.128,
+      "elapsed_seconds": 14.404
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_many_aggs_col_wise",
+      "id": "benchmark_matrix_table::test_matrix_table_many_aggs_col_wise",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.630959587000689,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.081,
+      "elapsed_seconds": 16.729
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_aggregate_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_aggregate_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.2097077589996843,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.209,
+      "elapsed_seconds": 13.436
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_call_stats_star_star",
+      "id": "benchmark_matrix_table::test_matrix_table_call_stats_star_star",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.281588523999744,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.062,
+      "elapsed_seconds": 13.361
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_gnomad_coverage_stats",
+      "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.005665567000506,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.214,
+      "elapsed_seconds": 16.238
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_gnomad_coverage_stats_optimized",
+      "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.7279826109997884,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.098,
+      "elapsed_seconds": 14.843
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_per_row_stats_star_star",
+      "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.2005146199999217,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.185,
+      "elapsed_seconds": 13.404
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_read_decode_gnomad_coverage",
+      "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.570601131999865,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.179,
+      "elapsed_seconds": 12.766
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_force_count_just_gp",
+      "id": "benchmark_matrix_table::test_import_bgen_force_count_just_gp",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 10.468114610999692,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 8.04,
+      "elapsed_seconds": 23.524
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_force_count_all",
+      "id": "benchmark_matrix_table::test_import_bgen_force_count_all",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 10.46962107499985,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 7.966,
+      "elapsed_seconds": 23.452
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_info_score",
+      "id": "benchmark_matrix_table::test_import_bgen_info_score",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            180
+          ]
+        }
+      ],
+      "status": "passed",
+      "benchmark_seconds": 14.037905806999333,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 8.034,
+      "elapsed_seconds": 27.089
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_filter_count",
+      "id": "benchmark_matrix_table::test_import_bgen_filter_count",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 10.447844308999265,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 8.182,
+      "elapsed_seconds": 23.647
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_entry_field_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_entry_field_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.696690063999995,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.127,
+      "elapsed_seconds": 13.844
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_row_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.481257065999671,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.158,
+      "elapsed_seconds": 12.655
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_col_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.4158133969995106,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.166,
+      "elapsed_seconds": 12.596
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_large_range_matrix_table_sum",
+      "id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            250
+          ]
+        }
+      ],
+      "status": "passed",
+      "benchmark_seconds": 16.96699750300013,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.112,
+      "elapsed_seconds": 27.092
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_kyle_sex_specific_qc",
+      "id": "benchmark_matrix_table::test_kyle_sex_specific_qc",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.924938314999963,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.16,
+      "elapsed_seconds": 14.103
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_scan_count_rows_2",
+      "id": "benchmark_matrix_table::test_matrix_table_scan_count_rows_2",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.0238294920000044,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.13,
+      "elapsed_seconds": 13.168
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_scan_count_cols_2",
+      "id": "benchmark_matrix_table::test_matrix_table_scan_count_cols_2",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.1235020969998004,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.098,
+      "elapsed_seconds": 12.235
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_multi_write_nothing",
+      "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": []
+        }
+      ],
+      "status": "timed_out",
+      "timeout_seconds": 120.0,
+      "fixture_seconds": 5.124,
+      "elapsed_seconds": 125.236
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_localize_and_collect",
+      "id": "benchmark_matrix_table::test_mt_localize_and_collect",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 9.025335211999845,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.053,
+      "elapsed_seconds": 19.098
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_group_by_memory_usage",
+      "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+      "args": [
+        "random_doubles_mt"
+      ],
+      "fixtures": [
+        "random_doubles_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.180543084999954,
+      "worker_cleanup_forced": true,
+      "fixture_seconds": 5.103,
+      "elapsed_seconds": 16.302
+    }
+  ],
+  "totals": {
+    "passed": 103,
+    "timed_out": 1,
+    "upstream_skipped": 4
+  }
+}

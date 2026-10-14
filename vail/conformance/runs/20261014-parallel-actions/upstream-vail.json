@@ -1,0 +1,2243 @@
+{
+  "runner_sha256": "8d1c711c2e1f9734146d2ba8acf7a46ff4637d1bd6fbd0b8406b5aee0519b914",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 120.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/home/ubuntu/hail-benchmark-data",
+  "smoke_fixtures": false,
+  "discovered": 108,
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_key_by_shuffle",
+      "id": "benchmark_table::test_table_key_by_shuffle",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.12343892299941217,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.228
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_group_by_aggregate_sorted",
+      "id": "benchmark_table::test_table_group_by_aggregate_sorted",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.40413958999943134,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 0.511
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_group_by_aggregate_unsorted",
+      "id": "benchmark_table::test_table_group_by_aggregate_unsorted",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.3941104360001191,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 0.5
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_force_count",
+      "id": "benchmark_table::test_table_range_force_count",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.04483274199992593,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 0.142
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_join",
+      "id": "benchmark_table::test_table_range_join[1000000000,1000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000000,
+        1000
+      ],
+      "arguments": {
+        "m": 1000000000,
+        "n": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 9.42466900799991,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 9.522
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_join",
+      "id": "benchmark_table::test_table_range_join[1000000000,1000000000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000000,
+        1000000000
+      ],
+      "arguments": {
+        "m": 1000000000,
+        "n": 1000000000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "timed_out",
+      "timeout_seconds": 120.0,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 121.648
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_python_construction",
+      "id": "benchmark_table::test_table_python_construction",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.1298533259996475,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 0.234
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_big_aggregate_compilation",
+      "id": "benchmark_table::test_table_big_aggregate_compilation",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.0780263579999882,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 2.186
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_big_aggregate_compile_and_execute",
+      "id": "benchmark_table::test_table_big_aggregate_compile_and_execute",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 24.204396356999496,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 24.313
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_foreign_key_join",
+      "id": "benchmark_table::test_table_foreign_key_join[1000000,1000000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000,
+        1000000
+      ],
+      "arguments": {
+        "m": 1000000,
+        "n": 1000000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.221556162000525,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 6.337
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_foreign_key_join",
+      "id": "benchmark_table::test_table_foreign_key_join[1000000,1000]",
+      "args": [
+        "m",
+        "n"
+      ],
+      "fixtures": [],
+      "parameters": [
+        1000000,
+        1000
+      ],
+      "arguments": {
+        "m": 1000000,
+        "n": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.30666848300006677,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.412
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_array_sum",
+      "id": "benchmark_table::test_table_aggregate_array_sum",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 38.48855812799957,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 38.597
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_flat",
+      "id": "benchmark_table::test_table_annotate_many_flat",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.1291952700003094,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 0.234
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_no_dependence",
+      "id": "benchmark_table::test_table_annotate_many_nested_no_dependence",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "upstream_skipped",
+      "reason": "never finishes"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_dependence_constants",
+      "id": "benchmark_table::test_table_annotate_many_nested_dependence_constants",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "upstream_skipped",
+      "reason": "never finishes"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_annotate_many_nested_dependence",
+      "id": "benchmark_table::test_table_annotate_many_nested_dependence",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "never finishes",
+          "args": []
+        }
+      ],
+      "status": "upstream_skipped",
+      "reason": "never finishes"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_read_force_count_ints",
+      "id": "benchmark_table::test_table_read_force_count_ints",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 252, in _make_exact_fixtures\n    table_fixture(\"many_ints_ht\", lambda: hl.import_table(\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 252, in <lambda>\n    table_fixture(\"many_ints_ht\", lambda: hl.import_table(\n                                          ^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_read_force_count_strings",
+      "id": "benchmark_table::test_table_read_force_count_strings",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in _make_exact_fixtures\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in <lambda>\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.092
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_ints",
+      "id": "benchmark_table::test_table_import_ints",
+      "args": [
+        "many_ints_tsv"
+      ],
+      "fixtures": [
+        "many_ints_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 131, in test_table_import_ints\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "benchmark_seconds": 2.3565999981656205e-05,
+      "fixture_seconds": 0.077,
+      "elapsed_seconds": 0.091
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_ints_impute",
+      "id": "benchmark_table::test_table_import_ints_impute",
+      "args": [
+        "many_ints_tsv"
+      ],
+      "fixtures": [
+        "many_ints_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: Hail type imputation is not implemented; supply types explicitly",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 138, in test_table_import_ints_impute\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 126, in import_table\n    raise NotImplementedError('Hail type imputation is not implemented; supply types explicitly')\nNotImplementedError: Hail type imputation is not implemented; supply types explicitly\n",
+      "benchmark_seconds": 6.743000085407402e-06,
+      "fixture_seconds": 0.077,
+      "elapsed_seconds": 0.091
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_import_strings",
+      "id": "benchmark_table::test_table_import_strings",
+      "args": [
+        "many_strings_tsv"
+      ],
+      "fixtures": [
+        "many_strings_tsv"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 142, in test_table_import_strings\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "benchmark_seconds": 1.8960000488732476e-05,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 0.092
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_int_stats",
+      "id": "benchmark_table::test_table_aggregate_int_stats",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 252, in _make_exact_fixtures\n    table_fixture(\"many_ints_ht\", lambda: hl.import_table(\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 252, in <lambda>\n    table_fixture(\"many_ints_ht\", lambda: hl.import_table(\n                                          ^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.092
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_means",
+      "id": "benchmark_table::test_table_range_means",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 11.688913633999618,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 11.801
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_range_array_range_force_count",
+      "id": "benchmark_table::test_table_range_array_range_force_count",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "RuntimeError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 164, in test_table_range_array_range_force_count\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/__init__.py\", line 1236, in _force_count\n    return self._native.force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: expression execution failed: partition count task failed: task 33 panicked with message \"called `Option::unwrap()` on a `None` value\"\n",
+      "benchmark_seconds": 38.96233165800004,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 39.067
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_approx_cdf",
+      "id": "benchmark_table::test_table_aggregate_approx_cdf",
+      "args": [
+        "random_doubles_mt"
+      ],
+      "fixtures": [
+        "random_doubles_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail has no import_matrix_table API for the upstream wide TSV fixture",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_counter",
+      "id": "benchmark_table::test_table_aggregate_counter",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in _make_exact_fixtures\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in <lambda>\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.092
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_take_by_strings",
+      "id": "benchmark_table::test_table_aggregate_take_by_strings",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in _make_exact_fixtures\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in <lambda>\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_dense",
+      "id": "benchmark_table::test_table_aggregate_downsample_dense",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 252, in _make_exact_fixtures\n    table_fixture(\"many_ints_ht\", lambda: hl.import_table(\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 252, in <lambda>\n    table_fixture(\"many_ints_ht\", lambda: hl.import_table(\n                                          ^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_worst_case",
+      "id": "benchmark_table::test_table_aggregate_downsample_worst_case",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "timed_out",
+      "timeout_seconds": 120.0,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 120.186
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_sparse",
+      "id": "benchmark_table::test_table_aggregate_downsample_sparse",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "skip",
+          "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness",
+          "args": []
+        }
+      ],
+      "status": "upstream_skipped",
+      "reason": "FIXME: this needs fixtures to accurately measure downsample (rather than randomness"
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_linreg",
+      "id": "benchmark_table::test_table_aggregate_linreg",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 252, in _make_exact_fixtures\n    table_fixture(\"many_ints_ht\", lambda: hl.import_table(\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 252, in <lambda>\n    table_fixture(\"many_ints_ht\", lambda: hl.import_table(\n                                          ^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.095
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_take",
+      "id": "benchmark_table::test_table_take",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in _make_exact_fixtures\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in <lambda>\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_show",
+      "id": "benchmark_table::test_table_show",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in _make_exact_fixtures\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in <lambda>\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.091
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_expr_take",
+      "id": "benchmark_table::test_table_expr_take",
+      "args": [
+        "many_strings_ht"
+      ],
+      "fixtures": [
+        "many_strings_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "NotImplementedError: compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 355, in _worker\n    fixture_values = _make_exact_fixtures(hl, engine, case[\"fixtures\"], Path(data_dir), case[\"fixture_parameters\"])\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in _make_exact_fixtures\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 238, in table_fixture\n    build().write(str(path), overwrite=True)\n    ^^^^^^^\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 260, in <lambda>\n    table_fixture(\"many_strings_ht\", lambda: hl.import_table(str(strings_tsv)))\n                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n",
+      "elapsed_seconds": 0.092
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[10]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.010862898999221215,
+      "fixture_seconds": 0.149,
+      "elapsed_seconds": 0.184
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[100]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.05511276299966994,
+      "fixture_seconds": 0.188,
+      "elapsed_seconds": 0.268
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_force_count_partitions",
+      "id": "benchmark_table::test_read_force_count_partitions[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.329381384000044,
+      "fixture_seconds": 0.657,
+      "elapsed_seconds": 2.015
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,1000]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        1000
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 1000
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.5782304649992511,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 0.689
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,100]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        100
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 100
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.10631097599980421,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 0.207
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_write_range_table",
+      "id": "benchmark_table::test_write_range_table[10000000,10]",
+      "args": [
+        "tmp_path",
+        "n",
+        "n_partitions"
+      ],
+      "fixtures": [],
+      "parameters": [
+        10000000,
+        10
+      ],
+      "arguments": {
+        "n": 10000000,
+        "n_partitions": 10
+      },
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.07641580800009251,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 0.194
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_read_with_index",
+      "id": "benchmark_table::test_read_with_index[1000]",
+      "args": [
+        "many_partitions_ht"
+      ],
+      "fixtures": [
+        "many_partitions_ht"
+      ],
+      "parameters": [
+        1000
+      ],
+      "arguments": {
+        "many_partitions_ht": 1000
+      },
+      "fixture_parameters": {
+        "many_partitions_ht": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 25.96000892200027,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 26.123
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.1673875229998885,
+      "fixture_seconds": 0.211,
+      "elapsed_seconds": 1.419
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.1422982539997975,
+      "fixture_seconds": 0.183,
+      "elapsed_seconds": 1.359
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.5111676739998074,
+      "fixture_seconds": 0.662,
+      "elapsed_seconds": 3.227
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.2119573119998677,
+      "fixture_seconds": 0.182,
+      "elapsed_seconds": 1.425
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.2136867379995238,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 1.322
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.6041577350006264,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 2.731
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.4268533260001277,
+      "fixture_seconds": 0.682,
+      "elapsed_seconds": 3.164
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.554356149999876,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 2.682
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_union_partitions_table",
+      "id": "benchmark_table::test_union_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.9973952440004723,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 4.125
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.23985831599929952,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 0.348
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.8193334810002852,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 0.933
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 13.161917628000083,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 13.33
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.8476583319998099,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 0.966
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.748870710999654,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 0.864
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 13.651202355999885,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 13.827
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 13.065015402000427,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 13.236
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 13.550567643999784,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 13.749
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 17.611171034000108,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 17.773
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_group_by_collect_per_row",
+      "id": "benchmark_table::test_group_by_collect_per_row",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement upstream fixture expression rand_unif",
+      "elapsed_seconds": 0.091
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_group_by_take_rekey",
+      "id": "benchmark_table::test_group_by_take_rekey",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement upstream fixture expression rand_unif",
+      "elapsed_seconds": 0.091
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_scan_sum_1k_partitions",
+      "id": "benchmark_table::test_table_scan_sum_1k_partitions",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.4645381099999213,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 0.574
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_scan_prev_non_null",
+      "id": "benchmark_table::test_table_scan_prev_non_null",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "timed_out",
+      "timeout_seconds": 120.0,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 120.97
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_map_filter_region_memory",
+      "id": "benchmark_table::test_test_map_filter_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: module 'vail' has no attribute 'zeros'",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 281, in test_test_map_filter_region_memory\nAttributeError: module 'vail' has no attribute 'zeros'\n",
+      "benchmark_seconds": 0.0015333689998442424,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 0.097
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_head_and_tail_region_memory",
+      "id": "benchmark_table::test_test_head_and_tail_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: module 'vail' has no attribute 'zeros'",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 287, in test_test_head_and_tail_region_memory\nAttributeError: module 'vail' has no attribute 'zeros'\n",
+      "benchmark_seconds": 0.0012834839999413816,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.096
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_inner_join_region_memory",
+      "id": "benchmark_table::test_test_inner_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: module 'vail' has no attribute 'zeros'",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 293, in test_test_inner_join_region_memory\nAttributeError: module 'vail' has no attribute 'zeros'\n",
+      "benchmark_seconds": 0.0015433809994647163,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.095
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_left_join_region_memory",
+      "id": "benchmark_table::test_test_left_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: module 'vail' has no attribute 'zeros'",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_table.py\", line 300, in test_test_left_join_region_memory\nAttributeError: module 'vail' has no attribute 'zeros'\n",
+      "benchmark_seconds": 0.0027109510001537274,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.096
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_decode_and_count",
+      "id": "benchmark_matrix_table::test_matrix_table_decode_and_count",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.492422839000028,
+      "fixture_seconds": 50.33,
+      "elapsed_seconds": 55.062
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_decode_and_count_just_gt",
+      "id": "benchmark_matrix_table::test_matrix_table_decode_and_count_just_gt",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 8.354016983000292,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 8.473
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_array_arithmetic",
+      "id": "benchmark_matrix_table::test_matrix_table_array_arithmetic",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: module 'vail' has no attribute 'pl_dosage'",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 364, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 19, in test_matrix_table_array_arithmetic\nAttributeError: module 'vail' has no attribute 'pl_dosage'\n",
+      "benchmark_seconds": 0.051315574999534874,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.164
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_table",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_table",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "worker exited with code -6 before reporting a result",
+      "worker_exitcode": -6,
+      "phase": "benchmark",
+      "elapsed_seconds": 6.692
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_table_no_key",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_table_no_key",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 25.144239580999965,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 25.28
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_force_count",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_force_count",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.629291483999623,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 4.737
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_show",
+      "id": "benchmark_matrix_table::test_matrix_table_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.3339923220000856,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 6.45
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_show",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.7415480720001142,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 1.967
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_cols_show",
+      "id": "benchmark_matrix_table::test_matrix_table_cols_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.07454768800016609,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 0.189
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_entry",
+      "id": "benchmark_matrix_table::test_matrix_table_take_entry",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "worker exited with code -6 before reporting a result",
+      "worker_exitcode": -6,
+      "phase": "benchmark",
+      "elapsed_seconds": 6.693
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_entries_show",
+      "id": "benchmark_matrix_table::test_matrix_table_entries_show",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "worker exited with code -6 before reporting a result",
+      "worker_exitcode": -6,
+      "phase": "benchmark",
+      "elapsed_seconds": 6.491
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_row",
+      "id": "benchmark_matrix_table::test_matrix_table_take_row",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 6.129263069000444,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 6.246
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_take_col",
+      "id": "benchmark_matrix_table::test_matrix_table_take_col",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.07478350499968656,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.189
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_write_range_matrix_table_p100",
+      "id": "benchmark_matrix_table::test_write_range_matrix_table_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 0.25999793099981616,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.376
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_write_profile_mt",
+      "id": "benchmark_matrix_table::test_write_profile_mt",
+      "args": [
+        "profile25_mt",
+        "tmp_path"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 12.589901430999817,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 12.808
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_rows_is_transition",
+      "id": "benchmark_matrix_table::test_matrix_table_rows_is_transition",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 4.75367129300048,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 4.867
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 16.865102181999646,
+      "fixture_seconds": 0.081,
+      "elapsed_seconds": 16.987
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_filter_entries_unfilter",
+      "id": "benchmark_matrix_table::test_matrix_table_filter_entries_unfilter",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 26.34523470000022,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 26.488
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_nested_annotate_rows_annotate_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_nested_annotate_rows_annotate_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": []
+        }
+      ],
+      "status": "timed_out",
+      "timeout_seconds": 120.0,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 120.351
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_many_aggs_row_wise",
+      "id": "benchmark_matrix_table::test_matrix_table_many_aggs_row_wise",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: is_hom_ref",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 365, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 149, in test_matrix_table_many_aggs_row_wise\n  File \"benchmark_matrix_table.py\", line 110, in many_aggs\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/expressions.py\", line 738, in __getattr__\n    raise AttributeError(name)\nAttributeError: is_hom_ref\n",
+      "benchmark_seconds": 0.0040742999999565654,
+      "fixture_seconds": 0.079,
+      "elapsed_seconds": 0.1
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_many_aggs_col_wise",
+      "id": "benchmark_matrix_table::test_matrix_table_many_aggs_col_wise",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: is_hom_ref",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 365, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 155, in test_matrix_table_many_aggs_col_wise\n  File \"benchmark_matrix_table.py\", line 110, in many_aggs\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/expressions.py\", line 738, in __getattr__\n    raise AttributeError(name)\nAttributeError: is_hom_ref\n",
+      "benchmark_seconds": 0.005333054000402626,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 0.1
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_aggregate_entries",
+      "id": "benchmark_matrix_table::test_matrix_table_aggregate_entries",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "worker exited with code -6 before reporting a result",
+      "worker_exitcode": -6,
+      "phase": "benchmark",
+      "elapsed_seconds": 6.69
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_call_stats_star_star",
+      "id": "benchmark_matrix_table::test_matrix_table_call_stats_star_star",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "timed_out",
+      "timeout_seconds": 120.0,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 120.363
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_gnomad_coverage_stats",
+      "id": "benchmark_matrix_table::test_gnomad_coverage_stats",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement upstream fixture expression rand_unif",
+      "elapsed_seconds": 0.092
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_gnomad_coverage_stats_optimized",
+      "id": "benchmark_matrix_table::test_gnomad_coverage_stats_optimized",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement upstream fixture expression rand_unif",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_per_row_stats_star_star",
+      "id": "benchmark_matrix_table::test_per_row_stats_star_star",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement upstream fixture expression rand_unif",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_read_decode_gnomad_coverage",
+      "id": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+      "args": [
+        "gnomad_dp_sim"
+      ],
+      "fixtures": [
+        "gnomad_dp_sim"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement upstream fixture expression rand_unif",
+      "elapsed_seconds": 0.092
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_force_count_just_gp",
+      "id": "benchmark_matrix_table::test_import_bgen_force_count_just_gp",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement BGEN import",
+      "elapsed_seconds": 0.091
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_force_count_all",
+      "id": "benchmark_matrix_table::test_import_bgen_force_count_all",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement BGEN import",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_info_score",
+      "id": "benchmark_matrix_table::test_import_bgen_info_score",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            180
+          ]
+        }
+      ],
+      "status": "unsupported",
+      "reason": "Vail does not implement BGEN import",
+      "elapsed_seconds": 0.093
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_import_bgen_filter_count",
+      "id": "benchmark_matrix_table::test_import_bgen_filter_count",
+      "args": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "fixtures": [
+        "sim_ukb_bgen",
+        "sim_ukb_sample"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail does not implement BGEN import",
+      "elapsed_seconds": 0.092
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_entry_field_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_entry_field_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: export",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 365, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 256, in test_export_range_matrix_table_entry_field_p100\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/expressions.py\", line 738, in __getattr__\n    raise AttributeError(name)\nAttributeError: export\n",
+      "benchmark_seconds": 0.05221051699936652,
+      "fixture_seconds": 0.08,
+      "elapsed_seconds": 0.162
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_row_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_row_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: export",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 365, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 261, in test_export_range_matrix_table_row_p100\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/expressions.py\", line 738, in __getattr__\n    raise AttributeError(name)\nAttributeError: export\n",
+      "benchmark_seconds": 0.04956972199943266,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 0.162
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_export_range_matrix_table_col_p100",
+      "id": "benchmark_matrix_table::test_export_range_matrix_table_col_p100",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: export",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 365, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 266, in test_export_range_matrix_table_col_p100\n  File \"/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/expressions.py\", line 738, in __getattr__\n    raise AttributeError(name)\nAttributeError: export\n",
+      "benchmark_seconds": 0.049669428000015614,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 0.165
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_large_range_matrix_table_sum",
+      "id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            250
+          ]
+        }
+      ],
+      "status": "timed_out",
+      "timeout_seconds": 250,
+      "fixture_seconds": 0.082,
+      "elapsed_seconds": 251.44
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_kyle_sex_specific_qc",
+      "id": "benchmark_matrix_table::test_kyle_sex_specific_qc",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "AttributeError: module 'vail' has no attribute 'rand_bool'",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 365, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 278, in test_kyle_sex_specific_qc\nAttributeError: module 'vail' has no attribute 'rand_bool'\n",
+      "benchmark_seconds": 0.004834997999751067,
+      "fixture_seconds": 0.078,
+      "elapsed_seconds": 0.099
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_scan_count_rows_2",
+      "id": "benchmark_matrix_table::test_matrix_table_scan_count_rows_2",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "failed",
+      "error": "worker exited with code -9 before reporting a result",
+      "worker_exitcode": -9,
+      "phase": "benchmark",
+      "elapsed_seconds": 23.743
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_table_scan_count_cols_2",
+      "id": "benchmark_matrix_table::test_matrix_table_scan_count_cols_2",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 1.1869723879999583,
+      "fixture_seconds": 0.34,
+      "elapsed_seconds": 1.549
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_matrix_multi_write_nothing",
+      "id": "benchmark_matrix_table::test_matrix_multi_write_nothing",
+      "args": [
+        "tmp_path"
+      ],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": []
+        }
+      ],
+      "status": "failed",
+      "error": "AttributeError: module 'vail' has no attribute 'experimental'",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/ubuntu/vail/benchmarks/upstream_benchmark_coverage.py\", line 365, in _worker\n    fn(**kwargs)\n  File \"benchmark_matrix_table.py\", line 332, in test_matrix_multi_write_nothing\nAttributeError: module 'vail' has no attribute 'experimental'\n",
+      "benchmark_seconds": 0.09481324500029586,
+      "fixture_seconds": 0.085,
+      "elapsed_seconds": 0.217
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_localize_and_collect",
+      "id": "benchmark_matrix_table::test_mt_localize_and_collect",
+      "args": [
+        "profile25_mt"
+      ],
+      "fixtures": [
+        "profile25_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "timed_out",
+      "timeout_seconds": 120.0,
+      "fixture_seconds": 0.087,
+      "elapsed_seconds": 121.38
+    },
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_mt_group_by_memory_usage",
+      "id": "benchmark_matrix_table::test_mt_group_by_memory_usage",
+      "args": [
+        "random_doubles_mt"
+      ],
+      "fixtures": [
+        "random_doubles_mt"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "unsupported",
+      "reason": "Vail has no import_matrix_table API for the upstream wide TSV fixture",
+      "elapsed_seconds": 0.094
+    }
+  ],
+  "totals": {
+    "failed": 31,
+    "passed": 54,
+    "timed_out": 7,
+    "unsupported": 12,
+    "upstream_skipped": 4
+  }
+}
