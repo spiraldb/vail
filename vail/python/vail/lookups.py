@@ -54,9 +54,10 @@ def index(table, expressions, all_matches=False, query_interval=False):
     ))
 
 
-def resolve(native, expressions):
+def resolve(native, expressions, *, random_scope="row"):
     """Append lookup DAG nodes, replacing each lookup with its private column."""
-    expressions = list(expressions)
+    from .randomness import resolve as resolve_randomness
+    native, expressions = resolve_randomness(native, list(expressions), random_scope)
     targets = {}
     for expr in expressions:
         targets.update(expr._lookup_refs)

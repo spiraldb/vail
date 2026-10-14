@@ -1209,6 +1209,14 @@ impl Expr {
                 args,
                 dtype,
             } => {
+                if let Some(function) = function.strip_prefix("random_") {
+                    let types = args
+                        .iter()
+                        .map(|arg| arg.dtype_scoped(schema, globals, scope))
+                        .collect::<Result<Vec<_>, _>>()?;
+                    crate::randomness::validate(function, &types, dtype)?;
+                    return Ok(dtype.clone());
+                }
                 // Validate the declared result against DataFusion's own type inference.
                 let udf = nested_function(function)?;
                 let args = args
@@ -2814,6 +2822,7 @@ fn array_reduce(
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 enum HailKind {
+    Random(String),
     RestoreArrowType,
     Die,
     Numeric(BinaryOperator),
@@ -3716,6 +3725,9 @@ impl PhysicalExpr for HailPhysicalExpr {
             .collect::<datafusion_common::Result<Vec<_>>>()?;
         let result = (|| -> Result<ArrayRef, ExprError> {
             match &self.kind {
+                HailKind::Random(function) => {
+                    crate::randomness::evaluate(function, &args, &self.dtype, len)
+                }
                 HailKind::RestoreArrowType => Ok(args[0].clone()),
                 HailKind::Die => {
                     if len == 0 {
@@ -4226,6 +4238,14 @@ fn lower_scoped(
                     )?)
                 })
                 .collect::<Result<Vec<_>, ExprError>>()?;
+            if let Some(function) = function.strip_prefix("random_") {
+                return Ok(Arc::new(HailPhysicalExpr {
+                    kind: HailKind::Random(function.into()),
+                    prepared_reference: Default::default(),
+                    args,
+                    dtype,
+                }));
+            }
             let function = Arc::new(ScalarFunctionExpr::try_new(
                 nested_function(function)?,
                 args,

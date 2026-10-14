@@ -32,6 +32,7 @@ static NEXT_NODE: AtomicU64 = AtomicU64::new(1);
 #[derive(Clone, Debug)]
 struct OrderedNode {
     id: u64,
+    freeze: bool,
     input: LogicalPlan,
     schema: DFSchemaRef,
 }
@@ -53,7 +54,11 @@ impl Hash for OrderedNode {
 }
 impl UserDefinedLogicalNodeCore for OrderedNode {
     fn name(&self) -> &str {
-        "VailOrderedPartitions"
+        if self.freeze {
+            "VailRngContext"
+        } else {
+            "VailOrderedPartitions"
+        }
     }
     fn inputs(&self) -> Vec<&LogicalPlan> {
         vec![&self.input]
@@ -65,7 +70,15 @@ impl UserDefinedLogicalNodeCore for OrderedNode {
         vec![]
     }
     fn fmt_for_explain(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "VailOrderedPartitions")
+        write!(
+            f,
+            "{}",
+            if self.freeze {
+                "VailRngContext"
+            } else {
+                "VailOrderedPartitions"
+            }
+        )
     }
     fn with_exprs_and_inputs(
         &self,
@@ -88,6 +101,18 @@ pub(crate) fn ordered(input: LogicalPlan) -> LogicalPlan {
     LogicalPlan::Extension(Extension {
         node: Arc::new(OrderedNode {
             id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
+            freeze: false,
+            schema: input.schema().clone(),
+            input,
+        }),
+    })
+}
+
+fn frozen_rng_context(input: LogicalPlan) -> LogicalPlan {
+    LogicalPlan::Extension(Extension {
+        node: Arc::new(OrderedNode {
+            id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
+            freeze: true,
             schema: input.schema().clone(),
             input,
         }),
@@ -666,6 +691,71 @@ fn lower_scans(
     Ok(LogicalPlanBuilder::from(input).project(output)?.build()?)
 }
 
+fn is_rng_uid(expr: &vail_execution::expressions::Expr) -> bool {
+    matches!(expr, vail_execution::expressions::Expr::Aggregate{ function, options, .. }
+        if function=="count" && options.get("__vail_rng_uid").and_then(serde_json::Value::as_bool)==Some(true))
+}
+
+/// RNG identities are ordinals, not a parallel aggregate scan. Number the
+/// ordered input once, then restore its logical partition tags. This avoids
+/// replaying stateful upstream operators for a scan's summary/carry branches.
+fn lower_rng_uids(
+    child: &TableRef,
+    input: LogicalPlan,
+    fields: &[(String, vail_execution::expressions::Expr)],
+    bindings: &std::collections::BTreeMap<String, usize>,
+) -> Result<LogicalPlan> {
+    use datafusion_expr::ExprSchemable;
+    let partition_index = child.globals().schema().fields().len() + child.schema().fields().len();
+    let partition_name = input.schema().field(partition_index).name().clone();
+    let mut ordinal_name = "__vail_rng_ordinal".to_owned();
+    while input
+        .schema()
+        .fields()
+        .iter()
+        .any(|f| f.name() == &ordinal_name)
+    {
+        ordinal_name.push('_');
+    }
+    let mut ordinal = WindowFunction::new(
+        datafusion_expr::WindowFunctionDefinition::WindowUDF(
+            datafusion_functions_window::row_number::row_number_udwf(),
+        ),
+        vec![],
+    );
+    ordinal.params.window_frame = WindowFrame::new(Some(true));
+    let numbered = LogicalPlanBuilder::from(ordered(input))
+        .window(vec![
+            Expr::WindowFunction(Box::new(ordinal)).alias(&ordinal_name),
+        ])?
+        .build()?;
+    let mut projections = Vec::new();
+    for (name, expr) in fields {
+        let value = if is_rng_uid(expr) {
+            datafusion_expr::col(&ordinal_name)
+                .cast_to(&arrow_schema::DataType::Int64, numbered.schema())?
+                - datafusion_expr::lit(1_i64)
+        } else {
+            lower_logical_with_bindings(
+                expr,
+                numbered.schema(),
+                child.globals().schema(),
+                bindings,
+            )?
+        };
+        projections.push(value.alias(name));
+    }
+    projections.push(indexed_column(&numbered, partition_index));
+    let result = LogicalPlanBuilder::from(numbered)
+        .project(projections)?
+        .build()?;
+    Ok(frozen_rng_context(restore_partitions(
+        result,
+        partition_name,
+        child.known_n_partitions().unwrap_or(1),
+    )))
+}
+
 pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
     match table.node() {
         TableNode::Read { .. }
@@ -746,6 +836,9 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
         } => {
             let input = crate::logical_globals::bind_globals(lower(child)?, child)?;
             let (input, indices) = crate::logical_globals::bind_external(input, bindings)?;
+            if fields.iter().any(|(_, expr)| is_rng_uid(expr)) {
+                return lower_rng_uids(child, input, fields, &indices);
+            }
             if fields.iter().any(|(_, e)| {
                 let mut found = false;
                 e.visit(&mut |n| found |= is_scan(n));
@@ -1066,8 +1159,18 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 crate::partitioned::ProtectedRangeRepartitionExec::new(input.clone(), ranges)?,
             )));
         }
-        if node.as_any().downcast_ref::<OrderedNode>().is_some() {
+        if let Some(node) = node.as_any().downcast_ref::<OrderedNode>() {
             let input = &physical_inputs[0];
+            if node.freeze {
+                let input = DefaultPhysicalPlanner::default().optimize_physical_plan(
+                    input.clone(),
+                    session,
+                    |_, _| {},
+                )?;
+                return Ok(Some(Arc::new(crate::rng_context::RngContextExec::new(
+                    input,
+                ))));
+            }
             let parts = (0..input.properties().output_partitioning().partition_count())
                 .map(|p| {
                     Arc::new(crate::partitioned::PartitionViewExec::new(input.clone(), p))

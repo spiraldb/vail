@@ -84,6 +84,9 @@ def _merge_sources(left, right):
 def as_expr(value):
     if isinstance(value, Expression):
         return value
+    from .streams import StreamExpression
+    if isinstance(value, StreamExpression):
+        return value.to_array()
     if isinstance(value, Mapping):
         return StructExpression(value)
     if isinstance(value, list):
@@ -527,8 +530,10 @@ class Expression:
         variable = Expression(element_type, self.source,
                               {"op": "lambda_variable", "name": parameter})
         body = as_expr(f(variable))
+        from .randomness import index_callback
+        value, body = index_callback(self, parameter, body)
         return Expression(tarray(body.dtype), _merge_sources(self.source, body.source),
-                          {"op": "array_map", "value": self.to_ir(),
+                          {"op": "array_map", "value": value.to_ir(),
                            "parameter": parameter, "body": body.to_ir()})
 
     def append(self, value):
@@ -556,6 +561,14 @@ class Expression:
         predicate = as_expr(f(variable))
         if predicate.dtype != tbool:
             raise TypeError(f"array.filter predicate must be bool, got {predicate.dtype}")
+        from .randomness import contains
+        if contains(predicate.to_ir()):
+            from .collection_functions import enumerate as enumerate_
+            from .randomness import index_callback
+            indexed, predicate = index_callback(self, parameter, predicate)
+            filtered = Expression(indexed.dtype, _merge_sources(self.source, predicate.source),
+                                 {"op": "array_filter", "value": indexed.to_ir(), "parameter": parameter, "predicate": predicate.to_ir()})
+            return filtered.map(lambda pair: pair[1])
         return Expression(self.dtype, _merge_sources(self.source, predicate.source),
                           {"op": "array_filter", "value": self.to_ir(),
                            "parameter": parameter, "predicate": predicate.to_ir()})
@@ -687,6 +700,11 @@ class Expression:
             return object.__getattribute__(self, "_array_flatmap")
         if isinstance(dtype, tarray):
             from . import collections as ops
+            if name == "aggregate":
+                from .array_aggregate import aggregate
+                return lambda f: aggregate(self, f)
+            if name == "to_array":
+                return lambda: self
             if name in ("fold", "scan", "group_by"):
                 from .array_methods import fold, array_scan, group_by
                 if name == "group_by": return lambda f: group_by(f, self)
@@ -1001,6 +1019,9 @@ def if_else(condition, consequent, alternate, missing_false=False):
     """Select a branch, optionally treating a missing condition as false."""
     if type(missing_false) is not bool:
         raise TypeError("missing_false must be a bool")
+    from .streams import StreamExpression
+    if isinstance(consequent, StreamExpression) and isinstance(alternate, StreamExpression):
+        return StreamExpression(if_else(condition, consequent.to_array(), alternate.to_array(), missing_false=missing_false))
     condition = as_expr(condition)
     if condition.dtype != tbool:
         raise TypeError("if_else condition must have bool type")

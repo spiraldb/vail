@@ -9,6 +9,7 @@ class LocalFilesystem:
 
 
 class NativeBackend:
+    requires_lowering = False
     fs = LocalFilesystem()
 
     @property
