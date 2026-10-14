@@ -1,0 +1,71 @@
+{
+  "engine": "hail",
+  "case": "table_group_sorted",
+  "parameters": {
+    "rows": 10000000,
+    "group_width": 1000
+  },
+  "start_ns": 2198697698509,
+  "end_ns": 2209420797528,
+  "iterations": [
+    {
+      "start_ns": 2198697702045,
+      "end_ns": 2199667413528
+    },
+    {
+      "start_ns": 2199667418708,
+      "end_ns": 2200767113024
+    },
+    {
+      "start_ns": 2200767117197,
+      "end_ns": 2201653063227
+    },
+    {
+      "start_ns": 2201653068252,
+      "end_ns": 2202478671988
+    },
+    {
+      "start_ns": 2202478676998,
+      "end_ns": 2203399447047
+    },
+    {
+      "start_ns": 2203399453583,
+      "end_ns": 2203989310227
+    },
+    {
+      "start_ns": 2203989316941,
+      "end_ns": 2204753816631
+    },
+    {
+      "start_ns": 2204753821814,
+      "end_ns": 2205582527753
+    },
+    {
+      "start_ns": 2205582533546,
+      "end_ns": 2206375686568
+    },
+    {
+      "start_ns": 2206375693543,
+      "end_ns": 2207258497332
+    },
+    {
+      "start_ns": 2207258503109,
+      "end_ns": 2207981373670
+    },
+    {
+      "start_ns": 2207981379051,
+      "end_ns": 2208646175660
+    },
+    {
+      "start_ns": 2208646181231,
+      "end_ns": 2209420790891
+    }
+  ],
+  "settings": {
+    "version": "0.2.139",
+    "package": "/home/ubuntu/hail-env/lib/python3.11/site-packages/hail/__init__.py",
+    "master": "local[32]",
+    "jvm_max_heap": 68719476736
+  },
+  "median_seconds": 0.825603736
+}

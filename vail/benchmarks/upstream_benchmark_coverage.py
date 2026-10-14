@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import ast
 import itertools
+import hashlib
 import json
 import multiprocessing as mp
 import os
@@ -437,7 +438,9 @@ def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
     process.join(5)
     if process.is_alive():
         _stop_worker_tree(process)
-        result = {"status": "failed", "error": "worker did not exit after reporting a result"}
+        # The benchmark result is already complete. Spark shutdown can exceed
+        # the grace period; record forced cleanup separately from query status.
+        result["worker_cleanup_forced"] = True
     queue.close()
     result["fixture_seconds"] = round(benchmark_started - started, 3)
     result["elapsed_seconds"] = round(time.monotonic() - started, 3)
@@ -478,7 +481,10 @@ def main() -> None:
     if args.list:
         print("\n".join(case["id"] for case in cases))
         return
-    report = {"engine": args.engine, "timeout_seconds": args.timeout,
+    report = {"runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+              "upstream_sha256": {name: hashlib.sha256((UPSTREAM / name).read_bytes()).hexdigest()
+                                  for name in (*SOURCES, "fixtures.py")},
+              "engine": args.engine, "timeout_seconds": args.timeout,
               "fixture_timeout_seconds": args.fixture_timeout, "data_dir": str(args.data_dir),
               "smoke_fixtures": args.smoke, "discovered": len(cases), "cases": []}
     completed = {}

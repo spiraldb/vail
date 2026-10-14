@@ -193,6 +193,8 @@ def render(root: Path, output: Path, upstream_vail: Path | None = None,
                 details.append(f"{engine}: {item['reason']}")
             if item and item.get("error"):
                 details.append(f"{engine}: {item['error']}")
+            if item and item.get("worker_cleanup_forced"):
+                details.append(f"{engine}: worker cleanup forced after query result")
             for field in ("timeout_seconds", "fixture_timeout_seconds"):
                 if item and item.get(field) is not None:
                     details.append(f"{engine}: {field.replace('_', ' ')} {item[field]}s")

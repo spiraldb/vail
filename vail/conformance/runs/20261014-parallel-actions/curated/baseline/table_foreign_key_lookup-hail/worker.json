@@ -1,0 +1,43 @@
+{
+  "engine": "hail",
+  "case": "table_foreign_key_lookup",
+  "parameters": {
+    "rows": 1000000,
+    "target_rows": 1000
+  },
+  "start_ns": 2405640971376,
+  "end_ns": 2415658534887,
+  "iterations": [
+    {
+      "start_ns": 2405640974197,
+      "end_ns": 2407355902153
+    },
+    {
+      "start_ns": 2407355906183,
+      "end_ns": 2409037091561
+    },
+    {
+      "start_ns": 2409037096058,
+      "end_ns": 2410704342123
+    },
+    {
+      "start_ns": 2410704346423,
+      "end_ns": 2412357921138
+    },
+    {
+      "start_ns": 2412357925461,
+      "end_ns": 2414034621882
+    },
+    {
+      "start_ns": 2414034627856,
+      "end_ns": 2415658526697
+    }
+  ],
+  "settings": {
+    "version": "0.2.139",
+    "package": "/home/ubuntu/hail-env/lib/python3.11/site-packages/hail/__init__.py",
+    "master": "local[32]",
+    "jvm_max_heap": 68719476736
+  },
+  "median_seconds": 1.671971243
+}
