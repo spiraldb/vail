@@ -1305,7 +1305,7 @@ fn lower_nested(
         dict: Box::new((dtype, value_type)),
     }
     .to_arrow()?;
-    collect_nested(nested, keys, entry, output_type, name)
+    collect_nested(nested, keys, entry, output_type, name, vec![])
 }
 
 fn collect_nested(
@@ -1314,10 +1314,12 @@ fn collect_nested(
     value: Arc<dyn PhysicalExpr>,
     output_type: DataType,
     name: &str,
+    order_by: Vec<datafusion_physical_expr::PhysicalSortExpr>,
 ) -> Result<(PhysicalPlan, ScalarValue)> {
     let schema = input.schema();
     let function = vail_execution::collect_aggregate::collect_udf(&value.data_type(&schema)?);
     let aggregate = AggregateExprBuilder::new(function, vec![value])
+        .order_by(order_by)
         .schema(schema.clone())
         .alias(name)
         .build()?;
@@ -1520,6 +1522,10 @@ fn lower_array_aggregation(
         column(&sorted, keys.len() + 1),
         output_type.clone(),
         name,
+        vec![PhysicalSortExpr::new(
+            column(&sorted, keys.len()),
+            arrow_schema::SortOptions::default(),
+        )],
     )?;
     let result = join_results(lengths, values, keys.len(), &[(name.into(), empty)])?;
     let null = ScalarValue::try_from(&output_type)?;

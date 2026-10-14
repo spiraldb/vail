@@ -1215,10 +1215,18 @@ impl Expr {
                     .iter()
                     .map(|arg| arg.dtype_scoped(schema, globals, scope)?.to_arrow())
                     .collect::<Result<Vec<_>, ExprError>>()?;
+                let matrix_function = matches!(
+                    function.as_str(),
+                    "__vail_list_take" | "__vail_matrix_columns" | "__vail_matrix_aligned"
+                );
                 let expected = if function == "array_sort" {
                     3
                 } else if function == "array_element"
                     || function == "arrays_zip"
+                    || matches!(
+                        function.as_str(),
+                        "__vail_list_take" | "__vail_matrix_aligned"
+                    )
                     || matches!(
                         function.as_str(),
                         "array_union" | "array_intersect" | "array_except" | "array_concat"
@@ -1244,6 +1252,7 @@ impl Expr {
                     ));
                 }
                 if expected == 2
+                    && !matrix_function
                     && !matches!(function.as_str(), "array_element" | "arrays_zip")
                     && !same_collection_storage(&args[0], &args[1])
                 {
@@ -4022,6 +4031,9 @@ fn same_collection_storage(left: &DataType, right: &DataType) -> bool {
 
 pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarUDF>, ExprError> {
     use datafusion_functions_nested as nested;
+    if let Some(function) = crate::matrix_arrays::udf(name) {
+        return Ok(function);
+    }
     Ok(match name {
         "array_sort" => nested::sort::array_sort_udf(),
         "array_distinct" => nested::set_ops::array_distinct_udf(),

@@ -86,6 +86,8 @@ def reduce_list(
                 value = globals[name]
             elif axis == "row":
                 value = base[matrix._ROW_NAME][name]
+            elif axis == "col" and "col" in context.dtype:
+                value = context.col[name]
             elif axis == "col" and "position" in context.dtype:
                 value = matrix._mir.column_records[context.position][
                     "__vail_matrix_col"

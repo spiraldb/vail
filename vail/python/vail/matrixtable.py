@@ -1,6 +1,7 @@
 """Lazy, typed MatrixTable plans lowered to native TableIR relations.
 
-Rows and columns have independent identities; entries contain only present cells.
+The ordered global column array defines every row's cell positions. Missing
+entries retain their slots with present=False; identities distinguish occurrences.
 All transformations build native DAGs. Python never evaluates cell expressions.
 """
 
@@ -114,6 +115,34 @@ def _indexed_cells(cells):
     )
 
 
+
+def _zip_arrays(left, right):
+    from .collections import _function
+    return _function("arrays_zip", [left, right], tarray(tstruct(**{
+        "1": left.dtype.element_type, "2": right.dtype.element_type,
+    })))
+
+
+def _mask_array(values, mask):
+    # The callback reads only its current pair, never an outer array.
+    return _zip_arrays(values, mask).filter(lambda pair: pair["2"]).map(lambda pair: pair["1"])
+
+
+def _take_array(values, positions):
+    from .collections import _function
+    return _function("__vail_list_take", [values, positions], values.dtype)
+
+
+def _validate_layout(core):
+    from .collections import _function
+    columns = core.globals[_COLUMNS]
+    checked = _function("__vail_matrix_columns", [columns], columns.dtype)
+    core = core.annotate_globals(**{_COLUMNS: checked})
+    columns = core.globals[_COLUMNS]
+    # A filter remains observable to count() and cannot be pruned like an unused
+    # projection. The check is lazy and runs only on the rows actually read.
+    return core.filter(_function("__vail_matrix_aligned", [core[_CELLS], columns], tbool))
+
 def _field_indices(node):
     """Return the matrix fields and axes referenced by an expression IR."""
     fields = {}
@@ -184,7 +213,7 @@ class MatrixIR:
     col_key: tuple[str, ...]
     row_index_keys: tuple[str, ...]
 
-    def __init__(self, rows, cols=None, *, row_key=(), col_key=(), row_index_keys=None):
+    def __init__(self, rows, cols=None, *, row_key=(), col_key=(), row_index_keys=None, _aligned=False):
         from . import agg
 
         row_key = tuple(row_key)
@@ -220,6 +249,18 @@ class MatrixIR:
             rows = rows.annotate_globals(**{_COLUMNS: records})
         if _COLUMNS not in rows._global_schema:
             raise ValueError("matrix core lacks global column metadata")
+        cell_type = rows._schema[_CELLS]
+        column_type = rows._global_schema[_COLUMNS]
+        if (not isinstance(cell_type, tarray) or not isinstance(cell_type.element_type, tstruct)
+                or cell_type.element_type.get(_CID) != tint64
+                or cell_type.element_type.get(_PRESENT) != tbool
+                or not isinstance(cell_type.element_type.get(_VALUE), tstruct)
+                or not isinstance(column_type, tarray) or not isinstance(column_type.element_type, tstruct)
+                or column_type.element_type.get(_CID) != tint64
+                or not isinstance(column_type.element_type.get(_COL), tstruct)):
+            raise TypeError("matrix layout requires typed column records and entry slots")
+        if not _aligned:
+            rows = _validate_layout(rows)
         for name, value in dict(
             core=rows,
             row_key=row_key,
@@ -290,30 +331,70 @@ class MatrixTable:
     _ROW_NAME = _ROW
     _is_scan_node = staticmethod(_is_scan)
 
-    def _copy(self, *, restrict=False, **changes):
+    def _copy(self, *, rows=None, row_key=None, col_key=None):
+        """Structural replacement; callers must preserve cell/column alignment."""
         old = self._mir
-        rows = changes.get("rows", old.core)
-        cols = changes.get("cols")
-        if cols is not None:
-            from . import agg, len as length, range as array_range
+        return MatrixTable(MatrixIR(
+            old.core if rows is None else rows,
+            row_key=old.row_key if row_key is None else row_key,
+            col_key=old.col_key if col_key is None else col_key,
+            _aligned=True,
+        ))
 
-            ids = cols.aggregate(agg.collect(cols[_CID]), _localize=False)
-            cells = rows[_CELLS]
-            rows = rows.annotate(
-                **{
-                    _CELLS: array_range(length(ids)).map(
-                        lambda j: cells.filter(lambda c: c[_CID] == ids[j])[0]
-                    )
-                }
-            )
-        return MatrixTable(
-            MatrixIR(
-                rows,
-                cols,
-                row_key=changes.get("row_key", old.row_key),
-                col_key=changes.get("col_key", old.col_key),
-            )
-        )
+    def _replace_column_metadata(self, cols):
+        """Order-preserving column annotation; cell slots do not change."""
+        from . import agg
+        records = cols.aggregate(agg.collect(cols.row), _localize=False)
+        return self._copy(rows=self._mir.core.annotate_globals(**{_COLUMNS: records}))
+
+    def _with_column_mask(self, mask):
+        base = self._mir.core
+        records = _mask_array(self._mir.column_records, mask)
+        core = base.annotate(**{_CELLS: _mask_array(base[_CELLS], mask)})
+        return self._copy(rows=core.annotate_globals(**{_COLUMNS: records}))
+
+    def _with_column_positions(self, positions, *, renumber=False):
+        base = self._mir.core
+        records = _take_array(self._mir.column_records, positions)
+        cells = _take_array(base[_CELLS], positions)
+        if renumber:
+            # A repeated selection creates distinct column occurrences. Give
+            # columns and cells the same new identities using positional zips.
+            from . import len as length, range as array_range
+            ids = array_range(length(positions))
+            records = _zip_arrays(records, ids).map(lambda pair: struct(**{
+                _CID: int64(pair["2"]), _COL: pair["1"][_COL],
+            }))
+            cells = _zip_arrays(cells, ids).map(lambda pair: struct(**{
+                _CID: int64(pair["2"]), _PRESENT: pair["1"][_PRESENT],
+                _VALUE: pair["1"][_VALUE],
+            }))
+        core = base.annotate(**{_CELLS: cells})
+        return self._copy(rows=core.annotate_globals(**{_COLUMNS: records}))
+
+    @property
+    def _column_position_name(self):
+        name = "__vail_matrix_position"
+        while name in self._mir.col_type:
+            name += "_"
+        return name
+
+    def _columns_with_positions(self):
+        records = _indexed_cells(self._mir.column_records).map(lambda pair: struct(**{
+            _CID: pair["1"][_CID], _COL: pair["1"][_COL],
+            self._column_position_name: pair["2"],
+        }))
+        return Table.parallelize(records)
+
+    def _select_columns_table(self, columns):
+        from . import agg
+        positions = columns.aggregate(agg.collect(columns[self._column_position_name]), _localize=False)
+        return self._with_column_positions(positions)
+
+    def _cell_contexts(self, base):
+        # Zip columns before entering any lambda. Capturing the whole column
+        # list inside the callback makes DF replicate it for every cell.
+        return _zip_arrays(_indexed_cells(base[_CELLS]), self._mir.column_records)
 
     def _without_row_index_keys(self):
         names = self._mir.row_index_keys
@@ -466,17 +547,17 @@ class MatrixTable:
             return self._mir.core
         if axis == "col":
             return self._mir.cols
-        source = self._mir.core.explode(_CELLS)
-        source = source.filter(source[_CELLS][_PRESENT])
-        fields = [
-            (_ROW, source[_ROW]),
-            (_ENTRY, source[_CELLS][_VALUE] if len(self.entry.dtype) else struct()),
-        ]
-        fields.insert(1, (_CID, source[_CELLS][_CID]))
-        e = _project(source, fields)
-        columns = self._column_records
-        col = columns.filter(lambda c: c[_CID] == e[_CID])[0][_COL]
-        return e.annotate(**{_COL: col})
+        base = self._mir.core
+        name = "__vail_matrix_context"
+        source = base.annotate(**{name: _zip_arrays(base[_CELLS], self._mir.column_records)}).explode(name)
+        cell = source[name]["1"]
+        source = source.filter(cell[_PRESENT])
+        cell = source[name]["1"]
+        return _project(source, [
+            (_ROW, source[_ROW]), (_CID, cell[_CID]),
+            (_ENTRY, cell[_VALUE] if len(self.entry.dtype) else struct()),
+            (_COL, source[name]["2"][_COL]),
+        ])
 
     @cached_property
     def _column_records(self):
@@ -520,11 +601,11 @@ class MatrixTable:
             row_indexed=bool(_axes(expr.to_ir())),
         )
 
-    def _lower_cell(self, expr, base, cell, position=None):
+    def _lower_cell(self, expr, base, cell, position=None, column=None):
         """Bind a cell expression inside its owning row's array map."""
         glob = self.index_globals()
         columns = self._column_records
-        col = (columns[position] if position is not None else
+        col = column if column is not None else (columns[position] if position is not None else
                columns.filter(lambda c: c[_CID] == cell[_CID])[0])[_COL]
         axes = {
             "row": base[_ROW],
@@ -557,12 +638,13 @@ class MatrixTable:
     def _row_contexts(self, base, *, filter_present=True, with_position=True):
         cells = base[_CELLS]
         if with_position:
-            contexts = _indexed_cells(cells).map(
+            contexts = self._cell_contexts(base).map(
                 lambda item: struct(
-                    entry=item["1"][_VALUE] if len(self.entry.dtype) else struct(),
-                    present=item["1"][_PRESENT],
-                    column_id=item["1"][_CID],
-                    position=item["2"],
+                    entry=item["1"]["1"][_VALUE] if len(self.entry.dtype) else struct(),
+                    present=item["1"]["1"][_PRESENT],
+                    column_id=item["1"]["1"][_CID],
+                    position=item["1"]["2"],
+                    col=item["2"][_COL],
                     bindings=struct(),
                 )
             )
@@ -644,15 +726,14 @@ class MatrixTable:
             base = self._mir.core
             base, prepared = self._prepare_row_lookups(base, [v for _, v in fields])
             fields = [(n, v) for (n, _), v in zip(fields, prepared)]
-            source_cells = base[_CELLS]
-            cells = _indexed_cells(source_cells).map(
+            cells = self._cell_contexts(base).map(
                 lambda item: struct(
                     **{
-                        _CID: item["1"][_CID],
-                        _PRESENT: item["1"][_PRESENT],
+                        _CID: item["1"]["1"][_CID],
+                        _PRESENT: item["1"]["1"][_PRESENT],
                         _VALUE: struct(
                             **{
-                                n: self._lower_cell(v, base, item["1"], item["2"])
+                                n: self._lower_cell(v, base, item["1"]["1"], item["1"]["2"], item["2"][_COL])
                                 for n, v in fields
                             }
                         ),
@@ -701,7 +782,7 @@ class MatrixTable:
             # after scan expressions and can invalidate their partition layout.
             return self._copy(rows=projected)
         if axis == "col":
-            return self._copy(cols=_project(base, [(_CID, base[_CID]), (_COL, value)]))
+            return self._replace_column_metadata(_project(base, [(_CID, base[_CID]), (_COL, value)]))
 
     @staticmethod
     def _sort_rows(rows, keys):
@@ -862,21 +943,15 @@ class MatrixTable:
             base = self._mir.core
             base, prepared = self._prepare_row_lookups(base, [expr])
             expr = prepared[0]
-            cells = array_range(length(base[_CELLS])).map(
-                lambda j: struct(
-                    **{
-                        _CID: base[_CELLS][j][_CID],
-                        _VALUE: base[_CELLS][j][_VALUE] if len(self.entry.dtype) else struct(),
-                        _PRESENT: base[_CELLS][j][_PRESENT]
-                        & coalesce(
-                            self._lower_cell(expr, base, base[_CELLS][j], j)
-                            if keep
-                            else ~self._lower_cell(expr, base, base[_CELLS][j], j),
-                            False,
-                        ),
-                    }
-                )
-            )
+            def filter_cell(item):
+                cell, position = item["1"]["1"], item["1"]["2"]
+                predicate = self._lower_cell(expr, base, cell, position, item["2"][_COL])
+                selected = predicate if keep else ~predicate
+                return struct(**{
+                    _CID: cell[_CID], _VALUE: cell[_VALUE],
+                    _PRESENT: cell[_PRESENT] & coalesce(selected, False),
+                })
+            cells = self._cell_contexts(base).map(filter_cell)
             return self._copy(
                 rows=_project(base, [(_ROW, base[_ROW]), (_CELLS, cells)])
             )
@@ -884,6 +959,11 @@ class MatrixTable:
         if _has_aggregate(expr.to_ir()):
             expr = self._axis_aggregates(expr, axis, base)
         predicate = self._lower(expr, base)
+        if axis == "col":
+            from . import agg
+            selected = predicate if keep else ~predicate
+            mask = base.aggregate(agg.collect(if_else(is_defined(selected), selected, False)), _localize=False)
+            return self._with_column_mask(mask)
         if axis == "row" and self._mir.row_index_keys:
             index_fields = dict(zip(self._mir.row_key, self._mir.row_index_keys))
 
@@ -919,9 +999,7 @@ class MatrixTable:
                 + [(name, filtered[name]) for name in self._mir.row_index_keys],
             )
             filtered = filtered._with_keys(*self._mir.row_index_keys)
-        return self._copy(
-            restrict=True, **{{"row": "rows", "col": "cols"}[axis]: filtered}
-        )
+        return self._copy(rows=filtered)
 
     def filter_rows(self, expr, keep=True):
         return self._filter("row", expr, keep)
@@ -1106,28 +1184,32 @@ class MatrixTable:
             if n_rows is not None:
                 raise ValueError("specify n_rows or n")
             n_rows = n
-        changes = {}
+        result = self
         if n_rows is not None:
             _validate_n(n_rows, "n_rows")
-            changes["rows"] = self._mir.core.head(n_rows)
+            result = result._copy(rows=result._mir.core.head(n_rows))
         if n_cols is not None:
             _validate_n(n_cols, "n_cols")
-            changes["cols"] = self._mir.cols.head(n_cols)
-        return self._copy(restrict=True, **changes) if changes else self
+            from . import len as length, range as array_range
+            count = length(result._mir.column_records)
+            result = result._with_column_positions(array_range(if_else(count < n_cols, count, n_cols)))
+        return result
 
     def tail(self, n_rows=None, n_cols=None, *, n=None):
         if n is not None:
             if n_rows is not None:
                 raise ValueError("specify n_rows or n")
             n_rows = n
-        changes = {}
+        result = self
         if n_rows is not None:
             _validate_n(n_rows, "n_rows")
-            changes["rows"] = self._mir.core.tail(n_rows)
+            result = result._copy(rows=result._mir.core.tail(n_rows))
         if n_cols is not None:
             _validate_n(n_cols, "n_cols")
-            changes["cols"] = self._mir.cols.tail(n_cols)
-        return self._copy(restrict=True, **changes) if changes else self
+            from . import len as length, range as array_range
+            count = length(result._mir.column_records)
+            result = result._with_column_positions(array_range(if_else(count > n_cols, count-n_cols, 0), count))
+        return result
 
     def add_row_index(self, name="row_idx"):
         from . import scan
@@ -1147,7 +1229,7 @@ class MatrixTable:
 
     def _filter_partitions(self, parts, keep=True):
         return self._copy(
-            restrict=True, rows=self._mir.core._filter_partitions(parts, keep)
+            rows=self._mir.core._filter_partitions(parts, keep)
         )
 
     def unfilter_entries(self):
@@ -1178,7 +1260,7 @@ class MatrixTable:
         )
         core = _project(table, [(_ROW, table.row), (_CELLS, cells)])
         cols = Table.parallelize([], schema=tstruct(**{_CID: tint64, _COL: tstruct()}))
-        return cls(MatrixIR(core, cols, row_key=table._keys))
+        return cls(MatrixIR(core, cols, row_key=table._keys, _aligned=True))
 
     @classmethod
     def from_parts(cls, globals=None, rows=None, cols=None, entries=None):
@@ -1257,7 +1339,7 @@ class MatrixTable:
         if globals:
             core = core.annotate_globals(**globals)
         ctable = ctable.select(**{_CID: int64(ctable.col_idx), _COL: ctable.row})
-        return cls(MatrixIR(core, ctable, row_key=("row_idx",), col_key=("col_idx",)))
+        return cls(MatrixIR(core, ctable, row_key=("row_idx",), col_key=("col_idx",), _aligned=True))
 
     def localize_entries(
         self, entries_array_field_name=None, columns_array_field_name=None
@@ -1297,45 +1379,10 @@ class MatrixTable:
             type(i) is not int for i in indices
         ):
             raise TypeError("indices must be a sequence of integers")
-        from . import agg, len as length, range as array_range
-
-        cols = self._mir.cols
-        count = cols.count()
+        count = self.count_cols()
         if any(i < 0 or i >= count for i in indices):
             raise ValueError("column index out of bounds")
-        values = cols.aggregate(agg.collect(cols[_COL]), _localize=False)
-        positions = literal(list(indices), tarray(tint32))
-        columns = Table.parallelize(
-            array_range(length(positions)).map(
-                lambda j: struct(
-                    **{
-                        _CID: int64(j),
-                        _COL: values[positions[j]] if len(self.col.dtype) else struct(),
-                    }
-                )
-            )
-        )
-        base = self._mir.core
-        cells = base[_CELLS]
-        selected = array_range(length(positions)).map(
-            lambda j: struct(
-                **{
-                    _CID: int64(j),
-                    _PRESENT: cells[positions[j]][_PRESENT],
-                    _VALUE: cells[positions[j]][_VALUE]
-                    if len(self.entry.dtype)
-                    else struct(),
-                }
-            )
-        )
-        return MatrixTable(
-            MatrixIR(
-                base.annotate(**{_CELLS: selected}),
-                columns,
-                row_key=self._mir.row_key,
-                col_key=self._mir.col_key,
-            )
-        )
+        return self._with_column_positions(literal(list(indices), tarray(tint32)), renumber=True)
 
     def drop(self, *fields):
         drops = set()
@@ -1529,7 +1576,7 @@ class MatrixTable:
             schema[n] for n in keys[: len(other._keys)]
         ] != [other._schema[n] for n in other._keys]:
             raise ValueError(f"{operation}: cannot join: key types do not match")
-        base = self._context(axis)
+        base = self._columns_with_positions() if axis == "col" else self._context(axis)
         temp = _project(
             base,
             [(n, base[_ROW if axis == "row" else _COL][n]) for n in keys]
@@ -1541,10 +1588,8 @@ class MatrixTable:
         if axis == "row":
             filtered = self._sort_rows(filtered, keys)
         else:
-            filtered = filtered.order_by(filtered[_CID])
-        return self._copy(
-            restrict=True, **{{"row": "rows", "col": "cols"}[axis]: filtered}
-        )
+            return self._select_columns_table(filtered.order_by(filtered[self._column_position_name]))
+        return self._copy(rows=filtered)
 
     def semi_join_rows(self, other):
         return self._key_filter("row", other, False)
@@ -1593,7 +1638,7 @@ class MatrixTable:
         keys = self._mir.row_key if axis == "row" else self._mir.col_key
         if not keys:
             raise ValueError("distinct requires a key")
-        base = self._context(axis)
+        base = self._columns_with_positions() if axis == "col" else self._context(axis)
         p = _ROW if axis == "row" else _COL
         t = (
             _project(
@@ -1606,8 +1651,8 @@ class MatrixTable:
         )
         t = t.select(*base._schema)
         if axis == "col":
-            t = t.order_by(t[_CID])
-        return self._copy(restrict=True, **{{"row": "rows", "col": "cols"}[axis]: t})
+            return self._select_columns_table(t.order_by(t[self._column_position_name]))
+        return self._copy(rows=t)
 
     def _explode(self, axis, field_expr):
         from . import agg, len as length, range as array_range, case
@@ -1651,7 +1696,7 @@ class MatrixTable:
                 [(_ROW, update(expanded[_ROW], path)), (_CELLS, expanded[_CELLS])],
             )
             return self._copy(rows=self._sort_rows(core, keys))
-        base = self._mir.cols
+        base = self._columns_with_positions()
         values = self._lower(field, base)
         if isinstance(field.dtype, tset):
             values = values.to_array()
@@ -1684,24 +1729,19 @@ class MatrixTable:
         expanded = _project(
             expanded,
             [
-                ("parent", expanded[_CID]),
+                ("parent_position", expanded[self._column_position_name]),
                 (_CID, child),
                 (_COL, updated(expanded[_COL], path)),
             ],
         )
         mapping = expanded.aggregate(agg.collect(expanded.row), _localize=False)
+        positions = mapping.map(lambda col: col.parent_position)
         core = self._mir.core
-        cells = core[_CELLS].flatmap(
-            lambda cell: mapping.filter(lambda col: col.parent == cell[_CID]).map(
-                lambda col: struct(
-                    **{
-                        _CID: col[_CID],
-                        _PRESENT: cell[_PRESENT],
-                        _VALUE: cell[_VALUE] if len(self.entry.dtype) else struct(),
-                    }
-                )
-            )
-        )
+        selected = _take_array(core[_CELLS], positions)
+        cells = _zip_arrays(selected, mapping).map(lambda pair: struct(**{
+            _CID: pair["2"][_CID], _PRESENT: pair["1"][_PRESENT],
+            _VALUE: pair["1"][_VALUE],
+        }))
         columns = _project(expanded, [(_CID, expanded[_CID]), (_COL, expanded[_COL])])
         return MatrixTable(
             MatrixIR(
@@ -1709,6 +1749,7 @@ class MatrixTable:
                 columns,
                 row_key=self._mir.row_key,
                 col_key=self._mir.col_key,
+                _aligned=True,
             )
         )
 
@@ -1775,20 +1816,12 @@ class MatrixTable:
                 raise ValueError("column counts differ")
             if _check_cols and result.col_key.collect() != other.col_key.collect():
                 raise ValueError("column keys or their order differ")
-            columns = result._mir.cols
-            ids = columns.aggregate(agg.collect(columns[_CID]), _localize=False)
             source = other._mir.core
-            cells = source[_CELLS]
-            aligned = array_range(length(ids)).map(
-                lambda j: struct(
-                    **{
-                        _CID: ids[j],
-                        _PRESENT: cells[j][_PRESENT],
-                        _VALUE: cells[j][_VALUE]
-                        if len(result.entry.dtype)
-                        else struct(),
-                    }
-                )
+            aligned = _zip_arrays(source[_CELLS], result._mir.column_records).map(
+                lambda pair: struct(**{
+                    _CID: pair["2"][_CID], _PRESENT: pair["1"][_PRESENT],
+                    _VALUE: pair["1"][_VALUE],
+                })
             )
             source = source.annotate(**{_CELLS: aligned})
             rows = result._mir.core.union(source)
@@ -1905,7 +1938,7 @@ class MatrixTable:
         core = self._sort_rows(core, lkeys)
         return MatrixTable(
             MatrixIR(
-                core, cols.union(rightcols), row_key=lkeys, col_key=self._mir.col_key
+                core, cols.union(rightcols), row_key=lkeys, col_key=self._mir.col_key, _aligned=True
             )
         )
 
@@ -2086,7 +2119,7 @@ def range_matrix_table(n_rows, n_cols, n_partitions=None):
         }
     )
     cols = c.select(**{_CID: int64(c.idx), _COL: struct(col_idx=c.idx)})
-    return MatrixTable(MatrixIR(core, cols, row_key=("row_idx",), col_key=("col_idx",)))
+    return MatrixTable(MatrixIR(core, cols, row_key=("row_idx",), col_key=("col_idx",), _aligned=True))
 
 
 def read_matrix_table(
@@ -2261,16 +2294,9 @@ def unlocalize_entries(table, entries_field_name, cols_field_name, col_key):
         .when(is_defined(globals[cols_field_name]), globals[cols_field_name])
         .or_error("column array must be defined")
     )
-    columns = Table.parallelize(
-        array_range(length(col_values)).map(
-            lambda j: struct(
-                **{
-                    _CID: int64(j),
-                    _COL: col_values[j] if len(ct.element_type) else struct(),
-                }
-            )
-        )
-    )
+    columns = Table.parallelize(_indexed_cells(col_values).map(lambda pair: struct(**{
+        _CID: int64(pair["2"]), _COL: pair["1"],
+    })))
     values = (
         case()
         .when(
@@ -2279,18 +2305,10 @@ def unlocalize_entries(table, entries_field_name, cols_field_name, col_key):
         )
         .or_error("entry array length differs from column count")
     )
-    # For empty entry structs, map validity before positional extraction. The
-    # Table scalar extractor cannot yet reconstruct zero-field struct arrays.
-    presence = values.map(lambda e: is_defined(e))
-    cells = array_range(length(values)).map(
-        lambda j: struct(
-            **{
-                _CID: int64(j),
-                _PRESENT: presence[j],
-                _VALUE: values[j] if len(et.element_type) else struct(),
-            }
-        )
-    )
+    cells = _indexed_cells(values).map(lambda pair: struct(**{
+        _CID: int64(pair["2"]), _PRESENT: is_defined(pair["1"]),
+        _VALUE: pair["1"] if len(et.element_type) else struct(),
+    }))
     core = _project(
         table,
         [
@@ -2376,7 +2394,8 @@ class GroupedMatrixTable:
                 for n, value in self._axis_fields.items()
             }
 
-            def cell_result(cell):
+            def cell_result(pair):
+                cell = pair["1"]
                 def prepare(expr):
                     expr = m._validate(expr, "entry", aggregate=True)
 
@@ -2405,21 +2424,18 @@ class GroupedMatrixTable:
                         return {k: fix(v, inside) for k, v in node.items()}
 
                     lowered = _expression(expr.dtype, m, fix(expr.to_ir()), expr)
-                    return m._lower_cell(lowered, base, cell)
+                    return m._lower_cell(lowered, base, cell, column=pair["2"][_COL])
 
                 value = struct(**{n: prepare(v) for n, v in self._entry_fields.items()})
                 return struct(
                     **{_CID: agg.take(cell[_CID], 1)[0], _PRESENT: True, _VALUE: value}
                 )
 
-            cells = agg.array_agg(cell_result, base[_CELLS])
+            cells = agg.array_agg(cell_result, _zip_arrays(base[_CELLS], m._mir.column_records))
             grouped = base.group_by(**keys).aggregate(**fields, **{_CELLS: cells})
             if self._partitions is not None:
                 grouped = grouped.repartition(self._partitions)
-            owned = grouped[_CELLS]
-            aligned = m._mir.column_records.map(
-                lambda col: owned.filter(lambda cell: cell[_CID] == col[_CID])[0]
-            )
+            aligned = grouped[_CELLS]
             core = _project(
                 grouped,
                 [
@@ -2432,7 +2448,7 @@ class GroupedMatrixTable:
             )
             core = m._sort_rows(core, groupnames)
             return MatrixTable(
-                MatrixIR(core, m._mir.cols, row_key=groupnames, col_key=m._mir.col_key)
+                MatrixIR(core, m._mir.cols, row_key=groupnames, col_key=m._mir.col_key, _aligned=True)
             )
         from . import range as array_range, len as length
         from .matrix_list_aggregates import reduce_list
@@ -2492,6 +2508,7 @@ class GroupedMatrixTable:
                 columns,
                 row_key=m._mir.row_key,
                 col_key=groupnames,
+                _aligned=True,
             )
         )
 
@@ -2578,7 +2595,7 @@ def to_matrix_table(
     core = MatrixTable._sort_rows(core, row_key)
     if n_partitions is not None:
         core = core.repartition(n_partitions)
-    return MatrixTable(MatrixIR(core, columns, row_key=row_key, col_key=col_key))
+    return MatrixTable(MatrixIR(core, columns, row_key=row_key, col_key=col_key, _aligned=True))
 
 
 def to_matrix_table_row_major(

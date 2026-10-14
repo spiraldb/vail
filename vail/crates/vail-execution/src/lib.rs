@@ -31,6 +31,7 @@ pub mod collect_aggregate;
 pub mod csv_line;
 pub mod expressions;
 pub mod logical_expr;
+mod matrix_arrays;
 pub mod reference;
 pub mod scan_scopes;
 pub mod scan_state;

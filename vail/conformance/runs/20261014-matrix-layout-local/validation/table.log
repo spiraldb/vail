@@ -1,0 +1,176 @@
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:307:31
+    |
+307 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+    --> crates/vail-table/src/partitioned.rs:1482:37
+     |
+1482 |             let rewritten = adapter.with_new_children(vec![parallel.clone()]).unwrap();
+     |                                     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:307:31
+    |
+307 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+
+warning: `vail-table` (lib) generated 1 warning
+warning: `vail-table` (lib test) generated 2 warnings
+   Compiling vail-table v0.1.0 (/Users/danielking/projects/vail/vail/crates/vail-table)
+    Finished `release` profile [optimized] target(s) in 7.11s
+     Running unittests src/lib.rs (/private/tmp/vail-native-types-target/release/deps/vail_table-5095d8065dae58c8)
+
+running 31 tests
+test comparison::tests::hail_relative_tolerance_and_ieee_rules ... ok
+test join_interval::tests::join_cells_merge_boundaries_equal_under_native_float_join_semantics ... ok
+test join_interval::tests::range_table_bounds_are_derived_without_scanning_rows ... ok
+test join_interval::tests::missing_bounds_and_duplicate_prefixes_keep_a_single_boundary_cell ... ok
+test join_interval::tests::cells_are_disjoint_points_and_open_gaps ... ok
+test line_source::tests::preserves_quotes_blank_lines_crlf_and_unicode_across_chunks ... ok
+test line_source::tests::trailing_lf_does_not_create_an_extra_row ... ok
+test line_source::tests::splits_hail_universal_newlines_even_across_chunks ... ok
+test line_source::tests::opener_streams_object_store_file_and_rejects_invalid_utf8 ... ok
+test initialized_aggregate::tests::rejects_multiple_initializer_rows ... ok
+test initialized_aggregate::tests::rejects_empty_initializer ... ok
+test initialized_scan::tests::rejects_initialized_schema_or_partition_count_mismatch ... ok
+test initialized_aggregate::tests::rejects_runtime_schema_mismatch ... ok
+test initialized_aggregate::tests::yields_runtime_output_batches_incrementally ... ok
+test initialized_scan::tests::rejects_non_singleton_initializer ... ok
+test initialized_scan::tests::initializes_lazily_and_only_once_for_concurrent_partitions ... ok
+test partitioned::expression_source_tests::exposed_children_are_reset_once_through_nested_ordering_wrappers ... ok
+test partitioned::expression_source_tests::replay_preserves_shared_physical_inputs_without_sharing_across_actions ... ok
+test provider::interval_intersection_tests::malformed_key_comparison_is_an_error_not_an_empty_intersection ... ok
+test provider::interval_intersection_tests::valid_disjoint_intersection_is_empty ... ok
+test partitioned::concurrent_partition_tests::canceling_ordered_output_aborts_prefetched_producers ... ok
+test text_schema::tests::unknown_options_and_empty_paths_are_rejected ... ok
+test text_schema::tests::schema_inference_rejects_unbounded_json_array_mode ... ok
+test partitioned::expression_source_tests::array_expression_evaluates_once_per_action_across_partitions ... ok
+test text_schema::tests::json_inference_handles_nested_values_and_merges_files ... ok
+test text_schema::tests::csv_inference_rejects_different_column_names_or_order ... ok
+test text_schema::tests::csv_inference_merges_typed_columns_across_files ... ok
+test aggregation::scope_join_tests::scoped_default_only_applies_when_the_scope_is_absent ... ok
+test partitioned::concurrent_partition_tests::singleton_adapters_keep_all_rows_after_a_parallel_child_rewrite ... ok
+test partitioned::concurrent_partition_tests::native_partition_consumers_are_limited_and_propagate_errors ... ok
+test partitioned::concurrent_partition_tests::ordered_producers_are_concurrent_bounded_and_keep_row_order ... ok
+
+test result: ok. 31 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/datafusion_plans.rs (/private/tmp/vail-native-types-target/release/deps/datafusion_plans-0af122e0a39c3cfa)
+
+running 5 tests
+test explode_lowers_to_datafusion_unnest ... ok
+test singleton_globals_and_rows_are_both_datafusion_plans ... ok
+test captured_globals_share_ir_without_retaining_table_rows ... ok
+test sort_spills_directly_from_a_generated_tableir_source ... ok
+test viceberg_plan_advertises_certified_order_without_sorting ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running tests/expression_source.rs (/private/tmp/vail-native-types-target/release/deps/expression_source-67f6643fb969bcf3)
+
+running 2 tests
+test expression_source_evaluates_once_and_splits_ordered_arrow_rows ... ok
+test expression_source_plan_does_not_evaluate_invalid_array ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+     Running tests/ir.rs (/private/tmp/vail-native-types-target/release/deps/ir-4883c83cb2b44219)
+
+running 5 tests
+test constructors_typecheck_scalar_ir_without_execution ... ok
+test parallelize_keeps_shared_input_buffers_without_prepartitioning ... ok
+test range_is_lazy_and_head_stops_batch_generation ... ok
+test branches_share_a_typed_child_and_execute_independently ... ok
+test write_streams_transformed_rows_into_rolled_files ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/joins.rs (/private/tmp/vail-native-types-target/release/deps/joins-185048e022478822)
+
+running 3 tests
+test membership_joins_preserve_independent_left_partitions ... ok
+test native_join_has_lazy_datafusion_operator_and_cartesian_duplicates ... ok
+test interval_join_partitions_contain_merge_operators_and_metadata_needs_no_rows ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/logical_order.rs (/private/tmp/vail-native-types-target/release/deps/logical_order-fdc0efee97948e06)
+
+running 1 test
+test optimized_planner_preserves_order_by_result ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/lookup.rs (/private/tmp/vail-native-types-target/release/deps/lookup-a740e7387547529a)
+
+running 2 tests
+test all_matches_lookup_keeps_duplicates_and_uses_empty_arrays_for_no_match ... ok
+test lookup_is_a_streaming_merge_join_and_preserves_source_partitions ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/physical_partitions.rs (/private/tmp/vail-native-types-target/release/deps/physical_partitions-83699ad843c67a62)
+
+running 7 tests
+test partitions_are_independent_datafusion_outputs_after_narrow_operations ... ok
+test actual_shuffle_output_is_a_datafusion_repartition ... ok
+test range_shuffle_and_coalesce_survive_planning_and_repeat_actions ... ok
+test read_partition_runs_without_any_unrelated_data_files ... ok
+test pushed_key_filter_skips_unmatched_files_inside_a_source_partition ... ok
+test pushed_key_or_filter_unions_disjoint_fragment_ranges ... ok
+test pushed_key_filter_prunes_unicode_utf8_string_fragments ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+
+     Running tests/text_io.rs (/private/tmp/vail-native-types-target/release/deps/text_io-22f175295c90d28c)
+
+running 2 tests
+test line_read_adds_source_path_as_file_column ... ok
+test csv_text_read_is_lazy_partitioned_and_streams_to_single_file ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s

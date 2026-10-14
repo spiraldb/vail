@@ -116,7 +116,9 @@ async fn interval_join_partitions_contain_merge_operators_and_metadata_needs_no_
         assert!(find(partition.as_ref(), "HashJoinExec").is_none());
         let merge = find(partition.as_ref(), "SortMergeJoinExec").unwrap();
         for child in merge.children() {
-            assert_eq!(child.name(), "JoinKeyOrderingExec");
+            // DataFusion may insert order-preserving repartitioning above the
+            // ordered input when satisfying the merge join's distribution.
+            assert!(find(child.as_ref(), "JoinKeyOrderingExec").is_some());
         }
     }
     assert_eq!(joined.count().await.unwrap(), 12);

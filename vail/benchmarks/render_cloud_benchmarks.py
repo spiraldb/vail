@@ -54,7 +54,14 @@ def read_perf(folder, summary, worker):
 
 def render(root, baseline_only=False):
     results, rows, cache_counts = {}, [], []
-    for tag, _, _, _ in (CONFIGS[:1] if baseline_only else CONFIGS):
+    provenance = json.loads((root / "provenance.json").read_text())
+    configs = provenance.get("configs", CONFIGS)
+    series = {
+        dimension: [("baseline", 1)] + [(tag, int(tag.split("-")[1][:-1]))
+            for tag, *_ in configs if tag.startswith(dimension + "-")]
+        for dimension in ("samples", "variants")
+    }
+    for tag, _, _, _ in (configs[:1] if baseline_only else configs):
         selected_cases = CASES if tag == "baseline" else CASES[11:]
         groups = [selected_cases[i:i+5] for i in range(0, len(selected_cases), 5)]
         for page, cases in enumerate(groups, 1):
@@ -114,13 +121,13 @@ def render(root, baseline_only=False):
         (root / "baseline-totals.json").write_text(json.dumps(baseline_totals, indent=2)+"\n")
         return
     for dimension in ("samples", "variants"):
-        tags = ("baseline", f"{dimension}-2x", f"{dimension}-4x")
+        tags, scales = zip(*series[dimension])
         fig, ax = plt.subplots(figsize=(13, 7))
         for case, color in zip(CASES[11:], COLORS):
             for engine, style in (("vail", "-"), ("hail", "--")):
-                ax.plot([1, 2, 4], [results[tag, case, engine] for tag in tags], color=color,
+                ax.plot(scales, [results[tag, case, engine] for tag in tags], color=color,
                     linestyle=style, marker="o", label=f"{LABELS[case]} · {engine.capitalize()}")
-        ax.set_xticks([1, 2, 4], ["1×", "2×", "4×"])
+        ax.set_xticks(scales, [f"{scale}×" for scale in scales])
         ax.set_yscale("log")
         ax.set_xlabel(f"{dimension.capitalize()} multiplier")
         ax.set_ylabel("Median query time (seconds, log scale)")
@@ -131,7 +138,7 @@ def render(root, baseline_only=False):
         fig.savefig(root / f"scaling-{dimension}.png", dpi=150)
         fig.savefig(root / f"scaling-{dimension}.svg")
         plt.close(fig)
-        for scale, tag in zip((1, 2, 4), tags):
+        for scale, tag in zip(scales, tags):
             vail = sum(results[tag, case, "vail"] for case in CASES[11:])
             hail = sum(results[tag, case, "hail"] for case in CASES[11:])
             totals.append(dict(dimension=dimension, scale=scale, vail_seconds=vail,
@@ -140,10 +147,11 @@ def render(root, baseline_only=False):
         writer = csv.DictWriter(output, fieldnames=list(rows[0]),lineterminator="\n")
         writer.writeheader(); writer.writerows(rows)
     unique_totals = {engine: baseline_totals[engine] + sum(results[tag, case, engine]
-                    for tag, *_ in CONFIGS[1:] for case in CASES[11:])
+                    for tag, *_ in configs[1:] for case in CASES[11:])
                     for engine in ("vail", "hail")}
+    unique_count = len(CASES) + len(CASES[11:]) * (len(configs)-1)
     (root / "totals.json").write_text(json.dumps(dict(baseline=baseline_totals, scaling=totals,
-        all_31_unique_workload_configurations=unique_totals), indent=2)+"\n")
+        **{f"all_{unique_count}_unique_workload_configurations": unique_totals}), indent=2)+"\n")
     lines = ["# Cloud Hail/Vail benchmarks", "",
         "AWS m7i.8xlarge, Ubuntu 22.04, 32 vCPUs (16 cores × 2 SMT threads), 128 GiB RAM, "
         "200 GiB gp3 EBS. Both engines use Python 3.11.17. Synthetic sources request 32 partitions; "
@@ -161,7 +169,7 @@ def render(root, baseline_only=False):
         lines.append(f"| {LABELS[case]} | {v:.6f} | {h:.6f} | {h/v:.2f}× |")
     v, h = baseline_totals["vail"], baseline_totals["hail"]
     lines.append(f"| **Total** | **{v:.6f}** | **{h:.6f}** | **{h/v:.2f}×** |")
-    lines += ["", f"Summing all 31 distinct workload configurations (the baseline is counted once): "
+    lines += ["", f"Summing all {unique_count} distinct workload configurations (the baseline is counted once): "
         f"Vail **{unique_totals['vail']:.6f} s**, Hail **{unique_totals['hail']:.6f} s**."]
     lines += ["", "## Scaling totals", "",
         "The four Matrix/VCF cases have sample/variant dimensions. 1× is 10 samples, "
@@ -171,11 +179,13 @@ def render(root, baseline_only=False):
     for row in totals:
         lines.append(f'| {row["dimension"]} | {row["scale"]}× | {row["vail_seconds"]:.6f} | {row["hail_seconds"]:.6f} | {row["hail_over_vail"]:.2f}× |')
     for dimension in ("samples", "variants"):
+        tags, scales = zip(*series[dimension])
         lines += ["", f"## {dimension.capitalize()} medians", "",
-                  "| Benchmark | Vail 1× | Hail 1× | Vail 2× | Hail 2× | Vail 4× | Hail 4× |",
-                  "|---|---:|---:|---:|---:|---:|---:|"]
+                  "| Benchmark | " + " | ".join(f"{engine} {scale}×"
+                    for scale in scales for engine in ("Vail", "Hail")) + " |",
+                  "|---|" + "---:|" * (2*len(scales))]
         for case in CASES[11:]:
-            values = [results[tag, case, engine] for tag in ("baseline", f"{dimension}-2x", f"{dimension}-4x") for engine in ("vail", "hail")]
+            values = [results[tag, case, engine] for tag in tags for engine in ("vail", "hail")]
             lines.append("| " + LABELS[case] + " | " + " | ".join(f"{value:.6f}" for value in values) + " |")
         lines += ["", f"![{dimension} scaling](scaling-{dimension}.png)"]
     lines += ["", "## Telemetry", "",
@@ -195,7 +205,7 @@ def render(root, baseline_only=False):
         lines += ["", "The virtual PMU reported zero cache misses in every capture. "
                   "Do not interpret that as evidence of no cache misses; the raw counts are retained, "
                   "but this counter is not used for performance conclusions."]
-    for tag, *_ in CONFIGS:
+    for tag, *_ in configs:
         pages = 3 if tag == "baseline" else 1
         for page in range(1, pages+1):
             lines += ["", f"![{tag} 10 Hz telemetry, page {page}](telemetry-{tag}-{page}.png)"]

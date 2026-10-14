@@ -436,6 +436,24 @@ impl TableIR {
                     bindings: bindings.clone(),
                 }
             }
+            // Matrix boundary validation is row-local and does not change key
+            // values or ordering. Run it on the surviving read partitions.
+            TableNode::Filter {
+                child,
+                predicate,
+                keep: true,
+                bindings,
+            } if self.keys == child.keys
+                && matches!(predicate, ScalarIR::NestedFunction { function, .. }
+                        if function == "__vail_matrix_aligned") =>
+            {
+                TableNode::Filter {
+                    child: child.push_interval_read(intervals, point_type, filter)?,
+                    predicate: predicate.clone(),
+                    keep: true,
+                    bindings: bindings.clone(),
+                }
+            }
             // A plain MapGlobals preserves key identity. `with_keys` is also
             // represented by MapGlobals, but may attach different key names;
             // intervals expressed in this node's key space cannot be passed
@@ -482,6 +500,12 @@ impl TableIR {
                         })
                     })
                     && child.can_pushdown_interval_read()
+            }
+            TableNode::Filter { child, predicate, keep: true, .. }
+                if matches!(predicate, ScalarIR::NestedFunction { function, .. }
+                    if function == "__vail_matrix_aligned") =>
+            {
+                self.keys == child.keys && child.can_pushdown_interval_read()
             }
             TableNode::MapGlobals { child } => {
                 self.keys == child.keys && child.can_pushdown_interval_read()

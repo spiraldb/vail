@@ -20,17 +20,20 @@ def run(args):
     scripts = Path(__file__).resolve().parent
     if build_processes():
         raise RuntimeError("Compilers still running; finish setup before benchmarking")
+    configs = CONFIGS + (("samples-8x", 80, 100_000, 50_000),) if args.samples_8x else CONFIGS
     report = dict(commit=args.commit, platform=platform.platform(),
         logical_cpus=os.cpu_count(), memory_bytes=psutil.virtual_memory().total,
         cores=32, warmups=3, measured_seconds_per_capture=args.seconds,
-        configs=CONFIGS, baseline_cases=CASES, scaling_cases=CASES[11:], runs=[],
+        configs=configs, baseline_cases=CASES, scaling_cases=CASES[11:], runs=[],
         script_hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest() for p in scripts.glob("*.py")},
         lscpu=subprocess.check_output(["lscpu"], text=True),
         perf_version=subprocess.check_output(["perf", "--version"], text=True),
         java_version=subprocess.run(["java", "-version"], capture_output=True,text=True).stderr)
     if args.resume:
         previous = json.loads((args.output / "provenance.json").read_text())
-        if previous["commit"] != args.commit or previous["measured_seconds_per_capture"] != args.seconds:
+        if (previous["commit"] != args.commit
+                or previous["measured_seconds_per_capture"] != args.seconds
+                or previous["configs"] != [list(config) for config in configs]):
             raise ValueError("Resume configuration differs from the original run")
         previous.setdefault("attempts", list(previous["runs"]))
         previous["runs"] = [r for r in previous["runs"] if r["returncode"] == 0]
@@ -38,7 +41,7 @@ def run(args):
         report = previous
     completed = {(r["config"], r["case"], r["engine"]) for r in report["runs"] if r["returncode"] == 0}
     started = time.perf_counter() - report.get("wall_seconds", 0)
-    for config_index, (tag, samples, matrix_rows, vcf_rows) in enumerate(CONFIGS):
+    for config_index, (tag, samples, matrix_rows, vcf_rows) in enumerate(configs):
         selected = CASES if tag == "baseline" else CASES[11:]
         for case_index, case in enumerate(selected):
             for engine in (("vail", "hail") if (config_index+case_index)%2==0 else ("hail", "vail")):
@@ -83,4 +86,5 @@ if __name__ == "__main__":
     parser.add_argument("--hail-python", required=True)
     parser.add_argument("--seconds", type=float, default=10)
     parser.add_argument("--resume", action="store_true")
+    parser.add_argument("--samples-8x", action="store_true", help="Also measure 80 samples at fixed variant count")
     run(parser.parse_args())
