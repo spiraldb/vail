@@ -4,7 +4,7 @@ The cloud suite currently contains 15 benchmark functions total: 11 Table and 4 
 
 ## Coverage runner
 
-`/private/tmp/vail-parallel-tests/bin/python benchmarks/upstream_benchmark_coverage.py --list` prints every expanded invocation. By default, `--engine vail|hail` attempts the upstream workload using original fixture dimensions and public fixture inputs, in a fresh process per case. `--fixture-timeout SECONDS` bounds downloads and native fixture materialization (default 1,800 seconds); after setup, `--timeout SECONDS` bounds benchmark execution (default 120 seconds, raised to any larger upstream `xtimeout` value). A timed-out worker is terminated. `--data-dir PATH` selects the download and native materialization cache. A JSON report can be written with `--output PATH`. `--smoke` explicitly selects reduced synthetic fixtures for dispatch checks; smoke results are never benchmark timings. Failures, unsupported engine APIs, timeouts, and fixture-generation errors remain explicit in the report.
+`/private/tmp/vail-parallel-tests/bin/python benchmarks/upstream_benchmark_coverage.py --list` prints every expanded invocation. By default, `--engine vail|hail` attempts the upstream workload using original fixture dimensions and public fixture inputs, in a fresh process per case. Hail workers use `local[32]` with 64 GiB driver and executor memory settings. `--fixture-timeout SECONDS` bounds downloads and native fixture materialization (default 1,800 seconds); after setup, `--timeout SECONDS` bounds benchmark execution (default 120 seconds, raised to any larger upstream `xtimeout` value). A timed-out worker and its JVM/Spark descendants are terminated as a process group before the next case starts. `--data-dir PATH` selects the download and native materialization cache. A JSON report can be written with `--output PATH`. `--smoke` explicitly selects reduced synthetic fixtures for dispatch checks; smoke results are never benchmark timings. Failures, unsupported engine APIs, timeouts, and fixture-generation errors remain explicit in the report.
 
 Exact fixture inputs download from `https://storage.googleapis.com/hail-common/benchmark/`, matching upstream `fixtures.py`. Generated Hail `.ht` and `.mt` fixtures use the source dimensions. Native fixture files are materialized independently under `<data-dir>/<engine>/`, so Hail and Vail never read each other's native storage formats.
 
@@ -20,7 +20,7 @@ Exact fixture inputs download from `https://storage.googleapis.com/hail-common/b
 Cases involving 100M–1B rows, 100M-element arrays, or 250k × 1k matrices are attempted under the per-case execution timeout, after fixture materialization completes under its separate timeout. Upstream `skip` cases receive an explicit `upstream_skipped` result with their source reason; timeout-marked cases are still attempted under the runner timeout. For the provisioned VM, the full exact-input run is:
 
 ```sh
-/private/tmp/vail-parallel-tests/bin/python benchmarks/upstream_benchmark_coverage.py \
+python benchmarks/upstream_benchmark_coverage.py \
   --engine vail --data-dir /home/ubuntu/hail-benchmark-data \
   --output /home/ubuntu/hail-benchmark-data/vail-upstream-report.json
 ```

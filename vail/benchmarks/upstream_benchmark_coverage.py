@@ -13,6 +13,7 @@ import itertools
 import json
 import multiprocessing as mp
 import os
+import signal
 from pathlib import Path
 import tempfile
 import time
@@ -281,6 +282,10 @@ def _make_exact_fixtures(hl, engine: str, names: list[str], data_dir: Path,
 
 
 def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
+    # Hail starts a JVM (and potentially other child processes). Put the whole
+    # worker tree in its own process group so a timed-out case cannot leave
+    # Spark behind and contaminate later measurements.
+    os.setsid()
     fixture_temp = None
     try:
         import importlib
@@ -290,7 +295,8 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
             import vail
         if engine == "hail":
             hl = importlib.import_module("hail")
-            hl.init(quiet=True)
+            hl.init(quiet=True, local="local[32]",
+                    spark_conf={"spark.driver.memory": "64g", "spark.executor.memory": "64g"})
         else:
             hl = vail
         source = (UPSTREAM / case["module"]).read_text()
@@ -353,6 +359,25 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
                 pass
 
 
+def _stop_worker_tree(process, grace_seconds: float = 5.0) -> None:
+    """Terminate and reap the worker and any JVM/Spark descendants."""
+    if not process.is_alive():
+        process.join()
+        return
+    try:
+        os.killpg(process.pid, signal.SIGTERM)
+    except (ProcessLookupError, PermissionError):
+        # If the child has not reached setsid yet, kill its process directly.
+        process.terminate()
+    process.join(grace_seconds)
+    if process.is_alive():
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except (ProcessLookupError, PermissionError):
+            process.kill()
+        process.join(grace_seconds)
+
+
 def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
             smoke: bool, data_dir: str) -> dict:
     upstream_skip = next((mark for mark in case["upstream_marks"] if mark["name"] == "skip"), None)
@@ -365,27 +390,31 @@ def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
     try:
         first = queue.get(timeout=fixture_timeout)
     except Exception:
-        if process.is_alive():
-            process.terminate()
-            process.join(5)
+        _stop_worker_tree(process)
+        queue.close()
         return {"status": "fixture_timeout", "fixture_timeout_seconds": fixture_timeout,
                 "elapsed_seconds": round(time.monotonic() - started, 3)}
     if first.get("status") != "ready":
         process.join(1)
+        if process.is_alive():
+            _stop_worker_tree(process)
+        queue.close()
         first["elapsed_seconds"] = round(time.monotonic() - started, 3)
         return first
     benchmark_started = time.monotonic()
-    process.join(timeout)
-    if process.is_alive():
-        process.terminate()
-        process.join(5)
+    try:
+        result = queue.get(timeout=timeout)
+    except Exception:
+        _stop_worker_tree(process)
+        queue.close()
         return {"status": "timed_out", "timeout_seconds": timeout,
                 "fixture_seconds": round(benchmark_started - started, 3),
                 "elapsed_seconds": round(time.monotonic() - started, 3)}
-    try:
-        result = queue.get(timeout=1)
-    except Exception:
-        result = {"status": "failed", "error": f"worker exited {process.exitcode} without a result"}
+    process.join(5)
+    if process.is_alive():
+        _stop_worker_tree(process)
+        result = {"status": "failed", "error": "worker did not exit after reporting a result"}
+    queue.close()
     result["fixture_seconds"] = round(benchmark_started - started, 3)
     result["benchmark_seconds"] = round(time.monotonic() - benchmark_started, 3)
     result["elapsed_seconds"] = round(time.monotonic() - started, 3)
