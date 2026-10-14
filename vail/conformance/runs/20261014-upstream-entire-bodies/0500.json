@@ -1,0 +1,158 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_block_matrix_illegal_indexing",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0, ]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[9, 0]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[-9, 0]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0, 11]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0, -11]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[::-1, 0]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0, ::-1]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[:0, 0]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0, :0]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0:9, 0]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[-9:, 0]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[:-9, 0]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0, :11]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0, -11:]'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "expr": "'square[0, :-11] '"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 775, in test_block_matrix_illegal_indexing\n    eval(expr, block_matrix_bindings)\nTypeError: globals must be a dict\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

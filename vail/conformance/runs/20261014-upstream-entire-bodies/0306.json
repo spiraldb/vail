@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "test_reservoir_sampling_pointer_type",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.agg' has no attribute '_reservoir_sample'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 4522, in test_reservoir_sampling_pointer_type\n    assert ht.aggregate(hl.agg._reservoir_sample(hl.str(ht.idx), 1000).all(lambda x: hl.str(hl.int(x)) == x))\n                        ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail.agg' has no attribute '_reservoir_sample'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

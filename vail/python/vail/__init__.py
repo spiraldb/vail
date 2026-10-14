@@ -357,6 +357,19 @@ class Table:
         return table
 
     @classmethod
+    def _generate(cls, contexts, globals, partitions, rowfn):
+        """Generate rows lazily from partition contexts and singleton globals."""
+        contexts, globals = as_expr(contexts), as_expr(globals)
+        if not isinstance(contexts.dtype, tarray) or not isinstance(globals.dtype, tstruct):
+            raise TypeError("_generate requires array contexts and struct globals")
+        _validate_n(partitions, "partitions", positive=True)
+        singleton = range_table(0).annotate_globals(**{n: globals[n] for n in globals.dtype})
+        bound_globals = singleton.index_globals()
+        rows = contexts.flatmap(lambda context: as_expr(rowfn(context, bound_globals)))
+        return cls.parallelize(rows, n_partitions=partitions,
+                               globals={n: bound_globals[n] for n in globals.dtype})
+
+    @classmethod
     def _parallelize_expression(cls, rows, schema, key, n_partitions, globals):
         from .inputs import bind_input
         if not isinstance(rows.dtype, tarray) or not isinstance(rows.dtype.element_type, tstruct):
@@ -821,6 +834,12 @@ class Table:
             ordered = ordered._project([(name, ordered[name]) for name in self._schema])
         return ordered
 
+    def sample(self, p, seed=None):
+        """Keep each row with probability ``p`` using a seeded random expression."""
+        if not 0 <= p <= 1:
+            raise ValueError(f"Requires 'p' in [0,1]. Found p={p}")
+        return self.filter(rand_bool(p, seed))
+
     def filter(self, expr, keep=True):
         if type(keep) is not builtins.bool:
             raise TypeError("keep must be a bool")
@@ -842,7 +861,8 @@ class Table:
             if intervals is not None:
                 return filter_intervals(self, intervals, _internal=True)
         native = native.filter_json(_json.dumps(expression.to_ir()), keep, _global_bindings(expressions))
-        if expr._lookup_refs:
+        from .randomness import contains as contains_randomness
+        if expr._lookup_refs or contains_randomness(expr.to_ir()):
             native = native.project_json(_json.dumps([[name, {"op": "column", "name": name}]
                                                       for name in self._schema]))
         return Table(native, self._schema, self._keys, self._key_sources)
@@ -1147,7 +1167,7 @@ class Table:
             raise ExpressionException("expression source mismatch: field belongs to a different Table")
         ir = expr.to_ir()
         _validate_aggregate_ir(ir)
-        native, expressions = _resolve_lookups(self._native, [expr])
+        native, expressions = _resolve_lookups(self._native, [expr], random_scope="total")
         native = native.aggregate_globals_json(
             _json.dumps(expressions[0].to_ir()), _global_bindings(expressions))
         result = _external_globals(native, tstruct(value=expr.dtype))["value"]
@@ -1466,7 +1486,7 @@ class GroupedTable:
                 raise ExpressionException("expression source mismatch: field belongs to a different Table")
             _validate_aggregate_ir(expr.to_ir())
         expressions = {name: as_expr(value) for name, value in fields.items()}
-        native, resolved = _resolve_lookups(table._native, [expr for _, expr in keys] + list(expressions.values()))
+        native, resolved = _resolve_lookups(table._native, [expr for _, expr in keys] + list(expressions.values()), random_scope=["row"] * builtins.len(keys) + ["group"] * builtins.len(expressions))
         resolved_keys, resolved_fields = resolved[:builtins.len(keys)], resolved[builtins.len(keys):]
         key_json = _json.dumps([[name, expr.to_ir()] for (name, _), expr in builtins.zip(keys, resolved_keys)])
         fields_json = _json.dumps([[name, expr.to_ir()] for name, expr in builtins.zip(expressions, resolved_fields)])
@@ -1753,6 +1773,23 @@ def _key_filter_intervals(table, expression):
 
 def filter_intervals(ds, intervals, keep=True, *, _internal=False):
     """Filter keyed rows by a union of intervals, preserving key order."""
+    if isinstance(ds, MatrixTable):
+        # Validate the shared key/interval contract through the row-table API.
+        filter_intervals(ds.rows(), intervals, keep, _internal=_internal)
+        values = eval(intervals) if isinstance(intervals, Expression) else list(intervals)
+        if builtins.any(isinstance(value, Expression) for value in values):
+            values = eval(array(values))
+        if not values:
+            return ds.filter_rows(False) if keep else ds
+        point_type = values[0].point_type
+        keys = ds._mir.row_key
+        point = ds[keys[0]] if point_type == ds[keys[0]].dtype else struct(**{
+            name: ds[key] for name,key in builtins.zip(point_type,keys)
+        })
+        predicate = literal(False)
+        for interval in values:
+            predicate = predicate | literal(interval, tinterval(point_type)).contains(point)
+        return ds.filter_rows(predicate, keep=keep)
     if not isinstance(ds, Table):
         raise TypeError("filter_intervals requires a Table")
     if type(keep) is not builtins.bool:
@@ -1950,3 +1987,19 @@ from .array_methods import fold, array_scan, mean, median, group_by
 
 from .collection_functions import (zip, map, starmap, any, all, find, filter, flatmap,
                                    flatten, enumerate, zip_with_index, corr, or_else)
+
+from .randomness import (reset_global_randomness, rand_bool, rand_norm, rand_norm2d, rand_pois, rand_unif, rand_int32, rand_int64, rand_beta, rand_gamma, rand_cat, rand_dirichlet, rand_hyper, rand_multi_hyper, shuffle)
+
+from .streams import zip_streams as _zip_streams
+
+def rbind(*args):
+    return bind(args[-1], *args[:-1])
+
+
+def repeat(value, n):
+    value = value() if callable(value) else as_expr(value)
+    return range(n).map(lambda _: value)
+
+from . import linalg
+
+from .simulation import balding_nichols_model

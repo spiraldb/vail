@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_aggregator_group_by_sorts_result",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "array_sort is not yet enabled for this element type",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 1470, in test_aggregator_group_by_sorts_result\n    self.assertEqual(grouped_expr, hl.eval(hl.sorted(grouped_expr)))\n                                           ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collections.py\", line 435, in sorted_\n    raise NotImplementedError(\"array_sort is not yet enabled for this element type\")\nNotImplementedError: array_sort is not yet enabled for this element type\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

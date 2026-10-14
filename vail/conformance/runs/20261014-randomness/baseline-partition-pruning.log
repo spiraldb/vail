@@ -1,0 +1,34 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+___ test_interval_partition_join_reads_only_files_needed_for_selected_output ___
+/private/tmp/vail-randomness-baseline/vail/python/tests/test_interval_partition_joins.py:208: in test_interval_partition_join_reads_only_files_needed_for_selected_output
+    _assert_rows(_row_tuples(selected), expected_first_partition)
+                 ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-randomness-baseline/vail/python/tests/test_interval_partition_joins.py:17: in _row_tuples
+    return [(row.k, row.lv, row.rv) for row in table.collect()]
+                                               ^^^^^^^^^^^^^^^
+/private/tmp/vail-randomness-baseline/vail/python/vail/__init__.py:1054: in collect
+    return decode_rows(self._native.collect_arrow(), self._schema)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+_ test_membership_join_executes_only_selected_left_partition[semi_join-expected0] _
+/private/tmp/vail-randomness-baseline/vail/python/tests/test_table_joins.py:363: in test_membership_join_executes_only_selected_left_partition
+    assert [row.idx for row in selected.collect()] == expected
+                               ^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-randomness-baseline/vail/python/vail/__init__.py:1054: in collect
+    return decode_rows(self._native.collect_arrow(), self._schema)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+_ test_membership_join_executes_only_selected_left_partition[anti_join-expected1] _
+/private/tmp/vail-randomness-baseline/vail/python/tests/test_table_joins.py:363: in test_membership_join_executes_only_selected_left_partition
+    assert [row.idx for row in selected.collect()] == expected
+                               ^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-randomness-baseline/vail/python/vail/__init__.py:1054: in collect
+    return decode_rows(self._native.collect_arrow(), self._schema)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+=========================== short test summary info ============================
+FAILED ../../../../../../private/tmp/vail-randomness-baseline/vail/python/tests/test_interval_partition_joins.py::test_interval_partition_join_reads_only_files_needed_for_selected_output
+FAILED ../../../../../../private/tmp/vail-randomness-baseline/vail/python/tests/test_table_joins.py::test_membership_join_executes_only_selected_left_partition[semi_join-expected0]
+FAILED ../../../../../../private/tmp/vail-randomness-baseline/vail/python/tests/test_table_joins.py::test_membership_join_executes_only_selected_left_partition[anti_join-expected1]
+3 failed in 2.78s

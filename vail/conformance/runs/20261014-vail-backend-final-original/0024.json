@@ -1,0 +1,26 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "test_matrix_randomness_aggregate_rows_by_key_without_body_randomness",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "BackendDependencyUnavailable",
+      "error": "Hail Scala/backend dependency: ir.MatrixAggregateRowsByKey",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-n5au13pt/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1999, in test_matrix_randomness_aggregate_rows_by_key_without_body_randomness\n    assert_contains_node(mt, ir.MatrixAggregateRowsByKey)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAggregateRowsByKey\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

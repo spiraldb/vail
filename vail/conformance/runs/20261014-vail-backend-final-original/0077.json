@@ -1,0 +1,25 @@
+{
+  "module": "methods/test_statgen.py",
+  "name": "Tests.test_logreg_pass_through",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "Vail backend does not support hl.logistic_regression_rows",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-n5au13pt/hail/python/test/hail/methods/test_statgen.py\", line 1034, in test_logreg_pass_through\n    ht = logreg_function(\n         ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_backend.py\", line 77, in unsupported\n    raise NotImplementedError(f'Vail backend does not support hl.{path}')\nNotImplementedError: Vail backend does not support hl.logistic_regression_rows\n"
+    }
+  ],
+  "setup_errors": [],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

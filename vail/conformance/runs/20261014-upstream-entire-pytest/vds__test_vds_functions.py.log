@@ -1,0 +1,42 @@
+FFFFFF                                                                   [100%]
+=================================== FAILURES ===================================
+________________________________ test_lgt_to_gt ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py:17: in test_lgt_to_gt
+    tuple(hl.vds.lgt_to_gt(c, la) for c in [call_0_0_f, call_0_0_t, call_0_1_f, call_2_0_t, call_1])
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py:17: in <genexpr>
+    tuple(hl.vds.lgt_to_gt(c, la) for c in [call_0_0_f, call_0_0_t, call_0_1_f, call_2_0_t, call_1])
+          ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'vds'
+____________________________ test_lgt_to_gt_invalid ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py:31: in test_lgt_to_gt_invalid
+    assert hl.eval(hl.vds.lgt_to_gt(c1, [0, 17495])) == hl.Call([17495, 17495])
+                   ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'vds'
+_____________________________ test_local_to_global _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py:43: in test_local_to_global
+    assert hl.eval(hl.vds.local_to_global(lad, local_alleles, 4, 0, number='R')) == [1, 9, 0, 10]
+                   ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'vds'
+_________________ test_local_to_global_alleles_non_increasing __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py:65: in test_local_to_global_alleles_non_increasing
+    assert hl.eval(hl.vds.local_to_global(lad, local_alleles, 4, 0, number='R')) == [1, 9, 0, 10]
+                   ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'vds'
+______________________ test_local_to_global_missing_fill _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py:85: in test_local_to_global_missing_fill
+    assert hl.eval(hl.vds.local_to_global(lad, local_alleles, 4, hl.missing('int32'), number='R')) == [1, 9, None, 10]
+                   ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'vds'
+______________________ test_local_to_global_out_of_bounds ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py:96: in test_local_to_global_out_of_bounds
+    assert hl.eval(hl.vds.local_to_global(lad, local_alleles, 2, 0, number='R')) == [1, 0]
+                   ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'vds'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py::test_lgt_to_gt
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py::test_lgt_to_gt_invalid
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py::test_local_to_global
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py::test_local_to_global_alleles_non_increasing
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py::test_local_to_global_missing_fill
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds_functions.py::test_local_to_global_out_of_bounds
+6 failed in 0.06s

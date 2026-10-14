@@ -1,0 +1,31 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "test_query_matrix_table_rows_compound_key",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "50",
+        "expected": "[Struct(row_idx=50, idx2=10, s='50', e=[Struct(n=0), Struct(n=500), Struct(n=1000), Struct(n=1500), Struct(n=2000), Struct(n=2500), Struct(n=3000), Struct(n=3500), Struct(n=4000), Struct(n=4500)])]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.StructExpression object at 0x11481b140>",
+        "expected": "[Struct(row_idx=50, idx2=10, s='50', e=[Struct(n=0), Struct(n=500), Struct(n=1000), Struct(n=1500), Struct(n=2000), Struct(n=2500), Struct(n=3000), Struct(n=3500), Struct(n=4000), Struct(n=4500)])]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x1148313c0>",
+        "expected": "[]"
+      }
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "passed"
+}

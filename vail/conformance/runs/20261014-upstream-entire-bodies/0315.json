@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_freezing.py",
+  "name": "test_collect_as_set_tuple_of_list",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "unhashable type: 'list'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_freezing.py\", line 29, in test_collect_as_set_tuple_of_list\n    result = t.aggregate_entries(hl.agg.collect_as_set(t.l))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1132, in aggregate_entries\n    return self._aggregate(\"entry\", expr, _localize)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1123, in _aggregate\n    return table.aggregate(self._lower(expr, table), _localize=localize)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1171, in aggregate\n    return eval(result)\n           ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1942, in eval\n    return decode_rows(data, tstruct(value=expr.dtype))[0].value\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/arrow.py\", line 196, in decode_rows\n    return [Struct(**{name: _logical(row[name], ty) for name, ty in schema.items()}) for row in rows]\n                            ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/arrow.py\", line 226, in _logical\n    return set(_hashable(v, dtype.element_type) for v in value)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unhashable type: 'list'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'frozenlist'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_first_match_in",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "DataFusion has no Hail-compatible Java regex capture groups implementation",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 461, in test_first_match_in\n    self.assertTrue(hl.eval(string.first_match_in(\"([^:]*)[:\\\\t](\\\\d+)[\\\\-\\\\t](\\\\d+)\")) == ['1', '25', '100'])\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 219, in reject\n    raise NotImplementedError(f'DataFusion has no Hail-compatible {name} implementation')\nNotImplementedError: DataFusion has no Hail-compatible Java regex capture groups implementation\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

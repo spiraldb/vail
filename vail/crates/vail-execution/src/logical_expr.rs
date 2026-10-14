@@ -396,6 +396,9 @@ fn lower(
         }
         Expr::GetField { .. } => return logical_kernel(expr, schema, globals, bindings, scope),
         Expr::NestedFunction { function, args, .. } => {
+            if function.starts_with("random_") {
+                return logical_kernel(expr, schema, globals, bindings, scope);
+            }
             let udf = crate::expressions::nested_function(function)?;
             let arguments = args
                 .iter()

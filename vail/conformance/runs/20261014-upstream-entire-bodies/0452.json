@@ -1,0 +1,16 @@
+{
+  "module": "genetics/test_reference_genome.py",
+  "name": "test_read_custom_reference_genome",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'NativeBackend' object has no attribute '_references'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/genetics/test_reference_genome.py\", line 176, in test_read_custom_reference_genome\n    available_rgs = set(hl.current_backend()._references.keys())\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NativeBackend' object has no attribute '_references'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

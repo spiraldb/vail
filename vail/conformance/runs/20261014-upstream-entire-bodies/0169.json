@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_call_unphase_diploid_gt_index",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "unphased_diploid_gt_index",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 2591, in test_call_unphase_diploid_gt_index\n    gt_idx = tuple(c[0].unphased_diploid_gt_index() for c in calls_and_indices)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 2591, in <genexpr>\n    gt_idx = tuple(c[0].unphased_diploid_gt_index() for c in calls_and_indices)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 756, in __getattr__\n    raise AttributeError(name)\nAttributeError: unphased_diploid_gt_index\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,19 @@
+{
+  "module": "matrixtable/test_file_formats.py",
+  "name": "test_write",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 45, in test_write\n    create_backward_compatibility_files()\n  File \"../hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 21, in create_backward_compatibility_files\n    all_values_table, all_values_matrix_table = create_all_values_datasets()\n                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/helpers.py\", line 147, in create_all_values_datasets\n    return (create_all_values_table(), create_all_values_matrix_table())\n            ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    }
+  ],
+  "setup_errors": [],
+  "fixture_adapters": [
+    "Local legacy snapshot enumeration: original 56 Table / 60 Matrix paths"
+  ],
+  "status": "failed_or_blocked"
+}

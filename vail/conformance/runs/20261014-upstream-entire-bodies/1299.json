@@ -1,0 +1,1771 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_table_head_and_tail",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'rt'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'par'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "table_name": "'rtcache'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "cache",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2136, in test_table_head_and_tail\n    table = hl.utils.range_table(10, n_partitions=num_parts).cache()\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: cache\n"
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "3",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "10",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "9",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "11",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "0",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'head'",
+        "counter_name": "'_force_count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'count'"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "table_name": "'chkpt'",
+        "num_parts": "11",
+        "n": "7",
+        "truncator_name": "'tail'",
+        "counter_name": "'_force_count'"
+      }
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

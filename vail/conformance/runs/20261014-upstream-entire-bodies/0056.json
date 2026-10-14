@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_operators",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "incompatible comparison types: ttuple(types=(bool, float64)) and ttuple(types=(float64, float64))",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 182, in test_operators\n    x53=hl.tuple([True, 1.0]) < (1.0, 0.0),\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 320, in __lt__\n    return self._compare(other, \"lt\")\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 251, in _compare\n    _check_comparable(self.dtype, other.dtype, operator)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 1226, in _check_comparable\n    raise TypeError(f\"incompatible comparison types: {left} and {right}\")\nTypeError: incompatible comparison types: ttuple(types=(bool, float64)) and ttuple(types=(float64, float64))\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

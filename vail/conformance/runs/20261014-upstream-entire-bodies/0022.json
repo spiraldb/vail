@@ -1,0 +1,16 @@
+{
+  "module": "backend/test_spark_backend.py",
+  "name": "TestSparkConf.test_",
+  "variants": [],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "No module named 'vail.backend.spark_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.spark_backend'; 'vail.backend' is not a package",
+    "No module named 'test'"
+  ],
+  "status": "blocked",
+  "phase": "setup_or_parameters",
+  "error_type": "NameError",
+  "error": "name 'cases' is not defined",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 189, in worker\n    for value in evaluate(decorator.args[1]):\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 185, in <lambda>\n    evaluate = lambda node: eval(compile(ast.Expression(node), str(source), 'eval'), scope)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/backend/test_spark_backend.py\", line 109, in <module>\n    @pytest.mark.parametrize('key,param,cvalue,arg,expected', cases)\n                                                              ^^^^^\nNameError: name 'cases' is not defined\n"
+}

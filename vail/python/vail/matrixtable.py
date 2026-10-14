@@ -2011,14 +2011,18 @@ class MatrixTable:
         return self
 
     def sample_rows(self, p, seed=None):
-        raise NotImplementedError(
-            "MatrixTable sampling requires stable native random expression support"
-        )
+        """Keep each row with probability ``p`` using a seeded random expression."""
+        from .randomness import rand_bool
+        if not 0 <= p <= 1:
+            raise ValueError(f"Requires 'p' in [0,1]. Found p={p}")
+        return self.filter_rows(rand_bool(p, seed))
 
     def sample_cols(self, p, seed=None):
-        raise NotImplementedError(
-            "MatrixTable sampling requires stable native random expression support"
-        )
+        """Keep each column with probability ``p`` using a seeded random expression."""
+        from .randomness import rand_bool
+        if not 0 <= p <= 1:
+            raise ValueError(f"Requires 'p' in [0,1]. Found p={p}")
+        return self.filter_cols(rand_bool(p, seed))
 
     def write(self, output, overwrite=False, stage_locally=False, _codec_spec=None):
         import os

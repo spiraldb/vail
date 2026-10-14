@@ -382,9 +382,13 @@ def predicate(value, f, first=False):
         raise TypeError("collection predicate must return bool")
     if first:
         body = ~is_missing(variable) & body
-    return Expression(value.dtype.element_type if first else tbool, _merge_sources(value.source, body.source),
-                      {"op": "array_predicate", "value": value.to_ir(), "parameter": parameter,
-                       "predicate": body.to_ir(), "first": first})
+    from .randomness import index_callback, contains
+    indexed = contains(body.to_ir())
+    value, body = index_callback(value, parameter, body)
+    result = Expression(value.dtype.element_type if first else tbool, _merge_sources(value.source, body.source),
+                        {"op": "array_predicate", "value": value.to_ir(), "parameter": parameter,
+                         "predicate": body.to_ir(), "first": first})
+    return result[1] if first and indexed else result
 
 
 def starmap(value, f):

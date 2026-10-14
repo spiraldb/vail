@@ -1,0 +1,18 @@
+{
+  "module": "experimental/test_annotation_db.py",
+  "name": "TestAnnotationDB.test_uniqueness",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "fixture",
+      "error_type": "KeyError",
+      "error": "'db_json'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 232, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 218, in fixture\n    factory = scope[name]\n              ~~~~~^^^^^^\nKeyError: 'db_json'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

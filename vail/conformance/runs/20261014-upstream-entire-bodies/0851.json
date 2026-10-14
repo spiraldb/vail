@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_import_gvcfs",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tarray' object has no attribute '_convert_to_json'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 524, in test_import_gvcfs\n    self.import_gvcfs_sample_vcf(path)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 468, in import_gvcfs_sample_vcf\n    parts_str = json.dumps(parts_type._convert_to_json(parts))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tarray' object has no attribute '_convert_to_json'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

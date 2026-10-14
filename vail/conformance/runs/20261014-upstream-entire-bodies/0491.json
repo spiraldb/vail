@@ -1,0 +1,63 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_matrix_sums",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'m.sum(axis=0).T'",
+        "y": "'np.array([[5.0], [7.0], [9.0]])'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 604, in test_matrix_sums\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'m.sum(axis=1).T'",
+        "y": "'np.array([[6.0, 15.0]])'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 604, in test_matrix_sums\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'m.sum(axis=0).T + row'",
+        "y": "'np.array([[12.0, 13.0, 14.0],[14.0, 15.0, 16.0],[16.0, 17.0, 18.0]])'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 604, in test_matrix_sums\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'m.sum(axis=0) + row.T'",
+        "y": "'np.array([[12.0, 14.0, 16.0],[13.0, 15.0, 17.0],[14.0, 16.0, 18.0]])'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 604, in test_matrix_sums\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'square.sum(axis=0).T + square.sum(axis=1)'",
+        "y": "'np.array([[18.0], [30.0], [42.0]])'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 604, in test_matrix_sums\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

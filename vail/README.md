@@ -75,6 +75,10 @@ Text interoperability includes lazy `import_lines`, delimited `import_table`,
 See [Text import and export](docs/TEXT_IMPORT_EXPORT.md) for supported options
 and explicit limitations, including Hail float and nested text rendering.
 
+Random expressions implement all 13 public `hl.rand_...` functions, seeded
+reproducibility, dynamic row/collection contexts, and random ndarray draws.
+See [Random expressions](docs/RANDOMNESS.md) for the design and verification.
+
 ## MatrixTable prototype
 
 The Python frontend now includes a lazy MatrixTable layer over native TableIR.

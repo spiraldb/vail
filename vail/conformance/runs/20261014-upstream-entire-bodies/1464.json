@@ -1,0 +1,24 @@
+{
+  "module": "utils/test_utils.py",
+  "name": "Tests.test_hadoop_mkdir_p",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'hadoop_open' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/utils/test_utils.py\", line 88, in test_hadoop_mkdir_p\n    with hadoop_open(resource('./some/foo/bar.txt'), 'w') as out:\n         ^^^^^^^^^^^\nNameError: name 'hadoop_open' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.utils' has no attribute 'frozendict'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "module 'vail.utils' has no attribute 'with_local_temp_file'",
+    "No module named 'vail.utils.linkedlist'",
+    "module 'vail.utils.misc' has no attribute 'escape_id'",
+    "module 'vail.utils.misc' has no attribute 'escape_str'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,86 @@
+[
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_linreg_pass_through",
+    "line": 95,
+    "body": "def test_linreg_pass_through(self):\n    phenos = hl.import_table(resource('regressionLinear.pheno'), types={'Pheno': hl.tfloat64}, key='Sample')\n    mt = hl.import_vcf(resource('regressionLinear.vcf')).annotate_rows(foo=hl.struct(bar=hl.rand_norm(0, 1)))\n    for linreg_function in self.linreg_functions:\n        lr_result = linreg_function(phenos[mt.s].Pheno, mt.GT.n_alt_alleles(), [1.0], pass_through=['filters', mt.foo.bar, mt.qual])\n        assert mt.aggregate_rows(hl.agg.all(mt.foo.bar == lr_result[mt.row_key].bar))\n        lr_result = linreg_function([[phenos[mt.s].Pheno]], mt.GT.n_alt_alleles(), [1.0], pass_through=['filters', mt.foo.bar, mt.qual])\n        assert mt.aggregate_rows(hl.agg.all(mt.foo.bar == lr_result[mt.row_key].bar))\n        assert 'filters' in lr_result.row\n        assert lr_result.filters.dtype == mt.filters.dtype\n        assert 'bar' in lr_result.row\n        assert lr_result.bar.dtype == mt.foo.bar.dtype\n        assert 'qual' in lr_result.row\n        assert lr_result.qual.dtype == mt.qual.dtype\n        linreg_function([[phenos[mt.s].Pheno]], mt.GT.n_alt_alleles(), [1.0], pass_through=['locus', 'alleles'])\n        with pytest.raises(ValueError):\n            linreg_function([[phenos[mt.s].Pheno]], mt.GT.n_alt_alleles(), [1.0], pass_through=[mt.filters.length()])"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_logreg_pass_through",
+    "line": 1024,
+    "body": "def test_logreg_pass_through(self):\n    covariates = hl.import_table(resource('regressionLogistic.cov'), key='Sample', types={'Cov1': hl.tfloat, 'Cov2': hl.tfloat})\n    pheno = hl.import_table(resource('regressionLogisticBoolean.pheno'), key='Sample', missing='0', types={'isCase': hl.tbool})\n    mt = hl.import_vcf(resource('regressionLogistic.vcf')).annotate_rows(foo=hl.struct(bar=hl.rand_norm(0, 1)))\n    for logreg_function in self.logreg_functions:\n        ht = logreg_function('wald', y=pheno[mt.s].isCase, x=mt.GT.n_alt_alleles(), covariates=[1.0, covariates[mt.s].Cov1, covariates[mt.s].Cov2], pass_through=['filters', mt.foo.bar, mt.qual])\n    assert mt.aggregate_rows(hl.agg.all(mt.foo.bar == ht[mt.row_key].bar))"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_poisson_pass_through",
+    "line": 1194,
+    "body": "def test_poisson_pass_through(self):\n    covariates = hl.import_table(resource('regressionLogistic.cov'), key='Sample', types={'Cov1': hl.tfloat, 'Cov2': hl.tfloat})\n    pheno = hl.import_table(resource('regressionPoisson.pheno'), key='Sample', missing='-1', types={'count': hl.tint32})\n    mt = hl.import_vcf(resource('regressionLogistic.vcf')).annotate_rows(foo=hl.struct(bar=hl.rand_norm(0, 1)))\n    ht = hl.poisson_regression_rows(test='wald', y=pheno[mt.s].count, x=mt.GT.n_alt_alleles(), covariates=[1.0, covariates[mt.s].Cov1, covariates[mt.s].Cov2], pass_through=['filters', mt.foo.bar, mt.qual])\n    assert mt.aggregate_rows(hl.agg.all(mt.foo.bar == ht[mt.row_key].bar))"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model",
+    "line": 1499,
+    "body": "def test_balding_nichols_model(self):\n    hl.reset_global_randomness()\n    ds = hl.balding_nichols_model(2, 20, 25, 3, pop_dist=[1.0, 2.0], fst=[0.02, 0.06], af_dist=hl.rand_beta(a=0.01, b=2.0, lower=0.05, upper=0.95))\n    ds.entries().show(100, width=200)\n    self.assertEqual(ds.count_cols(), 20)\n    self.assertEqual(ds.count_rows(), 25)\n    self.assertEqual(ds.n_partitions(), 3)\n    glob = ds.globals\n    self.assertEqual(hl.eval(glob.bn.n_populations), 2)\n    self.assertEqual(hl.eval(glob.bn.n_samples), 20)\n    self.assertEqual(hl.eval(glob.bn.n_variants), 25)\n    self.assertEqual(hl.eval(glob.bn.pop_dist), [1, 2])\n    self.assertEqual(hl.eval(glob.bn.fst), [0.02, 0.06])"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model_same_results",
+    "line": 1524,
+    "body": "def test_balding_nichols_model_same_results(self):\n    for mixture in [True, False]:\n        hl.reset_global_randomness()\n        ds1 = hl.balding_nichols_model(2, 20, 25, 3, pop_dist=[1.0, 2.0], fst=[0.02, 0.06], af_dist=hl.rand_beta(a=0.01, b=2.0, lower=0.05, upper=0.95), mixture=mixture)\n        hl.reset_global_randomness()\n        ds2 = hl.balding_nichols_model(2, 20, 25, 3, pop_dist=[1.0, 2.0], fst=[0.02, 0.06], af_dist=hl.rand_beta(a=0.01, b=2.0, lower=0.05, upper=0.95), mixture=mixture)\n        self.assertTrue(ds1._same(ds2))"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model_af_ranges",
+    "line": 1550,
+    "body": "def test_balding_nichols_model_af_ranges(self):\n\n    def test_af_range(rand_func, min, max, seed):\n        hl.reset_global_randomness()\n        bn = hl.balding_nichols_model(3, 400, 400, af_dist=rand_func)\n        self.assertTrue(bn.aggregate_rows(hl.agg.all((bn.ancestral_af > min) & (bn.ancestral_af < max))))\n    test_af_range(hl.rand_beta(0.01, 2, 0.2, 0.8), 0.2, 0.8, 0)\n    test_af_range(hl.rand_beta(3, 3, 0.4, 0.6), 0.4, 0.6, 1)\n    test_af_range(hl.rand_unif(0.4, 0.7), 0.4, 0.7, 2)\n    test_af_range(hl.rand_beta(4, 6), 0, 1, 3)"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_stats",
+    "line": 1562,
+    "body": "@test_timeout(batch=6 * 60)\ndef test_balding_nichols_stats(self):\n\n    def test_stat(k, n, m, seed):\n        hl.reset_global_randomness()\n        bn = hl.balding_nichols_model(k, n, m, af_dist=hl.rand_unif(0.1, 0.9))\n        pop_counts = bn.aggregate_cols(hl.agg.group_by(bn.pop, hl.agg.count()))\n        for i, count in pop_counts.items():\n            self.assertAlmostEqual(count / n, 1 / k, delta=0.1 * n / k)\n\n        def variance(expr):\n            return hl.bind(lambda mean: hl.mean(hl.map(lambda elt: (elt - mean) ** 2, expr)), hl.mean(expr))\n        delta_mean = 0.2\n        delta_var = 0.1\n        per_row = hl.bind(lambda mean, var, ancestral: (ancestral > mean - delta_mean) & (ancestral < mean + delta_mean) & (0.1 * ancestral * (1 - ancestral) > var - delta_var) & (0.1 * ancestral * (1 - ancestral) < var + delta_var), hl.mean(bn.af), variance(bn.af), bn.ancestral_af)\n        self.assertTrue(bn.aggregate_rows(hl.agg.all(per_row)))\n        stats_gt_by_pop = hl.agg.group_by(bn.pop, hl.agg.stats(hl.float(bn.GT.n_alt_alleles()))).values()\n        bn = bn.select_rows(sum_af=hl.sum(bn.af), sum_mean_gt_by_pop=hl.sum(hl.map(lambda x: x.mean, stats_gt_by_pop)))\n        sum_af = bn.aggregate_rows(hl.agg.sum(bn.sum_af))\n        sum_mean_gt = bn.aggregate_rows(hl.agg.sum(bn.sum_mean_gt_by_pop))\n        self.assertAlmostEqual(sum_mean_gt, 2 * sum_af, delta=0.1 * m * k)\n    test_stat(10, 100, 100, 0)\n    test_stat(40, 400, 20, 12)"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_regression_field_dependence",
+    "line": 1692,
+    "body": "def test_regression_field_dependence(self):\n    mt = hl.utils.range_matrix_table(10, 10)\n    mt = mt.annotate_cols(c1=hl.literal([x % 2 == 0 for x in range(10)])[mt.col_idx], c2=hl.rand_norm(0, 1))\n    mt = mt.annotate_entries(e1=hl.int(hl.rand_norm(0, 1) * 10))\n    x_expr = hl.case().when(mt.c2 < 0, 0).default(mt.e1)\n    hl.logistic_regression_rows('wald', y=mt.c1, x=x_expr, covariates=[1])\n    hl.poisson_regression_rows('wald', y=mt.c1, x=x_expr, covariates=[1])\n    hl.linear_regression_rows(y=mt.c1, x=x_expr, covariates=[1])"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_explode",
+    "line": 7,
+    "body": "@qobtest\ndef test_table_explode():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.range(hl.rand_int32(5)))\n    ht = ht.explode('x')\n    expected = [hl.Struct(idx=0, x=0), hl.Struct(idx=0, x=1), hl.Struct(idx=0, x=2), hl.Struct(idx=0, x=3), hl.Struct(idx=1, x=0), hl.Struct(idx=1, x=1), hl.Struct(idx=1, x=2), hl.Struct(idx=2, x=0), hl.Struct(idx=2, x=1), hl.Struct(idx=3, x=0), hl.Struct(idx=3, x=1), hl.Struct(idx=3, x=2), hl.Struct(idx=4, x=0), hl.Struct(idx=4, x=1), hl.Struct(idx=4, x=2)]\n    actual = ht.collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_key_by",
+    "line": 33,
+    "body": "def test_table_key_by():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.rand_int32(5))\n    ht = ht.key_by('x')\n    expected = [hl.Struct(idx=2, x=2), hl.Struct(idx=1, x=3), hl.Struct(idx=3, x=3), hl.Struct(idx=4, x=3), hl.Struct(idx=0, x=4)]\n    actual = ht.collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_annotate",
+    "line": 49,
+    "body": "def test_table_annotate():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.rand_int32(5))\n    ht = ht.annotate(y=ht.x * 10)\n    expected = [hl.Struct(idx=0, x=4, y=40), hl.Struct(idx=1, x=3, y=30), hl.Struct(idx=2, x=2, y=20), hl.Struct(idx=3, x=3, y=30), hl.Struct(idx=4, x=3, y=30)]\n    actual = ht.collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_matrix_table_entries",
+    "line": 65,
+    "body": "def test_matrix_table_entries():\n    hl.reset_global_randomness()\n    mt = hl.utils.range_matrix_table(5, 2)\n    mt = mt.annotate_entries(x=hl.rand_int32(5))\n    expected = [hl.Struct(row_idx=0, col_idx=0, x=0), hl.Struct(row_idx=0, col_idx=1, x=3), hl.Struct(row_idx=1, col_idx=0, x=2), hl.Struct(row_idx=1, col_idx=1, x=4), hl.Struct(row_idx=2, col_idx=0, x=1), hl.Struct(row_idx=2, col_idx=1, x=4), hl.Struct(row_idx=3, col_idx=0, x=4), hl.Struct(row_idx=3, col_idx=1, x=2), hl.Struct(row_idx=4, col_idx=0, x=4), hl.Struct(row_idx=4, col_idx=1, x=4)]\n    actual = mt.entries().collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_filter",
+    "line": 85,
+    "body": "def test_table_filter():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.rand_int32(5))\n    ht = ht.filter(ht.x % 3 == 0)\n    expected = [hl.Struct(idx=1, x=3), hl.Struct(idx=3, x=3), hl.Struct(idx=4, x=3)]\n    actual = ht.collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_key_by_aggregate",
+    "line": 95,
+    "body": "def test_table_key_by_aggregate():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.rand_int32(5))\n    ht = ht.group_by(ht.x).aggregate(y=hl.agg.count())\n    expected = [hl.Struct(x=2, y=1), hl.Struct(x=3, y=3), hl.Struct(x=4, y=1)]\n    actual = ht.collect()\n    assert expected == actual"
+  }
+]

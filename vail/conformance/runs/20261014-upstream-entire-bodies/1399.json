@@ -1,0 +1,61 @@
+{
+  "module": "test_ir.py",
+  "name": "test_literal_ndarray_encodings",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "array([], dtype=float64)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tndarray' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 743, in test_literal_ndarray_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tndarray' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "array([1])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tndarray' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 743, in test_literal_ndarray_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tndarray' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "array([1, 2, 3, 4])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tndarray' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 743, in test_literal_ndarray_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tndarray' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "array([[1, 2],\n       [3, 4],\n       [5, 6]])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tndarray' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 743, in test_literal_ndarray_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tndarray' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "array([[[[1]],\n\n        [[2]]],\n\n\n       [[[3]],\n\n        [[4]]],\n\n\n       [[[5]],\n\n        [[6]]]])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tndarray' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 743, in test_literal_ndarray_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tndarray' object has no attribute '_from_encoding'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

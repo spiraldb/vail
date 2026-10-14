@@ -1,0 +1,21 @@
+{
+  "module": "backend/test_spark_backend.py",
+  "name": "test_init_without_existing_spark_context",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "fixture",
+      "error_type": "KeyError",
+      "error": "'request'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 232, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 218, in fixture\n    factory = scope[name]\n              ~~~~~^^^^^^\nKeyError: 'request'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "No module named 'vail.backend.spark_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.spark_backend'; 'vail.backend' is not a package",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "ImportTableTests.test_import_table_force_bgz",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 2141, in test_import_table_force_bgz\n    t.export(f)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 500, in export\n    return export(self, output, types_file, header, parallel, delimiter)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 240, in export\n    table._native.export_text(_local_path(output), 'text', json.dumps({\n                              ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,171 @@
+{
+  "module": "test_ir.py",
+  "name": "test_literal_encodings",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "5.0"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "'foo'"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "[1, 2, 3, 4]"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tarray' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tarray' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "(5, 6, 7, 8)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'ttuple' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'ttuple' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "{'baz', 'foo', 'bar'}"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tset' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tset' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "{'a': {'b': 1}}"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tstruct' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tstruct' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "{'a': 1, 'b': 2}"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tstruct' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tstruct' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "{1: 'a', 2: 'b'}"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "keywords must be strings",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 697, in _assert_encoding_roundtrip\n    lit = hl.literal(value)\n          ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 881, in literal\n    dtype = infer_type(value)\n            ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 595, in infer_type\n    return tstruct(**{name: infer_type(field) for name, field in value.items()})\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: keywords must be strings\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "{1: [], 2: [1, 2, 3, 4]}"
+      },
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "cannot infer an array element type from an empty array",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 697, in _assert_encoding_roundtrip\n    lit = hl.literal(value)\n          ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 881, in literal\n    dtype = infer_type(value)\n            ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 595, in infer_type\n    return tstruct(**{name: infer_type(field) for name, field in value.items()})\n                            ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 598, in infer_type\n    raise ValueError(\"cannot infer an array element type from an empty array\")\nValueError: cannot infer an array element type from an empty array\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "Call(alleles=[0, 1], phased=False)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "Call(alleles=[1, 0], phased=True)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "Call(alleles=[2], phased=True)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "Call(alleles=[], phased=False)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "Call(alleles=[1, 1], phased=False)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "value": "Call(alleles=[17495, 17495], phased=False)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'_PrimitiveType' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 729, in test_literal_encodings\n    _assert_encoding_roundtrip(value)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: '_PrimitiveType' object has no attribute '_from_encoding'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

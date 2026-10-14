@@ -1,0 +1,24 @@
+{
+  "module": "methods/test_statgen.py",
+  "name": "Tests.test_linreg_pass_through",
+  "variants": [],
+  "setup_errors": [
+    "line 18: AttributeError: module 'vail' has no attribute 'linear_regression_rows'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "omitted_unreferenced_class_configuration": [
+    "logreg_functions"
+  ],
+  "status": "blocked",
+  "category": "harness_error",
+  "phase": "setup_or_parameters",
+  "error_type": "KeyError",
+  "error": "'Tests'",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 210, in worker\n    instance = scope[cls](methodName=method) if issubclass(scope[cls], unittest.TestCase) else scope[cls]()\n                                                           ~~~~~^^^^^\nKeyError: 'Tests'\n"
+}

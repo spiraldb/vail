@@ -1,0 +1,11 @@
+{
+  "module": "methods/test_skat.py",
+  "name": "test_skat_negative_weights_errors",
+  "variants": [],
+  "setup_errors": [],
+  "status": "blocked",
+  "phase": "setup_or_parameters",
+  "error_type": "AttributeError",
+  "error": "module 'vail' has no attribute '_linear_skat'",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 189, in worker\n    for value in evaluate(decorator.args[1]):\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 185, in <lambda>\n    evaluate = lambda node: eval(compile(ast.Expression(node), str(source), 'eval'), scope)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/methods/test_skat.py\", line 9, in <module>\n    @pytest.mark.parametrize(\"skat_model\", [('hl._linear_skat', hl._linear_skat), ('hl._logistic_skat', hl._logistic_skat)])\n                                                                ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_linear_skat'\n"
+}

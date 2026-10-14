@@ -1,0 +1,21 @@
+{
+  "module": "backend/test_py4j_backend.py",
+  "name": "test_log_suppress_shutdown_exceptions_swallows_exceptions",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name '_log_suppress_exceptions' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/backend/test_py4j_backend.py\", line 118, in test_log_suppress_shutdown_exceptions_swallows_exceptions\n    _log_suppress_exceptions(raising(ValueError))\n    ^^^^^^^^^^^^^^^^^^^^^^^^\nNameError: name '_log_suppress_exceptions' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.backend.backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package"
+  ],
+  "status": "failed_or_blocked"
+}

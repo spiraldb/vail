@@ -1,7 +1,7 @@
 //! Singleton globals participate in the same optimizable logical query tree.
 use crate::{
-    Result, TableIR, TableNode, TableRef,
-    globals::{GlobalBindings, GlobalsIR, GlobalsRef, Node},
+    Result, TableRef,
+    globals::{GlobalBindings, GlobalsRef, Node},
     plan::PhysicalPlan,
 };
 use arrow_array::StructArray;
@@ -79,9 +79,9 @@ pub(crate) fn lower(globals: &GlobalsRef) -> Result<LogicalPlan> {
             )? {
                 return Ok(plan);
             }
-            let mut inputs = vec![input, lower(table.globals())?];
-            inputs.extend(bindings.values().map(lower).collect::<Result<Vec<_>>>()?);
-            extension(globals, inputs)
+            Err(crate::TableError::Invalid(
+                "missing logical aggregate plan".into(),
+            ))
         }
         Node::Read(_) | Node::Prepared(_) => extension(globals, vec![]),
     }
@@ -192,15 +192,7 @@ impl UserDefinedLogicalNodeCore for GlobalNode {
         vec![]
     }
     fn fmt_for_explain(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "VailGlobalsOperation: {}",
-            if matches!(self.globals.node(), Node::Aggregate { .. }) {
-                "InitializedOrNestedAggregate"
-            } else {
-                "SingletonSource"
-            }
-        )
+        write!(f, "VailGlobalsOperation: SingletonSource")
     }
     fn with_exprs_and_inputs(
         &self,
@@ -243,51 +235,6 @@ impl ExtensionPlanner for GlobalsExtensionPlanner {
         };
         let build = || -> Result<PhysicalPlan> {
             match node.globals.node() {
-                Node::Aggregate {
-                    table,
-                    expression,
-                    bindings,
-                } => {
-                    if physical_inputs.len() != bindings.len() + 2 {
-                        return Err(crate::TableError::Invalid(
-                            "aggregate globals input count mismatch".into(),
-                        ));
-                    }
-                    let source = physical_inputs[0].clone();
-                    let parts = (0..source.properties().output_partitioning().partition_count())
-                        .map(|index| {
-                            Arc::new(crate::partitioned::PartitionViewExec::new(
-                                source.clone(),
-                                index,
-                            )) as PhysicalPlan
-                        })
-                        .collect();
-                    let physical = Arc::new(crate::partitioned::OrderedConcatExec::new(
-                        parts,
-                        source.schema(),
-                    )) as PhysicalPlan;
-                    let globals = GlobalsIR::prepared(physical_inputs[1].clone());
-                    let input = TableIR::new(
-                        table.schema().clone(),
-                        table.keys().to_vec(),
-                        globals,
-                        TableNode::Prepared {
-                            n_partitions: physical
-                                .properties()
-                                .output_partitioning()
-                                .partition_count(),
-                            rows: physical,
-                            count: None,
-                            partition_counts: table.partition_rows(),
-                        },
-                    );
-                    let bindings = bindings
-                        .keys()
-                        .zip(&physical_inputs[2..])
-                        .map(|(name, plan)| (name.clone(), GlobalsIR::prepared(plan.clone())))
-                        .collect();
-                    crate::aggregation::lower(&input, expression, &bindings)
-                }
                 Node::Read(_) | Node::Prepared(_) => node.globals.lower(),
                 _ => Err(crate::TableError::Invalid(
                     "unexpected globals logical extension".into(),

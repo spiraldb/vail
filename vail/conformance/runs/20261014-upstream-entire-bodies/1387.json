@@ -1,0 +1,19 @@
+{
+  "module": "test_ir.py",
+  "name": "CSETests.test_cse",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "BackendDependencyUnavailable",
+      "error": "Hail Scala/backend dependency: ir.I32",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 544, in test_cse\n    x = ir.I32(5)\n        ^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.I32\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

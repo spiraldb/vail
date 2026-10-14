@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_dict_keyed_by_dict",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "Set/Dictionary/ndarray ordering and keying are unsupported",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 3844, in test_dict_keyed_by_dict\n    dict_with_dict_key = hl.dict({hl.dict({1: 2, 3: 5}): 4})\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collections.py\", line 136, in dict_\n    return _dict_from_entries(entries, key_type, value_type)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collections.py\", line 210, in _dict_from_entries\n    _ensure_key_supported(key_type)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collections.py\", line 162, in _ensure_key_supported\n    raise NotImplementedError(\"Set/Dictionary/ndarray ordering and keying are unsupported\")\nNotImplementedError: Set/Dictionary/ndarray ordering and keying are unsupported\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

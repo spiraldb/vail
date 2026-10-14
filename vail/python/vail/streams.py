@@ -1,4 +1,5 @@
 """Typed lazy stream expressions built from Vail array expression IR."""
+
 from __future__ import annotations
 
 from .expressions import Expression, as_expr
@@ -15,7 +16,9 @@ class StreamExpression:
     __slots__ = ("_array",)
 
     def __init__(self, array_expression):
-        if not isinstance(array_expression, Expression) or not isinstance(array_expression.dtype, tarray):
+        if not isinstance(array_expression, Expression) or not isinstance(
+            array_expression.dtype, tarray
+        ):
             raise TypeError("StreamExpression requires an array expression")
         self._array = array_expression
 
@@ -50,10 +53,97 @@ class StreamExpression:
                 result = result.to_array()
             result = as_expr(result)
             if not isinstance(result.dtype, tarray):
-                raise TypeError("stream.flatmap callback must return a stream or array expression")
+                raise TypeError(
+                    "stream.flatmap callback must return a stream or array expression"
+                )
             return result
 
         return StreamExpression(self._array._array_flatmap(to_array))
+
+    def zip_with_index(self, start=0):
+        from .collection_functions import enumerate
+
+        return StreamExpression(enumerate(self._array, start))
+
+    def fold(self, f, zero):
+        from .array_methods import fold
+
+        return fold(f, zero, self._array)
+
+    def scan(self, f, zero):
+        from .array_methods import array_scan
+
+        return StreamExpression(array_scan(f, zero, self._array))
+
+    def aggregate(self, f):
+        from .array_aggregate import aggregate
+
+        return aggregate(self._array, f)
+
+    def _aggregate_scan(self, f):
+        from uuid import uuid4
+        from .expressions import Expression, _IR, cast
+        from .types import tint32, tint64
+        from .array_aggregate import aggregate
+        from .randomness import _is_random, bind_context
+
+        position_name, value_name = uuid4().hex, uuid4().hex
+        position = Expression(
+            tint32, self.source, {"op": "lambda_variable", "name": position_name}
+        )
+        variable = Expression(
+            self.dtype.element_type,
+            self.source,
+            {"op": "lambda_variable", "name": value_name},
+        )
+        result = as_expr(f(variable))
+        current = self._array[position]
+        prefix = self._array[:position]
+
+        def reduce(element):
+            def rewrite(node, inside=False):
+                if isinstance(node, list):
+                    return [rewrite(v, inside) for v in node]
+                if not isinstance(node, dict) or node.get("op") == "literal":
+                    return node
+                if node.get("op") == "lambda_variable" and node["name"] == value_name:
+                    return (element if inside else current).to_ir()
+                if node.get("op") == "aggregate":
+                    return {
+                        k: (
+                            {a: b for a, b in v.items() if a != "__vail_scan"}
+                            if k == "options"
+                            else rewrite(v, k == "value")
+                        )
+                        for k, v in node.items()
+                    }
+                output = {k: rewrite(v, inside) for k, v in node.items()}
+                if _is_random(node) and not inside:
+                    output = bind_context(output, [cast(position, tint64).to_ir()])
+                return output
+
+            return Expression(
+                result.dtype,
+                result.source,
+                _IR(rewrite(result.to_ir()), result._global_refs, result._lookup_refs),
+            )
+
+        body = aggregate(prefix, reduce)
+        # Prefix reducers use input-element identities; only scalar output
+        # randomness uses the output position. A generic map would add its
+        # position to both and resample earlier inputs for every prefix.
+        return StreamExpression(
+            Expression(
+                tarray(body.dtype),
+                body.source,
+                {
+                    "op": "array_map",
+                    "value": stream_range(self._array.length()).to_array().to_ir(),
+                    "parameter": position_name,
+                    "body": body.to_ir(),
+                },
+            )
+        )
 
     def grouped(self, n):
         size = as_expr(n)
@@ -76,7 +166,23 @@ def stream_range(start, stop=None, step=1):
     from .expressions import _merge_sources
 
     source = _merge_sources(_merge_sources(start.source, stop.source), step.source)
-    return StreamExpression(Expression(
-        tarray(tint32), source,
-        {"op": "stream_range", "start": start.to_ir(), "stop": stop.to_ir(), "step": step.to_ir()},
-    ))
+    return StreamExpression(
+        Expression(
+            tarray(tint32),
+            source,
+            {
+                "op": "stream_range",
+                "start": start.to_ir(),
+                "stop": stop.to_ir(),
+                "step": step.to_ir(),
+            },
+        )
+    )
+
+
+def zip_streams(*streams, fill_missing=False):
+    from .collection_functions import zip
+
+    return StreamExpression(
+        zip(*(s.to_array() for s in streams), fill_missing=fill_missing)
+    )

@@ -1,0 +1,191 @@
+[
+  {
+    "module": "backend/test_py4j_backend.py",
+    "kind": "collection",
+    "nodeid": "test_py4j_backend.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/backend/test_py4j_backend.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/backend/test_py4j_backend.py:10: in <module>\n    from vail.backend.backend import ActionTag\nE   ModuleNotFoundError: No module named 'vail.backend.backend'; 'vail.backend' is not a package"
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "kind": "collection",
+    "nodeid": "test_service_backend.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/backend/test_service_backend.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/backend/test_service_backend.py:10: in <module>\n    from vail.backend.service_backend import ServiceBackend\nE   ModuleNotFoundError: No module named 'vail.backend.service_backend'; 'vail.backend' is not a package"
+  },
+  {
+    "module": "backend/test_spark_backend.py",
+    "kind": "collection",
+    "nodeid": "test_spark_backend.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/backend/test_spark_backend.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/backend/test_spark_backend.py:5: in <module>\n    from pyspark import SparkConf, SparkContext\nE   ModuleNotFoundError: No module named 'pyspark'"
+  },
+  {
+    "module": "experimental/test_local_whitening.py",
+    "kind": "collection",
+    "nodeid": "test_local_whitening.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/experimental/test_local_whitening.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/experimental/test_local_whitening.py:5: in <module>\n    from vail.methods.pca import _make_tsm\nE   ModuleNotFoundError: No module named 'vail.methods'"
+  },
+  {
+    "module": "experimental/test_time.py",
+    "kind": "collection",
+    "nodeid": "test_time.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/experimental/test_time.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/experimental/test_time.py:2: in <module>\n    import vail.experimental.time as htime\nE   ModuleNotFoundError: No module named 'vail.experimental'"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "kind": "collection",
+    "nodeid": "test_freezing.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_freezing.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_freezing.py:5: in <module>\n    from hailtop.hail_frozenlist import frozenlist\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/hail_frozenlist.py:3: in <module>\n    from frozenlist import FrozenList as _FrozenList\nE   ModuleNotFoundError: No module named 'frozenlist'"
+  },
+  {
+    "module": "expr/test_types.py",
+    "kind": "collection",
+    "nodeid": "test_types.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_types.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_types.py:5: in <module>\n    from vail.expr import coercer_from_dtype\nE   ImportError: cannot import name 'coercer_from_dtype' from 'vail.expr' (/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expr/__init__.py)"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "kind": "collection",
+    "nodeid": "test_worker_driver_fs.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/fs/test_worker_driver_fs.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/fs/test_worker_driver_fs.py:8: in <module>\n    from hailtop.aiocloud.aioazure import AzureAsyncFS\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiocloud/aioazure/__init__.py:1: in <module>\n    from .client import (\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiocloud/aioazure/client/__init__.py:1: in <module>\n    from .arm_client import AzureResourceManagerClient\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiocloud/aioazure/client/arm_client.py:3: in <module>\n    from .base_client import AzureBaseClient\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiocloud/aioazure/client/base_client.py:3: in <module>\n    import aiohttp\nE   ModuleNotFoundError: No module named 'aiohttp'"
+  },
+  {
+    "module": "genetics/test_pedigree.py",
+    "kind": "collection",
+    "nodeid": "test_pedigree.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/genetics/test_pedigree.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/genetics/test_pedigree.py:3: in <module>\n    from vail.genetics import Pedigree, Trio\nE   ImportError: cannot import name 'Pedigree' from 'vail.genetics' (/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/genetics/__init__.py)"
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "kind": "collection",
+    "nodeid": "test_ggplot.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/ggplot/test_ggplot.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/ggplot/test_ggplot.py:6: in <module>\n    from vail.ggplot import (\nE   ModuleNotFoundError: No module named 'vail.ggplot'"
+  },
+  {
+    "module": "matrixtable/test_file_formats.py",
+    "kind": "collection",
+    "nodeid": "test_file_formats.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/matrixtable/test_file_formats.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/matrixtable/test_file_formats.py:90: in <module>\n    ht_paths, mt_paths = asyncio.new_event_loop().run_until_complete(collect_paths())\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/asyncio/base_events.py:691: in run_until_complete\n    return future.result()\n           ^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/matrixtable/test_file_formats.py:62: in collect_paths\n    from hailtop.aiotools.router_fs import RouterAsyncFS\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiotools/__init__.py:1: in <module>\n    from .fs import (\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiotools/fs/__init__.py:1: in <module>\n    from .copier import Copier, CopyReport, SourceCopier, SourceReport, Transfer, TransferReport\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiotools/fs/copier.py:7: in <module>\n    import humanize\nE   ModuleNotFoundError: No module named 'humanize'"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "kind": "collection",
+    "nodeid": "test_pc_relate.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/relatedness/test_pc_relate.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/relatedness/test_pc_relate.py:59: in <module>\n    @skip_when_service_backend_in_azure(reason='takes >14 minutes in QoB in Azure')\n     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/helpers.py:89: in skip_when_service_backend_in_azure\n    from vail.backend.service_backend import ServiceBackend\nE   ModuleNotFoundError: No module named 'vail.backend.service_backend'; 'vail.backend' is not a package"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "kind": "collection",
+    "nodeid": "test_pca.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_pca.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_pca.py:7: in <module>\n    from vail.methods.pca import _make_tsm\nE   ModuleNotFoundError: No module named 'vail.methods'"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "kind": "collection",
+    "nodeid": "test_qc.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_qc.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_qc.py:8: in <module>\n    from vail.methods.qc import VEPConfigGRCh37Version85, VEPConfigGRCh38Version95\nE   ModuleNotFoundError: No module named 'vail.methods'"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "kind": "collection",
+    "nodeid": "test_skat.py",
+    "outcome": "failed",
+    "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_skat.py:9: in <module>\n    @pytest.mark.parametrize(\"skat_model\", [('hl._linear_skat', hl._linear_skat), ('hl._logistic_skat', hl._logistic_skat)])\n                                                                ^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute '_linear_skat'"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "kind": "collection",
+    "nodeid": "test_statgen.py",
+    "outcome": "failed",
+    "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_statgen.py:13: in <module>\n    from vail.utils.java import Env, choose_backend\n/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/utils/java.py:17: in __getattr__\n    raise NotImplementedError(f'vail.utils.java.{name} requires Hail JVM support')\nE   NotImplementedError: vail.utils.java.choose_backend requires Hail JVM support"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "kind": "collection",
+    "nodeid": "test_plot.py",
+    "outcome": "failed",
+    "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/plot/test_plot.py:64: in <module>\n    ('manhattan', hl.plot.manhattan),\n                  ^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'plot'"
+  },
+  {
+    "module": "table/test_table.py",
+    "kind": "collection",
+    "nodeid": "test_table.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/table/test_table.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/table/test_table.py:6: in <module>\n    import pyspark.sql\nE   ModuleNotFoundError: No module named 'pyspark'"
+  },
+  {
+    "module": "test_context.py",
+    "kind": "collection",
+    "nodeid": "test_context.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/test_context.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/test_context.py:6: in <module>\n    from vail.backend.backend import Backend\nE   ModuleNotFoundError: No module named 'vail.backend.backend'; 'vail.backend' is not a package"
+  },
+  {
+    "module": "test_hail_in_notebook.py",
+    "kind": "collection",
+    "nodeid": "test_hail_in_notebook.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/test_hail_in_notebook.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/test_hail_in_notebook.py:4: in <module>\n    from hailtop.utils.process import sync_check_exec\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/utils/__init__.py:1: in <module>\n    from . import rich_progress_bar, serialization\n/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/utils/rich_progress_bar.py:3: in <module>\n    from rich import filesize\nE   ModuleNotFoundError: No module named 'rich'"
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "kind": "collection",
+    "nodeid": "test_typecheck.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/typecheck/test_typecheck.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/typecheck/test_typecheck.py:3: in <module>\n    from vail.typecheck.check import (\nE   ModuleNotFoundError: No module named 'vail.typecheck'"
+  },
+  {
+    "module": "utils/test_deduplicate.py",
+    "kind": "collection",
+    "nodeid": "test_deduplicate.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/utils/test_deduplicate.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/utils/test_deduplicate.py:1: in <module>\n    from vail.utils.deduplicate import deduplicate\nE   ModuleNotFoundError: No module named 'vail.utils.deduplicate'"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "kind": "collection",
+    "nodeid": "test_hl_hadoop_and_hail_fs.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/utils/test_hl_hadoop_and_hail_fs.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/utils/test_hl_hadoop_and_hail_fs.py:8: in <module>\n    from vail.context import _get_local_tmpdir\nE   ImportError: cannot import name '_get_local_tmpdir' from 'vail.context' (/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/context.py)"
+  },
+  {
+    "module": "utils/test_placement_tree.py",
+    "kind": "collection",
+    "nodeid": "test_placement_tree.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/utils/test_placement_tree.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/utils/test_placement_tree.py:4: in <module>\n    from vail.utils.placement_tree import PlacementTree\nE   ModuleNotFoundError: No module named 'vail.utils.placement_tree'"
+  },
+  {
+    "module": "utils/test_utils.py",
+    "kind": "collection",
+    "nodeid": "test_utils.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/utils/test_utils.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/utils/test_utils.py:8: in <module>\n    from vail.utils import (\nE   ImportError: cannot import name 'frozendict' from 'vail.utils' (/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/utils/__init__.py)"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "kind": "collection",
+    "nodeid": "test_combiner.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_combiner.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_combiner.py:6: in <module>\n    from vail.vds.combiner import load_combiner, new_combiner\nE   ModuleNotFoundError: No module named 'vail.vds'"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "kind": "collection",
+    "nodeid": "test_vds.py",
+    "outcome": "failed",
+    "error": "ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds.py'.\nHint: make sure your test modules/packages have valid Python names.\nTraceback:\n/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module\n    return _bootstrap._gcd_import(name[level:], package, level)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/vds/test_vds.py:7: in <module>\n    from vail.vds import VariantDataset\nE   ModuleNotFoundError: No module named 'vail.vds'"
+  }
+]

@@ -1,0 +1,107 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_to_table",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "1",
+        "block_size": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "1",
+        "block_size": "2"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "1",
+        "block_size": "5"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "2",
+        "block_size": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "2",
+        "block_size": "2"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "2",
+        "block_size": "5"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "3",
+        "block_size": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "3",
+        "block_size": "2"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "n_partitions": "3",
+        "block_size": "5"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 295, in test_to_table\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

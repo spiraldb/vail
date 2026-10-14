@@ -1,0 +1,61 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_indexed_read_boundaries",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "branching_factor": "2"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute '_with_flags'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "branching_factor": "3"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute '_with_flags'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "branching_factor": "5"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute '_with_flags'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "branching_factor": "7"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute '_with_flags'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "branching_factor": "121"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute '_with_flags'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 2305, in test_indexed_read_boundaries\n    with hl._with_flags(index_branching_factor=str(branching_factor)):\n         ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_tabix_export_file_exists",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "parallel VCF export, tabix, and appended headers are not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 517, in test_tabix_export_file_exists\n    hl.export_vcf(mt, tmp, tabix=True, parallel='header_per_shard')\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/vcf_export.py\", line 16, in export_vcf\n    raise NotImplementedError('parallel VCF export, tabix, and appended headers are not implemented')\nNotImplementedError: parallel VCF export, tabix, and appended headers are not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

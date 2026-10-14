@@ -1,0 +1,16 @@
+{
+  "module": "test_exceptions_from_workers_have_stack_traces.py",
+  "name": "test_exceptions_from_workers_have_stack_traces",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "RuntimeError",
+      "error": "Execution error: Arrow expression failed: Compute error: integer division or modulo by zero",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-iz5tbaeg/hail/python/test/hail/test_exceptions_from_workers_have_stack_traces.py\", line 27, in test_exceptions_from_workers_have_stack_traces\n    ht.collect()\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1074, in collect\n    return decode_rows(self._native.collect_arrow(), self._schema)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Execution error: Arrow expression failed: Compute error: integer division or modulo by zero\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

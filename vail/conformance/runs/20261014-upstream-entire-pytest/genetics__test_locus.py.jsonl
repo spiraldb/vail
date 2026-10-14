@@ -1,0 +1,9 @@
+{"kind": "inventory", "items": ["test_locus.py::test_constructor", "test_locus.py::test_call_rich_comparison"]}
+{"kind": "started", "nodeid": "test_locus.py::test_constructor"}
+{"kind": "test", "nodeid": "test_locus.py::test_constructor", "when": "setup", "outcome": "passed", "duration": 0.0015586249064654112, "error": ""}
+{"kind": "test", "nodeid": "test_locus.py::test_constructor", "when": "call", "outcome": "failed", "duration": 6.504193879663944e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/genetics/test_locus.py:6: in test_constructor\n    l = Locus.parse('1:100')\n        ^^^^^^^^^^^\nE   AttributeError: type object 'Locus' has no attribute 'parse'"}
+{"kind": "test", "nodeid": "test_locus.py::test_constructor", "when": "teardown", "outcome": "passed", "duration": 7.149996235966682e-05, "error": ""}
+{"kind": "started", "nodeid": "test_locus.py::test_call_rich_comparison"}
+{"kind": "test", "nodeid": "test_locus.py::test_call_rich_comparison", "when": "setup", "outcome": "passed", "duration": 0.0001302079763263464, "error": ""}
+{"kind": "test", "nodeid": "test_locus.py::test_call_rich_comparison", "when": "call", "outcome": "passed", "duration": 0.05757908406667411, "error": ""}
+{"kind": "test", "nodeid": "test_locus.py::test_call_rich_comparison", "when": "teardown", "outcome": "passed", "duration": 7.916707545518875e-05, "error": ""}

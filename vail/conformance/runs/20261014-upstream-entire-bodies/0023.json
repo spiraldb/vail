@@ -1,0 +1,21 @@
+{
+  "module": "backend/test_spark_backend.py",
+  "name": "test_min_block_size_pos_int",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'init'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/backend/test_spark_backend.py\", line 121, in test_min_block_size_pos_int\n    hl.init(min_block_size=-1)\n    ^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'init'. Did you mean: 'int'?\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "No module named 'vail.backend.spark_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.spark_backend'; 'vail.backend' is not a package",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

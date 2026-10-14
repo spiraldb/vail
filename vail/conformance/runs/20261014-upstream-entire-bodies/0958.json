@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "ImportMatrixTableTests.test_import_row_id_multiple_partitions",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "export",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 2048, in test_import_row_id_multiple_partitions\n    .x.export(path, header=False, delimiter=' ')\n       ^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 756, in __getattr__\n    raise AttributeError(name)\nAttributeError: export\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

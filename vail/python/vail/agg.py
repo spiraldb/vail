@@ -172,6 +172,8 @@ def explode(f, array_agg_expr):
                           {"op": "lambda_variable", "name": parameter})
     body = as_expr(f(variable))
     source = _merge_sources(value.source, body.source)
+    from .randomness import index_callback
+    value, body = index_callback(value, parameter, body)
     return Expression(body.dtype, source,
                       {"op": "agg_explode", "value": value.to_ir(),
                        "parameter": parameter, "body": body.to_ir()})
@@ -194,6 +196,8 @@ def array_agg(f, array):
     parameter = uuid4().hex
     variable = Expression(value.dtype.element_type, value.source, {"op": "lambda_variable", "name": parameter})
     body = as_expr(f(variable))
+    from .randomness import index_callback
+    value, body = index_callback(value, parameter, body)
     return Expression(tarray(body.dtype), _merge_sources(value.source, body.source),
                       {"op": "agg_array", "value": value.to_ir(), "parameter": parameter, "body": body.to_ir()})
 

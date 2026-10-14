@@ -1,0 +1,18 @@
+{
+  "module": "utils/test_deduplicate.py",
+  "name": "test_deduplicate_simple",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'deduplicate' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/utils/test_deduplicate.py\", line 5, in test_deduplicate_simple\n    mappings, new_ids = deduplicate([str(i) for i in range(5)])\n                        ^^^^^^^^^^^\nNameError: name 'deduplicate' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.utils.deduplicate'"
+  ],
+  "status": "failed_or_blocked"
+}

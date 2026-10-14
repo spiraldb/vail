@@ -118,7 +118,11 @@ impl GlobalsIR {
             logical_schema,
         )? {
             Some(plan) => Arc::new(plan.schema().as_arrow().clone()),
-            None => crate::aggregation::lower(&table, &expression, &bindings)?.schema(),
+            None => {
+                return Err(crate::TableError::Invalid(
+                    "missing logical aggregate plan".into(),
+                ));
+            }
         };
         Ok(Arc::new(Self {
             schema,
@@ -225,11 +229,10 @@ impl GlobalsIR {
 
     pub fn lower(self: &Arc<Self>) -> Result<crate::plan::PhysicalPlan> {
         Ok(match &self.node {
-            Node::Aggregate {
-                table,
-                expression,
-                bindings,
-            } => crate::aggregation::lower(table, expression, bindings)?,
+            Node::Aggregate { table, .. } => crate::deferred_logical::lower(
+                crate::logical_globals::lower(self)?,
+                crate::logical::max_partitions(table),
+            )?,
             Node::Prepared(plan) => plan.clone(),
             Node::Empty => {
                 let batch = vail_storage::globals::empty()?;

@@ -1,0 +1,19 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_expand_types_on_all_types",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 1515, in test_expand_types_on_all_types\n    t = create_all_values_table()\n        ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

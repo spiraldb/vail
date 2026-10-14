@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_freezing.py",
+  "name": "test_counter_dict_value_list",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "Set/Dictionary ordering and keying are unsupported",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_freezing.py\", line 73, in test_counter_dict_value_list\n    result = t.aggregate_entries(hl.agg.counter(t.l))\n                                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/agg_collections.py\", line 32, in counter\n    return agg.group_by(value, agg.count())\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/agg.py\", line 187, in group_by\n    _ensure_orderable(key.dtype)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 815, in _ensure_orderable\n    raise NotImplementedError(\"Set/Dictionary ordering and keying are unsupported\")\nNotImplementedError: Set/Dictionary ordering and keying are unsupported\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'frozenlist'"
+  ],
+  "status": "failed_or_blocked"
+}

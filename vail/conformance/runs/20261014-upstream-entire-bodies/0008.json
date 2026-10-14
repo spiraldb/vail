@@ -1,0 +1,33 @@
+{
+  "module": "backend/test_py4j_backend.py",
+  "name": "test_rpc_failures_cancel_the_operation_and_propagate",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {
+        "failure": "<class 'vail_upstream_bodies.Interrupt'>"
+      },
+      "phase": "fixture",
+      "error_type": "KeyError",
+      "error": "'monkeypatch'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 232, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 221, in fixture\n    else fixture(p)\n         ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 218, in fixture\n    factory = scope[name]\n              ~~~~~^^^^^^\nKeyError: 'monkeypatch'\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "failure": "<class 'requests.exceptions.ConnectionError'>"
+      },
+      "phase": "fixture",
+      "error_type": "KeyError",
+      "error": "'monkeypatch'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 232, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 221, in fixture\n    else fixture(p)\n         ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 218, in fixture\n    factory = scope[name]\n              ~~~~~^^^^^^\nKeyError: 'monkeypatch'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.backend.backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package"
+  ],
+  "status": "failed_or_blocked"
+}

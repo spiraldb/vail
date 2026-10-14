@@ -10,8 +10,11 @@ mod join_interval;
 mod joins;
 pub mod line_source;
 mod logical;
+mod deferred_logical;
+mod logical_aggregate_init;
 mod logical_aggregation;
 mod logical_globals;
+mod logical_nested_aggregation;
 mod logical_same;
 mod logical_scan;
 mod lookup;
@@ -1397,20 +1400,11 @@ impl TableIR {
             keys.iter().chain(fields.iter()).map(|(_, expr)| expr),
             bindings,
         )?;
-        // Validate aggregate expressions against the input schema without
-        // lowering its transformation graph through the legacy physical path.
-        // Execution lowers the real child through the logical planner, including
-        // any scan windows that produced its columns.
-        let input = Self::prepared(
-            self,
-            Arc::new(datafusion_physical_plan::empty::EmptyExec::new(
-                crate::plan::physical_schema(self),
-            )),
-            Some(0),
-            1,
-        );
-        let plan = crate::aggregation::lower_grouped(&input, &keys, &fields, &bindings)?;
-        let schema = plan.schema();
+        let input = crate::logical::lower(self)?;
+        let plan = crate::logical_aggregation::lower_grouped_fields(
+            self, input, &keys, &fields, &bindings,
+        )?;
+        let schema = Arc::new(plan.schema().as_arrow().clone());
         if !keys.is_empty() {
             order_requirement(
                 &keys
@@ -1949,3 +1943,5 @@ fn order_requirement(keys: &[(String, bool)]) -> Result<OrderRequirement> {
             .collect(),
     )?)
 }
+
+mod rng_context;

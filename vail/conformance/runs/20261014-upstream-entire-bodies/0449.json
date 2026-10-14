@@ -1,0 +1,16 @@
+{
+  "module": "genetics/test_reference_genome.py",
+  "name": "test_reference_genome_sequence",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "FASTA-backed reference construction is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/genetics/test_reference_genome.py\", line 51, in test_reference_genome_sequence\n    gr4 = ReferenceGenome.from_fasta_file(\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/reference_genome.py\", line 239, in from_fasta_file\n    def from_fasta_file(cls, *_args, **_kwargs): raise NotImplementedError(\"FASTA-backed reference construction is not implemented\")\n                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nNotImplementedError: FASTA-backed reference construction is not implemented\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

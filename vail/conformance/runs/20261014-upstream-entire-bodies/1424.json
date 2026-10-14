@@ -1,0 +1,16 @@
+{
+  "module": "utils/test_genomic_range_table.py",
+  "name": "test_genomic_range_table_canfam3",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'genomic_range_table'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/utils/test_genomic_range_table.py\", line 17, in test_genomic_range_table_canfam3\n    actual = hl.utils.genomic_range_table(10, reference_genome='CanFam3').collect()\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail.utils' has no attribute 'genomic_range_table'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

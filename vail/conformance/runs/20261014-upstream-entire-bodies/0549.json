@@ -1,0 +1,16 @@
+{
+  "module": "matrixtable/test_grouped_matrix_table.py",
+  "name": "Tests.test_errors_caught_correctly",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "positional grouping requires field references",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_grouped_matrix_table.py\", line 43, in test_errors_caught_correctly\n    self.assertRaises(ExpressionException, mt.group_rows_by, mt['group1'] + 1)\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 778, in assertRaises\n    return context.handle('assertRaises', args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 238, in handle\n    callable_obj(*args, **kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1766, in group_rows_by\n    return GroupedMatrixTable(self, \"row\", exprs, named)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 2341, in __init__\n    raise ValueError(\"positional grouping requires field references\")\nValueError: positional grouping requires field references\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

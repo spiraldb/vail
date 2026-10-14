@@ -1,0 +1,22 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "Tests.test_collect_cols_by_key_with_rand",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {}
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "passed"
+}

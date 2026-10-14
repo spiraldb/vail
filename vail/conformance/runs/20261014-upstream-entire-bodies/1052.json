@@ -1,0 +1,16 @@
+{
+  "module": "methods/test_skat.py",
+  "name": "test_skat_1",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "Hail type imputation is not implemented; supply types explicitly",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_skat.py\", line 389, in test_skat_1\n    ds = skat_dataset()\n         ^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/methods/test_skat.py\", line 368, in skat_dataset\n    covariates = hl.import_table(resource(\"skat.cov\"), impute=True).key_by(\"Sample\")\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 126, in import_table\n    raise NotImplementedError('Hail type imputation is not implemented; supply types explicitly')\nNotImplementedError: Hail type imputation is not implemented; supply types explicitly\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

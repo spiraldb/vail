@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_array_methods",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 2729, in test_array_methods\n    hl.flatmap(lambda x: hl.set(hl.range(0, x.length()).map(lambda i: x[i])), {\"ABC\", \"AAa\", \"BD\"}),\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collection_functions.py\", line 110, in flatmap\n    return ops.flatmap(value, f) if isinstance(value.dtype, tset) else value._array_flatmap(f)\n           ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collections.py\", line 369, in flatmap\n    mapped = value._array_map(callback)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 532, in _array_map\n    body = as_expr(f(variable))\n                   ^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collections.py\", line 365, in callback\n    result = as_expr(f(item))\n                     ^^^^^^^\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 2729, in <lambda>\n    hl.flatmap(lambda x: hl.set(hl.range(0, x.length()).map(lambda i: x[i])), {\"ABC\", \"AAa\", \"BD\"}),\n                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 532, in _array_map\n    body = as_expr(f(variable))\n                   ^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 2729, in <lambda>\n    hl.flatmap(lambda x: hl.set(hl.range(0, x.length()).map(lambda i: x[i])), {\"ABC\", \"AAa\", \"BD\"}),\n                                                                      ~^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 379, in __getitem__\n    return slice_(self, name) if isinstance(name, slice) else index(self, name)\n                                                              ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 104, in index\n    text = _bmp_literal(value)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 69, in _bmp_literal\n    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')\nNotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

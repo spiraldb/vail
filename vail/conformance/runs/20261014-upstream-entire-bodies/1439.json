@@ -1,0 +1,16 @@
+{
+  "module": "utils/test_pickle.py",
+  "name": "test_frozendict_pickle",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.utils' has no attribute 'frozendict'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/utils/test_pickle.py\", line 19, in test_frozendict_pickle\n    x = {hl.utils.frozendict({'abc': 123, 'def': 'hello'}): 10}\n         ^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail.utils' has no attribute 'frozendict'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

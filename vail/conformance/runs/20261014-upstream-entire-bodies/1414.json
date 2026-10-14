@@ -1,0 +1,30 @@
+{
+  "module": "typecheck/test_typecheck.py",
+  "name": "Tests.test_lazy",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'lazy' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/typecheck/test_typecheck.py\", line 216, in test_lazy\n    foo_type = lazy()\n               ^^^^\nNameError: name 'lazy' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'",
+    "No module named 'vail.typecheck'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_split_line",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "delimiter must be a single ASCII character",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 4193, in test_split_line\n    assert hl.eval(hl.str(s1)._split_line(r'\\s+', ['NA'], quote=None, regex=True)) == s1.split(' ')\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 660, in <lambda>\n    return lambda *args, **kwargs: split_line(self, *args, **kwargs)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 93, in split_line\n    _byte(delimiter, 'delimiter')\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 48, in _byte\n    raise ValueError(f'{name} must be a single ASCII character')\nValueError: delimiter must be a single ASCII character\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

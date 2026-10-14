@@ -1,0 +1,39 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_query_table_interval_key",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x117620d00>",
+        "expected": "[Struct(idx=20, interval=Interval(start=20, end=70, includes_start=True, includes_end=False, point_type=int32))]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x117620be0>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.StructExpression object at 0x11760a5e0>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x117620f40>",
+        "expected": "[Struct(idx=20, interval=Interval(start=20, end=70, includes_start=True, includes_end=False, point_type=int32))]"
+      }
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "passed"
+}

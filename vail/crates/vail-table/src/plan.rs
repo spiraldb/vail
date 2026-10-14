@@ -1138,38 +1138,13 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             data_field_name,
         } => crate::zip_join::lower(tables, table, data_field_name)?,
         TableNode::OrderBy { child, keys } => sort(lower(child)?, keys)?,
-        TableNode::Aggregate {
-            child,
-            keys,
-            fields,
-            bindings,
-        } => {
-            let grouped = crate::aggregation::lower_grouped(child, keys, fields, bindings)?;
-            let grouped_schema = grouped.schema();
-            let private = private_name(
-                &grouped_schema,
-                table.globals().schema(),
-                "__vail_partition",
-            );
-            let mut expressions = (0..grouped_schema.fields().len())
-                .map(|i| (column(&grouped, i), grouped_schema.field(i).name().clone()))
-                .collect::<Vec<_>>();
-            expressions.push((
-                Arc::new(Literal::new(ScalarValue::UInt64(Some(0)))),
-                private.clone(),
-            ));
-            let tagged: PhysicalPlan = Arc::new(ProjectionExec::try_new(expressions, grouped)?);
-            sort(
-                TablePlan {
-                    rows: tagged,
-                    layout: PartitionLayout::Fixed(1),
-                },
-                &keys
-                    .iter()
-                    .map(|(name, _)| (name.clone(), false))
-                    .collect::<Vec<_>>(),
-            )?
-        }
+        TableNode::Aggregate { .. } => TablePlan {
+            rows: crate::deferred_logical::lower(
+                crate::logical::lower(table)?,
+                crate::logical::max_partitions(table),
+            )?,
+            layout: PartitionLayout::Fixed(1),
+        },
     };
     Ok(result)
 }

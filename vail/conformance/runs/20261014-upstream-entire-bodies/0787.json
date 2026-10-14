@@ -1,0 +1,16 @@
+{
+  "module": "methods/relatedness/test_identity_by_descent.py",
+  "name": "test_ibd_does_not_error_with_dummy_maf_float32",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "fixture",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'balding_nichols_model'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 232, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 219, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/methods/relatedness/test_identity_by_descent.py\", line 15, in ds\n    dataset = hl.balding_nichols_model(1, 100, 100)\n              ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'balding_nichols_model'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

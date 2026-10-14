@@ -1,0 +1,53 @@
+{
+  "commit": "974da796eddda33ebd0736d1f207bbfc23c1b6cc",
+  "branch": "dk/randomness",
+  "scope": "All 62 test_*.py modules under pinned hail/hail/python/test/hail, including backend modules; Python API tests, not Hail Scala or hailtop suites. Imports redirected to Vail; init, backend flags, and snapshot fixtures adapted.",
+  "modules_attempted": 62,
+  "module_timeouts": [
+    {
+      "module": "extract_intervals/test_locus_position.py",
+      "timeout": true,
+      "timeout_scope": "test",
+      "nodeid": "test_locus_position.py::test_mt_lt",
+      "elapsed_seconds": 65.13946766685694,
+      "declared_limit_seconds": 60,
+      "source_sha256": "eeb299e3b67c4767cff6a0eba5b6611e57c8c565918912d6b4fbb6ae0d9d10fe"
+    }
+  ],
+  "pytest": {
+    "collection_errors": 27,
+    "collected_test_cases": 1620,
+    "setup_failed": 453,
+    "call_failed": 702,
+    "call_passed": 399,
+    "call_skipped": 48,
+    "setup_skipped": 8
+  },
+  "body_definitions_attempted": 1546,
+  "body_definition_status": {
+    "failed_or_blocked": 950,
+    "blocked": 3,
+    "passed": 516,
+    "worker_blocked": 77
+  },
+  "randomness_selection_definitions": 131,
+  "randomness_pytest_status": {
+    "failed": 56,
+    "passed_observed_cases": 20,
+    "skipped_or_incomplete": 2,
+    "not_executed_by_pytest": 53
+  },
+  "randomness_body_status": {
+    "failed_or_blocked": 99,
+    "passed": 24,
+    "worker_blocked": 8
+  },
+  "extension_sha256": "2b5b0b6055bb3305df54eaebb16674159ab2b716674034727784cb8929d230e3",
+  "limitations": [
+    "Collection failures and timeouts are not passes.",
+    "Per-test timeout 60 seconds, module timeout 600 seconds for pytest.",
+    "Supplemental bodies run in isolated subprocesses with a 45-second limit per definition; decorators, imports, fixtures and initialization adapted. These are separate from normal pytest results.",
+    "The 131-definition randomness selection uses direct rand_*, shuffle and sampling calls and same-module callers; it does not prove identification of every indirect randomness consumer.",
+    "Pass counts for observed pytest cases do not establish all variants executed when a module times out."
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "module": "test_context.py",
+  "name": "test_flags_same_in_scala_and_python",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'Env' has no attribute 'hail'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_context.py\", line 65, in test_flags_same_in_scala_and_python\n    scala_flag_map = _scala_map_str_to_tuple_str_str_to_dict(Env.hail().HailFeatureFlags.defaults())\n                                                             ^^^^^^^^\nAttributeError: type object 'Env' has no attribute 'hail'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.backend.backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.spark_backend'; 'vail.backend' is not a package",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

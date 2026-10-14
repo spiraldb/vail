@@ -1,0 +1,21 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "test_matrix_randomness_map_cols_without_body_randomness",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {}
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "passed"
+}

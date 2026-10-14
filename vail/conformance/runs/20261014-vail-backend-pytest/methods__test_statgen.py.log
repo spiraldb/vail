@@ -1,0 +1,50 @@
+....FFFF                                                                 [100%]
+=================================== FAILURES ===================================
+________________________ Tests.test_linreg_pass_through ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py:64: in test_linreg_pass_through
+    lr_result = linreg_function(phenos[mt.s].Pheno, mt.GT.n_alt_alleles(), [1.0], pass_through=['filters', mt.foo.bar, mt.qual])
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+upstream_backend.py:77: in unsupported
+    raise NotImplementedError(f'Vail backend does not support hl.{path}')
+E   NotImplementedError: Vail backend does not support hl.linear_regression_rows
+________________________ Tests.test_logreg_pass_through ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py:573: in test_logreg_pass_through
+    ht = logreg_function('wald', y=pheno[mt.s].isCase, x=mt.GT.n_alt_alleles(), covariates=[1.0, covariates[mt.s].Cov1, covariates[mt.s].Cov2], pass_through=['filters', mt.foo.bar, mt.qual])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+upstream_backend.py:77: in unsupported
+    raise NotImplementedError(f'Vail backend does not support hl.{path}')
+E   NotImplementedError: Vail backend does not support hl.logistic_regression_rows
+_______________________ Tests.test_poisson_pass_through ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py:655: in test_poisson_pass_through
+    ht = hl.poisson_regression_rows(test='wald', y=pheno[mt.s].count, x=mt.GT.n_alt_alleles(), covariates=[1.0, covariates[mt.s].Cov1, covariates[mt.s].Cov2], pass_through=['filters', mt.foo.bar, mt.qual])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'poisson_regression_rows'
+____________________ Tests.test_regression_field_dependence ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py:954: in test_regression_field_dependence
+    hl.logistic_regression_rows('wald', y=mt.c1, x=x_expr, covariates=[1])
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'logistic_regression_rows'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/helpers.py:102
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/helpers.py:102: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+upstream_backend.py:64
+  /private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_backend.py:64: PytestUnknownMarkWarning: Unknown pytest.mark.timeout - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    return pytest.mark.timeout(timeout) if timeout is not None else lambda f: f
+
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py:121
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py:121: PytestUnknownMarkWarning: Unknown pytest.mark.unchecked_allocator - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unchecked_allocator
+
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/helpers.py:87
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/helpers.py:87: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    return pytest.mark.backend('local', 'spark')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py::Tests::test_linreg_pass_through
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py::Tests::test_logreg_pass_through
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py::Tests::test_poisson_pass_through
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-_zhge0jk/upstream_hail/methods/test_statgen.py::Tests::test_regression_field_dependence
+4 failed, 4 passed, 64 deselected, 4 warnings in 20.31s

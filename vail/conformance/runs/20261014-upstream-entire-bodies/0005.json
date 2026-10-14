@@ -1,0 +1,33 @@
+{
+  "module": "backend/test_py4j_backend.py",
+  "name": "test_py4j_connections_are_interrupt_safe",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "cls": "<class 'py4j.java_gateway.GatewayConnection'>"
+      },
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/backend/test_py4j_backend.py\", line 114, in test_py4j_connections_are_interrupt_safe\n    assert getattr(cls.send_command, '_hail_interrupt_safe', False)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "cls": "<class 'py4j.clientserver.ClientServerConnection'>"
+      },
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/backend/test_py4j_backend.py\", line 114, in test_py4j_connections_are_interrupt_safe\n    assert getattr(cls.send_command, '_hail_interrupt_safe', False)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.backend.backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.py4j_backend'; 'vail.backend' is not a package"
+  ],
+  "status": "failed_or_blocked"
+}

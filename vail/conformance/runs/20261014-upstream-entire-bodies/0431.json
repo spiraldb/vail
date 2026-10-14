@@ -1,0 +1,20 @@
+{
+  "module": "fs/test_worker_driver_fs.py",
+  "name": "test_requester_pays_write_no_settings",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'ClientResponseError' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/fs/test_worker_driver_fs.py\", line 27, in test_requester_pays_write_no_settings\n    with pytest.raises(ClientResponseError, match='Bucket is a requester pays bucket but no user project provided'):\n                       ^^^^^^^^^^^^^^^^^^^\nNameError: name 'ClientResponseError' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'aiohttp'",
+    "No module named 'aiohttp'",
+    "No module named 'rich'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -28,6 +28,8 @@ def _fold(f, zero, collection, scan):
     if body.dtype != dtype:
         body = cast(body, dtype)
     source = _merge_sources(source, body.source)
+    from .randomness import index_callback
+    collection, body = index_callback(collection, parameter, body)
     return Expression(tarray(dtype) if scan else dtype, source,
                       {"op": "array_fold", "value": collection.to_ir(), "zero": zero.to_ir(),
                        "accumulator": accumulator, "parameter": parameter,

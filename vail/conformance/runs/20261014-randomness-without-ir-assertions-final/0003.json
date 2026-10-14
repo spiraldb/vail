@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_agg_corr",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "invalid expression: aggregation expressions require Table.aggregate",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-829g77kr/hail/python/test/hail/expr/test_expr.py\", line 1483, in test_agg_corr\n    results = ht.aggregate(\n              ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1165, in aggregate\n    native = native.aggregate_globals_json(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: invalid expression: aggregation expressions require Table.aggregate\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

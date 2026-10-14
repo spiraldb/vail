@@ -1,0 +1,16 @@
+{
+  "module": "experimental/test_experimental.py",
+  "name": "Tests.test_ld_score_annotated",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_plink'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/experimental/test_experimental.py\", line 66, in test_ld_score_annotated\n    mt = self.get_ld_score_mt()\n         ^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/experimental/test_experimental.py\", line 31, in get_ld_score_mt\n    mt = hl.import_plink(\n         ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}
