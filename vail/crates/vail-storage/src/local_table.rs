@@ -584,10 +584,19 @@ impl LocalRead {
         };
         let mut result = Vec::with_capacity(self.entry.partition_rows.len());
         let mut start = 0u64;
+        let mut first_file = 0;
         for &rows in &self.entry.partition_rows {
             let end = start + rows as u64;
             let mut bounds: Option<(TypedKey, TypedKey)> = None;
-            for (file_start, file_end, first, last) in &file_ranges {
+            // Both physical row ranges are ordered. Advance once over files
+            // preceding this partition, then visit only actual intersections.
+            while first_file < file_ranges.len() && file_ranges[first_file].1 <= start {
+                first_file += 1;
+            }
+            for (file_start, file_end, first, last) in file_ranges[first_file..]
+                .iter()
+                .take_while(|(file_start, _, _, _)| *file_start < end)
+            {
                 if start < end && *file_start < end && start < *file_end {
                     bounds = Some(match bounds {
                         None => (first.clone(), last.clone()),
@@ -625,13 +634,18 @@ impl LocalRead {
             super::snapshot_interval_row_ranges(&self.table, snapshot_id, queries).await?;
         let mut partition_start = 0u64;
         let mut candidates = Vec::new();
+        let mut first_file = 0;
         for (partition, row_count) in self.entry.partition_rows.iter().enumerate() {
             let partition_end = partition_start
                 .checked_add(*row_count as u64)
                 .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
-            if file_ranges
-                .iter()
-                .any(|file| file.start < partition_end && partition_start < file.end)
+            while first_file < file_ranges.len() && file_ranges[first_file].end <= partition_start {
+                first_file += 1;
+            }
+            if partition_start < partition_end
+                && file_ranges
+                    .get(first_file)
+                    .is_some_and(|file| file.start < partition_end)
             {
                 candidates.push(partition);
             }

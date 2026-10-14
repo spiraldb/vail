@@ -601,12 +601,10 @@ class MatrixTable:
             row_indexed=bool(_axes(expr.to_ir())),
         )
 
-    def _lower_cell(self, expr, base, cell, position=None, column=None):
-        """Bind a cell expression inside its owning row's array map."""
+    def _lower_cell(self, expr, base, cell, column, position=None):
+        """Bind the current cell and its already aligned column annotation."""
         glob = self.index_globals()
-        columns = self._column_records
-        col = column if column is not None else (columns[position] if position is not None else
-               columns.filter(lambda c: c[_CID] == cell[_CID])[0])[_COL]
+        col = column
         axes = {
             "row": base[_ROW],
             "col": col,
@@ -733,7 +731,7 @@ class MatrixTable:
                         _PRESENT: item["1"]["1"][_PRESENT],
                         _VALUE: struct(
                             **{
-                                n: self._lower_cell(v, base, item["1"]["1"], item["1"]["2"], item["2"][_COL])
+                                n: self._lower_cell(v, base, item["1"]["1"], item["2"][_COL], item["1"]["2"])
                                 for n, v in fields
                             }
                         ),
@@ -945,7 +943,7 @@ class MatrixTable:
             expr = prepared[0]
             def filter_cell(item):
                 cell, position = item["1"]["1"], item["1"]["2"]
-                predicate = self._lower_cell(expr, base, cell, position, item["2"][_COL])
+                predicate = self._lower_cell(expr, base, cell, item["2"][_COL], position)
                 selected = predicate if keep else ~predicate
                 return struct(**{
                     _CID: cell[_CID], _VALUE: cell[_VALUE],
