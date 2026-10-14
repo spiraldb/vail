@@ -1,0 +1,30 @@
+{
+  "engine": "vail",
+  "case": "matrix_filter_rows_columns",
+  "parameters": {
+    "rows": 100000,
+    "columns": 80
+  },
+  "start_ns": 560513572077,
+  "end_ns": 573472434911,
+  "iterations": [
+    {
+      "start_ns": 560513575058,
+      "end_ns": 564773676376
+    },
+    {
+      "start_ns": 564773685060,
+      "end_ns": 569080058548
+    },
+    {
+      "start_ns": 569080065943,
+      "end_ns": 573472425215
+    }
+  ],
+  "settings": {
+    "version": "0.1.0a1",
+    "package": "/home/ubuntu/vail-env/lib/python3.11/site-packages/vail/__init__.py",
+    "native_sha256": "b25e21c5e3e7f8bd8e9a9fe7f3e6d190f1bd55802e3bc4d550c4c7754028d850"
+  },
+  "median_seconds": 4.306373488
+}

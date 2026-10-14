@@ -1,0 +1,113 @@
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded intervaltree v0.2.7
+  Downloaded rangemap v1.8.0
+🍹 Building a mixed python/rust project
+🐍 Found CPython 3.11 at /home/ubuntu/vail-env/bin/python
+🔗 Found pyo3 bindings with abi3-py3.11 support
+📡 Using build options features from pyproject.toml
+   Compiling vail-ordering v0.1.0 (/home/ubuntu/vail/crates/vail-ordering)
+   Compiling rangemap v1.8.0
+   Compiling iceberg-property-macro v0.10.1 (/home/ubuntu/vail/patches/iceberg-rust/crates/property-macro)
+   Compiling intervaltree v0.2.7
+   Compiling vail-execution v0.1.0 (/home/ubuntu/vail/crates/vail-execution)
+   Compiling iceberg v0.10.1 (/home/ubuntu/vail/patches/iceberg-rust/crates/iceberg)
+   Compiling vail-vcf v0.1.0 (/home/ubuntu/vail/crates/vail-vcf)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vail-storage v0.1.0 (/home/ubuntu/vail/crates/vail-storage)
+   Compiling vail-table v0.1.0 (/home/ubuntu/vail/crates/vail-table)
+warning: unused import: `compare_typed_key_components`
+  --> crates/vail-table/src/interval_read.rs:25:58
+   |
+25 |         Endpoint, IndexBinding, KeyValue, QueryInterval, compare_typed_key_components,
+   |                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:307:31
+    |
+307 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/vail-table/src/interval_read.rs:756:13
+    |
+756 |         let mut start = lower
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `bound`
+   --> crates/vail-table/src/join_interval.rs:435:18
+    |
+435 |         let Some(bound) = bound else { continue };
+    |                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_bound`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: `vail-table` (lib) generated 4 warnings (run `cargo fix --lib -p vail-table` to apply 3 suggestions)
+   Compiling vail-python v0.1.0 (/home/ubuntu/vail/crates/vail-python)
+    Finished `release` profile [optimized] target(s) in 51.51s
+📦 Including files matching "LICENSE"
+📦 Including files matching "licenses/HAIL.txt"
+📦 Including files matching "python/vail/reference_data/*.json"
+📦 Built wheel for abi3 Python ≥ 3.11 to /home/ubuntu/audit-wheels/vail-0.1.0a1-cp311-abi3-manylinux_2_34_x86_64.whl
+Using Python 3.11.17 environment at: /home/ubuntu/vail-env
+Resolved 1 package in 1ms
+Prepared 1 package in 390ms
+Uninstalled 1 package in 0.77ms
+Installed 1 package in 0.83ms
+ ~ vail==0.1.0a1 (from file:///home/ubuntu/audit-wheels/vail-0.1.0a1-cp311-abi3-manylinux_2_34_x86_64.whl)
+...........................................                              [100%]
+43 passed in 10.58s
+START baseline table_range_force_count vail
+DONE {'config': 'baseline', 'case': 'table_range_force_count', 'engine': 'vail', 'returncode': 1, 'wall_seconds': 0.9235304430000042, 'host_load_after': (2.32177734375, 1.26025390625, 0.51513671875), 'collector_sha256': '3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b'}
+Traceback (most recent call last):
+  File "/home/ubuntu/vail/benchmarks/run_cloud_benchmarks.py", line 90, in <module>
+    run(parser.parse_args())
+  File "/home/ubuntu/vail/benchmarks/run_cloud_benchmarks.py", line 77, in run
+    raise RuntimeError(f"Capture failed; see {folder}")
+RuntimeError: Capture failed; see /home/ubuntu/audit-results/baseline/table_range_force_count-vail

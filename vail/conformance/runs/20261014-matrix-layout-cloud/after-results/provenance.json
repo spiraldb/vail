@@ -1,0 +1,2331 @@
+{
+  "commit": "92f3d4f2cf44994a1bd949ab3f89605a778d361c",
+  "platform": "Linux-6.8.0-1066-aws-x86_64-with-glibc2.35",
+  "logical_cpus": 32,
+  "memory_bytes": 132913676288,
+  "cores": 32,
+  "warmups": 3,
+  "measured_seconds_per_capture": 10.0,
+  "configs": [
+    [
+      "baseline",
+      10,
+      100000,
+      50000
+    ],
+    [
+      "samples-2x",
+      20,
+      100000,
+      50000
+    ],
+    [
+      "samples-4x",
+      40,
+      100000,
+      50000
+    ],
+    [
+      "variants-2x",
+      10,
+      200000,
+      100000
+    ],
+    [
+      "variants-4x",
+      10,
+      400000,
+      200000
+    ],
+    [
+      "samples-8x",
+      80,
+      100000,
+      50000
+    ]
+  ],
+  "baseline_cases": [
+    "table_range_force_count",
+    "table_key_by_shuffle",
+    "table_group_sorted",
+    "table_group_unsorted",
+    "table_annotate_100_fields",
+    "table_stats",
+    "table_inner_join",
+    "table_foreign_key_lookup",
+    "table_scan_sum",
+    "table_write",
+    "table_read",
+    "matrix_force_count_rows",
+    "matrix_entry_sum",
+    "matrix_filter_rows_columns",
+    "vcf_import_entry_sum"
+  ],
+  "scaling_cases": [
+    "matrix_force_count_rows",
+    "matrix_entry_sum",
+    "matrix_filter_rows_columns",
+    "vcf_import_entry_sum"
+  ],
+  "runs": [
+    {
+      "config": "baseline",
+      "case": "table_range_force_count",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.386491105000005,
+      "host_load_after": [
+        1.8974609375,
+        5.35595703125,
+        4.5966796875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2557130055,
+      "mean_cpu_cores": 1.1717289335085348,
+      "repetitions": 42
+    },
+    {
+      "config": "baseline",
+      "case": "table_range_force_count",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 31.65773819100002,
+      "host_load_after": [
+        3.57421875,
+        5.4580078125,
+        4.65625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.170742251,
+      "mean_cpu_cores": 21.122342863987043,
+      "repetitions": 58
+    },
+    {
+      "config": "baseline",
+      "case": "table_key_by_shuffle",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 32.80941871699997,
+      "host_load_after": [
+        3.14599609375,
+        5.1640625,
+        4.58740234375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.693918419,
+      "mean_cpu_cores": 21.189474989641234,
+      "repetitions": 15
+    },
+    {
+      "config": "baseline",
+      "case": "table_key_by_shuffle",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.452400927999975,
+      "host_load_after": [
+        2.81591796875,
+        5.0263671875,
+        4.54833984375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.124797412,
+      "mean_cpu_cores": 1.1707022502518658,
+      "repetitions": 81
+    },
+    {
+      "config": "baseline",
+      "case": "table_group_sorted",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.167401046000009,
+      "host_load_after": [
+        4.599609375,
+        5.35107421875,
+        4.65966796875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.027723394499999998,
+      "mean_cpu_cores": 18.274800501203966,
+      "repetitions": 336
+    },
+    {
+      "config": "baseline",
+      "case": "table_group_sorted",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 32.91540623399999,
+      "host_load_after": [
+        7.98681640625,
+        6.23193359375,
+        4.98583984375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.8702515129999999,
+      "mean_cpu_cores": 22.924342787174677,
+      "repetitions": 12
+    },
+    {
+      "config": "baseline",
+      "case": "table_group_unsorted",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 32.94608205600002,
+      "host_load_after": [
+        7.40478515625,
+        6.27099609375,
+        5.03857421875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.8723317255,
+      "mean_cpu_cores": 21.38683729847216,
+      "repetitions": 12
+    },
+    {
+      "config": "baseline",
+      "case": "table_group_unsorted",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.152593515000035,
+      "host_load_after": [
+        11.11279296875,
+        7.10205078125,
+        5.32275390625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.02676043,
+      "mean_cpu_cores": 19.658150765214792,
+      "repetitions": 363
+    },
+    {
+      "config": "baseline",
+      "case": "table_annotate_100_fields",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.156036405999885,
+      "host_load_after": [
+        8.94580078125,
+        6.818359375,
+        5.2578125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.038769068,
+      "mean_cpu_cores": 7.236786206930028,
+      "repetitions": 261
+    },
+    {
+      "config": "baseline",
+      "case": "table_annotate_100_fields",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.42789412000002,
+      "host_load_after": [
+        7.08935546875,
+        6.61669921875,
+        5.24267578125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2468180485,
+      "mean_cpu_cores": 13.584176828840446,
+      "repetitions": 40
+    },
+    {
+      "config": "baseline",
+      "case": "table_stats",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.349934989000076,
+      "host_load_after": [
+        5.8037109375,
+        6.36962890625,
+        5.1982421875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.38777202,
+      "mean_cpu_cores": 18.411013788008226,
+      "repetitions": 25
+    },
+    {
+      "config": "baseline",
+      "case": "table_stats",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.999318155999845,
+      "host_load_after": [
+        4.7392578125,
+        6.10595703125,
+        5.13037109375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.311928242,
+      "mean_cpu_cores": 1.220206686198436,
+      "repetitions": 31
+    },
+    {
+      "config": "baseline",
+      "case": "table_inner_join",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.546022096000115,
+      "host_load_after": [
+        5.11865234375,
+        6.13671875,
+        5.150390625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.14466778349999998,
+      "mean_cpu_cores": 6.669268618939721,
+      "repetitions": 70
+    },
+    {
+      "config": "baseline",
+      "case": "table_inner_join",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.896456561999912,
+      "host_load_after": [
+        7.6162109375,
+        6.662109375,
+        5.357421875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2361516705,
+      "mean_cpu_cores": 20.448724931491984,
+      "repetitions": 42
+    },
+    {
+      "config": "baseline",
+      "case": "table_foreign_key_lookup",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 37.30318847600006,
+      "host_load_after": [
+        6.982421875,
+        6.65625,
+        5.40576171875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 1.554488746,
+      "mean_cpu_cores": 21.469017651411164,
+      "repetitions": 7
+    },
+    {
+      "config": "baseline",
+      "case": "table_foreign_key_lookup",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.38833911000006,
+      "host_load_after": [
+        10.0419921875,
+        7.38330078125,
+        5.66552734375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0983697615,
+      "mean_cpu_cores": 10.405145666578848,
+      "repetitions": 102
+    },
+    {
+      "config": "baseline",
+      "case": "table_scan_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.618939962000013,
+      "host_load_after": [
+        8.6513671875,
+        7.17236328125,
+        5.61474609375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.206201672,
+      "mean_cpu_cores": 3.0333411443399774,
+      "repetitions": 49
+    },
+    {
+      "config": "baseline",
+      "case": "table_scan_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.805438001000084,
+      "host_load_after": [
+        7.875,
+        7.1240234375,
+        5.6474609375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.175152944,
+      "mean_cpu_cores": 15.551836535778847,
+      "repetitions": 55
+    },
+    {
+      "config": "baseline",
+      "case": "table_write",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 30.38780653599997,
+      "host_load_after": [
+        8.74853515625,
+        7.4892578125,
+        5.82080078125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.35268098,
+      "mean_cpu_cores": 14.311874229588435,
+      "repetitions": 29
+    },
+    {
+      "config": "baseline",
+      "case": "table_write",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 12.336642253000036,
+      "host_load_after": [
+        7.79052734375,
+        7.32470703125,
+        5.78466796875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.406322701,
+      "mean_cpu_cores": 0.7050106461542645,
+      "repetitions": 25
+    },
+    {
+      "config": "baseline",
+      "case": "table_read",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.493532982999795,
+      "host_load_after": [
+        12.61181640625,
+        8.4052734375,
+        6.1630859375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.018482599500000002,
+      "mean_cpu_cores": 21.88505468518417,
+      "repetitions": 540
+    },
+    {
+      "config": "baseline",
+      "case": "table_read",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.745880172999932,
+      "host_load_after": [
+        8.08984375,
+        7.7119140625,
+        6.0029296875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1416703335,
+      "mean_cpu_cores": 18.087748730389155,
+      "repetitions": 70
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.294061262000014,
+      "host_load_after": [
+        6.39990234375,
+        7.36083984375,
+        5.9326171875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.073875605,
+      "mean_cpu_cores": 11.473527668943026,
+      "repetitions": 126
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.017823183000019,
+      "host_load_after": [
+        5.5693359375,
+        7.15087890625,
+        5.87939453125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.010050664,
+      "mean_cpu_cores": 1.5469477250763484,
+      "repetitions": 992
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.105972532000123,
+      "host_load_after": [
+        4.9990234375,
+        6.94677734375,
+        5.8330078125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0203534815,
+      "mean_cpu_cores": 7.068648464505552,
+      "repetitions": 490
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.83150308800009,
+      "host_load_after": [
+        3.73486328125,
+        6.49853515625,
+        5.7138671875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1169100085,
+      "mean_cpu_cores": 11.263653872360553,
+      "repetitions": 80
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.442264729000044,
+      "host_load_after": [
+        3.06494140625,
+        6.08154296875,
+        5.60009765625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.135951003,
+      "mean_cpu_cores": 8.309170002014001,
+      "repetitions": 69
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.07430863400009,
+      "host_load_after": [
+        2.52685546875,
+        5.8154296875,
+        5.52001953125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.025439774,
+      "mean_cpu_cores": 1.4747521729503827,
+      "repetitions": 392
+    },
+    {
+      "config": "baseline",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.525045847000001,
+      "host_load_after": [
+        2.29150390625,
+        5.65625,
+        5.47119140625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0877632075,
+      "mean_cpu_cores": 1.212124946812854,
+      "repetitions": 114
+    },
+    {
+      "config": "baseline",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.968630650000023,
+      "host_load_after": [
+        1.80078125,
+        5.2236328125,
+        5.33251953125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1937592575,
+      "mean_cpu_cores": 2.199341824117094,
+      "repetitions": 48
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.48215395299985,
+      "host_load_after": [
+        4.8818359375,
+        5.7109375,
+        5.49462890625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.081118506,
+      "mean_cpu_cores": 12.236737895138107,
+      "repetitions": 115
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.028048692999846,
+      "host_load_after": [
+        4.50537109375,
+        5.60400390625,
+        5.4619140625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.010103227999999999,
+      "mean_cpu_cores": 1.5252557321412192,
+      "repetitions": 988
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.1469332449999,
+      "host_load_after": [
+        4.767578125,
+        5.61865234375,
+        5.4677734375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.024277004,
+      "mean_cpu_cores": 9.037887440175979,
+      "repetitions": 415
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.00370335299999,
+      "host_load_after": [
+        5.46044921875,
+        5.7412109375,
+        5.51416015625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.119972537,
+      "mean_cpu_cores": 12.086844241964595,
+      "repetitions": 77
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.374969846999875,
+      "host_load_after": [
+        3.65771484375,
+        5.28466796875,
+        5.36865234375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.143626101,
+      "mean_cpu_cores": 9.59002229336845,
+      "repetitions": 65
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.094725839000148,
+      "host_load_after": [
+        4.37060546875,
+        5.3759765625,
+        5.39697265625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.025940508,
+      "mean_cpu_cores": 1.6090950621815183,
+      "repetitions": 385
+    },
+    {
+      "config": "samples-2x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.624234345999866,
+      "host_load_after": [
+        3.85205078125,
+        5.2314453125,
+        5.34912109375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1279588655,
+      "mean_cpu_cores": 1.2121588189200283,
+      "repetitions": 78
+    },
+    {
+      "config": "samples-2x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 30.53272258899983,
+      "host_load_after": [
+        2.80810546875,
+        4.85546875,
+        5.2197265625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.220656152,
+      "mean_cpu_cores": 2.1515234713912177,
+      "repetitions": 43
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.05085840300012,
+      "host_load_after": [
+        2.4072265625,
+        4.666015625,
+        5.1513671875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.010608691,
+      "mean_cpu_cores": 1.6535557866411275,
+      "repetitions": 940
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.527328948999866,
+      "host_load_after": [
+        2.44970703125,
+        4.51123046875,
+        5.087890625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.088500854,
+      "mean_cpu_cores": 13.620409625512284,
+      "repetitions": 105
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.960210183000072,
+      "host_load_after": [
+        3.94873046875,
+        4.7099609375,
+        5.13671875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1230700085,
+      "mean_cpu_cores": 12.079793471976982,
+      "repetitions": 76
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.15493768500005,
+      "host_load_after": [
+        5.81787109375,
+        5.06884765625,
+        5.248046875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.029251494000000003,
+      "mean_cpu_cores": 11.584486934455606,
+      "repetitions": 346
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.076479473000063,
+      "host_load_after": [
+        5.07666015625,
+        4.93408203125,
+        5.2021484375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0258448275,
+      "mean_cpu_cores": 1.9524389243535247,
+      "repetitions": 386
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.758675737999965,
+      "host_load_after": [
+        5.13818359375,
+        5.044921875,
+        5.23486328125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.14172274,
+      "mean_cpu_cores": 10.09817340138427,
+      "repetitions": 66
+    },
+    {
+      "config": "samples-4x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.710505642000044,
+      "host_load_after": [
+        3.8125,
+        4.74853515625,
+        5.13037109375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2935988145,
+      "mean_cpu_cores": 1.8687303157229063,
+      "repetitions": 34
+    },
+    {
+      "config": "samples-4x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.884521984999992,
+      "host_load_after": [
+        3.1083984375,
+        4.54736328125,
+        5.05810546875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2027542055,
+      "mean_cpu_cores": 1.2209883738708023,
+      "repetitions": 50
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.244860806999895,
+      "host_load_after": [
+        2.54638671875,
+        4.3076171875,
+        4.96484375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0754724465,
+      "mean_cpu_cores": 12.349527053275589,
+      "repetitions": 124
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.045688127999938,
+      "host_load_after": [
+        2.30810546875,
+        4.1982421875,
+        4.921875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.010366665,
+      "mean_cpu_cores": 1.8757567013518,
+      "repetitions": 963
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.135486437000054,
+      "host_load_after": [
+        4.50048828125,
+        4.55615234375,
+        5.025390625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0259595895,
+      "mean_cpu_cores": 9.677410235001705,
+      "repetitions": 390
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.892550604999997,
+      "host_load_after": [
+        3.58349609375,
+        4.34716796875,
+        4.943359375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.116945914,
+      "mean_cpu_cores": 12.066746265750671,
+      "repetitions": 81
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.22007188700013,
+      "host_load_after": [
+        2.60888671875,
+        4.041015625,
+        4.82177734375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.145359864,
+      "mean_cpu_cores": 9.719288722162709,
+      "repetitions": 65
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.079784540999981,
+      "host_load_after": [
+        2.361328125,
+        3.9404296875,
+        4.7802734375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0256911545,
+      "mean_cpu_cores": 1.807038428436089,
+      "repetitions": 388
+    },
+    {
+      "config": "variants-2x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.714216978999957,
+      "host_load_after": [
+        2.1328125,
+        3.81201171875,
+        4.72412109375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.14816212,
+      "mean_cpu_cores": 1.2485051092005377,
+      "repetitions": 68
+    },
+    {
+      "config": "variants-2x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 30.316773063000028,
+      "host_load_after": [
+        1.64697265625,
+        3.53955078125,
+        4.6044921875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.25506295349999997,
+      "mean_cpu_cores": 2.0445528451071397,
+      "repetitions": 38
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.05848561200014,
+      "host_load_after": [
+        1.546875,
+        3.45556640625,
+        4.5654296875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.012382938,
+      "mean_cpu_cores": 2.664614068860752,
+      "repetitions": 806
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.325393118999955,
+      "host_load_after": [
+        3.67578125,
+        3.83251953125,
+        4.6572265625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0947278745,
+      "mean_cpu_cores": 13.928802393111232,
+      "repetitions": 98
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.89286717799996,
+      "host_load_after": [
+        6.75,
+        4.57861328125,
+        4.87939453125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.126917099,
+      "mean_cpu_cores": 13.381596915085678,
+      "repetitions": 73
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.170003824999867,
+      "host_load_after": [
+        5.86572265625,
+        4.46044921875,
+        4.83740234375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.038941982,
+      "mean_cpu_cores": 13.1370424715666,
+      "repetitions": 271
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.074271468999996,
+      "host_load_after": [
+        5.1171875,
+        4.34619140625,
+        4.7958984375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.027412163,
+      "mean_cpu_cores": 2.609399372252946,
+      "repetitions": 363
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.344305765999707,
+      "host_load_after": [
+        9.24072265625,
+        5.4794921875,
+        5.1611328125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1884687,
+      "mean_cpu_cores": 13.22808281987685,
+      "repetitions": 51
+    },
+    {
+      "config": "variants-4x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 31.16947993299982,
+      "host_load_after": [
+        6.28955078125,
+        5.140625,
+        5.05908203125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.406509459,
+      "mean_cpu_cores": 1.8520252767362808,
+      "repetitions": 25
+    },
+    {
+      "config": "variants-4x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 12.130493609000041,
+      "host_load_after": [
+        5.197265625,
+        4.95361328125,
+        4.99853515625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.27820350699999996,
+      "mean_cpu_cores": 1.3091420165406331,
+      "repetitions": 36
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.22664627100039,
+      "host_load_after": [
+        5.97607421875,
+        5.17724609375,
+        5.072265625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.090292154,
+      "mean_cpu_cores": 14.771956278026543,
+      "repetitions": 105
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.041451834999862,
+      "host_load_after": [
+        5.04541015625,
+        5.00537109375,
+        5.01708984375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.011115505000000001,
+      "mean_cpu_cores": 1.8388209647325215,
+      "repetitions": 886
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.237770215000182,
+      "host_load_after": [
+        7.0595703125,
+        5.4208984375,
+        5.15087890625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0453242515,
+      "mean_cpu_cores": 14.895309400658487,
+      "repetitions": 230
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.16149125799984,
+      "host_load_after": [
+        4.56005859375,
+        4.97802734375,
+        5.01171875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1213654565,
+      "mean_cpu_cores": 11.72071317829786,
+      "repetitions": 76
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.794772173999718,
+      "host_load_after": [
+        3.23193359375,
+        4.6259765625,
+        4.89306640625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.160776397,
+      "mean_cpu_cores": 10.140317853067051,
+      "repetitions": 59
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.10835930500025,
+      "host_load_after": [
+        2.96826171875,
+        4.5224609375,
+        4.8564453125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.029569065,
+      "mean_cpu_cores": 2.5586184416871514,
+      "repetitions": 338
+    },
+    {
+      "config": "samples-8x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 12.305008210999858,
+      "host_load_after": [
+        2.66552734375,
+        4.40625,
+        4.814453125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.358111973,
+      "mean_cpu_cores": 1.2333380892843326,
+      "repetitions": 28
+    },
+    {
+      "config": "samples-8x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 31.438372451000305,
+      "host_load_after": [
+        2.00244140625,
+        4.0576171875,
+        4.68212890625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.4410782005,
+      "mean_cpu_cores": 1.8585058536229124,
+      "repetitions": 24
+    }
+  ],
+  "script_hashes": {
+    "render_annotate_profile.py": "94319be3654c7d3b6765e4617bf14432f40064b69dc04e16599ab2709712c8de",
+    "render_sample_telemetry.py": "f56b6b2aeb7a688ff554ec8a68c786179725c0c9aa6f709b51ad0d92dbab6ecd",
+    "profile_samples.py": "50a9e05906269749cad95f0f77b7356b2217be6c1dbf07eff688c7607d012db9",
+    "run_dimension_scaling.py": "167587dc2b9a15822e50997ad0cbcddee4f3e4944a7294a3a214bb097e6021c6",
+    "compare_hail.py": "e38102dde3c03ea269aacd7b72c9e3e5742e5f0e8458223266afac4553bc3d10",
+    "profile_annotate.py": "2ff556a30fa1104d04acadc45c2ac770da040613cb42f222eea590870a6d99aa",
+    "render_matrix_layout.py": "20742f796f90f6360e364eaec55cb11bfd128e6777ff5cc1ed17c441b77da271",
+    "render_cloud_benchmarks.py": "1d28c39a26e6f520bc8c4c1d71cf4cd02304ff24713fbada2bc0271c8a37713b",
+    "profile_cloud.py": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+    "render_dimension_scaling.py": "279ebe16ea6d22b8969d5e24a31045a4203938ca943b48b87a4678d4cf1a2e85",
+    "run_cloud_benchmarks.py": "5070c31207f22c71b7039e34e7c1367f7c2e23c3258f3f994262df1771a6fb22"
+  },
+  "lscpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           46 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  32\nOn-line CPU(s) list:                     0-31\nVendor ID:                               GenuineIntel\nModel name:                              Intel(R) Xeon(R) Platinum 8488C\nCPU family:                              6\nModel:                                   143\nThread(s) per core:                      2\nCore(s) per socket:                      16\nSocket(s):                               1\nStepping:                                8\nBogoMIPS:                                4800.00\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc arch_perfmon rep_good nopl xtopology nonstop_tsc cpuid aperfmperf tsc_known_freq pni pclmulqdq monitor ssse3 fma cx16 pdcm pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm 3dnowprefetch cpuid_fault ssbd ibrs ibpb stibp ibrs_enhanced fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves avx_vnni avx512_bf16 wbnoinvd ida arat avx512vbmi umip pku ospke waitpkg avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg tme avx512_vpopcntdq rdpid cldemote movdiri movdir64b md_clear serialize amx_bf16 avx512_fp16 amx_tile amx_int8 flush_l1d arch_capabilities\nHypervisor vendor:                       KVM\nVirtualization type:                     full\nL1d cache:                               768 KiB (16 instances)\nL1i cache:                               512 KiB (16 instances)\nL2 cache:                                32 MiB (16 instances)\nL3 cache:                                105 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-31\nVulnerability Gather data sampling:      Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Not affected\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; PBRSB-eIBRS SW sequence; BHI BHI_DIS_S\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Not affected\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Not affected\n",
+  "perf_version": "perf version 6.8.12\n",
+  "java_version": "openjdk version \"11.0.32.1\" 2026-08-18\nOpenJDK Runtime Environment (build 11.0.32.1+1-post-1ubuntu1-22.04-Ubuntu)\nOpenJDK 64-Bit Server VM (build 11.0.32.1+1-post-1ubuntu1-22.04-Ubuntu, mixed mode, sharing)\n",
+  "attempts": [
+    {
+      "config": "baseline",
+      "case": "table_range_force_count",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.386491105000005,
+      "host_load_after": [
+        1.8974609375,
+        5.35595703125,
+        4.5966796875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2557130055,
+      "mean_cpu_cores": 1.1717289335085348,
+      "repetitions": 42
+    },
+    {
+      "config": "baseline",
+      "case": "table_range_force_count",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 31.65773819100002,
+      "host_load_after": [
+        3.57421875,
+        5.4580078125,
+        4.65625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.170742251,
+      "mean_cpu_cores": 21.122342863987043,
+      "repetitions": 58
+    },
+    {
+      "config": "baseline",
+      "case": "table_key_by_shuffle",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 32.80941871699997,
+      "host_load_after": [
+        3.14599609375,
+        5.1640625,
+        4.58740234375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.693918419,
+      "mean_cpu_cores": 21.189474989641234,
+      "repetitions": 15
+    },
+    {
+      "config": "baseline",
+      "case": "table_key_by_shuffle",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.452400927999975,
+      "host_load_after": [
+        2.81591796875,
+        5.0263671875,
+        4.54833984375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.124797412,
+      "mean_cpu_cores": 1.1707022502518658,
+      "repetitions": 81
+    },
+    {
+      "config": "baseline",
+      "case": "table_group_sorted",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.167401046000009,
+      "host_load_after": [
+        4.599609375,
+        5.35107421875,
+        4.65966796875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.027723394499999998,
+      "mean_cpu_cores": 18.274800501203966,
+      "repetitions": 336
+    },
+    {
+      "config": "baseline",
+      "case": "table_group_sorted",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 32.91540623399999,
+      "host_load_after": [
+        7.98681640625,
+        6.23193359375,
+        4.98583984375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.8702515129999999,
+      "mean_cpu_cores": 22.924342787174677,
+      "repetitions": 12
+    },
+    {
+      "config": "baseline",
+      "case": "table_group_unsorted",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 32.94608205600002,
+      "host_load_after": [
+        7.40478515625,
+        6.27099609375,
+        5.03857421875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.8723317255,
+      "mean_cpu_cores": 21.38683729847216,
+      "repetitions": 12
+    },
+    {
+      "config": "baseline",
+      "case": "table_group_unsorted",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.152593515000035,
+      "host_load_after": [
+        11.11279296875,
+        7.10205078125,
+        5.32275390625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.02676043,
+      "mean_cpu_cores": 19.658150765214792,
+      "repetitions": 363
+    },
+    {
+      "config": "baseline",
+      "case": "table_annotate_100_fields",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.156036405999885,
+      "host_load_after": [
+        8.94580078125,
+        6.818359375,
+        5.2578125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.038769068,
+      "mean_cpu_cores": 7.236786206930028,
+      "repetitions": 261
+    },
+    {
+      "config": "baseline",
+      "case": "table_annotate_100_fields",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.42789412000002,
+      "host_load_after": [
+        7.08935546875,
+        6.61669921875,
+        5.24267578125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2468180485,
+      "mean_cpu_cores": 13.584176828840446,
+      "repetitions": 40
+    },
+    {
+      "config": "baseline",
+      "case": "table_stats",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.349934989000076,
+      "host_load_after": [
+        5.8037109375,
+        6.36962890625,
+        5.1982421875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.38777202,
+      "mean_cpu_cores": 18.411013788008226,
+      "repetitions": 25
+    },
+    {
+      "config": "baseline",
+      "case": "table_stats",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.999318155999845,
+      "host_load_after": [
+        4.7392578125,
+        6.10595703125,
+        5.13037109375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.311928242,
+      "mean_cpu_cores": 1.220206686198436,
+      "repetitions": 31
+    },
+    {
+      "config": "baseline",
+      "case": "table_inner_join",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.546022096000115,
+      "host_load_after": [
+        5.11865234375,
+        6.13671875,
+        5.150390625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.14466778349999998,
+      "mean_cpu_cores": 6.669268618939721,
+      "repetitions": 70
+    },
+    {
+      "config": "baseline",
+      "case": "table_inner_join",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.896456561999912,
+      "host_load_after": [
+        7.6162109375,
+        6.662109375,
+        5.357421875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2361516705,
+      "mean_cpu_cores": 20.448724931491984,
+      "repetitions": 42
+    },
+    {
+      "config": "baseline",
+      "case": "table_foreign_key_lookup",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 37.30318847600006,
+      "host_load_after": [
+        6.982421875,
+        6.65625,
+        5.40576171875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 1.554488746,
+      "mean_cpu_cores": 21.469017651411164,
+      "repetitions": 7
+    },
+    {
+      "config": "baseline",
+      "case": "table_foreign_key_lookup",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.38833911000006,
+      "host_load_after": [
+        10.0419921875,
+        7.38330078125,
+        5.66552734375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0983697615,
+      "mean_cpu_cores": 10.405145666578848,
+      "repetitions": 102
+    },
+    {
+      "config": "baseline",
+      "case": "table_scan_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.618939962000013,
+      "host_load_after": [
+        8.6513671875,
+        7.17236328125,
+        5.61474609375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.206201672,
+      "mean_cpu_cores": 3.0333411443399774,
+      "repetitions": 49
+    },
+    {
+      "config": "baseline",
+      "case": "table_scan_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.805438001000084,
+      "host_load_after": [
+        7.875,
+        7.1240234375,
+        5.6474609375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.175152944,
+      "mean_cpu_cores": 15.551836535778847,
+      "repetitions": 55
+    },
+    {
+      "config": "baseline",
+      "case": "table_write",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 30.38780653599997,
+      "host_load_after": [
+        8.74853515625,
+        7.4892578125,
+        5.82080078125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.35268098,
+      "mean_cpu_cores": 14.311874229588435,
+      "repetitions": 29
+    },
+    {
+      "config": "baseline",
+      "case": "table_write",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 12.336642253000036,
+      "host_load_after": [
+        7.79052734375,
+        7.32470703125,
+        5.78466796875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.406322701,
+      "mean_cpu_cores": 0.7050106461542645,
+      "repetitions": 25
+    },
+    {
+      "config": "baseline",
+      "case": "table_read",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.493532982999795,
+      "host_load_after": [
+        12.61181640625,
+        8.4052734375,
+        6.1630859375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.018482599500000002,
+      "mean_cpu_cores": 21.88505468518417,
+      "repetitions": 540
+    },
+    {
+      "config": "baseline",
+      "case": "table_read",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.745880172999932,
+      "host_load_after": [
+        8.08984375,
+        7.7119140625,
+        6.0029296875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1416703335,
+      "mean_cpu_cores": 18.087748730389155,
+      "repetitions": 70
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.294061262000014,
+      "host_load_after": [
+        6.39990234375,
+        7.36083984375,
+        5.9326171875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.073875605,
+      "mean_cpu_cores": 11.473527668943026,
+      "repetitions": 126
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.017823183000019,
+      "host_load_after": [
+        5.5693359375,
+        7.15087890625,
+        5.87939453125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.010050664,
+      "mean_cpu_cores": 1.5469477250763484,
+      "repetitions": 992
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.105972532000123,
+      "host_load_after": [
+        4.9990234375,
+        6.94677734375,
+        5.8330078125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0203534815,
+      "mean_cpu_cores": 7.068648464505552,
+      "repetitions": 490
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.83150308800009,
+      "host_load_after": [
+        3.73486328125,
+        6.49853515625,
+        5.7138671875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1169100085,
+      "mean_cpu_cores": 11.263653872360553,
+      "repetitions": 80
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.442264729000044,
+      "host_load_after": [
+        3.06494140625,
+        6.08154296875,
+        5.60009765625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.135951003,
+      "mean_cpu_cores": 8.309170002014001,
+      "repetitions": 69
+    },
+    {
+      "config": "baseline",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.07430863400009,
+      "host_load_after": [
+        2.52685546875,
+        5.8154296875,
+        5.52001953125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.025439774,
+      "mean_cpu_cores": 1.4747521729503827,
+      "repetitions": 392
+    },
+    {
+      "config": "baseline",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.525045847000001,
+      "host_load_after": [
+        2.29150390625,
+        5.65625,
+        5.47119140625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0877632075,
+      "mean_cpu_cores": 1.212124946812854,
+      "repetitions": 114
+    },
+    {
+      "config": "baseline",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.968630650000023,
+      "host_load_after": [
+        1.80078125,
+        5.2236328125,
+        5.33251953125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1937592575,
+      "mean_cpu_cores": 2.199341824117094,
+      "repetitions": 48
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.48215395299985,
+      "host_load_after": [
+        4.8818359375,
+        5.7109375,
+        5.49462890625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.081118506,
+      "mean_cpu_cores": 12.236737895138107,
+      "repetitions": 115
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.028048692999846,
+      "host_load_after": [
+        4.50537109375,
+        5.60400390625,
+        5.4619140625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.010103227999999999,
+      "mean_cpu_cores": 1.5252557321412192,
+      "repetitions": 988
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.1469332449999,
+      "host_load_after": [
+        4.767578125,
+        5.61865234375,
+        5.4677734375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.024277004,
+      "mean_cpu_cores": 9.037887440175979,
+      "repetitions": 415
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.00370335299999,
+      "host_load_after": [
+        5.46044921875,
+        5.7412109375,
+        5.51416015625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.119972537,
+      "mean_cpu_cores": 12.086844241964595,
+      "repetitions": 77
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.374969846999875,
+      "host_load_after": [
+        3.65771484375,
+        5.28466796875,
+        5.36865234375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.143626101,
+      "mean_cpu_cores": 9.59002229336845,
+      "repetitions": 65
+    },
+    {
+      "config": "samples-2x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.094725839000148,
+      "host_load_after": [
+        4.37060546875,
+        5.3759765625,
+        5.39697265625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.025940508,
+      "mean_cpu_cores": 1.6090950621815183,
+      "repetitions": 385
+    },
+    {
+      "config": "samples-2x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.624234345999866,
+      "host_load_after": [
+        3.85205078125,
+        5.2314453125,
+        5.34912109375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1279588655,
+      "mean_cpu_cores": 1.2121588189200283,
+      "repetitions": 78
+    },
+    {
+      "config": "samples-2x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 30.53272258899983,
+      "host_load_after": [
+        2.80810546875,
+        4.85546875,
+        5.2197265625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.220656152,
+      "mean_cpu_cores": 2.1515234713912177,
+      "repetitions": 43
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.05085840300012,
+      "host_load_after": [
+        2.4072265625,
+        4.666015625,
+        5.1513671875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.010608691,
+      "mean_cpu_cores": 1.6535557866411275,
+      "repetitions": 940
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.527328948999866,
+      "host_load_after": [
+        2.44970703125,
+        4.51123046875,
+        5.087890625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.088500854,
+      "mean_cpu_cores": 13.620409625512284,
+      "repetitions": 105
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.960210183000072,
+      "host_load_after": [
+        3.94873046875,
+        4.7099609375,
+        5.13671875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1230700085,
+      "mean_cpu_cores": 12.079793471976982,
+      "repetitions": 76
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.15493768500005,
+      "host_load_after": [
+        5.81787109375,
+        5.06884765625,
+        5.248046875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.029251494000000003,
+      "mean_cpu_cores": 11.584486934455606,
+      "repetitions": 346
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.076479473000063,
+      "host_load_after": [
+        5.07666015625,
+        4.93408203125,
+        5.2021484375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0258448275,
+      "mean_cpu_cores": 1.9524389243535247,
+      "repetitions": 386
+    },
+    {
+      "config": "samples-4x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.758675737999965,
+      "host_load_after": [
+        5.13818359375,
+        5.044921875,
+        5.23486328125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.14172274,
+      "mean_cpu_cores": 10.09817340138427,
+      "repetitions": 66
+    },
+    {
+      "config": "samples-4x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.710505642000044,
+      "host_load_after": [
+        3.8125,
+        4.74853515625,
+        5.13037109375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2935988145,
+      "mean_cpu_cores": 1.8687303157229063,
+      "repetitions": 34
+    },
+    {
+      "config": "samples-4x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.884521984999992,
+      "host_load_after": [
+        3.1083984375,
+        4.54736328125,
+        5.05810546875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.2027542055,
+      "mean_cpu_cores": 1.2209883738708023,
+      "repetitions": 50
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.244860806999895,
+      "host_load_after": [
+        2.54638671875,
+        4.3076171875,
+        4.96484375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0754724465,
+      "mean_cpu_cores": 12.349527053275589,
+      "repetitions": 124
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.045688127999938,
+      "host_load_after": [
+        2.30810546875,
+        4.1982421875,
+        4.921875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.010366665,
+      "mean_cpu_cores": 1.8757567013518,
+      "repetitions": 963
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.135486437000054,
+      "host_load_after": [
+        4.50048828125,
+        4.55615234375,
+        5.025390625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0259595895,
+      "mean_cpu_cores": 9.677410235001705,
+      "repetitions": 390
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.892550604999997,
+      "host_load_after": [
+        3.58349609375,
+        4.34716796875,
+        4.943359375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.116945914,
+      "mean_cpu_cores": 12.066746265750671,
+      "repetitions": 81
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.22007188700013,
+      "host_load_after": [
+        2.60888671875,
+        4.041015625,
+        4.82177734375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.145359864,
+      "mean_cpu_cores": 9.719288722162709,
+      "repetitions": 65
+    },
+    {
+      "config": "variants-2x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.079784540999981,
+      "host_load_after": [
+        2.361328125,
+        3.9404296875,
+        4.7802734375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0256911545,
+      "mean_cpu_cores": 1.807038428436089,
+      "repetitions": 388
+    },
+    {
+      "config": "variants-2x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.714216978999957,
+      "host_load_after": [
+        2.1328125,
+        3.81201171875,
+        4.72412109375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.14816212,
+      "mean_cpu_cores": 1.2485051092005377,
+      "repetitions": 68
+    },
+    {
+      "config": "variants-2x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 30.316773063000028,
+      "host_load_after": [
+        1.64697265625,
+        3.53955078125,
+        4.6044921875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.25506295349999997,
+      "mean_cpu_cores": 2.0445528451071397,
+      "repetitions": 38
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.05848561200014,
+      "host_load_after": [
+        1.546875,
+        3.45556640625,
+        4.5654296875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.012382938,
+      "mean_cpu_cores": 2.664614068860752,
+      "repetitions": 806
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.325393118999955,
+      "host_load_after": [
+        3.67578125,
+        3.83251953125,
+        4.6572265625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0947278745,
+      "mean_cpu_cores": 13.928802393111232,
+      "repetitions": 98
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.89286717799996,
+      "host_load_after": [
+        6.75,
+        4.57861328125,
+        4.87939453125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.126917099,
+      "mean_cpu_cores": 13.381596915085678,
+      "repetitions": 73
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.170003824999867,
+      "host_load_after": [
+        5.86572265625,
+        4.46044921875,
+        4.83740234375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.038941982,
+      "mean_cpu_cores": 13.1370424715666,
+      "repetitions": 271
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.074271468999996,
+      "host_load_after": [
+        5.1171875,
+        4.34619140625,
+        4.7958984375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.027412163,
+      "mean_cpu_cores": 2.609399372252946,
+      "repetitions": 363
+    },
+    {
+      "config": "variants-4x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.344305765999707,
+      "host_load_after": [
+        9.24072265625,
+        5.4794921875,
+        5.1611328125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1884687,
+      "mean_cpu_cores": 13.22808281987685,
+      "repetitions": 51
+    },
+    {
+      "config": "variants-4x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 31.16947993299982,
+      "host_load_after": [
+        6.28955078125,
+        5.140625,
+        5.05908203125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.406509459,
+      "mean_cpu_cores": 1.8520252767362808,
+      "repetitions": 25
+    },
+    {
+      "config": "variants-4x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 12.130493609000041,
+      "host_load_after": [
+        5.197265625,
+        4.95361328125,
+        4.99853515625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.27820350699999996,
+      "mean_cpu_cores": 1.3091420165406331,
+      "repetitions": 36
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_force_count_rows",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 28.22664627100039,
+      "host_load_after": [
+        5.97607421875,
+        5.17724609375,
+        5.072265625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.090292154,
+      "mean_cpu_cores": 14.771956278026543,
+      "repetitions": 105
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_force_count_rows",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.041451834999862,
+      "host_load_after": [
+        5.04541015625,
+        5.00537109375,
+        5.01708984375
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.011115505000000001,
+      "mean_cpu_cores": 1.8388209647325215,
+      "repetitions": 886
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.237770215000182,
+      "host_load_after": [
+        7.0595703125,
+        5.4208984375,
+        5.15087890625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.0453242515,
+      "mean_cpu_cores": 14.895309400658487,
+      "repetitions": 230
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.16149125799984,
+      "host_load_after": [
+        4.56005859375,
+        4.97802734375,
+        5.01171875
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.1213654565,
+      "mean_cpu_cores": 11.72071317829786,
+      "repetitions": 76
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 29.794772173999718,
+      "host_load_after": [
+        3.23193359375,
+        4.6259765625,
+        4.89306640625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.160776397,
+      "mean_cpu_cores": 10.140317853067051,
+      "repetitions": 59
+    },
+    {
+      "config": "samples-8x",
+      "case": "matrix_filter_rows_columns",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 11.10835930500025,
+      "host_load_after": [
+        2.96826171875,
+        4.5224609375,
+        4.8564453125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.029569065,
+      "mean_cpu_cores": 2.5586184416871514,
+      "repetitions": 338
+    },
+    {
+      "config": "samples-8x",
+      "case": "vcf_import_entry_sum",
+      "engine": "vail",
+      "returncode": 0,
+      "wall_seconds": 12.305008210999858,
+      "host_load_after": [
+        2.66552734375,
+        4.40625,
+        4.814453125
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.358111973,
+      "mean_cpu_cores": 1.2333380892843326,
+      "repetitions": 28
+    },
+    {
+      "config": "samples-8x",
+      "case": "vcf_import_entry_sum",
+      "engine": "hail",
+      "returncode": 0,
+      "wall_seconds": 31.438372451000305,
+      "host_load_after": [
+        2.00244140625,
+        4.0576171875,
+        4.68212890625
+      ],
+      "collector_sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "median_seconds": 0.4410782005,
+      "mean_cpu_cores": 1.8585058536229124,
+      "repetitions": 24
+    }
+  ],
+  "wall_seconds": 1446.446620238
+}

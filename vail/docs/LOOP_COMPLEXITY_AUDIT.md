@@ -62,7 +62,7 @@ user expression has optimal complexity.
 | P1 | `vail-storage/src/lib.rs`: `certify_file`, `typed_key_for_row` | Sortedness validation visits every row (necessary), but allocates sliced key arrays/rebuilds comparators and searches schema field IDs for each row/key. | Resolve key column indices once; use cached Arrow comparators for adjacent rows or vectorized adjacent-slice comparisons. Only materialize boundary keys once per batch/file. Keep O(R × key_arity), with no per-row schema search or key-array allocation. |
 | P2 | `reference.rs`: `ordinal` / `validate_coordinate`; `expressions.rs`: locus conversion from global position | Contig names are linearly searched per locus. Validation repeats that search despite having the ordinal. Global-position conversion walks contig lengths per value. | Contig-to-ordinal map initialized once; validate known ordinal with direct `contigs[ordinal]`; cumulative contig endpoints with binary search for global positions. |
 
-## Additional allocation risk to address
+## Additional allocation findings (addressed)
 
 `matrix_list_aggregates.py`'s `agg_array` maps over output positions and captures
 all input contexts for each position, then indexes each input array. The intended
@@ -107,7 +107,7 @@ referenced outer columns, rather than dispatching a scalar-sized batch per item.
 - Small schema loops executed once at planning/startup are lower priority than
   searches repeated for every row, cell, or dictionary key.
 
-## Next fixes, in order
+## Implementation order (completed)
 
 1. Grouped columns and sparse coordinate-to-Matrix reconstruction.
 2. Dictionary construction, array grouping, and repeated collection lookup.
@@ -122,9 +122,8 @@ record instructions and memory, and verify that captured arrays are not repeated
 per output element. Calling a DataFusion expression does not make a quadratic
 frontend algorithm acceptable.
 
-## Validation of the small fixes
+## Initial small-fix validation at 92f3d4f
 
 The updated release wheel passed all 66 Matrix tests (including 12 layout cases).
 The Rust join and physical-partition suites passed all 10 tests, covering metadata
-bounds, interval pruning, unrelated file exclusion, and join results. No speedup
-is claimed here for the still-unfixed findings.
+bounds, interval pruning, unrelated file exclusion, and join results. That initial validation preceded the full fixes and validation recorded above.
