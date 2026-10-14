@@ -1,73 +1,62 @@
-# String operations through DataFusion
+# String operations and the UTF-8 contract
 
-Python builds lazy scalar IR. Rust validates a whitelist of string functions and
-lowers it to DataFusion scalar functions, casts, `CASE`, and binary expressions
-within existing TableIR plans. No new Vail string UDF/evaluation kernel or Python
-row evaluator is used. String offset arithmetic uses DataFusion integer binary
-expressions directly rather than Vail's Hail integer-arithmetic adapter.
+Vail deliberately diverges from Hail's UTF-16 string semantics. Strings contain
+valid UTF-8 and operations count Unicode scalar values (codepoints). They never
+index UTF-8 bytes or expose surrogate halves. For example, `hl.len('a😀b')` is 3,
+`hl.literal('a😀b')[1]` is `'😀'`, and reversing it produces `'b😀a'`.
 
-| Hail API | DataFusion lowering |
+This applies to literals, row/global expressions, lookups, collection callbacks,
+aggregations, and persisted values. No literal-only/BMP restriction applies.
+Combining marks, variation selectors and zero-width joiners each count as their
+own codepoint. Operations do not normalize Unicode or segment grapheme clusters.
+Lone UTF-16 surrogates are not valid Unicode scalar values or UTF-8 strings.
+String comparison and ordering use Unicode scalar order (equivalently valid
+UTF-8 lexicographic order), which can differ from Java UTF-16 ordering.
+
+## Supported text operations
+
+| API | Semantics / execution |
 | --- | --- |
-| `+`, reflected `+` | `concat`, with `CASE` to propagate missing inputs |
-| `*`, reflected `*` | `repeat`, with `CASE` returning empty string for non-positive counts |
-| `length`, `hl.len` | `character_length` plus `regexp_count` of supplementary Unicode scalars, giving UTF-16 units |
-| `lower`, `upper` | Built-in Unicode case conversion |
-| `strip` | `btrim` with the explicit U+0000..U+0020 Java trim character set |
-| `contains`, `startswith`, `endswith` | `contains`, `starts_with`, `ends_with` |
-| Unbounded `find` | `strpos`, `substr`, UTF-16 length of the preceding prefix, and `CASE` for absent/missing matches |
-| BMP literal slicing/indexing | `substr` with normalized bounds; dynamic indexing is rejected because substring does not raise Hail's out-of-bounds error |
-| BMP literal `reverse` | `reverse` |
-| Literal-pattern `matches` | `regexp_like`; full matches use absolute start/end anchors |
-| Literal-pattern/plain-replacement `replace` | `replace` |
-| Literal-delimiter unlimited `split` | `string_to_array`, with `CASE` preserving Hail's empty-input result |
-| Literal character `translate` | `translate`; deletion entries follow replacement entries in its arguments |
-| String collection `join` / `hl.delimit` | `array_to_string`, with `"null"` for missing members |
-| BMP literal `reverse_complement` | `reverse` and `translate` |
+| `length`, `hl.len` | Codepoint count using DataFusion `character_length` |
+| `s[i]` | Dynamic positive/negative codepoint index; missing inputs propagate; out-of-range indices raise at evaluation |
+| `s[start:stop:step]` | Dynamic codepoint bounds, clamped as array slices; positive/negative steps; a zero step raises |
+| `find(sub, start, end)` | Codepoint offsets within normalized bounds; -1 if absent |
+| `reverse`, `reverse_complement` | Reverse whole codepoints, including supplementary characters; complement only mapped bases |
+| `lower`, `upper`, `strip` | DataFusion Unicode case conversion; strip retains the U+0000..U+0020 trim set |
+| `+`, `*`, contains/prefix/suffix | Dynamic strings; missing-string repetition by non-positive counts gives the empty string |
+| `matches`, `first_match_in` | Dynamic regex patterns; partial/full matching and capture groups; no match gives missing capture array |
+| `replace` | Dynamic regex and replacement; all matches replaced; DataFusion replacement templates |
+| `split` | Dynamic regex delimiter and limit; positive limits retain the unsplit remainder, negative limits preserve trailing empties, zero removes trailing empties |
+| `translate` | Codepoint keys, supplementary characters, deletion, arbitrary replacement strings, dynamic dictionaries |
+| `join`, `delimit` | String arrays/sets joined natively; delimit converts non-string elements using Vail's string conversion |
+| `hamming` | Count unequal codepoints; unequal lengths or missing inputs give missing |
+| `entropy` | Shannon entropy of codepoint frequencies in bits; empty string gives zero |
 
-## Explicit gaps
+Python constructs lazy IR; execution stays in Rust/DataFusion. Built-ins handle
+substring, length, reversal, search, matching, replacement and character
+translation. Native scalar kernels supply regex splitting/capture extraction,
+hamming distance and entropy. Dynamic dictionary translation and stepped slices
+compose existing array lambdas, dictionary lookup and join operations.
 
-- **General UTF-16 indexing/slicing/reversal:** DataFusion operates on Unicode
-  scalars. Hail indexes UTF-16 units, can slice inside surrogate pairs, and its
-  runtime reversal of supplementary characters differs from Unicode-scalar
-  reversal. Only BMP literal inputs prove the same behavior without a runtime
-  compatibility evaluator. A full identity slice works for arbitrary input.
-  Bounded `find` is also rejected. Out-of-bounds constant indices raise early.
-- **Java regular expressions:** DataFusion uses Rust regex syntax and semantics.
-  Backreferences, lookaround, Unicode classes, anchors and other constructs do
-  not have universal Java parity. Public regex methods accept only patterns
-  containing no regex metacharacters. Capture extraction, templates, dynamic
-  patterns, zero-width split/replacement and split limits are rejected.
-- **Dictionary translation:** A DataFusion character translation maps character
-  positions in two strings. It cannot directly consume a dynamic dictionary or
-  replace one character with a longer string. Literal BMP character mappings and
-  deletion work.
-- **Numeric parsing:** The Hail oracle accepts Arabic decimal digits in integer
-  parsing, and JVM hexadecimal literals, numeric suffixes and signed NaNs in
-  float parsing. Generic DataFusion casts do not provide that complete grammar.
-  The public `parse_*` APIs explicitly reject rather than silently return a
-  different result for those inputs.
-- **Formatting/serialization and statistics:** The pinned functions do not
-  provide Hail-compatible Java printf, typed JSON serialization/parsing, hamming
-  distance or string entropy. No replacements were hand-written. Non-string
-  `delimit` is rejected because it needs Hail-specific formatting.
-- **Case locale and Unicode version:** The tested default-locale examples match
-  Hail, including final sigma and dotted I. DataFusion uses Rust Unicode tables;
-  Java case conversion also depends on JVM Unicode tables and default locale.
-  Exhaustive parity across locale/version combinations is not established.
+## Regex and remaining compatibility limits
 
-## Evidence
+Regex operations use DataFusion/Rust regex syntax and Unicode behavior. Patterns
+are no longer restricted to plain literals. Java-only lookaround/backreferences
+inside patterns are not supported by that engine; invalid patterns fail during
+execution. Replacement templates follow DataFusion's syntax (`$1`, `${name}`,
+and its supported POSIX-style backreferences). This is not full Java regex parity.
 
-The pinned Hail runtime produced
-[these observations](research/string-operations-hail-oracle.json), captured by
-[scripts/check_hail_string_operations.py](../scripts/check_hail_string_operations.py).
-It confirms UTF-16 length/positions, supplementary reversal differences, Java
-number syntax, missing-string zero repetition, joined missing members, and
-empty/trailing split results. The script imports Hail only for oracle testing;
-Vail's implementation does not import Hail.
+Java-specific numeric parsing (`parse_int*`, `parse_float*`), Java printf
+(`hl.format`), and Hail typed JSON serialization/parsing remain separate,
+explicitly unsupported APIs. The UTF-8 decision does not define those grammars.
+Unicode casing follows the Unicode tables supplied by Rust/DataFusion and can
+differ from Java across locale/version combinations.
 
-Python tests exercise these cases plus row/global expressions, lookup results,
-aggregation, independent partitions and Vortex write/read round trips. Native
-tests assert built-in DataFusion kernels and reject invalid IR during planning.
+## Compatibility evidence
 
-DataFusion functions are checked against the pinned 55.0.0 registry sources and
-[official scalar function documentation](https://datafusion.apache.org/user-guide/sql/scalar_functions.html).
+The historical [Hail oracle observations](research/string-operations-hail-oracle.json)
+and [capture script](../scripts/check_hail_string_operations.py) record Hail's
+UTF-16 behavior. They are evidence of the intentional divergence, not Vail's
+expected outputs. Tests in `test_string_operations.py` and
+`test_string_codepoints.py` assert Vail's codepoint contract, dynamic execution,
+bounds/missingness, regex operations, and storage round trips.

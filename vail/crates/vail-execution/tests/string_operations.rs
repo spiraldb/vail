@@ -8,10 +8,7 @@ use vail_execution::expressions::{Expr, lower, project_batch};
 fn assert_builtin_functions(expr: &Arc<dyn PhysicalExpr>) {
     if let Some(function) = expr.downcast_ref::<ScalarFunctionExpr>() {
         assert!(
-            matches!(
-                function.name(),
-                "lower" | "character_length" | "regexp_count"
-            ),
+            matches!(function.name(), "lower" | "character_length"),
             "unexpected function {}",
             function.name()
         );
@@ -22,15 +19,10 @@ fn assert_builtin_functions(expr: &Arc<dyn PhysicalExpr>) {
 }
 
 #[test]
-fn string_length_composition_contains_only_datafusion_kernels() {
+fn string_length_uses_codepoints_and_only_datafusion_kernels() {
     let expr: Expr = serde_json::from_value(json!({
-        "op":"integer_binary", "operator":"add",
-        "left":{"op":"cast","dtype":"int64","value":{
-            "op":"string_function","function":"character_length",
-            "args":[{"op":"column","name":"text"}]}},
-        "right":{"op":"string_function","function":"regexp_count","args":[
-            {"op":"column","name":"text"},
-            {"op":"literal","dtype":"str","value":"[\\x{10000}-\\x{10FFFF}]"}]}
+        "op":"string_function","function":"character_length",
+        "args":[{"op":"column","name":"text"}]
     }))
     .unwrap();
     let source = RecordBatch::try_from_iter([(
@@ -42,11 +34,11 @@ fn string_length_composition_contains_only_datafusion_kernels() {
     let output = project_batch(&source, &[("size".into(), expr)]).unwrap();
     assert_eq!(
         datafusion_common::ScalarValue::try_from_array(output.column(0), 0).unwrap(),
-        datafusion_common::ScalarValue::Int64(Some(4))
+        datafusion_common::ScalarValue::Int32(Some(3))
     );
     assert_eq!(
         datafusion_common::ScalarValue::try_from_array(output.column(0), 1).unwrap(),
-        datafusion_common::ScalarValue::Int64(None)
+        datafusion_common::ScalarValue::Int32(None)
     );
 }
 

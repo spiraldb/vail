@@ -4020,6 +4020,31 @@ pub(crate) fn string_function(
         "character_length" => (unicode::character_length(), vec![text], int32),
         "regexp_count" => (regex::regexp_count(), vec![text.clone(), text], int64),
         "regexp_like" => (regex::regexp_like(), vec![text.clone(), text], boolean),
+        "regexp_replace" => (
+            regex::regexp_replace(),
+            vec![text.clone(), text.clone(), text.clone(), text.clone()],
+            text,
+        ),
+        "regex_split" => (
+            crate::string_kernels::udf(name),
+            vec![text.clone(), text, int32],
+            strings,
+        ),
+        "first_match_in" => (
+            crate::string_kernels::udf(name),
+            vec![text.clone(), text],
+            strings,
+        ),
+        "hamming" => (
+            crate::string_kernels::udf(name),
+            vec![text.clone(), text],
+            int32,
+        ),
+        "entropy" => (
+            crate::string_kernels::udf(name),
+            vec![text],
+            Type::Primitive(PrimitiveType::Float64),
+        ),
         "strpos" => (unicode::strpos(), vec![text.clone(), text], int32),
         "substr" => (
             unicode::substr(),

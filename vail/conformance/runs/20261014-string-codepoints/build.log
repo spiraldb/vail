@@ -1,0 +1,169 @@
+🍹 Building a mixed python/rust project
+🐍 Found CPython 3.14 at /Users/danielking/projects/spiraldb/.venv/bin/python
+🔗 Found pyo3 bindings with abi3-py3.11 support
+📡 Using build options features from pyproject.toml
+💻 Using `MACOSX_DEPLOYMENT_TARGET=11.0` for aarch64-apple-darwin by default
+   Compiling zstd-sys v2.1.0+zstd.1.5.7
+   Compiling psm v0.1.32
+   Compiling ring v0.17.14
+   Compiling liblzma-sys v0.4.9
+   Compiling custom-labels v0.4.6
+   Compiling libdatasketches_sys v0.1.3
+   Compiling stacker v0.1.25
+   Compiling recursive v0.1.1
+   Compiling sqlparser v0.62.0
+   Compiling zstd-safe v7.3.0
+   Compiling zstd-safe v8.0.0
+   Compiling zstd v0.13.3
+   Compiling vortex-io v0.86.1
+   Compiling arrow-ipc v59.2.0
+   Compiling zstd v0.14.0
+   Compiling vortex-zstd v0.86.1
+   Compiling apache-avro v0.21.0
+   Compiling kll-rs v0.1.4
+   Compiling liblzma v0.4.8
+   Compiling vortex-btrblocks v0.86.1
+   Compiling arrow v59.2.0
+   Compiling parquet v59.2.0
+   Compiling compression-codecs v0.4.45
+   Compiling parquet-variant v59.2.0
+   Compiling async-compression v0.4.50
+   Compiling parquet-variant-json v59.2.0
+   Compiling vortex-layout v0.86.1
+   Compiling parquet-variant-compute v59.2.0
+   Compiling vortex-parquet-variant v0.86.1
+   Compiling vortex-file v0.86.1
+   Compiling datafusion-common v55.0.0
+   Compiling vortex v0.86.1
+   Compiling iceberg v0.10.1 (/Users/danielking/.codex/worktrees/1611/vail/vail/patches/iceberg-rust/crates/iceberg)
+   Compiling datafusion-expr-common v55.0.0
+   Compiling datafusion-physical-expr-common v55.0.0
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling datafusion-functions-aggregate-common v55.0.0
+   Compiling datafusion-functions-window-common v55.0.0
+   Compiling datafusion-expr v55.0.0
+   Compiling datafusion-physical-expr v55.0.0
+   Compiling datafusion-execution v55.0.0
+   Compiling datafusion-functions v55.0.0
+   Compiling datafusion-functions-aggregate v55.0.0
+   Compiling datafusion-optimizer v55.0.0
+   Compiling datafusion-functions-window v55.0.0
+   Compiling datafusion-physical-plan v55.0.0
+   Compiling datafusion-physical-expr-adapter v55.0.0
+   Compiling datafusion-functions-nested v55.0.0
+   Compiling datafusion-session v55.0.0
+warning: `iceberg` (lib) generated 1 warning
+   Compiling datafusion-sql v55.0.0
+   Compiling datafusion-datasource v55.0.0
+   Compiling datafusion-pruning v55.0.0
+   Compiling datafusion-catalog v55.0.0
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-execution)
+   Compiling datafusion-physical-optimizer v55.0.0
+   Compiling datafusion-datasource-parquet v55.0.0
+   Compiling datafusion-datasource-arrow v55.0.0
+   Compiling datafusion-datasource-csv v55.0.0
+   Compiling datafusion-datasource-json v55.0.0
+   Compiling vail-storage v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-storage)
+   Compiling vail-vcf v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-vcf)
+   Compiling datafusion-catalog-listing v55.0.0
+   Compiling datafusion-functions-table v55.0.0
+   Compiling datafusion v55.0.0
+   Compiling vail-table v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-table)
+warning: unused import: `compare_typed_key_components`
+  --> crates/vail-table/src/interval_read.rs:25:58
+   |
+25 |         Endpoint, IndexBinding, KeyValue, QueryInterval, compare_typed_key_components,
+   |                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:307:31
+    |
+307 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: variable does not need to be mutable
+   --> crates/vail-table/src/interval_read.rs:756:13
+    |
+756 |         let mut start = lower
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `bound`
+   --> crates/vail-table/src/join_interval.rs:435:18
+    |
+435 |         let Some(bound) = bound else { continue };
+    |                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_bound`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `physical_inputs`
+   --> crates/vail-table/src/logical_globals.rs:229:9
+    |
+229 |         physical_inputs: &[PhysicalPlan],
+    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_physical_inputs`
+
+warning: type alias `BuildAggregate` is never used
+  --> crates/vail-table/src/initialized_aggregate.rs:17:6
+   |
+17 | type BuildAggregate =
+   |      ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `initialized_aggregate` is never used
+  --> crates/vail-table/src/initialized_aggregate.rs:26:15
+   |
+26 | pub(crate) fn initialized_aggregate(
+   |               ^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vail-table` (lib) generated 7 warnings (run `cargo fix --lib -p vail-table` to apply 4 suggestions)
+   Compiling vail-python v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-python)
+    Finished `release` profile [optimized] target(s) in 4m 44s
+📦 Including files matching "LICENSE"
+📦 Including files matching "licenses/HAIL.txt"
+📦 Including files matching "python/vail/reference_data/*.json"
+📦 Built wheel for abi3 Python ≥ 3.11 to /private/tmp/vail-codepoint-wheels/vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl

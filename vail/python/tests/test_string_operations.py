@@ -2,8 +2,8 @@ import pytest
 import vail as hl
 
 
-@pytest.mark.parametrize('text, size', [('', 0), ('abc', 3), ('é中', 2), ('a😀b', 4), ('😀😀', 4), ('e\u0301', 2)])
-def test_utf16_length(text, size):
+@pytest.mark.parametrize('text, size', [('', 0), ('abc', 3), ('é中', 2), ('a😀b', 3), ('😀😀', 2), ('e\u0301', 2)])
+def test_codepoint_length(text, size):
     value = hl.literal(text)
     assert hl.eval(value.length()) == hl.eval(hl.len(value)) == size
     assert hl.eval(hl.missing(hl.tstr).length()) is None
@@ -43,10 +43,10 @@ def test_string_search(method, sub, expected):
     assert hl.eval(getattr(value, method)(hl.missing(hl.tstr))) is None
 
 
-def test_find_utf16_positions():
+def test_find_codepoint_positions():
     value = hl.literal('😀abc😀def')
-    assert hl.eval(value.find('a')) == 2
-    assert hl.eval(value.find('d')) == 7
+    assert hl.eval(value.find('a')) == 1
+    assert hl.eval(value.find('d')) == 5
     assert hl.eval(value.find('😀')) == 0
     assert hl.eval(value.find('no')) == -1
     assert hl.eval(value.find('')) == 0
@@ -61,8 +61,8 @@ def test_bmp_literal_index_and_slicing():
     for selection in (slice(None), slice(1, 4), slice(-3, -1), slice(20, 30), slice(-20, 2), slice(4, 1)):
         assert hl.eval(value[selection]) == 'abcdef'[selection]
     assert hl.eval(hl.literal('é中')[1:]) == '中'
-    with pytest.raises(IndexError):
-        value[6]
+    with pytest.raises(RuntimeError, match='string index out of bounds'):
+        hl.eval(value[6])
 
 
 def test_literal_regex_pattern_operations():
@@ -99,30 +99,20 @@ def test_string_operations_in_lazy_table_globals_lookup_and_storage(tmp_path):
     result = source.annotate(clean=source.text.strip(), size=source.text.length(),
                              greeting=lookup + source.suffix, pos=source.text.find('a'))
     assert result.n_partitions() == 2
-    assert [(r.clean, r.size, r.greeting, r.pos) for r in result.collect()] == [('😀a', 5, 'Alice!', 3), (None, None, None, None)]
+    assert [(r.clean, r.size, r.greeting, r.pos) for r in result.collect()] == [('😀a', 4, 'Alice!', 2), (None, None, None, None)]
     result.write(str(tmp_path / 'strings'))
     assert hl.read_table(str(tmp_path / 'strings'))._same(result)
-    assert source.aggregate(hl.agg.collect(source.text.length())) == [5, None]
+    assert source.aggregate(hl.agg.collect(source.text.length())) == [4, None]
 
 
 def test_datafusion_semantic_gaps_raise_explicitly():
     value = hl.literal('abc')
     for action in (
-        lambda: value.matches(r'\w+'), lambda: value.first_match_in('(a)'),
-        lambda: value.replace('a', '$1'), lambda: value.split(',', 2),
-        lambda: value.translate({'a': 'xy'}), lambda: hl.parse_int32('١'),
-        lambda: hl.parse_float64('0x1.8p1'), lambda: hl.hamming('a', 'b'),
-        lambda: hl.entropy('a'), lambda: hl.literal('😀').reverse(),
+        lambda: hl.parse_int32('١'), lambda: hl.parse_float64('0x1.8p1'),
         lambda: hl.format('%s', value), lambda: hl.json(value),
         lambda: hl.parse_json('{}', hl.tstruct()),
-        lambda: value.find('a', 1), lambda: value[::1],
-        lambda: hl.delimit(hl.array([1, 2])),
     ):
         with pytest.raises((NotImplementedError, TypeError)):
-            action()
-    source = hl.Table.parallelize([{'s': 'abc'}])
-    for action in (lambda: source.s[1:], lambda: source.s[0], lambda: source.s.reverse()):
-        with pytest.raises(NotImplementedError):
             action()
     with pytest.raises(TypeError, match='contains method'):
         'a' in value

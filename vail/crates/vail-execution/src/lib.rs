@@ -29,6 +29,7 @@ mod array_fold;
 pub mod calls;
 pub mod collect_aggregate;
 pub mod csv_line;
+mod string_kernels;
 pub mod expressions;
 pub mod logical_expr;
 mod matrix_arrays;

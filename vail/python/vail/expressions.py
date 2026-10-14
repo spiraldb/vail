@@ -678,10 +678,10 @@ class Expression:
                 return lambda sub: ops._call(search[name], self, ops._text(sub))
             methods = {'length': ops.length, 'strip': ops.strip, 'reverse': ops.reverse,
                        'find': ops.find, 'matches': ops.matches, 'replace': ops.replace,
-                       'split': ops.split, 'translate': ops.translate, 'join': ops.join}
+                       'split': ops.split, 'translate': ops.translate, 'join': ops.join,
+                       'first_match_in': ops.first_match_in}
             if name in methods:
                 return lambda *args, **kwargs: methods[name](self, *args, **kwargs)
-            if name == 'first_match_in': return ops.unsupported('Java regex capture groups')
         if isinstance(dtype, (tset, tdict)):
             from . import collections as ops
             if name in ("size", "length"):

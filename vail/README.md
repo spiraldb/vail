@@ -6,6 +6,14 @@ Vail's original code is licensed under [MIT](LICENSE). Upstream dependencies and
 
 The target is Hail Table operation and semantic parity, with Vortex-backed Iceberg storage replacing Hail's native table format. Vortex file-format support comes from [apache/iceberg-rust PR #2835](https://github.com/apache/iceberg-rust/pull/2835), pinned to `0252fe9174aa3062da51328c444a765aa7de2dae`. Vail uses that implementation's reader and writer; it does not maintain a separate Vortex integration in Iceberg. The PR remains an upstream preview, so this does not imply compatibility with arbitrary Iceberg readers.
 
+**Deliberate string compatibility break:** Vail stores valid UTF-8 and counts
+Unicode codepoints (scalar values), rather than Hail's UTF-16 code units.
+Length, indexing, slicing, search offsets, reversal, translation, hamming
+distance, and entropy follow that rule. For example, `hl.len('😀')` is 1.
+Combining sequences and emoji sequences may contain multiple codepoints;
+operations do not segment grapheme clusters or split UTF-8 bytes.
+See [String operations](docs/STRING_OPERATIONS.md).
+
 The first implementation includes a native ordered-collection API, a Python Table slice backed by that Rust code, Vortex files written and read through PR #2835's Iceberg integration, and a typed conformance harness. **This is a partial prototype, not full Hail Table parity.**
 
 ## Run the native and Python examples
@@ -43,7 +51,7 @@ assert [row.position for row in t.take(3)] == [10, 20, 30]
 assert list(t.order_by(hl.desc("position")).key) == []
 ```
 
-The Python slice supports primitive numeric, Boolean and string values, nested structs and arrays, typed row projections (`select`, `annotate`, `transmute`), filtering and collection expressions. Python builds typed TableIR and expression IR; Rust lowers the complete supported graph to DataFusion physical plans. Array construction and length reuse DataFusion functions; indexing, slicing and reductions adapt Hail's bounds, missingness and numeric semantics. Globals support annotate/select/transmute, row expression references, cross-table `index_globals()`, `hl.eval`, and Arrow persistence. Higher-order collection lambdas, sets, and general aggregations remain incomplete. Sort keys currently restrict strings to ASCII until Hail's full Unicode comparison is verified.
+The Python slice supports primitive numeric, Boolean and string values, nested structs and arrays, typed row projections (`select`, `annotate`, `transmute`), filtering and collection expressions. Python builds typed TableIR and expression IR; Rust lowers the complete supported graph to DataFusion physical plans. Array construction and length reuse DataFusion functions; indexing, slicing and reductions adapt Hail's bounds, missingness and numeric semantics. Globals support annotate/select/transmute, row expression references, cross-table `index_globals()`, `hl.eval`, and Arrow persistence. Higher-order collection lambdas, sets, and general aggregations remain incomplete. String sort keys use Unicode scalar order, following Vail's UTF-8 contract.
 
 `Table._same` checks logical schemas, keys, globals, row sequence, and duplicate
 multiplicity with Hail's recursive value similarity rules. Row comparison uses a
