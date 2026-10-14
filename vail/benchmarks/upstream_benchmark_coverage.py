@@ -13,6 +13,7 @@ import itertools
 import json
 import multiprocessing as mp
 import os
+import shutil
 import signal
 from pathlib import Path
 import tempfile
@@ -215,15 +216,27 @@ def _make_exact_fixtures(hl, engine: str, names: list[str], data_dir: Path,
     engine_dir.mkdir(parents=True, exist_ok=True)
     paths = {}
 
+    def is_complete(path: Path, kind: str) -> bool:
+        marker = "_SUCCESS" if engine == "hail" else f"_vail_{kind}.json"
+        return path.is_dir() and (path / marker).is_file()
+
+    def remove_incomplete(path: Path) -> None:
+        if path.is_dir():
+            shutil.rmtree(path)
+        elif path.exists():
+            path.unlink()
+
     def table_fixture(name, build, path_name=None):
         path = engine_dir / f"{path_name or name}.ht"
-        if not path.exists():
+        if not is_complete(path, "table"):
+            remove_incomplete(path)
             build().write(str(path), overwrite=True)
         paths[name] = path
 
     def matrix_fixture(name, build):
         path = engine_dir / f"{name}.mt"
-        if not path.exists():
+        if not is_complete(path, "matrix"):
+            remove_incomplete(path)
             build().write(str(path), overwrite=True)
         paths[name] = path
 
@@ -287,6 +300,8 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
     # Spark behind and contaminate later measurements.
     os.setsid()
     fixture_temp = None
+    benchmark_started = None
+    benchmark_seconds = None
     try:
         import importlib
         import sys
@@ -343,12 +358,21 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
             if "tmp_path" in case["args"]:
                 kwargs["tmp_path"] = Path(temp)
             queue.put({"status": "ready"})
-            fn(**kwargs)
-        queue.put({"status": "passed"})
+            benchmark_started = time.perf_counter()
+            try:
+                fn(**kwargs)
+            except BaseException:
+                benchmark_seconds = time.perf_counter() - benchmark_started
+                raise
+            benchmark_seconds = time.perf_counter() - benchmark_started
+        queue.put({"status": "passed", "benchmark_seconds": benchmark_seconds})
     except UnsupportedBenchmarkInput as exc:
         queue.put({"status": "unsupported", "reason": str(exc)})
     except BaseException as exc:
-        queue.put({"status": "failed", "error": f"{type(exc).__name__}: {exc}", "traceback": traceback.format_exc()})
+        result = {"status": "failed", "error": f"{type(exc).__name__}: {exc}", "traceback": traceback.format_exc()}
+        if benchmark_seconds is not None:
+            result["benchmark_seconds"] = benchmark_seconds
+        queue.put(result)
     finally:
         if fixture_temp is not None:
             fixture_temp.cleanup()
@@ -416,9 +440,15 @@ def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
         result = {"status": "failed", "error": "worker did not exit after reporting a result"}
     queue.close()
     result["fixture_seconds"] = round(benchmark_started - started, 3)
-    result["benchmark_seconds"] = round(time.monotonic() - benchmark_started, 3)
     result["elapsed_seconds"] = round(time.monotonic() - started, 3)
     return result
+
+
+def _write_report(path: Path, report: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_text(json.dumps(report, indent=2) + "\n")
+    temporary.replace(path)
 
 
 def main() -> None:
@@ -432,8 +462,12 @@ def main() -> None:
                         help="Cache for exact upstream fixture downloads and native materializations.")
     parser.add_argument("--smoke", action="store_true", help="Use reduced synthetic fixtures. Never use for benchmark timing claims.")
     parser.add_argument("--output", type=Path, help="JSON report path; defaults to stdout.")
+    parser.add_argument("--resume", action="store_true",
+                        help="Retain completed case results from --output and run only missing cases.")
     parser.add_argument("--list", action="store_true", help="Print discovered cases and exit.")
     args = parser.parse_args()
+    if args.resume and not args.output:
+        parser.error("--resume requires --output PATH")
     cases = inventory()
     if args.case:
         selected = set(args.case)
@@ -447,23 +481,34 @@ def main() -> None:
     report = {"engine": args.engine, "timeout_seconds": args.timeout,
               "fixture_timeout_seconds": args.fixture_timeout, "data_dir": str(args.data_dir),
               "smoke_fixtures": args.smoke, "discovered": len(cases), "cases": []}
+    completed = {}
+    if args.resume and args.output and args.output.exists():
+        previous = json.loads(args.output.read_text())
+        if (previous.get("engine") != args.engine or previous.get("smoke_fixtures") != args.smoke
+                or previous.get("data_dir") != str(args.data_dir)):
+            parser.error("--resume report must use the same engine, smoke mode, and data directory")
+        completed = {item["id"]: item for item in previous.get("cases", []) if "id" in item and "status" in item}
+        report["cases"] = [completed[case["id"]] for case in cases if case["id"] in completed]
     for i, case in enumerate(cases, 1):
+        if case["id"] in completed:
+            print(f"[{i}/{len(cases)}] {case['id']}: retained {completed[case['id']]['status']}", flush=True)
+            continue
         timeout = max([args.timeout, *(mark["args"][0] for mark in case["upstream_marks"]
                                       if mark["name"] == "xtimeout" and mark["args"]
                                       and isinstance(mark["args"][0], (int, float)))])
         result = run_one(case, args.engine, timeout, args.fixture_timeout, args.smoke, str(args.data_dir))
         report["cases"].append({**case, **result})
+        report["cases"].sort(key=lambda item: next(i for i, original in enumerate(cases) if original["id"] == item["id"]))
         report["totals"] = {status: sum(item["status"] == status for item in report["cases"])
                              for status in sorted({item["status"] for item in report["cases"]})}
         if args.output:
-            args.output.parent.mkdir(parents=True, exist_ok=True)
-            args.output.write_text(json.dumps(report, indent=2) + "\n")
+            _write_report(args.output, report)
         print(f"[{i}/{len(cases)}] {case['id']}: {result['status']}", flush=True)
     report["totals"] = {status: sum(item["status"] == status for item in report["cases"])
                          for status in sorted({item["status"] for item in report["cases"]})}
     output = json.dumps(report, indent=2) + "\n"
     if args.output:
-        args.output.write_text(output)
+        _write_report(args.output, report)
     else:
         print(output)
 
