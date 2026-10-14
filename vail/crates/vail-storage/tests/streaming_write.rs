@@ -288,45 +288,58 @@ async fn duplicate_and_missing_keys_keep_arrival_order_across_file_rollover() {
 
 #[tokio::test]
 async fn partition_stream_writes_overlap_and_descriptor_restores_partition_order() {
-    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::time::Duration;
 
     let dir = tempfile::tempdir().unwrap();
     let root = dir.path().join("table");
-    let second_started = Arc::new(AtomicBool::new(false));
     let first = {
-        let second_started = second_started.clone();
+        let root = root.clone();
         async_stream::try_stream! {
-            while !second_started.load(Ordering::SeqCst) {
-                tokio::task::yield_now().await;
+            // Keep source partition zero blocked until partition one has
+            // produced both files, forcing the later partition to reach the
+            // writer first.
+            while files(&root).len() < 2 {
+                tokio::time::sleep(Duration::from_millis(2)).await;
             }
             yield batch(vec![7, 7]);
         }
         .boxed()
     };
     let second = {
-        let second_started = second_started.clone();
         async_stream::try_stream! {
-            second_started.store(true, Ordering::SeqCst);
             yield batch(vec![3, 3]);
         }
         .boxed()
     };
-    write_local_partition_streams_with_globals(
-        root.to_str().unwrap(),
-        false,
-        schema(),
-        vec![first, second],
-        json!([["x", "int32"]]),
-        vec![],
-        WriteOptions {
-            max_buffer_bytes: usize::MAX,
-            max_rows_per_file: 1,
-        },
-        None,
+    tokio::time::timeout(
+        Duration::from_secs(10),
+        write_local_partition_streams_with_globals(
+            root.to_str().unwrap(),
+            false,
+            schema(),
+            vec![first, second],
+            json!([["x", "int32"]]),
+            vec![],
+            WriteOptions {
+                max_buffer_bytes: usize::MAX,
+                max_rows_per_file: 1,
+            },
+            None,
+        ),
     )
     .await
+    .expect("later partition must make progress while the first is gated")
     .unwrap();
 
+    let mut output_files = files(&root);
+    output_files.sort();
+    assert_eq!(
+        output_files
+            .iter()
+            .map(|path| source_order(path))
+            .collect::<Vec<_>>(),
+        vec![(0, 0), (0, 1), (1, 0), (1, 1)]
+    );
     let read = read_local(root.to_str().unwrap()).await.unwrap();
     assert_eq!(
         read.partitions
@@ -337,6 +350,13 @@ async fn partition_stream_writes_overlap_and_descriptor_restores_partition_order
     );
     assert_eq!(values(read.partitions), vec![7, 7, 3, 3]);
     assert_eq!(files(&root).len(), 4);
+}
+
+fn source_order(path: &Path) -> (usize, usize) {
+    let name = path.file_stem().unwrap().to_string_lossy();
+    let fields = name.split('-').collect::<Vec<_>>();
+    // Snapshot IDs are nonnegative; Vortex paths are snapshot-partition-file-uuid.
+    (fields[1].parse().unwrap(), fields[2].parse().unwrap())
 }
 
 #[tokio::test]

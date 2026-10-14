@@ -1602,10 +1602,11 @@ mod concurrent_partition_tests {
             .await;
         state.gate.add_permits(crate::EXECUTION_CONCURRENCY);
         state
-            .wait(|| state.started.load(Ordering::SeqCst) == crate::EXECUTION_CONCURRENCY + 1)
+            .wait(|| state.started.load(Ordering::SeqCst) > crate::EXECUTION_CONCURRENCY)
             .await;
         assert!(state.active.load(Ordering::SeqCst) > 0);
         state.release_first.notify_one();
+        state.gate.add_permits(40);
         assert_eq!(action.await.unwrap().unwrap(), 40);
         assert_eq!(state.active.load(Ordering::SeqCst), 0);
         assert!(state.peak.load(Ordering::SeqCst) <= crate::EXECUTION_CONCURRENCY);

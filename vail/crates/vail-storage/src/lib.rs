@@ -296,6 +296,7 @@ async fn write_initial_file_stream(
                                 &table,
                                 snapshot_id,
                                 file_ordinal,
+                                order,
                                 batches,
                                 binding.as_ref(),
                                 &arrow_schema,
@@ -412,6 +413,7 @@ async fn write_initial_file(
     table: &Table,
     snapshot_id: i64,
     ordinal: usize,
+    source_order: (usize, usize),
     batches: Vec<RecordBatch>,
     binding: Option<&IndexBinding>,
     arrow_schema: &arrow_schema::Schema,
@@ -463,7 +465,9 @@ async fn write_initial_file(
     let data_path = local_path(table.metadata().location())?
         .join("data")
         .join(format!(
-            "{snapshot_id}-{ordinal:020}-{}.vortex",
+            "{snapshot_id}-{:020}-{:020}-{}.vortex",
+            source_order.0,
+            source_order.1,
             Uuid::now_v7()
         ));
     std::fs::create_dir_all(
