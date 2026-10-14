@@ -1,0 +1,18 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "Tests.test_partitioned_write",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "MatrixTable.write() got an unexpected keyword argument '_partitions'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1796, in test_partitioned_write\n    test_parts([(0, 40, True, False)])\n  File \"../hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1790, in test_parts\n    mt.write(tmp, _partitions=parts)\nTypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

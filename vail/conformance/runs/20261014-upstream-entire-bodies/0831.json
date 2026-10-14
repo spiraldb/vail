@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "RuntimeError",
+      "error": "Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/missingInfoArray.vcf:15: Missing value in INFO array. Use 'hl.import_vcf(..., array_elements_required=False)'.",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 230, in test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements\n    mt._force_count_rows()\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1177, in _force_count_rows\n    return self._mir.core._force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1250, in _force_count\n    return self._native.force_count()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/missingInfoArray.vcf:15: Missing value in INFO array. Use 'hl.import_vcf(..., array_elements_required=False)'.\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

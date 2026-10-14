@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_dict_conversions",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "array expects a list or an array expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 2632, in test_dict_conversions\n    self.assertEqual(sorted(hl.eval(hl.array({1: 1, 2: 2}))), [(1, 1), (2, 2)])\n                                    ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 944, in array\n    raise TypeError(\"array expects a list or an array expression\")\nTypeError: array expects a list or an array expression\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

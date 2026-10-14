@@ -1,0 +1,19 @@
+{
+  "module": "vds/test_vds.py",
+  "name": "test_ref_block_does_not_densify_to_next_contig",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'vds'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/vds/test_vds.py\", line 906, in test_ref_block_does_not_densify_to_next_contig\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n          ^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'vds'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,11 @@
+{
+  "module": "plot/test_plot.py",
+  "name": "test_plots_deprecated_collect_all",
+  "variants": [],
+  "setup_errors": [],
+  "status": "blocked",
+  "phase": "setup_or_parameters",
+  "error_type": "AttributeError",
+  "error": "module 'vail' has no attribute 'plot'",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 189, in worker\n    for value in evaluate(decorator.args[1]):\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 185, in <lambda>\n    evaluate = lambda node: eval(compile(ast.Expression(node), str(source), 'eval'), scope)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/plot/test_plot.py\", line 64, in <module>\n    ('manhattan', hl.plot.manhattan),\n                  ^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'plot'\n"
+}

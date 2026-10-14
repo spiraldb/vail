@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_qnorm",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'qnorm'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 3542, in test_qnorm\n    self.assert_evals_to(hl.qnorm(hl.pnorm(0)), 0.0)\n                         ^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'qnorm'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

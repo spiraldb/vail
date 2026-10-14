@@ -1,0 +1,20 @@
+{
+  "module": "fs/test_worker_driver_fs.py",
+  "name": "test_requester_pays_with_project_more_than_one_partition_no_project",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "Regex pattern did not match.\n  Expected regex: 'Bucket is a requester pays bucket but no user project provided'\n  Actual message: 'text IO currently supports local paths'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/fs/test_worker_driver_fs.py\", line 121, in test_requester_pays_with_project_more_than_one_partition_no_project\n    with pytest.raises(Exception, match='Bucket is a requester pays bucket but no user project provided'):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/raises.py\", line 711, in __exit__\n    raise AssertionError(self._fail_reason) from None\nAssertionError: Regex pattern did not match.\n  Expected regex: 'Bucket is a requester pays bucket but no user project provided'\n  Actual message: 'text IO currently supports local paths'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'aiohttp'",
+    "No module named 'aiohttp'",
+    "No module named 'rich'"
+  ],
+  "status": "failed_or_blocked"
+}

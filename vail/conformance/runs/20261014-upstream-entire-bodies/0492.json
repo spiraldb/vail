@@ -1,0 +1,41 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_sparse_matrix_sums",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'s.sum()'",
+        "y": "'41.0'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 618, in test_sparse_matrix_sums\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'s.sum(axis=0)'",
+        "y": "'np.array([[9.0, 10.0, 10.0, 12.0]])'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 618, in test_sparse_matrix_sums\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "'s.sum(axis=1)'",
+        "y": "'np.array([[7.0], [15.0], [19.0]])'"
+      },
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "globals must be a dict",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 618, in test_sparse_matrix_sums\n    lhs = eval(x, block_matrix_bindings)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: globals must be a dict\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

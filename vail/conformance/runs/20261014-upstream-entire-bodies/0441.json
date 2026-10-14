@@ -1,0 +1,16 @@
+{
+  "module": "genetics/test_call.py",
+  "name": "Tests.test_haploid",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'Call' object has no attribute 'is_haploid'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/genetics/test_call.py\", line 63, in test_haploid\n    self.assertTrue(c_haploid.is_haploid())\n                    ^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'Call' object has no attribute 'is_haploid'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

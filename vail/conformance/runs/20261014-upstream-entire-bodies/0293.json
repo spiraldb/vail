@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "test_approx_cdf_accuracy",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "fixture",
+      "error_type": "KeyError",
+      "error": "'request'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 232, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 221, in fixture\n    else fixture(p)\n         ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 218, in fixture\n    factory = scope[name]\n              ~~~~~^^^^^^\nKeyError: 'request'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

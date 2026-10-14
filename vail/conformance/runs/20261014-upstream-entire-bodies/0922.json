@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "BGENTests.test_index_bgen_errors_when_index_file_has_wrong_extension",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'TemporaryFilename'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 1582, in test_index_bgen_errors_when_index_file_has_wrong_extension\n    with hl.TemporaryFilename(suffix='.idx') as index_file:\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'TemporaryFilename'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

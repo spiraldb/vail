@@ -1,0 +1,19 @@
+{
+  "module": "test_ir.py",
+  "name": "test_ir_value_type",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "fixture",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'tstream'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 232, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 221, in fixture\n    else fixture(p)\n         ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 219, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 44, in value_irs\n    env = value_irs_env()\n          ^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 24, in value_irs_env\n    'st': hl.tstream(hl.tint32),\n          ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'tstream'. Did you mean: 'streams'?\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

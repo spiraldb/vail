@@ -507,8 +507,7 @@ def test_make_table_filter_stats_and_explicit_blockers():
     assert [r.entry_stats_col.n_remaining for r in f.cols().collect()] == [2, 0]
     with pytest.raises(NotImplementedError):
         m.cache()
-    with pytest.raises(NotImplementedError):
-        m.sample_rows(0.5)
+    assert m.sample_rows(1, seed=0)._same(m)
 
 
 def test_grouped_empty_cells_keep_fixed_axis_values():

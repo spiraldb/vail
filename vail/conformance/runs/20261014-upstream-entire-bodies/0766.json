@@ -1,0 +1,87 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "test_query_matrix_table_rows",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "50",
+        "expected": "[Struct(row_idx=50, s='50', e=[Struct(n=0), Struct(n=500), Struct(n=1000), Struct(n=1500), Struct(n=2000), Struct(n=2500), Struct(n=3000), Struct(n=3500), Struct(n=4000), Struct(n=4500)])]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.StructExpression object at 0x10ed3f140>",
+        "expected": "[Struct(row_idx=50, s='50', e=[Struct(n=0), Struct(n=500), Struct(n=1000), Struct(n=1500), Struct(n=2000), Struct(n=2500), Struct(n=3000), Struct(n=3500), Struct(n=4000), Struct(n=4500)])]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "55",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "5",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "-1",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "205",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x10ed55180>",
+        "expected": "[Struct(row_idx=30, s='30', e=[Struct(n=0), Struct(n=300), Struct(n=600), Struct(n=900), Struct(n=1200), Struct(n=1500), Struct(n=1800), Struct(n=2100), Struct(n=2400), Struct(n=2700)]), Struct(row_idx=40, s='40', e=[Struct(n=0), Struct(n=400), Struct(n=800), Struct(n=1200), Struct(n=1600), Struct(n"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x10ed55060>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x10ed54ee0>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x10ed55240>",
+        "expected": "[Struct(row_idx=30, s='30', e=[Struct(n=0), Struct(n=300), Struct(n=600), Struct(n=900), Struct(n=1200), Struct(n=1500), Struct(n=1800), Struct(n=2100), Struct(n=2400), Struct(n=2700)]), Struct(row_idx=40, s='40', e=[Struct(n=0), Struct(n=400), Struct(n=800), Struct(n=1200), Struct(n=1600), Struct(n"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x10ed552a0>",
+        "expected": "[Struct(row_idx=40, s='40', e=[Struct(n=0), Struct(n=400), Struct(n=800), Struct(n=1200), Struct(n=1600), Struct(n=2000), Struct(n=2400), Struct(n=2800), Struct(n=3200), Struct(n=3600)]), Struct(row_idx=50, s='50', e=[Struct(n=0), Struct(n=500), Struct(n=1000), Struct(n=1500), Struct(n=2000), Struct"
+      }
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "passed"
+}

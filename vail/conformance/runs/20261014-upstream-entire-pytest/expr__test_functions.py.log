@@ -1,0 +1,59 @@
+FFF.FFF                                                                  [100%]
+=================================== FAILURES ===================================
+__________________________ test_deprecated_binom_test __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py:11: in test_deprecated_binom_test
+    assert hl.eval(hl.binom_test(2, 10, 0.5, 'two.sided')) == pytest.approx(binom.pvalue)
+                   ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'binom_test'
+_______________________________ test_binom_test ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py:18: in test_binom_test
+    assert hl.eval(hl.binom_test(*args)) == pytest.approx(binom.pvalue), args
+                   ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'binom_test'
+_______________________________ test_pchisqtail ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py:31: in test_pchisqtail
+    assert hl.eval(hl.pchisqtail(*args)) == pytest.approx(right_tail_from_scipy(*args)), args
+                   ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'pchisqtail'
+________________________________ test_pgenchisq ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py:39: in test_pgenchisq
+    ht = hl.import_table(
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py:190: in import_table
+    raise NotImplementedError('typed text imports currently support primitive fields')
+E   NotImplementedError: typed text imports currently support primitive fields
+__________________________________ test_array __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py:73: in test_array
+    hl.array(hl.nd.array([1, 2, 3, 3])),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:942: in array
+    return to_array(collection)
+           ^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collections.py:229: in to_array
+    raise TypeError("array conversion requires an array, set, or dictionary")
+E   TypeError: array conversion requires an array, set, or dictionary
+____________________________ test_literal_free_vars ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py:88: in test_literal_free_vars
+    array.map(hl.literal)
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:532: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:881: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py:622: in infer_type
+    raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
+E   TypeError: cannot infer a Vail type for Expression
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/helpers.py:101
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/helpers.py:101: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py::test_deprecated_binom_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py::test_binom_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py::test_pchisqtail
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py::test_pgenchisq
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py::test_array
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/expr/test_functions.py::test_literal_free_vars
+6 failed, 1 passed, 1 warning in 0.80s

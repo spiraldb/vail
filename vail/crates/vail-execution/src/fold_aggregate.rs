@@ -11,6 +11,7 @@ use datafusion_physical_expr::PhysicalExpr;
 #[derive(Debug)]
 struct FoldAccumulator {
     state: ScalarValue,
+    has_state: bool,
     input_schema: SchemaRef,
     seq_schema: SchemaRef,
     combine_schema: SchemaRef,
@@ -30,6 +31,7 @@ impl FoldAccumulator {
         columns.extend(row_columns.iter().map(|column| column.slice(0, 1)));
         let batch = RecordBatch::try_new(Arc::clone(&self.seq_schema), columns)?;
         self.state = Self::evaluate_one(&self.seq, &batch)?;
+        self.has_state = true;
         Ok(())
     }
 
@@ -98,7 +100,15 @@ impl Accumulator for FoldAccumulator {
         };
         for row in 0..states.len() {
             let partial = ScalarValue::try_from_array(states, row)?;
-            self.state = self.combine_states(self.state.clone(), partial)?;
+            // A final accumulator starts with the same initializer as a
+            // partial one. Adopt the first partial rather than adding that
+            // initializer a second time (it need not be a combine identity).
+            self.state = if self.has_state {
+                self.combine_states(self.state.clone(), partial)?
+            } else {
+                partial
+            };
+            self.has_state = true;
         }
         Ok(())
     }
@@ -131,6 +141,7 @@ pub fn fold_udaf(
     let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
         Ok(Box::new(FoldAccumulator {
             state: factory_initial.clone(),
+            has_state: false,
             input_schema: Arc::clone(&factory_input_schema),
             seq_schema: Arc::clone(&factory_seq_schema),
             combine_schema: Arc::clone(&factory_combine_schema),

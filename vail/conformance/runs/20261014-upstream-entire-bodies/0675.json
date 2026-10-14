@@ -1,0 +1,18 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "Tests.test_hw_func_and_agg_agree",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "matrix list aggregation requires a native per-list hardy_weinberg_test reducer",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1394, in test_hw_func_and_agg_agree\n    mt_two_sided = mt.annotate_rows(\n                   ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 874, in annotate_rows\n    return self._annotate(\"row\", named)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 811, in _annotate\n    return self._project_axis(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 768, in _project_axis\n    self._axis_aggregates(v, axis, base)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 673, in _axis_aggregates\n    return reduce_list(self, expr, base, self._row_contexts(base))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py\", line 471, in reduce_list\n    result = walk(expr.to_ir(), contexts, fixed)\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py\", line 454, in walk\n    raise NotImplementedError(\nNotImplementedError: matrix list aggregation requires a native per-list hardy_weinberg_test reducer\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_ndarrays.py",
+  "name": "test_concatenate",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'concatenate'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1066, in test_concatenate\n    res = hl.eval(hl.nd.concatenate([x, y], axis=1))\n                  ^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'concatenate'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,16 @@
+{
+  "module": "methods/test_misc.py",
+  "name": "Tests.test_rename_duplicates",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'rename_duplicates'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_misc.py\", line 12, in test_rename_duplicates\n    assert hl.rename_duplicates(mt.key_cols_by(s=hl.str(mt.col_idx))).unique_id.collect() == [\n           ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'rename_duplicates'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

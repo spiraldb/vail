@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_ndarrays.py",
+  "name": "test_maximum_minimuim",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "nd.array requires int32/int64/float32/float64 data",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1243, in test_maximum_minimuim\n    ndnan_elem = hl.nd.array([1.0, hl.float64(float(\"NaN\")), 3.0, 6.0])\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/nd.py\", line 14, in array\n    raise TypeError(\"nd.array requires int32/int64/float32/float64 data\")\nTypeError: nd.array requires int32/int64/float32/float64 data\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

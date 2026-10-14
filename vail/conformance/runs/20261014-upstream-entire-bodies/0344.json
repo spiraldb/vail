@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_ndarrays.py",
+  "name": "test_ndarray_reshape",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 318, in test_ndarray_reshape\n    cube = hl.nd.array([0, 1, 2, 3, 4, 5, 6, 7]).reshape((2, 2, 2))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,88 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_query_table",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "50",
+        "expected": "[Struct(idx=50, s='50')]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.StructExpression object at 0x120c0e5e0>",
+        "expected": "[Struct(idx=50, s='50')]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "55",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "5",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "-1",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "205",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x120c24dc0>",
+        "expected": "[Struct(idx=30, s='30'), Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60')]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x120c24ca0>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x120c24ac0>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x120c24e80>",
+        "expected": "[Struct(idx=30, s='30'), Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60')]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x120c24ee0>",
+        "expected": "[Struct(idx=40, s='40'), Struct(idx=50, s='50'), Struct(idx=60, s='60'), Struct(idx=70, s='70'), Struct(idx=80, s='80')]"
+      }
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "passed"
+}

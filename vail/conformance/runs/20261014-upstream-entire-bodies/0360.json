@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_ndarrays.py",
+  "name": "test_svd",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'svd'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 925, in test_svd\n    assert_evals_to_same_svd(small_square, np_small_square)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 886, in assert_evals_to_same_svd\n    evaled = hl.eval(hl.nd.svd(nd_expr, full_matrices, compute_uv))\n                     ^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'svd'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

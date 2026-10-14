@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "test_cannot_aggregate_in_local_scan",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "Failed",
+      "error": "DID NOT RAISE ExpressionException",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 4576, in test_cannot_aggregate_in_local_scan\n    with pytest.raises(hl.ExpressionException, match='local stream scan cannot aggregate'):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/raises.py\", line 699, in __exit__\n    fail(f\"DID NOT RAISE {self.expected_exceptions[0].__name__}\")\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/outcomes.py\", line 162, in __call__\n    raise Failed(msg=reason, pytrace=pytrace)\nFailed: DID NOT RAISE ExpressionException\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

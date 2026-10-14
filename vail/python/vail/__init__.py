@@ -834,6 +834,12 @@ class Table:
             ordered = ordered._project([(name, ordered[name]) for name in self._schema])
         return ordered
 
+    def sample(self, p, seed=None):
+        """Keep each row with probability ``p`` using a seeded random expression."""
+        if not 0 <= p <= 1:
+            raise ValueError(f"Requires 'p' in [0,1]. Found p={p}")
+        return self.filter(rand_bool(p, seed))
+
     def filter(self, expr, keep=True):
         if type(keep) is not builtins.bool:
             raise TypeError("keep must be a bool")
@@ -1995,3 +2001,5 @@ def repeat(value, n):
     return range(n).map(lambda _: value)
 
 from . import linalg
+
+from .simulation import balding_nichols_model

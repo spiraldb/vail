@@ -1,0 +1,85 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_sparsify_band_1",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "lower": "0",
+        "upper": "0"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_numpy'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 867, in test_sparsify_band_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_numpy'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "lower": "1",
+        "upper": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_numpy'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 867, in test_sparsify_band_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_numpy'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "lower": "2",
+        "upper": "2"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_numpy'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 867, in test_sparsify_band_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_numpy'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "lower": "-5",
+        "upper": "5"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_numpy'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 867, in test_sparsify_band_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_numpy'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "lower": "-7",
+        "upper": "0"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_numpy'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 867, in test_sparsify_band_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_numpy'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "lower": "0",
+        "upper": "9"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_numpy'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 867, in test_sparsify_band_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_numpy'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "lower": "-100",
+        "upper": "100"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_numpy'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 867, in test_sparsify_band_1\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n          ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_numpy'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

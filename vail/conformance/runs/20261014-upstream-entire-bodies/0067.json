@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_translate",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "translate mapping keys must be one UTF-16 character",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 429, in test_translate\n    hl.eval(hl.str('foo').translate({'foo': 'bar'}))\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 671, in <lambda>\n    return lambda *args, **kwargs: methods[name](self, *args, **kwargs)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 180, in translate\n    raise ValueError('translate mapping keys must be one UTF-16 character')\nValueError: translate mapping keys must be one UTF-16 character\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

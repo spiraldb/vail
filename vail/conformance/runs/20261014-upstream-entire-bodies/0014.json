@@ -1,0 +1,22 @@
+{
+  "module": "backend/test_service_backend.py",
+  "name": "test_driver_and_worker_job_groups",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'ServiceBackend' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/backend/test_service_backend.py\", line 109, in test_driver_and_worker_job_groups\n    assert isinstance(backend, ServiceBackend)\n                               ^^^^^^^^^^^^^^\nNameError: name 'ServiceBackend' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.backend.service_backend'; 'vail.backend' is not a package",
+    "module 'vail.utils' has no attribute 'ANY_REGION'",
+    "No module named 'aiohttp'",
+    "No module named 'rich'",
+    "No module named 'rich'"
+  ],
+  "status": "failed_or_blocked"
+}

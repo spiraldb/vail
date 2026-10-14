@@ -1,0 +1,24 @@
+{
+  "module": "utils/test_utils.py",
+  "name": "Tests.test_hadoop_mkdir_p_2",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'hadoop_exists'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/utils/test_utils.py\", line 102, in test_hadoop_mkdir_p_2\n    self.assertFalse(hl.hadoop_exists(resource('./some2')))\n                     ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'hadoop_exists'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.utils' has no attribute 'frozendict'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "module 'vail.utils' has no attribute 'with_local_temp_file'",
+    "No module named 'vail.utils.linkedlist'",
+    "module 'vail.utils.misc' has no attribute 'escape_id'",
+    "module 'vail.utils.misc' has no attribute 'escape_str'"
+  ],
+  "status": "failed_or_blocked"
+}

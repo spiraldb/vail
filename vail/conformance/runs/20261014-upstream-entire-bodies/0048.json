@@ -1,0 +1,16 @@
+{
+  "module": "experimental/test_time.py",
+  "name": "test_strftime",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'htime' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/experimental/test_time.py\", line 7, in test_strftime\n    hl.eval(htime.strftime(\"%A, %B %e, %Y. %r\", 876541523, \"America/New_York\"))\n            ^^^^^\nNameError: name 'htime' is not defined. Did you mean: 'timer'?\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

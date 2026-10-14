@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "test_approx_cdf_col_aggregate",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 4258, in test_approx_cdf_col_aggregate\n    mt = mt.annotate_cols(bar=hl.agg.approx_cdf(mt.foo))\n                              ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/agg_numeric.py\", line 85, in approx_cdf\n    raise NotImplementedError(\nNotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

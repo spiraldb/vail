@@ -1,0 +1,19 @@
+{
+  "module": "test_ir.py",
+  "name": "test_blockmatrix_ir_persist",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'Env' has no attribute 'backend'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 493, in test_blockmatrix_ir_persist\n    backend = Env.backend()\n              ^^^^^^^^^^^\nAttributeError: type object 'Env' has no attribute 'backend'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

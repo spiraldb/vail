@@ -1,0 +1,16 @@
+{
+  "module": "expr/test_functions.py",
+  "name": "test_pgenchisq",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "typed text imports currently support primitive fields",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_functions.py\", line 39, in test_pgenchisq\n    ht = hl.import_table(\n         ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 190, in import_table\n    raise NotImplementedError('typed text imports currently support primitive fields')\nNotImplementedError: typed text imports currently support primitive fields\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

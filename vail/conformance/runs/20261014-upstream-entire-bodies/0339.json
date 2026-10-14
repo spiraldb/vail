@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_ndarrays.py",
+  "name": "test_ndarray_ref_bounds_check",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray indexing is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 60, in test_ndarray_ref_bounds_check\n    hl.eval(hl.nd.array([1, 2, 3])[4])\n            ~~~~~~~~~~~~~~~~~~~~~~^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 406, in __getitem__\n    raise NotImplementedError(\"ndarray indexing is not implemented\")\nNotImplementedError: ndarray indexing is not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

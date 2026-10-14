@@ -1,0 +1,16 @@
+{
+  "module": "genetics/test_reference_genome.py",
+  "name": "test_locus_from_global_position_too_long",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'ReferenceGenome' object has no attribute 'locus_from_global_position'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/genetics/test_reference_genome.py\", line 235, in test_locus_from_global_position_too_long\n    hl.get_reference('GRCh37').locus_from_global_position(2**64 - 1)\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'ReferenceGenome' object has no attribute 'locus_from_global_position'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

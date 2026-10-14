@@ -1,0 +1,24 @@
+{
+  "module": "methods/test_king.py",
+  "name": "test_king_filtered_entries_no_error",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'import_plink'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-n5au13pt/hail/python/test/hail/methods/test_king.py\", line 51, in test_king_filtered_entries_no_error\n    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam')\n         ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?\n"
+    }
+  ],
+  "setup_errors": [],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,7 +1,7 @@
 """Supplement pytest collection blockers with isolated original-body attempts.
 
-Hail imports/initialization/backend decorators are omitted, as in the existing
-Table/Matrix runners. Assertions and parametrize values are unchanged. Missing
+Hail imports and backend decorators are adapted to the explicit Vail test
+backend. Assertions and parametrize values are unchanged. Missing
 setup names are blockers, never passes. No Hail implementation is executed.
 """
 import argparse
@@ -19,6 +19,7 @@ import traceback
 from types import SimpleNamespace
 from upstream_paths import doctest_data_dir, resource_path, FixtureModule
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from upstream_backend import VailTestBackend, test_timeout, backend_api, adapt_class_configuration
 
 
 def worker(source, name, output, suite):
@@ -34,10 +35,12 @@ def worker(source, name, output, suite):
     from timeit import default_timer as timer
     from upstream_matrix_cases import BackendDependency
     tree = ast.parse(source.read_text())
-    report = dict(module=str(source.relative_to(suite)), name=name, variants=[], setup_errors=[])
+    report = dict(module=str(source.relative_to(suite)), name=name, variants=[], setup_errors=[],
+                  backend=hl.current_backend().name,
+                  backend_capabilities=sorted(hl.current_backend().capabilities))
     def save():
         output.write_text(json.dumps(report, indent=2))
-    with tempfile.TemporaryDirectory(prefix='vail-body-') as folder:
+    with VailTestBackend() as backend, tempfile.TemporaryDirectory(prefix='vail-body-') as folder:
         temporary = Path(folder)
         hl = FixtureModule(hl, suite.parents[2] / 'hail/test/resources', temporary / 'fixtures')
         def new_temp_file(prefix='', extension=None):
@@ -52,8 +55,9 @@ def worker(source, name, output, suite):
                      resource=lambda f: resource_path(suite.parents[2] / 'hail/test/resources', f, temporary / 'fixtures'),
                      ir=BackendDependency('ir'), Env=hl.utils.Env,
                      ExpressionException=hl.ExpressionException,
-                     hl_init_for_test=lambda **kw: None, hl_stop_for_test=lambda: None,
-                     with_flags=no_decorator, test_timeout=no_decorator,
+                     hl_init_for_test=backend.initialize, hl_stop_for_test=backend.stop,
+                     with_flags=no_decorator, test_timeout=test_timeout,
+                     _vail_backend_api=backend_api,
                      __name__='vail_upstream_bodies', _dataset=None)
         scope['_doctest_dir'] = doctest_data_dir(suite)
         from vail.types import is_type
@@ -77,6 +81,9 @@ def worker(source, name, output, suite):
                 report.setdefault('fixture_adapters', []).append('Local legacy snapshot enumeration: original 56 Table / 60 Matrix paths')
                 return
             node = copy.deepcopy(node)
+            if isinstance(node, ast.ClassDef) and name.startswith(node.name + '.'):
+                node = adapt_class_configuration(ast.Module(body=[node], type_ignores=[])).body[0]
+                report['class_configuration_adapter'] = 'defer missing API references until called'
             for imported in ast.walk(node):
                 if isinstance(imported, ast.ImportFrom) and imported.module and (imported.module == 'hail' or imported.module.startswith('hail.')):
                     imported.module = 'vail' + imported.module[4:]
@@ -209,7 +216,7 @@ def worker(source, name, output, suite):
                     parameters = [dict(variant, **{'__fixture_param_' + name: value})
                                   for variant, value in itertools.product(parameters, fixture_parameters[name])]
         except BaseException as exc:
-            report.update(status='blocked', phase='setup_or_parameters', error_type=type(exc).__name__, error=str(exc), traceback=traceback.format_exc())
+            report.update(status='blocked', category='harness_error', phase='setup_or_parameters', error_type=type(exc).__name__, error=str(exc), traceback=traceback.format_exc())
             save()
             return
         cache = dict(init_hail=None, tmp_path=temporary, tmpdir=temporary)
@@ -238,6 +245,7 @@ def worker(source, name, output, suite):
                     target(**kwargs)
             except BaseException as exc:
                 outcome.update(status='blocked' if phase == 'fixture' or isinstance(exc, (NameError, KeyError)) else 'failed',
+                               category=backend.classify_failure(phase, exc),
                                phase=phase, error_type=type(exc).__name__, error=str(exc), traceback=traceback.format_exc())
             report['variants'].append(outcome)
             report['status'] = 'passed' if all(v['status']=='passed' for v in report['variants']) else 'failed_or_blocked'
@@ -254,6 +262,10 @@ def main():
     parser.add_argument('--worker-source', type=Path)
     parser.add_argument('--worker-name')
     parser.add_argument('--jobs', type=int, default=1)
+    parser.add_argument('--include-relational', action='store_true',
+                        help='Also attempt every Table and MatrixTable definition')
+    parser.add_argument('--include-backend', action='store_true',
+                        help='Also attempt backend-specific definitions')
     args = parser.parse_args()
     if args.worker_name:
         if args.output.exists():
@@ -263,8 +275,8 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     from all_upstream_table_cases import definitions
     cases = [(s, name) for s in sorted(args.suite.rglob('test_*.py'))
-             if 'backend' not in s.relative_to(args.suite).parts
-             if str(s.relative_to(args.suite)) not in ('table/test_table.py', 'matrixtable/test_matrix_table.py')
+             if args.include_backend or 'backend' not in s.relative_to(args.suite).parts
+             if args.include_relational or str(s.relative_to(args.suite)) not in ('table/test_table.py', 'matrixtable/test_matrix_table.py')
              for name, node in definitions(ast.parse(s.read_text()))]
     results = {}
     def run(index, source, name):

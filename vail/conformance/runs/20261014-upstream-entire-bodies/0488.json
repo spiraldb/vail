@@ -1,0 +1,30 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_sparse_broadcast_add",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "array([[ 7.],\n       [15.],\n       [19.]])",
+        "y": "array([[7., 8., 9.]])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_ndarray'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 521, in test_sparse_broadcast_add\n    bmx = BlockMatrix.from_ndarray(x, block_size=2)._sparsify_blocks([0, 1])\n          ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_ndarray'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "x": "array([[7., 8., 9.]])",
+        "y": "array([[ 7.],\n       [15.],\n       [19.]])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_ndarray'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 521, in test_sparse_broadcast_add\n    bmx = BlockMatrix.from_ndarray(x, block_size=2)._sparsify_blocks([0, 1])\n          ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_ndarray'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

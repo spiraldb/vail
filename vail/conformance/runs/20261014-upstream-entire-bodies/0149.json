@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_comparisons",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "(True, False)",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 2301, in test_comparisons\n    _test_many_equal_typed([\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 40, in _test_many_equal_typed\n    assert actual == expected, (actual, expected)\n           ^^^^^^^^^^^^^^^^^^\nAssertionError: (True, False)\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

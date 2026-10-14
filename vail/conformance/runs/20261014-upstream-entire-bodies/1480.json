@@ -1,0 +1,24 @@
+{
+  "module": "utils/test_utils.py",
+  "name": "Tests.test_expr_exception_results_in_hail_user_error",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "RuntimeError",
+      "error": "Execution error: invalid expression: array index out of bounds: index=5, length=2",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/utils/test_utils.py\", line 278, in test_expr_exception_results_in_hail_user_error\n    df.filter(df.x[5] == 0).count()\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1247, in count\n    return self._native.count()\n           ^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Execution error: invalid expression: array index out of bounds: index=5, length=2\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.utils' has no attribute 'frozendict'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "module 'vail.utils' has no attribute 'with_local_temp_file'",
+    "No module named 'vail.utils.linkedlist'",
+    "module 'vail.utils.misc' has no attribute 'escape_id'",
+    "module 'vail.utils.misc' has no attribute 'escape_str'"
+  ],
+  "status": "failed_or_blocked"
+}

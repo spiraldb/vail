@@ -1,0 +1,28 @@
+{
+  "module": "extract_intervals/test_key_prefix.py",
+  "name": "test_mt_le",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "__fixture_param_probe_locus": "<function locus at 0x10484d3a0>"
+      },
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/extract_intervals/test_key_prefix.py\", line 12, in test_mt_le\n    assert expr.n_partitions() == 15\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "__fixture_param_probe_locus": "<class 'vail.reference_genome.Locus'>"
+      },
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/extract_intervals/test_key_prefix.py\", line 12, in test_mt_le\n    assert expr.n_partitions() == 15\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

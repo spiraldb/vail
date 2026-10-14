@@ -1,0 +1,16 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_from_entry_expr_raises_when_values_missing",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "Regex pattern did not match.\n  Expected regex: 'Cannot construct an ndarray with missing values'\n  Actual message: \"type object 'BlockMatrix' has no attribute 'from_entry_expr'\"",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 151, in test_from_entry_expr_raises_when_values_missing\n    with pytest.raises(Exception, match='Cannot construct an ndarray with missing values'):\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/raises.py\", line 711, in __exit__\n    raise AssertionError(self._fail_reason) from None\nAssertionError: Regex pattern did not match.\n  Expected regex: 'Cannot construct an ndarray with missing values'\n  Actual message: \"type object 'BlockMatrix' has no attribute 'from_entry_expr'\"\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

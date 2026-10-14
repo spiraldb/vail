@@ -206,7 +206,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                 let fold = crate::aggregation::resolve(value.as_ref().unwrap(), &aliases)?;
                 let (udf, packed) = crate::aggregation::lower_fold(
                     &fold,
-                    &dummy,
+                    dummy.schema().as_ref(),
                     &schema,
                     context.globals,
                     context.bindings,

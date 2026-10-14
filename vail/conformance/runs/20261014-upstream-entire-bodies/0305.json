@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "test_locus_addition",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "arithmetic requires a numeric expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 4515, in test_locus_addition\n    assert hl.eval((loc + 10) == hl.locus('1', 15, reference_genome='GRCh37'))\n                    ~~~~^~~~\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 262, in __add__\n    return self._binary(other, \"add\")\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 219, in _binary\n    result_type = _numeric_result_type(self.dtype, other.dtype, operator)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 1173, in _numeric_result_type\n    _require_numeric(left, \"arithmetic\")\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 1165, in _require_numeric\n    raise TypeError(f\"{operation} requires a numeric expression\")\nTypeError: arithmetic requires a numeric expression\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

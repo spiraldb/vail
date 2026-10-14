@@ -1,0 +1,16 @@
+{
+  "module": "expr/test_show.py",
+  "name": "test_show_mt_fewer_cols",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'str' object has no attribute 'table_show'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_show.py\", line 61, in test_show_mt_fewer_cols\n    assert len(showobj.table_show.table.row) == len(mt.row) + mt.count_cols()\n               ^^^^^^^^^^^^^^^^^^\nAttributeError: 'str' object has no attribute 'table_show'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "Tests.test_fix3307_read_mt_wrong",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1086, in test_fix3307_read_mt_wrong\n    mt = hl.split_multi_hts(mt)\n         ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/variant.py\", line 61, in split_multi_hts\n    variant=_min_rep(split.locus,split.alleles[0],split.alleles[split.a_index])\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/variant.py\", line 31, in _min_rep\n    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 561, in _array_filter\n    predicate = as_expr(f(variable))\n                        ^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/variant.py\", line 31, in <lambda>\n    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])\n                                               ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 379, in __getitem__\n    return slice_(self, name) if isinstance(name, slice) else index(self, name)\n                                                              ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 104, in index\n    text = _bmp_literal(value)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 69, in _bmp_literal\n    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')\nNotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "ImportTableTests.test_source_file",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "add_index",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 2215, in test_source_file\n    ht = ht.add_index()\n         ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: add_index\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

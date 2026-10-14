@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_matches",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "Java regular-expression semantics differ from DataFusion; only literal patterns are supported",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 451, in test_matches\n    self.assertTrue(hl.eval(string.matches('\\\\d+')))\n                            ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 671, in <lambda>\n    return lambda *args, **kwargs: methods[name](self, *args, **kwargs)\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 142, in matches\n    pattern = _literal_regex(regex)\n              ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 135, in _literal_regex\n    raise NotImplementedError('Java regular-expression semantics differ from DataFusion; only literal patterns are supported')\nNotImplementedError: Java regular-expression semantics differ from DataFusion; only literal patterns are supported\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

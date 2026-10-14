@@ -628,6 +628,18 @@ class Expression:
 
     def __getattr__(self, name):
         dtype = object.__getattribute__(self, "dtype")
+        if dtype == tcall:
+            def call_field(field, result_type):
+                return Expression(result_type, self.source, _IR(
+                    {"op": "get_field", "value": self.to_ir(), "name": field},
+                    self._global_refs, self._lookup_refs,
+                ))
+            if name == "phased":
+                return call_field("__vail_call_phased", tbool)
+            if name == "n_alt_alleles":
+                return lambda: int32(array_sum(call_field(
+                    "__vail_call_alleles", tarray(tint32)
+                ).map(lambda allele: int32(allele > 0))))
         if isinstance(dtype, tlocus):
             if name in ("contig", "position"):
                 return self._locus_op(name, tstr if name == "contig" else tint32)
@@ -1325,4 +1337,36 @@ def liftover(*args, **kwargs):
 def bind(function, *values):
     if not callable(function):
         raise TypeError("bind requires a callable")
-    return as_expr(function(*(as_expr(value) for value in values)))
+    if not values:
+        return as_expr(function())
+    from uuid import uuid4
+
+    # A single-element map supplies lexical variables evaluated outside its
+    # body. Do not use _array_map: binding introduces no repeated RNG context.
+    arguments = tuple_(values)
+    parameter = uuid4().hex
+    variable = Expression(arguments.dtype, arguments.source,
+                          {"op": "lambda_variable", "name": parameter})
+    body = as_expr(function(*(variable[i] for i in range(len(values)))))
+
+    def check_scope(node, aggregate_scope=False):
+        if isinstance(node, list):
+            for child in node:
+                check_scope(child, aggregate_scope)
+        elif isinstance(node, dict) and node.get("op") != "literal":
+            op = node.get("op")
+            if op == "lambda_variable" and node.get("name") == parameter and aggregate_scope:
+                raise ExpressionException("aggregation expressions cannot capture an outer bind variable")
+            nested = aggregate_scope or op in (
+                "aggregate", "aggregate_fold", "agg_filter", "agg_explode", "agg_group_by", "agg_array"
+            )
+            for child in node.values():
+                check_scope(child, nested)
+
+    check_scope(body.to_ir())
+    source = _merge_sources(arguments.source, body.source)
+    bound = Expression(tarray(body.dtype), source, {
+        "op": "array_map", "value": array([arguments]).to_ir(),
+        "parameter": parameter, "body": body.to_ir(),
+    })
+    return bound[0]

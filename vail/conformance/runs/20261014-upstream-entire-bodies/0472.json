@@ -1,0 +1,16 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_random_uniform",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'random'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 185, in test_random_uniform\n    uniform = BlockMatrix.random(10, 10, gaussian=False)\n              ^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'random'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

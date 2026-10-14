@@ -1,0 +1,16 @@
+{
+  "module": "utils/test_pickle.py",
+  "name": "test_simple_struct_dill",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "RecursionError",
+      "error": "maximum recursion depth exceeded",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/utils/test_pickle.py\", line 15, in test_simple_struct_dill\n    assert x == dill.loads(dill.dumps(x))\n                ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/dill/_dill.py\", line 312, in loads\n    return load(file, ignore, **kwds)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/dill/_dill.py\", line 298, in load\n    return Unpickler(file, ignore=ignore, **kwds).load()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/dill/_dill.py\", line 453, in load\n    obj = StockUnpickler.load(self)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 311, in __getattr__\n    return self._fields[name]\n           ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 311, in __getattr__\n    return self._fields[name]\n           ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 311, in __getattr__\n    return self._fields[name]\n           ^^^^^^^^^^^^\n  [Previous line repeated 990 more times]\nRecursionError: maximum recursion depth exceeded\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,54 @@
+{
+  "module": "expr/test_ndarrays.py",
+  "name": "test_hstack",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "a": "array([1, 2, 3])",
+        "b": "array([2, 3, 4])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'hstack'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1183, in test_hstack\n    assert np.array_equal(hl.eval(hl.nd.hstack((a, b))), np.hstack((a, b)))\n                                  ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'hstack'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "a": "array([[1],\n       [2],\n       [3]])",
+        "b": "array([[2],\n       [3],\n       [4]])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'hstack'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1183, in test_hstack\n    assert np.array_equal(hl.eval(hl.nd.hstack((a, b))), np.hstack((a, b)))\n                                  ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'hstack'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "a": "array([[1],\n       [2],\n       [3]])",
+        "b": "array([], shape=(3, 0), dtype=int64)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'hstack'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1183, in test_hstack\n    assert np.array_equal(hl.eval(hl.nd.hstack((a, b))), np.hstack((a, b)))\n                                  ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'hstack'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "a": "array([], shape=(3, 0), dtype=int64)",
+        "b": "array([[1],\n       [2],\n       [3]])"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'hstack'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1183, in test_hstack\n    assert np.array_equal(hl.eval(hl.nd.hstack((a, b))), np.hstack((a, b)))\n                                  ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'hstack'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

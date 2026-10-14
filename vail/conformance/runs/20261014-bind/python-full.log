@@ -1,0 +1,123 @@
+........................................................................ [  5%]
+........................................................................ [ 11%]
+........................................................................ [ 17%]
+............................................................... [ 22%]
+........................................................................ [ 28%]
+........................................................................ [ 34%]
+........................F............................................... [ 40%]
+........................................................................ [ 46%]
+........................................................................ [ 52%]
+........................................................................ [ 58%]
+........................................................................ [ 63%]
+........................................................................ [ 69%]
+........................................................................ [ 75%]
+........................................................................ [ 81%]
+........................................................................ [ 87%]
+.........F.................................................... [ 92%]
+........................................................................ [ 98%]
+....................                                                     [100%]
+=================================== FAILURES ===================================
+___ test_interval_partition_join_reads_only_files_needed_for_selected_output ___
+
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-779/test_interval_partition_join_r1')
+
+    def test_interval_partition_join_reads_only_files_needed_for_selected_output(tmp_path):
+        left = _partitioned(
+            [{"k": k, "lv": f"l{k}"} for k in range(24)],
+            hl.tstruct(k=hl.tint32, lv=hl.tstr),
+            key="k",
+            partitions=6,
+        )
+        right = _partitioned(
+            [{"rk": k, "rv": f"r{k}"} for k in range(24)],
+            hl.tstruct(rk=hl.tint32, rv=hl.tstr),
+            key="rk",
+            partitions=6,
+        )
+        left_path = tmp_path / "selective-left"
+        right_path = tmp_path / "selective-right"
+        left.write(left_path)
+        right.write(right_path)
+    
+        # read_table captures the partition metadata while the files still exist.
+        stored_left = hl.read_table(left_path)
+        stored_right = hl.read_table(right_path)
+        joined = stored_left.join(stored_right)
+        assert joined.n_partitions() > 1
+        expected_first_partition = _row_tuples(joined._filter_partitions([0]))
+        assert expected_first_partition
+    
+        left_files = sorted(left_path.rglob("*.vortex"))
+        right_files = sorted(right_path.rglob("*.vortex"))
+        assert len(left_files) > 1
+        assert len(right_files) > 1
+        for data_file in left_files[1:] + right_files[1:]:
+            data_file.unlink()
+    
+        # This must plan source partition membership before touching distant files.
+        selected = joined._filter_partitions([0])
+>       _assert_rows(_row_tuples(selected), expected_first_partition)
+                     ^^^^^^^^^^^^^^^^^^^^^
+
+python/tests/test_interval_partition_joins.py:208: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+python/tests/test_interval_partition_joins.py:17: in _row_tuples
+    return [(row.k, row.lv, row.rv) for row in table.collect()]
+                                               ^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x117ee4a70>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: No such file or directory (os error 2)
+
+python/vail/__init__.py:1074: FileNotFoundError
+_ test_membership_join_executes_only_selected_left_partition[anti_join-expected1] _
+
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-779/test_membership_join_executes_1')
+method = 'anti_join', expected = [5, 6, 7]
+
+    @pytest.mark.parametrize("method, expected", [
+        ("semi_join", [4]), ("anti_join", [5, 6, 7]),
+    ])
+    def test_membership_join_executes_only_selected_left_partition(tmp_path, method, expected):
+        path = tmp_path / "independent.viceberg"
+        hl.range_table(12, n_partitions=3).write(path)
+        left = hl.read_table(path)
+        files = sorted(path.rglob("*.vortex"))
+        assert len(files) == 3
+        files[0].unlink()
+        files[2].unlink()
+        right = hl.Table.parallelize([{"idx": 4}], key="idx")
+        joined = getattr(left, method)(right)
+        selected = joined._filter_partitions([1])
+>       assert [row.idx for row in selected.collect()] == expected
+                                   ^^^^^^^^^^^^^^^^^^
+
+python/tests/test_table_joins.py:363: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x12015b890>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       FileNotFoundError: No such file or directory (os error 2)
+
+python/vail/__init__.py:1074: FileNotFoundError
+=========================== short test summary info ============================
+FAILED python/tests/test_interval_partition_joins.py::test_interval_partition_join_reads_only_files_needed_for_selected_output
+FAILED python/tests/test_table_joins.py::test_membership_join_executes_only_selected_left_partition[anti_join-expected1]
+2 failed, 1223 passed, 1 skipped, 19 subtests passed in 176.29s (0:02:56)

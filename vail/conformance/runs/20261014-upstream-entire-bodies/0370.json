@@ -1,0 +1,50 @@
+{
+  "module": "expr/test_ndarrays.py",
+  "name": "test_vstack",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "data": "(array([[1],\n       [2],\n       [3]]), array([[2],\n       [3],\n       [4]]))"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'vstack'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1133, in test_vstack\n    assert np.array_equal(hl.eval(hl.nd.vstack(data)), np.vstack(data))\n                                  ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'vstack'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "data": "(array([[1],\n       [2],\n       [3]]), array([], shape=(0, 1), dtype=int64), array([[2],\n       [3],\n       [4]]))"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'vstack'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1133, in test_vstack\n    assert np.array_equal(hl.eval(hl.nd.vstack(data)), np.vstack(data))\n                                  ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'vstack'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "data": "(array([], shape=(0, 1), dtype=int64), array([[1],\n       [2],\n       [3]]), array([[2],\n       [3],\n       [4]]))"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'vstack'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1133, in test_vstack\n    assert np.array_equal(hl.eval(hl.nd.vstack(data)), np.vstack(data))\n                                  ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'vstack'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "data": "(array([1, 2, 3]), array([2, 3, 4]))"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'vstack'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1133, in test_vstack\n    assert np.array_equal(hl.eval(hl.nd.vstack(data)), np.vstack(data))\n                                  ^^^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'vstack'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

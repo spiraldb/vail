@@ -1,0 +1,13 @@
+{"kind": "inventory", "items": ["test_king.py::test_king_small", "test_king.py::test_king_large", "test_king.py::test_king_filtered_entries_no_error"]}
+{"kind": "started", "nodeid": "test_king.py::test_king_small"}
+{"kind": "test", "nodeid": "test_king.py::test_king_small", "when": "setup", "outcome": "passed", "duration": 0.0017744170036166906, "error": ""}
+{"kind": "test", "nodeid": "test_king.py::test_king_small", "when": "call", "outcome": "skipped", "duration": 7.699988782405853e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_king.py:30: in test_king_small\n    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam')\n         ^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?"}
+{"kind": "test", "nodeid": "test_king.py::test_king_small", "when": "teardown", "outcome": "passed", "duration": 8.429214358329773e-05, "error": ""}
+{"kind": "started", "nodeid": "test_king.py::test_king_large"}
+{"kind": "test", "nodeid": "test_king.py::test_king_large", "when": "setup", "outcome": "passed", "duration": 0.00015195808373391628, "error": ""}
+{"kind": "test", "nodeid": "test_king.py::test_king_large", "when": "call", "outcome": "skipped", "duration": 5.787494592368603e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_king.py:40: in test_king_large\n    mt = hl.import_plink(\n         ^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?"}
+{"kind": "test", "nodeid": "test_king.py::test_king_large", "when": "teardown", "outcome": "passed", "duration": 6.849993951618671e-05, "error": ""}
+{"kind": "started", "nodeid": "test_king.py::test_king_filtered_entries_no_error"}
+{"kind": "test", "nodeid": "test_king.py::test_king_filtered_entries_no_error", "when": "setup", "outcome": "passed", "duration": 0.00013845902867615223, "error": ""}
+{"kind": "test", "nodeid": "test_king.py::test_king_filtered_entries_no_error", "when": "call", "outcome": "skipped", "duration": 5.379202775657177e-05, "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_king.py:51: in test_king_filtered_entries_no_error\n    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam')\n         ^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?"}
+{"kind": "test", "nodeid": "test_king.py::test_king_filtered_entries_no_error", "when": "teardown", "outcome": "passed", "duration": 7.60410912334919e-05, "error": ""}

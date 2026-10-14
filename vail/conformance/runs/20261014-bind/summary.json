@@ -1,0 +1,15 @@
+{
+  "bind_tests_passed": 13,
+  "model_randomness_tests_passed": 141,
+  "python_full": {
+    "passed": 1223,
+    "failed": 2,
+    "skipped": 1,
+    "passing_subtests": 19
+  },
+  "existing_failures": [
+    "test_interval_partition_join_reads_only_files_needed_for_selected_output",
+    "test_membership_join_executes_only_selected_left_partition[anti_join-expected1]"
+  ],
+  "upstream_phased_reference": "still fails exact genotype list; first differing genotype now index 6"
+}

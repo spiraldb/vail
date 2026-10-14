@@ -1,0 +1,18 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "Tests.test_read_stored_cols",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "FileNotFoundError",
+      "error": "No such file or directory (os error 2)",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 965, in test_read_stored_cols\n    t = hl.read_table(f + '/cols')\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1878, in read_table\n    native, keys = _native_session().read_table(os.fspath(path))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: No such file or directory (os error 2)\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

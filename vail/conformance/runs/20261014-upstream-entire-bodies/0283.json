@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_struct_slice",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "KeyError",
+      "error": "slice(1, None, None)",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 4090, in test_struct_slice\n    assert hl.eval(hl.struct(x=3, y=4, z=5, a=10)[1:]) == hl.Struct(y=4, z=5, a=10)\n                   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 863, in __getitem__\n    return self._fields[name]\n           ~~~~~~~~~~~~^^^^^^\nKeyError: slice(1, None, None)\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_vcf_different_info_errors",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "Check that all files have same INFO fields",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 821, in test_vcf_different_info_errors\n    mt = hl.import_vcf([resource('different_info_test1.vcf'), resource('different_info_test2.vcf')])\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/vcf.py\", line 78, in import_vcf\n    native, samples_json, _ = _native_session().read_vcf(\n                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: Check that all files have same INFO fields\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

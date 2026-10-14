@@ -1,0 +1,20 @@
+{
+  "module": "test_context.py",
+  "name": "test_tmpdir_runs",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'tmp_dir'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_context.py\", line 55, in test_tmpdir_runs\n    isinstance(hl.tmp_dir(), str)\n               ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'tmp_dir'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.backend.backend'; 'vail.backend' is not a package",
+    "No module named 'vail.backend.spark_backend'; 'vail.backend' is not a package",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

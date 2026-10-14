@@ -1,0 +1,16 @@
+{
+  "module": "genetics/test_locus.py",
+  "name": "test_constructor",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'Locus' has no attribute 'parse'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/genetics/test_locus.py\", line 6, in test_constructor\n    l = Locus.parse('1:100')\n        ^^^^^^^^^^^\nAttributeError: type object 'Locus' has no attribute 'parse'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

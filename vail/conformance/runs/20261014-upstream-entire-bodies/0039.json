@@ -1,0 +1,16 @@
+{
+  "module": "experimental/test_experimental.py",
+  "name": "Tests.test_export_block_matrices",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute '_create'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/experimental/test_experimental.py\", line 439, in test_export_block_matrices\n    hl.linalg.BlockMatrix._create(11, 12, data[0].tolist(), block_size=4),\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute '_create'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,112 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_from_entry_expr_options",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "False",
+        "center": "False",
+        "normalize": "False",
+        "mk_expected": "<function <lambda> at 0x10d24b920>"
+      },
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray indexing is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 137, in test_from_entry_expr_options\n    mt = mt.annotate_entries(x=xs[mt.s])\n                               ~~^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 406, in __getitem__\n    raise NotImplementedError(\"ndarray indexing is not implemented\")\nNotImplementedError: ndarray indexing is not implemented\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "False",
+        "center": "False",
+        "normalize": "True",
+        "mk_expected": "<function <lambda> at 0x10d24b7e0>"
+      },
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray indexing is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 137, in test_from_entry_expr_options\n    mt = mt.annotate_entries(x=xs[mt.s])\n                               ~~^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 406, in __getitem__\n    raise NotImplementedError(\"ndarray indexing is not implemented\")\nNotImplementedError: ndarray indexing is not implemented\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "False",
+        "center": "True",
+        "normalize": "False",
+        "mk_expected": "<function <lambda> at 0x10d24b9c0>"
+      },
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray indexing is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 137, in test_from_entry_expr_options\n    mt = mt.annotate_entries(x=xs[mt.s])\n                               ~~^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 406, in __getitem__\n    raise NotImplementedError(\"ndarray indexing is not implemented\")\nNotImplementedError: ndarray indexing is not implemented\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "False",
+        "center": "True",
+        "normalize": "True",
+        "mk_expected": "<function <lambda> at 0x10d24ba60>"
+      },
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray indexing is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 137, in test_from_entry_expr_options\n    mt = mt.annotate_entries(x=xs[mt.s])\n                               ~~^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 406, in __getitem__\n    raise NotImplementedError(\"ndarray indexing is not implemented\")\nNotImplementedError: ndarray indexing is not implemented\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "True",
+        "center": "False",
+        "normalize": "False",
+        "mk_expected": "<function <lambda> at 0x10d24bb00>"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_entry_expr'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 141, in test_from_entry_expr_options\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "True",
+        "center": "False",
+        "normalize": "True",
+        "mk_expected": "<function <lambda> at 0x10d24bba0>"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_entry_expr'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 141, in test_from_entry_expr_options\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "True",
+        "center": "True",
+        "normalize": "False",
+        "mk_expected": "<function <lambda> at 0x10d24bc40>"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_entry_expr'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 141, in test_from_entry_expr_options\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "mean_impute": "True",
+        "center": "True",
+        "normalize": "True",
+        "mk_expected": "<function <lambda> at 0x10d24bce0>"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_entry_expr'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 141, in test_from_entry_expr_options\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

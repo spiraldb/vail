@@ -1,0 +1,18 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "Tests.test_aggregate_cols_by_init_op",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "matrix-axis aggregate initialization requires native Table support for group-dependent initializers",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 402, in test_aggregate_cols_by_init_op\n    cs = mt.group_cols_by(mt.s).aggregate(cs=hl.agg.call_stats(mt.GT, mt.alleles))\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 2385, in aggregate\n    return self.aggregate_entries(**fields).result()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 2496, in result\n    core.annotate(**{_CELLS: indexed_groups.map(cell)}), columns,\n                             ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 532, in _array_map\n    body = as_expr(f(variable))\n                   ^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 2488, in cell\n    m, m._validate(v, \"entry\", aggregate=True), core,\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 547, in _validate\n    check_initializers(expr.to_ir())\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 537, in check_initializers\n    raise NotImplementedError(\nNotImplementedError: matrix-axis aggregate initialization requires native Table support for group-dependent initializers\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

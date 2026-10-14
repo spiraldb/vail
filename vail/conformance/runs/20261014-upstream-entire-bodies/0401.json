@@ -1,0 +1,19 @@
+{
+  "module": "expr/test_types.py",
+  "name": "Tests.test_nested_type_to_spark",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "to_spark",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_types.py\", line 113, in test_nested_type_to_spark\n    ht.to_spark()  # should not throw exception\n    ^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: to_spark\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.expr' has no attribute 'coercer_from_dtype'",
+    "module 'vail.types' has no attribute 'HailType'"
+  ],
+  "status": "failed_or_blocked"
+}

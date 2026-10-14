@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_combiner_works",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ModuleNotFoundError",
+      "error": "No module named 'vail.vds'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 554, in test_combiner_works\n    from hail.vds.combiner.combine import combine_variant_datasets, transform_gvcf\nModuleNotFoundError: No module named 'vail.vds'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

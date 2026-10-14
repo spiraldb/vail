@@ -1,0 +1,20 @@
+{
+  "module": "utils/test_utils.py",
+  "name": "Tests.test_interval_ops",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {}
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.utils' has no attribute 'frozendict'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "module 'vail.utils' has no attribute 'with_local_temp_file'",
+    "No module named 'vail.utils.linkedlist'",
+    "module 'vail.utils.misc' has no attribute 'escape_id'",
+    "module 'vail.utils.misc' has no attribute 'escape_str'"
+  ],
+  "status": "passed"
+}

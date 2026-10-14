@@ -1,0 +1,19 @@
+{
+  "module": "methods/test_qc.py",
+  "name": "Tests.test_vep_grch38_consequence_false",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'vep'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_qc.py\", line 404, in test_vep_grch38_consequence_false\n    hail_vep_result = hl.vep(mt, self.vep_config_grch38_95, csq=False)\n                      ^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'vep'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'",
+    "No module named 'vail.methods'"
+  ],
+  "status": "failed_or_blocked"
+}

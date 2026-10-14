@@ -1,0 +1,85 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_array_windows_illegal_arguments",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "array": "[1, 0]",
+        "radius": "-1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.linalg' has no attribute 'utils'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 1074, in test_array_windows_illegal_arguments\n    hl.linalg.utils.array_windows(np.array(array), radius)\n    ^^^^^^^^^^^^^^^\nAttributeError: module 'vail.linalg' has no attribute 'utils'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "array": "[0, nan]",
+        "radius": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.linalg' has no attribute 'utils'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 1074, in test_array_windows_illegal_arguments\n    hl.linalg.utils.array_windows(np.array(array), radius)\n    ^^^^^^^^^^^^^^^\nAttributeError: module 'vail.linalg' has no attribute 'utils'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "array": "[nan]",
+        "radius": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.linalg' has no attribute 'utils'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 1074, in test_array_windows_illegal_arguments\n    hl.linalg.utils.array_windows(np.array(array), radius)\n    ^^^^^^^^^^^^^^^\nAttributeError: module 'vail.linalg' has no attribute 'utils'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "array": "[0.0, nan]",
+        "radius": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.linalg' has no attribute 'utils'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 1074, in test_array_windows_illegal_arguments\n    hl.linalg.utils.array_windows(np.array(array), radius)\n    ^^^^^^^^^^^^^^^\nAttributeError: module 'vail.linalg' has no attribute 'utils'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "array": "[None]",
+        "radius": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.linalg' has no attribute 'utils'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 1074, in test_array_windows_illegal_arguments\n    hl.linalg.utils.array_windows(np.array(array), radius)\n    ^^^^^^^^^^^^^^^\nAttributeError: module 'vail.linalg' has no attribute 'utils'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "array": "[]",
+        "radius": "-1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.linalg' has no attribute 'utils'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 1074, in test_array_windows_illegal_arguments\n    hl.linalg.utils.array_windows(np.array(array), radius)\n    ^^^^^^^^^^^^^^^\nAttributeError: module 'vail.linalg' has no attribute 'utils'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "array": "['str']",
+        "radius": "1"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.linalg' has no attribute 'utils'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 1074, in test_array_windows_illegal_arguments\n    hl.linalg.utils.array_windows(np.array(array), radius)\n    ^^^^^^^^^^^^^^^\nAttributeError: module 'vail.linalg' has no attribute 'utils'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,19 @@
+{
+  "module": "test_ir.py",
+  "name": "test_locus_interval_encoding",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tlocus' object has no attribute '_from_encoding'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 758, in test_locus_interval_encoding\n    _assert_encoding_roundtrip(start)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 698, in _assert_encoding_roundtrip\n    round_trip_just_python_encoding = lit.dtype._from_encoding(lit.dtype._to_encoding(value))\n                                      ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tlocus' object has no attribute '_from_encoding'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

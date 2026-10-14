@@ -1,0 +1,19 @@
+{
+  "module": "expr/test_types.py",
+  "name": "Tests.test_pretty_roundtrip",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "tndarray requires a numeric type and nonnegative rank",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_types.py\", line 94, in test_pretty_roundtrip\n    ts = self.types_to_test()\n         ^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/expr/test_types.py\", line 43, in types_to_test\n    tndarray(tstr, 1),\n    ^^^^^^^^^^^^^^^^^\n  File \"<string>\", line 5, in __init__\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 85, in __post_init__\n    raise TypeError(\"tndarray requires a numeric type and nonnegative rank\")\nTypeError: tndarray requires a numeric type and nonnegative rank\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.expr' has no attribute 'coercer_from_dtype'",
+    "module 'vail.types' has no attribute 'HailType'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,18 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "Tests.test_annotate_col_agg_lowering",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "invalid TableIR: row fields must be inside an aggregator in Table.aggregate",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1737, in test_annotate_col_agg_lowering\n    mt = mt.annotate_cols(\n         ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 877, in annotate_cols\n    return self._annotate(\"col\", named)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 811, in _annotate\n    return self._project_axis(\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 768, in _project_axis\n    self._axis_aggregates(v, axis, base)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 707, in _axis_aggregates\n    return Expression(expr.dtype, self, _IR(rewrite(expr.to_ir()), refs, lookups))\n                                            ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 689, in rewrite\n    native = native.grouped_aggregate_json(\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: invalid TableIR: row fields must be inside an aggregator in Table.aggregate\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

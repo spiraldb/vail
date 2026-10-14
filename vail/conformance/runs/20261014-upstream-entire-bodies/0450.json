@@ -1,0 +1,16 @@
+{
+  "module": "genetics/test_reference_genome.py",
+  "name": "test_reference_genome_liftover",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'ReferenceGenome' object has no attribute 'has_liftover'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/genetics/test_reference_genome.py\", line 81, in test_reference_genome_liftover\n    assert not grch37.has_liftover('GRCh38')\n               ^^^^^^^^^^^^^^^^^^^\nAttributeError: 'ReferenceGenome' object has no attribute 'has_liftover'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

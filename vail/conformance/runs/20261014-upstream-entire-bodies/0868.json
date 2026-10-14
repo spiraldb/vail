@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_format_genotypes",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 763, in test_format_genotypes\n    assert expected in line\n           ^^^^^^^^^^^^^^^^\nAssertionError\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

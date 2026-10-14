@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_import_vcf_skip_invalid_loci",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "RuntimeError",
+      "error": "Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/skip_invalid_loci.vcf:89: Invalid locus 0:1 for reference GRCh37",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 324, in test_import_vcf_skip_invalid_loci\n    hl.import_vcf(resource('skip_invalid_loci.vcf')).count()\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1174, in count\n    return self.count_rows(), self.count_cols()\n           ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1161, in count_rows\n    return self._mir.core.count()\n           ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1247, in count\n    return self._native.count()\n           ^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/skip_invalid_loci.vcf:89: Invalid locus 0:1 for reference GRCh37\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

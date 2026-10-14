@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_addition",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "invalid expression: incompatible types Array { array: Primitive(Float32) } and Array { array: Primitive(Float64) }",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 1972, in test_addition\n    _test_many_equal_typed([\n  File \"../hail/hail/python/test/hail/expr/test_expr.py\", line 31, in _test_many_equal_typed\n    actuals, actual_type = hl.eval_typed(hl.tuple(expressions))\n                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1951, in eval_typed\n    return eval(expr), expr.dtype\n           ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1941, in eval\n    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: invalid expression: incompatible types Array { array: Primitive(Float32) } and Array { array: Primitive(Float64) }\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

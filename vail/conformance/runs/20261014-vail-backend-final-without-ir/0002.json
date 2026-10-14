@@ -1,0 +1,22 @@
+{
+  "module": "expr/test_expr.py",
+  "name": "Tests.test_agg_array_agg_sum_vs_sum",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {}
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "passed"
+}

@@ -1,0 +1,19 @@
+{
+  "module": "test_ir.py",
+  "name": "test_table_ir_highly_nested",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "_tir",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 320, in test_table_ir_highly_nested\n    str(ht._tir)\n        ^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: _tir\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

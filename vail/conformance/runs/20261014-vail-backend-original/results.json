@@ -1,0 +1,3273 @@
+[
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_mt_full_outer_join",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'experimental'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/experimental/test_experimental.py\", line 394, in test_mt_full_outer_join\n    mtj = hl.experimental.full_outer_join_mt(mt1, mt2)\n          ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'experimental'\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_plot_roc_curve",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'experimental'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/experimental/test_experimental.py\", line 115, in test_plot_roc_curve\n    _, aucs = hl.experimental.plot_roc_curve(ht, ['score1', 'score2', 'score3'])\n              ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'experimental'\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_agg_array_agg_sum_vs_sum",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_agg_corr",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_aggregators_with_randomness",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_downsample_in_array_agg",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_key_by_random",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_order_by_head_optimization_with_randomness",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_seeded_same",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_seeded_sampling",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "test_stream_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.NA",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/expr/test_expr.py\", line 4339, in test_stream_randomness\n    assert_contains_node(a, ir.NA)\n                            ^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.NA\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "expr/test_functions.py",
+    "name": "test_shuffle",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_aggregate_entries",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_choose_cols",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_collect_cols_by_key_with_rand",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_literals_rebuild",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_lower_row_agg_init_arg",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'variant_qc'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1891, in test_lower_row_agg_init_arg\n    mt2 = hl.variant_qc(mt)\n          ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'variant_qc'. Did you mean: 'variant'?\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_make_table_row_equivalence",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_sample_rows",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_cols_by_key_with_agg_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixAggregateColsByKey",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2206, in test_matrix_randomness_aggregate_cols_by_key_with_agg_randomness\n    assert_contains_node(mt, ir.MatrixAggregateColsByKey)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAggregateColsByKey\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_cols_by_key_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixAggregateColsByKey",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2189, in test_matrix_randomness_aggregate_cols_by_key_with_body_randomness\n    assert_contains_node(mt, ir.MatrixAggregateColsByKey)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAggregateColsByKey\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_cols_by_key_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixAggregateColsByKey",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2223, in test_matrix_randomness_aggregate_cols_by_key_without_body_randomness\n    assert_contains_node(mt, ir.MatrixAggregateColsByKey)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAggregateColsByKey\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_rows_by_key_then_aggregate_entries_with_agg_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixAggregateRowsByKey",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1982, in test_matrix_randomness_aggregate_rows_by_key_then_aggregate_entries_with_agg_randomness\n    assert_contains_node(mt, ir.MatrixAggregateRowsByKey)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAggregateRowsByKey\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_rows_by_key_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixAggregateRowsByKey",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1965, in test_matrix_randomness_aggregate_rows_by_key_with_body_randomness\n    assert_contains_node(mt, ir.MatrixAggregateRowsByKey)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAggregateRowsByKey\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_rows_by_key_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixAggregateRowsByKey",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1999, in test_matrix_randomness_aggregate_rows_by_key_without_body_randomness\n    assert_contains_node(mt, ir.MatrixAggregateRowsByKey)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAggregateRowsByKey\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_annotate_cols_table",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixAnnotateColsTable",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2322, in test_matrix_randomness_annotate_cols_table\n    assert_contains_node(joined, ir.MatrixAnnotateColsTable)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAnnotateColsTable\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_annotate_rows_table",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixAnnotateRowsTable",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2312, in test_matrix_randomness_annotate_rows_table\n    assert_contains_node(joined, ir.MatrixAnnotateRowsTable)\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixAnnotateRowsTable\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_cast_table_to_matrix",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.CastTableToMatrix",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2302, in test_matrix_randomness_cast_table_to_matrix\n    assert_contains_node(mt, ir.CastTableToMatrix)\n                             ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.CastTableToMatrix\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_choose_cols",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixChooseCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2021, in test_matrix_randomness_choose_cols\n    assert_contains_node(mt, ir.MatrixChooseCols)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixChooseCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_collect_cols_by_key",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixCollectColsByKey",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2176, in test_matrix_randomness_collect_cols_by_key\n    assert_contains_node(mt, ir.MatrixCollectColsByKey)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixCollectColsByKey\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_cols_head",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixColsHead",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2271, in test_matrix_randomness_cols_head\n    assert_contains_node(mt, ir.MatrixColsHead)\n                             ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixColsHead\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_cols_tail",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixColsTail",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2285, in test_matrix_randomness_cols_tail\n    assert_contains_node(mt, ir.MatrixColsTail)\n                             ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixColsTail\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_distinct_by_row",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixDistinctByRow",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2257, in test_matrix_randomness_distinct_by_row\n    assert_contains_node(mt, ir.MatrixDistinctByRow)\n                             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixDistinctByRow\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_explode_cols",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixExplodeCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2293, in test_matrix_randomness_explode_cols\n    assert_contains_node(mt, ir.MatrixExplodeCols)\n                             ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixExplodeCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_explode_rows",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixExplodeRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2231, in test_matrix_randomness_explode_rows\n    assert_contains_node(mt, ir.MatrixExplodeRows)\n                             ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixExplodeRows\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_cols_with_cond_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixFilterCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2160, in test_matrix_randomness_filter_cols_with_cond_randomness\n    assert_contains_node(mt, ir.MatrixFilterCols)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixFilterCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_cols_without_cond_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixFilterCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2168, in test_matrix_randomness_filter_cols_without_cond_randomness\n    assert_contains_node(mt, ir.MatrixFilterCols)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixFilterCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_entries_with_cond_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixFilterEntries",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2089, in test_matrix_randomness_filter_entries_with_cond_randomness\n    assert_contains_node(mt, ir.MatrixFilterEntries)\n                             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixFilterEntries\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_entries_without_cond_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixFilterEntries",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2097, in test_matrix_randomness_filter_entries_without_cond_randomness\n    assert_contains_node(mt, ir.MatrixFilterEntries)\n                             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixFilterEntries\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_intervals",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixFilterIntervals",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2344, in test_matrix_randomness_filter_intervals\n    assert_contains_node(mt, ir.MatrixFilterIntervals)\n                             ^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixFilterIntervals\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_rows_with_cond_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixFilterRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2006, in test_matrix_randomness_filter_rows_with_cond_randomness\n    assert_contains_node(mt, ir.MatrixFilterRows)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixFilterRows\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_rows_without_cond_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixFilterRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2014, in test_matrix_randomness_filter_rows_without_cond_randomness\n    assert_contains_node(mt, ir.MatrixFilterRows)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixFilterRows\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_key_rows_by",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixKeyRowsBy",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2104, in test_matrix_randomness_key_rows_by\n    assert_contains_node(mt, ir.MatrixKeyRowsBy)\n                             ^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixKeyRowsBy\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_cols_with_agg_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2037, in test_matrix_randomness_map_cols_with_agg_randomness\n    assert_contains_node(mt, ir.MatrixMapCols)\n                             ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_cols_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2028, in test_matrix_randomness_map_cols_with_body_randomness\n    assert_contains_node(mt, ir.MatrixMapCols)\n                             ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_cols_with_scan_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2046, in test_matrix_randomness_map_cols_with_scan_randomness\n    assert_contains_node(mt, ir.MatrixMapCols)\n                             ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_cols_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2055, in test_matrix_randomness_map_cols_without_body_randomness\n    assert_contains_node(mt, ir.MatrixMapCols)\n                             ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_entries_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapEntries",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2073, in test_matrix_randomness_map_entries_with_body_randomness\n    assert_contains_node(mt, ir.MatrixMapEntries)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapEntries\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_entries_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapEntries",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2082, in test_matrix_randomness_map_entries_without_body_randomness\n    assert_contains_node(mt, ir.MatrixMapEntries)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapEntries\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_globals_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapGlobals",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2145, in test_matrix_randomness_map_globals_with_body_randomness\n    assert_contains_node(mt, ir.MatrixMapGlobals)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapGlobals\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_globals_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapGlobals",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2153, in test_matrix_randomness_map_globals_without_body_randomness\n    assert_contains_node(mt, ir.MatrixMapGlobals)\n                             ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapGlobals\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_rows",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2111, in test_matrix_randomness_map_rows\n    assert_contains_node(mt, ir.MatrixMapRows)\n                             ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapRows\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_rows_with_agg_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2120, in test_matrix_randomness_map_rows_with_agg_randomness\n    assert_contains_node(mt, ir.MatrixMapRows)\n                             ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapRows\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_rows_with_scan_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2129, in test_matrix_randomness_map_rows_with_scan_randomness\n    assert_contains_node(mt, ir.MatrixMapRows)\n                             ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapRows\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_rows_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixMapRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2138, in test_matrix_randomness_map_rows_without_body_randomness\n    assert_contains_node(mt, ir.MatrixMapRows)\n                             ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixMapRows\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_read",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixRead",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 1952, in test_matrix_randomness_read\n    assert_contains_node(mt, ir.MatrixRead)\n                             ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixRead\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_rename",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixRename",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2336, in test_matrix_randomness_rename\n    assert_contains_node(mt, ir.MatrixRename)\n                             ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixRename\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_repartition",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixRepartition",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2239, in test_matrix_randomness_repartition\n    assert_contains_node(mt, ir.MatrixRepartition)\n                             ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixRepartition\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_rows_head",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixRowsHead",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2264, in test_matrix_randomness_rows_head\n    assert_contains_node(mt, ir.MatrixRowsHead)\n                             ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixRowsHead\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_rows_tail",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixRowsTail",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2278, in test_matrix_randomness_rows_tail\n    assert_contains_node(mt, ir.MatrixRowsTail)\n                             ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixRowsTail\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_to_matrix_apply",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixToMatrixApply",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2329, in test_matrix_randomness_to_matrix_apply\n    assert_contains_node(mt, ir.MatrixToMatrixApply)\n                             ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixToMatrixApply\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_union_cols",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixUnionCols",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2066, in test_matrix_randomness_union_cols\n    assert_contains_node(mt, ir.MatrixUnionCols)\n                             ^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixUnionCols\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_union_rows",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixUnionRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2249, in test_matrix_randomness_union_rows\n    assert_contains_node(mt, ir.MatrixUnionRows)\n                             ^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixUnionRows\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_query_matrix_table_rows_randomness",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_sample_entries",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_struct_of_arrays_encoding",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute '_with_flags'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/matrixtable/test_matrix_table.py\", line 2374, in test_struct_of_arrays_encoding\n    with hl._with_flags(use_unstable_encodings='1'):\n         ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute '_with_flags'\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_issue_5263",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'pc_relate'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/methods/relatedness/test_pc_relate.py\", line 140, in test_pc_relate_issue_5263\n    expected = hl.pc_relate(mt.GT, 0.10, k=2, statistics='all')\n               ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'pc_relate'\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "BGENTests.test_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'import_bgen'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/methods/test_impex.py\", line 1662, in test_randomness\n    bgen1 = hl.import_bgen(\n            ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "GENTests.test_export_gen",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'import_gen'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/methods/test_impex.py\", line 1724, in test_export_gen\n    gen = hl.import_gen(\n          ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "PLINKTests.test_export_plink",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "NotImplementedError",
+        "error": "DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/methods/test_impex.py\", line 981, in test_export_plink\n    mt = hl.split_multi_hts(hl.import_vcf(vcf_file, min_partitions=10))\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/variant.py\", line 61, in split_multi_hts\n    variant=_min_rep(split.locus,split.alleles[0],split.alleles[split.a_index])\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/variant.py\", line 31, in _min_rep\n    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 561, in _array_filter\n    predicate = as_expr(f(variable))\n                        ^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/variant.py\", line 31, in <lambda>\n    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])\n                                               ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 379, in __getitem__\n    return slice_(self, name) if isinstance(name, slice) else index(self, name)\n                                                              ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 104, in index\n    text = _bmp_literal(value)\n           ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/strings.py\", line 69, in _bmp_literal\n    raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')\nNotImplementedError: DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported\n"
+      }
+    ],
+    "setup_errors": [
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_king.py",
+    "name": "test_king_filtered_entries_no_error",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'import_plink'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/methods/test_king.py\", line 51, in test_king_filtered_entries_no_error\n    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam')\n         ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_misc.py",
+    "name": "Tests.test_maximal_independent_set_types",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'maximal_independent_set'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/methods/test_misc.py\", line 131, in test_maximal_independent_set_types\n    hl.maximal_independent_set(ht.ii, ht.jj).count()\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'maximal_independent_set'\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "omitted_unreferenced_class_configuration": [
+      "backend_name",
+      "linreg_functions",
+      "logreg_functions"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model_af_ranges",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "omitted_unreferenced_class_configuration": [
+      "backend_name",
+      "linreg_functions",
+      "logreg_functions"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model_same_results",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "omitted_unreferenced_class_configuration": [
+      "backend_name",
+      "linreg_functions",
+      "logreg_functions"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_stats",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "omitted_unreferenced_class_configuration": [
+      "backend_name",
+      "linreg_functions",
+      "logreg_functions"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_linreg_pass_through",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "NotImplementedError",
+        "error": "Vail backend does not support hl.linear_regression_rows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 272, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_statgen.py\", line 102, in test_linreg_pass_through\n    lr_result = linreg_function(\n                ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_backend.py\", line 77, in unsupported\n    raise NotImplementedError(f'Vail backend does not support hl.{path}')\nNotImplementedError: Vail backend does not support hl.linear_regression_rows\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "omitted_unreferenced_class_configuration": [
+      "logreg_functions"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_logreg_pass_through",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "NotImplementedError",
+        "error": "Vail backend does not support hl.logistic_regression_rows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 272, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_statgen.py\", line 1034, in test_logreg_pass_through\n    ht = logreg_function(\n         ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_backend.py\", line 77, in unsupported\n    raise NotImplementedError(f'Vail backend does not support hl.{path}')\nNotImplementedError: Vail backend does not support hl.logistic_regression_rows\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "omitted_unreferenced_class_configuration": [
+      "linreg_functions"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_poisson_pass_through",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'poisson_regression_rows'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/methods/test_statgen.py\", line 1202, in test_poisson_pass_through\n    ht = hl.poisson_regression_rows(\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'poisson_regression_rows'\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "omitted_unreferenced_class_configuration": [
+      "backend_name",
+      "linreg_functions",
+      "logreg_functions"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_regression_field_dependence",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'logistic_regression_rows'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/methods/test_statgen.py\", line 1699, in test_regression_field_dependence\n    hl.logistic_regression_rows('wald', y=mt.c1, x=x_expr, covariates=[1])\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'logistic_regression_rows'\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "omitted_unreferenced_class_configuration": [
+      "backend_name",
+      "linreg_functions",
+      "logreg_functions"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_visualize_missingness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "module 'vail' has no attribute 'plot'",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/plot/test_plot.py\", line 93, in test_visualize_missingness\n    hl.plot.visualize_missingness(hl.or_missing(hl.rand_bool(0.2), mt.GT))\n    ^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'plot'\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_nested_union_100",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_nested_union_200",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_order_by_expr",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_partitioning_rewrite",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_sample",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_to_matrix_table",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_randomness",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_aggregate_by_key",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableAggregateByKey",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2503, in test_table_randomness_aggregate_by_key\n    assert_contains_node(t, ir.TableAggregateByKey)\n                            ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableAggregateByKey\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_block_matrix_to_table",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.BlockMatrixToTable",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2602, in test_table_randomness_block_matrix_to_table\n    assert_contains_node(t, ir.BlockMatrixToTable)\n                            ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.BlockMatrixToTable\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_cast_matrix_to_table",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.CastMatrixToTable",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2568, in test_table_randomness_cast_matrix_to_table\n    assert_contains_node(t, ir.CastMatrixToTable)\n                            ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.CastMatrixToTable\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_distinct",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableDistinct",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2552, in test_table_randomness_distinct\n    assert_contains_node(t, ir.TableDistinct)\n                            ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableDistinct\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_explode",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableExplode",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2404, in test_table_randomness_explode\n    assert_contains_node(t, ir.TableExplode)\n                            ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableExplode\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_intervals",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableFilterIntervals",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2595, in test_table_randomness_filter_intervals\n    assert_contains_node(t, ir.TableFilterIntervals)\n                            ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableFilterIntervals\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_with_cond_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableFilter",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2464, in test_table_randomness_filter_with_cond_randomness\n    assert_contains_node(t, ir.TableFilter)\n                            ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableFilter\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_without_cond_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableFilter",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2472, in test_table_randomness_filter_without_cond_randomness\n    assert_contains_node(t, ir.TableFilter)\n                            ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableFilter\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_head",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableHead",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2530, in test_table_randomness_head\n    assert_contains_node(t, ir.TableHead)\n                            ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableHead\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_interval_join",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableIntervalJoin",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2369, in test_table_randomness_interval_join\n    assert_contains_node(t, ir.TableIntervalJoin)\n                            ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableIntervalJoin\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_join",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableJoin",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2350, in test_table_randomness_join\n    assert_contains_node(t, ir.TableJoin)\n                            ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableJoin\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableKeyBy",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2411, in test_table_randomness_key_by\n    assert_contains_node(t, ir.TableKeyBy)\n                            ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableKeyBy\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableKeyByAndAggregate",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2487, in test_table_randomness_key_by_and_aggregate_with_agg_randomness\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableKeyByAndAggregate\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableKeyByAndAggregate",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2479, in test_table_randomness_key_by_and_aggregate_with_body_randomness\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableKeyByAndAggregate\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableKeyByAndAggregate",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2495, in test_table_randomness_key_by_and_aggregate_without_body_randomness\n    assert_contains_node(t, ir.TableKeyByAndAggregate)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableKeyByAndAggregate\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_left_join_right_distinct",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableLeftJoinRightDistinct",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2360, in test_table_randomness_left_join_right_distinct\n    assert_contains_node(t, ir.TableLeftJoinRightDistinct)\n                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableLeftJoinRightDistinct\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableMapGlobals",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2388, in test_table_randomness_map_globals_with_body_randomness\n    assert_contains_node(t1, ir.TableMapGlobals)\n                             ^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableMapGlobals\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableMapGlobals",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2396, in test_table_randomness_map_globals_without_body_randomness\n    assert_contains_node(t2, ir.TableMapGlobals)\n                             ^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableMapGlobals\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_partitions",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableMapPartitions",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2441, in test_table_randomness_map_partitions\n    assert_contains_node(t, ir.TableMapPartitions)\n                            ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableMapPartitions\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableMapRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2418, in test_table_randomness_map_rows_with_body_randomness\n    assert_contains_node(t, ir.TableMapRows)\n                            ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableMapRows\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_scan_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableMapRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2426, in test_table_randomness_map_rows_with_scan_randomness\n    assert_contains_node(t, ir.TableMapRows)\n                            ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableMapRows\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableMapRows",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2433, in test_table_randomness_map_rows_without_body_randomness\n    assert_contains_node(t, ir.TableMapRows)\n                            ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableMapRows\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_cols_table",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixColsTable",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2510, in test_table_randomness_matrix_cols_table\n    assert_contains_node(t, ir.MatrixColsTable)\n                            ^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixColsTable\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_entries_table",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixEntriesTable",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2457, in test_table_randomness_matrix_entries_table\n    assert_contains_node(t, ir.MatrixEntriesTable)\n                            ^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixEntriesTable\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_multi_way_zip_join",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableMultiWayZipJoin",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2587, in test_table_randomness_multi_way_zip_join\n    assert_contains_node(t, ir.TableMultiWayZipJoin)\n                            ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableMultiWayZipJoin\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_order_by",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableOrderBy",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2544, in test_table_randomness_order_by\n    assert_contains_node(t, ir.TableOrderBy)\n                            ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableOrderBy\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_with_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableParallelize",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2516, in test_table_randomness_parallelize_with_body_randomness\n    assert_contains_node(t, ir.TableParallelize)\n                            ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableParallelize\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_without_body_randomness",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableParallelize",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2523, in test_table_randomness_parallelize_without_body_randomness\n    assert_contains_node(t, ir.TableParallelize)\n                            ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableParallelize\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_matrix_rows_table",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.MatrixRowsTable",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2340, in test_table_randomness_range_matrix_rows_table\n    assert_contains_node(t, ir.MatrixRowsTable)\n                            ^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MatrixRowsTable\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_table",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableRange",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2333, in test_table_randomness_range_table\n    assert_contains_node(t, ir.TableRange)\n                            ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableRange\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_read",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableRead",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2450, in test_table_randomness_read\n    assert_contains_node(t, ir.TableRead)\n                            ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableRead\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_rename",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableRename",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2575, in test_table_randomness_rename\n    assert_contains_node(t, ir.TableRename)\n                            ^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableRename\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_repartition",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "behavior_failure",
+        "phase": "body",
+        "error_type": "AttributeError",
+        "error": "_tir",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2560, in test_table_randomness_repartition\n    print(t._tir)\n          ^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 408, in __getattr__\n    raise AttributeError(name)\nAttributeError: _tir\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_table_gen",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableGen",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2613, in test_table_randomness_table_gen\n    assert_contains_node(t, ir.TableGen)\n                            ^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableGen\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_tail",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableTail",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2537, in test_table_randomness_tail\n    assert_contains_node(t, ir.TableTail)\n                            ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableTail\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_union",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "unsupported",
+        "phase": "body",
+        "error_type": "BackendDependencyUnavailable",
+        "error": "Hail Scala/backend dependency: ir.TableUnion",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/table/test_table.py\", line 2381, in test_table_randomness_union\n    assert_contains_node(t, ir.TableUnion)\n                            ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.TableUnion\n"
+      }
+    ],
+    "setup_errors": [
+      "No module named 'pyspark'",
+      "module 'vail' has no attribute 'ir'"
+    ],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "test_exceptions_from_workers_have_stack_traces.py",
+    "name": "test_exceptions_from_workers_have_stack_traces",
+    "variants": [
+      {
+        "status": "failed",
+        "parameters": {},
+        "category": "behavior_failure",
+        "phase": "body",
+        "error_type": "RuntimeError",
+        "error": "Execution error: Arrow expression failed: Compute error: integer division or modulo by zero",
+        "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 270, in worker\n    target(**kwargs)\n  File \"/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-irless-h593bai8/hail/python/test/hail/test_exceptions_from_workers_have_stack_traces.py\", line 27, in test_exceptions_from_workers_have_stack_traces\n    ht.collect()\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1074, in collect\n    return decode_rows(self._native.collect_arrow(), self._schema)\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Execution error: Arrow expression failed: Compute error: integer division or modulo by zero\n"
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "failed_or_blocked"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_matrix_table_entries",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_annotate",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_explode",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_filter",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_key_by",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_key_by_aggregate",
+    "variants": [
+      {
+        "status": "passed",
+        "parameters": {}
+      }
+    ],
+    "setup_errors": [],
+    "backend": "vail",
+    "backend_capabilities": [
+      "local_filesystem",
+      "matrix_table",
+      "randomness",
+      "table"
+    ],
+    "status": "passed"
+  }
+]

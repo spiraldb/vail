@@ -826,7 +826,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                     )));
                     Ok(LogicalPlanBuilder::from(plan).project(fields)?.build()?)
                 }
-                None => extension(table),
+                None => Err(TableError::Invalid("missing logical grouped aggregate plan".into())),
             }
         }
         TableNode::MapRows {
@@ -940,7 +940,7 @@ pub(crate) async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
     physical_plan(lower(table)?, max_partitions(table)).await
 }
 
-fn max_partitions(table: &TableRef) -> usize {
+pub(crate) fn max_partitions(table: &TableRef) -> usize {
     children(table)
         .iter()
         .map(max_partitions)
@@ -958,6 +958,7 @@ pub(crate) async fn physical_plan(
         Arc::new(VailExtensionPlanner),
         Arc::new(crate::logical_globals::GlobalsExtensionPlanner),
         Arc::new(crate::logical_same::SameExtensionPlanner),
+        Arc::new(crate::logical_aggregate_init::InitializerPlanner),
     ]);
     use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
     let mut state = session_state(target_partitions);

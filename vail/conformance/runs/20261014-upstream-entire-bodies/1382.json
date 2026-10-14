@@ -1,0 +1,19 @@
+{
+  "module": "test_ir.py",
+  "name": "test_matrix_ir_matrix_type",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "fixture",
+      "error_type": "BackendDependencyUnavailable",
+      "error": "Hail Scala/backend dependency: ir.MakeStruct",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 232, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 221, in fixture\n    else fixture(p)\n         ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 219, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"../hail/hail/python/test/hail/test_ir.py\", line 328, in matrix_irs\n    collect = ir.MakeStruct([('x', ir.ApplyAggOp('Collect', [], [ir.I32(0)]))])\n              ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_matrix_cases.py\", line 58, in __getattr__\n    raise BackendDependencyUnavailable(\nupstream_matrix_cases.BackendDependencyUnavailable: Hail Scala/backend dependency: ir.MakeStruct\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'",
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

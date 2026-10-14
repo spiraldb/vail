@@ -1,0 +1,48 @@
+{
+  "module": "linalg/test_linalg.py",
+  "name": "test_slicing_0",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {
+        "indices": "(0, 0)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_ndarray'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 707, in test_slicing_0\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_ndarray'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "indices": "(5, 7)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_ndarray'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 707, in test_slicing_0\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_ndarray'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "indices": "(-3, 9)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_ndarray'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 707, in test_slicing_0\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_ndarray'\n"
+    },
+    {
+      "status": "failed",
+      "parameters": {
+        "indices": "(-8, -10)"
+      },
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'BlockMatrix' has no attribute 'from_ndarray'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/linalg/test_linalg.py\", line 707, in test_slicing_0\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n         ^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: type object 'BlockMatrix' has no attribute 'from_ndarray'\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

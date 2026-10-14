@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py", line 336, in <module>
+    main()
+    ~~~~^^
+  File "/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py", line 300, in main
+    worker(args.worker_source, args.worker_name, args.output, args.suite)
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py", line 31, in worker
+    import numpy as np
+ModuleNotFoundError: No module named 'numpy'

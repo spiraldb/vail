@@ -1,0 +1,38 @@
+{
+  "module": "matrixtable/test_matrix_table.py",
+  "name": "test_query_matrix_table_rows_interval_key",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x11752d0c0>",
+        "expected": "[Struct(row_idx=20, interval=Interval(start=20, end=70, includes_start=True, includes_end=False, point_type=int32), e=[Struct(n=0), Struct(n=200), Struct(n=400), Struct(n=600), Struct(n=800), Struct(n=1000), Struct(n=1200), Struct(n=1400), Struct(n=1600), Struct(n=1800)])]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x11752cfa0>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.StructExpression object at 0x117517140>",
+        "expected": "[]"
+      }
+    },
+    {
+      "status": "passed",
+      "parameters": {
+        "query": "<vail.expressions.Expression object at 0x11752d300>",
+        "expected": "[Struct(row_idx=20, interval=Interval(start=20, end=70, includes_start=True, includes_end=False, point_type=int32), e=[Struct(n=0), Struct(n=200), Struct(n=400), Struct(n=600), Struct(n=800), Struct(n=1000), Struct(n=1200), Struct(n=1400), Struct(n=1600), Struct(n=1800)])]"
+      }
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "passed"
+}

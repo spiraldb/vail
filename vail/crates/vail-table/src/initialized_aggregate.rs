@@ -11,16 +11,34 @@ use datafusion_physical_plan::{
     execution_plan::{Boundedness, EmissionType},
     stream::RecordBatchStreamAdapter,
 };
-use futures::TryStreamExt;
+use futures::{FutureExt, TryStreamExt, future::BoxFuture};
 use std::{fmt, sync::Arc};
 
 type BuildAggregate =
     Arc<dyn Fn(RecordBatch) -> datafusion_common::Result<PhysicalPlan> + Send + Sync>;
 
+pub(crate) type AsyncBuildAggregate = Arc<
+    dyn Fn(RecordBatch) -> BoxFuture<'static, datafusion_common::Result<PhysicalPlan>>
+        + Send
+        + Sync,
+>;
+
 pub(crate) fn initialized_aggregate(
     initializers: PhysicalPlan,
     template: PhysicalPlan,
     build: BuildAggregate,
+) -> PhysicalPlan {
+    let build = Arc::new(move |batch| {
+        let build = build.clone();
+        async move { build(batch) }.boxed()
+    });
+    initialized_aggregate_async(initializers, template, build)
+}
+
+pub(crate) fn initialized_aggregate_async(
+    initializers: PhysicalPlan,
+    template: PhysicalPlan,
+    build: AsyncBuildAggregate,
 ) -> PhysicalPlan {
     let schema = template.schema();
     let cache = Arc::new(PlanProperties::new(
@@ -42,7 +60,7 @@ struct InitializeAggregateExec {
     // Retained for the standard physical-plan explanation and schema only.
     // Runtime planning happens in `build`; this template is never executed.
     template: PhysicalPlan,
-    build: BuildAggregate,
+    build: AsyncBuildAggregate,
     cache: Arc<PlanProperties>,
 }
 
@@ -90,7 +108,7 @@ impl ExecutionPlan for InitializeAggregateExec {
                 "initialized aggregate requires one child".into(),
             ));
         }
-        Ok(initialized_aggregate(
+        Ok(initialized_aggregate_async(
             children[0].clone(),
             self.template.clone(),
             self.build.clone(),
@@ -131,7 +149,7 @@ impl ExecutionPlan for InitializeAggregateExec {
                 let initializer = initializer.ok_or_else(|| DataFusionError::Execution(
                     "aggregate initializer plan produced no rows".into(),
                 ))?;
-                let aggregate = build(initializer)?;
+                let aggregate = build(initializer).await?;
                 if aggregate.schema().as_ref() != expected_schema.as_ref() {
                     Err(DataFusionError::Plan(format!(
                         "initialized aggregate schema mismatch: expected {:?}, got {:?}",
@@ -139,6 +157,13 @@ impl ExecutionPlan for InitializeAggregateExec {
                         aggregate.schema(),
                     )))?;
                 }
+                // Runtime logical optimization may partition grouped output.
+                // This boundary advertises one partition, so drain every one.
+                let aggregate = if aggregate.properties().output_partitioning().partition_count() > 1 {
+                    Arc::new(datafusion_physical_plan::coalesce_partitions::CoalescePartitionsExec::new(aggregate)) as PhysicalPlan
+                } else {
+                    aggregate
+                };
                 let mut output = aggregate.execute(0, context)?;
                 while let Some(batch) = output.try_next().await? {
                     yield batch;

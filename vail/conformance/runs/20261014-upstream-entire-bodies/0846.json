@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_export_vcf_invalid_info_types",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "vail.context.TemporaryFilename is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 424, in test_export_vcf_invalid_info_types\n    with pytest.raises(FatalError) as exp, TemporaryFilename(suffix='.vcf') as export_path:\n                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/context.py\", line 6, in __init__\n    raise NotImplementedError('vail.context.TemporaryFilename is not implemented')\nNotImplementedError: vail.context.TemporaryFilename is not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

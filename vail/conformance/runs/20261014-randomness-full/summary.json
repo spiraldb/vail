@@ -1,0 +1,31 @@
+{
+  "commit": "974da796eddda33ebd0736d1f207bbfc23c1b6cc",
+  "rust": {
+    "passed": 208,
+    "failed": 1,
+    "hung": 1
+  },
+  "python": {
+    "passed": 1191,
+    "failed": 3,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "native_conformance": {
+    "passed": 4
+  },
+  "upstream_table_cases": {
+    "passed": 103
+  },
+  "oracle": {
+    "unavailable": 4
+  },
+  "upstream_randomness_audit": {
+    "other_failed_or_blocked": 19,
+    "passed": 24,
+    "compiler_ir_blocked": 80,
+    "worker_blocked": 8
+  },
+  "audit_scope": "131 test definitions selected by AST calls to rand_*, shuffle, sample, sample_rows, sample_cols, plus same-module callers. Original bodies and IR assertions retained by full_hail_bodies runner; imports, initialization, decorators and fixtures adapted. This is not a claim to find every transitive use or to run the entire Hail suite.",
+  "extension_sha256": "2b5b0b6055bb3305df54eaebb16674159ab2b716674034727784cb8929d230e3"
+}

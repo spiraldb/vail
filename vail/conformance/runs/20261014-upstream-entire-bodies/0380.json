@@ -1,0 +1,18 @@
+{
+  "module": "expr/test_ndarrays.py",
+  "name": "test_agg_ndarray_mismatched_dims_raises_fatal_error",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail.nd' has no attribute 'ones'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_ndarrays.py\", line 1229, in test_agg_ndarray_mismatched_dims_raises_fatal_error\n    mismatched = mismatched.annotate(x=hl.nd.ones((mismatched.idx,)))\n                                       ^^^^^^^^^^\nAttributeError: module 'vail.nd' has no attribute 'ones'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'test'"
+  ],
+  "status": "failed_or_blocked"
+}

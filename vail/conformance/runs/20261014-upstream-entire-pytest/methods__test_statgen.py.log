@@ -1,0 +1,11 @@
+
+==================================== ERRORS ====================================
+_______________________ ERROR collecting test_statgen.py _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_statgen.py:13: in <module>
+    from vail.utils.java import Env, choose_backend
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/utils/java.py:17: in __getattr__
+    raise NotImplementedError(f'vail.utils.java.{name} requires Hail JVM support')
+E   NotImplementedError: vail.utils.java.choose_backend requires Hail JVM support
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_statgen.py
+1 error in 0.13s

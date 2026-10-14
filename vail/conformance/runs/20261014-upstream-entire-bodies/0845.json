@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_export_sites_only_from_table",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "export_vcf requires a MatrixTable",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 414, in test_export_sites_only_from_table\n    hl.export_vcf(mt.rows(), tmp)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/vcf_export.py\", line 14, in export_vcf\n    raise TypeError('export_vcf requires a MatrixTable')\nTypeError: export_vcf requires a MatrixTable\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

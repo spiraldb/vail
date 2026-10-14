@@ -1,0 +1,526 @@
+[
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_mt_full_outer_join"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_plot_roc_curve"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_agg_array_agg_sum_vs_sum"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_agg_corr"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_aggregators_with_randomness"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_downsample_in_array_agg"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_key_by_random"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_order_by_head_optimization_with_randomness"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_seeded_same"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "Tests.test_seeded_sampling"
+  },
+  {
+    "module": "expr/test_expr.py",
+    "name": "test_stream_randomness"
+  },
+  {
+    "module": "expr/test_functions.py",
+    "name": "test_shuffle"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_aggregate_entries"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_choose_cols"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_collect_cols_by_key_with_rand"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_literals_rebuild"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_lower_row_agg_init_arg"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_make_table_row_equivalence"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "Tests.test_sample_rows"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_cols_by_key_with_agg_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_cols_by_key_with_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_cols_by_key_without_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_rows_by_key_then_aggregate_entries_with_agg_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_rows_by_key_with_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_aggregate_rows_by_key_without_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_annotate_cols_table"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_annotate_rows_table"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_cast_table_to_matrix"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_choose_cols"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_collect_cols_by_key"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_cols_head"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_cols_tail"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_distinct_by_row"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_explode_cols"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_explode_rows"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_cols_with_cond_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_cols_without_cond_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_entries_with_cond_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_entries_without_cond_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_intervals"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_rows_with_cond_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_filter_rows_without_cond_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_key_rows_by"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_cols_with_agg_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_cols_with_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_cols_with_scan_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_cols_without_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_entries_with_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_entries_without_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_globals_with_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_globals_without_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_rows"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_rows_with_agg_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_rows_with_scan_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_map_rows_without_body_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_read"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_rename"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_repartition"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_rows_head"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_rows_tail"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_to_matrix_apply"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_union_cols"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_matrix_randomness_union_rows"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_query_matrix_table_rows_randomness"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_sample_entries"
+  },
+  {
+    "module": "matrixtable/test_matrix_table.py",
+    "name": "test_struct_of_arrays_encoding"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_issue_5263"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "BGENTests.test_randomness"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "GENTests.test_export_gen"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "PLINKTests.test_export_plink"
+  },
+  {
+    "module": "methods/test_king.py",
+    "name": "test_king_filtered_entries_no_error"
+  },
+  {
+    "module": "methods/test_misc.py",
+    "name": "Tests.test_maximal_independent_set_types"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model_af_ranges"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_model_same_results"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_balding_nichols_stats"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_linreg_pass_through"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_logreg_pass_through"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_poisson_pass_through"
+  },
+  {
+    "module": "methods/test_statgen.py",
+    "name": "Tests.test_regression_field_dependence"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_visualize_missingness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_nested_union_100"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_nested_union_200"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_order_by_expr"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_partitioning_rewrite"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_sample"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_to_matrix_table"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_aggregate_by_key"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_block_matrix_to_table"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_cast_matrix_to_table"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_distinct"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_explode"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_intervals"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_with_cond_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_without_cond_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_head"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_interval_join"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_join"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_agg_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_body_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_without_body_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_left_join_right_distinct"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_with_body_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_without_body_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_partitions"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_body_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_scan_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_without_body_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_cols_table"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_entries_table"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_multi_way_zip_join"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_order_by"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_with_body_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_without_body_randomness"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_matrix_rows_table"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_table"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_read"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_rename"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_repartition"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_table_gen"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_tail"
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_union"
+  },
+  {
+    "module": "test_exceptions_from_workers_have_stack_traces.py",
+    "name": "test_exceptions_from_workers_have_stack_traces"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_matrix_table_entries"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_annotate"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_explode"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_filter"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_key_by"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_key_by_aggregate"
+  }
+]

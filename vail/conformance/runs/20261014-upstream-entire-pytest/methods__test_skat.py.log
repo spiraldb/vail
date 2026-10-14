@@ -1,0 +1,16 @@
+
+==================================== ERRORS ====================================
+________________________ ERROR collecting test_skat.py _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_skat.py:9: in <module>
+    @pytest.mark.parametrize("skat_model", [('hl._linear_skat', hl._linear_skat), ('hl._logistic_skat', hl._logistic_skat)])
+                                                                ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_linear_skat'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/helpers.py:101
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/helpers.py:101: PytestUnknownMarkWarning: Unknown pytest.mark.backend - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    qobtest = pytest.mark.backend('batch')
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-27s0aabb/upstream_hail/methods/test_skat.py
+1 warning, 1 error in 0.05s

@@ -1,0 +1,19 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_from_spark_works",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "type object 'Env' has no attribute 'spark_session'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/table/test_table.py\", line 769, in test_from_spark_works\n    spark_session = Env.spark_session()\n                    ^^^^^^^^^^^^^^^^^\nAttributeError: type object 'Env' has no attribute 'spark_session'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

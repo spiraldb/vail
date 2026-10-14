@@ -1,0 +1,25 @@
+{
+  "sampling_and_simulation_tests": {
+    "passed": 18
+  },
+  "randomness_and_native_type_tests": {
+    "passed": 135
+  },
+  "python_full": {
+    "passed": 1210,
+    "failed": 2,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "upstream_model_behavioral_bodies": {
+    "passed": 4
+  },
+  "upstream_phased_exact_reference": {
+    "status": "failed",
+    "reason": "phased property assertion passes; exact expected genotype list differs"
+  },
+  "existing_failures": [
+    "test_interval_partition_join_reads_only_files_needed_for_selected_output",
+    "test_membership_join_executes_only_selected_left_partition[semi_join-expected0]"
+  ]
+}

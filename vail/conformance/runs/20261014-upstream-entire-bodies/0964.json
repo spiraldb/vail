@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "ImportLinesTest.test_import_lines_bgz",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "BGZF and gzip text scans are not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 2132, in test_import_lines_bgz\n    lines_table = hl.import_lines(resource('sample.vcf.gz'), min_partitions=5, force_bgz=True)\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 70, in import_lines\n    raise NotImplementedError('BGZF and gzip text scans are not implemented')\nNotImplementedError: BGZF and gzip text scans are not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

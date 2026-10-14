@@ -1,0 +1,18 @@
+{
+  "module": "methods/test_impex.py",
+  "name": "VCFTests.test_info_char",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "RuntimeError",
+      "error": "Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/infochar.vcf:124: Missing value in INFO array. Use 'hl.import_vcf(..., array_elements_required=False)'.",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_impex.py\", line 54, in test_info_char\n    self.assertEqual(hl.import_vcf(resource('infochar.vcf')).count_rows(), 1)\n                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1161, in count_rows\n    return self._mir.core.count()\n           ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1247, in count\n    return self._native.count()\n           ^^^^^^^^^^^^^^^^^^^^\nRuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/infochar.vcf:124: Missing value in INFO array. Use 'hl.import_vcf(..., array_elements_required=False)'.\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "status": "failed_or_blocked"
+}

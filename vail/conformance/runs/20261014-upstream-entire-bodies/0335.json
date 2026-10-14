@@ -1,0 +1,16 @@
+{
+  "module": "expr/test_functions.py",
+  "name": "test_literal_free_vars",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "cannot infer a Vail type for Expression",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/expr/test_functions.py\", line 88, in test_literal_free_vars\n    array.map(hl.literal)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 532, in _array_map\n    body = as_expr(f(variable))\n                   ^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 881, in literal\n    dtype = infer_type(value)\n            ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 622, in infer_type\n    raise TypeError(f\"cannot infer a Vail type for {type(value).__name__}\")\nTypeError: cannot infer a Vail type for Expression\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,16 @@
+{
+  "module": "methods/test_misc.py",
+  "name": "Tests.test_summarize_variants",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "keywords must be strings",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_misc.py\", line 215, in test_summarize_variants\n    variants = hl.literal({\n               ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 881, in literal\n    dtype = infer_type(value)\n            ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 595, in infer_type\n    return tstruct(**{name: infer_type(field) for name, field in value.items()})\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: keywords must be strings\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

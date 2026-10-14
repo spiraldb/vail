@@ -1,0 +1,16 @@
+{
+  "module": "matrixtable/test_matrix_table_from_parts.py",
+  "name": "test_raises_when_no_rows_and_entries",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "ValueError",
+      "error": "provide row and column dimensions through rows, cols, or entries",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/matrixtable/test_matrix_table_from_parts.py\", line 118, in test_raises_when_no_rows_and_entries\n    hl.MatrixTable.from_parts(cols=TestData.cols)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1298, in from_parts\n    raise ValueError(\nValueError: provide row and column dimensions through rows, cols, or entries\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}

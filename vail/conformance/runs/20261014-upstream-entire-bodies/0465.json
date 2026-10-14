@@ -1,0 +1,35 @@
+{
+  "module": "ggplot/test_ggplot.py",
+  "name": "test_faceting",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'ggplot' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/ggplot/test_ggplot.py\", line 154, in test_faceting\n    pfig = (ggplot(ht) + geom_point(aes(x=ht.idx, y=ht.idx)) + facet_wrap(vars(ht.x))).to_plotly()\n            ^^^^^^\nNameError: name 'ggplot' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'"
+  ],
+  "status": "failed_or_blocked"
+}

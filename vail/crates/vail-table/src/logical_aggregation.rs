@@ -15,7 +15,7 @@ use vail_execution::expressions::Expr;
 use vail_execution::logical_expr::lower_logical_with_bindings;
 
 // API field names are literal identifiers, not SQL text to parse/normalize.
-fn col(name: impl AsRef<str>) -> DFExpr {
+pub(crate) fn col(name: impl AsRef<str>) -> DFExpr {
     DFExpr::Column(datafusion_common::Column::new_unqualified(name.as_ref()))
 }
 
@@ -61,7 +61,7 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
     Ok(vail_execution::aggregates::aggregate_udf(f, dtype)?)
 }
 
-fn columns(plan: &LogicalPlan) -> Vec<DFExpr> {
+pub(crate) fn columns(plan: &LogicalPlan) -> Vec<DFExpr> {
     plan.schema()
         .columns()
         .into_iter()
@@ -69,7 +69,7 @@ fn columns(plan: &LogicalPlan) -> Vec<DFExpr> {
         .collect()
 }
 
-fn unique(used: &mut HashSet<String>, base: &str) -> String {
+pub(crate) fn unique(used: &mut HashSet<String>, base: &str) -> String {
     let mut result = base.to_owned();
     while !used.insert(result.clone()) {
         result.push('_');
@@ -80,6 +80,11 @@ fn unique(used: &mut HashSet<String>, base: &str) -> String {
 fn needs_order(expression: &Expr) -> bool {
     let mut ordered = false;
     expression.visit(&mut |node| {
+        // A fold's initial state is applied once, including for empty input.
+        // The native accumulator also preserves sequence order.
+        if matches!(node, Expr::AggregateFold { .. }) {
+            ordered = true;
+        }
         if let Expr::Aggregate { function, .. } = node {
             ordered |= !matches!(
                 function.as_str(),
@@ -109,7 +114,7 @@ fn needs_order(expression: &Expr) -> bool {
     ordered
 }
 
-fn scope_plan(
+pub(crate) fn scope_plan(
     mut input: LogicalPlan,
     table: &TableRef,
     group: &Group,
@@ -117,6 +122,8 @@ fn scope_plan(
     group_names: &[String],
     used: &mut HashSet<String>,
     bindings: &BTreeMap<String, usize>,
+    outer_scope: &BTreeMap<String, String>,
+    external: &crate::globals::GlobalBindings,
 ) -> Result<(LogicalPlan, BTreeMap<String, ScalarValue>, String)> {
     let key_types = key_names
         .iter()
@@ -128,7 +135,7 @@ fn scope_plan(
                 .clone())
         })
         .collect::<Result<Vec<_>>>()?;
-    let mut scope = BTreeMap::new();
+    let mut scope = outer_scope.clone();
     for step in &group.steps {
         match step {
             Step::Filter(predicate) => {
@@ -182,9 +189,13 @@ fn scope_plan(
             }
         }
     }
+    let nested_input = input.clone();
     let mut aggregates = Vec::new();
     let mut defaults = BTreeMap::new();
     for reducer in &group.reducers {
+        if reducer.function == "__nested" {
+            continue;
+        }
         let value = match &reducer.value {
             Some(value) => resolve(value, &scope)?,
             None if reducer.function == "count" => Expr::RuntimeLiteral {
@@ -192,12 +203,45 @@ fn scope_plan(
             },
             _ => return Err(TableError::Invalid("aggregate argument missing".into())),
         };
-        let logical_value = lower_logical_with_bindings(
-            &value,
-            input.schema(),
-            table.globals().schema(),
-            bindings,
-        )?;
+        let (fold_udf, fold_value) = if reducer.function == "__fold" {
+            let (udf, _) = crate::aggregation::lower_fold(
+                &value,
+                input.schema().as_arrow(),
+                input.schema().as_arrow(),
+                table.globals().schema(),
+                bindings,
+                &scope,
+            )?;
+            let packed = Expr::Struct {
+                fields: input
+                    .schema()
+                    .fields()
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, f)| *f.data_type() != DataType::UInt64)
+                    .map(|(i, f)| {
+                        (
+                            f.name().clone(),
+                            if i < table.globals().schema().fields().len() {
+                                Expr::Global {
+                                    name: table.globals().schema().field(i).name().clone(),
+                                }
+                            } else {
+                                Expr::Column {
+                                    name: f.name().clone(),
+                                }
+                            },
+                        )
+                    })
+                    .collect(),
+            };
+            (Some(udf), Some(packed))
+        } else {
+            (None, None)
+        };
+        let value = fold_value.as_ref().unwrap_or(&value);
+        let mut logical_value =
+            lower_logical_with_bindings(value, input.schema(), table.globals().schema(), bindings)?;
         let dtype = if reducer.function == "count" {
             None
         } else {
@@ -207,7 +251,26 @@ fn scope_plan(
                     .to_arrow()?,
             )
         };
-        let udf = factory(reducer, dtype.as_ref())?;
+        let dtype = if fold_udf.is_some() {
+            let payload = DataType::Struct(
+                input
+                    .schema()
+                    .fields()
+                    .iter()
+                    .filter(|f| *f.data_type() != DataType::UInt64)
+                    .cloned()
+                    .collect(),
+            );
+            logical_value =
+                vail_execution::logical_expr::restore_type(logical_value, payload.clone());
+            Some(payload)
+        } else {
+            dtype
+        };
+        let udf = match fold_udf {
+            Some(udf) => udf,
+            None => factory(reducer, dtype.as_ref())?,
+        };
         // Query the existing UDAF for its empty-input identity. This does not
         // evaluate input rows or construct an executable aggregate pipeline.
         let argument = ScalarValue::try_from(dtype.as_ref().unwrap_or(&DataType::Int64))?;
@@ -248,11 +311,35 @@ fn scope_plan(
     let result = LogicalPlanBuilder::from(result)
         .project(projection)?
         .build()?;
+    let mut result = result;
+    for reducer in group.reducers.iter().filter(|r| r.function == "__nested") {
+        let (right, default, right_presence) = crate::logical_nested_aggregation::lower(
+            nested_input.clone(),
+            table,
+            key_names,
+            group_names,
+            &scope,
+            used,
+            bindings,
+            reducer.value.as_ref().unwrap(),
+            &reducer.name,
+            external,
+        )?;
+        result = join_scope(
+            result,
+            right,
+            group_names,
+            &[(reducer.name.clone(), default.clone())],
+            &right_presence,
+            used,
+        )?;
+        defaults.insert(reducer.name.clone(), default);
+    }
     Ok((result, defaults, presence))
 }
 
-/// Dynamic aggregate initialization and nested fold/group reducers need their
-/// explicit Vail extension planner. Ordinary scopes use DF Aggregate/Join nodes.
+/// All grouped aggregate scopes use the logical relational lowering. Runtime
+/// initializer values are evaluated at an explicit logical extension boundary.
 pub(crate) fn lower_logical_grouped(
     table: &TableRef,
     child: LogicalPlan,
@@ -266,18 +353,22 @@ pub(crate) fn lower_logical_grouped(
     else {
         return Ok(None);
     };
-    let mut specialized = false;
-    for (_, expr) in fields {
-        expr.visit(&mut |node| match node {
-            Expr::Aggregate { init, .. } if !init.is_empty() => specialized = true,
-            Expr::AggregateFold { .. } | Expr::AggGroupBy { .. } | Expr::AggArray { .. } => {
-                specialized = true
-            }
-            _ => (),
-        });
-    }
-    if specialized {
-        return Ok(None);
+    Ok(Some(lower_grouped_fields(
+        table, child, keys, fields, bindings,
+    )?))
+}
+
+pub(crate) fn lower_grouped_fields(
+    table: &TableRef,
+    child: LogicalPlan,
+    keys: &[(String, Expr)],
+    fields: &[(String, Expr)],
+    bindings: &crate::globals::GlobalBindings,
+) -> Result<LogicalPlan> {
+    if let Some(plan) =
+        crate::logical_aggregate_init::lower(table, child.clone(), Some(keys), fields, bindings)?
+    {
+        return Ok(plan);
     }
     // Keep partitions independent for associative reductions. Ordered reducers
     // retain the source boundary, before scope/key columns are appended.
@@ -316,7 +407,7 @@ pub(crate) fn lower_logical_grouped(
             },
         )]
     } else {
-        keys.clone()
+        keys.to_vec()
     };
     let mut key_names = Vec::new();
     let mut group_names = Vec::new();
@@ -359,6 +450,8 @@ pub(crate) fn lower_logical_grouped(
         &group_names,
         &mut used,
         &indices,
+        &BTreeMap::new(),
+        bindings,
     )?;
     for group in groups {
         let (right, defaults, presence) = scope_plan(
@@ -369,6 +462,8 @@ pub(crate) fn lower_logical_grouped(
             &group_names,
             &mut used,
             &indices,
+            &BTreeMap::new(),
+            bindings,
         )?;
         let right_keys = group_names
             .iter()
@@ -428,11 +523,9 @@ pub(crate) fn lower_logical_grouped(
             .alias(name),
         );
     }
-    Ok(Some(
-        LogicalPlanBuilder::from(result)
-            .project(projection)?
-            .build()?,
-    ))
+    Ok(LogicalPlanBuilder::from(result)
+        .project(projection)?
+        .build()?)
 }
 
 /// Total aggregation emits one row even for empty input. Aggregate scopes are
@@ -443,16 +536,14 @@ pub(crate) fn lower_logical_total(
     bindings: &crate::globals::GlobalBindings,
     child: LogicalPlan,
 ) -> Result<Option<LogicalPlan>> {
-    let mut specialized = false;
-    expression.visit(&mut |node| match node {
-        Expr::Aggregate { init, .. } if !init.is_empty() => specialized = true,
-        Expr::AggregateFold { .. } | Expr::AggGroupBy { .. } | Expr::AggArray { .. } => {
-            specialized = true
-        }
-        _ => (),
-    });
-    if specialized {
-        return Ok(None);
+    if let Some(plan) = crate::logical_aggregate_init::lower(
+        table,
+        child.clone(),
+        None,
+        &[("value".into(), expression.clone())],
+        bindings,
+    )? {
+        return Ok(Some(plan));
     }
     let mut used: HashSet<String> = child
         .schema()
@@ -472,8 +563,17 @@ pub(crate) fn lower_logical_total(
         let child = crate::logical_globals::bind_globals(child, table)?;
         let (child, indices) = crate::logical_globals::bind_external(child, bindings)?;
         for group in groups {
-            let (right, _, _) =
-                scope_plan(child.clone(), table, &group, &[], &[], &mut used, &indices)?;
+            let (right, _, _) = scope_plan(
+                child.clone(),
+                table,
+                &group,
+                &[],
+                &[],
+                &mut used,
+                &indices,
+                &BTreeMap::new(),
+                bindings,
+            )?;
             result = LogicalPlanBuilder::from(result)
                 .cross_join(right)?
                 .build()?;
@@ -492,4 +592,121 @@ pub(crate) fn lower_logical_total(
             .project(vec![value.alias("value")])?
             .build()?,
     ))
+}
+
+/// Preserve the enclosing group domain and distinguish absent scopes from
+/// present scopes whose reducer legitimately returns missing.
+pub(crate) fn join_scope(
+    left: LogicalPlan,
+    right: LogicalPlan,
+    keys: &[String],
+    values: &[(String, ScalarValue)],
+    presence: &str,
+    used: &mut HashSet<String>,
+) -> Result<LogicalPlan> {
+    let aliases = keys
+        .iter()
+        .map(|_| unique(used, "__vail_nested_join_key"))
+        .collect::<Vec<_>>();
+    let mut fields = keys
+        .iter()
+        .zip(&aliases)
+        .map(|(l, r)| col(l).alias(r))
+        .collect::<Vec<_>>();
+    fields.extend(values.iter().map(|(name, _)| col(name)));
+    fields.push(col(presence));
+    let right = LogicalPlanBuilder::from(right).project(fields)?.build()?;
+    let mut fields = columns(&left);
+    let joined = if keys.is_empty() {
+        LogicalPlanBuilder::from(left).cross_join(right)?.build()?
+    } else {
+        LogicalPlanBuilder::from(left)
+            .join_detailed(
+                right,
+                JoinType::Left,
+                (keys.to_vec(), aliases),
+                None,
+                datafusion_common::NullEquality::NullEqualsNull,
+            )?
+            .build()?
+    };
+    for (name, default) in values {
+        let value = if default.is_null() {
+            col(name)
+        } else {
+            datafusion_expr::expr_fn::when(col(presence).is_null(), lit(default.clone()))
+                .otherwise(col(name))?
+        };
+        fields.push(value.alias(name));
+    }
+    Ok(LogicalPlanBuilder::from(joined).project(fields)?.build()?)
+}
+
+/// Recursively reduce a nested body, preserving its enclosing group keys.
+pub(crate) fn body_plan(
+    input: LogicalPlan,
+    table: &TableRef,
+    key_names: &[String],
+    group_names: &[String],
+    scope: &BTreeMap<String, String>,
+    used: &mut HashSet<String>,
+    bindings: &BTreeMap<String, usize>,
+    body: &Expr,
+    name: &str,
+    external: &crate::globals::GlobalBindings,
+) -> Result<LogicalPlan> {
+    let mut groups = Vec::new();
+    let output = extract(body, &[], &mut groups, used)?;
+    let anchor = groups
+        .iter()
+        .position(|g| g.steps.is_empty())
+        .map(|i| groups.remove(i))
+        .unwrap_or(Group {
+            steps: vec![],
+            reducers: vec![],
+        });
+    let (mut result, _, _) = scope_plan(
+        input.clone(),
+        table,
+        &anchor,
+        key_names,
+        group_names,
+        used,
+        bindings,
+        scope,
+        external,
+    )?;
+    for group in groups {
+        let (right, defaults, presence) = scope_plan(
+            input.clone(),
+            table,
+            &group,
+            key_names,
+            group_names,
+            used,
+            bindings,
+            scope,
+            external,
+        )?;
+        let values = group
+            .reducers
+            .iter()
+            .map(|r| (r.name.clone(), defaults[&r.name].clone()))
+            .collect::<Vec<_>>();
+        result = join_scope(result, right, group_names, &values, &presence, used)?;
+    }
+    result = crate::logical_globals::bind_globals(result, table)?;
+    // The external bindings in the input were removed by aggregation.
+    let (result, indices) = crate::logical_globals::bind_external(result, external)?;
+    let output = resolve(&output, scope)?;
+    let mut fields = group_names
+        .iter()
+        .chain(key_names)
+        .map(col)
+        .collect::<Vec<_>>();
+    fields.push(
+        lower_logical_with_bindings(&output, result.schema(), table.globals().schema(), &indices)?
+            .alias(name),
+    );
+    Ok(LogicalPlanBuilder::from(result).project(fields)?.build()?)
 }

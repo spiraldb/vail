@@ -1,0 +1,23 @@
+{
+  "module": "utils/test_hl_hadoop_and_hail_fs.py",
+  "name": "test_hadoop_methods_3",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'hadoop_open' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/utils/test_hl_hadoop_and_hail_fs.py\", line 73, in test_hadoop_methods_3\n    with hadoop_open(f'{tmpdir}/test_out.txt.gz', 'w') as f:\n         ^^^^^^^^^^^\nNameError: name 'hadoop_open' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.context' has no attribute '_get_local_tmpdir'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_ls'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "No module named 'jproperties'",
+    "No module named 'rich'"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,16 @@
+{
+  "module": "methods/test_misc.py",
+  "name": "Tests.test_segment_intervals",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "module 'vail' has no attribute 'segment_intervals'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 238, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_misc.py\", line 259, in test_segment_intervals\n    segmented1 = hl.segment_intervals(intervals, points1)\n                 ^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 15, in __getattr__\n    return getattr(self._module, name)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'vail' has no attribute 'segment_intervals'. Did you mean: 'filter_intervals'?\n"
+    }
+  ],
+  "setup_errors": [],
+  "status": "failed_or_blocked"
+}
