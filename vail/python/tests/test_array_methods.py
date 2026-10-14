@@ -54,3 +54,36 @@ def test_array_mean_median():
     assert hl.eval(hl.median([1, 9, None, 3, 5])) == 3
     assert hl.eval(hl.median(hl.empty_array(hl.tint32))) is None
     assert hl.eval(hl.median(hl.set([2, 3, 1]))) == 2
+
+
+def test_fold_and_scan_batch_lanes_keep_ragged_owner_context():
+    table = hl.Table.parallelize(
+        [{'idx': 2, 'a': [1, 2, 3]}, {'idx': 4, 'a': []},
+         {'idx': 7, 'a': None}, {'idx': 9, 'a': [4]},
+         {'idx': 11, 'a': [None, 6]}],
+        schema=hl.tstruct(idx=hl.tint32, a=hl.tarray(hl.tint32)),
+        n_partitions=1,
+    )
+    result = table.annotate(
+        folded=table.a.fold(lambda acc, item: acc + item + table.idx, table.idx),
+        scanned=table.a.scan(lambda acc, item: acc + item + table.idx, table.idx),
+    ).collect()
+    assert [row.folded for row in result] == [14, 4, None, 22, None]
+    assert [row.scanned for row in result] == [[2, 5, 9, 14], [4], None, [9, 22], [11, None, None]]
+
+
+def test_fold_ignores_large_unreferenced_nested_columns():
+    table = hl.Table.parallelize(
+        [{'idx': i, 'a': list(range(256)),
+          'unused': [list(range(256)) for _ in range(8)]} for i in range(4)],
+        schema=hl.tstruct(idx=hl.tint32, a=hl.tarray(hl.tint32),
+                          unused=hl.tarray(hl.tarray(hl.tint32))),
+        n_partitions=1,
+    )
+    result = table.annotate(
+        total=table.a.fold(lambda accumulator, item: accumulator + item, 0),
+        nested=table.unused.fold(lambda accumulator, items:
+                                 accumulator + items.fold(lambda a, x: a + x, 0), 0),
+    ).collect()
+    assert [row.total for row in result] == [sum(range(256))] * 4
+    assert [row.nested for row in result] == [8 * sum(range(256))] * 4

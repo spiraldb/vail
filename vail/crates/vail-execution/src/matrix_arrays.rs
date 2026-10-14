@@ -21,6 +21,8 @@ const CID: &str = "__vail_matrix_col_id";
 #[derive(Debug, PartialEq, Eq, Hash)]
 enum Operation {
     Take,
+    TakeGroups,
+    DenseCells,
     Columns,
     Aligned,
 }
@@ -34,6 +36,8 @@ struct MatrixArray {
 pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
     let operation = match name {
         "__vail_list_take" => Operation::Take,
+        "__vail_list_take_groups" => Operation::TakeGroups,
+        "__vail_dense_cells" => Operation::DenseCells,
         "__vail_matrix_columns" => Operation::Columns,
         "__vail_matrix_aligned" => Operation::Aligned,
         _ => return None,
@@ -137,6 +141,153 @@ fn gather(values: &ListArray, positions: &ListArray) -> Result<ArrayRef> {
     )?))
 }
 
+/// Gather all groups in one Arrow take, without repeating the source list for
+/// each group. The outer offsets identify owners; inner offsets identify groups.
+fn gather_groups(values: &ListArray, groups: &ListArray) -> Result<ArrayRef> {
+    if values.len() != groups.len() || groups.null_count() != 0 {
+        return exec_err!("grouped gather requires defined groups with matching row counts");
+    }
+    let positions = list(groups.values())?;
+    let DataType::List(index_field) = positions.data_type() else {
+        unreachable!()
+    };
+    let mut flat_offsets = Vec::with_capacity(groups.len() + 1);
+    let mut group_lengths = Vec::new();
+    let mut owner_lengths = Vec::with_capacity(groups.len());
+    for row in 0..groups.len() {
+        let start = groups.value_offsets()[row] as usize;
+        let end = groups.value_offsets()[row + 1] as usize;
+        flat_offsets.push(positions.value_offsets()[start]);
+        owner_lengths.push(end - start);
+        for group in start..end {
+            if positions.is_null(group) {
+                return exec_err!("grouped gather positions must not be missing");
+            }
+            group_lengths.push(positions.value_length(group) as usize);
+        }
+    }
+    let end = *groups.value_offsets().last().unwrap() as usize;
+    flat_offsets.push(positions.value_offsets()[end]);
+    let flat = ListArray::try_new(
+        index_field.clone(),
+        OffsetBuffer::new(flat_offsets.into()),
+        positions.values().clone(),
+        None,
+    )?;
+    let selected = gather(values, &flat)?;
+    let selected = list(&selected)?;
+    let DataType::List(value_field) = values.data_type() else {
+        unreachable!()
+    };
+    let inner = Arc::new(ListArray::try_new(
+        value_field.clone(),
+        OffsetBuffer::from_lengths(group_lengths),
+        selected.values().clone(),
+        None,
+    )?);
+    Ok(Arc::new(ListArray::try_new(
+        Arc::new(arrow_schema::Field::new(
+            "item",
+            inner.data_type().clone(),
+            true,
+        )),
+        OffsetBuffer::from_lengths(owner_lengths),
+        inner,
+        None,
+    )?))
+}
+
+fn dense_type(value_type: &DataType) -> DataType {
+    use arrow_schema::Field;
+    DataType::List(Arc::new(Field::new(
+        "item",
+        DataType::Struct(
+            vec![
+                Arc::new(Field::new(CID, DataType::Int64, true)),
+                Arc::new(Field::new("present", DataType::Boolean, true)),
+                Arc::new(Field::new("value", value_type.clone(), true)),
+            ]
+            .into(),
+        ),
+        true,
+    )))
+}
+
+/// Scatter known sparse column positions into a dense Arrow take index. No
+/// search or sort is required; Arrow supplies values and missing output slots.
+fn dense_cells(entries: &ListArray, widths: &Int32Array) -> Result<ArrayRef> {
+    if entries.len() != widths.len() || entries.null_count() != 0 || widths.null_count() != 0 {
+        return exec_err!("dense cells require defined records and matching column counts");
+    }
+    let lengths = widths
+        .values()
+        .iter()
+        .map(|&n| {
+            usize::try_from(n).map_err(|_| {
+                datafusion_common::exec_datafusion_err!("column count must not be negative")
+            })
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let total = lengths
+        .iter()
+        .try_fold(0usize, |n, &width| n.checked_add(width))
+        .filter(|&n| n <= i32::MAX as usize)
+        .ok_or_else(|| {
+            datafusion_common::exec_datafusion_err!("dense cell output exceeds Arrow list capacity")
+        })?;
+    let identities = ids(entries)?;
+    let records = entries
+        .values()
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    let values = records
+        .column_by_name("value")
+        .ok_or_else(|| datafusion_common::exec_datafusion_err!("sparse entries require values"))?;
+    let mut indices = vec![None; total];
+    let mut output_ids = Vec::with_capacity(total);
+    let mut offset = 0;
+    for (row, &width) in lengths.iter().enumerate() {
+        let start = entries.value_offsets()[row] as usize;
+        let end = entries.value_offsets()[row + 1] as usize;
+        for entry in start..end {
+            let id = identities.value(entry);
+            if records.is_null(entry) || identities.is_null(entry) || id < 0 || id >= width as i64 {
+                return exec_err!("sparse entry positions must be defined and within column count");
+            }
+            let target = offset + id as usize;
+            if indices[target].replace(entry as u32).is_some() {
+                return exec_err!("sparse entry positions must be unique");
+            }
+        }
+        output_ids.extend((0..width).map(|column| column as i64));
+        offset += width;
+    }
+    let presence = indices.iter().map(Option::is_some).collect::<Vec<_>>();
+    let selected = take(values.as_ref(), &UInt32Array::from(indices), None)?;
+    let DataType::List(field) = dense_type(values.data_type()) else {
+        unreachable!()
+    };
+    let DataType::Struct(fields) = field.data_type() else {
+        unreachable!()
+    };
+    let records = Arc::new(StructArray::try_new(
+        fields.clone(),
+        vec![
+            Arc::new(Int64Array::from(output_ids)),
+            Arc::new(BooleanArray::from(presence)),
+            selected,
+        ],
+        None,
+    )?);
+    Ok(Arc::new(ListArray::try_new(
+        field,
+        OffsetBuffer::from_lengths(lengths),
+        records,
+        None,
+    )?))
+}
+
 fn aligned(cells: &ListArray, columns: &ListArray) -> Result<ArrayRef> {
     if cells.len() != columns.len() {
         return exec_err!("matrix alignment row counts differ");
@@ -199,6 +350,8 @@ impl ScalarUDFImpl for MatrixArray {
     fn name(&self) -> &str {
         match self.operation {
             Operation::Take => "__vail_list_take",
+            Operation::TakeGroups => "__vail_list_take_groups",
+            Operation::DenseCells => "__vail_dense_cells",
             Operation::Columns => "__vail_matrix_columns",
             Operation::Aligned => "__vail_matrix_aligned",
         }
@@ -217,6 +370,33 @@ impl ScalarUDFImpl for MatrixArray {
                     return plan_err!("matrix gather requires a list of int32 positions");
                 }
                 Ok(args[0].clone())
+            }
+            Operation::TakeGroups => {
+                if !matches!(args.get(1), Some(DataType::List(group)) if
+                    matches!(group.data_type(), DataType::List(index) if index.data_type() == &DataType::Int32))
+                {
+                    return plan_err!("grouped gather requires lists of int32 position lists");
+                }
+                Ok(DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    args[0].clone(),
+                    true,
+                ))))
+            }
+            Operation::DenseCells => {
+                if args.get(1) != Some(&DataType::Int32) {
+                    return plan_err!("dense cells require an int32 column count");
+                }
+                let DataType::List(field) = &args[0] else {
+                    unreachable!()
+                };
+                let DataType::Struct(fields) = field.data_type() else {
+                    return plan_err!("dense cells require sparse entry records");
+                };
+                let value = fields.iter().find(|f| f.name() == "value").ok_or_else(|| {
+                    datafusion_common::plan_datafusion_err!("sparse entries require a value field")
+                })?;
+                Ok(dense_type(value.data_type()))
             }
             Operation::Columns => Ok(args[0].clone()),
             Operation::Aligned => {
@@ -241,6 +421,16 @@ impl ScalarUDFImpl for MatrixArray {
         let first = list(&arrays[0])?;
         let result = match self.operation {
             Operation::Take => gather(first, list(&arrays[1])?)?,
+            Operation::TakeGroups => gather_groups(first, list(&arrays[1])?)?,
+            Operation::DenseCells => dense_cells(
+                first,
+                arrays[1]
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .ok_or_else(|| {
+                        datafusion_common::exec_datafusion_err!("dense cell widths must be int32")
+                    })?,
+            )?,
             Operation::Columns => {
                 check_columns(first)?;
                 arrays[0].clone()
@@ -319,12 +509,112 @@ mod tests {
     }
 
     #[test]
+    fn grouped_gathers_preserve_empty_groups_repetition_and_unused_prefixes() {
+        let values = records(&[&[Some(7), Some(2), Some(8)], &[Some(4)], &[]], true);
+        let positions = positions(&[&[99], &[2, 0], &[], &[1, 2], &[0], &[]]);
+        let groups = ListArray::try_new(
+            Arc::new(Field::new("item", positions.data_type().clone(), true)),
+            OffsetBuffer::new(vec![1, 4, 5, 6].into()),
+            Arc::new(positions),
+            None,
+        )
+        .unwrap();
+        let out = gather_groups(&values, &groups).unwrap();
+        let outer = list(&out).unwrap();
+        assert_eq!(outer.value_offsets(), &[0, 3, 4, 5]);
+        let inner = list(outer.values()).unwrap();
+        assert_eq!(inner.value_offsets(), &[0, 2, 2, 4, 5, 5]);
+        assert_eq!(ids(inner).unwrap().values(), &[8, 7, 2, 8, 4]);
+        let sliced = gather_groups(&values.slice(1, 2), &groups.slice(1, 2)).unwrap();
+        let inner = list(list(&sliced).unwrap().values()).unwrap();
+        assert_eq!(ids(inner).unwrap().values(), &[4]);
+    }
+
+    #[test]
     fn gathers_reject_invalid_positions_and_row_counts() {
         let cells = records(&[&[Some(8)]], true);
         for index in [-1, 1] {
             assert!(gather(&cells, &positions(&[&[index]])).is_err());
         }
         assert!(gather(&cells, &positions(&[])).is_err());
+    }
+
+    #[test]
+    fn dense_scatter_preserves_unsorted_values_and_missing_slots() {
+        let sparse = records(&[&[Some(2), Some(0)], &[Some(1)], &[]], true);
+        let old = sparse
+            .values()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .unwrap();
+        let payload = StructArray::try_new(
+            vec![Arc::new(Field::new("marker", DataType::Int32, true))].into(),
+            vec![Arc::new(Int32Array::from(vec![102, 100, 201]))],
+            None,
+        )
+        .unwrap();
+        let records = Arc::new(
+            StructArray::try_new(
+                vec![
+                    old.fields()[0].clone(),
+                    Arc::new(Field::new("value", payload.data_type().clone(), true)),
+                ]
+                .into(),
+                vec![old.column(0).clone(), Arc::new(payload)],
+                None,
+            )
+            .unwrap(),
+        );
+        let sparse = ListArray::try_new(
+            Arc::new(Field::new("item", records.data_type().clone(), true)),
+            sparse.offsets().clone(),
+            records,
+            None,
+        )
+        .unwrap();
+        let out = dense_cells(&sparse, &Int32Array::from(vec![3, 2, 0])).unwrap();
+        let out = list(&out).unwrap();
+        assert_eq!(out.value_offsets(), &[0, 3, 5, 5]);
+        let values = out.values().as_any().downcast_ref::<StructArray>().unwrap();
+        let present = values
+            .column_by_name("present")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<BooleanArray>()
+            .unwrap();
+        assert_eq!(
+            present.iter().collect::<Vec<_>>(),
+            vec![Some(true), Some(false), Some(true), Some(false), Some(true)]
+        );
+        let payload = values
+            .column_by_name("value")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .unwrap();
+        assert!(payload.is_null(1) && payload.is_null(3));
+        let markers = payload
+            .column(0)
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap();
+        assert_eq!(
+            (markers.value(0), markers.value(2), markers.value(4)),
+            (100, 102, 201)
+        );
+    }
+
+    #[test]
+    fn dense_scatter_rejects_duplicate_and_invalid_positions() {
+        for row in [
+            &[Some(0), Some(0)][..],
+            &[Some(-1)][..],
+            &[Some(2)][..],
+            &[None][..],
+        ] {
+            assert!(dense_cells(&records(&[row], true), &Int32Array::from(vec![2])).is_err());
+        }
+        assert!(dense_cells(&records(&[&[]], true), &Int32Array::from(vec![-1])).is_err());
     }
 
     #[test]

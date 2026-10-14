@@ -208,15 +208,8 @@ def _direct_literal_array(value):
 def _dict_from_entries(entries, key_type, value_type, *, last_wins=False):
     """Deduplicate keys with DataFusion's native equality while preserving entries."""
     _ensure_key_supported(key_type)
-    keys = entries._array_map(lambda entry: entry.key)
-    keys = _native_sort(_function("array_distinct", [keys], keys.dtype))
-
-    def selected_entry(key):
-        matches = entries._array_filter(lambda entry: _equal(entry.key, key))
-        index = -1 if last_wins else 1
-        return _function("array_element", [matches, literal(index, tint64)], entries.dtype.element_type)
-
-    unique_entries = keys._array_map(selected_entry)
+    function = "__vail_dict_last" if last_wins else "__vail_dict_first"
+    unique_entries = _function(function, [entries], entries.dtype)
     return _cast(unique_entries, tdict(key_type, value_type))
 
 
@@ -268,25 +261,30 @@ def _equal(left, right):
     )
 
 
+def _lookup(value, key):
+    return _function('__vail_dict_lookup', [value, key],
+                     tstruct(found=tbool, value=value.dtype.value_type))
+
+
 def contains(value, key):
     if isinstance(value.dtype, tdict):
         key = _coerce(key, value.dtype.key_type)
-        matches = value._array_filter(lambda entry: _equal(entry.key, key))
-    elif isinstance(value.dtype, tset):
+        return _lookup(value, key).found
+    if isinstance(value.dtype, tset):
         key = _coerce(key, value.dtype.element_type)
-        matches = value._array_filter(lambda item: _equal(item, key))
-    else:
-        raise TypeError("contains requires a set or dictionary")
-    return length(matches) > 0
+        canonical_key = _native_equality_value(key)
+        pairs = value._array_map(lambda item: struct(
+            key=_native_equality_value(item), value=True))
+        dictionary = _cast(pairs, tdict(canonical_key.dtype, tbool))
+        return _lookup(dictionary, canonical_key).found
+    raise TypeError("contains requires a set or dictionary")
 
 
 def get(value, key, default=None):
     key = _coerce(key, value.dtype.key_type)
     default = _coerce(default, value.dtype.value_type)
-    matches = value._array_filter(lambda entry: _equal(entry.key, key))
-    values = matches._array_map(lambda entry: entry.value)
-    first = _function("array_element", [values, literal(1, tint64)], value.dtype.value_type)
-    return if_else(length(matches) > 0, first, default)
+    result = _lookup(value, key)
+    return if_else(result.found, result.value, default)
 
 
 def keys(value):
@@ -320,18 +318,29 @@ def set_binary(left, right, operation):
     if _distinct_supported(left.dtype.element_type):
         function = {'difference': 'array_except', 'intersection': 'array_intersect', 'union': 'array_union'}[operation]
         return _function(function, [left, right], left.dtype)
-    # Nested unordered values cannot use DataFusion's distinct kernels. Compose
-    # operations from native equality and filtering for those element types.
+    # Canonical values make nested unordered levels ordinary Arrow keys. Group
+    # both inputs once rather than probing the opposite collection per member.
+    left_pairs = left._array_map(
+        lambda item: struct(key=_native_equality_value(item),
+                            value=struct(item=item, left=True)))
+    right_pairs = right._array_map(
+        lambda item: struct(key=_native_equality_value(item),
+                            value=struct(item=item, left=False)))
+    pairs = _function('array_concat', [left_pairs, right_pairs], left_pairs.dtype)
+    entry_type = pairs.dtype.element_type
+    grouped_type = tarray(tstruct(key=entry_type['key'],
+                                 value=tarray(entry_type['value'])))
+    groups = _function('__vail_collection_group', [pairs], grouped_type)
     if operation == 'difference':
-        result = left._array_filter(lambda item: ~contains(right, item))
+        groups = groups._array_filter(
+            lambda group: group.value.any(lambda entry: entry.left)
+            & ~group.value.any(lambda entry: ~entry.left))
     elif operation == 'intersection':
-        result = left._array_filter(lambda item: contains(right, item))
-    else:
-        extra = right._array_filter(lambda item: ~contains(left, item))
-        left_array = _cast(left, tarray(left.dtype.element_type))
-        result = _function('array_concat', [left_array, extra], tarray(left.dtype.element_type))
+        groups = groups._array_filter(
+            lambda group: group.value.any(lambda entry: entry.left)
+            & group.value.any(lambda entry: ~entry.left))
+    result = groups._array_map(lambda group: group.value[0].item)
     result = _cast(result, left.dtype)
-    # SQL set kernels propagate missing inputs; the composed path must do so too.
     return if_else(is_missing(left) | is_missing(right), missing(left.dtype), result)
 
 

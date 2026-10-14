@@ -133,6 +133,11 @@ def _take_array(values, positions):
     return _function("__vail_list_take", [values, positions], values.dtype)
 
 
+def _take_groups(values, positions):
+    from .collections import _function
+    return _function("__vail_list_take_groups", [values, positions], tarray(values.dtype))
+
+
 def _validate_layout(core):
     from .collections import _function
     columns = core.globals[_COLUMNS]
@@ -2451,64 +2456,46 @@ class GroupedMatrixTable:
         from . import range as array_range, len as length
         from .matrix_list_aggregates import reduce_list
 
-        base = m._mir.cols
+        base = m._columns_with_positions()
         keys = {n: m._lower(expr, base) for n, expr in self._keys}
         fields = {
             n: m._lower(m._validate(v, "col", aggregate=True), base)
             for n, v in self._axis_fields.items()
         }
-        grouped = base.group_by(**keys).aggregate(
-            **fields, members=agg.collect(base[_CID])
-        )
+        positions_name = "__vail_group_positions"
+        while positions_name in set(groupnames) | set(fields):
+            positions_name += "_"
+        from . import sorted as sorted_array
+        grouped = base.group_by(**keys).aggregate(**fields, **{
+            positions_name: sorted_array(agg.collect(base[m._column_position_name])),
+        })
         grouped = grouped.order_by(*(grouped[n] for n in groupnames)).key_by()
         groups = grouped.aggregate(agg.collect(grouped.row), _localize=False)
-        columns = Table.parallelize(
-            array_range(length(groups)).map(
-                lambda j: struct(
-                    **{
-                        _CID: int64(j),
-                        _COL: struct(
-                            **{n: groups[j][n] for n in groupnames + tuple(fields)}
-                        ),
-                    }
-                )
-            )
-        )
+        columns = Table.parallelize(_indexed_cells(groups).map(lambda pair: struct(**{
+            _CID: int64(pair["2"]),
+            _COL: struct(**{n: pair["1"][n] for n in groupnames + tuple(fields)}),
+        })))
         core = m._mir.core
-        contexts = m._row_contexts(core)
+        contexts = m._row_contexts(core, filter_present=False)
+        selected_groups = _take_groups(contexts, groups.map(lambda group: group[positions_name]))
+        indexed_groups = _indexed_cells(selected_groups)
 
-        def cell(j):
-            members = groups[j].members
-            selected = contexts.filter(
-                lambda ctx: length(members.filter(lambda cid: cid == ctx.column_id)) > 0
-            )
-            outside = struct(
-                row=core[_ROW], col=struct(), entry=struct(), bindings=struct()
-            )
-            value = struct(
-                **{
-                    n: reduce_list(
-                        m,
-                        m._validate(v, "entry", aggregate=True),
-                        core,
-                        selected,
-                        outside,
-                        bound={j.to_ir()["name"]: j.dtype},
-                    )
-                    for n, v in self._entry_fields.items()
-                }
-            )
-            return struct(**{_CID: int64(j), _PRESENT: True, _VALUE: value})
+        def cell(pair):
+            selected = pair["1"].filter(lambda ctx: ctx.present)
+            outside = struct(row=core[_ROW], col=struct(), entry=struct(), bindings=struct())
+            value = struct(**{
+                n: reduce_list(
+                    m, m._validate(v, "entry", aggregate=True), core,
+                    selected, outside, bound={pair.to_ir()["name"]: pair.dtype},
+                )
+                for n, v in self._entry_fields.items()
+            })
+            return struct(**{_CID: int64(pair["2"]), _PRESENT: True, _VALUE: value})
 
-        return MatrixTable(
-            MatrixIR(
-                core.annotate(**{_CELLS: array_range(length(groups)).map(cell)}),
-                columns,
-                row_key=m._mir.row_key,
-                col_key=groupnames,
-                _aligned=True,
-            )
-        )
+        return MatrixTable(MatrixIR(
+            core.annotate(**{_CELLS: indexed_groups.map(cell)}), columns,
+            row_key=m._mir.row_key, col_key=groupnames, _aligned=True,
+        ))
 
 
 def to_matrix_table(
@@ -2548,11 +2535,9 @@ def to_matrix_table(
     )
     cols = cols.order_by(*(cols[_COL][n] for n in col_key)).key_by()
     column_values = cols.aggregate(agg.collect(cols[_COL]), _localize=False)
-    columns = Table.parallelize(
-        array_range(length(column_values)).map(
-            lambda j: struct(**{_CID: int64(j), _COL: column_values[j]})
-        )
-    )
+    columns = Table.parallelize(_indexed_cells(column_values).map(
+        lambda pair: struct(**{_CID: int64(pair["2"]), _COL: pair["1"]})
+    ))
     lookup = _project(
         columns,
         [(ck, struct(**{n: columns[_COL][n] for n in col_key})), (_CID, columns[_CID])],
@@ -2570,24 +2555,10 @@ def to_matrix_table(
             ),
         }
     )
-    values = records[_CELLS]
-
-    def cell(j):
-        found = values.filter(lambda c: c[_CID] == int64(j))
-        return struct(
-            **{
-                _CID: int64(j),
-                _PRESENT: length(found) > 0,
-                _VALUE: if_else(
-                    length(found) > 0, found[0][_VALUE], missing(entry.dtype)
-                ),
-            }
-        )
-
-    core = _project(
-        records,
-        [(_ROW, records[_ROW]), (_CELLS, array_range(length(column_values)).map(cell))],
-    )
+    from .collections import _function
+    cells = _function("__vail_dense_cells", [records[_CELLS], length(column_values)],
+        tarray(tstruct(**{_CID: tint64, _PRESENT: tbool, _VALUE: entry.dtype})))
+    core = _project(records, [(_ROW, records[_ROW]), (_CELLS, cells)])
     globals = table.index_globals()
     core = core.select_globals(**{n: globals[n] for n in table._global_schema})
     core = MatrixTable._sort_rows(core, row_key)

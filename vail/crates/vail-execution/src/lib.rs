@@ -540,3 +540,9 @@ pub mod advanced_numeric_aggregates;
 pub mod array_length_aggregate;
 
 pub mod fold_aggregate;
+
+mod collection_groups;
+
+mod collection_lookup;
+
+mod matrix_transpose;

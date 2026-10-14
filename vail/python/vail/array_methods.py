@@ -85,15 +85,14 @@ def group_by(f, collection):
         raise TypeError('group_by requires an array or set')
     pairs = collection._array_map(lambda item: struct(key=f(item), value=item))
     _ensure_group_key(pairs.dtype.element_type["key"])
-    keys = pairs._array_map(lambda pair: pair.key)
-    unique = ops._function('array_distinct', [keys], keys.dtype)
-    def grouped(key):
-        matches = pairs._array_filter(lambda pair: ops._equal(pair.key, key))
-        values = matches._array_map(lambda pair: pair.value)
-        if isinstance(collection.dtype, tset):
-            values = ops.set_(values)
-        return struct(key=matches.first().key, value=values)
-    return ops.dict_(unique._array_map(grouped))
+    result_type = tarray(collection.dtype.element_type)
+    from .types import tdict, tstruct
+    groups = ops._function("__vail_collection_group", [pairs],
+        tarray(tstruct(key=pairs.dtype.element_type["key"], value=result_type)))
+    if isinstance(collection.dtype, tset):
+        result_type = tset(collection.dtype.element_type)
+        groups = groups.map(lambda group: struct(key=group.key, value=ops._cast(group.value, result_type)))
+    return ops._cast(groups, tdict(pairs.dtype.element_type["key"], result_type))
 
 
 def _ensure_group_key(dtype):

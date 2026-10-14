@@ -147,3 +147,58 @@ def test_unlocalize_rejects_misaligned_entry_lengths(action):
             matrix._mir.core.collect()
         else:
             matrix.count()
+
+
+def test_grouped_columns_gather_original_positions_and_keep_filtered_slots():
+    m = hl.range_matrix_table(4, 5, 3)
+    m = m.annotate_entries(marker=m.row_idx * 100 + m.col_idx)
+    m = m.choose_cols([4, 1, 4, 0, 3])
+    m = m.filter_entries(m.col_idx % 2 == 0)
+    grouped = (
+        m.group_cols_by(g=m.col_idx % 2)
+        .aggregate_cols(first=hl.agg.take(m.col_idx, 1)[0])
+        .aggregate(total=hl.agg.sum(m.marker), n=hl.agg.count())
+    )
+    assert [
+        (record[_COL].g, record[_COL].first)
+        for record in hl.eval(grouped._mir.column_records)
+    ] == [(0, 4), (1, 1)]
+    for row in grouped._mir.core.collect():
+        assert [cell[_CID] for cell in row[_CELLS]] == [0, 1]
+        assert [cell[_VALUE].total for cell in row[_CELLS]] == [
+            row[_ROW].row_idx * 300 + 8,
+            0,
+        ]
+        assert [cell[_VALUE].n for cell in row[_CELLS]] == [3, 0]
+    empty = m.choose_cols([])
+    result = empty.group_cols_by(g=empty.col_idx % 2).aggregate(n=hl.agg.count())
+    assert result.count() == (4, 0)
+    assert all(row[_CELLS] == [] for row in result._mir.core.collect())
+
+
+def test_sparse_coordinate_conversion_scatters_by_exact_column_positions(tmp_path):
+    table = hl.Table.parallelize(
+        [
+            {"r": 0, "c": 2, "v": 20},
+            {"r": 1, "c": 1, "v": 11},
+            {"r": 0, "c": 0, "v": 0},
+            {"r": 0, "c": 2, "v": 21},
+            {"r": 1, "c": 2, "v": 12},
+        ],
+        n_partitions=3,
+    )
+    matrix = table.to_matrix_table(["r"], ["c"])
+    assert [record[_COL].c for record in hl.eval(matrix._mir.column_records)] == [
+        0,
+        1,
+        2,
+    ]
+    rows = matrix._mir.core.collect()
+    assert [
+        [cell[_VALUE].v if cell[_PRESENT] else None for cell in row[_CELLS]]
+        for row in rows
+    ] == [[0, None, 21], [None, 11, 12]]
+    assert all([cell[_CID] for cell in row[_CELLS]] == [0, 1, 2] for row in rows)
+    path = tmp_path / "sparse.mt"
+    matrix.write(path)
+    assert hl.read_matrix_table(path)._same(matrix)

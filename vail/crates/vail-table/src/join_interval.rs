@@ -17,9 +17,10 @@ use datafusion_physical_expr::PhysicalExpr;
 use datafusion_physical_expr::expressions::{BinaryExpr, IsNullExpr, Literal, NotExpr};
 use datafusion_physical_plan::filter::FilterExec;
 use futures::TryStreamExt;
+use intervaltree::IntervalTree;
 use std::cmp::Ordering;
 use std::sync::Arc;
-use vail_storage::fragment_index::compare_typed_key_components;
+use vail_storage::fragment_index::{compare_typed_key_components, make_typed_key_comparators};
 
 #[derive(Clone, Debug)]
 struct Bound {
@@ -47,10 +48,26 @@ pub(crate) async fn prepare(
     let left_bounds = bounds(left, &left_input, join_key).await?;
     let right_bounds = bounds(right, &right_input, join_key).await?;
     let cells = cells(&left_bounds, &right_bounds)?;
+    let left_candidates = candidates_by_cell(&left_bounds, &cells)?;
+    let right_candidates = candidates_by_cell(&right_bounds, &cells)?;
     let mut parts = Vec::with_capacity(cells.len());
-    for cell in cells {
-        let left_parts = clipped_parts(&left_input.parts, &left_bounds, &cell, left, join_key)?;
-        let right_parts = clipped_parts(&right_input.parts, &right_bounds, &cell, right, join_key)?;
+    for (index, cell) in cells.iter().enumerate() {
+        let left_parts = clipped_parts(
+            &left_input.parts,
+            &left_bounds,
+            &left_candidates[index],
+            cell,
+            left,
+            join_key,
+        )?;
+        let right_parts = clipped_parts(
+            &right_input.parts,
+            &right_bounds,
+            &right_candidates[index],
+            cell,
+            right,
+            join_key,
+        )?;
         if left_parts.is_empty() && right_parts.is_empty() {
             continue;
         }
@@ -86,6 +103,7 @@ pub(crate) async fn prepare_membership(
     let right_input = crate::partitioned::prepare_legacy(right.clone()).await?;
     let left_bounds = bounds(left, &left_input, join_key).await?;
     let right_bounds = bounds(right, &right_input, join_key).await?;
+    let right_index = BoundIndex::new(&right_bounds)?;
     let mut parts = Vec::with_capacity(left_input.parts.len());
     for (index, left_part) in left_input.parts.iter().enumerate() {
         let Some(bound) = left_bounds.get(index).and_then(Option::as_ref) else {
@@ -97,9 +115,11 @@ pub(crate) async fn prepare_membership(
                 .push(crate::joins::lower(output, &left_local, &right_local, kind, join_key)?.rows);
             continue;
         };
+        let candidate_ids = right_index.query(&bound.first, &bound.last)?;
         let candidates = clipped_bounds_parts(
             &right_input.parts,
             &right_bounds,
+            &candidate_ids,
             &bound.first,
             &bound.last,
             right,
@@ -151,12 +171,23 @@ pub(crate) async fn prepare_zip(
         inputs.push((table.clone(), prepared, bounds));
     }
     let cells = cells(&all_bounds, &[])?;
+    let candidates = inputs
+        .iter()
+        .map(|(_, _, bounds)| candidates_by_cell(bounds, &cells))
+        .collect::<Result<Vec<_>>>()?;
     let mut parts = Vec::with_capacity(cells.len());
-    for cell in cells {
+    for (cell_index, cell) in cells.iter().enumerate() {
         let mut local_tables = Vec::with_capacity(inputs.len());
         let mut any_input = false;
-        for (table, prepared, bounds) in &inputs {
-            let selected = clipped_parts(&prepared.parts, bounds, &cell, table, join_key)?;
+        for (input_index, (table, prepared, bounds)) in inputs.iter().enumerate() {
+            let selected = clipped_parts(
+                &prepared.parts,
+                bounds,
+                &candidates[input_index][cell_index],
+                cell,
+                table,
+                join_key,
+            )?;
             any_input |= !selected.is_empty();
             let rows = if selected.is_empty() {
                 empty_like(&prepared.schema)?
@@ -185,13 +216,21 @@ pub(crate) async fn prepare_zip(
 fn clipped_parts(
     parts: &[PhysicalPlan],
     bounds: &[Option<Bound>],
+    candidates: &[usize],
     cell: &Cell,
     table: &TableRef,
     join_key: usize,
 ) -> Result<Vec<PhysicalPlan>> {
     let mut selected = Vec::new();
-    for (part, bound) in parts.iter().zip(bounds) {
-        let Some(bound) = bound else { continue };
+    for &index in candidates {
+        let Some(part) = parts.get(index) else {
+            return Err(TableError::Invalid(
+                "join partition index out of range".into(),
+            ));
+        };
+        let Some(bound) = bounds.get(index).and_then(Option::as_ref) else {
+            continue;
+        };
         if !overlaps(bound, cell)? {
             continue;
         }
@@ -217,14 +256,22 @@ fn clipped_parts(
 fn clipped_bounds_parts(
     parts: &[PhysicalPlan],
     bounds: &[Option<Bound>],
+    candidates: &[usize],
     lower: &[ArrayRef],
     upper: &[ArrayRef],
     table: &TableRef,
     join_key: usize,
 ) -> Result<Vec<PhysicalPlan>> {
     let mut selected = Vec::new();
-    for (part, bound) in parts.iter().zip(bounds) {
-        let Some(bound) = bound else { continue };
+    for &index in candidates {
+        let Some(part) = parts.get(index) else {
+            return Err(TableError::Invalid(
+                "join partition index out of range".into(),
+            ));
+        };
+        let Some(bound) = bounds.get(index).and_then(Option::as_ref) else {
+            continue;
+        };
         if compare_keys(&bound.last, lower)? == Ordering::Less
             || compare_keys(&bound.first, upper)? == Ordering::Greater
         {
@@ -247,6 +294,90 @@ fn clipped_bounds_parts(
     Ok(selected)
 }
 
+/// Static interval tree for partition bounds used by membership joins. Arrow
+/// keys are sorted once with native comparators, then mapped to ordinal ranges
+/// for the generic interval tree.
+struct BoundIndex {
+    endpoints: Vec<Vec<ArrayRef>>,
+    tree: IntervalTree<usize, usize>,
+}
+
+impl BoundIndex {
+    fn new(bounds: &[Option<Bound>]) -> Result<Self> {
+        let endpoints = bounds
+            .iter()
+            .filter_map(Option::as_ref)
+            .flat_map(|bound| [bound.first.clone(), bound.last.clone()])
+            .collect::<Vec<_>>();
+        let endpoints = sort_keys(endpoints)?;
+        let mut intervals = Vec::new();
+        for (partition, bound) in bounds.iter().enumerate() {
+            let Some(bound) = bound else { continue };
+            if compare_keys(&bound.first, &bound.last)? == Ordering::Greater {
+                continue;
+            }
+            let start = endpoint_lower_bound(&endpoints, &bound.first)?;
+            let end = endpoint_upper_bound(&endpoints, &bound.last)?;
+            if start < end {
+                intervals.push((start..end, partition));
+            }
+        }
+        Ok(Self {
+            endpoints,
+            tree: intervals.into_iter().collect(),
+        })
+    }
+
+    fn query(&self, lower: &[ArrayRef], upper: &[ArrayRef]) -> Result<Vec<usize>> {
+        if self.endpoints.is_empty() {
+            return Ok(Vec::new());
+        }
+        let start = endpoint_lower_bound(&self.endpoints, lower)?;
+        let mut end = endpoint_upper_bound(&self.endpoints, upper)?;
+        if start >= self.endpoints.len() {
+            return Ok(Vec::new());
+        }
+        if start >= end {
+            end = start + 1;
+        }
+        let mut result = self
+            .tree
+            .query(start..end)
+            .map(|entry| entry.value)
+            .collect::<Vec<_>>();
+        result.sort_unstable();
+        Ok(result)
+    }
+}
+
+fn endpoint_lower_bound(endpoints: &[Vec<ArrayRef>], key: &[ArrayRef]) -> Result<usize> {
+    let mut lower = 0;
+    let mut upper = endpoints.len();
+    while lower < upper {
+        let middle = lower + (upper - lower) / 2;
+        if compare_keys(&endpoints[middle], key)? == Ordering::Less {
+            lower = middle + 1;
+        } else {
+            upper = middle;
+        }
+    }
+    Ok(lower)
+}
+
+fn endpoint_upper_bound(endpoints: &[Vec<ArrayRef>], key: &[ArrayRef]) -> Result<usize> {
+    let mut lower = 0;
+    let mut upper = endpoints.len();
+    while lower < upper {
+        let middle = lower + (upper - lower) / 2;
+        if compare_keys(&endpoints[middle], key)? != Ordering::Greater {
+            lower = middle + 1;
+        } else {
+            upper = middle;
+        }
+    }
+    Ok(lower)
+}
+
 fn overlaps(bound: &Bound, cell: &Cell) -> Result<bool> {
     match cell {
         Cell::Point(key) => Ok(compare_keys(&bound.first, key)? != Ordering::Greater
@@ -256,6 +387,183 @@ fn overlaps(bound: &Bound, cell: &Cell) -> Result<bool> {
     }
 }
 
+/// Route each disjoint point/gap cell to only the partition bounds that cover
+/// it. Bounds may overlap arbitrarily (for example, when several partitions
+/// share a key prefix), so the active set retains every matching partition.
+fn candidates_by_cell(bounds: &[Option<Bound>], cells: &[Cell]) -> Result<Vec<Vec<usize>>> {
+    let point_cells = cells
+        .iter()
+        .enumerate()
+        .filter_map(|(cell_index, cell)| match cell {
+            Cell::Point(value) => Some((cell_index, value)),
+            Cell::Between(_, _) => None,
+        })
+        .collect::<Vec<_>>();
+    if point_cells.is_empty() {
+        return Ok(vec![Vec::new(); cells.len()]);
+    }
+    if bounds.iter().all(Option::is_none) {
+        return Ok(vec![Vec::new(); cells.len()]);
+    }
+    let boundary_keys = point_cells
+        .iter()
+        .map(|(_, key)| (*key).clone())
+        .collect::<Vec<_>>();
+    let mut lookup_keys = Vec::new();
+    let mut lookup_rows = vec![None; bounds.len()];
+    for (partition, bound) in bounds.iter().enumerate() {
+        if let Some(bound) = bound {
+            let first = lookup_keys.len();
+            lookup_keys.push(bound.first.clone());
+            let last = lookup_keys.len();
+            lookup_keys.push(bound.last.clone());
+            lookup_rows[partition] = Some((first, last));
+        }
+    }
+    let arity = boundary_keys[0].len();
+    let boundary_columns = concat_key_columns(&boundary_keys, arity)?;
+    let lookup_columns = concat_key_columns(&lookup_keys, arity)?;
+    let comparators =
+        make_typed_key_comparators(&boundary_columns, &lookup_columns, &key_sort_options(arity))
+            .map_err(|error| TableError::Invalid(error.to_string()))?;
+    let lookup_comparators =
+        make_typed_key_comparators(&lookup_columns, &lookup_columns, &key_sort_options(arity))
+            .map_err(|error| TableError::Invalid(error.to_string()))?;
+    let mut starts = vec![Vec::new(); point_cells.len()];
+    let mut ends = vec![Vec::new(); point_cells.len()];
+    for (partition, bound) in bounds.iter().enumerate() {
+        let Some(bound) = bound else { continue };
+        let (first_row, last_row) = lookup_rows[partition].expect("bound has lookup rows");
+        if compare_indexed_keys(
+            &lookup_columns,
+            &lookup_columns,
+            &lookup_comparators,
+            first_row,
+            last_row,
+        )? == Ordering::Greater
+        {
+            continue;
+        }
+        let start = boundary_index(
+            point_cells.len(),
+            &boundary_columns,
+            &lookup_columns,
+            &comparators,
+            first_row,
+        )?;
+        let end = boundary_index(
+            point_cells.len(),
+            &boundary_columns,
+            &lookup_columns,
+            &comparators,
+            last_row,
+        )?;
+        let (Some(start), Some(end)) = (start, end) else {
+            return Err(TableError::Invalid(
+                "partition bound endpoint is absent from join cells".into(),
+            ));
+        };
+        if start <= end {
+            starts[start].push(partition);
+            ends[end].push(partition);
+        }
+    }
+    let mut candidates = vec![Vec::new(); cells.len()];
+    let mut active = std::collections::BTreeSet::new();
+    for point in 0..point_cells.len() {
+        active.extend(starts[point].iter().copied());
+        candidates[point_cells[point].0] = active.iter().copied().collect();
+        for partition in &ends[point] {
+            active.remove(partition);
+        }
+        if let Some((next_cell, _)) = point_cells.get(point + 1) {
+            let gap_cell = *next_cell - 1;
+            candidates[gap_cell] = active.iter().copied().collect();
+        }
+    }
+    Ok(candidates)
+}
+
+fn boundary_index(
+    boundary_count: usize,
+    boundaries: &[ArrayRef],
+    keys: &[ArrayRef],
+    comparators: &[arrow_ord::ord::DynComparator],
+    key_row: usize,
+) -> Result<Option<usize>> {
+    let mut lower = 0;
+    let mut upper = boundary_count;
+    while lower < upper {
+        let middle = lower + (upper - lower) / 2;
+        match compare_indexed_keys(boundaries, keys, comparators, middle, key_row)? {
+            Ordering::Less => lower = middle + 1,
+            Ordering::Greater => upper = middle,
+            Ordering::Equal => return Ok(Some(middle)),
+        }
+    }
+    Ok(None)
+}
+
+fn concat_key_columns(keys: &[Vec<ArrayRef>], arity: usize) -> Result<Vec<ArrayRef>> {
+    (0..arity)
+        .map(|column| {
+            let arrays = keys
+                .iter()
+                .map(|key| key[column].as_ref())
+                .collect::<Vec<_>>();
+            arrow_select::concat::concat(&arrays).map_err(TableError::from)
+        })
+        .collect()
+}
+
+fn compare_indexed_keys(
+    left: &[ArrayRef],
+    right: &[ArrayRef],
+    comparators: &[arrow_ord::ord::DynComparator],
+    left_row: usize,
+    right_row: usize,
+) -> Result<Ordering> {
+    for (column, comparator) in comparators.iter().enumerate() {
+        let equal_native_float = match left[column].data_type() {
+            arrow_schema::DataType::Float32 => {
+                let left_values = left[column]
+                    .as_any()
+                    .downcast_ref::<arrow_array::Float32Array>()
+                    .unwrap();
+                let right_values = right[column]
+                    .as_any()
+                    .downcast_ref::<arrow_array::Float32Array>()
+                    .unwrap();
+                !left_values.is_null(left_row)
+                    && !right_values.is_null(right_row)
+                    && left_values.value(left_row) == right_values.value(right_row)
+            }
+            arrow_schema::DataType::Float64 => {
+                let left_values = left[column]
+                    .as_any()
+                    .downcast_ref::<arrow_array::Float64Array>()
+                    .unwrap();
+                let right_values = right[column]
+                    .as_any()
+                    .downcast_ref::<arrow_array::Float64Array>()
+                    .unwrap();
+                !left_values.is_null(left_row)
+                    && !right_values.is_null(right_row)
+                    && left_values.value(left_row) == right_values.value(right_row)
+            }
+            _ => false,
+        };
+        if equal_native_float {
+            continue;
+        }
+        let ordering = comparator(left_row, right_row);
+        if ordering != Ordering::Equal {
+            return Ok(ordering);
+        }
+    }
+    Ok(Ordering::Equal)
+}
+
 fn cells(left: &[Option<Bound>], right: &[Option<Bound>]) -> Result<Vec<Cell>> {
     let mut boundaries = left
         .iter()
@@ -263,15 +571,7 @@ fn cells(left: &[Option<Bound>], right: &[Option<Bound>]) -> Result<Vec<Cell>> {
         .filter_map(Option::as_ref)
         .flat_map(|bound| [bound.first.clone(), bound.last.clone()])
         .collect::<Vec<_>>();
-    for index in 1..boundaries.len() {
-        let mut current = index;
-        while current > 0
-            && compare_keys(&boundaries[current - 1], &boundaries[current])? == Ordering::Greater
-        {
-            boundaries.swap(current - 1, current);
-            current -= 1;
-        }
-    }
+    boundaries = sort_keys(boundaries)?;
     let mut unique: Vec<Vec<ArrayRef>> = Vec::with_capacity(boundaries.len());
     for boundary in boundaries {
         let is_new = match unique.last() {
@@ -292,6 +592,66 @@ fn cells(left: &[Option<Bound>], right: &[Option<Bound>]) -> Result<Vec<Cell>> {
         }
     }
     Ok(result)
+}
+
+/// Sort endpoint metadata in O(P log P), building Arrow's typed comparators
+/// once for the whole sort. The comparator operates on the concatenated
+/// one-row endpoint arrays, so it does not rebuild Arrow comparison state for
+/// every comparison made by the sorting algorithm.
+fn sort_keys(keys: Vec<Vec<ArrayRef>>) -> Result<Vec<Vec<ArrayRef>>> {
+    if keys.len() < 2 {
+        return Ok(keys);
+    }
+    let arity = keys[0].len();
+    if keys.iter().any(|key| key.len() != arity) {
+        return Err(TableError::Invalid("join key arity mismatch".into()));
+    }
+    let columns = (0..arity)
+        .map(|column| {
+            let arrays = keys
+                .iter()
+                .map(|key| key[column].as_ref())
+                .collect::<Vec<_>>();
+            arrow_select::concat::concat(&arrays).map_err(TableError::from)
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let comparators = make_typed_key_comparators(&columns, &columns, &key_sort_options(arity))
+        .map_err(|error| TableError::Invalid(error.to_string()))?;
+    let mut order = (0..keys.len()).collect::<Vec<_>>();
+    order.sort_by(|&left, &right| {
+        for (column, comparator) in comparators.iter().enumerate() {
+            let equal_native_float = match columns[column].data_type() {
+                arrow_schema::DataType::Float32 => {
+                    let values = columns[column]
+                        .as_any()
+                        .downcast_ref::<arrow_array::Float32Array>()
+                        .unwrap();
+                    !values.is_null(left)
+                        && !values.is_null(right)
+                        && values.value(left) == values.value(right)
+                }
+                arrow_schema::DataType::Float64 => {
+                    let values = columns[column]
+                        .as_any()
+                        .downcast_ref::<arrow_array::Float64Array>()
+                        .unwrap();
+                    !values.is_null(left)
+                        && !values.is_null(right)
+                        && values.value(left) == values.value(right)
+                }
+                _ => false,
+            };
+            if equal_native_float {
+                continue;
+            }
+            let ordering = comparator(left, right);
+            if ordering != Ordering::Equal {
+                return ordering;
+            }
+        }
+        Ordering::Equal
+    });
+    Ok(order.into_iter().map(|index| keys[index].clone()).collect())
 }
 
 async fn bounds(
@@ -612,6 +972,73 @@ mod tests {
                 _ => None,
             })
             .collect()
+    }
+
+    #[test]
+    fn endpoint_sort_uses_arrow_order_and_preserves_native_float_equality() {
+        let sorted = sort_keys(vec![key(7), key(-2), key(4), key(0)]).unwrap();
+        let values = sorted
+            .iter()
+            .map(
+                |key| match ScalarValue::try_from_array(&key[0], 0).unwrap() {
+                    ScalarValue::Int32(Some(value)) => value,
+                    _ => panic!("expected Int32 key"),
+                },
+            )
+            .collect::<Vec<_>>();
+        assert_eq!(values, vec![-2, 0, 4, 7]);
+
+        let sorted = sort_keys(vec![float_key(0.0), float_key(-0.0), float_key(1.0)]).unwrap();
+        assert_eq!(
+            compare_keys(&sorted[0], &sorted[1]).unwrap(),
+            Ordering::Equal
+        );
+    }
+
+    #[test]
+    fn cell_sweep_routes_overlapping_bounds_and_keeps_partition_order() {
+        let bounds = vec![bound(1, 5), bound(3, 8), None, bound(5, 9), bound(1, 5)];
+        let planned = cells(&bounds, &[]).unwrap();
+        let candidates = candidates_by_cell(&bounds, &planned).unwrap();
+        for (cell, actual) in planned.iter().zip(&candidates) {
+            let expected = bounds
+                .iter()
+                .enumerate()
+                .filter_map(|(index, bound)| {
+                    bound
+                        .as_ref()
+                        .and_then(|bound| overlaps(bound, cell).unwrap().then_some(index))
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(*actual, expected);
+        }
+        let five_cell = planned
+            .iter()
+            .position(|cell| matches!(cell, Cell::Point(value) if compare_keys(value, &key(5)).unwrap() == Ordering::Equal))
+            .unwrap();
+        assert_eq!(candidates[five_cell], vec![0, 1, 3, 4]);
+    }
+
+    #[test]
+    fn membership_bound_index_matches_brute_force_for_overlapping_prefixes() {
+        let bounds = vec![bound(1, 5), bound(3, 8), None, bound(5, 9), bound(1, 5)];
+        let index = BoundIndex::new(&bounds).unwrap();
+        for (lower, upper) in [(0, 1), (2, 4), (5, 5), (7, 10), (10, 12)] {
+            let actual = index.query(&key(lower), &key(upper)).unwrap();
+            let expected = bounds
+                .iter()
+                .enumerate()
+                .filter_map(|(partition, bound)| {
+                    bound.as_ref().and_then(|bound| {
+                        (compare_keys(&bound.last, &key(lower)).unwrap() != Ordering::Less
+                            && compare_keys(&bound.first, &key(upper)).unwrap()
+                                != Ordering::Greater)
+                            .then_some(partition)
+                    })
+                })
+                .collect::<Vec<_>>();
+            assert_eq!(actual, expected);
+        }
     }
 
     #[test]

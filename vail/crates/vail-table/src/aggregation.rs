@@ -4,7 +4,7 @@
 use crate::globals::GlobalBindings;
 use crate::plan::{PhysicalPlan, bind_external, column};
 use crate::{Result, TableError, TableRef};
-use arrow_array::{Array, ArrayRef, StructArray, make_array};
+use arrow_array::{Array, ArrayRef, StructArray};
 use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{NullHandling, ScalarValue, UnnestOptions};
@@ -35,33 +35,7 @@ fn empty_struct_scalar(missing: bool) -> ScalarValue {
 /// struct (notably the List<Dict> shape produced by grouped collection), while
 /// changing only field metadata/names does not require touching those buffers.
 fn retag_array(array: &ArrayRef, dtype: &DataType) -> datafusion_common::Result<ArrayRef> {
-    if vail_ordering::same_layout(array.data_type(), dtype) {
-        fn retag_data(
-            data: arrow_data::ArrayData,
-            dtype: &DataType,
-        ) -> datafusion_common::Result<arrow_data::ArrayData> {
-            let child_types = match dtype {
-                DataType::List(field)
-                | DataType::LargeList(field)
-                | DataType::FixedSizeList(field, _) => vec![field.data_type()],
-                DataType::Struct(fields) => fields.iter().map(|field| field.data_type()).collect(),
-                _ => Vec::new(),
-            };
-            let children = data
-                .child_data()
-                .iter()
-                .zip(child_types)
-                .map(|(child, child_type)| retag_data(child.clone(), child_type))
-                .collect::<datafusion_common::Result<Vec<_>>>()?;
-            Ok(data
-                .into_builder()
-                .data_type(dtype.clone())
-                .child_data(children)
-                .build()?)
-        }
-        return Ok(make_array(retag_data(array.to_data(), dtype)?));
-    }
-    Ok(arrow_cast::cast(array.as_ref(), dtype)?)
+    vail_execution::logical_expr::restore_arrow_array_type(array, dtype)
 }
 
 #[derive(Debug)]

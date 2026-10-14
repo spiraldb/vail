@@ -230,17 +230,12 @@ fn intervals_for_filter(
                 return Ok(None);
             };
             if binary.op == Operator::Or {
-                return Ok(Some(left.into_iter().chain(right).collect()));
+                return Ok(Some(normalize_intervals(
+                    left.into_iter().chain(right).collect(),
+                    binding,
+                )?));
             }
-            let mut intersections = Vec::new();
-            for a in &left {
-                for b in &right {
-                    if let Some(interval) = intersect_pair(a, b, binding)? {
-                        intersections.push(interval);
-                    }
-                }
-            }
-            return Ok(Some(intersections));
+            return Ok(Some(intersect_unions(&left, &right, binding)?));
         }
         let (mut operator, scalar) = match (&*binary.left, &*binary.right) {
             (Expr::Column(column), Expr::Literal(value, _)) if column.name == name => {
@@ -307,15 +302,186 @@ fn intersect_intervals(
     let binding = source
         .index_binding()
         .map_err(|e| DataFusionError::External(Box::new(e)))?;
+    intersect_unions(left, right, &binding)
+}
+
+/// Sort and merge an interval union using typed Arrow key comparisons. Errors
+/// from Arrow's fallible comparator construction/comparison are returned after
+/// sorting rather than being hidden inside `sort_by`'s infallible closure.
+fn normalize_intervals(
+    mut intervals: Vec<QueryInterval>,
+    binding: &vail_storage::fragment_index::IndexBinding,
+) -> DFResult<Vec<QueryInterval>> {
+    intervals = intervals
+        .into_iter()
+        .filter_map(|interval| match interval_is_non_empty(&interval, binding) {
+            Ok(true) => Some(Ok(interval)),
+            Ok(false) => None,
+            Err(error) => Some(Err(error)),
+        })
+        .collect::<DFResult<Vec<_>>>()?;
+    let intervals = sort_intervals(intervals, binding)?;
+    let mut merged: Vec<QueryInterval> = Vec::with_capacity(intervals.len());
+    for current in intervals {
+        let Some(previous) = merged.last_mut() else {
+            merged.push(current);
+            continue;
+        };
+        let relation = compare_upper_lower_bounds(&previous.upper, &current.lower, binding)?;
+        if relation == std::cmp::Ordering::Greater
+            || (relation == std::cmp::Ordering::Equal
+                && (previous.upper.as_ref().is_none_or(|bound| bound.inclusive)
+                    || current.lower.as_ref().is_none_or(|bound| bound.inclusive)))
+        {
+            match compare_upper_bounds(&current.upper, &previous.upper, binding)? {
+                std::cmp::Ordering::Greater => previous.upper = current.upper,
+                std::cmp::Ordering::Equal => {
+                    if let (Some(previous), Some(current)) = (&mut previous.upper, &current.upper) {
+                        previous.inclusive |= current.inclusive;
+                    }
+                }
+                std::cmp::Ordering::Less => (),
+            }
+        } else {
+            merged.push(current);
+        }
+    }
+    Ok(merged)
+}
+
+fn interval_is_non_empty(
+    interval: &QueryInterval,
+    binding: &vail_storage::fragment_index::IndexBinding,
+) -> DFResult<bool> {
+    let (Some(lower), Some(upper)) = (&interval.lower, &interval.upper) else {
+        return Ok(true);
+    };
+    match compare_keys(binding, &lower.key, &upper.key)
+        .map_err(|error| DataFusionError::External(Box::new(error)))?
+    {
+        std::cmp::Ordering::Less => Ok(true),
+        std::cmp::Ordering::Greater => Ok(false),
+        std::cmp::Ordering::Equal => Ok(lower.inclusive && upper.inclusive),
+    }
+}
+
+fn sort_intervals(
+    intervals: Vec<QueryInterval>,
+    binding: &vail_storage::fragment_index::IndexBinding,
+) -> DFResult<Vec<QueryInterval>> {
+    let mut row_for_interval = vec![None; intervals.len()];
+    let mut typed_keys = Vec::new();
+    for (index, interval) in intervals.iter().enumerate() {
+        if let Some(lower) = &interval.lower {
+            let typed = vail_storage::fragment_index::typed_key_from_transport(binding, &lower.key)
+                .map_err(|error| DataFusionError::External(Box::new(error)))?;
+            row_for_interval[index] = Some(typed_keys.len());
+            typed_keys.push(typed.components);
+        }
+    }
+    if typed_keys.is_empty() {
+        return Ok(intervals);
+    }
+    let columns = (0..binding.key_fields.len())
+        .map(|component| {
+            let arrays = typed_keys
+                .iter()
+                .map(|key| key[component].as_ref())
+                .collect::<Vec<_>>();
+            arrow_select::concat::concat(&arrays)
+                .map_err(|error| DataFusionError::ArrowError(Box::new(error), None))
+        })
+        .collect::<DFResult<Vec<_>>>()?;
+    let options = binding
+        .key_fields
+        .iter()
+        .map(|field| arrow_schema::SortOptions {
+            descending: field.descending,
+            nulls_first: !field.nulls_last,
+        })
+        .collect::<Vec<_>>();
+    let comparators =
+        vail_storage::fragment_index::make_typed_key_comparators(&columns, &columns, &options)
+            .map_err(|error| DataFusionError::External(Box::new(error)))?;
+    let mut order = (0..intervals.len()).collect::<Vec<_>>();
+    order.sort_by(|&left, &right| {
+        match (row_for_interval[left], row_for_interval[right]) {
+            (None, None) => return std::cmp::Ordering::Equal,
+            (None, Some(_)) => return std::cmp::Ordering::Less,
+            (Some(_), None) => return std::cmp::Ordering::Greater,
+            (Some(left_row), Some(right_row)) => {
+                for comparator in &comparators {
+                    let ordering = comparator(left_row, right_row);
+                    if ordering != std::cmp::Ordering::Equal {
+                        return ordering;
+                    }
+                }
+            }
+        }
+        intervals[left]
+            .lower
+            .as_ref()
+            .unwrap()
+            .inclusive
+            .cmp(&intervals[right].lower.as_ref().unwrap().inclusive)
+            .reverse()
+    });
+    Ok(order
+        .into_iter()
+        .map(|index| intervals[index].clone())
+        .collect())
+}
+
+fn intersect_unions(
+    left: &[QueryInterval],
+    right: &[QueryInterval],
+    binding: &vail_storage::fragment_index::IndexBinding,
+) -> DFResult<Vec<QueryInterval>> {
+    let left = normalize_intervals(left.to_vec(), binding)?;
+    let right = normalize_intervals(right.to_vec(), binding)?;
     let mut intersections = Vec::new();
-    for a in left {
-        for b in right {
-            if let Some(interval) = intersect_pair(a, b, &binding)? {
-                intersections.push(interval);
+    let (mut i, mut j) = (0, 0);
+    while i < left.len() && j < right.len() {
+        if let Some(overlap) = intersect_pair(&left[i], &right[j], binding)? {
+            intersections.push(overlap);
+        }
+        match compare_upper_bounds(&left[i].upper, &right[j].upper, binding)? {
+            std::cmp::Ordering::Less => i += 1,
+            std::cmp::Ordering::Greater => j += 1,
+            std::cmp::Ordering::Equal => {
+                i += 1;
+                j += 1;
             }
         }
     }
     Ok(intersections)
+}
+
+fn compare_upper_lower_bounds(
+    upper: &Option<Endpoint>,
+    lower: &Option<Endpoint>,
+    binding: &vail_storage::fragment_index::IndexBinding,
+) -> DFResult<std::cmp::Ordering> {
+    match (upper, lower) {
+        (None, _) | (_, None) => Ok(std::cmp::Ordering::Greater),
+        (Some(upper), Some(lower)) => compare_keys(binding, &upper.key, &lower.key)
+            .map_err(|error| DataFusionError::External(Box::new(error))),
+    }
+}
+
+fn compare_upper_bounds(
+    left: &Option<Endpoint>,
+    right: &Option<Endpoint>,
+    binding: &vail_storage::fragment_index::IndexBinding,
+) -> DFResult<std::cmp::Ordering> {
+    match (left, right) {
+        (None, None) => Ok(std::cmp::Ordering::Equal),
+        (None, Some(_)) => Ok(std::cmp::Ordering::Greater),
+        (Some(_), None) => Ok(std::cmp::Ordering::Less),
+        (Some(left), Some(right)) => Ok(compare_keys(binding, &left.key, &right.key)
+            .map_err(|error| DataFusionError::External(Box::new(error)))?
+            .then_with(|| left.inclusive.cmp(&right.inclusive))),
+    }
 }
 
 fn intersect_pair(
@@ -685,6 +851,23 @@ mod interval_intersection_tests {
         }
     }
 
+    fn interval(lower: Option<(i32, bool)>, upper: Option<(i32, bool)>) -> QueryInterval {
+        let endpoint = |(value, inclusive)| Endpoint {
+            key: vec![KeyValue::Int32(value)],
+            inclusive,
+        };
+        QueryInterval {
+            lower: lower.map(endpoint),
+            upper: upper.map(endpoint),
+        }
+    }
+
+    fn contains(interval: &QueryInterval, value: i32) -> bool {
+        intersect_pair(&point(KeyValue::Int32(value)), interval, &binding())
+            .unwrap()
+            .is_some()
+    }
+
     #[test]
     fn malformed_key_comparison_is_an_error_not_an_empty_intersection() {
         let error = intersect_pair(
@@ -707,5 +890,92 @@ mod interval_intersection_tests {
             .unwrap(),
             None
         );
+    }
+
+    #[test]
+    fn interval_union_normalization_preserves_open_shared_endpoints() {
+        let normalized = normalize_intervals(
+            vec![
+                interval(Some((2, false)), Some((3, true))),
+                interval(Some((1, true)), Some((2, false))),
+                interval(Some((8, true)), None),
+            ],
+            &binding(),
+        )
+        .unwrap();
+        assert_eq!(normalized.len(), 3);
+        assert_eq!(normalized[0], interval(Some((1, true)), Some((2, false))));
+        assert_eq!(normalized[1], interval(Some((2, false)), Some((3, true))));
+        assert_eq!(normalized[2], interval(Some((8, true)), None));
+    }
+
+    #[test]
+    fn intersection_sweep_handles_overlaps_and_unbounded_endpoints() {
+        let left = vec![
+            interval(Some((4, true)), Some((8, true))),
+            interval(Some((1, true)), Some((5, true))),
+            interval(None, Some((-2, false))),
+        ];
+        let right = vec![
+            interval(Some((3, true)), Some((6, true))),
+            interval(None, Some((-2, true))),
+        ];
+        let intersections = intersect_unions(&left, &right, &binding()).unwrap();
+        assert_eq!(
+            intersections,
+            vec![
+                interval(None, Some((-2, false))),
+                interval(Some((3, true)), Some((6, true))),
+            ]
+        );
+    }
+
+    #[test]
+    fn intersection_sweep_matches_cartesian_oracle_for_generated_bounds() {
+        let b = binding();
+        let lowers = [
+            None,
+            Some((-1, false)),
+            Some((-1, true)),
+            Some((1, false)),
+            Some((1, true)),
+        ];
+        let uppers = [
+            None,
+            Some((-1, false)),
+            Some((-1, true)),
+            Some((0, false)),
+            Some((1, true)),
+        ];
+        for seed in 0..20 {
+            let left = (0..4)
+                .map(|offset| {
+                    interval(
+                        lowers[(seed + offset * 3) % lowers.len()],
+                        uppers[(seed * 2 + offset) % uppers.len()],
+                    )
+                })
+                .collect::<Vec<_>>();
+            let right = (0..3)
+                .map(|offset| {
+                    interval(
+                        lowers[(seed * 3 + offset + 1) % lowers.len()],
+                        uppers[(seed + offset * 2 + 2) % uppers.len()],
+                    )
+                })
+                .collect::<Vec<_>>();
+            let swept = intersect_unions(&left, &right, &b).unwrap();
+            for value in -3..=3 {
+                let expected = left.iter().any(|a| {
+                    right.iter().any(|b| {
+                        intersect_pair(a, b, &binding())
+                            .unwrap()
+                            .is_some_and(|overlap| contains(&overlap, value))
+                    })
+                });
+                let actual = swept.iter().any(|interval| contains(interval, value));
+                assert_eq!(actual, expected, "seed={seed}, key={value}");
+            }
+        }
     }
 }

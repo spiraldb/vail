@@ -11,7 +11,41 @@ U distinct keys, P partitions, F files, I query intervals, and K actual overlaps
 Costs below describe the frontend algorithm; DataFusion lambda capture can add
 allocation costs by repeating an entire captured array for each output element.
 
-## Confirmed remaining problems
+## Implementation progress (2026-10-14)
+
+The table below records the original findings; its descriptions are not a claim
+that every path still uses the original algorithm.
+
+All original findings have an implementation. The final release wheel passed
+**1,056 Python tests**, with one skip and 19 subtests. Release Rust validation
+passed 76 execution, 18 storage, and 38 Table library tests, plus nine round-trip
+and five streaming-write integrations. The additional fold-pruning unit test
+was run after the 75-test execution suite.
+
+- Matrix grouping uses position gathers; sparse reconstruction uses direct
+  scatter indices. Copies delegate to Arrow take.
+- Dictionary construction and collection grouping/lookup use DataFusion
+  GroupValues. Scalar dictionaries are indexed once for the batch of queries.
+- Nested set binary operations group canonical values with DataFusion.
+- Fold callbacks run across active row lanes and gather only referenced columns.
+- Storage reads binary-search cached Arrow comparators; writer certification
+  caches comparators and resolves key columns once.
+- Reference metadata is prepared once per expression. Contig and classification
+  lookups are indexed; PAR membership uses rangemap RangeSet.
+- Join cell candidates use endpoint events; membership and prefix reads use
+  intervaltree indexes over Arrow-ordered endpoint ranks. Interval unions are
+  normalized before intersections are swept.
+- Matrix array aggregation transposes with Arrow take and projects only body
+  context fields, avoiding repeated captures of the original arrays.
+
+Capturing a large row dictionary inside a higher-order expression can still
+replicate its physical input before the lookup kernel. This remains a fusion
+and allocation concern; the lookup itself no longer filters and allocates a
+match list per key. This audit is not a proof that every dependency or arbitrary
+user expression has optimal complexity.
+
+
+## Original findings and replacements
 
 | Priority | Path | Existing work | Replacement |
 |---|---|---|---|
@@ -36,6 +70,14 @@ work is proportional to the total input elements; DF capture can repeat array
 payloads across output positions. This needs a dedicated profile and an
 explode-by-position/group lowering, rather than treating an outer array map as
 an efficient implementation of indexed access.
+
+`array_fold.rs::evaluate` has a separate constant-factor problem: an arbitrary
+fold is necessarily sequential within each array, but the current implementation
+creates and evaluates a one-row RecordBatch for every element, slicing all outer
+columns each time. This is linear in input elements, not a search/indexing bug.
+Recognized reductions should use native DataFusion/Arrow reductions; generic
+callbacks should evaluate batches of active row lanes per step and retain only
+referenced outer columns, rather than dispatching a scalar-sized batch per item.
 
 ## Removed in this audit
 

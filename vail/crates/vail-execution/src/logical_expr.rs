@@ -34,6 +34,45 @@ pub fn lower_logical(expr: &Expr, schema: &DFSchema) -> Result<LogicalExpr, Expr
     lower_logical_with_bindings(expr, schema, &Schema::empty(), &BTreeMap::new())
 }
 
+/// Change compatible Arrow descriptors without casting or copying value buffers.
+pub fn restore_arrow_array_type(
+    array: &arrow_array::ArrayRef,
+    dtype: &arrow_schema::DataType,
+) -> datafusion_common::Result<arrow_array::ArrayRef> {
+    if array.data_type() == dtype {
+        return Ok(array.clone());
+    }
+    if vail_ordering::same_layout(array.data_type(), dtype) {
+        fn retag_data(
+            data: arrow_data::ArrayData,
+            dtype: &arrow_schema::DataType,
+        ) -> datafusion_common::Result<arrow_data::ArrayData> {
+            let child_types = match dtype {
+                arrow_schema::DataType::List(field)
+                | arrow_schema::DataType::LargeList(field)
+                | arrow_schema::DataType::FixedSizeList(field, _) => vec![field.data_type()],
+                arrow_schema::DataType::Struct(fields) => {
+                    fields.iter().map(|field| field.data_type()).collect()
+                }
+                _ => Vec::new(),
+            };
+            let children = data
+                .child_data()
+                .iter()
+                .zip(child_types)
+                .map(|(child, child_type)| retag_data(child.clone(), child_type))
+                .collect::<datafusion_common::Result<Vec<_>>>()?;
+            Ok(data
+                .into_builder()
+                .data_type(dtype.clone())
+                .child_data(children)
+                .build()?)
+        }
+        return Ok(arrow_array::make_array(retag_data(array.to_data(), dtype)?));
+    }
+    Ok(arrow_cast::cast(array.as_ref(), dtype)?)
+}
+
 /// Restore an IR-declared type after a library operator constructs new Arrow
 /// fields. Volatile prevents constant folding from stripping list metadata.
 pub fn restore_type(value: LogicalExpr, dtype: arrow_schema::DataType) -> LogicalExpr {
@@ -49,12 +88,19 @@ pub fn restore_type(value: LogicalExpr, dtype: arrow_schema::DataType) -> Logica
                     datafusion_expr::ColumnarValue::Array(a) => a.len(),
                     _ => 1,
                 })?;
-                let array = arrow_cast::cast(&array, &output)?;
+                let array = restore_arrow_array_type(&array, &output)?;
                 if scalar {
                     Ok(datafusion_expr::ColumnarValue::Scalar(
-                        crate::expressions::scalar_at(&array, 0).map_err(|e| {
-                            datafusion_common::DataFusionError::Execution(e.to_string())
-                        })?,
+                        if let Some(list) = array.as_any().downcast_ref::<arrow_array::ListArray>()
+                        {
+                            ScalarValue::List(Arc::new(list.slice(0, 1)))
+                        } else if let Some(record) =
+                            array.as_any().downcast_ref::<arrow_array::StructArray>()
+                        {
+                            ScalarValue::Struct(Arc::new(record.slice(0, 1)))
+                        } else {
+                            ScalarValue::try_from_array(&array, 0)?
+                        },
                     ))
                 } else {
                     Ok(datafusion_expr::ColumnarValue::Array(array))
@@ -63,6 +109,21 @@ pub fn restore_type(value: LogicalExpr, dtype: arrow_schema::DataType) -> Logica
         ),
     );
     udf.call(vec![value])
+}
+
+fn coerce_type(
+    value: LogicalExpr,
+    dtype: arrow_schema::DataType,
+    schema: &DFSchema,
+) -> Result<LogicalExpr, ExprError> {
+    let actual = value.get_type(schema)?;
+    if actual == dtype {
+        return Ok(value);
+    }
+    if vail_ordering::same_layout(&actual, &dtype) {
+        return Ok(restore_type(value, dtype));
+    }
+    Ok(value.cast_to(&dtype, schema)?)
 }
 
 fn lower(
@@ -282,7 +343,7 @@ fn lower(
             if fallible {
                 return logical_kernel(expr, schema, globals, bindings, scope);
             }
-            recurse(value)?.cast_to(&dtype.to_arrow()?, schema)?
+            coerce_type(recurse(value)?, dtype.to_arrow()?, schema)?
         }
         Expr::IsMissing { value } => recurse(value)?.is_null(),
         Expr::IfElse {
@@ -294,8 +355,8 @@ fn lower(
                 .dtype_with_globals(&schema.as_arrow(), globals)?
                 .to_arrow()?;
             let condition = recurse(condition)?;
-            let consequent = recurse(consequent)?.cast_to(&dtype, schema)?;
-            let alternate = recurse(alternate)?.cast_to(&dtype, schema)?;
+            let consequent = coerce_type(recurse(consequent)?, dtype.clone(), schema)?;
+            let alternate = coerce_type(recurse(alternate)?, dtype.clone(), schema)?;
             let null_result = lit(ScalarValue::try_from(&dtype)?);
             datafusion_expr::expr_fn::when(condition.clone().is_null(), null_result)
                 .when(condition, consequent)
@@ -327,23 +388,28 @@ fn lower(
             let dtype = expr
                 .dtype_with_globals(schema.as_arrow(), globals)?
                 .to_arrow()?;
-            datafusion_functions::core::named_struct()
-                .call(args)
-                .cast_to(&dtype, schema)?
+            coerce_type(
+                datafusion_functions::core::named_struct().call(args),
+                dtype,
+                schema,
+            )?
         }
         Expr::GetField { .. } => return logical_kernel(expr, schema, globals, bindings, scope),
         Expr::NestedFunction { function, args, .. } => {
             let udf = crate::expressions::nested_function(function)?;
-            let arguments =
-                args.iter()
-                    .map(|arg| {
-                        let ty = arg
-                            .dtype_with_globals(schema.as_arrow(), globals)?
-                            .to_arrow()?;
-                        Ok(recurse(arg)?
-                            .cast_to(&vail_ordering::without_type_metadata(&ty), schema)?)
-                    })
-                    .collect::<Result<Vec<_>, ExprError>>()?;
+            let arguments = args
+                .iter()
+                .map(|arg| {
+                    let ty = arg
+                        .dtype_with_globals(schema.as_arrow(), globals)?
+                        .to_arrow()?;
+                    coerce_type(
+                        recurse(arg)?,
+                        vail_ordering::without_type_metadata(&ty),
+                        schema,
+                    )
+                })
+                .collect::<Result<Vec<_>, ExprError>>()?;
             let dtype = expr
                 .dtype_with_globals(schema.as_arrow(), globals)?
                 .to_arrow()?;
@@ -375,8 +441,11 @@ fn lower(
                     let ty = element
                         .dtype_with_globals(schema.as_arrow(), globals)?
                         .to_arrow()?;
-                    Ok(recurse(element)?
-                        .cast_to(&vail_ordering::without_type_metadata(&ty), schema)?)
+                    coerce_type(
+                        recurse(element)?,
+                        vail_ordering::without_type_metadata(&ty),
+                        schema,
+                    )
                 })
                 .collect::<Result<Vec<_>, ExprError>>()?;
             let value = datafusion_functions_nested::make_array::make_array_udf().call(args);

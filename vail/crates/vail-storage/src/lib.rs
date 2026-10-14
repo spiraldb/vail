@@ -976,43 +976,55 @@ pub async fn read_current(table: &Table) -> Result<(Vec<RecordBatch>, SnapshotDe
 
 fn certify_file(
     binding: &IndexBinding,
-    _schema: &arrow_schema::Schema,
+    schema: &arrow_schema::Schema,
     field_ids: &[i32],
     batches: &[RecordBatch],
 ) -> Result<(CompositeKey, CompositeKey, u64)> {
+    let positions = key_positions(schema, field_ids, binding)?;
+    let options = key_sort_options(binding);
     let mut first: Option<Vec<arrow_array::ArrayRef>> = None;
     let mut previous: Option<Vec<arrow_array::ArrayRef>> = None;
-    let mut count = 0;
+    let mut count = 0u64;
     for batch in batches {
-        for row in 0..batch.num_rows() {
-            let key = typed_key_for_row(batch, field_ids, binding, row)?;
-            if previous.as_ref().is_some_and(|last| {
-                fragment_index::compare_typed_keys(binding, last, &key)
-                    .expect("certification keys share the input schema")
-                    == Ordering::Greater
-            }) {
+        if batch.num_rows() == 0 {
+            continue;
+        }
+        let columns = key_columns(batch, &positions);
+        let comparators = fragment_index::make_typed_key_comparators(&columns, &columns, &options)
+            .map_err(|error| StorageError::Invalid(error.to_string()))?;
+        if let Some(last) = &previous {
+            let boundary = fragment_index::make_typed_key_comparators(last, &columns, &options)
+                .map_err(|error| StorageError::Invalid(error.to_string()))?;
+            if compare_at(&boundary, 0, 0) == Ordering::Greater {
                 return Err(StorageError::Invalid(
                     "Vortex file rows are not sorted by bound key".into(),
                 ));
             }
-            if first.is_none() {
-                first = Some(key.clone());
-            }
-            previous = Some(key);
-            count += 1;
+        } else {
+            first = Some(key_at(&columns, 0));
         }
+        for row in 1..batch.num_rows() {
+            if compare_at(&comparators, row - 1, row) == Ordering::Greater {
+                return Err(StorageError::Invalid(
+                    "Vortex file rows are not sorted by bound key".into(),
+                ));
+            }
+        }
+        previous = Some(key_at(&columns, batch.num_rows() - 1));
+        count = count
+            .checked_add(batch.num_rows() as u64)
+            .ok_or_else(|| StorageError::Invalid("ordered file row count overflow".into()))?;
     }
     let first = first.ok_or_else(|| StorageError::Invalid("empty ordered file".into()))?;
     let last = previous.expect("nonempty file has last key");
     Ok((persist_typed_key(&first)?, persist_typed_key(&last)?, count))
 }
 
-fn typed_key_for_row(
-    batch: &RecordBatch,
+fn key_positions(
+    schema: &arrow_schema::Schema,
     field_ids: &[i32],
     binding: &IndexBinding,
-    row: usize,
-) -> Result<Vec<arrow_array::ArrayRef>> {
+) -> Result<Vec<usize>> {
     binding
         .key_fields
         .iter()
@@ -1026,9 +1038,82 @@ fn typed_key_for_row(
                         field.field_id
                     ))
                 })?;
-            Ok(batch.column(position).slice(row, 1))
+            if position >= schema.fields().len()
+                || schema.field(position).data_type() != &field.physical_type
+            {
+                return Err(StorageError::Invalid(format!(
+                    "key field {} type differs from binding",
+                    field.field_id
+                )));
+            }
+            Ok(position)
         })
         .collect()
+}
+
+fn key_columns(batch: &RecordBatch, positions: &[usize]) -> Vec<arrow_array::ArrayRef> {
+    positions
+        .iter()
+        .map(|position| batch.column(*position).clone())
+        .collect()
+}
+
+fn key_at(columns: &[arrow_array::ArrayRef], row: usize) -> Vec<arrow_array::ArrayRef> {
+    columns.iter().map(|column| column.slice(row, 1)).collect()
+}
+
+fn key_sort_options(binding: &IndexBinding) -> Vec<arrow_schema::SortOptions> {
+    binding
+        .key_fields
+        .iter()
+        .map(|field| arrow_schema::SortOptions {
+            descending: field.descending,
+            nulls_first: !field.nulls_last,
+        })
+        .collect()
+}
+
+fn compare_at(
+    comparators: &[arrow_ord::ord::DynComparator],
+    left: usize,
+    right: usize,
+) -> Ordering {
+    for comparator in comparators {
+        let order = comparator(left, right);
+        if order != Ordering::Equal {
+            return order;
+        }
+    }
+    Ordering::Equal
+}
+
+fn bound_position(
+    columns: &[arrow_array::ArrayRef],
+    endpoint: &[arrow_array::ArrayRef],
+    options: &[arrow_schema::SortOptions],
+    inclusive: bool,
+    lower_bound: bool,
+    rows: usize,
+) -> Result<usize> {
+    let comparators = fragment_index::make_typed_key_comparators(columns, endpoint, options)
+        .map_err(|error| StorageError::Invalid(error.to_string()))?;
+    let mut lo = 0;
+    let mut hi = rows;
+    while lo < hi {
+        let mid = lo + (hi - lo) / 2;
+        let comparison = compare_at(&comparators, mid, 0);
+        let advance = if lower_bound {
+            comparison == Ordering::Less || (comparison == Ordering::Equal && !inclusive)
+        } else {
+            comparison == Ordering::Less || (comparison == Ordering::Equal && inclusive)
+        };
+        if advance {
+            lo = mid + 1;
+        } else {
+            hi = mid;
+        }
+    }
+    Ok(lo)
 }
 
 fn persist_typed_key(key: &[arrow_array::ArrayRef]) -> Result<CompositeKey> {
@@ -1041,25 +1126,6 @@ fn persist_typed_key(key: &[arrow_array::ArrayRef]) -> Result<CompositeKey> {
         .collect()
 }
 
-fn key_in_range(
-    binding: &IndexBinding,
-    key: &[arrow_array::ArrayRef],
-    lower_endpoint: Option<(&[arrow_array::ArrayRef], bool)>,
-    upper_endpoint: Option<(&[arrow_array::ArrayRef], bool)>,
-) -> bool {
-    let lower = lower_endpoint.is_none_or(|(endpoint, inclusive)| {
-        let comparison = fragment_index::compare_typed_keys(binding, key, endpoint)
-            .expect("interval endpoint types match source key");
-        comparison == Ordering::Greater || (comparison == Ordering::Equal && inclusive)
-    });
-    let upper = upper_endpoint.is_none_or(|(endpoint, inclusive)| {
-        let comparison = fragment_index::compare_typed_keys(binding, key, endpoint)
-            .expect("interval endpoint types match source key");
-        comparison == Ordering::Less || (comparison == Ordering::Equal && inclusive)
-    });
-    lower && upper
-}
-
 fn filter_batch_range(
     batch: &RecordBatch,
     _schema: &arrow_schema::Schema,
@@ -1067,6 +1133,9 @@ fn filter_batch_range(
     binding: &IndexBinding,
     query: &QueryInterval,
 ) -> Result<RecordBatch> {
+    let positions = key_positions(_schema, field_ids, binding)?;
+    let columns = key_columns(batch, &positions);
+    let options = key_sort_options(binding);
     let lower = query
         .lower
         .as_ref()
@@ -1085,27 +1154,33 @@ fn filter_batch_range(
                 .map_err(|error| StorageError::Invalid(error.to_string()))
         })
         .transpose()?;
-    let mut first = None;
-    let mut last = 0;
-    for row in 0..batch.num_rows() {
-        if key_in_range(
-            binding,
-            &typed_key_for_row(batch, field_ids, binding, row)?,
-            lower
-                .as_ref()
-                .map(|(key, inclusive)| (key.components.as_slice(), *inclusive)),
-            upper
-                .as_ref()
-                .map(|(key, inclusive)| (key.components.as_slice(), *inclusive)),
-        ) {
-            first.get_or_insert(row);
-            last = row + 1;
-        }
-    }
+    let start = if let Some((key, inclusive)) = &lower {
+        bound_position(
+            &columns,
+            &key.components,
+            &options,
+            *inclusive,
+            true,
+            batch.num_rows(),
+        )?
+    } else {
+        0
+    };
+    let end = if let Some((key, inclusive)) = &upper {
+        bound_position(
+            &columns,
+            &key.components,
+            &options,
+            *inclusive,
+            false,
+            batch.num_rows(),
+        )?
+    } else {
+        batch.num_rows()
+    };
     // Certified input and a single lexicographic interval imply a contiguous
     // matching slice, including equal-key groups at file boundaries.
-    let start = first.unwrap_or(0);
-    Ok(batch.slice(start, last - start))
+    Ok(batch.slice(start.min(end), end.saturating_sub(start)))
 }
 
 fn reserve_snapshot_id(table: &Table) -> i64 {
@@ -1189,4 +1264,210 @@ fn live_files_hash(files: &[DataFileIdentity]) -> Result<String> {
     let mut sorted = files.to_vec();
     sorted.sort_by(|a, b| a.path.cmp(&b.path));
     Ok(sha256_hex(&serde_json::to_vec(&sorted)?))
+}
+
+#[cfg(test)]
+mod storage_key_search_tests {
+    use super::*;
+    use arrow_array::builder::{Int32Builder, ListBuilder};
+    use arrow_array::{Int32Array, StringArray, StructArray};
+    use arrow_schema::{DataType, Field, Fields, Schema};
+    use std::sync::Arc;
+
+    fn setup(descending: bool) -> (IndexBinding, Arc<Schema>, Vec<i32>, Vec<KeyField>) {
+        let fields = vec![
+            KeyField {
+                field_id: 10,
+                data_type: KeyType::Arrow(serde_json::json!("int32")),
+                physical_type: DataType::Int32,
+                descending,
+                nulls_last: false,
+            },
+            KeyField {
+                field_id: 11,
+                data_type: KeyType::Arrow(serde_json::json!("str")),
+                physical_type: DataType::Utf8,
+                descending: false,
+                nulls_last: false,
+            },
+        ];
+        let schema = Arc::new(Schema::new(vec![
+            Field::new("a", DataType::Int32, true),
+            Field::new("b", DataType::Utf8, true),
+        ]));
+        let binding = IndexBinding {
+            table_uuid: Uuid::nil(),
+            snapshot_id: 1,
+            schema_id: 0,
+            comparator_version: ARROW_TYPED_COMPARATOR_V4.into(),
+            live_files_sha256: "0".repeat(64),
+            key_fields: fields.clone(),
+        };
+        (binding, schema, vec![10, 11], fields)
+    }
+
+    fn batch(schema: Arc<Schema>, a: &[Option<i32>], b: &[Option<&str>]) -> RecordBatch {
+        RecordBatch::try_new(
+            schema,
+            vec![
+                Arc::new(Int32Array::from(a.to_vec())),
+                Arc::new(StringArray::from(b.to_vec())),
+            ],
+        )
+        .unwrap()
+    }
+
+    fn endpoint(a: Option<i32>, b: Option<&str>, inclusive: bool) -> fragment_index::Endpoint {
+        let components: Vec<arrow_array::ArrayRef> = vec![
+            Arc::new(Int32Array::from(vec![a])),
+            Arc::new(StringArray::from(vec![b])),
+        ];
+        fragment_index::Endpoint {
+            key: components
+                .iter()
+                .map(|x| KeyValue::ArrowIpc(fragment_index::encode_typed_key_component(x).unwrap()))
+                .collect(),
+            inclusive,
+        }
+    }
+
+    #[test]
+    fn certification_and_range_search_handle_duplicates_nulls_and_batch_edges() {
+        let (binding, schema, ids, _) = setup(false);
+        let batches = vec![
+            batch(schema.clone(), &[Some(1), Some(2)], &[Some("a"), Some("a")]),
+            batch(
+                schema.clone(),
+                &[Some(2), Some(3), Some(3)],
+                &[Some("a"), None, Some("a")],
+            ),
+        ];
+        let (_, _, count) = certify_file(&binding, &schema, &ids, &batches).unwrap();
+        assert_eq!(count, 5);
+        let query = QueryInterval {
+            lower: Some(endpoint(Some(2), Some("a"), false)),
+            upper: Some(endpoint(Some(3), Some("a"), true)),
+        };
+        let filtered = filter_batch_range(&batches[1], &schema, &ids, &binding, &query).unwrap();
+        assert_eq!(filtered.num_rows(), 2); // (2,a) excluded, then (3,null), (3,a) retained.
+        assert_eq!(
+            filtered
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values(),
+            &[3, 3]
+        );
+    }
+
+    #[test]
+    fn descending_ranges_and_unsorted_rejection() {
+        let (binding, schema, ids, _) = setup(true);
+        let ordered = vec![batch(
+            schema.clone(),
+            &[Some(5), Some(4), Some(4), Some(2)],
+            &[Some("x"); 4],
+        )];
+        certify_file(&binding, &schema, &ids, &ordered).unwrap();
+        let query = QueryInterval {
+            lower: Some(endpoint(Some(5), Some("x"), true)),
+            upper: Some(endpoint(Some(4), Some("x"), false)),
+        };
+        let filtered = filter_batch_range(&ordered[0], &schema, &ids, &binding, &query).unwrap();
+        assert_eq!(
+            filtered
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values(),
+            &[5]
+        );
+        let bad = vec![batch(
+            schema.clone(),
+            &[Some(1), Some(3)],
+            &[Some("x"), Some("x")],
+        )];
+        assert!(certify_file(&binding, &schema, &ids, &bad).is_err());
+    }
+
+    #[test]
+    fn nested_struct_key_uses_arrow_comparator() {
+        let child_fields: Fields = vec![
+            Field::new("major", DataType::Int32, false),
+            Field::new("minor", DataType::Int32, false),
+        ]
+        .into();
+        let physical_type = DataType::Struct(child_fields.clone());
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "nested",
+            physical_type.clone(),
+            false,
+        )]));
+        let binding = IndexBinding {
+            table_uuid: Uuid::nil(),
+            snapshot_id: 1,
+            schema_id: 0,
+            comparator_version: ARROW_TYPED_COMPARATOR_V4.into(),
+            live_files_sha256: "0".repeat(64),
+            key_fields: vec![KeyField {
+                field_id: 12,
+                data_type: KeyType::Arrow(
+                    serde_json::json!({"struct": [["major", "int32"], ["minor", "int32"]]}),
+                ),
+                physical_type,
+                descending: false,
+                nulls_last: false,
+            }],
+        };
+        let nested = Arc::new(StructArray::new(
+            child_fields,
+            vec![
+                Arc::new(Int32Array::from(vec![1, 1, 2])),
+                Arc::new(Int32Array::from(vec![1, 2, 0])),
+            ],
+            None,
+        ));
+        let batch = RecordBatch::try_new(schema.clone(), vec![nested]).unwrap();
+        assert_eq!(
+            certify_file(&binding, &schema, &[12], &[batch]).unwrap().2,
+            3
+        );
+    }
+
+    #[test]
+    fn nested_list_key_uses_arrow_comparator() {
+        let mut builder = ListBuilder::new(Int32Builder::new());
+        for values in [&[1][..], &[1, 2][..], &[2][..]] {
+            builder.values().append_slice(values);
+            builder.append(true);
+        }
+        let nested = Arc::new(builder.finish());
+        let physical_type = nested.data_type().clone();
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "nested",
+            physical_type.clone(),
+            false,
+        )]));
+        let binding = IndexBinding {
+            table_uuid: Uuid::nil(),
+            snapshot_id: 1,
+            schema_id: 0,
+            comparator_version: ARROW_TYPED_COMPARATOR_V4.into(),
+            live_files_sha256: "0".repeat(64),
+            key_fields: vec![KeyField {
+                field_id: 13,
+                data_type: KeyType::Arrow(serde_json::json!({"array": "int32"})),
+                physical_type,
+                descending: false,
+                nulls_last: false,
+            }],
+        };
+        let batch = RecordBatch::try_new(schema.clone(), vec![nested]).unwrap();
+        assert_eq!(
+            certify_file(&binding, &schema, &[13], &[batch]).unwrap().2,
+            3
+        );
+    }
 }

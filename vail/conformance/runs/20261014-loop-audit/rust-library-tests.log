@@ -1,0 +1,231 @@
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+   Compiling vail-table v0.1.0 (/Users/danielking/projects/vail/vail/crates/vail-table)
+warning: unused import: `compare_typed_key_components`
+  --> crates/vail-table/src/interval_read.rs:25:58
+   |
+25 |         Endpoint, IndexBinding, KeyValue, QueryInterval, compare_typed_key_components,
+   |                                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: use of deprecated method `datafusion_physical_plan::ExecutionPlan::with_new_children`: Use `ExecutionPlan::replace_children` with `ReplaceChildrenOptions`
+    --> crates/vail-table/src/partitioned.rs:1482:37
+     |
+1482 |             let rewritten = adapter.with_new_children(vec![parallel.clone()]).unwrap();
+     |                                     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `#[warn(deprecated)]` on by default
+
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:307:31
+    |
+307 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+
+warning: variable does not need to be mutable
+   --> crates/vail-table/src/interval_read.rs:756:13
+    |
+756 |         let mut start = lower
+    |             ----^^^^^
+    |             |
+    |             help: remove this `mut`
+    |
+    = note: `#[warn(unused_mut)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused variable: `bound`
+   --> crates/vail-table/src/join_interval.rs:435:18
+    |
+435 |         let Some(bound) = bound else { continue };
+    |                  ^^^^^ help: if this is intentional, prefix it with an underscore: `_bound`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vail-table` (lib test) generated 5 warnings (run `cargo fix --lib -p vail-table --tests` to apply 3 suggestions)
+    Finished `release` profile [optimized] target(s) in 19.48s
+     Running unittests src/lib.rs (/private/tmp/vail-native-types-target/release/deps/vail_execution-35e2f13aa9a8810e)
+
+running 75 tests
+test advanced_genomic_aggregates::tests::hwe_matches_hail_examples_and_mid_p ... ok
+test aggregates::tests::count_where_uses_arrow_true_count_and_ignores_nulls ... ok
+test aggregates::tests::min_max_arrow_batches_preserve_integer_values_and_empty_identity ... ok
+test aggregates::tests::empty_semantics_and_boolean_counts ... ok
+test aggregates::tests::extrema_use_arrow_native_ordering_across_batches_and_ignore_nulls ... ok
+test aggregates::tests::int64_sum_preserves_bits_and_merges ... ok
+test aggregates::tests::fraction_counts_null_rows_and_product_merges_empty_partials ... ok
+test aggregates::tests::min_max_arrow_batches_preserve_nulls_and_signed_zero_ties ... ok
+test advanced_genomic_aggregates::tests::hwe_skips_non_diploid_and_merges_counts ... ok
+test advanced_collection_aggregates::identity_tests::take_udafs_with_different_limits_have_distinct_identities ... ok
+test collect_aggregate::tests::collect_declares_its_input_order_requirement ... ok
+test collect_aggregate::tests::collect_empty_result_is_typed_and_memory_size_tracks_chunks ... ok
+test advanced_genomic_aggregates::tests::call_stats_requires_initializer_and_never_infers_shape_from_rows ... ok
+test csv_line::tests::empty_header_line_is_one_empty_field_but_data_rows_fail ... ok
+test collect_aggregate::tests::collect_normalizes_nested_nullability_without_coercing_value_types ... ok
+test advanced_collection_aggregates::tests::ordered_take_keeps_smallest_keys_and_nulls_last ... ok
+test aggregates::tests::stable_stddev_merges_library_state_for_large_offset_values ... ok
+test collect_aggregate::tests::collect_merges_ordered_partial_states_and_keeps_nested_nulls_and_fields ... ok
+test expressions::tests::arrow_array_sum_keeps_wrapping_identity_and_missing_semantics ... ok
+test advanced_collection_aggregates::tests::set_retains_one_null_and_merges_partial_states ... ok
+test expressions::tests::float_nan_wire_preserves_bits_and_rejects_malformed_tags ... ok
+test expressions::tests::locus_coordinates_classification_boundaries_and_global_positions ... ok
+test expressions::tests::hail_string_formats_nested_json_missing_and_float_scalars ... ok
+test csv_line::tests::csv_reader_reports_malformed_lines_and_field_count ... ok
+test csv_line::tests::missing_markers_include_empty_when_configured ... ok
+test expressions::tests::ndarray_string_rejects_invalid_shape_without_indexing_past_data ... ok
+test expressions::tests::locus_literal_uses_frontend_physical_value_and_checks_ordinal ... ok
+test csv_line::tests::csv_reader_handles_quoted_and_trailing_empty_fields ... ok
+test expressions::tests::interval_types_literals_construction_and_field_projection ... ok
+test expressions::tests::prepared_reference_cache_does_not_change_physical_expression_identity ... ok
+test expressions::tests::source_validation_and_float_special_values ... ok
+test collection_groups::tests::grouping_is_owner_local_slice_aware_and_preserves_null_lists ... ok
+test expressions::tests::lazy_if_else_and_missing_condition ... ok
+test expressions::tests::json_lowering_chained_numeric_and_kleene ... ok
+test expressions::tests::array_ir_rejects_bad_types_and_handles_zero_rows ... ok
+test expressions::tests::parse_csv_line_runs_as_a_physical_dataframe_expression ... ok
+test expressions::tests::set_literals_use_typed_arrow_equality_without_order_encoding ... ok
+test expressions::tests::struct_parent_nulls_array_literals_and_zero_fields ... ok
+test expressions::tests::flatten_skips_hidden_values_under_null_inner_lists ... ok
+test logical_expr::tests::distinct_physical_kernels_have_distinct_optimizer_identities ... ok
+test logical_expr::tests::equality_remains_a_native_binary_expression ... ok
+test expressions::tests::stream_range_uses_exclusive_stop_and_reports_zero_step ... ok
+test expressions::tests::interval_contains_and_overlaps_respect_bounds_and_missingness ... ok
+test logical_expr::tests::ordinary_binary_expression_stays_visible_to_optimizer ... ok
+test logical_expr::tests::independent_annotations_execute_with_distinct_values ... ok
+test logical_expr::tests::set_equality_reports_missing_logical_collection_support ... ok
+test logical_expr::tests::integer_division_and_wrapping_keep_vail_semantics ... ok
+test logical_expr::tests::if_else_keeps_null_condition_branch_explicit ... ok
+test logical_expr::tests::array_map_fallback_is_named_for_the_semantic_operation ... ok
+test matrix_arrays::tests::dense_scatter_preserves_unsorted_values_and_missing_slots ... ok
+test logical_expr::tests::missing_if_condition_produces_missing_and_dead_die_branch_is_not_evaluated ... ok
+test matrix_arrays::tests::alignment_is_positional_and_checks_lengths_and_missing_identities ... ok
+test matrix_arrays::tests::dense_scatter_rejects_duplicate_and_invalid_positions ... ok
+test matrix_arrays::tests::gathers_preserve_repetition_order_empty_structs_and_sliced_offsets ... ok
+test matrix_arrays::tests::gathers_reject_invalid_positions_and_row_counts ... ok
+test matrix_arrays::tests::grouped_gathers_preserve_empty_groups_repetition_and_unused_prefixes ... ok
+test expressions::tests::array_grouped_emits_short_final_group ... ok
+test matrix_arrays::tests::metadata_rejects_duplicate_and_missing_occurrence_ids ... ok
+test matrix_transpose::tests::rejects_ragged_arrays_with_existing_error_shape ... ok
+test matrix_transpose::tests::skips_missing_arrays_and_supports_empty_context_structs ... ok
+test matrix_transpose::tests::transposes_values_and_contexts_once_per_position_with_sliced_offsets ... ok
+test reference::tests::prepared_reference_indexes_contigs_boundaries_and_intervals ... ok
+test scan_scopes::tests::array_scope_rejects_different_lengths ... ok
+test reference::tests::prepared_reference_binary_searches_many_contig_boundaries ... ok
+test scan_state::tests::collect_state_preserves_partition_order_and_missing_elements ... ok
+test scan_state::tests::combines_unequal_missing_partitions_using_original_mean_state ... ok
+test scan_state::tests::vectorized_sum_finish_matches_generic_for_float64 ... ok
+test scan_state::tests::vectorized_sum_finish_matches_generic_for_int64_empty_and_null_states ... ok
+test scan_scopes::tests::grouped_snapshots_can_be_repeated_and_merged ... ok
+test tests::invalid_inputs_fail_before_execution ... ok
+test tests::interleaved_partitions_merge_in_global_order ... ok
+test tests::empty_and_duplicate_keys_are_handled ... ok
+test tests::descending_nulls_last_and_limit_apply_after_merge ... ok
+test tests::compound_mixed_directions_ignore_input_partition_layout ... ok
+test tests::caller_memory_limit_spills_local_sort ... ok
+
+test result: ok. 75 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running unittests src/lib.rs (/private/tmp/vail-native-types-target/release/deps/vail_storage-bfecf484f22811a5)
+
+running 18 tests
+test fragment_index::tests::hail_filtered_boundaries_are_candidate_only ... ok
+test fragment_index::tests::same_start_sorts_point_run_before_wider_run_regardless_of_name ... ok
+test fragment_index::tests::retired_hail_comparator_is_not_a_total_order_certificate ... ok
+test fragment_index::tests::compound_mixed_direction_missing_and_ascii_are_lexicographic ... ok
+test fragment_index::tests::rejects_interior_overlap_duplicate_identity_and_invalid_keys ... ok
+test fragment_index::tests::missing_position_is_independent_of_descending_value_direction ... ok
+test fragment_index::tests::hail_indexed_read_boundary_shapes_retain_touching_duplicates ... ok
+test fragment_index::tests::empty_unbounded_and_reversed_queries ... ok
+test local_table::tests::reference_definitions_are_collected_from_nested_rows_and_globals ... ok
+test storage_key_search_tests::nested_list_key_uses_arrow_comparator ... ok
+test storage_key_search_tests::descending_ranges_and_unsorted_rejection ... ok
+test storage_key_search_tests::certification_and_range_search_handle_duplicates_nulls_and_batch_edges ... ok
+test storage_key_search_tests::nested_struct_key_uses_arrow_comparator ... ok
+test fragment_index::tests::certification_rejects_unordered_or_mismatched_logical_key_types ... ok
+test fragment_index::tests::typed_ipc_bounds_compare_as_arrow_values_and_validate_physical_type ... ok
+test local_table::tests::ordinal_partition_read_preserves_empty_partition_events ... ok
+test local_table::tests::certification_failure_preserves_published_snapshot_and_cleans_new_output ... ok
+test local_table::tests::ordinal_partition_reads_open_only_overlapping_duplicate_key_files ... ok
+
+test result: ok. 18 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running unittests src/lib.rs (/private/tmp/vail-native-types-target/release/deps/vail_table-a410161155f9792f)
+
+running 38 tests
+test comparison::tests::hail_relative_tolerance_and_ieee_rules ... ok
+test join_interval::tests::cells_are_disjoint_points_and_open_gaps ... ok
+test join_interval::tests::join_cells_merge_boundaries_equal_under_native_float_join_semantics ... ok
+test join_interval::tests::endpoint_sort_uses_arrow_order_and_preserves_native_float_equality ... ok
+test join_interval::tests::membership_bound_index_matches_brute_force_for_overlapping_prefixes ... ok
+test join_interval::tests::cell_sweep_routes_overlapping_bounds_and_keeps_partition_order ... ok
+test join_interval::tests::missing_bounds_and_duplicate_prefixes_keep_a_single_boundary_cell ... ok
+test interval_read::prefix_partition_index_tests::indexed_prefix_candidates_match_brute_force_with_overlaps_and_open_bounds ... ok
+test join_interval::tests::range_table_bounds_are_derived_without_scanning_rows ... ok
+test initialized_aggregate::tests::rejects_empty_initializer ... ok
+test initialized_aggregate::tests::yields_runtime_output_batches_incrementally ... ok
+test initialized_scan::tests::rejects_non_singleton_initializer ... ok
+test initialized_aggregate::tests::rejects_runtime_schema_mismatch ... ok
+test line_source::tests::preserves_quotes_blank_lines_crlf_and_unicode_across_chunks ... ok
+test initialized_aggregate::tests::rejects_multiple_initializer_rows ... ok
+test initialized_scan::tests::initializes_lazily_and_only_once_for_concurrent_partitions ... ok
+test initialized_scan::tests::rejects_initialized_schema_or_partition_count_mismatch ... ok
+test line_source::tests::splits_hail_universal_newlines_even_across_chunks ... ok
+test line_source::tests::trailing_lf_does_not_create_an_extra_row ... ok
+test line_source::tests::opener_streams_object_store_file_and_rejects_invalid_utf8 ... ok
+test partitioned::expression_source_tests::replay_preserves_shared_physical_inputs_without_sharing_across_actions ... ok
+test provider::interval_intersection_tests::intersection_sweep_handles_overlaps_and_unbounded_endpoints ... ok
+test provider::interval_intersection_tests::interval_union_normalization_preserves_open_shared_endpoints ... ok
+test provider::interval_intersection_tests::valid_disjoint_intersection_is_empty ... ok
+test provider::interval_intersection_tests::malformed_key_comparison_is_an_error_not_an_empty_intersection ... ok
+test partitioned::expression_source_tests::exposed_children_are_reset_once_through_nested_ordering_wrappers ... ok
+test partitioned::concurrent_partition_tests::canceling_ordered_output_aborts_prefetched_producers ... ok
+test partitioned::expression_source_tests::array_expression_evaluates_once_per_action_across_partitions ... ok
+test text_schema::tests::schema_inference_rejects_unbounded_json_array_mode ... ok
+test text_schema::tests::unknown_options_and_empty_paths_are_rejected ... ok
+test text_schema::tests::json_inference_handles_nested_values_and_merges_files ... ok
+test provider::interval_intersection_tests::intersection_sweep_matches_cartesian_oracle_for_generated_bounds ... ok
+test aggregation::scope_join_tests::scoped_default_only_applies_when_the_scope_is_absent ... ok
+test text_schema::tests::csv_inference_rejects_different_column_names_or_order ... ok
+test text_schema::tests::csv_inference_merges_typed_columns_across_files ... ok
+test partitioned::concurrent_partition_tests::singleton_adapters_keep_all_rows_after_a_parallel_child_rewrite ... ok
+test partitioned::concurrent_partition_tests::native_partition_consumers_are_limited_and_propagate_errors ... ok
+test partitioned::concurrent_partition_tests::ordered_producers_are_concurrent_bounded_and_keep_row_order ... ok
+
+test result: ok. 38 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

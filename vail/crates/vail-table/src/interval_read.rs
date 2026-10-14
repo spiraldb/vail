@@ -16,10 +16,15 @@ use datafusion_physical_plan::{
     stream::RecordBatchStreamAdapter,
 };
 use futures::TryStreamExt;
+use intervaltree::IntervalTree;
+use std::cmp::Ordering;
 use std::{fmt, sync::Arc};
 use vail_execution::expressions::{Expr, Type, lower_with_global_columns};
 use vail_storage::{
-    fragment_index::{Endpoint, IndexBinding, KeyValue, QueryInterval},
+    fragment_index::{
+        Endpoint, IndexBinding, KeyValue, QueryInterval, compare_typed_key_components,
+        make_typed_key_comparators,
+    },
     local_table::LocalRead,
 };
 
@@ -228,7 +233,7 @@ pub(crate) async fn prepare(
                 .map(|indices| {
                     indices
                         .into_iter()
-                        .map(|index| intervals[index].clone())
+                        .flat_map(|index| bounds[index].sources.iter().cloned())
                         .collect::<Vec<_>>()
                 })
                 .unwrap_or_else(|| intervals.to_vec());
@@ -648,50 +653,388 @@ fn candidate_prefix_partitions(
             Ok((decode(&interval.lower)?, decode(&interval.upper)?))
         })
         .collect::<Result<Vec<_>>>()?;
-    let mut candidates = Vec::new();
-    for (partition, bounds_for_partition) in partition_bounds.iter().enumerate() {
-        let Some((partition_min, partition_max)) = bounds_for_partition else {
-            continue;
-        };
-        let mut matching_intervals = Vec::new();
-        for (interval_index, ((lower, upper), interval)) in
-            typed_bounds.iter().zip(bounds).enumerate()
-        {
-            let starts_after_partition = if let Some(lower) = lower {
-                let prefix =
-                    compare_typed_prefix(&lower.components, &partition_max.components, binding)?;
-                let ordering = prefix
-                    .then_with(|| lower.components.len().cmp(&partition_max.components.len()));
-                ordering == std::cmp::Ordering::Greater
-                    || (ordering == std::cmp::Ordering::Equal && !interval.lower_inclusive)
-                    || (!interval.lower_inclusive
-                        && lower.components.len() < partition_max.components.len()
-                        && prefix == std::cmp::Ordering::Equal)
-            } else {
-                false
-            };
-            let ends_before_partition = if let Some(upper) = upper {
-                let prefix =
-                    compare_typed_prefix(&upper.components, &partition_min.components, binding)?;
-                let ordering = prefix
-                    .then_with(|| partition_min.components.len().cmp(&upper.components.len()));
-                ordering == std::cmp::Ordering::Less
-                    || (ordering == std::cmp::Ordering::Equal && !interval.upper_inclusive)
-                    || (!interval.upper_inclusive
-                        && upper.components.len() < partition_min.components.len()
-                        && prefix == std::cmp::Ordering::Equal)
-            } else {
-                false
-            };
-            if !starts_after_partition && !ends_before_partition {
-                matching_intervals.push(interval_index);
-            }
-        }
-        if !matching_intervals.is_empty() {
-            candidates.push((partition, Some(matching_intervals)));
+    let index = PrefixPartitionIndex::new(&partition_bounds, binding)?;
+    let mut matching_by_partition = vec![Vec::new(); partition_bounds.len()];
+    for (interval_index, ((lower, upper), interval)) in typed_bounds.iter().zip(bounds).enumerate()
+    {
+        for partition in index.query(lower.as_ref(), upper.as_ref(), interval, binding)? {
+            matching_by_partition[partition].push(interval_index);
         }
     }
-    Ok(candidates)
+    Ok(matching_by_partition
+        .into_iter()
+        .enumerate()
+        .filter_map(|(partition, intervals)| {
+            (!intervals.is_empty()).then_some((partition, Some(intervals)))
+        })
+        .collect())
+}
+
+/// Interval tree for indexed partition bounds. Typed Arrow endpoints are
+/// assigned ordinal ranks, then the generic interval tree indexes those ranks.
+struct PrefixPartitionIndex {
+    endpoints: Vec<vail_storage::fragment_index::TypedKey>,
+    tree: IntervalTree<usize, usize>,
+    partitions: Vec<
+        Option<(
+            vail_storage::fragment_index::TypedKey,
+            vail_storage::fragment_index::TypedKey,
+        )>,
+    >,
+}
+
+impl PrefixPartitionIndex {
+    fn new(
+        bounds: &[Option<(
+            vail_storage::fragment_index::TypedKey,
+            vail_storage::fragment_index::TypedKey,
+        )>],
+        binding: &IndexBinding,
+    ) -> Result<Self> {
+        let mut endpoints = bounds
+            .iter()
+            .filter_map(Option::as_ref)
+            .flat_map(|(lower, upper)| [lower.clone(), upper.clone()])
+            .collect::<Vec<_>>();
+        if endpoints.is_empty() {
+            return Ok(Self {
+                endpoints,
+                tree: std::iter::empty::<(std::ops::Range<usize>, usize)>().collect(),
+                partitions: bounds.to_vec(),
+            });
+        }
+        let keys = endpoints
+            .iter()
+            .map(|key| key.components.clone())
+            .collect::<Vec<_>>();
+        let columns = concatenate_typed_keys(&keys, binding.key_fields.len())?;
+        let comparators =
+            make_typed_key_comparators(&columns, &columns, &typed_sort_options(binding))
+                .map_err(|error| TableError::Invalid(error.to_string()))?;
+        let mut order = (0..endpoints.len()).collect::<Vec<_>>();
+        order.sort_by(|&left, &right| {
+            for comparator in &comparators {
+                let ordering = comparator(left, right);
+                if ordering != Ordering::Equal {
+                    return ordering;
+                }
+            }
+            Ordering::Equal
+        });
+        endpoints = order
+            .into_iter()
+            .map(|index| endpoints[index].clone())
+            .collect();
+        let mut intervals = Vec::new();
+        for (partition, bounds) in bounds.iter().enumerate() {
+            let Some((lower, upper)) = bounds else {
+                continue;
+            };
+            let start = full_lower_bound(&endpoints, lower, binding)?;
+            let end = full_upper_bound(&endpoints, upper, binding)?;
+            if start < end {
+                intervals.push((start..end, partition));
+            }
+        }
+        Ok(Self {
+            endpoints,
+            tree: intervals.into_iter().collect(),
+            partitions: bounds.to_vec(),
+        })
+    }
+
+    fn query(
+        &self,
+        lower: Option<&vail_storage::fragment_index::TypedKey>,
+        upper: Option<&vail_storage::fragment_index::TypedKey>,
+        interval: &IntervalBounds,
+        binding: &IndexBinding,
+    ) -> Result<Vec<usize>> {
+        if self.endpoints.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut start = lower
+            .map(|lower| prefix_lower_bound(&self.endpoints, lower, binding))
+            .transpose()?
+            .unwrap_or(0);
+        let mut end = upper
+            .map(|upper| prefix_upper_bound(&self.endpoints, upper, binding))
+            .transpose()?
+            .unwrap_or(self.endpoints.len());
+        if start >= self.endpoints.len() {
+            return Ok(Vec::new());
+        }
+        if start >= end {
+            end = start + 1;
+        }
+        let mut result = self
+            .tree
+            .query(start..end)
+            .filter_map(|entry| {
+                let partition = entry.value;
+                let (minimum, maximum) = self.partitions[partition].as_ref()?;
+                match prefix_interval_overlaps(lower, upper, interval, minimum, maximum, binding) {
+                    Ok(true) => Some(Ok(partition)),
+                    Ok(false) => None,
+                    Err(error) => Some(Err(error)),
+                }
+            })
+            .collect::<Result<Vec<_>>>()?;
+        result.sort_unstable();
+        Ok(result)
+    }
+}
+
+fn full_lower_bound(
+    endpoints: &[vail_storage::fragment_index::TypedKey],
+    key: &vail_storage::fragment_index::TypedKey,
+    binding: &IndexBinding,
+) -> Result<usize> {
+    let mut lower = 0;
+    let mut upper = endpoints.len();
+    while lower < upper {
+        let middle = lower + (upper - lower) / 2;
+        if compare_typed_prefix(&endpoints[middle].components, &key.components, binding)?
+            == Ordering::Less
+        {
+            lower = middle + 1;
+        } else {
+            upper = middle;
+        }
+    }
+    Ok(lower)
+}
+
+fn full_upper_bound(
+    endpoints: &[vail_storage::fragment_index::TypedKey],
+    key: &vail_storage::fragment_index::TypedKey,
+    binding: &IndexBinding,
+) -> Result<usize> {
+    let mut lower = 0;
+    let mut upper = endpoints.len();
+    while lower < upper {
+        let middle = lower + (upper - lower) / 2;
+        if compare_typed_prefix(&endpoints[middle].components, &key.components, binding)?
+            != Ordering::Greater
+        {
+            lower = middle + 1;
+        } else {
+            upper = middle;
+        }
+    }
+    Ok(lower)
+}
+
+fn prefix_lower_bound(
+    endpoints: &[vail_storage::fragment_index::TypedKey],
+    key: &vail_storage::fragment_index::TypedKey,
+    binding: &IndexBinding,
+) -> Result<usize> {
+    let mut lower = 0;
+    let mut upper = endpoints.len();
+    while lower < upper {
+        let middle = lower + (upper - lower) / 2;
+        if compare_typed_as_upper_lower(&endpoints[middle].components, &key.components, binding)?
+            == Ordering::Less
+        {
+            lower = middle + 1;
+        } else {
+            upper = middle;
+        }
+    }
+    Ok(lower)
+}
+
+fn prefix_upper_bound(
+    endpoints: &[vail_storage::fragment_index::TypedKey],
+    key: &vail_storage::fragment_index::TypedKey,
+    binding: &IndexBinding,
+) -> Result<usize> {
+    let mut lower = 0;
+    let mut upper = endpoints.len();
+    while lower < upper {
+        let middle = lower + (upper - lower) / 2;
+        if compare_typed_as_upper_lower(&key.components, &endpoints[middle].components, binding)?
+            != Ordering::Less
+        {
+            lower = middle + 1;
+        } else {
+            upper = middle;
+        }
+    }
+    Ok(lower)
+}
+
+fn compare_typed_as_upper_lower(
+    upper: &[ArrayRef],
+    lower: &[ArrayRef],
+    binding: &IndexBinding,
+) -> Result<Ordering> {
+    let common = compare_typed_prefix(upper, lower, binding)?;
+    Ok(if common != Ordering::Equal {
+        common
+    } else if upper.len() == lower.len() {
+        Ordering::Equal
+    } else {
+        Ordering::Greater
+    })
+}
+
+fn prefix_interval_overlaps(
+    lower: Option<&vail_storage::fragment_index::TypedKey>,
+    upper: Option<&vail_storage::fragment_index::TypedKey>,
+    interval: &IntervalBounds,
+    partition_min: &vail_storage::fragment_index::TypedKey,
+    partition_max: &vail_storage::fragment_index::TypedKey,
+    binding: &IndexBinding,
+) -> Result<bool> {
+    if let Some(lower) = lower {
+        let prefix = compare_typed_prefix(&lower.components, &partition_max.components, binding)?;
+        let ordering =
+            prefix.then_with(|| lower.components.len().cmp(&partition_max.components.len()));
+        let starts_after_partition = ordering == Ordering::Greater
+            || (ordering == Ordering::Equal && !interval.lower_inclusive)
+            || (!interval.lower_inclusive
+                && lower.components.len() < partition_max.components.len()
+                && prefix == Ordering::Equal);
+        if starts_after_partition {
+            return Ok(false);
+        }
+    }
+    if let Some(upper) = upper {
+        let prefix = compare_typed_prefix(&upper.components, &partition_min.components, binding)?;
+        let ordering =
+            prefix.then_with(|| partition_min.components.len().cmp(&upper.components.len()));
+        let ends_before_partition = ordering == Ordering::Less
+            || (ordering == Ordering::Equal && !interval.upper_inclusive)
+            || (!interval.upper_inclusive
+                && upper.components.len() < partition_min.components.len()
+                && prefix == Ordering::Equal);
+        if ends_before_partition {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
+fn typed_sort_options(binding: &IndexBinding) -> Vec<arrow_schema::SortOptions> {
+    binding
+        .key_fields
+        .iter()
+        .map(|field| arrow_schema::SortOptions {
+            descending: field.descending,
+            nulls_first: !field.nulls_last,
+        })
+        .collect()
+}
+
+fn concatenate_typed_keys(keys: &[Vec<ArrayRef>], arity: usize) -> Result<Vec<ArrayRef>> {
+    (0..arity)
+        .map(|component| {
+            let arrays = keys
+                .iter()
+                .map(|key| key[component].as_ref())
+                .collect::<Vec<_>>();
+            arrow_select::concat::concat(&arrays).map_err(TableError::from)
+        })
+        .collect()
+}
+
+#[cfg(test)]
+mod prefix_partition_index_tests {
+    use super::*;
+    use vail_storage::fragment_index::{KeyField, KeyType, TypedKey};
+
+    fn binding() -> IndexBinding {
+        IndexBinding {
+            table_uuid: uuid::Uuid::from_u128(1),
+            snapshot_id: 1,
+            schema_id: 1,
+            comparator_version: "test".into(),
+            live_files_sha256: "test".into(),
+            key_fields: (0..2)
+                .map(|field_id| KeyField {
+                    field_id,
+                    data_type: KeyType::Int32,
+                    physical_type: arrow_schema::DataType::Int32,
+                    descending: false,
+                    nulls_last: true,
+                })
+                .collect(),
+        }
+    }
+
+    fn typed(values: &[i32]) -> TypedKey {
+        TypedKey {
+            components: values
+                .iter()
+                .map(|&value| Arc::new(arrow_array::Int32Array::from(vec![value])) as ArrayRef)
+                .collect(),
+        }
+    }
+
+    fn query(
+        lower: Option<i32>,
+        upper: Option<i32>,
+        lower_inclusive: bool,
+        upper_inclusive: bool,
+    ) -> (Option<TypedKey>, Option<TypedKey>, IntervalBounds) {
+        (
+            lower.map(|value| typed(&[value])),
+            upper.map(|value| typed(&[value])),
+            IntervalBounds {
+                lower: ScalarValue::Int32(lower),
+                upper: ScalarValue::Int32(upper),
+                lower_inclusive,
+                upper_inclusive,
+                sources: vec![],
+            },
+        )
+    }
+
+    #[test]
+    fn indexed_prefix_candidates_match_brute_force_with_overlaps_and_open_bounds() {
+        let binding = binding();
+        let partitions = vec![
+            Some((typed(&[1, 1]), typed(&[1, 5]))),
+            Some((typed(&[1, 4]), typed(&[2, 0]))),
+            None,
+            Some((typed(&[3, 0]), typed(&[4, 5]))),
+        ];
+        let index = PrefixPartitionIndex::new(&partitions, &binding).unwrap();
+        for lower in [None, Some(0), Some(1), Some(2), Some(4), Some(5)] {
+            for upper in [None, Some(0), Some(1), Some(2), Some(3), Some(4)] {
+                for lower_inclusive in [false, true] {
+                    for upper_inclusive in [false, true] {
+                        let (lower_key, upper_key, interval) =
+                            query(lower, upper, lower_inclusive, upper_inclusive);
+                        let actual = index
+                            .query(lower_key.as_ref(), upper_key.as_ref(), &interval, &binding)
+                            .unwrap();
+                        let expected = partitions
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(partition, bounds)| {
+                                bounds.as_ref().and_then(|(minimum, maximum)| {
+                                    prefix_interval_overlaps(
+                                        lower_key.as_ref(),
+                                        upper_key.as_ref(),
+                                        &interval,
+                                        minimum,
+                                        maximum,
+                                        &binding,
+                                    )
+                                    .unwrap()
+                                    .then_some(partition)
+                                })
+                            })
+                            .collect::<Vec<_>>();
+                        assert_eq!(actual, expected);
+                    }
+                }
+            }
+        }
+    }
 }
 fn decode_typed_prefix(
     binding: &IndexBinding,

@@ -88,10 +88,6 @@ def reduce_list(
                 value = base[matrix._ROW_NAME][name]
             elif axis == "col" and "col" in context.dtype:
                 value = context.col[name]
-            elif axis == "col" and "position" in context.dtype:
-                value = matrix._mir.column_records[context.position][
-                    "__vail_matrix_col"
-                ][name]
             else:
                 value = context[axis][name]
             refs.update(value._global_refs)
@@ -198,50 +194,119 @@ def reduce_list(
         if op == "agg_array":
             values = mapped(items, node["value"])
             value_type = values.dtype.element_type
-            present = items.filter(
-                lambda ctx: is_defined(raw(bind(node["value"], ctx), value_type))
-            )
-            lengths = values.filter(is_defined).map(length)
-            maximum = array_max(lengths)
-            width = if_else(is_defined(maximum), maximum, literal(0, tint32))
-            valid = length(lengths.filter(lambda n: n != width)) == 0
-            width = (
-                case()
-                .when(valid, width)
-                .or_error("agg.array_agg requires equal array lengths")
-            )
-            from . import range as array_range
+            body = node["body"]
+            parameter = node["parameter"]
+            required = {"entry": set(), "col": set(), "bindings": set()}
+            needs_position = False
 
-            def at(i):
-                bound[i.to_ir()["name"]] = i.dtype
-                selected = present.map(
-                    lambda ctx: with_binding(
-                        ctx,
-                        node["parameter"],
-                        raw(bind(node["value"], ctx), value_type)[i],
+            def context_uses(expression, lexical=frozenset()):
+                nonlocal needs_position
+                if isinstance(expression, list):
+                    for child in expression:
+                        context_uses(child, lexical)
+                    return
+                if not isinstance(expression, dict) or expression.get("op") == "literal":
+                    return
+                op = expression.get("op")
+                if op == "matrix_field":
+                    axis = expression["axis"]
+                    if axis in ("entry", "col"):
+                        required[axis].add(expression["name"])
+                    return
+                if op == "matrix_column_position":
+                    needs_position = True
+                    return
+                if op == "lambda_variable":
+                    name = expression["name"]
+                    context_type = items.dtype.element_type
+                    bindings_type = context_type["bindings"] if "bindings" in context_type else None
+                    if name not in lexical and bindings_type is not None and name in bindings_type:
+                        required["bindings"].add(name)
+                    return
+                if op in ("array_map", "array_filter"):
+                    context_uses(expression["value"], lexical)
+                    callback = expression.get("body", expression.get("predicate"))
+                    context_uses(callback, lexical | {expression["parameter"]})
+                    return
+                if op in ("agg_array", "agg_explode"):
+                    context_uses(expression["value"], lexical)
+                    context_uses(expression["body"], lexical | {expression["parameter"]})
+                    return
+                for child in expression.values():
+                    context_uses(child, lexical)
+
+            context_uses(body, frozenset({parameter}))
+
+            def project_context(ctx):
+                fields = {}
+                for axis in ("entry", "col"):
+                    if required[axis] and axis in ctx.dtype:
+                        source = ctx[axis]
+                        fields[axis] = struct(
+                            **{name: source[name] for name in sorted(required[axis])}
+                        )
+                if needs_position and "position" in ctx.dtype:
+                    fields["position"] = ctx.position
+                if "bindings" in ctx.dtype:
+                    source = ctx.bindings
+                    fields["bindings"] = struct(
+                        **{
+                            name: source[name]
+                            for name in sorted(required["bindings"])
+                        }
                     )
-                )
-                return typed(raw(walk(node["body"], selected, fixed)))
+                else:
+                    fields["bindings"] = struct()
+                # The sum lowering uses this bit to ignore absent sparse cells.
+                if "present" in ctx.dtype:
+                    fields["present"] = ctx.present
+                return struct(**fields)
 
-            result = array_range(width).map(at)
+            inputs = items.map(
+                lambda ctx: struct(
+                    context=project_context(ctx),
+                    value=raw(bind(node["value"], ctx), value_type),
+                )
+            ).filter(lambda item: is_defined(item.value))
+            from .collections import _function
+            from .types import tstruct
+
+            input_item = inputs.dtype.element_type
+            position_items = tstruct(
+                context=input_item["context"], value=value_type.element_type
+            )
+            transposed_type = tarray(tarray(position_items))
+            positions = _function("__vail_matrix_transpose", [inputs], transposed_type)
+            bound[parameter] = value_type.element_type
+
+            def at(position):
+                bound[position.to_ir()["name"]] = position.dtype
+                selected = position.map(
+                    lambda item: with_binding(item.context, parameter, item.value)
+                )
+                return typed(raw(walk(body, selected, fixed)))
+
+            result = positions.map(at)
             return typed(result).to_ir()
         if op == "agg_group_by":
             keys = mapped(items, node["key"])
-            from .collections import to_array
+            from .collections import _function, _cast, _ensure_key_supported
+            from .types import tstruct, tdict
+            _ensure_key_supported(keys.dtype.element_type)
+            pairs = items.map(lambda ctx: struct(
+                key=raw(bind(node["key"], ctx), keys.dtype.element_type), value=ctx,
+            ))
+            groups = _function("__vail_collection_group", [pairs],
+                tarray(tstruct(key=keys.dtype.element_type, value=items.dtype)))
 
-            unique = to_array(make_set(keys))
+            def group(record):
+                bound[record.to_ir()["name"]] = record.dtype
+                value = typed(raw(walk(node["body"], record.value, fixed)))
+                return struct(key=record.key, value=value)
 
-            def group(key):
-                bound[key.to_ir()["name"]] = key.dtype
-                selected = items.filter(
-                    lambda ctx: same(
-                        raw(bind(node["key"], ctx), keys.dtype.element_type), key
-                    )
-                )
-                value = typed(raw(walk(node["body"], selected, fixed)))
-                return make_tuple([key, value])
-
-            return typed(make_dict(unique.map(group))).to_ir()
+            result = groups.map(group)
+            dtype = result.dtype.element_type
+            return _cast(result, tdict(dtype["key"], dtype["value"])).to_ir()
         if op == "aggregate_fold":
             raise NotImplementedError(
                 "matrix list aggregation requires a native list-fold kernel for agg.fold"
