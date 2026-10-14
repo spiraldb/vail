@@ -45,6 +45,8 @@ def test_parallel_row_execution_propagates_errors_and_can_be_replayed():
     bad = t.annotate(value=hl.int32(hl.if_else(t.idx == 96, "invalid", hl.str(t.idx))))
     with pytest.raises(Exception, match="invalid|cast|parse"):
         bad.collect()
+    with pytest.raises(Exception, match="invalid|cast|parse"):
+        bad._force_count()
     assert [row.idx for row in t.collect()] == list(range(97))
     assert [row.idx for row in t.collect()] == list(range(97))
 
@@ -52,6 +54,7 @@ def test_parallel_row_execution_propagates_errors_and_can_be_replayed():
 def test_parallel_execution_handles_empty_input_and_matrix_row_lists():
     empty = hl.range_table(0, 4)
     assert empty.collect() == []
+    assert empty._force_count() == 0
     assert empty.aggregate(hl.agg.sum(empty.idx)) == 0
     assert empty.aggregate(hl.agg.collect(empty.idx)) == []
     m = hl.range_matrix_table(97, 5, 40)

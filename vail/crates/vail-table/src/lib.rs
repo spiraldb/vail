@@ -43,7 +43,8 @@ use vail_execution::{OrderKey, OrderRequirement};
 use vail_storage::{
     StorageError,
     local_table::{
-        LocalRead, WriteGlobals, WriteOptions, open_local, write_local_stream_with_globals,
+        LocalRead, WriteGlobals, WriteOptions, open_local,
+        write_local_partition_streams_with_globals,
     },
 };
 
@@ -1860,18 +1861,7 @@ impl TableIR {
     }
     /// Execute every output column for validation, retaining only a row count.
     pub async fn force_count(self: &Arc<Self>) -> Result<usize> {
-        use futures::TryStreamExt;
-
-        let mut rows = 0usize;
-        let mut stream = self.execute();
-        while let Some(event) = stream.try_next().await? {
-            if let PartitionEvent::Batch(batch) = event {
-                rows = rows.checked_add(batch.num_rows()).ok_or_else(|| {
-                    TableError::Invalid("row count exceeds usize capacity".into())
-                })?;
-            }
-        }
-        Ok(rows)
+        partitioned::force_count(self.clone()).await
     }
     pub async fn n_partitions(self: &Arc<Self>) -> Result<usize> {
         if let Some(count) = self.known_n_partitions() {
@@ -1900,14 +1890,28 @@ impl TableIR {
         overwrite: bool,
         options: WriteOptions,
     ) -> Result<()> {
-        let input = self
-            .execute()
-            .map_err(|error| match error {
-                TableError::Storage(error) => error,
-                other => StorageError::Execution(Box::new(other)),
-            })
-            .boxed();
-        write_local_stream_with_globals(
+        let prepared = partitioned::prepare(self.clone()).await?;
+        let context = Arc::new(datafusion_execution::TaskContext::default());
+        let input: Vec<BoxStream<'static, std::result::Result<RecordBatch, StorageError>>> =
+            prepared
+                .parts
+                .into_iter()
+                .map(|part| {
+                    let context = context.clone();
+                    let schema = self.schema.clone();
+                    async_stream::try_stream! {
+                    let mut batches = part.execute(0, context)
+                        .map_err(|error| StorageError::Execution(Box::new(error)))?;
+                    while let Some(batch) = batches.try_next().await
+                        .map_err(|error| StorageError::Execution(Box::new(error)))? {
+                        if batch.num_rows() == 0 { continue; }
+                        let row = batch.project(&(0..schema.fields().len()).collect::<Vec<_>>())?;
+                        yield vail_storage::local_table::normalize(&row, schema.clone())?;
+                    }
+                }.boxed()
+                })
+                .collect();
+        write_local_partition_streams_with_globals(
             path,
             overwrite,
             self.schema.clone(),

@@ -92,6 +92,9 @@ fn needs_order(expression: &Expr) -> bool {
                     | "stats"
                     | "count_where"
                     | "fraction"
+                    // stats expands to this internal aggregate, whose native
+                    // DataFusion accumulator can be merged across partitions.
+                    | "stddev_pop"
                     | "any"
                     | "all"
                     | "hist"

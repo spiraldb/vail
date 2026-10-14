@@ -1314,6 +1314,46 @@ pub async fn count(table: TableRef) -> Result<usize> {
     crate::logical::count(&table).await
 }
 
+/// Execute every output partition concurrently while discarding batches as
+/// soon as they have been counted. Unlike ordered row execution, no consumer
+/// waits for an earlier partition before it can drain a later one.
+pub async fn force_count(table: TableRef) -> Result<usize> {
+    let prepared = prepare(table).await?;
+    count_parts(prepared.parts, Arc::new(TaskContext::default())).await
+}
+
+async fn count_parts(parts: Vec<PhysicalPlan>, context: Arc<TaskContext>) -> Result<usize> {
+    let mut pending = parts.into_iter();
+    let mut tasks = tokio::task::JoinSet::new();
+    let mut total = 0usize;
+
+    loop {
+        while tasks.len() < crate::EXECUTION_CONCURRENCY {
+            let Some(part) = pending.next() else { break };
+            let context = context.clone();
+            tasks.spawn(async move {
+                let mut stream = part.execute(0, context)?;
+                let mut rows = 0usize;
+                while let Some(batch) = stream.try_next().await? {
+                    rows = rows.checked_add(batch.num_rows()).ok_or_else(|| {
+                        DataFusionError::Execution("row count exceeds usize capacity".into())
+                    })?;
+                }
+                Ok::<usize, DataFusionError>(rows)
+            });
+        }
+        let Some(result) = tasks.join_next().await else {
+            break;
+        };
+        let rows = result
+            .map_err(|e| TableError::Execution(format!("partition count task failed: {e}")))??;
+        total = total
+            .checked_add(rows)
+            .ok_or_else(|| TableError::Invalid("row count exceeds usize capacity".into()))?;
+    }
+    Ok(total)
+}
+
 pub fn execute(table: &TableRef) -> BatchStream {
     let table = table.clone();
     async_stream::try_stream!{
@@ -1346,6 +1386,8 @@ mod concurrent_partition_tests {
         started: AtomicUsize,
         gate: Semaphore,
         changed: Notify,
+        release_first: Notify,
+        hold_first: AtomicUsize,
     }
     impl Progress {
         fn new() -> Arc<Self> {
@@ -1355,6 +1397,8 @@ mod concurrent_partition_tests {
                 started: AtomicUsize::new(0),
                 gate: Semaphore::new(0),
                 changed: Notify::new(),
+                release_first: Notify::new(),
+                hold_first: AtomicUsize::new(0),
             })
         }
         async fn wait(&self, predicate: impl Fn() -> bool) {
@@ -1434,6 +1478,9 @@ mod concurrent_partition_tests {
                     state.changed.notify_one();
                     let permit = state.gate.acquire().await.unwrap();
                     permit.forget();
+                    if id == 0 && state.hold_first.load(Ordering::SeqCst) != 0 {
+                        state.release_first.notified().await;
+                    }
                     // Later partitions deliberately finish before earlier ones.
                     tokio::time::sleep(std::time::Duration::from_millis((31-id%32) as u64)).await;
                     if fail { Err(DataFusionError::Execution("partition probe failure".into()))?; }
@@ -1543,6 +1590,25 @@ mod concurrent_partition_tests {
             crate::EXECUTION_CONCURRENCY
         );
         assert_eq!(state.active.load(Ordering::SeqCst), 0);
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn force_count_drains_later_partitions_while_first_is_gated() {
+        let state = Progress::new();
+        state.hold_first.store(1, Ordering::SeqCst);
+        let (_, parts) = inputs(&state, None);
+        let action = tokio::spawn(count_parts(parts, Arc::new(TaskContext::default())));
+        state
+            .wait(|| state.started.load(Ordering::SeqCst) == crate::EXECUTION_CONCURRENCY)
+            .await;
+        state.gate.add_permits(crate::EXECUTION_CONCURRENCY);
+        state
+            .wait(|| state.started.load(Ordering::SeqCst) == crate::EXECUTION_CONCURRENCY + 1)
+            .await;
+        assert!(state.active.load(Ordering::SeqCst) > 0);
+        state.release_first.notify_one();
+        assert_eq!(action.await.unwrap().unwrap(), 40);
+        assert_eq!(state.active.load(Ordering::SeqCst), 0);
+        assert!(state.peak.load(Ordering::SeqCst) <= crate::EXECUTION_CONCURRENCY);
     }
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
     async fn canceling_ordered_output_aborts_prefetched_producers() {

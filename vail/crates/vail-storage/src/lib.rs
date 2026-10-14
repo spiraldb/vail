@@ -156,19 +156,26 @@ async fn write_initial_files(
     write_initial_file_stream(
         catalog,
         table,
-        futures::stream::iter(files.into_iter().map(Ok)).boxed(),
+        futures::stream::iter(
+            files
+                .into_iter()
+                .enumerate()
+                .map(|(index, batches)| Ok(((index, 0), batches))),
+        )
+        .boxed(),
         semantics,
         key_fields,
     )
     .await
 }
 
-/// Consume and close one bounded file buffer before polling the next. Only file
-/// identities, intervals and Iceberg metadata accumulate across the snapshot.
+/// Write bounded file buffers concurrently and restore their source ordinals
+/// before assembling metadata. Only file identities, intervals and Iceberg
+/// metadata accumulate across the snapshot.
 async fn write_initial_file_stream(
     catalog: &dyn Catalog,
     table: &Table,
-    mut files: futures::stream::BoxStream<'_, Result<Vec<RecordBatch>>>,
+    files: futures::stream::BoxStream<'_, Result<((usize, usize), Vec<RecordBatch>)>>,
     semantics: VailSemantics,
     key_fields: Option<Vec<KeyField>>,
 ) -> Result<Table> {
@@ -239,112 +246,103 @@ async fn write_initial_file_stream(
         live_files_sha256: "0".repeat(64),
         key_fields,
     });
-    while let Some(batches) = files.try_next().await? {
-        if !batches.iter().any(|b| b.num_rows() > 0) {
-            continue;
-        }
-        for batch in &batches {
-            if batch.num_columns() != arrow_schema.fields().len() {
-                return Err(StorageError::Invalid(
-                    "batch column count differs from table schema".into(),
-                ));
-            }
-            for ((column, input_field), field) in batch
-                .columns()
-                .iter()
-                .zip(batch.schema().fields().iter())
-                .zip(arrow_schema.fields())
-            {
-                if input_field.name() != field.name()
-                    || input_field.is_nullable() != field.is_nullable()
-                    || column.data_type() != field.data_type()
-                {
-                    return Err(StorageError::Invalid(format!(
-                        "batch field name, requiredness, or type differs from Iceberg field {}",
-                        field.name()
-                    )));
+    // The input remains demand-driven, but once it has yielded independently
+    // buffered file chunks their physical writes can overlap. The ordinal is
+    // restored below before descriptor/index metadata is assembled.
+    let file_schema = table.metadata().current_schema().clone();
+    let field_ids = file_schema
+        .as_struct()
+        .fields()
+        .iter()
+        .map(|field| field.id)
+        .collect::<Vec<_>>();
+    let mut pending = files;
+    let mut writers = tokio::task::JoinSet::new();
+    let mut file_outputs = Vec::new();
+    let mut ordinal = 0usize;
+    let mut input_done = false;
+    let write_result: Result<()> = async {
+        loop {
+            while !input_done && writers.len() < 32 {
+                let next = if writers.is_empty() {
+                    pending.next().await
+                } else {
+                    tokio::select! {
+                        biased;
+                        joined = writers.join_next() => {
+                            match joined {
+                                Some(Ok(Ok(Some(output)))) => file_outputs.push(output),
+                                Some(Ok(Ok(None))) => (),
+                                Some(Ok(Err(error))) => return Err(error),
+                                Some(Err(error)) => return Err(StorageError::Execution(Box::new(error))),
+                                None => (),
+                            }
+                            continue;
+                        }
+                        item = pending.next() => item,
+                    }
+                };
+                match next {
+                    Some(Ok((order, batches))) => {
+                        let table = table.clone();
+                        let binding = binding.clone();
+                        let arrow_schema = arrow_schema.clone();
+                        let field_ids = field_ids.clone();
+                        let file_schema = file_schema.clone();
+                        let file_ordinal = ordinal;
+                        ordinal += 1;
+                        writers.spawn(async move {
+                            write_initial_file(
+                                &table,
+                                snapshot_id,
+                                file_ordinal,
+                                batches,
+                                binding.as_ref(),
+                                &arrow_schema,
+                                &field_ids,
+                                file_schema,
+                            )
+                            .await
+                            .map(|output| {
+                                output.map(|(_, file, identity, interval)| {
+                                    (order, file, identity, interval)
+                                })
+                            })
+                        });
+                    }
+                    Some(Err(error)) => return Err(error),
+                    None => input_done = true,
                 }
-                if !field.is_nullable() && column.null_count() != 0 {
-                    return Err(StorageError::Invalid(format!(
-                        "required Iceberg field {} contains nulls",
-                        field.name()
-                    )));
+            }
+            if writers.is_empty() {
+                if input_done {
+                    break;
                 }
+                continue;
+            }
+            match writers.join_next().await {
+                Some(Ok(Ok(Some(output)))) => file_outputs.push(output),
+                Some(Ok(Ok(None))) => (),
+                Some(Ok(Err(error))) => return Err(error),
+                Some(Err(error)) => return Err(StorageError::Execution(Box::new(error))),
+                None => (),
             }
         }
-
-        let endpoints = if let Some(binding) = &binding {
-            let field_ids = table
-                .metadata()
-                .current_schema()
-                .as_struct()
-                .fields()
-                .iter()
-                .map(|field| field.id)
-                .collect::<Vec<_>>();
-            Some(certify_file(binding, &arrow_schema, &field_ids, &batches)?)
-        } else {
-            None
-        };
-        let data_path = local_path(table.metadata().location())?
-            .join("data")
-            .join(format!(
-                "{snapshot_id}-{:020}-{}.vortex",
-                identities.len(),
-                Uuid::now_v7()
-            ));
-        std::fs::create_dir_all(
-            data_path
-                .parent()
-                .ok_or_else(|| StorageError::Invalid("no data parent".into()))?,
-        )?;
-        let file_path = file_uri(&data_path)?;
-        let output = table.file_io().new_output(&file_path)?;
-        let mut writer = VortexWriterBuilder::new(
-            table.metadata().current_schema().clone(),
-            VortexSession::default(),
-        )
-        .build(output)
-        .await?;
-        for batch in &batches {
-            writer.write(batch).await?;
-        }
-        let writer_files = writer.close().await?;
-        let mut writer_files = writer_files.into_iter();
-        let data_file = writer_files
-            .next()
-            .ok_or_else(|| StorageError::Invalid("Vortex writer produced no file".into()))?
-            .partition_spec_id(table.metadata().default_partition_spec_id())
-            .build()
-            .map_err(|e| StorageError::Invalid(e.to_string()))?;
-        if writer_files.next().is_some() || data_file.file_path() != file_path {
-            return Err(StorageError::Invalid(
-                "Vortex writer returned unexpected files".into(),
-            ));
-        }
-        identities.push(DataFileIdentity {
-            path: file_path.clone(),
-            sha256: sha256_file(&data_path)?,
-            row_count: data_file.record_count(),
-        });
-        if let Some((first_key, last_key, certified_rows)) = endpoints {
-            let identity = identities.last().unwrap();
-            if certified_rows != identity.row_count {
-                return Err(StorageError::Invalid(
-                    "writer row count differs from order certificate".into(),
-                ));
-            }
-            intervals.push(FragmentInterval {
-                identity: FragmentIdentity {
-                    file_path,
-                    content_sha256: identity.sha256.clone(),
-                },
-                row_count: certified_rows,
-                first_key,
-                last_key,
-            });
-        }
+        Ok(())
+    }
+    .await;
+    if write_result.is_err() {
+        writers.abort_all();
+        while writers.join_next().await.is_some() {}
+    }
+    write_result?;
+    file_outputs.sort_by_key(|(order, _, _, _)| *order);
+    for (_, data_file, identity, interval) in file_outputs {
         data_files.push(data_file);
+        identities.push(identity);
+        if let Some(interval) = interval {
+            intervals.push(interval);
+        }
     }
     let live_files_sha256 = live_files_hash(&identities)?;
     let mut index_pointer = None;
@@ -408,6 +406,116 @@ async fn write_initial_file_stream(
         ));
     }
     Ok(committed)
+}
+
+async fn write_initial_file(
+    table: &Table,
+    snapshot_id: i64,
+    ordinal: usize,
+    batches: Vec<RecordBatch>,
+    binding: Option<&IndexBinding>,
+    arrow_schema: &arrow_schema::Schema,
+    field_ids: &[i32],
+    file_schema: iceberg::spec::SchemaRef,
+) -> Result<
+    Option<(
+        usize,
+        iceberg::spec::DataFile,
+        DataFileIdentity,
+        Option<FragmentInterval>,
+    )>,
+> {
+    if !batches.iter().any(|batch| batch.num_rows() > 0) {
+        return Ok(None);
+    }
+    for batch in &batches {
+        if batch.num_columns() != arrow_schema.fields().len() {
+            return Err(StorageError::Invalid(
+                "batch column count differs from table schema".into(),
+            ));
+        }
+        for ((column, input_field), field) in batch
+            .columns()
+            .iter()
+            .zip(batch.schema().fields().iter())
+            .zip(arrow_schema.fields())
+        {
+            if input_field.name() != field.name()
+                || input_field.is_nullable() != field.is_nullable()
+                || column.data_type() != field.data_type()
+            {
+                return Err(StorageError::Invalid(format!(
+                    "batch field name, requiredness, or type differs from Iceberg field {}",
+                    field.name()
+                )));
+            }
+            if !field.is_nullable() && column.null_count() != 0 {
+                return Err(StorageError::Invalid(format!(
+                    "required Iceberg field {} contains nulls",
+                    field.name()
+                )));
+            }
+        }
+    }
+    let endpoints = binding
+        .map(|binding| certify_file(binding, arrow_schema, field_ids, &batches))
+        .transpose()?;
+    let data_path = local_path(table.metadata().location())?
+        .join("data")
+        .join(format!(
+            "{snapshot_id}-{ordinal:020}-{}.vortex",
+            Uuid::now_v7()
+        ));
+    std::fs::create_dir_all(
+        data_path
+            .parent()
+            .ok_or_else(|| StorageError::Invalid("no data parent".into()))?,
+    )?;
+    let file_path = file_uri(&data_path)?;
+    let output = table.file_io().new_output(&file_path)?;
+    let mut writer = VortexWriterBuilder::new(file_schema, VortexSession::default())
+        .build(output)
+        .await?;
+    for batch in &batches {
+        writer.write(batch).await?;
+    }
+    let writer_files = writer.close().await?;
+    let mut writer_files = writer_files.into_iter();
+    let data_file = writer_files
+        .next()
+        .ok_or_else(|| StorageError::Invalid("Vortex writer produced no file".into()))?
+        .partition_spec_id(table.metadata().default_partition_spec_id())
+        .build()
+        .map_err(|e| StorageError::Invalid(e.to_string()))?;
+    if writer_files.next().is_some() || data_file.file_path() != file_path {
+        return Err(StorageError::Invalid(
+            "Vortex writer returned unexpected files".into(),
+        ));
+    }
+    let identity = DataFileIdentity {
+        path: file_path.clone(),
+        sha256: sha256_file(&data_path)?,
+        row_count: data_file.record_count(),
+    };
+    let interval = endpoints
+        .map(|(first_key, last_key, certified_rows)| {
+            if certified_rows != identity.row_count {
+                return Err(StorageError::Invalid(
+                    "writer row count differs from order certificate".into(),
+                ));
+            }
+            Ok(FragmentInterval {
+                identity: FragmentIdentity {
+                    file_path,
+                    content_sha256: identity.sha256.clone(),
+                },
+                row_count: certified_rows,
+                first_key,
+                last_key,
+            })
+        })
+        .transpose()?;
+    Ok(Some((ordinal, data_file, identity, interval)))
 }
 
 /// Read a pinned Iceberg snapshot by planning its actual manifest entries.

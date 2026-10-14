@@ -9,7 +9,10 @@ use std::{
 };
 use vail_storage::{
     StorageError,
-    local_table::{PartitionEvent, WriteOptions, read_local, write_local_stream},
+    local_table::{
+        PartitionEvent, WriteOptions, read_local, write_local_partition_streams_with_globals,
+        write_local_stream,
+    },
 };
 
 fn files(root: &Path) -> Vec<PathBuf> {
@@ -62,14 +65,15 @@ async fn row_and_byte_limits_flush_before_requesting_more_input() {
             yield PartitionEvent::StartPartition;
             for i in 0..3 {
                 // This is executed when the consumer asks for the next batch.
-                // Each preceding file must already have been flushed and closed.
                 let written = files(root_ref);
-                assert_eq!(written.len(), i);
+                // Physical writes may still be running, but no future file
+                // may exist before its input batch is consumed.
+                assert!(written.len() <= i);
                 assert!(written.iter().all(|p| fs::metadata(p).unwrap().len() > 0));
                 assert!(!root_ref.join("_vail_table.json").exists());
                 yield PartitionEvent::Batch(batch(vec![(2 * i) as i32, (2 * i + 1) as i32]));
             }
-            assert_eq!(files(root_ref).len(), 3);
+            assert!(files(root_ref).len() <= 3);
         }
         .boxed();
         write_local_stream(
@@ -147,7 +151,9 @@ async fn input_failure_after_a_flush_never_publishes_a_partial_snapshot() {
         let input = async_stream::try_stream! {
             yield PartitionEvent::StartPartition;
             yield PartitionEvent::Batch(batch(vec![1, 2]));
-            assert_eq!(files(root_ref).len(), if overwrite { 2 } else { 1 });
+            assert!(
+                files(root_ref).len() <= if overwrite { 2 } else { 1 }
+            );
             Err(StorageError::Input("injected after flush".into()))?;
         }
         .boxed();
@@ -278,4 +284,148 @@ async fn duplicate_and_missing_keys_keep_arrival_order_across_file_rollover() {
         })
         .collect::<Vec<_>>();
     assert_eq!(ordinals, vec![0, 1, 2, 3, 4, 5]);
+}
+
+#[tokio::test]
+async fn partition_stream_writes_overlap_and_descriptor_restores_partition_order() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("table");
+    let second_started = Arc::new(AtomicBool::new(false));
+    let first = {
+        let second_started = second_started.clone();
+        async_stream::try_stream! {
+            while !second_started.load(Ordering::SeqCst) {
+                tokio::task::yield_now().await;
+            }
+            yield batch(vec![7, 7]);
+        }
+        .boxed()
+    };
+    let second = {
+        let second_started = second_started.clone();
+        async_stream::try_stream! {
+            second_started.store(true, Ordering::SeqCst);
+            yield batch(vec![3, 3]);
+        }
+        .boxed()
+    };
+    write_local_partition_streams_with_globals(
+        root.to_str().unwrap(),
+        false,
+        schema(),
+        vec![first, second],
+        json!([["x", "int32"]]),
+        vec![],
+        WriteOptions {
+            max_buffer_bytes: usize::MAX,
+            max_rows_per_file: 1,
+        },
+        None,
+    )
+    .await
+    .unwrap();
+
+    let read = read_local(root.to_str().unwrap()).await.unwrap();
+    assert_eq!(
+        read.partitions
+            .iter()
+            .map(|partition| partition.iter().map(RecordBatch::num_rows).sum::<usize>())
+            .collect::<Vec<_>>(),
+        vec![2, 2]
+    );
+    assert_eq!(values(read.partitions), vec![7, 7, 3, 3]);
+    assert_eq!(files(&root).len(), 4);
+}
+
+#[tokio::test]
+async fn partition_stream_failure_does_not_publish_a_snapshot() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("table");
+    let success = futures::stream::iter(vec![Ok(batch(vec![1, 2]))]).boxed();
+    let failure = async_stream::try_stream! {
+        yield batch(vec![3, 4]);
+        Err(StorageError::Input("partition failed".into()))?;
+    }
+    .boxed();
+    let result = write_local_partition_streams_with_globals(
+        root.to_str().unwrap(),
+        false,
+        schema(),
+        vec![success, failure],
+        json!([["x", "int32"]]),
+        vec![],
+        WriteOptions {
+            max_buffer_bytes: usize::MAX,
+            max_rows_per_file: 1,
+        },
+        None,
+    )
+    .await;
+    assert!(matches!(result, Err(StorageError::Input(_))));
+    assert!(!root.exists());
+}
+
+#[tokio::test]
+async fn partition_writer_drains_more_than_one_worker_wave() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("table");
+    let partitions = (0..40)
+        .map(|value| futures::stream::iter(vec![Ok(batch(vec![value, value]))]).boxed())
+        .collect();
+    write_local_partition_streams_with_globals(
+        root.to_str().unwrap(),
+        false,
+        schema(),
+        partitions,
+        json!([["x", "int32"]]),
+        vec![],
+        WriteOptions {
+            max_buffer_bytes: usize::MAX,
+            max_rows_per_file: 1,
+        },
+        None,
+    )
+    .await
+    .unwrap();
+
+    let read = read_local(root.to_str().unwrap()).await.unwrap();
+    assert_eq!(
+        read.partitions
+            .iter()
+            .map(|partition| partition.iter().map(RecordBatch::num_rows).sum::<usize>())
+            .collect::<Vec<_>>(),
+        vec![2; 40]
+    );
+    assert_eq!(
+        values(read.partitions),
+        (0..40).flat_map(|v| [v, v]).collect::<Vec<_>>()
+    );
+    assert_eq!(files(&root).len(), 80);
+}
+
+#[tokio::test]
+async fn partition_worker_panic_cannot_publish_a_partial_snapshot() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().join("table");
+    let panicking = futures::stream::poll_fn(
+        |_| -> std::task::Poll<Option<vail_storage::Result<RecordBatch>>> {
+            panic!("injected partition panic");
+        },
+    )
+    .boxed();
+    let result = write_local_partition_streams_with_globals(
+        root.to_str().unwrap(),
+        false,
+        schema(),
+        vec![panicking],
+        json!([["x", "int32"]]),
+        vec![],
+        WriteOptions::default(),
+        None,
+    )
+    .await;
+    assert!(matches!(result, Err(StorageError::Input(_))));
+    assert!(!root.exists());
 }

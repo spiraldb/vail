@@ -3,6 +3,7 @@
 use super::*;
 use arrow_array::{Int32Array, RecordBatch, RecordBatchOptions};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
+use futures::FutureExt;
 use iceberg::arrow::{arrow_schema_to_schema_auto_assign_ids, schema_to_arrow_schema};
 use iceberg::io::{FileIO, LocalFsStorageFactory};
 use iceberg::table::StaticTable;
@@ -14,6 +15,26 @@ use serde_json::{Value, json};
 use std::{collections::HashMap, fs, io::Write, path::PathBuf, sync::Arc};
 
 const ENTRY: &str = "_vail_table.json";
+
+fn start_partition_count(counts: &std::sync::Mutex<Vec<usize>>) {
+    counts.lock().unwrap().push(0);
+}
+
+fn add_partition_count(
+    counts: &std::sync::Mutex<Vec<usize>>,
+    partition: usize,
+    rows: usize,
+) -> Result<()> {
+    let mut counts = counts.lock().unwrap();
+    let count = counts
+        .get_mut(partition)
+        .ok_or_else(|| StorageError::Invalid("batch outside partition".into()))?;
+    *count = count
+        .checked_add(rows)
+        .ok_or_else(|| StorageError::Invalid("partition row count overflow".into()))?;
+    Ok(())
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct Entry {
     version: u32,
@@ -137,7 +158,61 @@ pub async fn write_local_stream_with_globals(
     path: &str,
     overwrite: bool,
     schema: SchemaRef,
-    mut input: futures::stream::BoxStream<'_, Result<PartitionEvent>>,
+    input: futures::stream::BoxStream<'_, Result<PartitionEvent>>,
+    row_type: Value,
+    keys: Vec<String>,
+    options: WriteOptions,
+    globals: Option<WriteGlobals>,
+) -> Result<()> {
+    write_local_source_with_globals(
+        path,
+        overwrite,
+        schema,
+        WriteSource::Events(input),
+        row_type,
+        keys,
+        options,
+        globals,
+    )
+    .await
+}
+
+/// Write independently executable table partitions concurrently. At most 32
+/// partitions are polled at once and each holds only one configured file
+/// buffer; files are committed to the snapshot in partition/file order.
+pub async fn write_local_partition_streams_with_globals(
+    path: &str,
+    overwrite: bool,
+    schema: SchemaRef,
+    partitions: Vec<futures::stream::BoxStream<'static, Result<RecordBatch>>>,
+    row_type: Value,
+    keys: Vec<String>,
+    options: WriteOptions,
+    globals: Option<WriteGlobals>,
+) -> Result<()> {
+    write_local_source_with_globals(
+        path,
+        overwrite,
+        schema,
+        WriteSource::Partitions(partitions),
+        row_type,
+        keys,
+        options,
+        globals,
+    )
+    .await
+}
+
+enum WriteSource<'a> {
+    Events(futures::stream::BoxStream<'a, Result<PartitionEvent>>),
+    Partitions(Vec<futures::stream::BoxStream<'static, Result<RecordBatch>>>),
+}
+
+async fn write_local_source_with_globals(
+    path: &str,
+    overwrite: bool,
+    schema: SchemaRef,
+    source: WriteSource<'_>,
     row_type: Value,
     keys: Vec<String>,
     options: WriteOptions,
@@ -248,56 +323,11 @@ pub async fn write_local_stream_with_globals(
                     .build(),
             )
             .await?;
-        let mut partition_rows = Vec::<usize>::new();
-        let counts = &mut partition_rows;
-        // The consumer closes each file before polling this producer again.
-        // Partition boundaries flush the buffer without dropping empty partitions.
-        let files = async_stream::try_stream! {
-            let mut buffer = Vec::new();
-            let (mut buffered_bytes, mut buffered_rows) = (0usize, 0usize);
-            while let Some(event) = input.try_next().await? {
-                match event {
-                    PartitionEvent::StartPartition => {
-                        if !buffer.is_empty() { yield std::mem::take(&mut buffer); }
-                        buffered_bytes = 0;
-                        buffered_rows = 0;
-                        counts.push(0);
-                    }
-                    PartitionEvent::Batch(batch) => {
-                        let count = counts.last_mut().ok_or_else(||
-                            StorageError::Invalid("batch outside partition".into()))?;
-                        *count = count.checked_add(batch.num_rows()).ok_or_else(||
-                            StorageError::Invalid("partition row count overflow".into()))?;
-                        let mut offset = 0;
-                        while offset < batch.num_rows() {
-                            let length = (batch.num_rows() - offset).min(options.max_rows_per_file - buffered_rows);
-                            let piece = batch.slice(offset, length);
-                            let piece = if empty_row {
-                                RecordBatch::try_new(canonical.clone(), vec![Arc::new(Int32Array::from(vec![0; length]))])?
-                            } else { normalize(&piece, canonical.clone())? };
-                            let bytes = piece.get_array_memory_size();
-                            if !buffer.is_empty() && buffered_bytes.saturating_add(bytes) > options.max_buffer_bytes {
-                                yield std::mem::take(&mut buffer);
-                                buffered_bytes = 0;
-                                buffered_rows = 0;
-                            }
-                            buffer.push(piece);
-                            buffered_bytes = buffered_bytes.saturating_add(bytes);
-                            buffered_rows += length;
-                            offset += length;
-                            if buffered_bytes >= options.max_buffer_bytes || buffered_rows >= options.max_rows_per_file {
-                                yield std::mem::take(&mut buffer);
-                                buffered_bytes = 0;
-                                buffered_rows = 0;
-                            }
-                        }
-                    }
-                }
-            }
-            if !buffer.is_empty() { yield buffer; }
-        }.boxed();
         let (global_type, globals) = match globals {
-            Some(globals) => (globals.logical_type, super::globals::write(&generation.join("metadata"), &globals.batch)?),
+            Some(globals) => (
+                globals.logical_type,
+                super::globals::write(&generation.join("metadata"), &globals.batch)?,
+            ),
             None => (json!({}), json!({})),
         };
         let reference_genomes = collect_reference_genomes(&row_type, &global_type)?;
@@ -310,7 +340,154 @@ pub async fn write_local_stream_with_globals(
             reference_genomes,
         };
         let ordered = (!key_fields.is_empty()).then_some(key_fields);
-        let committed = super::write_initial_file_stream(&catalog, &table, files, semantics, ordered).await?;
+        let (counts, files, mut partition_tasks) = match source {
+            WriteSource::Events(mut input) => {
+                let counts = Arc::new(std::sync::Mutex::new(Vec::<usize>::new()));
+                let recorded = counts.clone();
+                let files = async_stream::try_stream! {
+                    let mut buffer = Vec::new();
+                    let (mut buffered_bytes, mut buffered_rows, mut file_ordinal) = (0usize, 0usize, 0usize);
+                    while let Some(event) = input.try_next().await? {
+                        match event {
+                            PartitionEvent::StartPartition => {
+                                if !buffer.is_empty() { yield ((file_ordinal, 0), std::mem::take(&mut buffer)); file_ordinal += 1; }
+                                buffered_bytes = 0;
+                                buffered_rows = 0;
+                                start_partition_count(&recorded);
+                            }
+                            PartitionEvent::Batch(batch) => {
+                                let partition = recorded.lock().unwrap().len().saturating_sub(1);
+                                add_partition_count(&recorded, partition, batch.num_rows())?;
+                                let mut offset = 0;
+                                while offset < batch.num_rows() {
+                                    let length = (batch.num_rows() - offset).min(options.max_rows_per_file - buffered_rows);
+                                    let piece = batch.slice(offset, length);
+                                    let piece = if empty_row {
+                                        RecordBatch::try_new(canonical.clone(), vec![Arc::new(Int32Array::from(vec![0; length]))])?
+                                    } else { normalize(&piece, canonical.clone())? };
+                                    let bytes = piece.get_array_memory_size();
+                                    if !buffer.is_empty() && buffered_bytes.saturating_add(bytes) > options.max_buffer_bytes {
+                                        yield ((file_ordinal, 0), std::mem::take(&mut buffer));
+                                        file_ordinal += 1;
+                                        buffered_bytes = 0;
+                                        buffered_rows = 0;
+                                    }
+                                    buffer.push(piece);
+                                    buffered_bytes = buffered_bytes.saturating_add(bytes);
+                                    buffered_rows += length;
+                                    offset += length;
+                                    if buffered_bytes >= options.max_buffer_bytes || buffered_rows >= options.max_rows_per_file {
+                                        yield ((file_ordinal, 0), std::mem::take(&mut buffer));
+                                        file_ordinal += 1;
+                                        buffered_bytes = 0;
+                                        buffered_rows = 0;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if !buffer.is_empty() { yield ((file_ordinal, 0), buffer); }
+                }.boxed();
+                (counts, files, tokio::task::JoinSet::new())
+            }
+            WriteSource::Partitions(partitions) => {
+                let counts = Arc::new(std::sync::Mutex::new(vec![0usize; partitions.len()]));
+                let concurrency = Arc::new(tokio::sync::Semaphore::new(32));
+                let mut receivers = Vec::with_capacity(partitions.len());
+                let mut tasks = tokio::task::JoinSet::new();
+                for (partition, mut input) in partitions.into_iter().enumerate() {
+                    let (sender, receiver) = tokio::sync::mpsc::channel(1);
+                    receivers.push(receiver);
+                    let canonical = canonical.clone();
+                    let counts = counts.clone();
+                    let concurrency = concurrency.clone();
+                    tasks.spawn(async move {
+                        let failure_sender = sender.clone();
+                        let producer = async move {
+                            let Ok(_permit) = concurrency.acquire_owned().await else { return };
+                            let chunks = async_stream::try_stream! {
+                                let mut buffer = Vec::new();
+                                let (mut buffered_bytes, mut buffered_rows, mut file_ordinal) = (0usize, 0usize, 0usize);
+                                while let Some(batch) = input.try_next().await? {
+                                    add_partition_count(&counts, partition, batch.num_rows())?;
+                                    let mut offset = 0;
+                                    while offset < batch.num_rows() {
+                                        let length = (batch.num_rows() - offset).min(options.max_rows_per_file - buffered_rows);
+                                        let piece = batch.slice(offset, length);
+                                        let piece = if empty_row {
+                                            RecordBatch::try_new(canonical.clone(), vec![Arc::new(Int32Array::from(vec![0; length]))])?
+                                        } else { normalize(&piece, canonical.clone())? };
+                                        let bytes = piece.get_array_memory_size();
+                                        if !buffer.is_empty() && buffered_bytes.saturating_add(bytes) > options.max_buffer_bytes {
+                                            yield ((partition, file_ordinal), std::mem::take(&mut buffer));
+                                            file_ordinal += 1;
+                                            buffered_bytes = 0;
+                                            buffered_rows = 0;
+                                        }
+                                        buffer.push(piece);
+                                        buffered_bytes = buffered_bytes.saturating_add(bytes);
+                                        buffered_rows += length;
+                                        offset += length;
+                                        if buffered_bytes >= options.max_buffer_bytes || buffered_rows >= options.max_rows_per_file {
+                                            yield ((partition, file_ordinal), std::mem::take(&mut buffer));
+                                            file_ordinal += 1;
+                                            buffered_bytes = 0;
+                                            buffered_rows = 0;
+                                        }
+                                    }
+                                }
+                                if !buffer.is_empty() { yield ((partition, file_ordinal), buffer); }
+                            }.boxed();
+                            futures::pin_mut!(chunks);
+                            while let Some(item) = chunks.next().await {
+                                let failed = item.is_err();
+                                if sender.send(item).await.is_err() || failed {
+                                    break;
+                                }
+                            }
+                        };
+                        if std::panic::AssertUnwindSafe(producer).catch_unwind().await.is_err() {
+                            let _ = failure_sender
+                                .send(Err(StorageError::Input("partition producer panicked".into())))
+                                .await;
+                        }
+                    });
+                }
+                let streams = futures::stream::iter(receivers)
+                    .map(|receiver| {
+                        futures::stream::unfold(receiver, |mut receiver| async move {
+                            receiver.recv().await.map(|item| (item, receiver))
+                        })
+                        .boxed()
+                    })
+                    // All receiver streams are polled; the semaphore, not the
+                    // receiver merge, bounds active producer workers. Limiting
+                    // this merge to 32 would let later producers hold permits
+                    // while their full channels block the first 32 receivers.
+                    .flatten_unordered(0)
+                    .boxed();
+                (counts, streams, tasks)
+            }
+        };
+        let committed_result =
+            super::write_initial_file_stream(&catalog, &table, files, semantics, ordered).await;
+        if committed_result.is_err() {
+            partition_tasks.abort_all();
+        }
+        let mut task_error = None;
+        while let Some(result) = partition_tasks.join_next().await {
+            if let Err(error) = result {
+                task_error.get_or_insert_with(|| {
+                    StorageError::Execution(Box::new(error))
+                });
+                partition_tasks.abort_all();
+            }
+        }
+        let committed = committed_result?;
+        if let Some(error) = task_error {
+            return Err(error);
+        }
+        let partition_rows = counts.lock().unwrap().clone();
         let entry = Entry {
             version: 2,
             metadata: committed
