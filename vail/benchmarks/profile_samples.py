@@ -40,7 +40,7 @@ def worker(args):
     else:
         native = Path(hl.__file__).parent / "_native.abi3.so"
         settings["native_sha256"] = hashlib.sha256(native.read_bytes()).hexdigest()
-    samples, rows = args.samples, 100_000
+    samples, rows = args.samples, args.matrix_rows
     vcf = args.output / "input.vcf"
     if args.case == "vcf_import_entry_sum":
         with vcf.open("w") as out:
@@ -49,13 +49,13 @@ def worker(args):
             out.write('##FORMAT=<ID=DP,Number=1,Type=Integer,Description="Depth">\n')
             out.write("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t" + "\t".join(f"s{i}" for i in range(samples)) + "\n")
             entries = "\t".join(["0/1:20"] * samples)
-            for pos in range(1, 50_001):
+            for pos in range(1, args.vcf_rows + 1):
                 out.write(f"1\t{pos}\t.\tA\tC\t50\tPASS\t.\tGT:DP\t{entries}\n")
 
     def query():
         if args.case == "vcf_import_entry_sum":
             m = hl.import_vcf(str(vcf), reference_genome="GRCh37")
-            assert m.aggregate_entries(hl.agg.sum(m.DP)) == 50_000 * samples * 20
+            assert m.aggregate_entries(hl.agg.sum(m.DP)) == args.vcf_rows * samples * 20
             return
         m = hl.utils.range_matrix_table(rows, samples, 14)
         if args.case == "matrix_force_count_rows":
@@ -82,7 +82,7 @@ def worker(args):
         events.append({"start_ns": before, "end_ns": time.perf_counter_ns()})
     end = time.perf_counter_ns()
     report = dict(engine=args.engine, case=args.case, samples=samples,
-                  rows=50_000 if args.case == "vcf_import_entry_sum" else rows,
+                  rows=args.vcf_rows if args.case == "vcf_import_entry_sum" else rows,
                   start_ns=start, end_ns=end, iterations=events,
                   median_seconds=statistics.median((e["end_ns"]-e["start_ns"])/1e9 for e in events),
                   settings=settings)
@@ -122,6 +122,7 @@ def monitor(args):
     tracked, snapshots = {}, []
     command = [args.python, str(Path(__file__).resolve()), "--worker", "--engine", args.engine,
                "--case", args.case, "--samples", str(args.samples), "--seconds", str(args.seconds),
+               "--matrix-rows", str(args.matrix_rows), "--vcf-rows", str(args.vcf_rows),
                "--output", str(args.output)]
     env = os.environ.copy()
     env.pop("PYTHONPATH", None)
@@ -224,10 +225,12 @@ if __name__ == "__main__":
     parser.add_argument("--engine", choices=("hail", "vail"), required=True)
     parser.add_argument("--case", choices=CASES, required=True)
     parser.add_argument("--samples", type=int, default=20)
+    parser.add_argument("--matrix-rows", type=int, default=100_000)
+    parser.add_argument("--vcf-rows", type=int, default=50_000)
     parser.add_argument("--seconds", type=float, default=10)
     parser.add_argument("--python")
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
-    if args.samples < 1 or args.seconds <= 0 or (not args.worker and not args.python):
+    if min(args.samples, args.matrix_rows, args.vcf_rows) < 1 or args.seconds <= 0 or (not args.worker and not args.python):
         parser.error("positive samples/seconds and a worker Python are required")
     worker(args) if args.worker else monitor(args)

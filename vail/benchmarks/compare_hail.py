@@ -21,43 +21,7 @@ import time
 import traceback
 
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--engine', choices=['hail', 'vail'], required=True)
-    parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--workdir', type=Path, required=True)
-    parser.add_argument('--scale', type=float, default=1.0)
-    parser.add_argument('--matrix-rows', type=int, default=100_000)
-    parser.add_argument('--matrix-columns', type=int, default=10)
-    parser.add_argument('--vcf-samples', type=int, default=10)
-    parser.add_argument('--iterations', type=int, default=3)
-    parser.add_argument('--warmups', type=int, default=1)
-    parser.add_argument('--cores', type=int, default=14)
-    parser.add_argument('--case', action='append')
-    args = parser.parse_args()
-    if args.matrix_columns < 1 or args.vcf_samples < 1:
-        parser.error('matrix-columns and vcf-samples must be positive')
-    args.workdir.mkdir(parents=True, exist_ok=True)
-    imported_at = time.perf_counter()
-    hl = importlib.import_module(args.engine)
-    import_seconds = time.perf_counter() - imported_at
-    initialized_at = time.perf_counter()
-    settings = {}
-    if args.engine == 'hail':
-        hl.init(master=f'local[{args.cores}]', spark_conf={
-            'spark.driver.memory': '48g', 'spark.executor.memory': '48g',
-            'spark.driver.maxResultSize': '8g', 'spark.ui.enabled': 'false',
-            'spark.sql.shuffle.partitions': str(args.cores),
-        }, log=str(args.workdir / 'hail.log'), quiet=True)
-        from pyspark import SparkContext
-        sc = SparkContext._active_spark_context
-        settings = {
-            'spark_version': sc.version, 'master': sc.master,
-            'parallelism': sc.defaultParallelism,
-            'max_heap_bytes': sc._jvm.java.lang.Runtime.getRuntime().maxMemory(),
-            'spark_conf': dict(sc.getConf().getAll()),
-        }
-    initialization_seconds = time.perf_counter() - initialized_at
+def make_cases(hl, args):
     cores = args.cores
     size = lambda n: max(cores, int(n * args.scale))
     n = size(1_000_000)
@@ -124,7 +88,7 @@ def main():
         assert matrix._force_count_rows() == (matrix_n + 1) // 2
         assert matrix.count_cols() == (matrix_cols + 1) // 2
 
-    vcf_rows = size(50_000)
+    vcf_rows = size(args.vcf_rows)
     vcf = args.workdir / 'synthetic.vcf'
     if args.case is None or 'vcf_import_entry_sum' in args.case:
         with vcf.open('w') as output:
@@ -164,9 +128,52 @@ def main():
         'matrix_filter_rows_columns': (matrix_filtered, {'rows': matrix_n, 'columns': matrix_cols}),
         'vcf_import_entry_sum': (vcf_sum, {'rows': vcf_rows, 'samples': cols}),
     }
+    return cases
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--engine', choices=['hail', 'vail'], required=True)
+    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--workdir', type=Path, required=True)
+    parser.add_argument('--scale', type=float, default=1.0)
+    parser.add_argument('--matrix-rows', type=int, default=100_000)
+    parser.add_argument('--matrix-columns', type=int, default=10)
+    parser.add_argument('--vcf-samples', type=int, default=10)
+    parser.add_argument('--vcf-rows', type=int, default=50_000)
+    parser.add_argument('--iterations', type=int, default=3)
+    parser.add_argument('--warmups', type=int, default=1)
+    parser.add_argument('--cores', type=int, default=14)
+    parser.add_argument('--case', action='append')
+    args = parser.parse_args()
+    if args.matrix_columns < 1 or args.vcf_samples < 1:
+        parser.error('matrix-columns and vcf-samples must be positive')
+    args.workdir.mkdir(parents=True, exist_ok=True)
+    imported_at = time.perf_counter()
+    hl = importlib.import_module(args.engine)
+    import_seconds = time.perf_counter() - imported_at
+    initialized_at = time.perf_counter()
+    settings = {}
+    if args.engine == 'hail':
+        hl.init(master=f'local[{args.cores}]', spark_conf={
+            'spark.driver.memory': '48g', 'spark.executor.memory': '48g',
+            'spark.driver.maxResultSize': '8g', 'spark.ui.enabled': 'false',
+            'spark.sql.shuffle.partitions': str(args.cores),
+        }, log=str(args.workdir / 'hail.log'), quiet=True)
+        from pyspark import SparkContext
+        sc = SparkContext._active_spark_context
+        settings = {
+            'spark_version': sc.version, 'master': sc.master,
+            'parallelism': sc.defaultParallelism,
+            'max_heap_bytes': sc._jvm.java.lang.Runtime.getRuntime().maxMemory(),
+            'spark_conf': dict(sc.getConf().getAll()),
+        }
+    initialization_seconds = time.perf_counter() - initialized_at
+    cores = args.cores
+    cases = make_cases(hl, args)
     selected = args.case or list(cases)
     if 'table_read' in selected and 'table_write' not in selected:
-        write()
+        cases['table_write'][0]()
     report = {
         'engine': args.engine, 'package_version': importlib.metadata.version(args.engine),
         'runtime_version': getattr(hl, '__version__', None),

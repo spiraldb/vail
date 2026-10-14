@@ -1,0 +1,28 @@
+{
+  "region": "us-east-1",
+  "instance_type": "m7i.8xlarge",
+  "key_name": "dk-vail-benchmark-7fac2ef6",
+  "security_group_id": "sg-0246520a0f2aff0f5",
+  "instance_id": "i-0cc4d03153875358e",
+  "availability_zone": "us-east-1a",
+  "state": "terminated",
+  "public_ip": "32.194.87.80",
+  "on_demand_usd_per_hour": [
+    "1.6128000000"
+  ],
+  "launch_time": "2026-10-14T14:38:16+00:00",
+  "block_devices": [
+    {
+      "DeviceName": "/dev/sda1",
+      "Ebs": {
+        "AttachTime": "2026-10-14T14:38:17+00:00",
+        "DeleteOnTermination": true,
+        "Status": "attached",
+        "VolumeId": "vol-07a5d0d31bb0ccda5"
+      }
+    }
+  ],
+  "termination_verified_utc": "2026-10-14T15:19:11.728574+00:00",
+  "temporary_security_group_deleted": true,
+  "temporary_key_pair_deleted": true
+}
