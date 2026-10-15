@@ -636,10 +636,11 @@ class Expression:
                 ))
             if name == "phased":
                 return call_field("__vail_call_phased", tbool)
-            if name == "n_alt_alleles":
-                return lambda: int32(array_sum(call_field(
-                    "__vail_call_alleles", tarray(tint32)
-                ).map(lambda allele: int32(allele > 0))))
+            if name in {"ploidy", "is_haploid", "is_diploid", "is_hom_ref", "is_non_ref",
+                        "is_het", "is_het_ref", "is_het_non_ref", "is_hom_var", "n_alt_alleles"}:
+                from .call_expressions import call_property
+                value = call_property(call_field("__vail_call_word", tint32), name)
+                return value if name == "ploidy" else lambda: value
         if isinstance(dtype, tlocus):
             if name in ("contig", "position"):
                 return self._locus_op(name, tstr if name == "contig" else tint32)

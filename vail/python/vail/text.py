@@ -7,7 +7,7 @@ from urllib.parse import unquote, urlparse
 
 from .collections import _function
 from .expressions import Expression, cast, literal
-from .types import (tarray, tstr, tint64, tstruct, tint32, tfloat32, tfloat64,
+from .types import (dtype, tarray, tstr, tint64, tstruct, tint32, tfloat32, tfloat64,
                     tbool, type_to_wire, type_from_wire)
 
 _COMPRESSED_SUFFIXES = ('.gz', '.bgz', '.bz2', '.xz', '.zst')
@@ -108,6 +108,25 @@ def split_line(value, delimiter, missing=None, quote=None, regex=False):
     return _split_line(value, delimiter, quote, markers)
 
 
+def _parse_integer_array(value, target):
+    from . import case, empty_array, if_else, is_missing, missing
+
+    whitespace = r'[ \t\r\n]*'
+    integer = r'(?:-?(?:0|[1-9][0-9]*)|null)'
+    grammar = (whitespace + r'\[' + whitespace
+               + '(?:' + integer + whitespace + '(?:,' + whitespace + integer + whitespace + ')*)?'
+               + r'\]' + whitespace)
+    inside = value.strip()[1:-1].strip()
+    elements = inside.split(',').map(lambda element: if_else(
+        element.strip() == 'null', missing(target.element_type),
+        cast(element.strip(), target.element_type),
+    ))
+    parsed = if_else(inside == '', empty_array(target.element_type), elements)
+    return (case().when(is_missing(value), missing(target))
+            .when(value.matches(grammar, full_match=True), parsed)
+            .or_error(f'invalid JSON integer array for {target}'))
+
+
 def import_table(paths, key=None, min_partitions=None, impute=False, no_header=False,
                  comment=(), delimiter='\t', missing='NA', types=None, quote=None,
                  skip_blank_lines=False, force_bgz=False, filter=None, find_replace=None,
@@ -186,10 +205,13 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
     fields = {}
     for index, name in enumerate(names):
         target = types.get(name, tstr)
-        if target not in (tstr, tint32, tint64, tfloat32, tfloat64, tbool):
-            raise NotImplementedError('typed text imports currently support primitive fields')
+        if isinstance(target, str):
+            target = dtype(target)
+        integer_array = isinstance(target, tarray) and target.element_type in (tint32, tint64)
+        if target not in (tstr, tint32, tint64, tfloat32, tfloat64, tbool) and not integer_array:
+            raise NotImplementedError('typed text imports support primitive fields and integer arrays')
         value = _function('array_element', [split, literal(index + 1, tint64)], tstr)
-        fields[name] = cast(value, target)
+        fields[name] = _parse_integer_array(value, target) if integer_array else cast(value, target)
     if source_file_field is not None:
         fields[source_file_field] = table.file
     table = table.select(**fields)

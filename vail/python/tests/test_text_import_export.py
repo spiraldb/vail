@@ -4,6 +4,24 @@ import pytest
 import vail as hl
 
 
+def test_import_typed_integer_arrays_and_type_aliases(tmp_path):
+    path = tmp_path / 'arrays.tsv'
+    path.write_text('idx\txs\n0\t[1, null, -2]\n1\t[]\n2\tNA\n3\t [ 2147483647 ] \n')
+    table = hl.import_table(path, types={'idx': 'int', 'xs': 'array<int>'})
+    assert table.row.dtype == hl.tstruct(idx=hl.tint32, xs=hl.tarray(hl.tint32))
+    assert [(row.idx, row.xs) for row in table.collect()] == [
+        (0, [1, None, -2]), (1, []), (2, None), (3, [2147483647]),
+    ]
+
+
+@pytest.mark.parametrize('value', ['[01]', '[+1]', '[1,]', '[1.0]', '1,2', '[2147483648]'])
+def test_integer_array_import_rejects_malformed_json_or_overflow(tmp_path, value):
+    path = tmp_path / 'invalid.tsv'
+    path.write_text('xs\n' + value + '\n')
+    with pytest.raises((RuntimeError, ValueError)):
+        hl.import_table(path, types={'xs': hl.tarray(hl.tint32)}).collect()
+
+
 def test_import_lines_preserves_physical_lines_and_files(tmp_path):
     one, two = tmp_path / 'one.txt', tmp_path / 'two.txt'
     one.write_bytes('a,"b"\r\n\r\n\t😀\nlast'.encode())

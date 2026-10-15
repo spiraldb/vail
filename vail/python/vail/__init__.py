@@ -2015,3 +2015,4 @@ from . import linalg
 from .simulation import balding_nichols_model
 
 from .qc import variant_qc, hardy_weinberg_test
+from .genotype_likelihoods import pl_to_gp, pl_dosage
