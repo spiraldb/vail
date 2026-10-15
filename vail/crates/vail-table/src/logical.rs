@@ -1052,6 +1052,33 @@ impl datafusion::physical_optimizer::PhysicalOptimizerRule for MetadataCrossJoin
     }
 }
 
+#[derive(Debug)]
+struct EliminateIdentityRanges;
+impl datafusion::physical_optimizer::PhysicalOptimizerRule for EliminateIdentityRanges {
+    fn name(&self) -> &str {
+        "vail_eliminate_identity_ranges"
+    }
+    fn schema_check(&self) -> bool {
+        true
+    }
+    fn optimize(
+        &self,
+        plan: PhysicalPlan,
+        _: &datafusion_common::config::ConfigOptions,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        use datafusion_common::tree_node::{Transformed, TreeNode};
+        Ok(plan.transform_up(|plan| {
+            if let Some(range) = plan.as_ref()
+                .downcast_ref::<crate::partitioned::ProtectedRangeRepartitionExec>()
+                && let Some(input) = range.identity_input()
+            {
+                return Ok(Transformed::yes(input));
+            }
+            Ok(Transformed::no(plan))
+        })?.data)
+    }
+}
+
 fn session_state(target_partitions: usize) -> datafusion::execution::SessionState {
     // Vail source partitions are observable. DataFusion may otherwise insert
     // a round-robin repartition to the host's core count after a narrow filter.
@@ -1063,6 +1090,7 @@ fn session_state(target_partitions: usize) -> datafusion::execution::SessionStat
         Arc<dyn datafusion::physical_optimizer::PhysicalOptimizerRule + Send + Sync>,
     > = vec![Arc::new(MetadataCrossJoin)];
     rules.extend(state.physical_optimizers().iter().cloned());
+    rules.push(Arc::new(EliminateIdentityRanges));
     datafusion::execution::session_state::SessionStateBuilder::new_from_existing(state)
         .with_physical_optimizer_rules(rules)
         .build()

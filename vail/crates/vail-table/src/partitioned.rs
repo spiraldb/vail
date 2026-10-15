@@ -365,6 +365,25 @@ pub(crate) struct ProtectedRangeRepartitionExec {
     requirement: Option<OrderingRequirements>,
 }
 impl ProtectedRangeRepartitionExec {
+    pub(crate) fn identity_input(&self) -> Option<PhysicalPlan> {
+        let target = Partitioning::Range(self.range.clone());
+        if self.input.output_partitioning() == &target {
+            return Some(self.input.clone());
+        }
+        // The required single input can introduce a merge even when the child
+        // already has exactly the requested ranges. Remove both operations:
+        // merging and redistributing the same ranges only adds buffering.
+        if let Some(merge) = self.input.as_ref().downcast_ref::<
+            datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeExec,
+        >() {
+            let input = merge.input();
+            if input.output_partitioning() == &target {
+                return Some(input.clone());
+            }
+        }
+        None
+    }
+
     pub(crate) fn new(
         input: PhysicalPlan,
         range: RangePartitioning,

@@ -88,6 +88,9 @@ def test_scan_row_windows_use_datafusion_partitioned_execution():
     assert "join_type=Right" in plan
     assert "RepartitionExec: partitioning=Hash([__vail_partition" not in plan
     assert "SortExec: expr=[__vail_partition" not in plan
+    # Once prefix totals are attached, the row stream already has the exact
+    # requested ranges. It must not merge and redistribute the entire payload.
+    assert "VailProtectedRangeRepartitionExec" not in plan.split("HashJoinExec", 1)[0]
     assert [row.prefix for row in scanned.collect()] == [sum(range(i)) for i in range(12)]
 
 
