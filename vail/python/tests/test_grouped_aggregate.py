@@ -4,6 +4,33 @@ import pytest
 import vail as hl
 
 
+@pytest.mark.parametrize("dtype", [hl.tint32, hl.tint64, hl.tfloat32, hl.tfloat64])
+def test_native_grouped_sum_widening_and_all_missing_identity(dtype):
+    table = hl.Table.parallelize(
+        [{"g": 0, "x": 2}, {"g": 0, "x": 3},
+         {"g": 1, "x": None}, {"g": 1, "x": None}],
+        schema=hl.tstruct(g=hl.tint32, x=dtype), n_partitions=3,
+    )
+    grouped = table.group_by(table.g).aggregate(
+        total=hl.agg.sum(table.x), n=hl.agg.count(),
+    )
+    expected_type = hl.tint64 if dtype in (hl.tint32, hl.tint64) else hl.tfloat64
+    assert grouped.total.dtype == expected_type
+    assert [(row.g, row.total, row.n) for row in grouped.collect()] == [
+        (0, 5, 2), (1, 0, 2),
+    ]
+    empty = hl.Table.parallelize([], schema=table.row.dtype)
+    assert empty.aggregate(hl.agg.sum(empty.x)) == 0
+
+
+def test_native_grouped_integer_sum_wraps_at_int64_boundary():
+    table = hl.Table.parallelize(
+        [{"g": 0, "x": 2**63 - 1}, {"g": 0, "x": 1}],
+        schema=hl.tstruct(g=hl.tint32, x=hl.tint64), n_partitions=2,
+    )
+    assert table.group_by(table.g).aggregate(total=hl.agg.sum(table.x)).collect()[0].total == -(2**63)
+
+
 def test_grouped_aggregate_counts_sums_computed_and_multiple_keys():
     table = hl.Table.parallelize(
         [{"group": "a", "sub": 1, "x": 2},

@@ -296,6 +296,7 @@ pub(crate) fn scope_plan(
     let nested_input = input.clone();
     let mut aggregates = Vec::new();
     let mut defaults = BTreeMap::new();
+    let mut native_sums = BTreeMap::new();
     for reducer in &group.reducers {
         if reducer.function == "__nested" {
             continue;
@@ -355,7 +356,7 @@ pub(crate) fn scope_plan(
                     .to_arrow()?,
             )
         };
-        let dtype = if fold_udf.is_some() {
+        let mut dtype = if fold_udf.is_some() {
             let payload = DataType::Struct(
                 input
                     .schema()
@@ -371,8 +372,35 @@ pub(crate) fn scope_plan(
         } else {
             dtype
         };
+        // Use DataFusion's grouped kernels rather than constructing one scalar
+        // accumulator per group. Widen before summing as required by Hail.
+        let native_sum_type = if reducer.function == "sum" {
+            match dtype.as_ref() {
+                Some(DataType::Int32 | DataType::Int64) => Some(DataType::Int64),
+                Some(DataType::Float32 | DataType::Float64) => Some(DataType::Float64),
+                _ => None,
+            }
+        } else {
+            None
+        };
+        if let Some(output_type) = native_sum_type {
+            logical_value = datafusion_expr::expr_fn::cast(logical_value, output_type.clone());
+            let zero = if output_type == DataType::Int64 {
+                ScalarValue::Int64(Some(0))
+            } else {
+                ScalarValue::Float64(Some(0.0))
+            };
+            native_sums.insert(reducer.name.clone(), zero);
+            dtype = Some(output_type);
+        }
         let udf = match fold_udf {
             Some(udf) => udf,
+            None if native_sums.contains_key(&reducer.name) => {
+                datafusion_functions_aggregate::sum::sum_udaf()
+            }
+            None if reducer.function == "count" => {
+                datafusion_functions_aggregate::count::count_udaf()
+            }
             None => factory(reducer, dtype.as_ref())?,
         };
         // Query the existing UDAF for its empty-input identity. This does not
@@ -386,7 +414,10 @@ pub(crate) fn scope_plan(
                 .build()?;
         defaults.insert(
             reducer.name.clone(),
-            physical.create_accumulator()?.evaluate()?,
+            match native_sums.get(&reducer.name) {
+                Some(zero) => zero.clone(),
+                None => physical.create_accumulator()?.evaluate()?,
+            },
         );
         aggregates.push(udf.call(vec![logical_value]).alias(&reducer.name));
     }
@@ -402,7 +433,17 @@ pub(crate) fn scope_plan(
         .build()?;
     // Native grouping retains the typed key itself; no representative
     // accumulator is necessary, including for zero-field structs.
-    let mut projection = columns(&result);
+    let mut projection = result
+        .schema()
+        .columns()
+        .into_iter()
+        .map(|column| match native_sums.get(&column.name) {
+            Some(zero) => datafusion_functions::core::coalesce()
+                .call(vec![DFExpr::Column(column.clone()), lit(zero.clone())])
+                .alias(&column.name),
+            None => DFExpr::Column(column),
+        })
+        .collect::<Vec<_>>();
     let restored_keys = group_names
         .iter()
         .zip(key_names)
