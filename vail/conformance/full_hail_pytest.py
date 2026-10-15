@@ -7,6 +7,7 @@ runs in its own process so a native failure cannot prevent later collection.
 """
 import ast
 import argparse
+from upstream_scope import exclusion_reason
 import hashlib
 import json
 import os
@@ -152,7 +153,11 @@ def main():
     source = args.source.resolve()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
+    exclusions = [dict(module=str(p.relative_to(source)), reason=exclusion_reason(p.relative_to(source)))
+                  for p in sorted(source.rglob('test_*.py')) if exclusion_reason(p.relative_to(source))]
+    (output / 'scope-exclusions.json').write_text(json.dumps(exclusions, indent=2) + '\n')
     files = [p for p in sorted(source.rglob('test_*.py'))
+             if not exclusion_reason(p.relative_to(source))
              if args.include_backend or 'backend' not in p.relative_to(source).parts]
     if args.module:
         requested = Path(args.module)

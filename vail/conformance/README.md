@@ -51,3 +51,18 @@ Run all local Python tests with `uv run --no-sync python -m pytest python/tests 
 The inventory generator is `uv run --no-sync python scripts/inventory_hail_tests.py`. It merges the static Python/Scala census with the reviewed `table-test-requirements.json` and `extra-table-requirements-*.json` overlays, then attaches current source-body evidence. It writes the JSON inventory and the main/supplementary Markdown matrices. Reviewed requirements, static inference and execution results are separate fields; unknown fixture/provider behavior is retained for review. Changing pinned source or Vail files covered by an evidence hash requires updating the corresponding review/evidence first.
 
 The full reviewed run is saved in [integrated-verified](runs/20260924T205540Z-integrated-verified/summary.json), with command logs, source fingerprints, native extension hashes and separate failure/unsupported/unavailable counts. Reproduce it with `uv run --no-sync python scripts/run_all_tests.py --label integrated`.
+
+## Full upstream audit scope
+
+As requested on 2026-10-15, future full upstream runs exclude Python typecheck
+decorator tests (`typecheck/test_typecheck.py`), Hadoop open/Hail filesystem
+compatibility (`utils/test_hl_hadoop_and_hail_fs.py`), and worker/driver filesystem
+tests (`fs/`). These are out of scope for now, not implementation failures.
+Expression type tests (`expr/test_types.py`) remain in scope.
+
+The shared policy lives in `upstream_scope.py` and is applied by both
+`full_hail_pytest.py` and `full_hail_bodies.py`. Pytest audits record omitted
+modules and reasons in `scope-exclusions.json`. New orchestration scripts must
+apply this policy when constructing their inventory and failure denominator;
+explicit-module requests do not bypass the exclusions. Historical run reports
+retain their original scope and counts.

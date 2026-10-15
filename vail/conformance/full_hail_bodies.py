@@ -5,6 +5,7 @@ backend. Assertions and parametrize values are unchanged. Missing
 setup names are blockers, never passes. No Hail implementation is executed.
 """
 import argparse
+from upstream_scope import exclusion_reason
 import ast
 import copy
 import inspect
@@ -275,6 +276,7 @@ def main():
     args.output.mkdir(parents=True, exist_ok=True)
     from all_upstream_table_cases import definitions
     cases = [(s, name) for s in sorted(args.suite.rglob('test_*.py'))
+             if not exclusion_reason(s.relative_to(args.suite))
              if args.include_backend or 'backend' not in s.relative_to(args.suite).parts
              if args.include_relational or str(s.relative_to(args.suite)) not in ('table/test_table.py', 'matrixtable/test_matrix_table.py')
              for name, node in definitions(ast.parse(s.read_text()))]
