@@ -257,7 +257,7 @@ fn set_physical_order_is_not_logical_set_equality() {
     let tag = |array: ArrayRef| {
         arrow_cast::cast(
             &array,
-            &vail_ordering::tag_type(array.data_type().clone(), &logical),
+            &vail_ordering::tag_type(array.data_type().clone(), &logical).unwrap(),
         )
         .unwrap()
     };
@@ -374,7 +374,7 @@ fn call_order_differs_from_physical_allele_order() {
     let tag = |array: ArrayRef| {
         arrow_cast::cast(
             &array,
-            &vail_ordering::tag_type(array.data_type().clone(), &logical),
+            &vail_ordering::tag_type(array.data_type().clone(), &logical).unwrap(),
         )
         .unwrap()
     };
@@ -412,7 +412,7 @@ fn ndarray_order_differs_from_physical_data_first_order() {
     let tag = |array: ArrayRef| {
         arrow_cast::cast(
             &array,
-            &vail_ordering::tag_type(array.data_type().clone(), &logical),
+            &vail_ordering::tag_type(array.data_type().clone(), &logical).unwrap(),
         )
         .unwrap()
     };
@@ -451,7 +451,7 @@ fn dictionary_entry_order_is_not_logical_dictionary_equality() {
     let tag = |array: ArrayRef| {
         arrow_cast::cast(
             &array,
-            &vail_ordering::tag_type(array.data_type().clone(), &logical),
+            &vail_ordering::tag_type(array.data_type().clone(), &logical).unwrap(),
         )
         .unwrap()
     };

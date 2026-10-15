@@ -596,6 +596,7 @@ fn tuple_item_type() -> DataType {
         dtype,
         &serde_json::json!({"tuple": ["float64", "float64", {"array": "str"}]}),
     )
+    .expect("the fixed downsample tuple has a nonempty struct carrier")
 }
 fn downsample_type() -> DataType {
     DataType::List(Arc::new(Field::new("item", tuple_item_type(), true)))

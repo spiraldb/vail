@@ -39,7 +39,12 @@ pub fn type_metadata(dtype: &DataType) -> Result<Option<Value>, MetadataError> {
     }
 }
 
-pub fn tag_type(dtype: DataType, logical: &Value) -> DataType {
+/// Attach a descriptor to a nonempty struct, List, or LargeList.
+///
+/// On success, `type_metadata` returns the supplied descriptor and the physical
+/// layout is unchanged. Other types have no supported carrier field and fail.
+/// The descriptor is opaque JSON; its meaning is validated by the consumer.
+pub fn tag_type(dtype: DataType, logical: &Value) -> Result<DataType, MetadataError> {
     let tag = |field: &arrow_schema::Field| {
         let mut metadata = field.metadata().clone();
         metadata.insert(TYPE_VERSION.into(), "1".into());
@@ -49,13 +54,17 @@ pub fn tag_type(dtype: DataType, logical: &Value) -> DataType {
     match dtype {
         DataType::Struct(fields) => {
             let mut fields: Vec<_> = fields.iter().cloned().collect();
-            if let Some(first) = fields.first_mut() {
-                *first = tag(first);
-            }
-            DataType::Struct(fields.into())
+            let first = fields.first_mut().ok_or(MetadataError::Invalid(
+                "empty structs cannot carry logical type metadata",
+            ))?;
+            *first = tag(first);
+            Ok(DataType::Struct(fields.into()))
         }
-        DataType::List(field) => DataType::List(tag(&field)),
-        other => other,
+        DataType::List(field) => Ok(DataType::List(tag(&field))),
+        DataType::LargeList(field) => Ok(DataType::LargeList(tag(&field))),
+        _ => Err(MetadataError::Invalid(
+            "logical type metadata requires a nonempty struct, List, or LargeList",
+        )),
     }
 }
 
@@ -68,7 +77,10 @@ pub fn same_layout(a: &DataType, b: &DataType) -> bool {
                     .zip(b)
                     .all(|(a, b)| a.name() == b.name() && same_layout(a.data_type(), b.data_type()))
         }
-        (DataType::List(a), DataType::List(b)) => same_layout(a.data_type(), b.data_type()),
+        (DataType::List(a), DataType::List(b))
+        | (DataType::LargeList(a), DataType::LargeList(b)) => {
+            same_layout(a.data_type(), b.data_type())
+        }
         _ => a == b,
     }
 }
@@ -87,6 +99,9 @@ pub fn without_type_metadata(dtype: &DataType) -> DataType {
                 .with_data_type(without_type_metadata(field.data_type())),
         )
     };
+    let clean_list = |field: &arrow_schema::Field| {
+        std::sync::Arc::new(clean(field).as_ref().clone().with_name("item"))
+    };
     match dtype {
         DataType::Struct(fields) => {
             DataType::Struct(fields.iter().map(|f| clean(f)).collect::<Vec<_>>().into())
@@ -94,30 +109,23 @@ pub fn without_type_metadata(dtype: &DataType) -> DataType {
         // Nested functions produce generic list child fields. Normalize the
         // logical Array/Set field-name distinction on arguments; the IR cast
         // at each UDF result restores the declared logical type.
-        DataType::List(field) => {
-            let mut metadata = field.metadata().clone();
-            metadata.remove(TYPE_VERSION);
-            metadata.remove(TYPE_DESCRIPTOR);
-            DataType::List(std::sync::Arc::new(
-                arrow_schema::Field::new(
-                    "item",
-                    without_type_metadata(field.data_type()),
-                    field.is_nullable(),
-                )
-                .with_metadata(metadata),
-            ))
-        }
+        DataType::List(field) => DataType::List(clean_list(field)),
+        DataType::LargeList(field) => DataType::LargeList(clean_list(field)),
         other => other.clone(),
     }
 }
 
 pub fn has_type_metadata(dtype: &DataType) -> bool {
     match dtype {
-        DataType::Struct(fields) => fields
-            .iter()
-            .any(|f| f.metadata().contains_key(TYPE_VERSION) || has_type_metadata(f.data_type())),
-        DataType::List(field) => {
-            field.metadata().contains_key(TYPE_VERSION) || has_type_metadata(field.data_type())
+        DataType::Struct(fields) => fields.iter().any(|f| {
+            f.metadata().contains_key(TYPE_VERSION)
+                || f.metadata().contains_key(TYPE_DESCRIPTOR)
+                || has_type_metadata(f.data_type())
+        }),
+        DataType::List(field) | DataType::LargeList(field) => {
+            field.metadata().contains_key(TYPE_VERSION)
+                || field.metadata().contains_key(TYPE_DESCRIPTOR)
+                || has_type_metadata(field.data_type())
         }
         _ => false,
     }
@@ -155,7 +163,7 @@ mod tests {
             ]
             .into(),
         );
-        let tagged = tag_type(physical.clone(), &logical);
+        let tagged = tag_type(physical.clone(), &logical).unwrap();
         assert_eq!(type_metadata(&tagged).unwrap(), Some(logical));
         assert!(same_layout(&physical, &tagged));
         assert!(has_type_metadata(&tagged));

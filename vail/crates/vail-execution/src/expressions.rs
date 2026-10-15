@@ -274,7 +274,7 @@ impl Type {
         ) {
             let logical =
                 serde_json::to_value(self).map_err(|e| ExprError::Invalid(e.to_string()))?;
-            Ok(vail_ordering::tag_type(dtype, &logical))
+            vail_ordering::tag_type(dtype, &logical).map_err(|e| ExprError::Invalid(e.to_string()))
         } else {
             Ok(dtype)
         }
