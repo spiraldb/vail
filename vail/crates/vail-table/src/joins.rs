@@ -242,16 +242,8 @@ fn combined_globals(left: &GlobalsRef, right: &GlobalsRef) -> Result<GlobalsRef>
     left.map_bound(fields, bindings)
 }
 fn match_key(input: &PhysicalPlan, name: &str) -> Result<Arc<dyn PhysicalExpr>> {
-    let value = column(input, input.schema().index_of(name)?);
-    let missing = ScalarValue::try_from(value.data_type(input.schema().as_ref())?)?;
-    Ok(Arc::new(CaseExpr::try_new(
-        None,
-        vec![(
-            Arc::new(IsNullExpr::new(value.clone())),
-            Arc::new(Literal::new(missing)),
-        )],
-        Some(value),
-    )?))
+    // DataFusion's join null-equality policy handles missing keys directly.
+    Ok(column(input, input.schema().index_of(name)?))
 }
 fn prefer_left(
     left: Arc<dyn PhysicalExpr>,
