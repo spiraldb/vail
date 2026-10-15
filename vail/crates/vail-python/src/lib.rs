@@ -1,3 +1,4 @@
+mod input_binding;
 mod ir_view;
 mod native_ir;
 use native_ir::{NativeExpr, NativeType};

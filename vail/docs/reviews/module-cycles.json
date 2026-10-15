@@ -218,6 +218,26 @@
       ],
       "reports": [
         "vail/docs/reviews/stream-cost.json"
+      ],
+      "merged_commit": "a7a37a3"
+    },
+    {
+      "module": "Vail expression inputs, backend and context shims",
+      "reviewed_base": "a7a37a3",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "detect dictionary-key expressions and preserve their source/lazy error contracts",
+        "retain literal scalar/Arrow storage directly instead of one globals dependency per leaf",
+        "validate and bind native expression DAGs using stable borrowed-node identity without Python tree expansion",
+        "avoid temporary cloned child pointers during identity-aware inquiry/substitution"
+      ],
+      "validation": [
+        "101 public Python tests passed",
+        "95 Rust execution tests passed",
+        "bounded mixed-input and shared-DAG construction/action evidence, including quiet follow-up resolving the suspected action regression"
+      ],
+      "reports": [
+        "vail/docs/reviews/expression-input-cost.json"
       ]
     }
   ],
@@ -338,6 +358,7 @@
     "vail/python/vail/vcf.py",
     "vail/python/vail/vcf_export.py",
     "vail/crates/vail-table/src/arrow_batches.rs",
-    "vail/crates/vail-execution/src/conditionals.rs"
+    "vail/crates/vail-execution/src/conditionals.rs",
+    "vail/crates/vail-python/src/input_binding.rs"
   ]
 }

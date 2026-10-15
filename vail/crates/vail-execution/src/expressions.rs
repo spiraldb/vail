@@ -691,11 +691,17 @@ impl Expr {
     /// Visit typed expression nodes, never literal payloads or type metadata.
     pub fn visit(&self, f: &mut impl FnMut(&Expr)) {
         f(self);
+        self.visit_children(&mut |child| child.visit(f));
+    }
+
+    /// Visit immediate children borrowed from this node, excluding literal data.
+    /// The order matches `try_map_children`.
+    pub fn visit_children<'a>(&'a self, f: &mut impl FnMut(&'a Expr)) {
         match self {
-            Self::MatrixScope { value, .. } => value.visit(f),
+            Self::MatrixScope { value, .. } => f(value),
             Self::TableLookup { keys, .. } => {
                 for key in keys {
-                    key.visit(f);
+                    f(key);
                 }
             }
             Self::MatrixField { .. }
@@ -703,10 +709,10 @@ impl Expr {
             | Self::MatrixColumnPosition { .. } => {}
             Self::Aggregate { value, init, .. } => {
                 if let Some(value) = value {
-                    value.visit(f);
+                    f(value);
                 }
                 for (_, expr) in init {
-                    expr.visit(f);
+                    f(expr);
                 }
             }
             Self::AggregateFold {
@@ -715,25 +721,25 @@ impl Expr {
                 combine,
                 ..
             } => {
-                initial.visit(f);
-                seq.visit(f);
-                combine.visit(f);
+                f(initial);
+                f(seq);
+                f(combine);
             }
             Self::AggGroupBy { key, body } => {
-                key.visit(f);
-                body.visit(f);
+                f(key);
+                f(body);
             }
             Self::AggArray { value, body, .. } => {
-                value.visit(f);
-                body.visit(f);
+                f(value);
+                f(body);
             }
             Self::AggFilter { predicate, body } => {
-                predicate.visit(f);
-                body.visit(f);
+                f(predicate);
+                f(body);
             }
             Self::AggExplode { value, body, .. } => {
-                value.visit(f);
-                body.visit(f);
+                f(value);
+                f(body);
             }
             Self::LambdaVariable { .. }
             | Self::ExternalGlobal { .. }
@@ -745,19 +751,19 @@ impl Expr {
             | Self::StringFunction { args, .. }
             | Self::NestedFunction { args, .. } => {
                 for arg in args {
-                    arg.visit(f);
+                    f(arg);
                 }
             }
             Self::ArrayMap { value, body, .. } => {
-                value.visit(f);
-                body.visit(f);
+                f(value);
+                f(body);
             }
             Self::ArrayFold {
                 value, zero, body, ..
             } => {
-                value.visit(f);
-                zero.visit(f);
-                body.visit(f);
+                f(value);
+                f(zero);
+                f(body);
             }
             Self::ArrayPredicate {
                 value, predicate, ..
@@ -765,21 +771,21 @@ impl Expr {
             | Self::ArrayFilter {
                 value, predicate, ..
             } => {
-                value.visit(f);
-                predicate.visit(f);
+                f(value);
+                f(predicate);
             }
             Self::StreamRange { start, stop, step } => {
-                start.visit(f);
-                stop.visit(f);
-                step.visit(f);
+                f(start);
+                f(stop);
+                f(step);
             }
             Self::ArrayGrouped { value, size } => {
-                value.visit(f);
-                size.visit(f);
+                f(value);
+                f(size);
             }
             Self::IntegerBinary { left, right, .. } | Self::Binary { left, right, .. } => {
-                left.visit(f);
-                right.visit(f);
+                f(left);
+                f(right);
             }
             Self::Die { message: value, .. }
             | Self::Unary { value, .. }
@@ -790,29 +796,29 @@ impl Expr {
             | Self::IsMissing { value }
             | Self::ArrayFlatten { value }
             | Self::ArrayLength { value }
-            | Self::ArrayReduce { value, .. } => value.visit(f),
+            | Self::ArrayReduce { value, .. } => f(value),
             Self::Interval {
                 start,
                 end,
                 includes_start,
                 includes_end,
             } => {
-                start.visit(f);
-                end.visit(f);
-                includes_start.visit(f);
-                includes_end.visit(f);
+                f(start);
+                f(end);
+                f(includes_start);
+                f(includes_end);
             }
             Self::IntervalContains { interval, point } => {
-                interval.visit(f);
-                point.visit(f);
+                f(interval);
+                f(point);
             }
             Self::IntervalOverlaps { left, right } => {
-                left.visit(f);
-                right.visit(f);
+                f(left);
+                f(right);
             }
             Self::Struct { fields } => {
                 for (_, expr) in fields {
-                    expr.visit(f);
+                    f(expr);
                 }
             }
             Self::Switch {
@@ -822,14 +828,14 @@ impl Expr {
                 missing,
                 ..
             } => {
-                value.visit(f);
+                f(value);
                 for (condition, result) in cases {
-                    condition.visit(f);
-                    result.visit(f);
+                    f(condition);
+                    f(result);
                 }
-                default.visit(f);
+                f(default);
                 if let Some(missing) = missing {
-                    missing.visit(f);
+                    f(missing);
                 }
             }
             Self::IfElse {
@@ -837,47 +843,58 @@ impl Expr {
                 consequent,
                 alternate,
             } => {
-                condition.visit(f);
-                consequent.visit(f);
-                alternate.visit(f);
+                f(condition);
+                f(consequent);
+                f(alternate);
             }
             Self::Array { elements, .. } => {
                 for expr in elements {
-                    expr.visit(f);
+                    f(expr);
                 }
             }
             Self::ArrayIndex { value, index } => {
-                value.visit(f);
-                index.visit(f);
+                f(value);
+                f(index);
             }
             Self::Locus {
                 contig, position, ..
             } => {
-                contig.visit(f);
-                position.visit(f);
+                f(contig);
+                f(position);
             }
             Self::LocusOp { value, .. }
             | Self::ParseLocus { value, .. }
-            | Self::ParseCsvLine { value, .. } => value.visit(f),
+            | Self::ParseCsvLine { value, .. } => f(value),
             Self::LocusValid {
                 contig, position, ..
             } => {
-                contig.visit(f);
-                position.visit(f);
+                f(contig);
+                f(position);
             }
-            Self::LocusFromGlobalPosition { position, .. } => position.visit(f),
+            Self::LocusFromGlobalPosition { position, .. } => f(position),
             Self::ArraySlice {
                 value,
                 start,
                 stop,
                 step,
             } => {
-                value.visit(f);
+                f(value);
                 for expr in [start, stop, step].into_iter().flatten() {
-                    expr.visit(f);
+                    f(expr);
                 }
             }
         }
+    }
+
+    /// Map original borrowed children, retaining stable identity for DAG rewrites.
+    pub fn try_map_original_children<E>(
+        &self,
+        mut f: impl FnMut(&Expr) -> Result<Expr, E>,
+    ) -> Result<Expr, E> {
+        let mut children = Vec::new();
+        self.visit_children(&mut |child| children.push(child));
+        let mut children = children.into_iter();
+        self.try_map_children(|_| f(children.next().expect("typed child traversal order")))
     }
 
     /// Rewrite immediate typed children, excluding literal payloads and types.

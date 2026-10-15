@@ -878,6 +878,18 @@ impl NativeExpr {
     fn __repr__(&self) -> String {
         format!("NativeExpr({:?})", self.inner)
     }
+    fn input_global_names(&self) -> PyResult<Vec<String>> {
+        crate::input_binding::global_names(&self.inner)
+    }
+    fn bind_input_globals(&self, globals: Vec<(String, PyRef<'_, NativeExpr>)>) -> PyResult<Self> {
+        let globals = globals
+            .into_iter()
+            .map(|(name, value)| (name, value.inner.clone()))
+            .collect();
+        Ok(Self {
+            inner: crate::input_binding::bind(&self.inner, &globals)?,
+        })
+    }
     fn same_node_as(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.inner, &other.inner)
     }
