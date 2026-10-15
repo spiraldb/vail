@@ -979,6 +979,29 @@ pub(crate) fn prepare_legacy(table: TableRef) -> BoxFuture<'static, Result<Prepa
                 if *n==0{return Ok(PreparedTable {parts:vec![],counts:vec![],schema});}
                 let mut input=prepare_legacy(child.clone()).await?;
                 let tail=matches!(table.node(),TableNode::Tail {..});
+                if !tail && child.partition_rows().is_none() {
+                    // Discover only enough rows to satisfy HEAD. Counting
+                    // every partition first defeats LIMIT and can evaluate a
+                    // huge exploded relation just to take its first row.
+                    let mut remaining = *n;
+                    let mut parts = Vec::new();
+                    let mut counts = Vec::new();
+                    for (part, known) in input.parts.into_iter().zip(input.counts) {
+                        let count = match known {
+                            Some(count) => count.min(remaining),
+                            None => count_rows(Arc::new(GlobalLimitExec::new(
+                                reset_plan_states(part.clone())?, 0, Some(remaining),
+                            ))).await?,
+                        };
+                        if count > 0 {
+                            parts.push(Arc::new(GlobalLimitExec::new(part, 0, Some(count))) as PhysicalPlan);
+                            counts.push(Some(count));
+                            remaining -= count;
+                        }
+                        if remaining == 0 { break; }
+                    }
+                    return Ok(PreparedTable { parts, counts, schema });
+                }
                 let known=if let Some(lengths)=child.partition_rows(){lengths}else {input.partition_counts().await?};
                 if input.counts.iter().any(Option::is_none) { input=prepare_legacy(child.clone()).await?; }
                 let mut remaining=*n;let mut selected=Vec::new();

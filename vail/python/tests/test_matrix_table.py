@@ -802,6 +802,21 @@ def test_entry_aggregations_skip_unreferenced_column_context(monkeypatch):
     assert result.stats.mean == 11
 
 
+def test_entry_context_drops_cell_array_before_exploding(monkeypatch):
+    import vail.matrixtable as module
+
+    original = hl.Table.explode
+    def explode(table, field, *args, **kwargs):
+        if field == "__vail_matrix_context":
+            assert module._CELLS not in table._schema
+        return original(table, field, *args, **kwargs)
+    monkeypatch.setattr(hl.Table, "explode", explode)
+    m = matrix(2, 3)
+    assert m.aggregate_entries(hl.agg.stats(m.x)).sum == 66
+    assert m.x.take(2) == [5, 6]
+    assert len(m.entries().collect()) == 6
+
+
 def test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback():
     import vail.matrixtable as module
 

@@ -555,14 +555,19 @@ class MatrixTable:
         base = self._mir.core
         name = "__vail_matrix_context"
         if not with_columns:
-            source = base.annotate(**{name: base[_CELLS]}).explode(name)
+            source = _project(base, [(_ROW, base[_ROW]), (name, base[_CELLS])]).explode(name)
             source = source.filter(source[name][_PRESENT])
             cell = source[name]
             return _project(source, [
                 (_ROW, source[_ROW]), (_CID, cell[_CID]),
                 (_ENTRY, cell[_VALUE] if len(self.entry.dtype) else struct()),
             ])
-        source = base.annotate(**{name: _zip_arrays(base[_CELLS], self._mir.column_records)}).explode(name)
+        # Drop the original cell array before UNNEST: retaining it would
+        # duplicate that whole array once for every emitted entry.
+        source = _project(base, [
+            (_ROW, base[_ROW]),
+            (name, _zip_arrays(base[_CELLS], self._mir.column_records)),
+        ]).explode(name)
         cell = source[name]["1"]
         source = source.filter(cell[_PRESENT])
         cell = source[name]["1"]
