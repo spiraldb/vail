@@ -1,6 +1,6 @@
 {
   "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
-  "scope": "Vail-owned Rust source and Python package modules; associated tests reviewed with their modules",
+  "scope": "Vail-owned Rust and Python only; exclude all dependency checkouts and patched/vendored Iceberg, Vortex, and DataFusion code.",
   "cycles": [
     {
       "module": "vail/crates/vail-ordering",
@@ -15,7 +15,7 @@
     {
       "module": "vail/python/vail/arrow.py",
       "reviewed_base": "3a2b941",
-      "status": "approved",
+      "status": "approved_and_merged",
       "accepted_findings": [
         "recursively hashable tuple collection keys",
         "replace mocked transport assertions with public behavior/resource evidence",
@@ -24,13 +24,38 @@
         "propagate key context through interval endpoints",
         "avoid per-locus contig-length map copies"
       ],
-      "validation_report": "vail/docs/reviews/cycle2-validation.json"
+      "validation_report": "vail/docs/reviews/cycle2-validation.json",
+      "merged_commit": "9ccbccd"
     },
     {
       "module": "vail/patches/vortex-layout/src/layouts/list/writer.rs",
-      "status": "pending_review",
+      "status": "skipped_by_user",
       "known_defect": "empty nested list stream fails structural storage",
-      "reproduction": "vail/docs/reviews/reproduce_nullable_nested_list_write.py"
+      "reproduction": "vail/docs/reviews/reproduce_nullable_nested_list_write.py",
+      "reason": "Dependency/patched code excluded by explicit user instruction; upstream fixes handled in PRs10533 and10534."
+    },
+    {
+      "module": "vail/python/vail/reference_genome.py",
+      "reviewed_base": "9ccbccd",
+      "status": "approved",
+      "accepted_findings": [
+        "index contig ranks and share immutable complete definitions for repeated comparison",
+        "index classification and merged half-open PAR coverage",
+        "replace incidental storage topology assertions with reopened reference/data checks",
+        "deduplicate endpoint reference validation and cache immutable locus-type reference resolution during PAR export"
+      ],
+      "validation": [
+        "64 reference/locus/Arrow bridge/dtype parsing tests passed",
+        "bounded public query and export/reregistration workloads saved before and after indexing/caching"
+      ],
+      "reports": [
+        "vail/docs/reviews/reference-genome-baseline.json",
+        "vail/docs/reviews/reference-genome-indexed.json",
+        "vail/docs/reviews/reference-genome-export-baseline.json",
+        "vail/docs/reviews/reference-genome-export-indexed.json",
+        "vail/docs/reviews/reference-genome-many-sex-baseline.json",
+        "vail/docs/reviews/reference-genome-many-sex-indexed.json"
+      ]
     }
   ],
   "source_inventory": [

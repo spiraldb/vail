@@ -107,14 +107,26 @@ class tinterval(_NativeType):
 
 
 class tlocus(_NativeType):
+    """Immutable native locus type with a cached immutable coordinate reference."""
+    __slots__ = ('_reference',)
+
     def __init__(self, reference_genome='default'):
         from .reference_genome import resolve_reference
         reference = resolve_reference(reference_genome)
         self._set_native(NativeType.construct('locus', [], reference_value=reference.to_wire()))
+        object.__setattr__(self, '_reference', reference)
+
     @property
     def reference_genome(self):
-        from .reference_genome import ReferenceGenome
-        return ReferenceGenome.from_wire(self._native_type.reference())
+        reference = getattr(self, '_reference', None)
+        if reference is None:
+            # Wrappers imported from native handles have not resolved a Python
+            # reference yet. Both the handle and resolved definition are immutable.
+            from .reference_genome import ReferenceGenome
+            reference = ReferenceGenome.from_wire(self._native_type.reference())
+            object.__setattr__(self, '_reference', reference)
+        return reference
+
     def __str__(self): return f"locus<{self.reference_genome.name}>"
     def __repr__(self): return f"tlocus({self.reference_genome.name!r})"
 

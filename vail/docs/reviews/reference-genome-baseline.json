@@ -1,0 +1,59 @@
+{
+  "python": "3.14.2 (main, Dec  5 2025, 21:11:58) [Clang 21.1.4 ]",
+  "results": [
+    {
+      "workload": "comparison",
+      "size": 64,
+      "queries": 10000,
+      "wall_s": 0.3145802079998248,
+      "cpu_s": 0.16953999999999997,
+      "incremental_peak_rss_mib": 0.09375,
+      "checksum": 630000
+    },
+    {
+      "workload": "comparison",
+      "size": 4096,
+      "queries": 10000,
+      "wall_s": 20.348492458000692,
+      "cpu_s": 6.4559169999999995,
+      "incremental_peak_rss_mib": 2.859375,
+      "checksum": 40950000
+    },
+    {
+      "workload": "classification",
+      "size": 64,
+      "queries": 10000,
+      "wall_s": 0.073771499999566,
+      "cpu_s": 0.0234769999999995,
+      "incremental_peak_rss_mib": 0.0,
+      "checksum": 10000
+    },
+    {
+      "workload": "classification",
+      "size": 4096,
+      "queries": 10000,
+      "wall_s": 3.5508521669980837,
+      "cpu_s": 1.1973740000000008,
+      "incremental_peak_rss_mib": 0.0,
+      "checksum": 10000
+    },
+    {
+      "workload": "par",
+      "size": 64,
+      "queries": 10000,
+      "wall_s": 0.34388166699864087,
+      "cpu_s": 0.11985900000000013,
+      "incremental_peak_rss_mib": 0.0,
+      "checksum": 10000
+    },
+    {
+      "workload": "par",
+      "size": 4096,
+      "queries": 10000,
+      "wall_s": 15.706933582998317,
+      "cpu_s": 6.726616,
+      "incremental_peak_rss_mib": 0.0,
+      "checksum": 10000
+    }
+  ]
+}
