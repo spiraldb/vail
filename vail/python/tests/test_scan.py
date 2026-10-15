@@ -60,6 +60,14 @@ def test_native_sum_and_count_scan_prefixes_skip_state_accumulator_rows():
     assert "vail_scan_state" not in scanned._native.physical_plan()
 
 
+def test_count_scan_reuses_row_ordinals_instead_of_a_second_local_window():
+    table = hl.range_table(100, n_partitions=3)
+    scanned = table.annotate(n=hl.scan.count())
+    assert scanned.n.collect() == list(range(100))
+    # One row-number window and one small partition-prefix window.
+    assert scanned._native.physical_plan().count("BoundedWindowAggExec") == 2
+
+
 def test_native_prefix_sum_covers_range_table_int32_and_float32():
     # This is the exact input shape used by benchmarks/compare_hail.py:
     # range_table.idx is Int32, so the fast path must cover SUM(Int32).

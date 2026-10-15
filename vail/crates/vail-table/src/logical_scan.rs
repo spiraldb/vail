@@ -359,14 +359,16 @@ fn lower_native_prefix(
         .build()?;
 
     let mut local_windows = Vec::with_capacity(nodes.len());
+    let mut ordinal_counts = Vec::new();
     let mut local_names = Vec::with_capacity(nodes.len());
     let mut total_aggregates = Vec::with_capacity(nodes.len());
     let mut total_names = Vec::with_capacity(nodes.len());
     for (i, (kind, value)) in kinds.iter().enumerate() {
-        // A row count is the sum of one per input row; the same native sum
-        // kernel handles its exclusive local prefix and partition total.
+        // Native aggregates compute partition totals. Counts reuse the local
+        // ordinal below; sums and previous values use their own local windows.
         let udf = match *kind {
-            "sum" | "count" => datafusion_functions_aggregate::sum::sum_udaf(),
+            "sum" => datafusion_functions_aggregate::sum::sum_udaf(),
+            "count" => datafusion_functions_aggregate::count::count_udaf(),
             "previous_nonnull" => datafusion_functions_aggregate::first_last::last_value_udaf(),
             _ => unreachable!(),
         };
@@ -396,25 +398,40 @@ fn lower_native_prefix(
             }
         }
         let local_name = unique(&mut used, &format!("__scan_native_local_{i}"));
-        let mut local_window = if *kind == "previous_nonnull" {
-            let mut window = WindowFunction::new(
-                WindowFunctionDefinition::WindowUDF(
-                    datafusion_functions_window::lead_lag::lag_udwf(),
-                ),
-                vec![arg.clone(), datafusion_expr::lit(1_i64)],
+        if *kind == "count" {
+            // ROW_NUMBER is already required for source order. Its exclusive
+            // zero-based ordinal is the local count; a second running SUM(1)
+            // would duplicate window state and per-row work.
+            ordinal_counts.push(
+                (datafusion_expr::expr_fn::cast(
+                    datafusion_expr::col(&ordinal_name),
+                    DataType::Int64,
+                ) - datafusion_expr::lit(1_i64))
+                .alias(&local_name),
             );
-            window.params.null_treatment = Some(datafusion_expr::expr::NullTreatment::IgnoreNulls);
-            window
         } else {
-            WindowFunction::new(
-                WindowFunctionDefinition::AggregateUDF(udf.clone()),
-                vec![arg.clone()],
-            )
-        };
-        local_window.params.partition_by = vec![part.clone()];
-        local_window.params.order_by = vec![datafusion_expr::col(&ordinal_name).sort(true, true)];
-        local_window.params.window_frame = frame();
-        local_windows.push(Expr::WindowFunction(Box::new(local_window)).alias(&local_name));
+            let mut local_window = if *kind == "previous_nonnull" {
+                let mut window = WindowFunction::new(
+                    WindowFunctionDefinition::WindowUDF(
+                        datafusion_functions_window::lead_lag::lag_udwf(),
+                    ),
+                    vec![arg.clone(), datafusion_expr::lit(1_i64)],
+                );
+                window.params.null_treatment =
+                    Some(datafusion_expr::expr::NullTreatment::IgnoreNulls);
+                window
+            } else {
+                WindowFunction::new(
+                    WindowFunctionDefinition::AggregateUDF(udf.clone()),
+                    vec![arg.clone()],
+                )
+            };
+            local_window.params.partition_by = vec![part.clone()];
+            local_window.params.order_by =
+                vec![datafusion_expr::col(&ordinal_name).sort(true, true)];
+            local_window.params.window_frame = frame();
+            local_windows.push(Expr::WindowFunction(Box::new(local_window)).alias(&local_name));
+        }
         local_names.push(local_name);
 
         let total_name = unique(&mut used, &format!("__scan_native_total_{i}"));
@@ -427,9 +444,23 @@ fn lower_native_prefix(
         total_aggregates.push(total.alias(&total_name));
         total_names.push(total_name);
     }
-    local = LogicalPlanBuilder::from(local)
-        .window(local_windows)?
-        .build()?;
+    if !local_windows.is_empty() {
+        local = LogicalPlanBuilder::from(local)
+            .window(local_windows)?
+            .build()?;
+    }
+    if !ordinal_counts.is_empty() {
+        let mut projection = local
+            .schema()
+            .columns()
+            .into_iter()
+            .map(Expr::Column)
+            .collect::<Vec<_>>();
+        projection.extend(ordinal_counts);
+        local = LogicalPlanBuilder::from(local)
+            .project(projection)?
+            .build()?;
+    }
 
     let summary_part = unique(&mut used, "__scan_native_partition");
     let summary = LogicalPlanBuilder::from(input)
