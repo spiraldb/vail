@@ -2981,17 +2981,14 @@ struct HailPhysicalExpr {
     kind: HailKind,
     args: Vec<Arc<dyn PhysicalExpr>>,
     dtype: DataType,
-    prepared_reference:
-        Arc<OnceLock<Result<Arc<(ReferenceDefinition, PreparedReference)>, String>>>,
+    prepared_reference: Arc<OnceLock<Result<Arc<PreparedReference>, String>>>,
 }
 
 fn locus_eval(
     op: &str,
-    reference: &ReferenceDefinition,
     reference_json: &str,
     prepared: &PreparedReference,
     args: &[ArrayRef],
-    _dtype: &DataType,
     len: usize,
 ) -> Result<ArrayRef, ExprError> {
     let is_missing = |i: usize| args.iter().any(|a| a.is_null(i));
@@ -3030,17 +3027,17 @@ fn locus_eval(
                             "global position cannot be negative".into(),
                         ));
                     }
-                    let (ordinal, position) = prepared.from_global(p).ok_or_else(|| {
+                    let (contig, position) = prepared.from_global(p).ok_or_else(|| {
                         ExprError::Invalid("global position exceeds reference length".into())
                     })?;
-                    (reference.contigs[ordinal].clone(), position)
+                    (contig.to_owned(), position)
                 }
             };
             let ordinal = prepared
                 .ordinal(&contig)
                 .ok_or_else(|| ExprError::Invalid(format!("unknown locus contig {contig:?}")))?;
             prepared
-                .validate_coordinate(reference, ordinal, &contig, position)
+                .validate_coordinate(ordinal, &contig, position)
                 .map_err(ExprError::Invalid)?;
             ordinals.push(Some(ordinal));
             contigs.push(Some(contig));
@@ -3075,9 +3072,11 @@ fn locus_eval(
             } else {
                 let c = down::<StringArray>(args[0].as_ref())?.value(i);
                 let p = down::<Int32Array>(args[1].as_ref())?.value(i);
-                out.push(Some(prepared.ordinal(c).is_some_and(|o| {
-                    prepared.validate_coordinate(reference, o, c, p).is_ok()
-                })));
+                out.push(Some(
+                    prepared
+                        .ordinal(c)
+                        .is_some_and(|o| prepared.validate_coordinate(o, c, p).is_ok()),
+                ));
             }
         }
         return Ok(Arc::new(BooleanArray::from(out)));
@@ -3099,18 +3098,20 @@ fn locus_eval(
                 ));
             }
             prepared
-                .validate_coordinate(
-                    reference,
-                    ordinals.value(i),
-                    contigs.value(i),
-                    positions.value(i),
-                )
+                .validate_coordinate(ordinals.value(i), contigs.value(i), positions.value(i))
                 .map_err(ExprError::Invalid)?;
         }
     }
     match op {
-        "contig" => Ok(Arc::new(contigs.clone())),
-        "position" => Ok(Arc::new(positions.clone())),
+        "contig" => Ok(Arc::new(StringArray::new(
+            contigs.offsets().clone(),
+            contigs.values().clone(),
+            NullBuffer::union(contigs.nulls(), st.nulls()),
+        ))),
+        "position" => Ok(Arc::new(Int32Array::new(
+            positions.values().clone(),
+            NullBuffer::union(positions.nulls(), st.nulls()),
+        ))),
         "global_position" => {
             let out = (0..len)
                 .map(|i| {
@@ -3118,12 +3119,7 @@ fn locus_eval(
                         None
                     } else {
                         let ordinal = ordinals.value(i) as usize;
-                        let base = if ordinal == 0 {
-                            0
-                        } else {
-                            prepared.cumulative_ends[ordinal - 1]
-                        };
-                        Some(base + i64::from(positions.value(i) - 1))
+                        prepared.global_position(ordinal, positions.value(i))
                     }
                 })
                 .collect::<Vec<_>>();
@@ -3972,20 +3968,12 @@ impl PhysicalExpr for HailPhysicalExpr {
                         let reference: ReferenceDefinition =
                             serde_json::from_str(reference_json).map_err(|e| e.to_string())?;
                         let prepared = reference.prepare()?;
-                        Ok(Arc::new((reference, prepared)))
+                        Ok(Arc::new(prepared))
                     });
                     let prepared = prepared
                         .as_ref()
                         .map_err(|error| ExprError::Invalid(error.clone()))?;
-                    locus_eval(
-                        operation,
-                        &prepared.0,
-                        reference_json,
-                        &prepared.1,
-                        &args,
-                        &self.dtype,
-                        len,
-                    )
+                    locus_eval(operation, reference_json, prepared, &args, len)
                 }
                 HailKind::CompactInnerNullLists => {
                     let outer = args[0]
@@ -5475,152 +5463,6 @@ mod tests {
                 },
             ],
         }
-    }
-
-    #[test]
-    fn locus_coordinates_classification_boundaries_and_global_positions() {
-        let reference = test_reference();
-        let prepared = reference.prepare().unwrap();
-        let reference_json = serde_json::to_string(&reference).unwrap();
-        let loci = locus_eval(
-            "create",
-            &reference,
-            &reference_json,
-            &prepared,
-            &[
-                Arc::new(StringArray::from(vec![
-                    Some("chrY"),
-                    Some("chrY"),
-                    Some("chrY"),
-                    Some("chrY"),
-                ])) as ArrayRef,
-                Arc::new(Int32Array::from(vec![
-                    Some(29),
-                    Some(30),
-                    Some(40),
-                    Some(41),
-                ])),
-            ],
-            &DataType::Null,
-            4,
-        )
-        .unwrap();
-        let in_par = locus_eval(
-            "in_y_par",
-            &reference,
-            &reference_json,
-            &prepared,
-            &[loci.clone()],
-            &DataType::Boolean,
-            4,
-        )
-        .unwrap();
-        let in_par = in_par.as_any().downcast_ref::<BooleanArray>().unwrap();
-        assert_eq!(
-            (0..4).map(|i| in_par.value(i)).collect::<Vec<_>>(),
-            vec![false, true, true, false]
-        );
-
-        let global = locus_eval(
-            "from_global",
-            &reference,
-            &reference_json,
-            &prepared,
-            &[Arc::new(Int64Array::from(vec![Some(199), Some(200), None]))],
-            &DataType::Null,
-            3,
-        )
-        .unwrap();
-        let global = global.as_any().downcast_ref::<StructArray>().unwrap();
-        assert_eq!(
-            global
-                .column(1)
-                .as_any()
-                .downcast_ref::<StringArray>()
-                .unwrap()
-                .value(0),
-            "chr10"
-        );
-        assert_eq!(
-            global
-                .column(2)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap()
-                .value(0),
-            1
-        );
-        assert_eq!(
-            global
-                .column(2)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap()
-                .value(1),
-            2
-        );
-        assert!(global.is_null(2));
-
-        assert!(
-            locus_eval(
-                "create",
-                &reference,
-                &reference_json,
-                &prepared,
-                &[
-                    Arc::new(StringArray::from(vec![Some("chrA")])) as ArrayRef,
-                    Arc::new(Int32Array::from(vec![Some(200)]))
-                ],
-                &DataType::Null,
-                1
-            )
-            .is_err()
-        );
-        assert!(
-            locus_eval(
-                "from_global",
-                &reference,
-                &reference_json,
-                &prepared,
-                &[Arc::new(Int64Array::from(vec![Some(1000)]))],
-                &DataType::Null,
-                1
-            )
-            .is_err()
-        );
-    }
-
-    #[test]
-    fn prepared_reference_cache_does_not_change_physical_expression_identity() {
-        let reference = test_reference();
-        let reference_json = serde_json::to_string(&reference).unwrap();
-        let kind = HailKind::Locus {
-            operation: "from_global".into(),
-            reference_json,
-        };
-        let args: Vec<Arc<dyn PhysicalExpr>> = vec![];
-        let dtype = DataType::Int64;
-        let left_cache = Arc::new(OnceLock::new());
-        let right_cache = Arc::new(OnceLock::new());
-        left_cache
-            .set(Ok(Arc::new((
-                reference.clone(),
-                reference.prepare().unwrap(),
-            ))))
-            .unwrap();
-        let left = HailPhysicalExpr {
-            kind: kind.clone(),
-            args: args.clone(),
-            dtype: dtype.clone(),
-            prepared_reference: left_cache,
-        };
-        let right = HailPhysicalExpr {
-            kind,
-            args,
-            dtype,
-            prepared_reference: right_cache,
-        };
-        assert_eq!(left, right);
     }
 
     #[test]

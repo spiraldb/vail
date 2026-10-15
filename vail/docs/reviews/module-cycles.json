@@ -37,7 +37,7 @@
     {
       "module": "vail/python/vail/reference_genome.py",
       "reviewed_base": "9ccbccd",
-      "status": "approved",
+      "status": "approved_and_merged",
       "accepted_findings": [
         "index contig ranks and share immutable complete definitions for repeated comparison",
         "index classification and merged half-open PAR coverage",
@@ -55,6 +55,26 @@
         "vail/docs/reviews/reference-genome-export-indexed.json",
         "vail/docs/reviews/reference-genome-many-sex-baseline.json",
         "vail/docs/reviews/reference-genome-many-sex-indexed.json"
+      ],
+      "merged_commit": "24ac2f8"
+    },
+    {
+      "module": "vail/crates/vail-execution/src/reference.rs and locus execution callers",
+      "reviewed_base": "24ac2f8",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "preserve parent nulls in imported locus field extraction without copying Arrow data buffers",
+        "eliminate quadratic classification/PAR validation and preparation",
+        "own aligned coordinate metadata in an immutable prepared snapshot",
+        "replace private reference tests with public expression and Arrow execution tests"
+      ],
+      "validation": [
+        "cargo test --release -p vail-execution --test reference: 4 passed",
+        "cargo test --release -p vail-execution --lib expressions::tests: 17 passed",
+        "cargo run --release -p vail-execution --example reference_validation_cost: passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/rust-reference-validation-cost.json"
       ]
     }
   ],
