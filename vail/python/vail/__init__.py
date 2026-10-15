@@ -1082,7 +1082,7 @@ class Table:
             raise TypeError("df must be a pandas.DataFrame")
         if not df.columns.is_unique or builtins.any(not isinstance(name, builtins.str) for name in df.columns):
             raise ValueError("DataFrame columns must be unique strings")
-        from .arrow import arrow_type, _physical
+        from .arrow import arrow_type, _physical_converter
         columns = []
         for name in df.columns:
             series = df[name]
@@ -1115,7 +1115,8 @@ class Table:
                         ty = _infer_type(values)
                 except NotImplementedError as exc:
                     raise ExpressionException("cannot impute array elements with incompatible types") from exc
-                columns.append(pa.array([_physical(value, ty) for value in values], type=arrow_type(ty)))
+                convert = _physical_converter(ty)
+                columns.append(pa.array([convert(value) for value in values], type=arrow_type(ty)))
             else:
                 columns.append(pa.Array.from_pandas(series))
         if columns:
@@ -1128,7 +1129,7 @@ class Table:
         """Execute through Arrow and convert to Hail-compatible pandas dtypes."""
         import pandas as pd
         import pyarrow as pa
-        from .arrow import read_arrow, _logical
+        from .arrow import read_arrow, _logical_converter
         if type(flatten) is not builtins.bool:
             raise TypeError("flatten must be a bool")
         if types is not None and not isinstance(types, Mapping):
@@ -1150,7 +1151,8 @@ class Table:
         overrides = {} if types is None else types
         for name, ty in table._schema.items():
             if ty not in (tint32, tint64, tfloat32, tfloat64, tbool, tstr):
-                frame[name] = pd.Series([_logical(value, ty) for value in arrow_table[name].to_pylist()], dtype=object)
+                convert = _logical_converter(ty)
+                frame[name] = pd.Series([convert(value) for value in arrow_table[name].to_pylist()], dtype=object)
             requested = overrides.get(name)
             if requested is None:
                 requested = next((value for key, value in overrides.items() if key == ty), None)

@@ -287,6 +287,10 @@ class tstruct(_NativeType, Mapping):
     def __iter__(self): return iter(self._native_type.field_names)
     def __len__(self): return len(self._native_type.field_names)
     def __getitem__(self, name): return _wrap_native_type(self._native_type.field(name))
+    def items(self):
+        """Return an ordered snapshot without a separate field search per item."""
+        return tuple(zip(self._native_type.field_names,
+                         map(_wrap_native_type, self._native_type.children)))
     def __repr__(self): return "struct{" + ", ".join(f"{k}: {v}" for k, v in self.items()) + "}"
 
 

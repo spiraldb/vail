@@ -31,10 +31,14 @@ class Locus:
         object.__setattr__(self, "reference_genome", resolve_reference(self.reference_genome))
         if isinstance(self.contig, int):
             object.__setattr__(self, "contig", str(self.contig))
-        if not isinstance(self.contig, str) or self.contig not in self.reference_genome.lengths:
+        if not isinstance(self.contig, str):
             raise ValueError(f"contig {self.contig!r} is not in reference genome {self.reference_genome.name}")
-        if type(self.position) is not int or not 1 <= self.position <= self.reference_genome.lengths[self.contig]:
-            raise ValueError(f"position must be between 1 and {self.reference_genome.lengths[self.contig]} on {self.contig}")
+        try:
+            length = self.reference_genome.contig_length(self.contig)
+        except KeyError:
+            raise ValueError(f"contig {self.contig!r} is not in reference genome {self.reference_genome.name}") from None
+        if type(self.position) is not int or not 1 <= self.position <= length:
+            raise ValueError(f"position must be between 1 and {length} on {self.contig}")
 
     def __repr__(self):
         return f"Locus(contig={self.contig!r}, position={self.position}, reference_genome={self.reference_genome.name})"

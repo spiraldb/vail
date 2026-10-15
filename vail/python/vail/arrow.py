@@ -40,60 +40,159 @@ def arrow_type(dtype):
     return _pa().table(type_to_wire(dtype).arrow_type()).schema.field(0).type
 
 
-def _physical(value, dtype):
-    if value is None:
-        return None
+def _nullable(convert):
+    """Lift a converter for present values to one that preserves missingness."""
+    return lambda value: None if value is None else convert(value)
+
+
+def _physical_converter(dtype):
+    """Resolve type/reference metadata once before converting a batch's values."""
     if isinstance(dtype, tlocus):
-        return {"__vail_locus_ordinal": dtype.reference_genome.contigs.index(value.contig), "__vail_locus_contig": value.contig,
-                "__vail_locus_position": value.position}
+        reference = dtype.reference_genome
+        ordinals = {contig: index for index, contig in enumerate(reference.contigs)}
+        return _nullable(lambda value: {
+            "__vail_locus_ordinal": ordinals[value.contig],
+            "__vail_locus_contig": value.contig,
+            "__vail_locus_position": value.position,
+        })
     if dtype == tcall:
         from .types import _pack_call
-        return {"__vail_call_word": _pack_call(value)}
+        return _nullable(lambda value: {"__vail_call_word": _pack_call(value)})
     if isinstance(dtype, tinterval):
-        return {"__vail_interval_start": _physical(value.start, dtype.point_type),
-                "__vail_interval_end": _physical(value.end, dtype.point_type),
-                "__vail_interval_start_exclusive": not value.includes_start,
-                "__vail_interval_end_inclusive": value.includes_end}
+        point = _physical_converter(dtype.point_type)
+        return _nullable(lambda value: {
+            "__vail_interval_start": point(value.start),
+            "__vail_interval_end": point(value.end),
+            "__vail_interval_start_exclusive": not value.includes_start,
+            "__vail_interval_end_inclusive": value.includes_end,
+        })
     if isinstance(dtype, ttuple):
-        dtype._validate_value(value)
-        if not dtype.types:
-            return {"__vail_tuple_empty": False}
-        return {f"__vail_tuple_{i}": _physical(value[i], ty) for i, ty in enumerate(dtype.types)}
+        children = tuple(_physical_converter(ty) for ty in dtype.types)
+        def convert_tuple(value):
+            if not isinstance(value, tuple):
+                raise TypeError("expected a Python tuple")
+            if len(value) != len(children):
+                raise TypeError(f"expected a tuple with {len(children)} elements, found {len(value)}")
+            if not children:
+                return {"__vail_tuple_empty": False}
+            return {f"__vail_tuple_{index}": convert(item)
+                    for index, (convert, item) in enumerate(zip(children, value))}
+        return _nullable(convert_tuple)
     if isinstance(dtype, tdict):
-        return [{"key": _physical(k, dtype.key_type), "value": _physical(v, dtype.value_type)}
-                for k, v in value.items()]
+        key = _physical_converter(dtype.key_type)
+        item = _physical_converter(dtype.value_type)
+        return _nullable(lambda value: [{"key": key(k), "value": item(v)} for k, v in value.items()])
     if isinstance(dtype, tndarray):
         import numpy as np
-        if isinstance(value, Mapping) and "__vail_ndarray_data" in value:
-            data, shape = value["__vail_ndarray_data"], value["__vail_ndarray_shape"]
-            if len(shape) != dtype.ndim:
+        element_type, rank = dtype.element_type, dtype.ndim
+        element = _physical_converter(element_type)
+        numpy_type = str(element_type)
+        def convert_ndarray(value):
+            if isinstance(value, Mapping) and "__vail_ndarray_data" in value:
+                data, shape = value["__vail_ndarray_data"], value["__vail_ndarray_shape"]
+                if len(shape) != rank:
+                    raise ValueError("ndarray rank does not match dtype")
+                if any(type(size) is not int or size < 0 for size in shape):
+                    raise ValueError("ndarray shape must contain nonnegative integers")
+                if len(data) != prod(shape):
+                    raise ValueError("ndarray data size does not match shape")
+                return {"__vail_ndarray_data": [element(v) for v in data],
+                        "__vail_ndarray_shape": list(shape)}
+            array = np.asarray(value, dtype=numpy_type)
+            if array.ndim != rank:
                 raise ValueError("ndarray rank does not match dtype")
-            if any(type(size) is not int or size < 0 for size in shape):
-                raise ValueError("ndarray shape must contain nonnegative integers")
-            if len(data) != prod(shape):
-                raise ValueError("ndarray data size does not match shape")
-            return {"__vail_ndarray_data": [_physical(v, dtype.element_type) for v in data],
-                    "__vail_ndarray_shape": list(shape)}
-        arr = np.asarray(value, dtype=str(dtype.element_type))
-        if arr.ndim != dtype.ndim:
-            raise ValueError("ndarray rank does not match dtype")
-        return {"__vail_ndarray_data": [_physical(v, dtype.element_type) for v in arr.ravel().tolist()],
-                "__vail_ndarray_shape": list(arr.shape)}
+            return {"__vail_ndarray_data": [element(v) for v in array.ravel().tolist()],
+                    "__vail_ndarray_shape": list(array.shape)}
+        return _nullable(convert_ndarray)
     if isinstance(dtype, (tarray, tset)):
-        return [_physical(v, dtype.element_type) for v in value]
+        element = _physical_converter(dtype.element_type)
+        return _nullable(lambda value: [element(v) for v in value])
     if isinstance(dtype, tstruct):
-        return {name: _physical(value[name], ty) for name, ty in dtype.items()}
-    if isinstance(value, Struct):
-        return dict(value)
-    return value
+        fields = tuple((name, _physical_converter(ty)) for name, ty in dtype.items())
+        return _nullable(lambda value: {name: convert(value[name]) for name, convert in fields})
+    return lambda value: value
+
+
+def _logical_converter(dtype, *, key=False):
+    """Compile localization; key converters return recursively hashable values.
+
+    In key context arrays become tuples and sets/dicts become frozensets.
+    Tuple/struct children inherit that context. Dispatch and child metadata
+    resolution happen here, outside the returned converters' value loops.
+    """
+    if isinstance(dtype, tlocus):
+        from .reference_genome import Locus
+        reference = dtype.reference_genome
+        contigs = reference.contigs
+        def convert_locus(value):
+            contig, ordinal = value["__vail_locus_contig"], value["__vail_locus_ordinal"]
+            if type(ordinal) is not int or not 0 <= ordinal < len(contigs) or contigs[ordinal] != contig:
+                raise ValueError("locus contig ordinal does not match reference genome order")
+            return Locus(contig, value["__vail_locus_position"], reference)
+        return _nullable(convert_locus)
+    if dtype == tcall:
+        from .types import _unpack_call
+        return _nullable(lambda value: _unpack_call(value["__vail_call_word"]))
+    if isinstance(dtype, tinterval):
+        point_type = dtype.point_type
+        point = _logical_converter(point_type, key=key)
+        return _nullable(lambda value: Interval(
+            point(value["__vail_interval_start"]), point(value["__vail_interval_end"]),
+            not value["__vail_interval_start_exclusive"], value["__vail_interval_end_inclusive"],
+            point_type,
+        ))
+    if isinstance(dtype, ttuple):
+        children = tuple((f"__vail_tuple_{index}", _logical_converter(ty, key=key))
+                         for index, ty in enumerate(dtype.types))
+        return _nullable(lambda value: tuple(convert(value[name]) for name, convert in children))
+    if isinstance(dtype, tdict):
+        convert_key = _logical_converter(dtype.key_type, key=True)
+        item = _logical_converter(dtype.value_type, key=key)
+        if key:
+            return _nullable(lambda value: frozenset((convert_key(v["key"]), item(v["value"])) for v in value))
+        return _nullable(lambda value: {convert_key(v["key"]): item(v["value"]) for v in value})
+    if isinstance(dtype, tndarray):
+        import numpy as np
+        element_type = dtype.element_type
+        element = _logical_converter(element_type)
+        numpy_type = str(element_type)
+        return _nullable(lambda value: np.asarray(
+            [element(v) for v in value["__vail_ndarray_data"]], dtype=numpy_type,
+        ).reshape(value["__vail_ndarray_shape"]))
+    if isinstance(dtype, tset):
+        element = _logical_converter(dtype.element_type, key=True)
+        collection = frozenset if key else set
+        return _nullable(lambda value: collection(element(v) for v in value))
+    if isinstance(dtype, tarray):
+        element = _logical_converter(dtype.element_type, key=key)
+        collection = tuple if key else list
+        return _nullable(lambda value: collection(element(v) for v in value))
+    if isinstance(dtype, tstruct):
+        fields = tuple((name, _logical_converter(ty, key=key)) for name, ty in dtype.items())
+        return _nullable(lambda value: Struct(**{name: convert(value[name]) for name, convert in fields}))
+    return lambda value: value
+
+
+def _physical(value, dtype):
+    return _physical_converter(dtype)(value)
+
+
+def _logical(value, dtype):
+    return _logical_converter(dtype)(value)
+
+
+def _hashable(value, dtype):
+    """Localize a supported key with recursively hashable children."""
+    return _logical_converter(dtype, key=True)(value)
 
 
 def rows_to_arrow(rows, schema):
     pa = _pa()
     arrow_schema = pa.schema([pa.field(name, arrow_type(ty), nullable=True) for name, ty in schema.items()])
-    converted = [{name: _physical(row[name], ty) for name, ty in schema.items()} for row in rows]
+    convert = _physical_converter(schema)
+    converted = [convert(row) for row in rows]
     if not schema:
-        batch = pa.RecordBatch.from_struct_array(pa.array([{} for _ in rows], type=pa.struct([])))
+        batch = pa.RecordBatch.from_struct_array(pa.array(converted, type=pa.struct([])))
         table = pa.Table.from_batches([batch], schema=arrow_schema)
     else:
         table = pa.Table.from_pylist(converted, schema=arrow_schema)
@@ -118,57 +217,8 @@ def read_arrow(data):
 def decode_rows(data, schema):
     _arrow_schema, table = read_arrow(data)
     rows = table.to_pylist()
-    return [Struct(**{name: _logical(row[name], ty) for name, ty in schema.items()}) for row in rows]
-
-
-def _logical(value, dtype):
-    from .types import decode_value
-    if value is None:
-        return None
-    if isinstance(dtype, tlocus):
-        logical = {"__vail_locus_ordinal": value["__vail_locus_ordinal"],
-                   "__vail_locus_contig": value["__vail_locus_contig"],
-                   "__vail_locus_position": value["__vail_locus_position"]}
-        return decode_value(logical, dtype)
-    if dtype == tcall:
-        return decode_value(value, dtype)
-    if isinstance(dtype, tinterval):
-        return Interval(_logical(value["__vail_interval_start"], dtype.point_type),
-                        _logical(value["__vail_interval_end"], dtype.point_type),
-                        not value["__vail_interval_start_exclusive"], value["__vail_interval_end_inclusive"],
-                        dtype.point_type)
-    if isinstance(dtype, ttuple):
-        if not dtype.types: return ()
-        return tuple(_logical(value[f"__vail_tuple_{i}"], ty) for i, ty in enumerate(dtype.types))
-    if isinstance(dtype, tdict):
-        return {_hashable(pair["key"], dtype.key_type): _logical(pair["value"], dtype.value_type)
-                for pair in value}
-    if isinstance(dtype, tndarray):
-        import numpy as np
-        values = [_logical(v, dtype.element_type) for v in value["__vail_ndarray_data"]]
-        return np.asarray(values, dtype=str(dtype.element_type)).reshape(value["__vail_ndarray_shape"])
-    if isinstance(dtype, tset):
-        return set(_hashable(v, dtype.element_type) for v in value)
-    if isinstance(dtype, tarray):
-        return [_logical(v, dtype.element_type) for v in value]
-    if isinstance(dtype, tstruct):
-        return Struct(**{name: _logical(value[name], ty) for name, ty in dtype.items()})
-    return decode_value(value, dtype)
-
-
-def _hashable(value, dtype):
-    if value is None:
-        return None
-    if isinstance(dtype, tset):
-        return frozenset(_hashable(v, dtype.element_type) for v in value)
-    if isinstance(dtype, tdict):
-        return frozenset((_hashable(pair["key"], dtype.key_type),
-                          _hashable(pair["value"], dtype.value_type)) for pair in value)
-    if isinstance(dtype, tarray):
-        return tuple(_hashable(v, dtype.element_type) for v in value)
-    if isinstance(dtype, tstruct):
-        return Struct(**{name: _hashable(value[name], ty) for name, ty in dtype.items()})
-    return _logical(value, dtype)
+    convert = _logical_converter(schema)
+    return [convert(row) for row in rows]
 
 
 def dtype_from_arrow(ty):

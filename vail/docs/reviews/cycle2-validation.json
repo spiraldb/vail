@@ -1,0 +1,86 @@
+{
+  "cycle": 2,
+  "module": "vail/python/vail/arrow.py",
+  "rust_source_commit": "3a2b941",
+  "native_library": "/Users/danielking/.codex/worktrees/412f/vail/vail/python/vail/_native.abi3.so",
+  "native_sha256": "fb0f3f4d21d8f53d1900f9a2811e44eba9e9be3c930d27f62e3bc4ef4831dbfc",
+  "python": "3.14.2",
+  "build_command": "uv sync --project vail",
+  "build_result": "passed; fresh release build completed in 24m27s",
+  "test_command": "vail/.venv/bin/python -m pytest -q vail/python/tests/test_arrow_bridge.py vail/python/tests/test_arrow_type_metadata.py vail/python/tests/test_native_memory_boundary.py vail/python/tests/test_pandas.py vail/python/tests/test_dtype_parsing.py vail/python/tests/test_locus.py vail/python/tests/test_reference_genome.py vail/python/tests/test_ndarray_scope.py",
+  "tests": {
+    "passed": 108,
+    "failed": 1,
+    "elapsed_s": 10.79,
+    "failure": "test_tagged_types_survive_execution_export_and_storage[dtype4-value4]",
+    "error": "Vortex ListLayoutStrategy needs at least one chunk"
+  },
+  "baseline_reproduction": {
+    "python_source_commit": "3a2b941",
+    "source_directory": "/private/tmp/vail-cycle2-baseline",
+    "native_library": "same SHA256 as above",
+    "command": "PYTHONPATH=/private/tmp/vail-cycle2-baseline vail/.venv/bin/python -m pytest -q vail/python/tests/test_arrow_type_metadata.py -k tagged_types_survive_execution_export_and_storage",
+    "passed": 8,
+    "failed": 1,
+    "elapsed_s": 4.62,
+    "error": "identical Vortex ListLayoutStrategy needs at least one chunk"
+  },
+  "resource_command": "vail/.venv/bin/python vail/benchmarks/check_native_boundary_cost.py",
+  "resource_limits": {
+    "wall_s": 20,
+    "incremental_peak_rss_mib": 512,
+    "external_timeout_s": 30
+  },
+  "resources": [
+    {
+      "workload": "expression-32",
+      "wall_s": 0.0632862499987823,
+      "cpu_s": 0.045919,
+      "incremental_peak_rss_mib": 0.796875,
+      "passed": true
+    },
+    {
+      "workload": "expression-64",
+      "wall_s": 0.16833504200258176,
+      "cpu_s": 0.08827,
+      "incremental_peak_rss_mib": 2.0625,
+      "passed": true
+    },
+    {
+      "workload": "arrow",
+      "wall_s": 0.4277183750018594,
+      "cpu_s": 0.195205,
+      "incremental_peak_rss_mib": 12.5,
+      "passed": true
+    },
+    {
+      "workload": "wide-64",
+      "wall_s": 0.1136800000022049,
+      "cpu_s": 0.056525,
+      "incremental_peak_rss_mib": 13.359375,
+      "passed": true
+    },
+    {
+      "workload": "wide-256",
+      "wall_s": 0.36971141699905274,
+      "cpu_s": 0.237742,
+      "incremental_peak_rss_mib": 48.578125,
+      "passed": true
+    },
+    {
+      "workload": "locus-64",
+      "wall_s": 0.007778915998642333,
+      "cpu_s": 0.006312,
+      "incremental_peak_rss_mib": 2.3125,
+      "passed": true
+    },
+    {
+      "workload": "locus-4096",
+      "wall_s": 0.03672441600065213,
+      "cpu_s": 0.026098,
+      "incremental_peak_rss_mib": 6.59375,
+      "passed": true
+    }
+  ],
+  "next_cycle": "Immediately review/fix Rust/Vortex nullable nested-list storage failure separately, as reviewer requested."
+}
