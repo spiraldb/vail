@@ -17,6 +17,48 @@ use datafusion_physical_plan::{
 use std::sync::Arc;
 use vail_execution::expressions::{Type, lower_with_bindings};
 
+/// Conservatively prove a forward traversal that leaves each key unchanged.
+/// Unknown expressions intentionally lose ordering metadata without sorting.
+pub(crate) fn preserves_keys(body: &ScalarIR, rows_name: &str, keys: &[String]) -> bool {
+    match body {
+        ScalarIR::Column { name } => name == rows_name,
+        ScalarIR::ArrayFilter { value, .. } => preserves_keys(value, rows_name, keys),
+        ScalarIR::ArrayMap {
+            value,
+            parameter,
+            body,
+        } => {
+            if !preserves_keys(value, rows_name, keys) {
+                return false;
+            }
+            match body.as_ref() {
+                ScalarIR::LambdaVariable { name } => name == parameter,
+                ScalarIR::Struct { fields } => {
+                    let forwarded: std::collections::HashSet<&str> = fields
+                        .iter()
+                        .filter_map(|(name, expr)| match expr {
+                            ScalarIR::GetField { value, name: field } if field == name => {
+                                match value.as_ref() {
+                                    ScalarIR::LambdaVariable { name: variable }
+                                        if variable == parameter =>
+                                    {
+                                        Some(name.as_str())
+                                    }
+                                    _ => None,
+                                }
+                            }
+                            _ => None,
+                        })
+                        .collect();
+                    keys.iter().all(|key| forwarded.contains(key.as_str()))
+                }
+                _ => false,
+            }
+        }
+        _ => false,
+    }
+}
+
 pub(crate) fn lower(
     input: TablePlan,
     child: &TableRef,
@@ -227,21 +269,22 @@ fn lower_stream(
                 else {
                     return Ok(None);
                 };
-                let projections = fields
-                    .into_iter()
-                    .map(|(name, _)| {
-                        let field = match &expression {
-                            ScalarIR::Struct { fields } => {
-                                fields.iter().find(|(n, _)| n == &name).unwrap().1.clone()
-                            }
-                            _ => ScalarIR::GetField {
-                                value: Arc::new(expression.clone()),
-                                name: name.clone(),
-                            },
-                        };
-                        (name, field)
-                    })
-                    .collect();
+                let projections = match expression {
+                    ScalarIR::Struct { fields } => fields,
+                    expression => {
+                        let value = Arc::new(expression);
+                        fields
+                            .into_iter()
+                            .map(|(name, _)| {
+                                let field = ScalarIR::GetField {
+                                    value: value.clone(),
+                                    name: name.clone(),
+                                };
+                                (name, field)
+                            })
+                            .collect()
+                    }
+                };
                 Ok(Some(
                     input
                         .key_by(vec![])?

@@ -1,0 +1,97 @@
+{
+  "reviewed_base": "5ef30e5",
+  "baseline_native_sha256": "fd76f587c87eab79ee8a979293238144f693c177fc7583d19a7dee67e5f64ecf",
+  "baseline_exclusive_sum": [
+    {
+      "elements": 1024,
+      "seconds": 0.0036859999963780865
+    },
+    {
+      "elements": 4096,
+      "seconds": 0.03199954199953936
+    },
+    {
+      "elements": 16384,
+      "seconds": 0.4761045000050217
+    }
+  ],
+  "final": [
+    {
+      "native_sha256": "34c7591f8c665d9a869bae750190b84efd96a83bd02527cc107a280eb6d4d0f1"
+    },
+    {
+      "workload": "exclusive_sum",
+      "seconds": 0.011439833004260436,
+      "max_rss_bytes": 324567040,
+      "elements": 1024
+    },
+    {
+      "workload": "exclusive_sum",
+      "seconds": 0.04354533299920149,
+      "max_rss_bytes": 329056256,
+      "elements": 4096
+    },
+    {
+      "workload": "exclusive_sum",
+      "seconds": 0.18310145800205646,
+      "max_rss_bytes": 346587136,
+      "elements": 16384
+    },
+    {
+      "workload": "exclusive_sum",
+      "seconds": 0.6446386669995263,
+      "max_rss_bytes": 416481280,
+      "elements": 65536
+    },
+    {
+      "workload": "keyed_partition_head",
+      "seconds": 0.00085479200060945,
+      "max_rss_bytes": 416481280,
+      "source_rows": 2147483647,
+      "source_partitions": 3
+    },
+    {
+      "workload": "keyed_partition_head",
+      "seconds": 0.0010285839962307364,
+      "max_rss_bytes": 416481280,
+      "source_rows": 2147483647,
+      "source_partitions": 3
+    },
+    {
+      "workload": "keyed_partition_head",
+      "seconds": 0.0009837920006248169,
+      "max_rss_bytes": 416481280,
+      "source_rows": 2147483647,
+      "source_partitions": 3
+    },
+    {
+      "workload": "wide_partition_map",
+      "seconds": 0.004423250000400003,
+      "max_rss_bytes": 416481280,
+      "fields": 65
+    },
+    {
+      "workload": "wide_partition_map",
+      "seconds": 0.013864790998923127,
+      "max_rss_bytes": 416481280,
+      "fields": 257
+    },
+    {
+      "workload": "wide_partition_map",
+      "seconds": 0.05524570800480433,
+      "max_rss_bytes": 416481280,
+      "fields": 1025
+    }
+  ],
+  "limitations": [
+    "Baseline sum measured with compatibility _stream_range/_aggregate_scan aliases before edits, after hl.eval(1) warm-up; final script uses new public names with identical sum workload.",
+    "Baseline sum was faster for small inputs; incremental final work scales approximately linearly and fixes filter and randomness scope. Final includes a last-input laziness guard absent from earlier candidate timings.",
+    "No wide-projection or keyed-head baseline speedup claim. Final keyed-head workload exercises an actual 2,147,483,647-row source and stops on one output row. Text sentinel independently proves later input is unread.",
+    "RSS is process cumulative high-water, not operator allocation; sizes run in increasing order. Shared machine load and concurrent correctness testing affect timing."
+  ],
+  "validation": [
+    "79 public Python tests +10 subtests passed: test_map_partitions_streams, test_partition_operations, test_tail_partitions, test_scan, test_array_methods.",
+    "9 public Rust vail-table ir integration tests passed.",
+    "Public tests cover nested random parameters in input, output and filters; reducer missingness; exclusive final-input errors; partition-local reverse/changed keys and explicit rekey; globals/empty structs; lazy UTF8/cast errors and head(0)."
+  ]
+}

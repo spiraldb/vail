@@ -1156,15 +1156,6 @@ impl TableIR {
             ));
         };
         let schema = Arc::new(Schema::new(fields));
-        for key in &self.keys {
-            if schema.field_with_name(key)?.data_type()
-                != self.schema.field_with_name(key)?.data_type()
-            {
-                return Err(TableError::Invalid(
-                    "Table._map_partitions must preserve key fields and types".into(),
-                ));
-            }
-        }
         for field in schema.fields() {
             if self.globals.schema().index_of(field.name()).is_ok() {
                 return Err(TableError::Invalid(
@@ -1172,9 +1163,16 @@ impl TableIR {
                 ));
             }
         }
+        // A partition callback preserves membership, but may change keys or
+        // reorder rows. Retain key metadata only for a proven forward traversal.
+        let keys = if crate::partition_map::preserves_keys(&body, &rows_name, &self.keys) {
+            self.keys.clone()
+        } else {
+            vec![]
+        };
         Ok(Self::new(
             schema,
-            self.keys.clone(),
+            keys,
             self.globals.clone(),
             TableNode::MapPartitions {
                 child: self.clone(),

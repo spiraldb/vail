@@ -956,6 +956,9 @@ pub(crate) fn prepare_legacy(table: TableRef) -> BoxFuture<'static, Result<Prepa
                 if *n==0{return Ok(PreparedTable {parts:vec![],counts:vec![],schema});}
                 let mut input=prepare_legacy(child.clone()).await?;
                 let tail=matches!(table.node(),TableNode::Tail {..});
+                if !tail && input.counts.iter().any(Option::is_none) {
+                    return bounded_head(input, *n).await;
+                }
                 let known=if let Some(lengths)=child.partition_rows(){lengths}else {input.partition_counts().await?};
                 if input.counts.iter().any(Option::is_none) { input=prepare_legacy(child.clone()).await?; }
                 let mut remaining=*n;let mut selected=Vec::new();
@@ -1108,6 +1111,37 @@ async fn count_rows(input: PhysicalPlan) -> Result<usize> {
         }
         _ => Err(TableError::Invalid("invalid count result".into())),
     }
+}
+
+/// Unknown partition sizes must not trigger a full count before a forward
+/// limit. Retain only visited Arrow prefixes, so each input is executed once.
+async fn bounded_head(input: PreparedTable, n: usize) -> Result<PreparedTable> {
+    use datafusion_datasource::memory::MemorySourceConfig;
+    let context = Arc::new(TaskContext::default());
+    let mut remaining = n;
+    let mut parts: Vec<PhysicalPlan> = Vec::new();
+    let mut counts = Vec::new();
+    for physical in input.parts {
+        if remaining == 0 {
+            break;
+        }
+        let limited: PhysicalPlan = Arc::new(GlobalLimitExec::new(physical, 0, Some(remaining)));
+        let batches =
+            datafusion_physical_plan::execution_plan::collect(limited, context.clone()).await?;
+        let count = batches.iter().map(RecordBatch::num_rows).sum::<usize>();
+        if count != 0 {
+            let physical =
+                MemorySourceConfig::try_new_exec(&[batches], input.schema.clone(), None)?;
+            parts.push(physical);
+            counts.push(Some(count));
+            remaining -= count;
+        }
+    }
+    Ok(PreparedTable {
+        parts,
+        counts,
+        schema: input.schema,
+    })
 }
 
 async fn shuffle(

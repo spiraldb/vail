@@ -196,6 +196,28 @@
       ],
       "reports": [
         "vail/docs/reviews/conditional-cost.json"
+      ],
+      "merged_commit": "5ef30e5"
+    },
+    {
+      "module": "Vail stream expressions and partition callbacks",
+      "reviewed_base": "5ef30e5",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "bind scan filter predicates to reducer input, not output row",
+        "bind nested RNG context once per input/output position",
+        "incremental fixed-state exclusive scan, preserving last-input laziness",
+        "linear direct struct projection traversal",
+        "prove key forwarding for conservative ordered shapes; unknown callbacks become unkeyed without implicit sorting",
+        "public stream/partition APIs and behavior tests without callback spies",
+        "unknown-count forward heads read bounded prefixes once instead of count and replay"
+      ],
+      "validation": [
+        "79 public Python tests +10 subtests passed",
+        "9 public Rust integration tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/stream-cost.json"
       ]
     }
   ],

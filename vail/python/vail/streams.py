@@ -82,70 +82,127 @@ class StreamExpression:
 
         return aggregate(self._array, f)
 
-    def _aggregate_scan(self, f):
+    def aggregate_scan(self, f):
+        """Return exclusive prefix reductions, evaluating each input once.
+
+        Fixed-size reducers retain one state per reducer. Collection reducers
+        necessarily retain their growing output. As with collection aggregate,
+        nested explode/group reducers are not supported.
+        """
         from uuid import uuid4
-        from .expressions import Expression, _IR, cast
-        from .types import tint32, tint64
-        from .array_aggregate import aggregate
-        from .randomness import _is_random, bind_context
+        from .array_methods import array_scan
+        from .expressions import (_IR, if_else, is_missing, literal,
+                                  missing, struct, array_min, array_max)
+        from .types import type_from_wire, type_to_wire, tbool, tint64, tset
 
-        position_name, value_name = uuid4().hex, uuid4().hex
-        position = Expression(
-            tint32, self.source, {"op": "lambda_variable", "name": position_name}
-        )
-        variable = Expression(
-            self.dtype.element_type,
-            self.source,
-            {"op": "lambda_variable", "name": value_name},
-        )
+        if not callable(f):
+            raise TypeError("stream.aggregate_scan requires a callable")
+        parameter = uuid4().hex
+        variable = Expression(self.dtype.element_type, self.source,
+                              {"op": "lambda_variable", "name": parameter})
         result = as_expr(f(variable))
-        current = self._array[position]
-        prefix = self._array[:position]
+        reducers = []
 
-        def reduce(element):
-            def rewrite(node, inside=False):
-                if isinstance(node, list):
-                    return [rewrite(v, inside) for v in node]
-                if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-                    return node
-                if node.get("op") == "lambda_variable" and node["name"] == value_name:
-                    return (element if inside else current).to_ir()
-                if node.get("op") == "aggregate":
-                    return {
-                        k: (
-                            {a: b for a, b in v.items() if a != "__vail_scan"}
-                            if k == "options"
-                            else rewrite(v, k == "value")
-                        )
-                        for k, v in node.items()
-                    }
-                output = {k: rewrite(v, inside) for k, v in node.items()}
-                if _is_random(node) and not inside:
-                    output = bind_context(output, [cast(position, tint64).to_ir()])
-                return output
+        def plan(node, filters=()):
+            if isinstance(node, list):
+                return [plan(v, filters) for v in node]
+            if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
+                return node
+            op = node.get("op")
+            if op == "agg_filter":
+                return plan(node["body"], (*filters, node["predicate"]))
+            if op in ("agg_explode", "agg_group_by", "agg_array", "aggregate_fold"):
+                raise NotImplementedError(f"stream aggregate scan {op}")
+            if op == "aggregate":
+                function = node["function"]
+                if function not in ("count", "sum", "product", "min", "max",
+                                    "all", "any", "collect", "collect_as_set"):
+                    raise NotImplementedError(f"stream aggregate scan {function}")
+                name = f"state_{len(reducers)}"
+                dtype = type_from_wire(node["options"]["__vail_result_type"])
+                reducers.append((name, function, dtype, node["value"], filters))
+                # This temporary marker is replaced before constructing native IR.
+                return {"scan_state": name}
+            return {k: plan(v, filters) for k, v in node.items()}
 
-            return Expression(
-                result.dtype,
-                result.source,
-                _IR(rewrite(result.to_ir()), result._global_refs, result._lookup_refs),
-            )
+        output = plan(result.to_ir())
 
-        body = aggregate(prefix, reduce)
-        # Prefix reducers use input-element identities; only scalar output
-        # randomness uses the output position. A generic map would add its
-        # position to both and resample earlier inputs for every prefix.
-        return StreamExpression(
-            Expression(
-                tarray(body.dtype),
-                body.source,
-                {
-                    "op": "array_map",
-                    "value": stream_range(self._array.length()).to_array().to_ir(),
-                    "parameter": position_name,
-                    "body": body.to_ir(),
-                },
-            )
-        )
+        def substitute(node, element, state):
+            if isinstance(node, list):
+                return [substitute(v, element, state) for v in node]
+            if not isinstance(node, IR_NODE_TYPES):
+                return node
+            if "scan_state" in node:
+                return state[node["scan_state"]].to_ir()
+            if node.get("op") == "literal":
+                return node
+            if node.get("op") == "lambda_variable" and node["name"] == parameter:
+                return element.to_ir()
+            return {k: substitute(v, element, state) for k, v in node.items()}
+
+        def raw(node, dtype, element, state):
+            return Expression(dtype, result.source,
+                              _IR(substitute(node, element, state),
+                                  result._global_refs, result._lookup_refs))
+
+        initial = {}
+        for name, function, dtype, _, _ in reducers:
+            if function in ("min", "max"):
+                initial[name] = missing(dtype)
+            elif function in ("collect", "collect_as_set"):
+                initial[name] = literal([] if function == "collect" else set(), dtype)
+            else:
+                initial[name] = literal(
+                    True if function == "all" else False if function == "any"
+                    else 1 if function == "product" else 0, dtype)
+        initial["remaining"] = self._array.length() - 1
+        initial["output"] = missing(result.dtype)
+
+        def step(state, element):
+            updated = {}
+            for name, function, dtype, value, filters in reducers:
+                old = state[name]
+                selected = state.remaining > 0
+                for predicate in filters:
+                    # Nested filters short circuit, including erroneous values.
+                    selected = if_else(selected, raw(predicate, tbool, element, state), False,
+                                       missing_false=True)
+                if function == "count":
+                    new = old + literal(1, tint64)
+                else:
+                    value_type = dtype.element_type if isinstance(dtype, (tarray, tset)) else dtype
+                    # Explicit native cast: aggregate sums widen their input.
+                    value = Expression(value_type, result.source, _IR(
+                        {"op": "cast", "value": substitute(value, element, state),
+                         "dtype": type_to_wire(value_type)},
+                        result._global_refs, result._lookup_refs))
+                    if function == "sum":
+                        new = if_else(is_missing(value), old, old + value)
+                    elif function == "product":
+                        new = if_else(is_missing(value), old, old * value)
+                    elif function == "min":
+                        new = array_min(old, value)
+                    elif function == "max":
+                        new = array_max(old, value)
+                    elif function == "all":
+                        new = old & value
+                    elif function == "any":
+                        new = old | value
+                    elif function == "collect":
+                        new = old.append(value)
+                    else:
+                        new = old.add(value)
+                updated[name] = if_else(selected, new, old, missing_false=True)
+            updated["remaining"] = state.remaining - 1
+            updated["output"] = raw(output, result.dtype, element, state)
+            return struct(**updated)
+
+        # The fold binds input-position randomness once to the entire step,
+        # including nested random parameters and scalar output expressions.
+        states = array_scan(step, struct(**initial), self._array)
+        return StreamExpression(states[1:].map(lambda state: state.output))
+
+    _aggregate_scan = aggregate_scan
 
     def grouped(self, n):
         size = as_expr(n)
@@ -164,7 +221,7 @@ def stream_range(start, stop=None, step=1):
         start = 0
     start, stop, step = as_expr(start), as_expr(stop), as_expr(step)
     if start.dtype != tint32 or stop.dtype != tint32 or step.dtype != tint32:
-        raise TypeError("_stream_range start, stop, and step must have int32 type")
+        raise TypeError("stream_range start, stop, and step must have int32 type")
     from .expressions import _merge_sources
 
     source = _merge_sources(_merge_sources(start.source, stop.source), step.source)

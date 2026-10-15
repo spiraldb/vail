@@ -215,3 +215,102 @@ async fn multibatch_inputs_keep_order_across_empty_batches_and_partitions() {
     }
     assert!(TableIR::parallelize_batches(Arc::new(Schema::empty()), batches, 1).is_err());
 }
+
+#[tokio::test]
+async fn partition_callbacks_preserve_membership_without_implicit_sorting() {
+    let source = TableIR::range(9, 3).unwrap();
+    let rows = column("rows");
+    let identity = source
+        .map_partitions("rows".into(), rows.clone(), Default::default())
+        .unwrap();
+    assert_eq!(identity.keys(), &["idx"]);
+    let reversed = source
+        .map_partitions(
+            "rows".into(),
+            ScalarIR::ArrayMap {
+                value: Arc::new(rows),
+                parameter: "r".into(),
+                body: Arc::new(ScalarIR::Struct {
+                    fields: vec![(
+                        "idx".into(),
+                        ScalarIR::Binary {
+                            operator: BinaryOperator::Sub,
+                            left: Arc::new(int(8)),
+                            right: Arc::new(ScalarIR::GetField {
+                                value: Arc::new(ScalarIR::LambdaVariable { name: "r".into() }),
+                                name: "idx".into(),
+                            }),
+                        },
+                    )],
+                }),
+            },
+            Default::default(),
+        )
+        .unwrap();
+    assert!(reversed.keys().is_empty());
+    let partitions = reversed.collect_partitions().await.unwrap();
+    let values = partitions
+        .iter()
+        .map(|batches| {
+            batches
+                .iter()
+                .flat_map(|batch| {
+                    batch
+                        .column(0)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap()
+                        .values()
+                        .to_vec()
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(values, vec![vec![8, 7, 6], vec![5, 4, 3], vec![2, 1, 0]]);
+    let ordered = reversed.key_by(vec!["idx".into()]).unwrap();
+    let values = ordered
+        .collect_partitions()
+        .await
+        .unwrap()
+        .iter()
+        .flatten()
+        .flat_map(|batch| {
+            batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .to_vec()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(values, (0..9).collect::<Vec<_>>());
+}
+
+#[tokio::test]
+async fn keyed_partition_identity_map_filter_remain_bounded_by_head() {
+    let source = TableIR::range(i32::MAX as usize, 3).unwrap();
+    let mapped = source
+        .map_partitions(
+            "rows".into(),
+            ScalarIR::ArrayFilter {
+                value: Arc::new(ScalarIR::ArrayMap {
+                    value: Arc::new(column("rows")),
+                    parameter: "r".into(),
+                    body: Arc::new(ScalarIR::LambdaVariable { name: "r".into() }),
+                }),
+                parameter: "r".into(),
+                predicate: Arc::new(greater(
+                    int(3),
+                    ScalarIR::GetField {
+                        value: Arc::new(ScalarIR::LambdaVariable { name: "r".into() }),
+                        name: "idx".into(),
+                    },
+                )),
+            },
+            Default::default(),
+        )
+        .unwrap();
+    assert_eq!(mapped.keys(), &["idx"]);
+    assert_eq!(mapped.head(1).count().await.unwrap(), 1);
+}

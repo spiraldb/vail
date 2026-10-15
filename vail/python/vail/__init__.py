@@ -100,7 +100,8 @@ parse_float = parse_float64
 format = _unsupported_string('Java printf formatting')
 json = _unsupported_string('Hail typed JSON serialization')
 parse_json = _unsupported_string('Hail typed JSON parsing')
-from .streams import StreamExpression, stream_range as _stream_range
+from .streams import StreamExpression, stream_range
+_stream_range = stream_range
 
 
 def range(start, stop=None, step=1):
@@ -1321,35 +1322,36 @@ class Table:
         })
         return Table(native, schema, self._keys)
 
-    def _map_partitions(self, f):
-        """Build a lazy transformation over each table partition's row stream."""
+    def map_partitions(self, f):
+        """Lazily transform each partition, retaining its partition membership.
+
+        Identity, filters, and direct key-forwarding maps retain the table key.
+        Other callbacks return an unkeyed table; use ``key_by`` explicitly to
+        establish ordering after changing keys or rearranging rows.
+        """
         if not callable(f):
-            raise TypeError("Table._map_partitions requires a callable")
+            raise TypeError("Table.map_partitions requires a callable")
         from uuid import uuid4
 
         rows_name = "__vail_partition_rows_" + uuid4().hex
         rows = Expression(tarray(self._schema), self, {"op": "column", "name": rows_name})._to_stream()
         result = f(rows)
         if not isinstance(result, StreamExpression):
-            raise TypeError("Table._map_partitions callback must return a stream expression")
+            raise TypeError("Table.map_partitions callback must return a stream expression")
         body = result.to_array()
         if not isinstance(body.dtype, tarray) or not isinstance(body.dtype.element_type, tstruct):
-            raise TypeError("Table._map_partitions callback must return a stream of structs")
+            raise TypeError("Table.map_partitions callback must return a stream of structs")
         if body.source is not None and body.source is not self:
             raise ExpressionException("expression source mismatch: partition stream belongs to a different Table")
-        result_schema = body.dtype.element_type
-        for key in self._keys:
-            if key not in result_schema:
-                raise ValueError("Table._map_partitions must preserve key fields")
-            if result_schema[key] != self._schema[key]:
-                raise ValueError(f"Table._map_partitions must preserve key field type for {key!r}")
         native = self._native.map_partitions(
             rows_name, _native_expression(body.to_ir()), _global_bindings([body])
         )
         schema = tstruct(**{
             name: type_from_wire(dtype) for name, dtype in native.schema()
         })
-        return Table(native, schema, self._keys)
+        return Table(native, schema, _keys_from_native(native))
+
+    _map_partitions = map_partitions
 
 
 def range_table(n, n_partitions=None):
@@ -1971,7 +1973,6 @@ def eval_typed(expression):
 
 from . import nd
 
-_stream_range = _stream_range
 
 int = int32
 float = float64
