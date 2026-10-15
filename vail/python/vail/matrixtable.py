@@ -547,32 +547,32 @@ class MatrixTable:
         check_initializers(expr.to_ir())
         return expr
 
-    def _context(self, axis, *, with_columns=True):
+    def _context(self, axis, *, with_columns=True, with_rows=True):
         if axis in ("row", "global"):
             return self._mir.core
         if axis == "col":
             return self._mir.cols
         base = self._mir.core
         name = "__vail_matrix_context"
+        row_fields = [(_ROW, base[_ROW])] if with_rows else []
         if not with_columns:
-            source = _project(base, [(_ROW, base[_ROW]), (name, base[_CELLS])]).explode(name)
+            source = _project(base, row_fields + [(name, base[_CELLS])]).explode(name)
             source = source.filter(source[name][_PRESENT])
             cell = source[name]
-            return _project(source, [
-                (_ROW, source[_ROW]), (_CID, cell[_CID]),
+            return _project(source, ([(_ROW, source[_ROW])] if with_rows else []) + [
                 (_ENTRY, cell[_VALUE] if len(self.entry.dtype) else struct()),
             ])
         # Drop the original cell array before UNNEST: retaining it would
         # duplicate that whole array once for every emitted entry.
         source = _project(base, [
-            (_ROW, base[_ROW]),
+            *row_fields,
             (name, _zip_arrays(base[_CELLS], self._mir.column_records)),
         ]).explode(name)
         cell = source[name]["1"]
         source = source.filter(cell[_PRESENT])
         cell = source[name]["1"]
-        return _project(source, [
-            (_ROW, source[_ROW]), (_CID, cell[_CID]),
+        return _project(source, ([(_ROW, source[_ROW])] if with_rows else []) + [
+            (_CID, cell[_CID]),
             (_ENTRY, cell[_VALUE] if len(self.entry.dtype) else struct()),
             (_COL, source[name]["2"][_COL]),
         ])
@@ -1201,7 +1201,10 @@ class MatrixTable:
                     self, expr, core, None, direct_entry_sum=True
                 )
             return core.aggregate(aggregate_sum(row_total), _localize=localize)
-        table = self._context(axis, with_columns=_uses_axis_field(node, "col"))
+        table = self._context(
+            axis, with_columns=_uses_axis_field(node, "col"),
+            with_rows=_uses_axis_field(node, "row"),
+        )
         if axis == "col" and self._mir.col_key:
             table = table.order_by(
                 *(table[_COL][n] for n in self._mir.col_key)
@@ -1229,8 +1232,10 @@ class MatrixTable:
             if axes == {"col"}
             else "global"
         )
-        table = (self._context(axis, with_columns=_uses_axis_field(expr.to_ir(), "col"))
-                 if axis != "global" else self.globals_table())
+        table = self.globals_table() if axis == "global" else self._context(
+            axis, with_columns=_uses_axis_field(expr.to_ir(), "col"),
+            with_rows=_uses_axis_field(expr.to_ir(), "row"),
+        )
         lowered = self._lower(expr, table)
         output = _project(table, [("value", lowered)])
         if n is not None:
