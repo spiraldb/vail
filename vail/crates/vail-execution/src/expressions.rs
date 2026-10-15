@@ -558,6 +558,15 @@ pub enum Expr {
     Struct {
         fields: Vec<(String, Expr)>,
     },
+    /// Bind the selector once; Boolean conditions and result expressions use
+    /// the lexical parameter inside ordered, lazy branches.
+    Switch {
+        value: Arc<Expr>,
+        parameter: String,
+        cases: Vec<(Expr, Expr)>,
+        default: Arc<Expr>,
+        missing: Option<Arc<Expr>>,
+    },
     IfElse {
         condition: Arc<Expr>,
         consequent: Arc<Expr>,
@@ -806,6 +815,23 @@ impl Expr {
                     expr.visit(f);
                 }
             }
+            Self::Switch {
+                value,
+                cases,
+                default,
+                missing,
+                ..
+            } => {
+                value.visit(f);
+                for (condition, result) in cases {
+                    condition.visit(f);
+                    result.visit(f);
+                }
+                default.visit(f);
+                if let Some(missing) = missing {
+                    missing.visit(f);
+                }
+            }
             Self::IfElse {
                 condition,
                 consequent,
@@ -972,6 +998,23 @@ impl Expr {
             Self::Struct { fields } => {
                 for (_, expr) in fields {
                     *expr = f(expr)?;
+                }
+            }
+            Self::Switch {
+                value,
+                cases,
+                default,
+                missing,
+                ..
+            } => {
+                *value = Arc::new(f(value)?);
+                for (condition, result) in cases {
+                    *condition = f(condition)?;
+                    *result = f(result)?;
+                }
+                *default = Arc::new(f(default)?);
+                if let Some(missing) = missing {
+                    *missing = Arc::new(f(missing)?);
                 }
             }
             Self::IfElse {
@@ -1264,6 +1307,23 @@ impl Expr {
                         .collect::<Result<Vec<_>, _>>()?;
                     crate::randomness::validate(function, &types, dtype)?;
                     return Ok(dtype.clone());
+                }
+                if function == "coalesce" {
+                    let boolean = Type::Primitive(PrimitiveType::Bool);
+                    if dtype != &boolean || args.len() != 2 {
+                        return Err(ExprError::Invalid(
+                            "Boolean coalesce requires two Boolean arguments and Boolean output"
+                                .into(),
+                        ));
+                    }
+                    for arg in args {
+                        if arg.dtype_scoped(schema, globals, scope)? != boolean {
+                            return Err(ExprError::Invalid(
+                                "Boolean coalesce requires two Boolean arguments".into(),
+                            ));
+                        }
+                    }
+                    return Ok(boolean);
                 }
                 // Validate the declared result against DataFusion's own type inference.
                 let udf = nested_function(function)?;
@@ -1971,6 +2031,40 @@ impl Expr {
                         promote(&a, &b)
                     }
                 }
+            }
+            Self::Switch {
+                value,
+                parameter,
+                cases,
+                default,
+                missing,
+            } => {
+                let selector = value.dtype_scoped(schema, globals, scope)?;
+                if scope.iter().any(|(name, _, _)| name == parameter) {
+                    return Err(ExprError::Invalid(
+                        "duplicate switch parameter identity".into(),
+                    ));
+                }
+                let mut nested = scope.to_vec();
+                nested.push((parameter.clone(), selector, schema.fields().len()));
+                let output = default.dtype_scoped(schema, globals, &nested)?;
+                if let Some(missing) = missing {
+                    if missing.dtype_scoped(schema, globals, &nested)? != output {
+                        return Err(ExprError::Invalid(
+                            "switch missing/default types differ".into(),
+                        ));
+                    }
+                }
+                for (condition, result) in cases {
+                    ensure_bool(
+                        &condition.dtype_scoped(schema, globals, &nested)?,
+                        "switch condition",
+                    )?;
+                    if result.dtype_scoped(schema, globals, &nested)? != output {
+                        return Err(ExprError::Invalid("switch branch types differ".into()));
+                    }
+                }
+                Ok(output)
             }
             Self::IfElse {
                 condition,
@@ -4367,6 +4461,101 @@ fn interval_boundary_sequence(
     )?))
 }
 
+fn switch_capture_indices(
+    expr: &Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+) -> Vec<usize> {
+    let mut used = std::collections::BTreeSet::new();
+    expr.visit(&mut |node| {
+        let index = match node {
+            Expr::Column { name } => schema.index_of(name).ok(),
+            Expr::Global { name } => match globals {
+                GlobalBinding::Columns(_, _) => schema.index_of(name).ok(),
+                _ => None,
+            },
+            Expr::ExternalGlobal { reference, .. } => match globals {
+                GlobalBinding::Columns(_, bindings) => bindings.get(reference).copied(),
+                _ => None,
+            },
+            Expr::LambdaVariable { name } => scope
+                .iter()
+                .rev()
+                .find(|(parameter, _, _)| parameter == name)
+                .map(|(_, _, index)| *index),
+            _ => None,
+        };
+        if let Some(index) = index {
+            used.insert(index);
+        }
+    });
+    used.into_iter().collect()
+}
+
+fn switch_callback(
+    expr: &Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+    output: &DataType,
+) -> Result<crate::conditionals::Callback, ExprError> {
+    let indices = switch_capture_indices(expr, schema, globals, scope);
+    let remap = indices
+        .iter()
+        .enumerate()
+        .map(|(new, old)| (*old, new))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    let compact = Arc::new(Schema::new(
+        indices
+            .iter()
+            .map(|&index| schema.field(index).clone())
+            .collect::<Vec<_>>(),
+    ));
+    let nested = scope
+        .iter()
+        .filter_map(|(name, ty, index)| remap.get(index).map(|&at| (name.clone(), ty.clone(), at)))
+        .collect::<Vec<_>>();
+    let bindings = match globals {
+        GlobalBinding::Columns(_, bindings) => bindings
+            .iter()
+            .filter_map(|(name, index)| remap.get(index).map(|&at| (name.clone(), at)))
+            .collect(),
+        _ => std::collections::BTreeMap::new(),
+    };
+    let globals = match globals {
+        GlobalBinding::Columns(schema, _) => GlobalBinding::Columns(schema, &bindings),
+        other => other,
+    };
+    let expr = cast(
+        lower_scoped(expr, &compact, globals, &nested)?,
+        &compact,
+        output.clone(),
+    )?;
+    Ok(crate::conditionals::Callback {
+        expr,
+        indices,
+        schema: compact,
+    })
+}
+
+/// Both Boolean values are covered; a missing base selects only `missing`.
+/// Simple CASE owns the decision value so evaluating a null guard never repeats it.
+fn boolean_case(
+    base: Arc<dyn PhysicalExpr>,
+    yes: Arc<dyn PhysicalExpr>,
+    no: Arc<dyn PhysicalExpr>,
+    missing: Arc<dyn PhysicalExpr>,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let yes_test: Arc<dyn PhysicalExpr> = Arc::new(Literal::new(ScalarValue::Boolean(Some(true))));
+    let no_test: Arc<dyn PhysicalExpr> = Arc::new(Literal::new(ScalarValue::Boolean(Some(false))));
+    Ok(Arc::new(CaseExpr::try_new(
+        Some(base),
+        vec![(yes_test, yes), (no_test, no)],
+        Some(missing),
+    )?))
+}
+
 fn lower_scoped(
     expr: &Expr,
     schema: &Schema,
@@ -4407,6 +4596,13 @@ fn lower_scoped(
                 *index,
                 Arc::new(Field::new(name, ty.to_arrow()?, true)),
             ))
+        }
+        Expr::NestedFunction { function, args, .. } if function == "coalesce" => {
+            let base = lower_scoped(&args[0], schema, globals, scope)?;
+            let fallback = lower_scoped(&args[1], schema, globals, scope)?;
+            let yes = Arc::new(Literal::new(ScalarValue::Boolean(Some(true))));
+            let no = Arc::new(Literal::new(ScalarValue::Boolean(Some(false))));
+            boolean_case(base, yes, no, fallback)?
         }
         Expr::NestedFunction { function, args, .. } => {
             let args = args
@@ -5175,6 +5371,109 @@ fn lower_scoped(
             vec![lower_scoped(message, schema, globals, scope)?],
             dtype.clone(),
         ),
+        Expr::Switch {
+            value,
+            parameter,
+            cases,
+            default,
+            missing,
+        } => {
+            // Capture only fields used anywhere in this switch. In particular,
+            // a surrounding array's payload must not become an implicit capture
+            // merely because it occurs in the enclosing lambda's input schema.
+            let indices = switch_capture_indices(expr, schema, globals, scope);
+            let inputs = indices
+                .iter()
+                .map(|&index| {
+                    let field = schema.fields()[index].clone();
+                    if scope.iter().any(|(_, _, at)| *at == index) {
+                        Arc::new(datafusion_physical_expr::expressions::LambdaVariable::new(
+                            index, field,
+                        )) as Arc<dyn PhysicalExpr>
+                    } else {
+                        Arc::new(Column::new(field.name(), index)) as Arc<dyn PhysicalExpr>
+                    }
+                })
+                .collect();
+            let remap = indices
+                .iter()
+                .enumerate()
+                .map(|(new, old)| (*old, new))
+                .collect::<std::collections::BTreeMap<_, _>>();
+            let input_schema = Arc::new(Schema::new(
+                indices
+                    .iter()
+                    .map(|&index| schema.field(index).clone())
+                    .collect::<Vec<_>>(),
+            ));
+            let parent_scope = scope
+                .iter()
+                .filter_map(|(name, ty, index)| {
+                    remap.get(index).map(|&at| (name.clone(), ty.clone(), at))
+                })
+                .collect::<Vec<_>>();
+            let bindings = match globals {
+                GlobalBinding::Columns(_, bindings) => bindings
+                    .iter()
+                    .filter_map(|(name, index)| remap.get(index).map(|&at| (name.clone(), at)))
+                    .collect(),
+                _ => std::collections::BTreeMap::new(),
+            };
+            let globals = match globals {
+                GlobalBinding::Columns(schema, _) => GlobalBinding::Columns(schema, &bindings),
+                other => other,
+            };
+            let schema = input_schema.as_ref();
+            let scope = parent_scope.as_slice();
+            let selector_type = value.dtype_scoped(schema, globals.schema(), scope)?;
+            // Canonicalize storage once for the bound column. Utf8 views may
+            // materialize here; comparisons never repeat that conversion.
+            let selector = cast(
+                lower_scoped(value, schema, globals, scope)?,
+                schema,
+                selector_type.to_arrow()?,
+            )?;
+            let mut fields = schema.fields().to_vec();
+            fields.push(Arc::new(Field::new(
+                parameter,
+                selector_type.to_arrow()?,
+                true,
+            )));
+            let bound_schema = Arc::new(Schema::new(fields));
+            let mut nested = scope.to_vec();
+            nested.push((parameter.clone(), selector_type, schema.fields().len()));
+            let cases = cases
+                .iter()
+                .map(|(condition, result)| {
+                    Ok((
+                        switch_callback(
+                            condition,
+                            &bound_schema,
+                            globals,
+                            &nested,
+                            &DataType::Boolean,
+                        )?,
+                        switch_callback(result, &bound_schema, globals, &nested, &dtype)?,
+                    ))
+                })
+                .collect::<Result<Vec<_>, ExprError>>()?;
+            let default = switch_callback(default, &bound_schema, globals, &nested, &dtype)?;
+            let missing = missing
+                .as_ref()
+                .map(|missing| switch_callback(missing, &bound_schema, globals, &nested, &dtype))
+                .transpose()?;
+            Arc::new(crate::conditionals::ScopedSwitch {
+                inputs,
+                value: selector,
+                cases,
+                default,
+                missing,
+                input_schema,
+                bound_schema,
+                dtype,
+            })
+        }
+
         Expr::IfElse {
             condition,
             consequent,
@@ -5193,12 +5492,7 @@ fn lower_scoped(
             )?;
             let missing: Arc<dyn PhysicalExpr> =
                 Arc::new(Literal::new(ScalarValue::try_from(&dtype)?));
-            let is_null: Arc<dyn PhysicalExpr> = Arc::new(IsNullExpr::new(cond.clone()));
-            Arc::new(CaseExpr::try_new(
-                None,
-                vec![(is_null, missing), (cond, yes)],
-                Some(no),
-            )?)
+            boolean_case(cond, yes, no, missing)?
         }
     };
     if vail_ordering::has_type_metadata(&output_type) {

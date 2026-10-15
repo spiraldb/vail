@@ -175,6 +175,27 @@
       ],
       "reports": [
         "vail/docs/reviews/csv-cost.json"
+      ],
+      "merged_commit": "7089622"
+    },
+    {
+      "module": "Vail conditional builders and native IfElse adapters",
+      "reviewed_base": "7089622",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "represent switch as flat typed lexical scope with one selector evaluation",
+        "normalize Boolean missing predicates without repeated input evaluation",
+        "lower nullable conditionals with a single simple-CASE base",
+        "capture and gather only referenced callback fields, retaining lexical/matrix/random context",
+        "normalize selected output storage and share full identity output; interleave mixed pieces once"
+      ],
+      "validation": [
+        "72 public Python conditional/row/codepoint/numeric-aggregate tests passed against matching release native",
+        "4 public Rust conditional tests passed",
+        "same bounded cheap and expensive increasing-case workloads improve without the earlier regression"
+      ],
+      "reports": [
+        "vail/docs/reviews/conditional-cost.json"
       ]
     }
   ],
@@ -294,6 +315,7 @@
     "vail/python/vail/variant.py",
     "vail/python/vail/vcf.py",
     "vail/python/vail/vcf_export.py",
-    "vail/crates/vail-table/src/arrow_batches.rs"
+    "vail/crates/vail-table/src/arrow_batches.rs",
+    "vail/crates/vail-execution/src/conditionals.rs"
   ]
 }

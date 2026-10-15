@@ -1075,7 +1075,8 @@ def if_else(condition, consequent, alternate, missing_false=False):
     if condition.dtype != tbool:
         raise TypeError("if_else condition must have bool type")
     if missing_false:
-        condition = if_else(is_missing(condition), False, condition)
+        from .collections import _function
+        condition = _function('coalesce', [condition, literal(False)], tbool)
     consequent = as_expr(consequent)
     alternate = as_expr(alternate)
     result_type = unify_types(consequent.dtype, alternate.dtype)
@@ -1125,9 +1126,8 @@ class CaseBuilder:
     def _finish(self, default):
         result = cast(default, self._ret_type)
         for condition, then in reversed(self._cases):
-            if self._missing_false:
-                condition = if_else(is_missing(condition), False, condition)
-            result = if_else(condition, cast(then, self._ret_type), result)
+            result = if_else(condition, cast(then, self._ret_type), result,
+                             missing_false=self._missing_false)
         return result
 
     def default(self, then):

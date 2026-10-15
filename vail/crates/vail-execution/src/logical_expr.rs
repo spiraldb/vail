@@ -111,6 +111,22 @@ pub fn restore_type(value: LogicalExpr, dtype: arrow_schema::DataType) -> Logica
     udf.call(vec![value])
 }
 
+fn boolean_case(
+    base: LogicalExpr,
+    yes: LogicalExpr,
+    no: LogicalExpr,
+    missing: LogicalExpr,
+) -> LogicalExpr {
+    LogicalExpr::Case(datafusion_expr::expr::Case::new(
+        Some(Box::new(base)),
+        vec![
+            (Box::new(lit(true)), Box::new(yes)),
+            (Box::new(lit(false)), Box::new(no)),
+        ],
+        Some(Box::new(missing)),
+    ))
+}
+
 fn coerce_type(
     value: LogicalExpr,
     dtype: arrow_schema::DataType,
@@ -367,9 +383,7 @@ fn lower(
             let consequent = coerce_type(recurse(consequent)?, dtype.clone(), schema)?;
             let alternate = coerce_type(recurse(alternate)?, dtype.clone(), schema)?;
             let null_result = lit(ScalarValue::try_from(&dtype)?);
-            datafusion_expr::expr_fn::when(condition.clone().is_null(), null_result)
-                .when(condition, consequent)
-                .otherwise(alternate)?
+            boolean_case(condition, consequent, alternate, null_result)
         }
         Expr::Struct { fields } => {
             if fields.is_empty() {
@@ -404,6 +418,15 @@ fn lower(
             )?
         }
         Expr::GetField { .. } => return logical_kernel(expr, schema, globals, bindings, scope),
+        Expr::NestedFunction { function, args, .. } if function == "coalesce" => {
+            expr.dtype_with_globals(schema.as_arrow(), globals)?;
+            boolean_case(
+                recurse(&args[0])?,
+                lit(true),
+                lit(false),
+                recurse(&args[1])?,
+            )
+        }
         Expr::NestedFunction { function, args, .. } => {
             if function.starts_with("random_") {
                 return logical_kernel(expr, schema, globals, bindings, scope);
@@ -515,7 +538,8 @@ fn lower(
                 "aggregation expressions require the DataFusion aggregate planner".into(),
             ));
         }
-        Expr::Die { .. }
+        Expr::Switch { .. }
+        | Expr::Die { .. }
         | Expr::ArrayFold { .. }
         | Expr::ArrayMap { .. }
         | Expr::ArrayPredicate { .. }
@@ -746,6 +770,7 @@ fn logical_kernel(
 
 fn kernel_label(expr: &Expr) -> &'static str {
     match expr {
+        Expr::Switch { .. } => "switch",
         Expr::Die { .. } => "die",
         Expr::ArrayFold { scan: true, .. } => "array_scan",
         Expr::ArrayFold { scan: false, .. } => "array_fold",

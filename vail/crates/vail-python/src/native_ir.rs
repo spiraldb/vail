@@ -344,6 +344,7 @@ impl NativeExpr {
             Expr::AggFilter { .. } => "agg_filter",
             Expr::AggExplode { .. } => "agg_explode",
             Expr::LambdaVariable { .. } => "lambda_variable",
+            Expr::Switch { .. } => "switch",
             Expr::NestedFunction { .. } => "nested_function",
             Expr::CollectionCast { .. } => "collection_cast",
             Expr::IntegerBinary { .. } => "integer_binary",
@@ -650,6 +651,27 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         },
         "struct" => Expr::Struct {
             fields: fields(&get(d, "fields")?)?,
+        },
+        "switch" => Expr::Switch {
+            value: expression_ref(&get(d, "value")?)?,
+            parameter: get(d, "parameter")?.extract()?,
+            cases: get(d, "cases")?
+                .try_iter()?
+                .map(|pair| {
+                    let pair = pair?;
+                    Ok((
+                        expression(&pair.get_item(0)?)?,
+                        expression(&pair.get_item(1)?)?,
+                    ))
+                })
+                .collect::<PyResult<Vec<_>>>()?,
+            default: expression_ref(&get(d, "default")?)?,
+            missing: d
+                .get_item("missing")
+                .ok()
+                .filter(|value| !value.is_none())
+                .map(|value| expression_ref(&value))
+                .transpose()?,
         },
         "if_else" => Expr::IfElse {
             condition: expression_ref(&get(d, "condition")?)?,
@@ -1643,6 +1665,53 @@ impl NativeExpr {
             Expr::Struct { fields } => {
                 d.set_item("op", "struct")?;
                 d.set_item("fields", projection_view(py, fields)?.into_any())?;
+            }
+            Expr::Switch {
+                value,
+                parameter,
+                cases,
+                default,
+                missing,
+            } => {
+                d.set_item("op", "switch")?;
+                d.set_item("parameter", parameter)?;
+                for (name, node) in [("value", value), ("default", default)] {
+                    d.set_item(
+                        name,
+                        Py::new(
+                            py,
+                            NativeExpr {
+                                inner: node.clone(),
+                            },
+                        )?,
+                    )?;
+                }
+                if let Some(missing) = missing {
+                    d.set_item(
+                        "missing",
+                        Py::new(
+                            py,
+                            NativeExpr {
+                                inner: missing.clone(),
+                            },
+                        )?,
+                    )?;
+                } else {
+                    d.set_item("missing", py.None())?;
+                }
+                let pairs = cases
+                    .iter()
+                    .map(|(condition, result)| {
+                        PyList::new(
+                            py,
+                            [
+                                Py::new(py, NativeExpr::from_expr(condition.clone()))?,
+                                Py::new(py, NativeExpr::from_expr(result.clone()))?,
+                            ],
+                        )
+                    })
+                    .collect::<PyResult<Vec<_>>>()?;
+                d.set_item("cases", PyList::new(py, pairs)?)?;
             }
             Expr::IfElse {
                 condition,

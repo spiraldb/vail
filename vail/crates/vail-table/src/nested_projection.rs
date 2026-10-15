@@ -68,6 +68,7 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
     }
 
     match expression {
+        Expr::Switch { .. } => walk_all_columns(expression, arrays, deps),
         Expr::MatrixScope { .. }
         | Expr::MatrixField { .. }
         | Expr::MatrixNumCols { .. }
