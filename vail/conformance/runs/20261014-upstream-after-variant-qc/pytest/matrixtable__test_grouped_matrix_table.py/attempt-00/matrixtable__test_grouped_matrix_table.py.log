@@ -1,0 +1,248 @@
+.F.FFF..                                                                 [100%]
+=================================== FAILURES ===================================
+______________________ Tests.test_errors_caught_correctly ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ueh52sbm/upstream_hail/matrixtable/test_grouped_matrix_table.py:32: in test_errors_caught_correctly
+    self.assertRaises(ExpressionException, mt.group_rows_by, mt['group1'] + 1)
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:1783: in group_rows_by
+    return GroupedMatrixTable(self, "row", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2362: in __init__
+    raise ValueError("positional grouping requires field references")
+E   ValueError: positional grouping requires field references
+______________________ Tests.test_group_cols_by_aggregate ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ueh52sbm/upstream_hail/matrixtable/test_grouped_matrix_table.py:116: in test_group_cols_by_aggregate
+    col_result = mt.group_cols_by(group=mt2.cols()[mt.col_idx].col_idx2 < 2).aggregate_cols(collect=hl.agg.collect(mt.col_idx)).aggregate_cols(count=hl.agg.count()).aggregate_entries(sum=hl.agg.sum(mt2[mt.row_idx, mt.col_idx].x + mt.glob) + mt.glob - 15 - mt.row_idx).aggregate_entries(x=5).result()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2517: in result
+    core.annotate(**{_CELLS: indexed_groups.map(cell)}), columns,
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:532: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2508: in cell
+    n: reduce_list(
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:479: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:470: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:470: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:470: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:328: in walk
+    values = mapped(items, node["value"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:161: in mapped
+    return typed(items.map(lambda ctx: raw(bind(node, ctx))))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:68: in typed
+    probe = base.key_by()._project([("__matrix_type_probe", raw(node))], keys=())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:525: in _project
+    native, expressions = _resolve_lookups(self._native, [expr for _, expr in projections])
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:90: in resolve
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+                                                      ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:85: in rewrite
+    native = native.lookup_json(targets[reference], json.dumps(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "5be23f039a0847dca430c3da96b007b2"
+______________________ Tests.test_group_rows_by_aggregate ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ueh52sbm/upstream_hail/matrixtable/test_grouped_matrix_table.py:109: in test_group_rows_by_aggregate
+    row_result = mt.group_rows_by(group=mt2.rows()[mt.row_idx].row_idx2 < 2).aggregate_rows(collect=hl.agg.collect(mt.row_idx)).aggregate_rows(count=hl.agg.count()).aggregate_entries(sum=hl.agg.sum(mt2[mt.row_idx, mt.col_idx].x + mt.glob) + mt.glob - 15 - mt.col_idx).aggregate_entries(x=5).result()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2459: in result
+    grouped = base.group_by(**keys).aggregate(**fields, **{_CELLS: cells})
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1487: in aggregate
+    native, resolved = _resolve_lookups(table._native, [expr for _, expr in keys] + list(expressions.values()), random_scope=["row"] * builtins.len(keys) + ["group"] * builtins.len(expressions))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:90: in resolve
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+                                                      ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:74: in rewrite
+    return [rewrite(child) for child in node]
+            ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:74: in rewrite
+    return [rewrite(child) for child in node]
+            ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:74: in rewrite
+    return [rewrite(child) for child in node]
+            ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:74: in rewrite
+    return [rewrite(child) for child in node]
+            ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:85: in rewrite
+    native = native.lookup_json(targets[reference], json.dumps(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "da6d5d01bc35439688ebd0d3cc3d5a1f"
+_______________________ Tests.test_joins_work_correctly ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ueh52sbm/upstream_hail/matrixtable/test_grouped_matrix_table.py:100: in test_joins_work_correctly
+    col_result = mt.group_cols_by(group=mt2.cols()[mt.col_idx].col_idx2 < 2).aggregate(sum=hl.agg.sum(mt2[mt.row_idx, mt.col_idx].x + mt.glob) + mt.glob - 15).drop('r1')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2406: in aggregate
+    return self.aggregate_entries(**fields).result()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2517: in result
+    core.annotate(**{_CELLS: indexed_groups.map(cell)}), columns,
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:532: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2508: in cell
+    n: reduce_list(
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:479: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:470: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:470: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:328: in walk
+    values = mapped(items, node["value"])
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:161: in mapped
+    return typed(items.map(lambda ctx: raw(bind(node, ctx))))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:68: in typed
+    probe = base.key_by()._project([("__matrix_type_probe", raw(node))], keys=())
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:525: in _project
+    native, expressions = _resolve_lookups(self._native, [expr for _, expr in projections])
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:90: in resolve
+    output = [Expression(expr.dtype, expr.source, _IR(rewrite(expr.to_ir()), expr._global_refs),
+                                                      ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:88: in rewrite
+    return {name: rewrite(child) for name, child in node.items()}
+                  ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/lookups.py:85: in rewrite
+    native = native.lookup_json(targets[reference], json.dumps(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "c0439506116446e382acf56970f73252"
+=============================== warnings summary ===============================
+test_grouped_matrix_table.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_grouped_matrix_table.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ueh52sbm/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_errors_caught_correctly
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ueh52sbm/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_group_cols_by_aggregate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ueh52sbm/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_group_rows_by_aggregate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ueh52sbm/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_joins_work_correctly
+4 failed, 4 passed, 1 warning in 1.68s

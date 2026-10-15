@@ -1,8 +1,8 @@
-"""String expressions lowered exclusively to DataFusion's built-in kernels."""
+"""UTF-8 strings indexed by Unicode scalar values, deliberately unlike Hail UTF-16."""
 import builtins
 from collections.abc import Mapping
-from .expressions import Expression, _merge_sources, as_expr, cast, if_else, is_missing, literal, missing, array
-from .types import tstr, tint32, tint64, tbool, tarray, tset, tdict
+from .expressions import Expression, _merge_sources, as_expr, cast, if_else, is_missing, literal, missing, case, bind
+from .types import tstr, tint32, tint64, tfloat64, tbool, tarray, tset, tdict
 
 
 _TYPES = {
@@ -11,6 +11,8 @@ _TYPES = {
     'ends_with': tbool, 'character_length': tint32, 'regexp_count': tint64,
     'regexp_like': tbool, 'strpos': tint32, 'substr': tstr, 'translate': tstr,
     'replace': tstr, 'string_to_array': tarray(tstr), 'array_to_string': tstr,
+    'regexp_replace': tstr, 'regex_split': tarray(tstr), 'first_match_in': tarray(tstr),
+    'hamming': tint32, 'entropy': tfloat64,
 }
 
 
@@ -37,10 +39,7 @@ def _integer(operator, left, right):
 
 
 def length(value):
-    # Count UTF-16 units, including the extra unit for each supplementary scalar.
-    points = _call('character_length', value)
-    extra = _call('regexp_count', value, literal(r'[\x{10000}-\x{10FFFF}]'))
-    return cast(_integer('add', points, extra), tint32)
+    return _call('character_length', _text(value))
 
 
 def concat(left, right):
@@ -61,20 +60,17 @@ def strip(value):
     return _call('btrim', value, literal(''.join(builtins.chr(i) for i in builtins.range(33))))
 
 
-def _bmp_literal(value):
-    ir = value.to_ir()
-    if ir.get('op') == 'literal' and ir.get('value') is None:
-        return None
-    if ir.get('op') != 'literal' or not isinstance(ir.get('value'), builtins.str):
-        raise NotImplementedError('DataFusion uses Unicode scalar positions; general Hail UTF-16 string slicing/indexing/reversal is unsupported')
-    if builtins.any(ord(char) > 0xFFFF for char in ir['value']):
-        raise NotImplementedError('DataFusion cannot reproduce Hail UTF-16 slicing/indexing/reversal of supplementary characters')
-    return ir['value']
-
-
 def reverse(value):
-    _bmp_literal(value)
-    return _call('reverse', value)
+    return _call('reverse', _text(value))
+
+
+def reversed_(value):
+    value = as_expr(value)
+    if value.dtype == tstr:
+        return reverse(value)
+    if isinstance(value.dtype, tarray):
+        return value[::-1]
+    raise TypeError('reversed requires a string or array')
 
 
 def _bound(value, size):
@@ -88,11 +84,23 @@ def _bound(value, size):
 
 
 def slice_(value, selection):
+    value = _text(value)
+    if selection.start is selection.stop is selection.step is None:
+        return value
+    endpoints = (selection.start, selection.stop, selection.step)
+    def build(text, *bounds):
+        values = iter(bounds)
+        return _slice_bound(text, slice(*(None if bound is None else next(values) for bound in endpoints)))
+    return bind(build, value, *(as_expr(bound) for bound in endpoints if bound is not None))
+
+
+def _slice_bound(value, selection):
     if selection.step is not None:
-        raise NotImplementedError('Hail string slicing does not support a step')
+        from .streams import stream_range
+        positions = stream_range(length(value)).to_array()[selection]
+        return join(literal(''), positions.map(lambda i: _call('substr', value, cast(i, tint64) + literal(1, tint64), literal(1, tint64))))
     if selection.start is selection.stop is None:
         return value
-    _bmp_literal(value)
     size = cast(length(value), tint64)
     start = literal(0, tint64) if selection.start is None else _bound(selection.start, size)
     stop = size if selection.stop is None else _bound(selection.stop, size)
@@ -101,95 +109,104 @@ def slice_(value, selection):
 
 
 def index(value, selection):
-    text = _bmp_literal(value)
+    value = _text(value)
     selection = as_expr(selection)
     if selection.dtype != tint32:
         raise TypeError('string index must be int32')
-    ir = selection.to_ir()
-    if ir.get('op') != 'literal' or not isinstance(ir.get('value'), builtins.int):
-        raise NotImplementedError('DataFusion substring does not raise Hail index-out-of-bounds errors for dynamic indices')
-    if text is None:
-        return missing(tstr)
-    position = ir['value']
-    if not -len(text) <= position < len(text):
-        raise IndexError('string index out of bounds')
-    position = position if position >= 0 else len(text) + position
-    return _call('substr', value, literal(position + 1, tint64), literal(1, tint64))
+    return bind(_index_bound, value, selection)
+
+
+def _index_bound(value, selection):
+    size = cast(length(value), tint64)
+    position = cast(selection, tint64)
+    position = if_else(_integer('lt', position, 0), _integer('add', size, position), position)
+    result = _call('substr', value, _integer('add', position, 1), literal(1, tint64))
+    return case().when(is_missing(value) | is_missing(selection), missing(tstr)).when(
+        _integer('le', 0, position) & _integer('lt', position, size), result
+    ).or_error('string index out of bounds')
 
 
 def find(value, sub, start=None, end=None):
-    if start is not None or end is not None:
-        raise NotImplementedError('bounded string find requires general Hail UTF-16 slicing support')
-    position = _call('strpos', value, _text(sub))
-    prefix = _call('substr', value, literal(1, tint64), _integer('sub', position, 1))
-    return if_else(_integer('eq', position, 0), literal(-1, tint32), length(prefix))
-
-
-def _literal_regex(pattern):
-    pattern = _text(pattern)
-    ir = pattern.to_ir()
-    if ir.get('op') != 'literal' or not isinstance(ir.get('value'), builtins.str):
-        raise NotImplementedError('expression-valued Java regular expressions are unsupported by DataFusion')
-    text = ir['value']
-    if builtins.any(char in r'.^$*+?{}[]\|()' for char in text):
-        raise NotImplementedError('Java regular-expression semantics differ from DataFusion; only literal patterns are supported')
-    return text
+    value, sub = _text(value), _text(sub)
+    size = cast(length(value), tint64)
+    lower = literal(0, tint64) if start is None else _bound(start, size)
+    upper = size if end is None else _bound(end, size)
+    count = if_else(_integer('lt', upper, lower), literal(0, tint64), _integer('sub', upper, lower))
+    part = _call('substr', value, _integer('add', lower, 1), count)
+    position = _call('strpos', part, sub)
+    found = cast(_integer('add', lower, _integer('sub', position, 1)), tint32)
+    result = if_else(_integer('eq', position, 0) | _integer('lt', upper, lower), literal(-1, tint32), found)
+    return if_else(is_missing(value) | is_missing(sub), missing(tint32), result)
 
 
 def matches(value, regex, full_match=False):
     if type(full_match) is not bool:
         raise TypeError('full_match must be a bool')
-    pattern = _literal_regex(regex)
+    pattern = _text(regex)
     if full_match:
-        pattern = r'\A' + pattern + r'\z'
-    return _call('regexp_like', value, literal(pattern))
+        pattern = concat(concat(literal(r'\A(?:'), pattern), literal(r')\z'))
+    return _call('regexp_like', _text(value), pattern)
 
 
 def replace(value, pattern, replacement):
-    pattern = _literal_regex(pattern)
-    replacement = _text(replacement)
-    ir = replacement.to_ir()
-    if ir.get('op') != 'literal' or not isinstance(ir.get('value'), builtins.str) or builtins.any(char in '$\\' for char in ir['value']):
-        raise NotImplementedError('Java replacement templates are unsupported; replacement must be a plain literal')
-    if not pattern:
-        raise NotImplementedError('empty-pattern replacement needs Java zero-width match semantics')
-    return _call('replace', value, literal(pattern), replacement)
+    return _call('regexp_replace', _text(value), _text(pattern), _text(replacement), literal('g'))
 
 
 def split(value, delim, n=None):
-    if n is not None:
-        raise NotImplementedError('DataFusion has no Java regex split-with-limit function')
-    delim = _literal_regex(delim)
-    if not delim:
-        raise NotImplementedError('empty-pattern splitting needs Java zero-width match semantics')
-    result = _call('string_to_array', value, literal(delim))
-    empty = _call('regexp_like', value, literal(r'\A\z'))
-    return if_else(empty, array(['']), result)
+    n = literal(-1, tint32) if n is None else as_expr(n)
+    if n.dtype != tint32:
+        raise TypeError('split limit must be int32')
+    return _call('regex_split', _text(value), _text(delim), n)
+
+
+def first_match_in(value, regex):
+    return _call('first_match_in', _text(value), _text(regex))
 
 
 def translate(value, mapping):
+    value = _text(value)
     if isinstance(mapping, Expression) and mapping.dtype == tdict(tstr, tstr):
         ir = mapping.to_ir()
         if ir.get('op') == 'literal' and isinstance(ir.get('value'), list):
             mapping = {entry['key']: entry['value'] for entry in ir['value']}
+    if isinstance(mapping, Expression):
+        if mapping.dtype != tdict(tstr, tstr):
+            raise TypeError('translate requires a dict<str, str>')
+        return _translate_dynamic(value, mapping)
     if not isinstance(mapping, Mapping):
-        raise NotImplementedError('DataFusion translate does not accept expression-valued dictionaries')
+        raise TypeError('translate requires a dictionary')
     preserved, removed = [], []
     for key, replacement in mapping.items():
-        if not isinstance(key, builtins.str) or len(key) != 1 or ord(key) > 0xFFFF:
-            raise ValueError('translate mapping keys must be one UTF-16 character')
-        if not isinstance(replacement, builtins.str) or len(replacement) > 1 or (replacement and ord(replacement) > 0xFFFF):
-            raise NotImplementedError('DataFusion translate cannot replace a character with an arbitrary string')
+        if not isinstance(key, builtins.str) or len(key) != 1:
+            from .utils import FatalError
+            raise FatalError('translate mapping keys must be one character; expected one Unicode codepoint')
+        if not isinstance(replacement, builtins.str):
+            raise TypeError('translate mapping values must be strings')
+        if len(replacement) > 1:
+            return _translate_dynamic(value, literal(mapping, tdict(tstr, tstr)))
         (preserved if replacement else removed).append((key, replacement))
     ordered = preserved + removed
     return _call('translate', value, literal(''.join(key for key, _ in ordered)),
                  literal(''.join(replacement for _, replacement in ordered)))
 
 
+def _translate_dynamic(value, mapping):
+    from .streams import stream_range
+    def translate_bound(text, translations):
+        characters = stream_range(length(text)).to_array().map(lambda i: index(text, i))
+        result = join(literal(''), characters.map(lambda c: translations.get(c, c)))
+        return case().when(is_missing(text) | is_missing(translations), missing(tstr)).when(
+            translations.keys().all(lambda key: length(key) == 1), result
+        ).or_error('translate mapping keys must be one Unicode codepoint')
+    return bind(translate_bound, value, mapping)
+
+
 def join(value, collection):
     collection = as_expr(collection)
-    if not isinstance(collection.dtype, (tarray, tset)) or collection.dtype.element_type != tstr:
+    if not isinstance(collection.dtype, (tarray, tset)):
         raise TypeError('join requires an array or set of strings')
+    if collection.dtype.element_type != tstr:
+        raise TypeError(f'Expected str collection, {collection.dtype.element_type} found')
     from .collections import to_array
     return _call('array_to_string', to_array(collection), value, literal('null'))
 
@@ -197,7 +214,8 @@ def join(value, collection):
 def delimit(collection, delimiter=','):
     collection = as_expr(collection)
     if isinstance(collection.dtype, (tarray, tset)) and collection.dtype.element_type != tstr:
-        raise NotImplementedError('DataFusion casts do not provide Hail formatting for non-string delimit')
+        from .expressions import str_
+        collection = collection.map(str_)
     return join(_text(delimiter), collection)
 
 
@@ -205,13 +223,20 @@ def reverse_complement(value, rna=False):
     if type(rna) is not bool:
         raise TypeError('rna must be a bool')
     value = _text(value)
-    _bmp_literal(value)
     result = _call('reverse', value)
     mapping = {'A': 'U' if rna else 'T', 'T': 'A', 'G': 'C', 'C': 'G'}
     if rna:
         mapping['U'] = 'A'
     mapping.update({key.lower(): replacement.lower() for key, replacement in list(mapping.items())})
     return translate(result, mapping)
+
+
+def hamming(left, right):
+    return _call('hamming', _text(left), _text(right))
+
+
+def entropy(value):
+    return _call('entropy', _text(value))
 
 
 def unsupported(name):

@@ -1,0 +1,20 @@
+[
+  {
+    "module": "methods/test_king.py",
+    "name": "test_king_small",
+    "line": 28,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_king_small():\n    plink_path = resource('balding-nichols-1024-variants-4-samples-3-populations')\n    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam')\n    kinship = hl.king(mt.GT)\n    assert_c_king_same_as_hail_king(resource('balding-nichols-1024-variants-4-samples-3-populations.kin0'), kinship)"
+  },
+  {
+    "module": "methods/test_king.py",
+    "name": "test_king_large",
+    "line": 38,
+    "body": "@pytest.mark.unchecked_allocator\n@fails_service_backend()\n@fails_local_backend()\ndef test_king_large():\n    plink_path = resource('fastlmmTest')\n    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam', reference_genome=None)\n    kinship = hl.king(mt.GT)\n    assert_c_king_same_as_hail_king(resource('fastlmmTest.kin0.bgz'), kinship)"
+  },
+  {
+    "module": "methods/test_king.py",
+    "name": "test_king_filtered_entries_no_error",
+    "line": 49,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_king_filtered_entries_no_error():\n    plink_path = resource('balding-nichols-1024-variants-4-samples-3-populations')\n    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam')\n    mt = mt.filter_entries(hl.rand_bool(0.5))\n    hl.king(mt.GT)._force_count_rows()"
+  }
+]

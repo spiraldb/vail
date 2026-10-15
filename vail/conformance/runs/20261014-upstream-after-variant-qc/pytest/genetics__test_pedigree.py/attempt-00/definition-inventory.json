@@ -1,0 +1,14 @@
+[
+  {
+    "module": "genetics/test_pedigree.py",
+    "name": "Tests.test_trios",
+    "line": 10,
+    "body": "def test_trios(self):\n    t1 = Trio('kid1', pat_id='dad1', is_female=True)\n    t2 = Trio('kid1', pat_id='dad1', is_female=True)\n    t3 = Trio('kid1', pat_id='dad1', is_female=False)\n    t4 = Trio('kid1', pat_id='dad1', mat_id='mom2', is_female=True)\n    t5 = Trio('kid2', mat_id='mom2', is_female=False)\n    t6 = Trio('kid2', pat_id='dad2', mat_id='mom2')\n    self.assertEqual(t1, t2)\n    self.assertNotEqual(t1, t3)\n    self.assertNotEqual(t1, t4)\n    self.assertEqual(t1.fam_id, None)\n    self.assertEqual(t1.s, 'kid1')\n    self.assertEqual(t1.pat_id, 'dad1')\n    self.assertEqual(t1.mat_id, None)\n    self.assertEqual(t1.is_female, True)\n    self.assertEqual(t1.is_female, True)\n    self.assertEqual(t1.is_male, False)\n    self.assertEqual(t1.is_complete(), False)\n    self.assertEqual(t4.is_complete(), True)\n    self.assertEqual(t5.is_complete(), False)\n    self.assertEqual(t6.is_complete(), True)"
+  },
+  {
+    "module": "genetics/test_pedigree.py",
+    "name": "Tests.test_pedigree",
+    "line": 35,
+    "body": "def test_pedigree(self):\n    ped = Pedigree.read(resource('sample.fam'))\n    ped.write('/tmp/sample_out.fam')\n    ped2 = Pedigree.read('/tmp/sample_out.fam')\n    self.assertEqual(ped, ped2)\n    complete_trios = ped.complete_trios()\n    self.assertEqual(len(complete_trios), 3)\n    with self.assertRaises(FatalError):\n        Pedigree.read(resource('duplicate_id.fam'))"
+  }
+]

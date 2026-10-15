@@ -1,0 +1,31 @@
+{
+  "module": "utils/test_hl_hadoop_and_hail_fs.py",
+  "name": "test_rmtree_empty_subdir_is_ok",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'fs' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/utils/test_hl_hadoop_and_hail_fs.py\", line 227, in test_rmtree_empty_subdir_is_ok\n    fs.mkdir(f'{tmpdir}foo/')\n    ^^\nNameError: name 'fs' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.context' has no attribute '_get_local_tmpdir'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_ls'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "No module named 'jproperties'",
+    "No module named 'rich'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

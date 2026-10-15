@@ -1,0 +1,689 @@
+........F.F.........F.....FF..F..........F..................F...F.....F. [ 31%]
+........F...F.....F.F...F.FF.....FFFFF...FFF.F.FF....................... [ 62%]
+.............F.F...FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF..F...... [ 93%]
+..............                                                           [100%]
+=================================== FAILURES ===================================
+_____________________ Tests.test_aggregate_cols_by_init_op _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:304: in test_aggregate_cols_by_init_op
+    cs = mt.group_cols_by(mt.s).aggregate(cs=hl.agg.call_stats(mt.GT, mt.alleles))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2406: in aggregate
+    return self.aggregate_entries(**fields).result()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2517: in result
+    core.annotate(**{_CELLS: indexed_groups.map(cell)}), columns,
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:532: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2509: in cell
+    m, m._validate(v, "entry", aggregate=True), core,
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:547: in _validate
+    check_initializers(expr.to_ir())
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:537: in check_initializers
+    raise NotImplementedError(
+E   NotImplementedError: matrix-axis aggregate initialization requires native Table support for group-dependent initializers
+__________________ Tests.test_aggregate_cols_scope_violation ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:308: in test_aggregate_cols_scope_violation
+    mt = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2163: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_____________________ Tests.test_annotate_col_agg_lowering _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1211: in test_annotate_col_agg_lowering
+    mt = mt.annotate_cols(exploded=hl.agg.explode(lambda e: common_ref + hl.agg.sum(e), mt.e2), array=hl.agg.array_agg(lambda e: common_ref + hl.agg.sum(e), mt.e2), filt=hl.agg.filter(mt.e1 < 5, hl.agg.sum(mt.e1) + common_ref), grouped=hl.agg.group_by(mt.e1 % 5, hl.agg.sum(mt.e1) + common_ref))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:886: in annotate_cols
+    return self._annotate("col", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:820: in _annotate
+    return self._project_axis(
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:777: in _project_axis
+    self._axis_aggregates(v, axis, base)
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:716: in _axis_aggregates
+    return Expression(expr.dtype, self, _IR(rewrite(expr.to_ir()), refs, lookups))
+                                            ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:698: in rewrite
+    native = native.grouped_aggregate_json(
+E   ValueError: invalid TableIR: row fields must be inside an aggregator in Table.aggregate
+___________________________ Tests.test_codecs_matrix ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:770: in test_codecs_matrix
+    supported_codecs = scala_object(Env.hail().io, 'BufferSpec').specs()
+                                    ^^^^^^^^
+E   AttributeError: type object 'Env' has no attribute 'hail'
+___________________________ Tests.test_codecs_table ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:782: in test_codecs_table
+    supported_codecs = scala_object(Env.hail().io, 'BufferSpec').specs()
+                                    ^^^^^^^^
+E   AttributeError: type object 'Env' has no attribute 'hail'
+________________________ Tests.test_collect_cols_by_key ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:324: in test_collect_cols_by_key
+    col_dict = hl.literal({0: [1], 1: [2, 3], 2: [4, 5, 6]})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:906: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py:595: in infer_type
+    return tstruct(**{name: infer_type(field) for name, field in value.items()})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+________________________ Tests.test_entry_filter_stats _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1202: in test_entry_filter_stats
+    assert mt.aggregate_rows(hl.agg.all(mt.entry_stats_row == row_expected[mt.row_idx % 4 == 0]))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:313: in __eq__
+    def __eq__(self, other): return self._compare(other, "eq")
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:251: in _compare
+    _check_comparable(self.dtype, other.dtype, operator)
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:1251: in _check_comparable
+    raise TypeError(f"incompatible comparison types: {left} and {right}")
+E   TypeError: incompatible comparison types: struct{n_filtered: int64, n_remaining: int64, fraction_filtered: float64} and struct{n_filtered: int32, n_remaining: int32, fraction_filtered: float32}
+_______________________ Tests.test_fix3307_read_mt_wrong _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:793: in test_fix3307_read_mt_wrong
+    with hl.TemporaryDirectory(suffix='.mt', ensure_exists=False) as mt_path:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+________________________ Tests.test_hardy_weinberg_test ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:997: in test_hardy_weinberg_test
+    mt_two_sided = mt.select_rows(**hl.agg.hardy_weinberg_test(mt.GT, one_sided=False))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:895: in select_rows
+    return self._select("row", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:845: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:777: in _project_axis
+    self._axis_aggregates(v, axis, base)
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:682: in _axis_aggregates
+    return reduce_list(self, expr, base, self._row_contexts(base))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:479: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:470: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:462: in walk
+    raise NotImplementedError(
+E   NotImplementedError: matrix list aggregation requires a native per-list hardy_weinberg_test reducer
+_______________________ Tests.test_hw_func_and_agg_agree _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1014: in test_hw_func_and_agg_agree
+    mt_two_sided = mt.annotate_rows(stats=hl.agg.call_stats(mt.GT, mt.alleles), hw=hl.agg.hardy_weinberg_test(mt.GT, one_sided=False))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:883: in annotate_rows
+    return self._annotate("row", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:820: in _annotate
+    return self._project_axis(
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:777: in _project_axis
+    self._axis_aggregates(v, axis, base)
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:682: in _axis_aggregates
+    return reduce_list(self, expr, base, self._row_contexts(base))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:479: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrix_list_aggregates.py:462: in walk
+    raise NotImplementedError(
+E   NotImplementedError: matrix list aggregation requires a native per-list hardy_weinberg_test reducer
+_________________________ Tests.test_invalid_metadata __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1269: in test_invalid_metadata
+    hl.read_matrix_table(resource('0.1-1fd5cc7.vds'))
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2163: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/0.1-1fd5cc7.vds/_vail_matrix.json'
+________________ Tests.test_legacy_files_with_required_globals _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1272: in test_legacy_files_with_required_globals
+    hl.read_table(resource('required_globals.ht'))._force_count()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1882: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+______________________ Tests.test_lower_row_agg_init_arg _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1331: in test_lower_row_agg_init_arg
+    hl.hwe_normalized_pca(mt.GT)
+    ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'
+___________________ Tests.test_make_table_empty_entry_field ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:947: in test_make_table_empty_entry_field
+    mt = mt.select_entries(**{'': mt.row_idx * mt.col_idx})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:901: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:845: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:736: in _project_axis
+    raise ValueError("field names must be nonempty strings")
+E   ValueError: field names must be nonempty strings
+_____________________ Tests.test_matrix_multi_write_range ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1284: in test_matrix_multi_write_range
+    hl.experimental.write_matrix_tables(mts, f)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+_______________________ Tests.test_matrix_type_equality ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1183: in test_matrix_type_equality
+    assert mt._type == mt._type
+           ^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:441: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _type
+____________________________ Tests.test_multi_write ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1175: in test_multi_write
+    paths = hl.experimental.write_matrix_tables(mts, prefix)
+            ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+________________________ Tests.test_order_by_intervals _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:913: in test_order_by_intervals
+    ht = ht.annotate_globals(ilist=intervals)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:452: in annotate_globals
+    expressions = {name: as_expr(value) for name, value in named_exprs.items()}
+                         ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:91: in as_expr
+    return StructExpression(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:881: in __init__
+    dtype = tstruct(**{name: expr.dtype for name, expr in field_exprs.items()})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+_____________________________ Tests.test_overwrite _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1264: in test_overwrite
+    mt.write(f)
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2062: in write
+    raise FileExistsError(output)
+E   FileExistsError: /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/HLAmZ4KZLZ1GN7LL6xtstU.mt
+_________________________ Tests.test_partitioned_write _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1244: in test_partitioned_write
+    test_parts([(0, 40, True, False)])
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1240: in test_parts
+    mt.write(tmp, _partitions=parts)
+E   TypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'
+_____________________ Tests.test_partitioned_write_coerce ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1253: in test_partitioned_write_coerce
+    mt.write(tmp, _partitions=parts)
+E   TypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'
+_______________________________ Tests.test_range _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:821: in test_range
+    et = ds.annotate_entries(entry_idx=10 * ds.row_idx + ds.col_idx).entries().add_index()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:406: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: add_index
+_________________________ Tests.test_read_stored_cols __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:715: in test_read_stored_cols
+    t = hl.read_table(f + '/cols')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1882: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+________________________ Tests.test_read_stored_globals ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:731: in test_read_stored_globals
+    t = hl.read_table(f + '/globals')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1882: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+_________________________ Tests.test_read_stored_rows __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:723: in test_read_stored_rows
+    t = hl.read_table(f + '/rows')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1882: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+______________________________ Tests.test_rename _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:804: in test_rename
+    self.assertEqual(renamed1['locus2']._type, dataset['locus']._type)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _type. Did you mean: 'dtype'?
+______________________ Tests.test_row_joins_into_table_2 _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1107: in test_row_joins_into_table_2
+    with self.assertRaises(hl.expr.ExpressionException):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: ExpressionException not raised
+______________________ Tests.test_row_key_field_show_runs ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:28: in test_row_key_field_show_runs
+    ds.locus.show()
+    ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: show
+________________________ Tests.test_write_stage_locally ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1026: in test_write_stage_locally
+    mt.write(f, stage_locally=True)
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:2050: in write
+    raise NotImplementedError("matrix codecs and staging are not implemented")
+E   NotImplementedError: matrix codecs and staging are not implemented
+__________________________ test_read_write_all_types ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1342: in test_read_write_all_types
+    mt = create_all_values_matrix_table()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/helpers.py:72: in create_all_values_matrix_table
+    all_values = create_all_values()
+                 ^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/helpers.py:62: in create_all_values
+    return hl.struct(f32=hl.float32(3.14), i64=hl.int64(-9), m=hl.missing(hl.tfloat64), astruct=hl.struct(a=hl.missing(hl.tint32), b=5.5), mstruct=hl.missing(hl.tstruct(x=hl.tint32, y=hl.tstr)), aset=hl.set(['foo', 'bar', 'baz']), mset=hl.missing(hl.tset(hl.tfloat64)), d=hl.dict({hl.array(['a', 'b']): 0.5, hl.array(['x', hl.missing(hl.tstr), 'z']): 0.3}), md=hl.missing(hl.tdict(hl.tint32, hl.tstr)), h38=hl.locus('chr22', 33878978, 'GRCh38'), ml=hl.missing(hl.tlocus('GRCh37')), i=hl.interval(hl.locus('1', 999), hl.locus('1', 1001)), c=hl.call(0, 1), mc=hl.missing(hl.tcall), t=hl.tuple([hl.call(1, 2, phased=True), 'foo', hl.missing(hl.tstr)]), mt=hl.missing(hl.ttuple(hl.tlocus('GRCh37'), hl.tbool)), nd=hl.nd.arange(0, 10).reshape((2, 5)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:311: in reshape
+    raise NotImplementedError("ndarray reshape is not implemented")
+E   NotImplementedError: ndarray reshape is not implemented
+_________________________ test_matrix_randomness_read __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1377: in test_matrix_randomness_read
+    assert_contains_node(mt, ir.MatrixRead)
+                             ^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixRead is not implemented
+______ test_matrix_randomness_aggregate_rows_by_key_with_body_randomness _______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1384: in test_matrix_randomness_aggregate_rows_by_key_with_body_randomness
+    assert_contains_node(mt, ir.MatrixAggregateRowsByKey)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixAggregateRowsByKey is not implemented
+_ test_matrix_randomness_aggregate_rows_by_key_then_aggregate_entries_with_agg_randomness _
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1395: in test_matrix_randomness_aggregate_rows_by_key_then_aggregate_entries_with_agg_randomness
+    assert_contains_node(mt, ir.MatrixAggregateRowsByKey)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixAggregateRowsByKey is not implemented
+_____ test_matrix_randomness_aggregate_rows_by_key_without_body_randomness _____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1406: in test_matrix_randomness_aggregate_rows_by_key_without_body_randomness
+    assert_contains_node(mt, ir.MatrixAggregateRowsByKey)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixAggregateRowsByKey is not implemented
+___________ test_matrix_randomness_filter_rows_with_cond_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1412: in test_matrix_randomness_filter_rows_with_cond_randomness
+    assert_contains_node(mt, ir.MatrixFilterRows)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixFilterRows is not implemented
+__________ test_matrix_randomness_filter_rows_without_cond_randomness __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1419: in test_matrix_randomness_filter_rows_without_cond_randomness
+    assert_contains_node(mt, ir.MatrixFilterRows)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixFilterRows is not implemented
+______________________ test_matrix_randomness_choose_cols ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1425: in test_matrix_randomness_choose_cols
+    assert_contains_node(mt, ir.MatrixChooseCols)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixChooseCols is not implemented
+_____________ test_matrix_randomness_map_cols_with_body_randomness _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1431: in test_matrix_randomness_map_cols_with_body_randomness
+    assert_contains_node(mt, ir.MatrixMapCols)
+                             ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapCols is not implemented
+_____________ test_matrix_randomness_map_cols_with_agg_randomness ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1439: in test_matrix_randomness_map_cols_with_agg_randomness
+    assert_contains_node(mt, ir.MatrixMapCols)
+                             ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapCols is not implemented
+_____________ test_matrix_randomness_map_cols_with_scan_randomness _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1447: in test_matrix_randomness_map_cols_with_scan_randomness
+    assert_contains_node(mt, ir.MatrixMapCols)
+                             ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapCols is not implemented
+___________ test_matrix_randomness_map_cols_without_body_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1455: in test_matrix_randomness_map_cols_without_body_randomness
+    assert_contains_node(mt, ir.MatrixMapCols)
+                             ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapCols is not implemented
+______________________ test_matrix_randomness_union_cols _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1465: in test_matrix_randomness_union_cols
+    assert_contains_node(mt, ir.MatrixUnionCols)
+                             ^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixUnionCols is not implemented
+___________ test_matrix_randomness_map_entries_with_body_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1471: in test_matrix_randomness_map_entries_with_body_randomness
+    assert_contains_node(mt, ir.MatrixMapEntries)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapEntries is not implemented
+__________ test_matrix_randomness_map_entries_without_body_randomness __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1479: in test_matrix_randomness_map_entries_without_body_randomness
+    assert_contains_node(mt, ir.MatrixMapEntries)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapEntries is not implemented
+__________ test_matrix_randomness_filter_entries_with_cond_randomness __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1485: in test_matrix_randomness_filter_entries_with_cond_randomness
+    assert_contains_node(mt, ir.MatrixFilterEntries)
+                             ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixFilterEntries is not implemented
+________ test_matrix_randomness_filter_entries_without_cond_randomness _________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1492: in test_matrix_randomness_filter_entries_without_cond_randomness
+    assert_contains_node(mt, ir.MatrixFilterEntries)
+                             ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixFilterEntries is not implemented
+______________________ test_matrix_randomness_key_rows_by ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1498: in test_matrix_randomness_key_rows_by
+    assert_contains_node(mt, ir.MatrixKeyRowsBy)
+                             ^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixKeyRowsBy is not implemented
+_______________________ test_matrix_randomness_map_rows ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1504: in test_matrix_randomness_map_rows
+    assert_contains_node(mt, ir.MatrixMapRows)
+                             ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapRows is not implemented
+_____________ test_matrix_randomness_map_rows_with_agg_randomness ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1512: in test_matrix_randomness_map_rows_with_agg_randomness
+    assert_contains_node(mt, ir.MatrixMapRows)
+                             ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapRows is not implemented
+_____________ test_matrix_randomness_map_rows_with_scan_randomness _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1520: in test_matrix_randomness_map_rows_with_scan_randomness
+    assert_contains_node(mt, ir.MatrixMapRows)
+                             ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapRows is not implemented
+___________ test_matrix_randomness_map_rows_without_body_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1528: in test_matrix_randomness_map_rows_without_body_randomness
+    assert_contains_node(mt, ir.MatrixMapRows)
+                             ^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapRows is not implemented
+___________ test_matrix_randomness_map_globals_with_body_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1534: in test_matrix_randomness_map_globals_with_body_randomness
+    assert_contains_node(mt, ir.MatrixMapGlobals)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapGlobals is not implemented
+__________ test_matrix_randomness_map_globals_without_body_randomness __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1541: in test_matrix_randomness_map_globals_without_body_randomness
+    assert_contains_node(mt, ir.MatrixMapGlobals)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixMapGlobals is not implemented
+___________ test_matrix_randomness_filter_cols_with_cond_randomness ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1547: in test_matrix_randomness_filter_cols_with_cond_randomness
+    assert_contains_node(mt, ir.MatrixFilterCols)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixFilterCols is not implemented
+__________ test_matrix_randomness_filter_cols_without_cond_randomness __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1554: in test_matrix_randomness_filter_cols_without_cond_randomness
+    assert_contains_node(mt, ir.MatrixFilterCols)
+                             ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixFilterCols is not implemented
+__________________ test_matrix_randomness_collect_cols_by_key __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1561: in test_matrix_randomness_collect_cols_by_key
+    assert_contains_node(mt, ir.MatrixCollectColsByKey)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixCollectColsByKey is not implemented
+______ test_matrix_randomness_aggregate_cols_by_key_with_body_randomness _______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1568: in test_matrix_randomness_aggregate_cols_by_key_with_body_randomness
+    assert_contains_node(mt, ir.MatrixAggregateColsByKey)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixAggregateColsByKey is not implemented
+_______ test_matrix_randomness_aggregate_cols_by_key_with_agg_randomness _______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1579: in test_matrix_randomness_aggregate_cols_by_key_with_agg_randomness
+    assert_contains_node(mt, ir.MatrixAggregateColsByKey)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixAggregateColsByKey is not implemented
+_____ test_matrix_randomness_aggregate_cols_by_key_without_body_randomness _____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1590: in test_matrix_randomness_aggregate_cols_by_key_without_body_randomness
+    assert_contains_node(mt, ir.MatrixAggregateColsByKey)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixAggregateColsByKey is not implemented
+_____________________ test_matrix_randomness_explode_rows ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1597: in test_matrix_randomness_explode_rows
+    assert_contains_node(mt, ir.MatrixExplodeRows)
+                             ^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixExplodeRows is not implemented
+______________________ test_matrix_randomness_repartition ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1604: in test_matrix_randomness_repartition
+    assert_contains_node(mt, ir.MatrixRepartition)
+                             ^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixRepartition is not implemented
+______________________ test_matrix_randomness_union_rows _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1613: in test_matrix_randomness_union_rows
+    assert_contains_node(mt, ir.MatrixUnionRows)
+                             ^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixUnionRows is not implemented
+____________________ test_matrix_randomness_distinct_by_row ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1620: in test_matrix_randomness_distinct_by_row
+    assert_contains_node(mt, ir.MatrixDistinctByRow)
+                             ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixDistinctByRow is not implemented
+_______________________ test_matrix_randomness_rows_head _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1626: in test_matrix_randomness_rows_head
+    assert_contains_node(mt, ir.MatrixRowsHead)
+                             ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixRowsHead is not implemented
+_______________________ test_matrix_randomness_cols_head _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1632: in test_matrix_randomness_cols_head
+    assert_contains_node(mt, ir.MatrixColsHead)
+                             ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixColsHead is not implemented
+_______________________ test_matrix_randomness_rows_tail _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1638: in test_matrix_randomness_rows_tail
+    assert_contains_node(mt, ir.MatrixRowsTail)
+                             ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixRowsTail is not implemented
+_______________________ test_matrix_randomness_cols_tail _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1644: in test_matrix_randomness_cols_tail
+    assert_contains_node(mt, ir.MatrixColsTail)
+                             ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixColsTail is not implemented
+_____________________ test_matrix_randomness_explode_cols ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1651: in test_matrix_randomness_explode_cols
+    assert_contains_node(mt, ir.MatrixExplodeCols)
+                             ^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixExplodeCols is not implemented
+_________________ test_matrix_randomness_cast_table_to_matrix __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1659: in test_matrix_randomness_cast_table_to_matrix
+    assert_contains_node(mt, ir.CastTableToMatrix)
+                             ^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.CastTableToMatrix is not implemented
+__________________ test_matrix_randomness_annotate_rows_table __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1668: in test_matrix_randomness_annotate_rows_table
+    assert_contains_node(joined, ir.MatrixAnnotateRowsTable)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixAnnotateRowsTable is not implemented
+__________________ test_matrix_randomness_annotate_cols_table __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1677: in test_matrix_randomness_annotate_cols_table
+    assert_contains_node(joined, ir.MatrixAnnotateColsTable)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixAnnotateColsTable is not implemented
+____________________ test_matrix_randomness_to_matrix_apply ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1683: in test_matrix_randomness_to_matrix_apply
+    assert_contains_node(mt, ir.MatrixToMatrixApply)
+                             ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixToMatrixApply is not implemented
+________________________ test_matrix_randomness_rename _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1689: in test_matrix_randomness_rename
+    assert_contains_node(mt, ir.MatrixRename)
+                             ^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixRename is not implemented
+___________________ test_matrix_randomness_filter_intervals ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1696: in test_matrix_randomness_filter_intervals
+    assert_contains_node(mt, ir.MatrixFilterIntervals)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/ir/__init__.py:10: in __getattr__
+    raise NotImplementedError(f'vail.ir.{name} is not implemented')
+E   NotImplementedError: vail.ir.MatrixFilterIntervals is not implemented
+________________________ test_struct_of_arrays_encoding ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py:1717: in test_struct_of_arrays_encoding
+    with hl._with_flags(use_unstable_encodings='1'):
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_with_flags'
+=============================== warnings summary ===============================
+test_matrix_table.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_matrix_table.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_aggregate_cols_by_init_op
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_aggregate_cols_scope_violation
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_annotate_col_agg_lowering
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_codecs_matrix
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_codecs_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_collect_cols_by_key
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_entry_filter_stats
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_fix3307_read_mt_wrong
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_hardy_weinberg_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_hw_func_and_agg_agree
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_invalid_metadata
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_legacy_files_with_required_globals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_lower_row_agg_init_arg
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_make_table_empty_entry_field
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_matrix_multi_write_range
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_matrix_type_equality
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_multi_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_order_by_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_overwrite
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_partitioned_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_partitioned_write_coerce
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_range
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_cols
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_globals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_rows
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_rename
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_row_joins_into_table_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_row_key_field_show_runs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_write_stage_locally
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_read_write_all_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_read
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_aggregate_rows_by_key_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_aggregate_rows_by_key_then_aggregate_entries_with_agg_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_aggregate_rows_by_key_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_filter_rows_with_cond_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_filter_rows_without_cond_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_choose_cols
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_cols_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_cols_with_agg_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_cols_with_scan_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_cols_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_union_cols
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_entries_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_entries_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_filter_entries_with_cond_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_filter_entries_without_cond_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_key_rows_by
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_rows
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_rows_with_agg_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_rows_with_scan_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_rows_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_globals_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_map_globals_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_filter_cols_with_cond_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_filter_cols_without_cond_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_collect_cols_by_key
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_aggregate_cols_by_key_with_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_aggregate_cols_by_key_with_agg_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_aggregate_cols_by_key_without_body_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_explode_rows
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_repartition
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_union_rows
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_distinct_by_row
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_rows_head
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_cols_head
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_rows_tail
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_cols_tail
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_explode_cols
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_cast_table_to_matrix
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_annotate_rows_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_annotate_cols_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_to_matrix_apply
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_rename
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_matrix_randomness_filter_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8xdnp0u8/upstream_hail/matrixtable/test_matrix_table.py::test_struct_of_arrays_encoding
+75 failed, 155 passed, 1 warning in 58.09s

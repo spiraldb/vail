@@ -1,0 +1,74 @@
+[
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_cdf",
+    "line": 8,
+    "body": "def test_cdf():\n    ht = hl.utils.range_table(100)\n    hl.plot.cdf(ht.idx)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_histogram",
+    "line": 13,
+    "body": "def test_histogram():\n    ht = hl.utils.range_table(100)\n    hl.plot.histogram(ht.idx, (0, 100), 10)\n    hl.plot.histogram(ht.idx)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_pdf",
+    "line": 19,
+    "body": "def test_pdf():\n    ht = hl.utils.range_table(100)\n    hl.plot.pdf(ht.idx)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_smoothed_pdf",
+    "line": 24,
+    "body": "def test_smoothed_pdf():\n    ht = hl.utils.range_table(100)\n    hl.plot.smoothed_pdf(ht.idx)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_cumulative_histogram",
+    "line": 29,
+    "body": "def test_cumulative_histogram():\n    ht = hl.utils.range_table(100)\n    hl.plot.cumulative_histogram(ht.idx, (0, 100), 10)\n    hl.plot.cumulative_histogram(ht.idx)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_histogram2d",
+    "line": 35,
+    "body": "def test_histogram2d():\n    ht = hl.utils.range_table(100)\n    hl.plot.histogram2d(ht.idx, ht.idx * ht.idx)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_scatter",
+    "line": 40,
+    "body": "def test_scatter():\n    ht = hl.utils.range_table(100)\n    hl.plot.scatter(ht.idx, ht.idx * ht.idx)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_joint_plot",
+    "line": 45,
+    "body": "def test_joint_plot():\n    ht = hl.utils.range_table(100)\n    hl.plot.joint_plot(ht.idx, ht.idx * ht.idx)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_qq",
+    "line": 50,
+    "body": "def test_qq():\n    ht = hl.utils.range_table(100)\n    hl.plot.qq(ht.idx / 100)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_manhattan",
+    "line": 55,
+    "body": "def test_manhattan():\n    ht = hl.balding_nichols_model(1, n_variants=100, n_samples=1).rows()\n    ht = ht.add_index('idx')\n    hl.plot.manhattan(ht.idx / 100)"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_plots_deprecated_collect_all",
+    "line": 70,
+    "body": "@pytest.mark.parametrize('name, plot', [('manhattan', hl.plot.manhattan), ('scatter', lambda x, **kwargs: hl.plot.scatter(x, x, **kwargs)), ('join_plot', lambda x, **kwargs: hl.plot.joint_plot(x, x, **kwargs)), ('qq', hl.plot.qq)])\ndef test_plots_deprecated_collect_all(name, plot):\n    ht = hl.balding_nichols_model(1, n_variants=100, n_samples=1).rows()\n    ht = ht.add_index('idx')\n    with pytest.raises(ValueError):\n        plot(ht.idx, collect_all=True)\n    with pytest.raises(ValueError):\n        plot(ht.idx, n_divisions=0)\n    with patch('warnings.warn') as mock:\n        plot(ht.idx, n_divisions=None)\n        mock.assert_not_called()\n    with patch('warnings.warn') as mock:\n        plot(ht.idx, n_divisions=None, collect_all=True)\n        mock.assert_called()\n        assert name in mock.call_args_list[0][0][0]"
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_visualize_missingness",
+    "line": 90,
+    "body": "def test_visualize_missingness():\n    mt = hl.balding_nichols_model(1, n_variants=100, n_samples=1)\n    mt = mt.key_rows_by('locus')\n    hl.plot.visualize_missingness(hl.or_missing(hl.rand_bool(0.2), mt.GT))"
+  }
+]

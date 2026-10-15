@@ -1,0 +1,23 @@
+{"pid": 72380, "native": "/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/_native.abi3.so"}
+{"event": "start", "stage": "fixture_snapshot", "pid": 72380}
+{"event": "end", "stage": "fixture_snapshot", "seconds": 20.54893762478605, "result": "/private/tmp/vail-profile-346-fixtures/sample.vcf-20-partitions.mt"}
+{"event": "start", "stage": "read_matrix", "pid": 72380}
+{"event": "end", "stage": "read_matrix", "seconds": 0.0020870838779956102, "result": null}
+{"event": "start", "stage": "unfiltered_partitions", "pid": 72380}
+{"event": "end", "stage": "unfiltered_partitions", "seconds": 7.62520357966423e-06, "result": 20}
+{"event": "start", "stage": "unfiltered_rows", "pid": 72380}
+{"event": "end", "stage": "unfiltered_rows", "seconds": 0.029132874915376306, "result": 346}
+{"event": "start", "stage": "unfiltered_cols", "pid": 72380}
+{"event": "end", "stage": "unfiltered_cols", "seconds": 0.001838000025600195, "result": 100}
+{"event": "start", "stage": "predicate", "pid": 72380}
+{"event": "end", "stage": "predicate", "seconds": 0.00013424991630017757, "result": null}
+{"event": "start", "stage": "filter_construct", "pid": 72380}
+{"event": "end", "stage": "filter_construct", "seconds": 0.04070975002832711, "result": null}
+{"event": "start", "stage": "filtered_partitions", "pid": 72380}
+{"event": "end", "stage": "filtered_partitions", "seconds": 76.2145767500624, "result": 15}
+{"event": "start", "stage": "filtered_count_rows", "pid": 72380}
+{"event": "end", "stage": "filtered_count_rows", "seconds": 108.2343449590262, "result": 245}
+{"event": "start", "stage": "filtered_count_cols", "pid": 72380}
+{"event": "end", "stage": "filtered_count_cols", "seconds": 0.0037067909725010395, "result": 100}
+{"event": "start", "stage": "filtered_rows_view_count", "pid": 72380}
+{"event": "end", "stage": "filtered_rows_view_count", "seconds": 186.23789174994454, "result": 245}

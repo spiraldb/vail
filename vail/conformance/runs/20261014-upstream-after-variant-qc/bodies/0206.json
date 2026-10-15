@@ -1,0 +1,28 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_table_parallelize_partial_infer_types",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "partial_type is not implemented in this initial slice",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/table/test_table.py\", line 899, in test_table_parallelize_partial_infer_types\n    table = hl.Table.parallelize(data, partial_type=partial_type, key='idx')\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 278, in parallelize\n    raise NotImplementedError(\"partial_type is not implemented in this initial slice\")\nNotImplementedError: partial_type is not implemented in this initial slice\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

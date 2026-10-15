@@ -1,0 +1,27 @@
+
+==================================== ERRORS ====================================
+____________________ ERROR collecting test_file_formats.py _____________________
+ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-bt5pu5wj/upstream_hail/matrixtable/test_file_formats.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-bt5pu5wj/upstream_hail/matrixtable/test_file_formats.py:90: in <module>
+    ht_paths, mt_paths = asyncio.new_event_loop().run_until_complete(collect_paths())
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/asyncio/base_events.py:691: in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-bt5pu5wj/upstream_hail/matrixtable/test_file_formats.py:62: in collect_paths
+    from hailtop.aiotools.router_fs import RouterAsyncFS
+/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiotools/__init__.py:1: in <module>
+    from .fs import (
+/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiotools/fs/__init__.py:1: in <module>
+    from .copier import Copier, CopyReport, SourceCopier, SourceReport, Transfer, TransferReport
+/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/aiotools/fs/copier.py:7: in <module>
+    import humanize
+E   ModuleNotFoundError: No module named 'humanize'
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-bt5pu5wj/upstream_hail/matrixtable/test_file_formats.py
+1 error in 0.12s

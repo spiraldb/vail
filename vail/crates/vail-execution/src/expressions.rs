@@ -444,6 +444,8 @@ pub enum Expr {
         left: Box<Expr>,
         right: Box<Expr>,
     },
+    // Keep the original wire spelling while sharing the scalar UDF registry.
+    #[serde(alias = "scalar_function")]
     StringFunction {
         function: String,
         args: Vec<Expr>,
@@ -4008,6 +4010,13 @@ pub(crate) fn string_function(
         array: Box::new(text.clone()),
     };
     Ok(match name {
+        "hardy_weinberg_counts" => (
+            crate::hwe_counts::udf(),
+            vec![int32.clone(), int32.clone(), int32, boolean],
+            Type::Array {
+                array: Box::new(Type::Primitive(PrimitiveType::Float64)),
+            },
+        ),
         "lower" => (string::lower(), vec![text.clone()], text),
         "upper" => (string::upper(), vec![text.clone()], text),
         "reverse" => (unicode::reverse(), vec![text.clone()], text),
@@ -4020,6 +4029,31 @@ pub(crate) fn string_function(
         "character_length" => (unicode::character_length(), vec![text], int32),
         "regexp_count" => (regex::regexp_count(), vec![text.clone(), text], int64),
         "regexp_like" => (regex::regexp_like(), vec![text.clone(), text], boolean),
+        "regexp_replace" => (
+            regex::regexp_replace(),
+            vec![text.clone(), text.clone(), text.clone(), text.clone()],
+            text,
+        ),
+        "regex_split" => (
+            crate::string_kernels::udf(name),
+            vec![text.clone(), text, int32],
+            strings,
+        ),
+        "first_match_in" => (
+            crate::string_kernels::udf(name),
+            vec![text.clone(), text],
+            strings,
+        ),
+        "hamming" => (
+            crate::string_kernels::udf(name),
+            vec![text.clone(), text],
+            int32,
+        ),
+        "entropy" => (
+            crate::string_kernels::udf(name),
+            vec![text],
+            Type::Primitive(PrimitiveType::Float64),
+        ),
         "strpos" => (unicode::strpos(), vec![text.clone(), text], int32),
         "substr" => (
             unicode::substr(),

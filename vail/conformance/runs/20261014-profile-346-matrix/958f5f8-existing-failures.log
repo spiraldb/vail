@@ -1,0 +1,144 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+____ test_tagged_types_survive_execution_export_and_storage[dtype4-value4] _____
+
+dtype = tdict(key_type=ttuple(types=(int32,)), value_type=tarray(ttuple(types=(int32,))))
+value = {(1,): [(2,)]}
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-850/test_tagged_types_survive_exec0')
+
+    @pytest.mark.parametrize('dtype,value', [
+        (hl.ttuple(), ()),
+        (hl.ttuple(hl.tint32, hl.tstr), (2, 'a')),
+        (hl.tarray(hl.ttuple(hl.tint32)), [(1,), None, (2,)]),
+        (hl.tset(hl.ttuple(hl.tint32)), {(1,), (2,)}),
+        (hl.tdict(hl.ttuple(hl.tint32), hl.tarray(hl.ttuple(hl.tint32))), {(1,): [(2,)]}),
+        (hl.tcall, hl.Call((1, 2), True)),
+        (hl.tndarray(hl.tint32, 2), {'__vail_ndarray_data': [1, 2, 3, 4], '__vail_ndarray_shape': [2, 2]}),
+        (hl.tinterval(hl.tint32), hl.Interval(1, 3)),
+        (hl.tlocus('GRCh37'), hl.Locus('1', 2, hl.get_reference('GRCh37'))),
+    ])
+    def test_tagged_types_survive_execution_export_and_storage(dtype, value, tmp_path):
+        table = hl.Table.parallelize([{'x': value}, {'x': None}], schema=hl.tstruct(x=dtype), n_partitions=2)
+        table = table.select(x=table.x)
+        schema, exported = read_ipc(table._native.collect_arrow())
+        assert dtype_from_arrow(schema.field('x').type) == dtype
+        imported = hl.Table.parallelize(exported)
+        assert imported.x.dtype == dtype
+        assert imported._same(table)
+        path = tmp_path / 'tagged'
+>       table.write(path)
+
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/tests/test_arrow_type_metadata.py:68: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <vail.Table object at 0x11a21e060>
+output = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-850/test_tagged_types_survive_exec0/tagged')
+overwrite = False, stage_locally = False, _codec_spec = None
+
+    def write(self, output, overwrite=False, stage_locally=False, _codec_spec=None):
+        """Atomically publish a local Viceberg snapshot; retain old generations on overwrite."""
+        if not isinstance(overwrite, builtins.bool) or not isinstance(stage_locally, builtins.bool):
+            raise TypeError("overwrite and stage_locally must be bool")
+        if stage_locally or _codec_spec is not None:
+            raise NotImplementedError("staging and custom codecs are not supported")
+>       self._native.write(os.fspath(output), overwrite)
+E       RuntimeError: Unexpected => Vortex error, source: Other error: ListLayoutStrategy needs at least one chunk
+
+python/vail/__init__.py:496: RuntimeError
+___________ test_mixed_and_nested_keys_and_missing_values_round_trip ___________
+
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-850/test_mixed_and_nested_keys_and0')
+
+    def test_mixed_and_nested_keys_and_missing_values_round_trip(tmp_path):
+        table = hl.Table.parallelize(
+            [{"id": 0, "s": hl.Struct(x=2)}, {"id": 1, "s": hl.Struct(x=None)},
+             {"id": 2, "s": hl.Struct(x=1)}],
+            schema=hl.tstruct(id=hl.tint32, s=hl.tstruct(x=hl.tint32)),
+            n_partitions=2,
+        )
+        nested = table.key_by(table.s.x)
+        assert list(nested.key) == ["x"]
+        assert [row.id for row in nested.collect()] == [2, 0, 1]
+        keyed = table.key_by("id", bounds=hl.interval(table.id, table.id + 1))
+        path = tmp_path / "computed.viceberg"
+        keyed.write(path)
+>       assert keyed._same(hl.read_table(path))
+E       AssertionError: assert False
+E        +  where False = _same(<vail.Table object at 0x119649c40>)
+E        +    where _same = <vail.Table object at 0x11a1684d0>._same
+E        +    and   <vail.Table object at 0x119649c40> = <function read_table at 0x105f4eca0>(PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-850/test_mixed_and_nested_keys_and0/computed.viceberg'))
+E        +      where <function read_table at 0x105f4eca0> = hl.read_table
+
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/tests/test_computed_keys_order.py:31: AssertionError
+----------------------------- Captured stdout call -----------------------------
+Table._same: row values, keys, or row counts differ
+_________ test_globals_reads_are_lazy_snapshot_pinned_and_checksummed __________
+
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-850/test_globals_reads_are_lazy_sn0')
+
+    def test_globals_reads_are_lazy_snapshot_pinned_and_checksummed(tmp_path):
+        path = tmp_path / 'table'
+        hl.range_table(3).annotate_globals(g=[1, None]).write(path)
+        old = hl.read_table(path)
+        old_file = next(path.rglob('globals.arrow'))
+        data = old_file.read_bytes()
+        old_file.unlink()
+        read = hl.read_table(path)
+        mapped = read.annotate(x=read.g[0])
+        assert read.globals.dtype == hl.tstruct(g=hl.tarray(hl.tint32))
+        assert mapped.head(0).collect() == []
+        with pytest.raises(FileNotFoundError):
+            hl.eval(read.g)
+        old_file.write_bytes(data)
+        assert hl.eval(read.g) == [1, None]
+        hl.range_table(1).annotate_globals(g=[2]).write(path, overwrite=True)
+        assert hl.eval(old.g) == [1, None]
+        assert hl.eval(hl.read_table(path).g) == [2]
+        old_file.write_bytes(b'corrupt')
+        with pytest.raises(ValueError, match='checksum'):
+>           hl.eval(old.g)
+
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/tests/test_globals.py:136: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+expression = <vail.expressions.Field object at 0x11a2efae0>
+
+    def eval(expression):
+        """Evaluate an unindexed expression, including a table's globals."""
+        expr = as_expr(expression)
+        if isinstance(expr.source, MatrixTable):
+            from .matrixtable import _axes
+            if _axes(expr.to_ir()):
+                raise ValueError("eval cannot evaluate indexed matrix expressions")
+            matrix = expr.source
+            expr = matrix._lower(expr, matrix.globals_table())
+        if _referenced_columns(expr.to_ir()):
+            raise ValueError("eval cannot evaluate row-indexed expressions")
+        table = expr.source if expr.source is not None else utils.range_table(0)
+        from .arrow import decode_rows
+>       data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       OSError: Invalid argument (os error 22)
+
+python/vail/__init__.py:1947: OSError
+________ test_grouped_nested_reducers_have_logical_aggregate_and_unnest ________
+
+    def test_grouped_nested_reducers_have_logical_aggregate_and_unnest():
+        table = hl.range_table(12, n_partitions=3)
+        table = table.annotate(unused=hl.rand_bool(.5), xs=[table.idx, table.idx + 1])
+        grouped = table.group_by(g=table.idx % 2).aggregate(
+            xs=hl.agg.array_agg(lambda x: hl.agg.sum(x), table.xs),
+            counts=hl.agg.group_by(table.idx % 3, hl.agg.count()),
+        )
+        plan = grouped._native.logical_plan()
+        assert 'Aggregate:' in plan
+>       assert 'Unnest:' in plan
+E       AssertionError: assert 'Unnest:' in 'Projection: g, xs, counts, UInt64(0) AS __vail_partition\n  Sort: g ASC NULLS LAST\n    Projection: __vail_logical_gr...          VailOrderedPartitions\n                            TableScan: vail_source projection=[idx, __vail_partition]'
+
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/tests/test_logical_nested_aggregation.py:44: AssertionError
+=========================== short test summary info ============================
+FAILED ../../../../Users/danielking/.codex/worktrees/1611/vail/vail/python/tests/test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]
+FAILED ../../../../Users/danielking/.codex/worktrees/1611/vail/vail/python/tests/test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip
+FAILED ../../../../Users/danielking/.codex/worktrees/1611/vail/vail/python/tests/test_globals.py::test_globals_reads_are_lazy_snapshot_pinned_and_checksummed
+FAILED ../../../../Users/danielking/.codex/worktrees/1611/vail/vail/python/tests/test_logical_nested_aggregation.py::test_grouped_nested_reducers_have_logical_aggregate_and_unnest
+4 failed in 4.26s

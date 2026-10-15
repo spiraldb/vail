@@ -1,0 +1,38 @@
+[
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_explode",
+    "line": 7,
+    "body": "@qobtest\ndef test_table_explode():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.range(hl.rand_int32(5)))\n    ht = ht.explode('x')\n    expected = [hl.Struct(idx=0, x=0), hl.Struct(idx=0, x=1), hl.Struct(idx=0, x=2), hl.Struct(idx=0, x=3), hl.Struct(idx=1, x=0), hl.Struct(idx=1, x=1), hl.Struct(idx=1, x=2), hl.Struct(idx=2, x=0), hl.Struct(idx=2, x=1), hl.Struct(idx=3, x=0), hl.Struct(idx=3, x=1), hl.Struct(idx=3, x=2), hl.Struct(idx=4, x=0), hl.Struct(idx=4, x=1), hl.Struct(idx=4, x=2)]\n    actual = ht.collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_key_by",
+    "line": 33,
+    "body": "def test_table_key_by():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.rand_int32(5))\n    ht = ht.key_by('x')\n    expected = [hl.Struct(idx=2, x=2), hl.Struct(idx=1, x=3), hl.Struct(idx=3, x=3), hl.Struct(idx=4, x=3), hl.Struct(idx=0, x=4)]\n    actual = ht.collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_annotate",
+    "line": 49,
+    "body": "def test_table_annotate():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.rand_int32(5))\n    ht = ht.annotate(y=ht.x * 10)\n    expected = [hl.Struct(idx=0, x=4, y=40), hl.Struct(idx=1, x=3, y=30), hl.Struct(idx=2, x=2, y=20), hl.Struct(idx=3, x=3, y=30), hl.Struct(idx=4, x=3, y=30)]\n    actual = ht.collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_matrix_table_entries",
+    "line": 65,
+    "body": "def test_matrix_table_entries():\n    hl.reset_global_randomness()\n    mt = hl.utils.range_matrix_table(5, 2)\n    mt = mt.annotate_entries(x=hl.rand_int32(5))\n    expected = [hl.Struct(row_idx=0, col_idx=0, x=0), hl.Struct(row_idx=0, col_idx=1, x=3), hl.Struct(row_idx=1, col_idx=0, x=2), hl.Struct(row_idx=1, col_idx=1, x=4), hl.Struct(row_idx=2, col_idx=0, x=1), hl.Struct(row_idx=2, col_idx=1, x=4), hl.Struct(row_idx=3, col_idx=0, x=4), hl.Struct(row_idx=3, col_idx=1, x=2), hl.Struct(row_idx=4, col_idx=0, x=4), hl.Struct(row_idx=4, col_idx=1, x=4)]\n    actual = mt.entries().collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_filter",
+    "line": 85,
+    "body": "def test_table_filter():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.rand_int32(5))\n    ht = ht.filter(ht.x % 3 == 0)\n    expected = [hl.Struct(idx=1, x=3), hl.Struct(idx=3, x=3), hl.Struct(idx=4, x=3)]\n    actual = ht.collect()\n    assert expected == actual"
+  },
+  {
+    "module": "test_randomness.py",
+    "name": "test_table_key_by_aggregate",
+    "line": 95,
+    "body": "def test_table_key_by_aggregate():\n    hl.reset_global_randomness()\n    ht = hl.utils.range_table(5)\n    ht = ht.annotate(x=hl.rand_int32(5))\n    ht = ht.group_by(ht.x).aggregate(y=hl.agg.count())\n    expected = [hl.Struct(x=2, y=1), hl.Struct(x=3, y=3), hl.Struct(x=4, y=1)]\n    actual = ht.collect()\n    assert expected == actual"
+  }
+]

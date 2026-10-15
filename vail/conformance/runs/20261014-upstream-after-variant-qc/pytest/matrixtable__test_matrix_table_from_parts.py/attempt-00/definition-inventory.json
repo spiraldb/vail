@@ -1,0 +1,86 @@
+[
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_from_parts",
+    "line": 50,
+    "body": "def test_from_parts():\n    mt = hl.MatrixTable.from_parts(globals=TestData.globals, rows=TestData.rows, cols=TestData.cols, entries=TestData.entries)\n    TestData.assert_matches_globals(mt)\n    TestData.assert_matches_rows(mt)\n    TestData.assert_matches_cols(mt)\n    TestData.assert_matches_entries(mt)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_optional_globals",
+    "line": 60,
+    "body": "def test_optional_globals():\n    mt = hl.MatrixTable.from_parts(rows=TestData.rows, cols=TestData.cols, entries=TestData.entries)\n    TestData.assert_no_globals(mt)\n    TestData.assert_matches_rows(mt)\n    TestData.assert_matches_cols(mt)\n    TestData.assert_matches_entries(mt)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_optional_rows",
+    "line": 68,
+    "body": "def test_optional_rows():\n    mt = hl.MatrixTable.from_parts(globals=TestData.globals, cols=TestData.cols, entries=TestData.entries)\n    TestData.assert_matches_globals(mt)\n    TestData.assert_matches_rows(mt, no_props=True)\n    TestData.assert_matches_cols(mt)\n    TestData.assert_matches_entries(mt)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_optional_cols",
+    "line": 76,
+    "body": "def test_optional_cols():\n    mt = hl.MatrixTable.from_parts(globals=TestData.globals, rows=TestData.rows, entries=TestData.entries)\n    TestData.assert_matches_globals(mt)\n    TestData.assert_matches_rows(mt)\n    TestData.assert_matches_cols(mt, no_props=True)\n    TestData.assert_matches_entries(mt)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_optional_globals_and_cols",
+    "line": 84,
+    "body": "def test_optional_globals_and_cols():\n    mt = hl.MatrixTable.from_parts(rows=TestData.rows, entries=TestData.entries)\n    TestData.assert_no_globals(mt)\n    TestData.assert_matches_rows(mt)\n    TestData.assert_matches_cols(mt, no_props=True)\n    TestData.assert_matches_entries(mt)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_optional_globals_and_rows_and_cols",
+    "line": 92,
+    "body": "def test_optional_globals_and_rows_and_cols():\n    mt = hl.MatrixTable.from_parts(entries=TestData.entries)\n    TestData.assert_no_globals(mt)\n    TestData.assert_matches_rows(mt, no_props=True)\n    TestData.assert_matches_cols(mt, no_props=True)\n    TestData.assert_matches_entries(mt)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_optional_entries",
+    "line": 100,
+    "body": "def test_optional_entries():\n    mt = hl.MatrixTable.from_parts(rows=TestData.rows, cols=TestData.cols)\n    TestData.assert_no_globals(mt)\n    TestData.assert_matches_rows(mt)\n    TestData.assert_matches_cols(mt)\n    TestData.assert_matches_entries(mt, no_props=True)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_rectangular_matrices",
+    "line": 108,
+    "body": "def test_rectangular_matrices():\n    mt = hl.MatrixTable.from_parts(entries={'foo': [[1], [2]]})\n    assert mt.select_rows().select_cols().entries().collect() == [hl.Struct(row_idx=0, col_idx=0, foo=1), hl.Struct(row_idx=1, col_idx=0, foo=2)]"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_raises_when_no_rows_and_entries",
+    "line": 116,
+    "body": "def test_raises_when_no_rows_and_entries():\n    with pytest.raises(AssertionError):\n        hl.MatrixTable.from_parts(cols=TestData.cols)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_raises_when_no_cols_and_entries",
+    "line": 121,
+    "body": "def test_raises_when_no_cols_and_entries():\n    with pytest.raises(AssertionError):\n        hl.MatrixTable.from_parts(rows=TestData.rows)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_raises_when_mismatched_row_property_dimensions",
+    "line": 126,
+    "body": "def test_raises_when_mismatched_row_property_dimensions():\n    with pytest.raises(ValueError):\n        hl.MatrixTable.from_parts(rows={'foo': [1], 'bar': [1, 2]}, entries=TestData.entries)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_raises_when_mismatched_col_property_dimensions",
+    "line": 131,
+    "body": "def test_raises_when_mismatched_col_property_dimensions():\n    with pytest.raises(ValueError):\n        hl.MatrixTable.from_parts(cols={'foo': [1], 'bar': [1, 2]}, entries=TestData.entries)"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_raises_when_mismatched_entry_property_dimensions",
+    "line": 136,
+    "body": "def test_raises_when_mismatched_entry_property_dimensions():\n    with pytest.raises(ValueError):\n        hl.MatrixTable.from_parts(entries={'foo': [[1]], 'bar': [[1, 2]]})"
+  },
+  {
+    "module": "matrixtable/test_matrix_table_from_parts.py",
+    "name": "test_raises_when_mismatched_rows_cols_entry_dimensions",
+    "line": 141,
+    "body": "def test_raises_when_mismatched_rows_cols_entry_dimensions():\n    with pytest.raises(ValueError):\n        hl.MatrixTable.from_parts(rows={'foo': [1]}, cols={'bar': [1]}, entries={'baz': [[1, 2]]})"
+  }
+]

@@ -1,0 +1,86 @@
+[
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_empty",
+    "line": 178,
+    "body": "def test_import_vcf_empty(self):\n    mt = hl.import_vcf([resource('0var.vcf.bgz'), resource('3var.vcf.bgz')])\n    assert mt._same(hl.import_vcf(resource('3var.vcf.bgz')))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_no_reference_specified",
+    "line": 182,
+    "body": "def test_import_vcf_no_reference_specified(self):\n    vcf = hl.import_vcf(resource('sample2.vcf'), reference_genome=None)\n    self.assertEqual(vcf.locus.dtype, hl.tstruct(contig=hl.tstr, position=hl.tint32))\n    self.assertEqual(vcf.count_rows(), 735)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_bad_reference_allele",
+    "line": 187,
+    "body": "def test_import_vcf_bad_reference_allele(self):\n    vcf = hl.import_vcf(resource('invalid_base.vcf'))\n    self.assertEqual(vcf.count_rows(), 1)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_flags_are_defined",
+    "line": 191,
+    "body": "def test_import_vcf_flags_are_defined(self):\n    t = hl.import_vcf(resource('sample.vcf')).rows()\n    self.assertTrue(t.all(hl.is_defined(t.info.NEGATIVE_TRAIN_SITE) & hl.is_defined(t.info.POSITIVE_TRAIN_SITE) & hl.is_defined(t.info.DB) & hl.is_defined(t.info.DS)))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_can_import_float_array_format",
+    "line": 203,
+    "body": "def test_import_vcf_can_import_float_array_format(self):\n    mt = hl.import_vcf(resource('floating_point_array.vcf'))\n    self.assertTrue(mt.aggregate_entries(hl.agg.all(mt.numeric_array == [1.5, 2.5])))\n    self.assertEqual(hl.tarray(hl.tfloat64), mt['numeric_array'].dtype)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_can_import_float32_array_format",
+    "line": 208,
+    "body": "def test_import_vcf_can_import_float32_array_format(self):\n    mt = hl.import_vcf(resource('floating_point_array.vcf'), entry_float_type=hl.tfloat32)\n    self.assertTrue(mt.aggregate_entries(hl.agg.all(mt.numeric_array == [1.5, 2.5])))\n    self.assertEqual(hl.tarray(hl.tfloat32), mt['numeric_array'].dtype)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_can_import_negative_numbers",
+    "line": 213,
+    "body": "def test_import_vcf_can_import_negative_numbers(self):\n    mt = hl.import_vcf(resource('negative_format_fields.vcf'))\n    self.assertTrue(mt.aggregate_entries(hl.agg.all(mt.negative_int == -1) & hl.agg.all(mt.negative_float == -1.5) & hl.agg.all(mt.negative_int_array == [-1, -2]) & hl.agg.all(mt.negative_float_array == [-0.5, -1.5])))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements",
+    "line": 224,
+    "body": "def test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements(self):\n    mt = hl.import_vcf(resource('missingInfoArray.vcf'), reference_genome='GRCh37')\n    with pytest.raises(FatalError, match=\".*Missing value in INFO array. Use 'hl.import_vcf[(][.][.][.], array_elements_required=False[)]'[.].*\"):\n        mt._force_count_rows()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements",
+    "line": 232,
+    "body": "def test_import_vcf_array_elements_required_is_false_parses_info_fields_with_missing_elements(self):\n    mt = hl.import_vcf(resource('missingInfoArray.vcf'), reference_genome='GRCh37', array_elements_required=False)\n    mt = mt.select_rows(**mt.info)\n    expected = hl.Table.parallelize([{'locus': hl.Locus('X', 16050036), 'alleles': ['A', 'C'], 'FOO': [1, None], 'BAR': [2, None, None], 'JUST_A_DOT': None, 'NOT_EVEN_PRESENT': None}, {'locus': hl.Locus('X', 16061250), 'alleles': ['T', 'A', 'C'], 'FOO': [None, 2, None], 'BAR': [None, 1.0, None], 'JUST_A_DOT': None, 'NOT_EVEN_PRESENT': None}], hl.tstruct(locus=hl.tlocus('GRCh37'), alleles=hl.tarray(hl.tstr), FOO=hl.tarray(hl.tint), BAR=hl.tarray(hl.tfloat64), JUST_A_DOT=hl.tarray(hl.tfloat64), NOT_EVEN_PRESENT=hl.tarray(hl.tfloat64)), key=['locus', 'alleles'])\n    assert mt.rows()._same(expected)"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_missing_format_field_elements",
+    "line": 266,
+    "body": "def test_import_vcf_missing_format_field_elements(self):\n    mt = hl.import_vcf(resource('missingFormatArray.vcf'), reference_genome='GRCh37', array_elements_required=False)\n    mt = mt.select_rows().select_entries('AD', 'PL')\n    expected = hl.Table.parallelize([{'locus': hl.Locus('X', 16050036), 'alleles': ['A', 'C'], 's': 'C1046::HG02024', 'AD': [None, None], 'PL': [0, None, 180]}, {'locus': hl.Locus('X', 16050036), 'alleles': ['A', 'C'], 's': 'C1046::HG02025', 'AD': [None, 6], 'PL': [70, None]}, {'locus': hl.Locus('X', 16061250), 'alleles': ['T', 'A', 'C'], 's': 'C1046::HG02024', 'AD': [0, 0, None], 'PL': [396, None, None, 33, None, 0]}, {'locus': hl.Locus('X', 16061250), 'alleles': ['T', 'A', 'C'], 's': 'C1046::HG02025', 'AD': [0, 0, 9], 'PL': [None, None, None]}], hl.tstruct(locus=hl.tlocus('GRCh37'), alleles=hl.tarray(hl.tstr), s=hl.tstr, AD=hl.tarray(hl.tint), PL=hl.tarray(hl.tint)), key=['locus', 'alleles', 's'])\n    self.assertTrue(mt.entries()._same(expected))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_skip_invalid_loci",
+    "line": 319,
+    "body": "def test_import_vcf_skip_invalid_loci(self):\n    mt = hl.import_vcf(resource('skip_invalid_loci.vcf'), reference_genome='GRCh37', skip_invalid_loci=True)\n    self.assertEqual(mt._force_count_rows(), 3)\n    with self.assertRaisesRegex(FatalError, 'Invalid locus'):\n        hl.import_vcf(resource('skip_invalid_loci.vcf')).count()"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_set_field_missing",
+    "line": 326,
+    "body": "def test_import_vcf_set_field_missing(self):\n    mt = hl.import_vcf(resource('test_set_field_missing.vcf'))\n    mt.aggregate_entries(hl.agg.sum(mt.DP))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_dosages_as_doubles_or_floats",
+    "line": 330,
+    "body": "def test_import_vcf_dosages_as_doubles_or_floats(self):\n    mt = hl.import_vcf(resource('small-ds.vcf'))\n    self.assertEqual(hl.expr.expressions.typed_expressions.Float64Expression, type(mt.entry.DS))\n    mt32 = hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tfloat32)\n    self.assertEqual(hl.expr.expressions.typed_expressions.Float32Expression, type(mt32.entry.DS))\n    mt_result = mt.annotate_entries(DS32=mt32.index_entries(mt.row_key, mt.col_key).DS)\n    compare = mt_result.annotate_entries(test=hl.coalesce(hl.approx_equal(mt_result.DS, mt_result.DS32, nan_same=True), True))\n    self.assertTrue(all(compare.test.collect()))"
+  },
+  {
+    "module": "methods/test_impex.py",
+    "name": "VCFTests.test_import_vcf_invalid_float_type",
+    "line": 341,
+    "body": "def test_import_vcf_invalid_float_type(self):\n    with self.assertRaises(TypeError):\n        hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tstr)\n    with self.assertRaises(TypeError):\n        hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tint)\n    with self.assertRaises(TypeError):\n        hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tint32)\n    with self.assertRaises(TypeError):\n        hl.import_vcf(resource('small-ds.vcf'), entry_float_type=hl.tint64)"
+  }
+]

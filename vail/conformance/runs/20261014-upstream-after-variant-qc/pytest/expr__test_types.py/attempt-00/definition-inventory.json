@@ -1,0 +1,62 @@
+[
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_parser_roundtrip",
+    "line": 66,
+    "body": "def test_parser_roundtrip(self):\n    for t in self.types_to_test():\n        self.assertEqual(t, dtype(str(t)))"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_eval_roundtrip",
+    "line": 70,
+    "body": "def test_eval_roundtrip(self):\n    for t in self.types_to_test():\n        self.assertEqual(t, eval(repr(t)))"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_equality",
+    "line": 74,
+    "body": "def test_equality(self):\n    ts = self.types_to_test()\n    ts2 = self.types_to_test()\n    for i in range(len(ts)):\n        for j in range(len(ts2)):\n            if i == j:\n                self.assertEqual(ts[i], ts2[j])\n            else:\n                self.assertNotEqual(ts[i], ts2[j])"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_type_jvm_roundtrip",
+    "line": 86,
+    "body": "@skip_unless_spark_backend()\ndef test_type_jvm_roundtrip(self):\n    ts = self.types_to_test()\n    for t in ts:\n        rev_str = t._parsable_string()\n        jtyp = Env.hail().expr.ir.IRParser.parseType(rev_str)\n        self.assertEqual(t, dtype(jtyp.toString()))"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_pretty_roundtrip",
+    "line": 93,
+    "body": "def test_pretty_roundtrip(self):\n    ts = self.types_to_test()\n    for t in ts:\n        p1 = t.pretty()\n        p2 = t.pretty(5, 5)\n        self.assertEqual(t, dtype(p1))\n        self.assertEqual(t, dtype(p2))"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_coercers_can_coerce",
+    "line": 101,
+    "body": "def test_coercers_can_coerce(self):\n    ts = self.types_to_test()\n    for t in ts:\n        c = coercer_from_dtype(t)\n        self.assertTrue(c.can_coerce(t))\n        self.assertFalse(c.requires_conversion(t))"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_nested_type_to_spark",
+    "line": 110,
+    "body": "@skip_when_service_backend(reason='to_spark is nonsensical in the service')\n@fails_local_backend()\ndef test_nested_type_to_spark(self):\n    ht = hl.utils.range_table(10)\n    ht = ht.annotate(nested=hl.dict({'tup': hl.tuple([ht.idx])}))\n    ht.to_spark()"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_rename_not_unique",
+    "line": 115,
+    "body": "def test_rename_not_unique(self):\n    with self.assertRaisesRegex(ValueError, \"attempted to rename 'b' and 'c' both to 'x'\"):\n        hl.tstruct(a=hl.tbool, b=hl.tint32, c=hl.tint32)._rename({'b': 'x', 'c': 'x'})\n    with self.assertRaisesRegex(ValueError, \"attempted to rename 'a' and 'b' both to 'a'\"):\n        hl.tstruct(a=hl.tbool, b=hl.tint32)._rename({'b': 'a'})"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_get_context",
+    "line": 121,
+    "body": "def test_get_context(self):\n    tl1 = tlocus('GRCh37')\n    tl2 = tlocus('GRCh38')\n    types_and_rgs = [([tint32, tint64, tfloat32, tfloat64, tstr, tbool, tcall, tinterval(tset(tint32)), tdict(tstr, tarray(tint32)), tndarray(tstr, 1), tstruct(), tstruct(x=tint32, y=tint64, z=tarray(tset(tstr))), ttuple(tstr, tint32), ttuple()], set()), ([tl1, tinterval(tl1), tdict(tstr, tl1), tndarray(tl1, 2), tinterval(tl1), tset(tinterval(tl1)), tstruct(a=tint32, b=tint32, c=tarray(tl1)), ttuple(tarray(tint32), tl1, tstr, tint32, tbool)], {'GRCh37'}), ([tdict(tl1, tl2), ttuple(tarray(tl2), tl1, tstr, tint32, tbool)], {'GRCh37', 'GRCh38'})]\n    for types, rgs in types_and_rgs:\n        for t in types:\n            self.assertEqual(t.get_context().references, rgs)"
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_tlocus_schema_from_rg_matches_scala",
+    "line": 171,
+    "body": "def test_tlocus_schema_from_rg_matches_scala(self):\n\n    def locus_from_import_vcf(rg: Optional[str]) -> HailType:\n        return hl.import_vcf(resource('sample2.vcf'), reference_genome=rg).locus.dtype\n    assert tlocus._schema_from_rg(None) == locus_from_import_vcf(None)\n    assert tlocus._schema_from_rg('GRCh37') == locus_from_import_vcf('GRCh37')\n    assert tlocus._schema_from_rg('GRCh38') == locus_from_import_vcf('GRCh38')\n    assert tlocus._schema_from_rg('GRCm38') == locus_from_import_vcf('GRCm38')\n    assert tlocus._schema_from_rg('CanFam3') == locus_from_import_vcf('CanFam3')\n    assert tlocus._schema_from_rg('default') == locus_from_import_vcf('default')"
+  }
+]

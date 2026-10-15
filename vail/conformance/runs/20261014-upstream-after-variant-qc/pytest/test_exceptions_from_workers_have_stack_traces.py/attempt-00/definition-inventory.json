@@ -1,0 +1,8 @@
+[
+  {
+    "module": "test_exceptions_from_workers_have_stack_traces.py",
+    "name": "test_exceptions_from_workers_have_stack_traces",
+    "line": 12,
+    "body": "@qobtest\ndef test_exceptions_from_workers_have_stack_traces():\n    ht = hl.utils.range_table(10, n_partitions=10)\n    ht = ht.annotate(x=hl.int(1) // hl.int(hl.rand_unif(0, 1)))\n    pattern = '.*' + re.escape('java.lang.Math.floorDiv(Math.java:') + '[0-9]+' + re.escape(')') + '.*' + re.escape('(BackendUtils.scala:') + '[0-9]+' + re.escape(')\\n') + '.*'\n    with pytest.raises(FatalError, match=re.compile(pattern, re.DOTALL)):\n        ht.collect()"
+  }
+]

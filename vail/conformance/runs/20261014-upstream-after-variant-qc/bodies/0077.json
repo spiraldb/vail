@@ -1,0 +1,634 @@
+{
+  "module": "matrixtable/test_file_formats.py",
+  "name": "test_backward_compatability_ht",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.1.0/table/0.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.1.0/table/1.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.1.0/table/2.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.1.0/table/3.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.1.0/table/4.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.1.0/table/5.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.2.0/table/0.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.2.0/table/1.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.2.0/table/2.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.2.0/table/3.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.2.0/table/4.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.2.0/table/5.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.3.0/table/0.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.3.0/table/1.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.3.0/table/2.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.3.0/table/3.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.3.0/table/4.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.3.0/table/5.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.4.0/table/0.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.4.0/table/1.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.4.0/table/2.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.4.0/table/3.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.4.0/table/4.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.4.0/table/5.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.4.0/table/6.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.4.0/table/7.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.5.0/table/0.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.5.0/table/1.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.5.0/table/2.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.5.0/table/3.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.5.0/table/4.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.5.0/table/5.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.5.0/table/6.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.5.0/table/7.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.6.0/table/0.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.6.0/table/1.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.6.0/table/2.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.6.0/table/3.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.6.0/table/4.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.6.0/table/5.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.6.0/table/6.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.6.0/table/7.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/0.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/1.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/2.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/3.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/4.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/5.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/6.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/7.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/8.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.7.0/table/9.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.8.0/table/0.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.8.0/table/1.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.8.0/table/2.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    },
+    {
+      "status": "blocked",
+      "parameters": {
+        "path": "'/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/backward_compatability/1.8.0/table/3.ht'"
+      },
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "NotImplementedError",
+      "error": "ndarray reshape is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 226, in fixture\n    cache[name] = factory(**{p: SimpleNamespace(param=params['__fixture_param_' + name])\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/matrixtable/test_file_formats.py\", line 55, in all_values_table_fixture\n    return create_all_values_table()\n           ^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 125, in create_all_values_table\n    all_values = create_all_values()\n                 ^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 116, in create_all_values\n    nd=hl.nd.arange(0, 10).reshape((2, 5)),\n       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 311, in reshape\n    raise NotImplementedError(\"ndarray reshape is not implemented\")\nNotImplementedError: ndarray reshape is not implemented\n"
+    }
+  ],
+  "setup_errors": [],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "fixture_adapters": [
+    "Local legacy snapshot enumeration: original 56 Table / 60 Matrix paths"
+  ],
+  "status": "failed_or_blocked"
+}

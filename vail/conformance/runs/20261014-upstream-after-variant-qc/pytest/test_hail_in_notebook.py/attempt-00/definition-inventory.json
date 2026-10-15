@@ -1,0 +1,8 @@
+[
+  {
+    "module": "test_hail_in_notebook.py",
+    "name": "test_hail_in_notebook",
+    "line": 12,
+    "body": "@skip_when_local_backend('In the LocalBackend, writing to a gs:// URL hangs indefinitely https://github.com/hail-is/hail/issues/13904')\ndef test_hail_in_notebook():\n    folder = pathlib.Path(__file__).parent.resolve()\n    source_ipynb = os.path.join(folder, 'test_hail_in_notebook.ipynb')\n    output_ipynb = os.path.join(folder, 'test_hail_in_notebook_out.ipynb')\n    sync_check_exec('jupyter', 'nbconvert', '--to', 'notebook', '--execute', str(source_ipynb), '--output', str(output_ipynb))"
+  }
+]

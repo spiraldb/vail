@@ -1,0 +1,32 @@
+{
+  "module": "utils/test_utils.py",
+  "name": "test_hadoop_ls_groups",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "unsupported operand type(s) for +: 'generator' and 'str'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/utils/test_utils.py\", line 409, in test_hadoop_ls_groups\n    expected = [glob_tests_directory + '/abc/ghi/123']\n                ~~~~~~~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~\nTypeError: unsupported operand type(s) for +: 'generator' and 'str'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.utils' has no attribute 'frozendict'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "module 'vail.utils' has no attribute 'with_local_temp_file'",
+    "No module named 'vail.utils.linkedlist'",
+    "module 'vail.utils.misc' has no attribute 'escape_id'",
+    "module 'vail.utils.misc' has no attribute 'escape_str'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,62 @@
+[
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_combiner_works",
+    "line": 66,
+    "body": "@qobtest\ndef test_combiner_works():\n    _paths = ['gvcfs/HG00096.g.vcf.gz', 'gvcfs/HG00268.g.vcf.gz']\n    paths = [resource(p) for p in _paths]\n    parts = [hl.Interval(start=hl.Locus('chr20', 17821257, reference_genome='GRCh38'), end=hl.Locus('chr20', 18708366, reference_genome='GRCh38'), includes_end=True), hl.Interval(start=hl.Locus('chr20', 18708367, reference_genome='GRCh38'), end=hl.Locus('chr20', 19776611, reference_genome='GRCh38'), includes_end=True), hl.Interval(start=hl.Locus('chr20', 19776612, reference_genome='GRCh38'), end=hl.Locus('chr20', 21144633, reference_genome='GRCh38'), includes_end=True)]\n    with hl.TemporaryDirectory() as tmpdir:\n        out = os.path.join(tmpdir, 'out.vds')\n        hl.vds.new_combiner(temp_path=tmpdir, output_path=out, gvcf_paths=paths, intervals=parts, reference_genome='GRCh38').run()\n        comb = hl.vds.read_vds(out)\n        assert 'LPGT' in comb.variant_data.entry\n        assert comb.variant_data.LPGT.dtype == hl.tcall\n        assert 'LGT' in comb.reference_data.entry\n        assert len(parts) == comb.variant_data.n_partitions()\n        comb.variant_data._force_count_rows()\n        comb.reference_data._force_count_rows()"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_combiner_plan_round_trip_serialization",
+    "line": 105,
+    "body": "def test_combiner_plan_round_trip_serialization():\n    sample_names = all_samples[:5]\n    paths = [os.path.join(resource('gvcfs'), '1kg_chr22', f'{s}.hg38.g.vcf.gz') for s in sample_names]\n    plan_path = new_temp_file(extension='json')\n    out_file = new_temp_file(extension='vds')\n    plan = new_combiner(gvcf_paths=paths, output_path=out_file, temp_path=Env.hc()._tmpdir, save_path=plan_path, reference_genome='GRCh38', use_exome_default_intervals=True, branch_factor=2, batch_size=2)\n    plan.save()\n    plan_loaded = load_combiner(plan_path)\n    assert plan == plan_loaded"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_reload_combiner_plan",
+    "line": 125,
+    "body": "def test_reload_combiner_plan():\n    sample_names = all_samples[:5]\n    paths = [os.path.join(resource('gvcfs'), '1kg_chr22', f'{s}.hg38.g.vcf.gz') for s in sample_names]\n    plan_path = new_temp_file(extension='json')\n    out_file = new_temp_file(extension='vds')\n    plan = new_combiner(gvcf_paths=paths, output_path=out_file, temp_path=Env.hc()._tmpdir, save_path=plan_path, reference_genome='GRCh38', use_exome_default_intervals=True, branch_factor=2, batch_size=2)\n    plan.save()\n    plan_loaded = new_combiner(gvcf_paths=paths, output_path=out_file, temp_path=Env.hc()._tmpdir, save_path=plan_path, reference_genome='GRCh38', use_exome_default_intervals=True, branch_factor=2, batch_size=2)\n    assert plan == plan_loaded"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_move_load_combiner_plan",
+    "line": 154,
+    "body": "def test_move_load_combiner_plan():\n    fs = hl.current_backend().fs\n    sample_names = all_samples[:5]\n    paths = [os.path.join(resource('gvcfs'), '1kg_chr22', f'{s}.hg38.g.vcf.gz') for s in sample_names]\n    plan_path = new_temp_file(extension='json')\n    out_file = new_temp_file(extension='vds')\n    new_plan_path = new_temp_file(extension='json')\n    plan = new_combiner(gvcf_paths=paths, output_path=out_file, temp_path=Env.hc()._tmpdir, save_path=plan_path, reference_genome='GRCh38', use_exome_default_intervals=True, branch_factor=2, batch_size=2)\n    plan.save()\n    fs.copy(plan_path, new_plan_path)\n    plan_loaded = load_combiner(new_plan_path)\n    assert plan != plan_loaded\n    plan._save_path = new_plan_path\n    assert plan == plan_loaded"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_combiner_run",
+    "line": 183,
+    "body": "@test_timeout(10 * 60)\n@skip_when_service_backend(reason='Combiner makes extensive use of the Backend API which are serviced by starting a Hail Batch job to execute them. This test will be too slow until we change the combiner to use many fewer executes.')\ndef test_combiner_run():\n    tmpdir = new_temp_file()\n    samples = all_samples[:5]\n    input_paths = [resource(os.path.join('gvcfs', '1kg_chr22', f'{s}.hg38.g.vcf.gz')) for s in samples]\n    final_paths_individual = [os.path.join(tmpdir, f'sample_{s}') for s in samples]\n    final_path_1 = os.path.join(tmpdir, 'final1.vds')\n    final_path_2 = os.path.join(tmpdir, 'final2.vds')\n    parts = hl.eval([hl.parse_locus_interval('chr22:start-end', reference_genome='GRCh38')])\n    for input_gvcf, path in zip(input_paths[:2], final_paths_individual[:2]):\n        combiner = hl.vds.new_combiner(output_path=path, intervals=parts, temp_path=tmpdir, gvcf_paths=[input_gvcf], reference_genome='GRCh38')\n        combiner.run()\n    combiner = hl.vds.new_combiner(output_path=final_path_1, intervals=parts, temp_path=tmpdir, gvcf_paths=input_paths[2:], vds_paths=final_paths_individual[:2], reference_genome='GRCh38', branch_factor=2, batch_size=2)\n    combiner.run()\n    combiner2 = hl.vds.new_combiner(output_path=final_path_2, intervals=parts, temp_path=tmpdir, gvcf_paths=input_paths, reference_genome='GRCh38', branch_factor=2, batch_size=2)\n    combiner2.run()\n    assert hl.vds.read_vds(final_path_1)._same(hl.vds.read_vds(final_path_2))"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_combiner_manual_filtration",
+    "line": 226,
+    "body": "def test_combiner_manual_filtration():\n    sample_names = all_samples[:2]\n    paths = [os.path.join(resource('gvcfs'), '1kg_chr22', f'{s}.hg38.g.vcf.gz') for s in sample_names]\n    out_file = new_temp_file(extension='vds')\n    plan = new_combiner(gvcf_paths=paths, output_path=out_file, temp_path=Env.hc()._tmpdir, reference_genome='GRCh38', use_exome_default_intervals=True, gvcf_reference_entry_fields_to_keep=['GQ'], gvcf_info_to_keep=['ExcessHet'], force=True)\n    assert plan._gvcf_info_to_keep == {'ExcessHet'}\n    plan.run()\n    vds = hl.vds.read_vds(out_file)\n    assert sorted(vds.variant_data.gvcf_info) == ['ExcessHet']\n    assert sorted(vds.reference_data.entry) == ['END', 'GQ', 'LEN']"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_ref_block_max_len_propagates_in_combiner",
+    "line": 250,
+    "body": "@test_timeout(10 * 60)\ndef test_ref_block_max_len_propagates_in_combiner():\n    gvcfs = ['NA21123.hg38.g.vcf.gz', 'NA21099.hg38.g.vcf.gz', 'NA19747.hg38.g.vcf.gz']\n    with hl.TemporaryDirectory() as tmpdir:\n        vds_paths = []\n        for i, gvcf in enumerate(gvcfs):\n            p = os.path.join(tmpdir, f'{i}.vds')\n            vds_paths.append(p)\n            c = hl.vds.new_combiner(output_path=p, temp_path=tmpdir, gvcf_paths=[os.path.join(resource('gvcfs'), '1kg_chr22', gvcf)], reference_genome='GRCh38', import_interval_size=1000000000)\n            c.run()\n        for path in vds_paths:\n            vds = hl.vds.read_vds(path)\n            assert hl.vds.VariantDataset.ref_block_max_length_field in vds.reference_data.globals\n        final_path = os.path.join(tmpdir, 'final.vds')\n        hl.vds.new_combiner(output_path=final_path, temp_path=tmpdir, vds_paths=vds_paths, reference_genome='GRCh38').run()\n        vds = hl.vds.read_vds(final_path)\n        assert hl.vds.VariantDataset.ref_block_max_length_field in vds.reference_data.globals"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_custom_call_fields",
+    "line": 277,
+    "body": "def test_custom_call_fields():\n    _paths = ['gvcfs/HG00096.g.vcf.gz', 'gvcfs/HG00268.g.vcf.gz']\n    paths = [resource(p) for p in _paths]\n    parts = [hl.Interval(start=hl.Locus('chr20', 17821257, reference_genome='GRCh38'), end=hl.Locus('chr20', 21144633, reference_genome='GRCh38'), includes_end=True)]\n    with hl.TemporaryDirectory() as tmpdir:\n        out = os.path.join(tmpdir, 'out.vds')\n        hl.vds.new_combiner(temp_path=tmpdir, output_path=out, gvcf_paths=paths, intervals=parts, call_fields=[], reference_genome='GRCh38').run()\n        comb = hl.vds.read_vds(out)\n        assert 'LPGT' in comb.variant_data.entry\n        assert comb.variant_data.LPGT.dtype == hl.tstr"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_missing_ref_gt_does_not_drop_other_fields",
+    "line": 303,
+    "body": "def test_missing_ref_gt_does_not_drop_other_fields():\n    locus = hl.locus('1', 1, reference_genome='GRCh37')\n    entry = hl.struct(GT=hl.missing('tcall'), DP=10, GQ=20)\n    row = hl.struct(locus=locus, info=hl.struct(END=40))\n    result = hl.eval(make_ref_entry_struct(entry, set(entry), False, row))\n    assert result is not None\n    assert result.LGT is None\n    assert result.DP == 10\n    assert result.GQ == 20\n    assert result.LEN == 40"
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_save_filters_saves_filters",
+    "line": 315,
+    "body": "def test_save_filters_saves_filters():\n    _paths = ['gvcfs/has_filter.g.vcf.gz']\n    paths = [resource(p) for p in _paths]\n    parts = [hl.Interval(start=hl.Locus('chr20', 17821257, reference_genome='GRCh38'), end=hl.Locus('chr20', 21144633, reference_genome='GRCh38'), includes_end=True)]\n    with hl.TemporaryDirectory() as tmpdir:\n        out = os.path.join(tmpdir, 'out.vds')\n        hl.vds.new_combiner(temp_path=tmpdir, output_path=out, gvcf_paths=paths, intervals=parts, call_fields=[], reference_genome='GRCh38', gvcf_save_filters=True).run()\n        comb = hl.vds.read_vds(out)\n        assert 'gvcf_filters' in comb.reference_data.entry\n        assert 'gvcf_filters' in comb.variant_data.entry\n        all_filters = comb.reference_data.aggregate_entries(hl.agg.collect_as_set(comb.reference_data.gvcf_filters))\n        filters = frozenset.union(*all_filters)\n        assert {'LowQual'} == filters\n        all_filters = comb.variant_data.aggregate_entries(hl.agg.collect_as_set(comb.variant_data.gvcf_filters))\n        filters = frozenset.union(*all_filters)\n        assert {'LowQual'} == filters"
+  }
+]

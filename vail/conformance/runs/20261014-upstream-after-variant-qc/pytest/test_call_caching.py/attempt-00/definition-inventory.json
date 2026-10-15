@@ -1,0 +1,8 @@
+[
+  {
+    "module": "test_call_caching.py",
+    "name": "test_execution_cache_creation",
+    "line": 7,
+    "body": "def test_execution_cache_creation():\n    \"\"\"Asserts creation of execution cache folder\"\"\"\n    folder = new_temp_file('hail-execution-cache')\n    fs = hl.current_backend().fs\n    assert not fs.exists(folder)\n\n    @with_flags(use_fast_restarts='1', cachedir=folder)\n    def test():\n        hl.utils.range_table(10).annotate(another_field=5)._force_count()\n        assert fs.exists(folder)\n        assert len(fs.ls(folder)) > 0\n    test()"
+  }
+]

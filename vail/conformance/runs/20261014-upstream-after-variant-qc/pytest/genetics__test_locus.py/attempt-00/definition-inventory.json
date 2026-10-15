@@ -1,0 +1,14 @@
+[
+  {
+    "module": "genetics/test_locus.py",
+    "name": "test_constructor",
+    "line": 5,
+    "body": "def test_constructor():\n    l = Locus.parse('1:100')\n    assert l == Locus('1', 100)\n    assert l == Locus(1, 100)\n    assert l.reference_genome == hl.default_reference()"
+  },
+  {
+    "module": "genetics/test_locus.py",
+    "name": "test_call_rich_comparison",
+    "line": 13,
+    "body": "def test_call_rich_comparison():\n    val = Locus(1, 1)\n    expr = hl.locus('1', 1)\n    assert hl.eval(val == expr)\n    assert hl.eval(expr == val)"
+  }
+]

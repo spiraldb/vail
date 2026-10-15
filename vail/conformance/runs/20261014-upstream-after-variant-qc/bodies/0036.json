@@ -1,0 +1,26 @@
+{
+  "module": "expr/test_freezing.py",
+  "name": "test_collect_as_set_list_list_list_set_list",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'frozenlist' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/expr/test_freezing.py\", line 85, in test_collect_as_set_list_list_list_set_list\n    assert result == {frozenlist([frozenlist([frozenlist([frozenset([frozenlist(['hello'])])])])])}\n                      ^^^^^^^^^^\nNameError: name 'frozenlist' is not defined. Did you mean: 'frozendict'?\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'frozenlist'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

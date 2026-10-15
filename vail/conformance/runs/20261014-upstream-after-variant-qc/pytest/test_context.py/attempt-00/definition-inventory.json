@@ -1,0 +1,38 @@
+[
+  {
+    "module": "test_context.py",
+    "name": "test_init_hail_context_twice",
+    "line": 31,
+    "body": "@qobtest\n@pytest.mark.uninitialized\ndef test_init_hail_context_twice():\n    hl_init_for_test()\n    hl_init_for_test(idempotent=True)\n    hl_stop_for_test()\n    hl_init_for_test(idempotent=True)\n    hl.experimental.define_function(lambda x: x + 2, hl.tint32)\n    hl_stop_for_test()\n    hl_init_for_test(idempotent=True)\n    if isinstance(Env.backend(), SparkBackend):\n        hl_init_for_test(sc=hl.spark_context(), idempotent=True)"
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_top_level_functions_are_do_not_error",
+    "line": 48,
+    "body": "@qobtest\ndef test_top_level_functions_are_do_not_error():\n    hl.current_backend()\n    hl.debug_info()"
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_tmpdir_runs",
+    "line": 54,
+    "body": "@qobtest\ndef test_tmpdir_runs():\n    isinstance(hl.tmp_dir(), str)"
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_get_flags",
+    "line": 58,
+    "body": "def test_get_flags():\n    assert hl._get_flags() == {}\n    assert list(hl._get_flags('use_new_shuffle')) == ['use_new_shuffle']"
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_flags_same_in_scala_and_python",
+    "line": 64,
+    "body": "@pytest.mark.backend('spark', 'local')\ndef test_flags_same_in_scala_and_python():\n    scala_flag_map = _scala_map_str_to_tuple_str_str_to_dict(Env.hail().HailFeatureFlags.defaults())\n    assert scala_flag_map == Backend._flags_env_vars_and_defaults"
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_fast_restarts_feature",
+    "line": 69,
+    "body": "def test_fast_restarts_feature():\n\n    def is_featured_off():\n        return hl._get_flags('use_fast_restarts', 'cachedir') == {'use_fast_restarts': None, 'cachedir': None}\n\n    @with_flags(use_fast_restarts='1')\n    def uses_fast_restarts():\n        return hl._get_flags('use_fast_restarts', 'cachedir') == {'use_fast_restarts': '1', 'cachedir': None}\n\n    @with_flags(use_fast_restarts='1', cachedir='gs://my-bucket/object-prefix')\n    def uses_cachedir():\n        return hl._get_flags('use_fast_restarts', 'cachedir') == {'use_fast_restarts': '1', 'cachedir': 'gs://my-bucket/object-prefix'}\n    assert is_featured_off()\n    assert uses_fast_restarts()\n    assert is_featured_off()\n    assert uses_cachedir()\n    assert is_featured_off()"
+  }
+]

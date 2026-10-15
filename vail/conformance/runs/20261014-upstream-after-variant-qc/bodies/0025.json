@@ -1,0 +1,26 @@
+{
+  "module": "experimental/test_local_whitening.py",
+  "name": "test_local_whitening_singleton_final_partition",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray indexing is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/experimental/test_local_whitening.py\", line 42, in test_local_whitening_singleton_final_partition\n    run_local_whitening_test(\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/experimental/test_local_whitening.py\", line 24, in run_local_whitening_test\n    mt = mt.annotate_entries(x=mt.data[mt.row_idx, mt.col_idx])\n                               ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 406, in __getitem__\n    raise NotImplementedError(\"ndarray indexing is not implemented\")\nNotImplementedError: ndarray indexing is not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

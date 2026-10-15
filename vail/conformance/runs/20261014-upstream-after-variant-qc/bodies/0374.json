@@ -1,0 +1,26 @@
+{
+  "module": "test_hail_in_notebook.py",
+  "name": "test_hail_in_notebook",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name '__file__' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/test_hail_in_notebook.py\", line 13, in test_hail_in_notebook\n    folder = pathlib.Path(__file__).parent.resolve()\n                          ^^^^^^^^\nNameError: name '__file__' is not defined. Did you mean: '__name__'?\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'rich'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

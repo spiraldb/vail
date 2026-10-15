@@ -1,0 +1,28 @@
+{
+  "module": "fs/test_worker_driver_fs.py",
+  "name": "test_requester_pays_no_settings",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "text IO currently supports local paths",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/fs/test_worker_driver_fs.py\", line 21, in test_requester_pays_no_settings\n    hl.import_table('gs://hail-test-requester-pays-fds32/hello')\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 24, in _local_path\n    raise NotImplementedError('text IO currently supports local paths')\nNotImplementedError: text IO currently supports local paths\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'aiohttp'",
+    "No module named 'aiohttp'",
+    "No module named 'rich'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

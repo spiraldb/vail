@@ -1,0 +1,24 @@
+{
+  "module": "methods/relatedness/test_pc_relate.py",
+  "name": "test_pc_relate_paths_3",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "MatrixTable caching requires native Table result-cache support",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/methods/relatedness/test_pc_relate.py\", line 91, in test_pc_relate_paths_3\n    mt = hl.balding_nichols_model(3, 50, 100).cache()\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 2018, in cache\n    raise NotImplementedError(\nNotImplementedError: MatrixTable caching requires native Table result-cache support\n"
+    }
+  ],
+  "setup_errors": [],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

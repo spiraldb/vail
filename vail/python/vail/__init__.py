@@ -88,15 +88,13 @@ from . import scan
 from .text import import_lines, import_table, read_csv, read_json
 from .lookups import index as _index_table, resolve as _resolve_lookups
 from .collections import set_ as set, dict_ as dict, empty_set, empty_array, empty_dict, length as len
-from .strings import delimit, reverse_complement, unsupported as _unsupported_string
+from .strings import delimit, reverse_complement, hamming, entropy, reversed_ as reversed, unsupported as _unsupported_string
 parse_int32 = _unsupported_string('Java int32 parsing')
 parse_int64 = _unsupported_string('Java int64 parsing')
 parse_float32 = _unsupported_string('Java float32 parsing')
 parse_float64 = _unsupported_string('Java float64 parsing')
 parse_int = parse_int32
 parse_float = parse_float64
-hamming = _unsupported_string('hamming')
-entropy = _unsupported_string('entropy')
 format = _unsupported_string('Java printf formatting')
 json = _unsupported_string('Hail typed JSON serialization')
 parse_json = _unsupported_string('Hail typed JSON parsing')
@@ -1975,7 +1973,7 @@ from . import expr
 from .expressions import coalesce, approx_equal
 from .backend import current_backend
 from .vcf_export import export_vcf
-from .variant import split_multi_hts
+from .variant import split_multi_hts, parse_variant
 from .allele_functions import (
     allele_type, numeric_allele_type, is_snp, is_mnp, is_insertion,
     is_deletion, is_indel, is_complex, is_star, is_symbolic,
@@ -2003,3 +2001,5 @@ def repeat(value, n):
 from . import linalg
 
 from .simulation import balding_nichols_model
+
+from .qc import variant_qc, hardy_weinberg_test

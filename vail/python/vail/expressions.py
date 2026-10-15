@@ -665,6 +665,19 @@ class Expression:
             return self[name]
         if isinstance(dtype, tstruct) and name in dtype:
             return self[name]
+        if isinstance(dtype, tstruct) and name == "select":
+            def select(*fields, **named):
+                if len(set(fields)) != len(fields) or set(fields) & set(named):
+                    raise ValueError("duplicate fields in struct.select")
+                for field in fields:
+                    if not isinstance(field, str) or field not in dtype:
+                        raise ValueError(f"unknown struct field {field!r}")
+                return bind(
+                    lambda value: or_missing(is_defined(value), struct(
+                        **{field: value[field] for field in fields}, **named)),
+                    self,
+                )
+            return select
         if dtype == tstr:
             from . import strings as ops
             if name == '_split_line':
@@ -678,10 +691,10 @@ class Expression:
                 return lambda sub: ops._call(search[name], self, ops._text(sub))
             methods = {'length': ops.length, 'strip': ops.strip, 'reverse': ops.reverse,
                        'find': ops.find, 'matches': ops.matches, 'replace': ops.replace,
-                       'split': ops.split, 'translate': ops.translate, 'join': ops.join}
+                       'split': ops.split, 'translate': ops.translate, 'join': ops.join,
+                       'first_match_in': ops.first_match_in}
             if name in methods:
                 return lambda *args, **kwargs: methods[name](self, *args, **kwargs)
-            if name == 'first_match_in': return ops.unsupported('Java regex capture groups')
         if isinstance(dtype, (tset, tdict)):
             from . import collections as ops
             if name in ("size", "length"):

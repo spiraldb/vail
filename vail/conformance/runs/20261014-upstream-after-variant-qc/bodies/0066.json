@@ -1,0 +1,43 @@
+{
+  "module": "ggplot/test_ggplot.py",
+  "name": "test_manhattan_plot",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'ggplot' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/ggplot/test_ggplot.py\", line 52, in test_manhattan_plot\n    fig = ggplot(ht, aes(x=ht.locus, y=-hl.log10(ht.pval))) + geom_point() + geom_hline(yintercept=-math.log10(5e-8))\n          ^^^^^^\nNameError: name 'ggplot' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'",
+    "No module named 'vail.ggplot'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

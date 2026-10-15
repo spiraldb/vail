@@ -1,0 +1,33 @@
+{
+  "module": "utils/test_utils.py",
+  "name": "Tests.test_hadoop_no_glob_in_bucket",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "KeyError",
+      "error": "'HAIL_TEST_STORAGE_URI'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/utils/test_utils.py\", line 135, in test_hadoop_no_glob_in_bucket\n    test_dir_url = os.environ['HAIL_TEST_STORAGE_URI']\n                   ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen os>\", line 714, in __getitem__\nKeyError: 'HAIL_TEST_STORAGE_URI'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.utils' has no attribute 'frozendict'",
+    "module 'vail.utils' has no attribute 'hadoop_copy'",
+    "module 'vail.utils' has no attribute 'hadoop_open'",
+    "module 'vail.utils' has no attribute 'with_local_temp_file'",
+    "No module named 'vail.utils.linkedlist'",
+    "module 'vail.utils.misc' has no attribute 'escape_id'",
+    "module 'vail.utils.misc' has no attribute 'escape_str'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

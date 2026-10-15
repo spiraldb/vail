@@ -1,0 +1,24 @@
+{
+  "module": "experimental/test_time.py",
+  "name": "test_strptime",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'htime' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/experimental/test_time.py\", line 19, in test_strptime\n    hl.eval(htime.strptime(\"Friday, October 10, 1997. 11:45:23 PM\", \"%A, %B %e, %Y. %r\", \"America/New_York\"))\n            ^^^^^\nNameError: name 'htime' is not defined. Did you mean: 'timer'?\n"
+    }
+  ],
+  "setup_errors": [],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

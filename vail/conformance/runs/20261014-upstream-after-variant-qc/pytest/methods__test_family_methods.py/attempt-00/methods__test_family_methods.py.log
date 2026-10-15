@@ -1,0 +1,102 @@
+.FFFFFFFFFFFFFFF                                                         [100%]
+=================================== FAILURES ===================================
+______________________________ Tests.test_de_novo ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:180: in test_de_novo
+    ped = hl.Pedigree.read(resource('denovo.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_1 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:84: in test_mendel_errors_1
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_2 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:98: in test_mendel_errors_2
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_3 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:105: in test_mendel_errors_3
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_4 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:112: in test_mendel_errors_4
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_5 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:119: in test_mendel_errors_5
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_6 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:126: in test_mendel_errors_6
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_7 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:135: in test_mendel_errors_7
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_8 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:144: in test_mendel_errors_8
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+__________________________ Tests.test_mendel_errors_9 __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:157: in test_mendel_errors_9
+    ped = hl.Pedigree.read(resource('mendel.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+________________________________ Tests.test_tdt ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:164: in test_tdt
+    pedigree = hl.Pedigree.read(resource('tdt.fam'))
+               ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+___________________________ Tests.test_trio_matrix_1 ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:18: in test_trio_matrix_1
+    ped = hl.Pedigree.read(resource('triomatrix.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+___________________________ Tests.test_trio_matrix_2 ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:48: in test_trio_matrix_2
+    ped = hl.Pedigree.read(resource('triomatrix.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+___________________ Tests.test_trio_matrix_incomplete_trios ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:77: in test_trio_matrix_incomplete_trios
+    ped = hl.Pedigree.read(resource('triomatrix.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+_______________________ Tests.test_trio_matrix_null_keys _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py:68: in test_trio_matrix_null_keys
+    ped = hl.Pedigree.read(resource('triomatrix.fam'))
+          ^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'Pedigree'
+=============================== warnings summary ===============================
+test_family_methods.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_family_methods.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_de_novo
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_3
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_4
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_5
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_6
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_7
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_8
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_mendel_errors_9
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_tdt
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_trio_matrix_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_trio_matrix_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_trio_matrix_incomplete_trios
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-8zsf6xn6/upstream_hail/methods/test_family_methods.py::Tests::test_trio_matrix_null_keys
+15 failed, 1 passed, 1 warning in 0.48s

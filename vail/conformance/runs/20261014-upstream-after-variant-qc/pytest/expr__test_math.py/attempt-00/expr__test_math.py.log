@@ -1,0 +1,16 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+__________________________________ test_logit __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ezmn5pn5/upstream_hail/expr/test_math.py:7: in test_logit
+    assert hl.eval(hl.logit(0.5)) == 0.0
+                   ^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'logit'
+__________________________________ test_expit __________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ezmn5pn5/upstream_hail/expr/test_math.py:14: in test_expit
+    assert hl.eval(hl.expit(0.0)) == 0.5
+                   ^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'expit'. Did you mean: 'expr'?
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ezmn5pn5/upstream_hail/expr/test_math.py::test_logit
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-ezmn5pn5/upstream_hail/expr/test_math.py::test_expit
+2 failed in 0.38s

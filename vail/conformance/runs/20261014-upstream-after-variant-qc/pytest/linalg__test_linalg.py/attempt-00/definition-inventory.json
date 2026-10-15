@@ -1,0 +1,476 @@
+[
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_from_entry_expr_empty_parts",
+    "line": 78,
+    "body": "def test_from_entry_expr_empty_parts():\n    with hl.TemporaryDirectory(ensure_exists=False) as path:\n        mt = hl.balding_nichols_model(n_populations=5, n_variants=2000, n_samples=20, n_partitions=200)\n        mt = mt.filter_rows((mt.locus.position <= 500) | (mt.locus.position > 1500)).checkpoint(path)\n        bm = BlockMatrix.from_entry_expr(mt.GT.n_alt_alleles())\n        nd = (bm @ bm.T).to_numpy()\n        assert nd.shape == (1000, 1000)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_from_entry_expr_options",
+    "line": 130,
+    "body": "@pytest.mark.parametrize('mean_impute, center, normalize, mk_expected', [(False, False, False, lambda a: a), (False, False, True, lambda a: a / np.sqrt(5)), (False, True, False, lambda a: a - 1.0), (False, True, True, lambda a: (a - 1.0) / np.sqrt(2)), (True, False, False, lambda a: a), (True, False, True, lambda a: a / np.sqrt(5)), (True, True, False, lambda a: a - 1.0), (True, True, True, lambda a: (a - 1.0) / np.sqrt(2))])\ndef test_from_entry_expr_options(mean_impute, center, normalize, mk_expected):\n    a = np.array([0.0, 1.0, 2.0])\n    mt = hl.utils.range_matrix_table(1, 3)\n    mt = mt.rename({'row_idx': 'v', 'col_idx': 's'})\n    xs = hl.array([0.0, hl.missing(hl.tfloat), 2.0]) if mean_impute else hl.literal(a)\n    mt = mt.annotate_entries(x=xs[mt.s])\n    expected = mk_expected(a)\n    bm = BlockMatrix.from_entry_expr(mt.x, mean_impute, center, normalize)\n    actual = np.squeeze(hl.eval(bm.to_ndarray()))\n    assert np.allclose(actual, expected)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_from_entry_expr_raises_when_values_missing",
+    "line": 146,
+    "body": "def test_from_entry_expr_raises_when_values_missing():\n    mt = hl.utils.range_matrix_table(1, 3)\n    mt = mt.rename({'row_idx': 'v', 'col_idx': 's'})\n    actual = hl.array([0.0, hl.missing(hl.tfloat), 2.0])\n    mt = mt.annotate_entries(x=actual[mt.s])\n    with pytest.raises(Exception, match='Cannot construct an ndarray with missing values'):\n        BlockMatrix.from_entry_expr(mt.x)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_write_from_entry_expr_overwrite",
+    "line": 155,
+    "body": "def test_write_from_entry_expr_overwrite():\n    mt = hl.balding_nichols_model(1, 1, 1)\n    mt = mt.select_entries(x=mt.GT.n_alt_alleles())\n    bm = BlockMatrix.from_entry_expr(mt.x)\n    with hl.TemporaryDirectory(ensure_exists=False) as path:\n        BlockMatrix.write_from_entry_expr(mt.x, path)\n        with pytest.raises(FatalError):\n            BlockMatrix.write_from_entry_expr(mt.x, path)\n        BlockMatrix.write_from_entry_expr(mt.x, path, overwrite=True)\n        _assert_eq(BlockMatrix.read(path), bm)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_write_from_entry_expr_overwrite_non_field_expressions",
+    "line": 170,
+    "body": "def test_write_from_entry_expr_overwrite_non_field_expressions():\n    mt = hl.balding_nichols_model(1, 1, 1)\n    mt = mt.select_entries(x=mt.GT.n_alt_alleles())\n    bm = BlockMatrix.from_entry_expr(mt.x)\n    with hl.TemporaryDirectory(ensure_exists=False) as path:\n        BlockMatrix.write_from_entry_expr(mt.x + 1, path)\n        with pytest.raises(FatalError):\n            BlockMatrix.write_from_entry_expr(mt.x + 1, path)\n        BlockMatrix.write_from_entry_expr(mt.x + 2, path, overwrite=True)\n        _assert_eq(BlockMatrix.read(path), bm + 2)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_random_uniform",
+    "line": 184,
+    "body": "def test_random_uniform():\n    uniform = BlockMatrix.random(10, 10, gaussian=False)\n    nuniform = hl.eval(uniform.to_ndarray())\n    for row in nuniform:\n        for entry in row:\n            assert entry > 0"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_bm_to_numpy",
+    "line": 193,
+    "body": "def test_bm_to_numpy():\n    bm = BlockMatrix.from_ndarray(hl.nd.arange(20).map(hl.float64).reshape((4, 5)))\n    np_bm = bm.to_numpy()\n    _assert_eq(np_bm, np.arange(20, dtype=np.float64).reshape((4, 5)))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_bm_transpose_to_numpy",
+    "line": 199,
+    "body": "def test_bm_transpose_to_numpy():\n    bm = BlockMatrix.from_ndarray(hl.nd.arange(20).map(hl.float64).reshape((4, 5)))\n    np_bm = bm.T.to_numpy()\n    _assert_eq(np_bm, np.arange(20, dtype=np.float64).reshape((4, 5)).T)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_from_numpy",
+    "line": 218,
+    "body": "def test_block_matrix_from_numpy():\n    data = np.random.rand(10, 11)\n    bm = BlockMatrix.from_numpy(data, block_size=5)\n    _assert_eq(data, bm.to_numpy())"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_from_numpy_transpose",
+    "line": 224,
+    "body": "def test_block_matrix_from_numpy_transpose():\n    data = np.random.rand(10, 11)\n    bm = BlockMatrix.from_numpy(data.T, block_size=5)\n    _assert_eq(data, bm.T.to_numpy())"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_to_file_transpose",
+    "line": 230,
+    "body": "def test_block_matrix_to_file_transpose():\n    data = np.random.rand(10, 11)\n    with block_matrix_to_tmp_file(data, transpose=True) as f:\n        _assert_eq(data.T, np.frombuffer(hl.current_backend().fs.open(f, mode='rb').read()).reshape((11, 10)))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_numpy_read_block_matrix_to_file",
+    "line": 236,
+    "body": "def test_numpy_read_block_matrix_to_file():\n    data = np.random.rand(10, 11)\n    with block_matrix_to_tmp_file(data) as f:\n        _assert_eq(data, np.frombuffer(hl.current_backend().fs.open(f, mode='rb').read()).reshape((10, 11)))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_from_numpy_bytes",
+    "line": 242,
+    "body": "def test_block_matrix_from_numpy_bytes():\n    data = np.random.rand(10, 11)\n    with hl.TemporaryFilename() as f:\n        hl.current_backend().fs.open(f, mode='wb').write(data.tobytes())\n        array = BlockMatrix.fromfile(f, 10, 11, block_size=3).to_numpy()\n        _assert_eq(array, data)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_from_file",
+    "line": 250,
+    "body": "def test_block_matrix_from_file():\n    data = np.random.rand(10, 11)\n    with block_matrix_to_tmp_file(data) as f:\n        array = BlockMatrix.fromfile(f, 10, 11).to_numpy()\n        _assert_eq(array, data)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_persist_unpersist",
+    "line": 257,
+    "body": "def test_block_matrix_persist_unpersist():\n    data = np.random.rand(10, 11)\n    bm = BlockMatrix.from_numpy(data, block_size=5)\n    bm_persist = bm.persist()\n    _assert_eq(data, bm_persist.to_numpy())\n    bm_unpersist = bm_persist.unpersist()\n    _assert_eq(data, bm_unpersist.to_numpy())"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_numpy_round_trip_force_blocking",
+    "line": 269,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_numpy_round_trip_force_blocking():\n    n_rows = 10\n    n_cols = 11\n    data = np.random.rand(n_rows * n_cols)\n    a = data.reshape((n_rows, n_cols))\n    bm = BlockMatrix._create(n_rows, n_cols, data.tolist(), block_size=4)\n    _assert_eq(bm.to_numpy(_force_blocking=True), a)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_to_table",
+    "line": 284,
+    "body": "@fails_service_backend()\n@fails_local_backend()\n@pytest.mark.parametrize('n_partitions,block_size', [(n_partitions, block_size) for n_partitions in [1, 2, 3] for block_size in [1, 2, 5]])\ndef test_to_table(n_partitions, block_size):\n    schema = hl.tstruct(row_idx=hl.tint64, entries=hl.tarray(hl.tfloat64))\n    rows = [{'row_idx': 0, 'entries': [0.0, 1.0]}, {'row_idx': 1, 'entries': [2.0, 3.0]}, {'row_idx': 2, 'entries': [4.0, 5.0]}, {'row_idx': 3, 'entries': [6.0, 7.0]}, {'row_idx': 4, 'entries': [8.0, 9.0]}]\n    expected = hl.Table.parallelize(rows, schema, 'row_idx', n_partitions)\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], block_size)\n    actual = bm.to_table_row_major(n_partitions)\n    assert expected._same(actual)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_to_table_maximum_cache_memory_in_bytes_limits",
+    "line": 302,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_to_table_maximum_cache_memory_in_bytes_limits():\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], 2)\n    with pytest.raises(Exception) as exc_info:\n        bm.to_table_row_major(2, maximum_cache_memory_in_bytes=15)._force_count()\n    assert 'BlockMatrixCachedPartFile must be able to hold at least one row of every block in memory' in exc_info.value.args[0]\n    bm = BlockMatrix._create(5, 2, [float(i) for i in range(10)], 2)\n    bm.to_table_row_major(2, maximum_cache_memory_in_bytes=16)._force_count()"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_to_matrix_table_0",
+    "line": 319,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_to_matrix_table_0():\n    n_partitions = 2\n    rows, cols = (2, 5)\n    bm = BlockMatrix._create(rows, cols, [float(i) for i in range(10)])\n    actual = bm.to_matrix_table_row_major(n_partitions)\n    expected = hl.utils.range_matrix_table(rows, cols)\n    expected = expected.annotate_entries(element=hl.float64(expected.row_idx * cols + expected.col_idx))\n    expected = expected.key_cols_by(col_idx=hl.int64(expected.col_idx))\n    expected = expected.key_rows_by(row_idx=hl.int64(expected.row_idx))\n    assert expected._same(actual)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_to_matrix_table_1",
+    "line": 334,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_to_matrix_table_1():\n    n_partitions = 2\n    bm = BlockMatrix.random(50, 100, block_size=25, seed=0)\n    mt = bm.to_matrix_table_row_major(n_partitions)\n    mt_round_trip = BlockMatrix.from_entry_expr(mt.element).to_matrix_table_row_major()\n    assert mt._same(mt_round_trip)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_elementwise_arithmetic",
+    "line": 501,
+    "body": "@pytest.mark.parametrize('x, y', [('+m', '0 + m'), ('x + e', 'nx + e'), ('c + e', 'nc + e'), ('r + e', 'nr + e'), ('m + e', 'nm + e'), ('x + e', 'e + x'), ('c + e', 'e + c'), ('r + e', 'e + r'), ('m + e', 'e + m'), ('x + x', '2 * x'), ('c + c', '2 * c'), ('r + r', '2 * r'), ('m + m', '2 * m'), ('x + c', 'np.array([[3.0], [4.0]])'), ('x + r', 'np.array([[3.0, 4.0, 5.0]])'), ('x + m', 'np.array([[3.0, 4.0, 5.0], [6.0, 7.0, 8.0]])'), ('c + m', 'np.array([[2.0, 3.0, 4.0], [6.0, 7.0, 8.0]])'), ('r + m', 'np.array([[2.0, 4.0, 6.0], [5.0, 7.0, 9.0]])'), ('x + c', 'c + x'), ('x + r', 'r + x'), ('x + m', 'm + x'), ('c + m', 'm + c'), ('r + m', 'm + r'), ('x + nx', 'x + x'), ('x + nc', 'x + c'), ('x + nr', 'x + r'), ('x + nm', 'x + m'), ('c + nx', 'c + x'), ('c + nc', 'c + c'), ('c + nm', 'c + m'), ('r + nx', 'r + x'), ('r + nr', 'r + r'), ('r + nm', 'r + m'), ('m + nx', 'm + x'), ('m + nc', 'm + c'), ('m + nr', 'm + r'), ('m + nm', 'm + m'), ('-m', '0 - m'), ('x - e', 'nx - e'), ('c - e', 'nc - e'), ('r - e', 'nr - e'), ('m - e', 'nm - e'), ('x - e', '-(e - x)'), ('c - e', '-(e - c)'), ('r - e', '-(e - r)'), ('m - e', '-(e - m)'), ('x - x', 'np.zeros((1, 1))'), ('c - c', 'np.zeros((2, 1))'), ('r - r', 'np.zeros((1, 3))'), ('m - m', 'np.zeros((2, 3))'), ('x - c', 'np.array([[1.0], [0.0]])'), ('x - r', 'np.array([[1.0, 0.0, -1.0]])'), ('x - m', 'np.array([[1.0, 0.0, -1.0], [-2.0, -3.0, -4.0]])'), ('c - m', 'np.array([[0.0, -1.0, -2.0], [-2.0, -3.0, -4.0]])'), ('r - m', 'np.array([[0.0, 0.0, 0.0], [-3.0, -3.0, -3.0]])'), ('x - c', '-(c - x)'), ('x - r', '-(r - x)'), ('x - m', '-(m - x)'), ('c - m', '-(m - c)'), ('r - m', '-(m - r)'), ('x - nx', 'x - x'), ('x - nc', 'x - c'), ('x - nr', 'x - r'), ('x - nm', 'x - m'), ('c - nx', 'c - x'), ('c - nc', 'c - c'), ('c - nm', 'c - m'), ('r - nx', 'r - x'), ('r - nr', 'r - r'), ('r - nm', 'r - m'), ('m - nx', 'm - x'), ('m - nc', 'm - c'), ('m - nr', 'm - r'), ('m - nm', 'm - m'), ('x * e', 'nx * e'), ('c * e', 'nc * e'), ('r * e', 'nr * e'), ('m * e', 'nm * e'), ('x * e', 'e * x'), ('c * e', 'e * c'), ('r * e', 'e * r'), ('m * e', 'e * m'), ('x * x', 'x ** 2'), ('c * c', 'c ** 2'), ('r * r', 'r ** 2'), ('m * m', 'm ** 2'), ('x * c', 'np.array([[2.0], [4.0]])'), ('x * r', 'np.array([[2.0, 4.0, 6.0]])'), ('x * m', 'np.array([[2.0, 4.0, 6.0], [8.0, 10.0, 12.0]])'), ('c * m', 'np.array([[1.0, 2.0, 3.0], [8.0, 10.0, 12.0]])'), ('r * m', 'np.array([[1.0, 4.0, 9.0], [4.0, 10.0, 18.0]])'), ('x * c', 'c * x'), ('x * r', 'r * x'), ('x * m', 'm * x'), ('c * m', 'm * c'), ('r * m', 'm * r'), ('x * nx', 'x * x'), ('x * nc', 'x * c'), ('x * nr', 'x * r'), ('x * nm', 'x * m'), ('c * nx', 'c * x'), ('c * nc', 'c * c'), ('c * nm', 'c * m'), ('r * nx', 'r * x'), ('r * nr', 'r * r'), ('r * nm', 'r * m'), ('m * nx', 'm * x'), ('m * nc', 'm * c'), ('m * nr', 'm * r'), ('m * nm', 'm * m'), ('m.T', 'nm.T'), ('m.T', 'nm.T'), ('row.T', 'nrow.T'), ('m @ m.T', 'nm @ nm.T'), ('m @ nm.T', 'nm @ nm.T'), ('row @ row.T', 'nrow @ nrow.T'), ('row @ nrow.T', 'nrow @ nrow.T'), ('m.T @ m', 'nm.T @ nm'), ('m.T @ nm', 'nm.T @ nm'), ('row.T @ row', 'nrow.T @ nrow'), ('row.T @ nrow', 'nrow.T @ nrow')])\ndef test_block_matrix_elementwise_arithmetic(block_matrix_bindings, x, y):\n    lhs = eval(x, block_matrix_bindings)\n    rhs = eval(y, {'np': np}, block_matrix_bindings)\n    _assert_eq(lhs, rhs)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparse_broadcast_add",
+    "line": 520,
+    "body": "@pytest.mark.parametrize('x, y', [(np.array([[7.0], [15.0], [19.0]]), np.array([[7.0, 8.0, 9.0]])), (np.array([[7.0, 8.0, 9.0]]), np.array([[7.0], [15.0], [19.0]]))])\ndef test_sparse_broadcast_add(x, y):\n    bmx = BlockMatrix.from_ndarray(x, block_size=2)._sparsify_blocks([0, 1])\n    bmy = BlockMatrix.from_ndarray(y, block_size=2)\n    _assert_eq(bmx + bmy, x + y)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_elementwise_close_arithmetic",
+    "line": 574,
+    "body": "@pytest.mark.parametrize('x, y', [('x / e', 'nx / e'), ('c / e', 'nc / e'), ('r / e', 'nr / e'), ('m / e', 'nm / e'), ('x / e', '1 / (e / x)'), ('c / e', '1 / (e / c)'), ('r / e', '1 / (e / r)'), ('m / e', '1 / (e / m)'), ('x / x', 'np.ones((1, 1))'), ('c / c', 'np.ones((2, 1))'), ('r / r', 'np.ones((1, 3))'), ('m / m', 'np.ones((2, 3))'), ('x / c', 'np.array([[2 / 1.0], [2 / 2.0]])'), ('x / r', 'np.array([[2 / 1.0, 2 / 2.0, 2 / 3.0]])'), ('x / m', 'np.array([[2 / 1.0, 2 / 2.0, 2 / 3.0], [2 / 4.0, 2 / 5.0, 2 / 6.0]])'), ('c / m', 'np.array([[1 / 1.0, 1 / 2.0, 1 / 3.0], [2 / 4.0, 2 / 5.0, 2 / 6.0]])'), ('r / m', 'np.array([[1 / 1.0, 2 / 2.0, 3 / 3.0], [1 / 4.0, 2 / 5.0, 3 / 6.0]])'), ('x / c', '1 / (c / x)'), ('x / r', '1 / (r / x)'), ('x / m', '1 / (m / x)'), ('c / m', '1 / (m / c)'), ('r / m', '1 / (m / r)'), ('x / nx', 'x / x'), ('x / nc', 'x / c'), ('x / nr', 'x / r'), ('x / nm', 'x / m'), ('c / nx', 'c / x'), ('c / nc', 'c / c'), ('c / nm', 'c / m'), ('r / nx', 'r / x'), ('r / nr', 'r / r'), ('r / nm', 'r / m'), ('m / nx', 'm / x'), ('m / nc', 'm / c'), ('m / nr', 'm / r'), ('m / nm', 'm / m'), ('m ** 3', 'nm ** 3'), ('m.sqrt()', 'np.sqrt(nm)'), ('m.ceil()', 'np.ceil(nm)'), ('m.floor()', 'np.floor(nm)'), ('m.log()', 'np.log(nm)'), ('(m - 4).abs()', 'np.abs(nm - 4)')])\ndef test_block_matrix_elementwise_close_arithmetic(block_matrix_bindings, x, y):\n    lhs = eval(x, block_matrix_bindings)\n    rhs = eval(y, {'np': np}, block_matrix_bindings)\n    _assert_close(lhs, rhs)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_raises",
+    "line": 588,
+    "body": "@pytest.mark.parametrize('expr, expectation', [(\"x + np.array(['one'], dtype=str)\", pytest.raises(TypeError)), ('m @ m ', pytest.raises(ValueError)), ('m @ nm', pytest.raises(ValueError))])\ndef test_block_matrix_raises(block_matrix_bindings, expr, expectation):\n    with expectation:\n        eval(expr, {'np': np}, block_matrix_bindings)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_matrix_sums",
+    "line": 603,
+    "body": "@pytest.mark.parametrize('x, y', [('m.sum(axis=0).T', 'np.array([[5.0], [7.0], [9.0]])'), ('m.sum(axis=1).T', 'np.array([[6.0, 15.0]])'), ('m.sum(axis=0).T + row', 'np.array([[12.0, 13.0, 14.0],[14.0, 15.0, 16.0],[16.0, 17.0, 18.0]])'), ('m.sum(axis=0) + row.T', 'np.array([[12.0, 14.0, 16.0],[13.0, 15.0, 17.0],[14.0, 16.0, 18.0]])'), ('square.sum(axis=0).T + square.sum(axis=1)', 'np.array([[18.0], [30.0], [42.0]])')])\ndef test_matrix_sums(block_matrix_bindings, x, y):\n    lhs = eval(x, block_matrix_bindings)\n    rhs = eval(y, {'np': np}, block_matrix_bindings)\n    _assert_eq(lhs, rhs)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparse_matrix_sums",
+    "line": 617,
+    "body": "@pytest.mark.parametrize('x, y', [('s.sum()', '41.0'), ('s.sum(axis=0)', 'np.array([[9.0, 10.0, 10.0, 12.0]])'), ('s.sum(axis=1)', 'np.array([[7.0], [15.0], [19.0]])')])\ndef test_sparse_matrix_sums(block_matrix_bindings, x, y):\n    lhs = eval(x, block_matrix_bindings)\n    rhs = eval(y, {'np': np}, block_matrix_bindings)\n    _assert_eq(lhs, rhs)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_tree_matmul",
+    "line": 638,
+    "body": "@fails_service_backend()\n@fails_local_backend()\n@pytest.mark.parametrize('x, y', [('m.tree_matmul(m.T, splits=2)', 'nm @ nm.T'), ('m.tree_matmul(nm.T, splits=2)', 'nm @ nm.T'), ('row.tree_matmul(row.T, splits=2)', 'nrow @ nrow.T'), ('row.tree_matmul(nrow.T, splits=2)', 'nrow @ nrow.T'), ('m.T.tree_matmul(m, splits=2)', 'nm.T @ nm'), ('m.T.tree_matmul(nm, splits=2)', 'nm.T @ nm'), ('row.T.tree_matmul(row, splits=2)', 'nrow.T @ nrow'), ('row.T.tree_matmul(nrow, splits=2)', 'nrow.T @ nrow')])\ndef test_tree_matmul(block_matrix_bindings, x, y):\n    lhs = eval(x, block_matrix_bindings)\n    rhs = eval(y, block_matrix_bindings)\n    _assert_eq(lhs, rhs)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_fill",
+    "line": 662,
+    "body": "def test_fill():\n    nd = np.ones((3, 5))\n    bm = BlockMatrix.fill(3, 5, 1.0)\n    bm2 = BlockMatrix.fill(3, 5, 1.0, block_size=2)\n    assert bm.block_size == BlockMatrix.default_block_size()\n    assert bm2.block_size == 2\n    _assert_eq(bm, nd)\n    _assert_eq(bm2, nd)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sum",
+    "line": 673,
+    "body": "def test_sum():\n    nd = np.arange(11 * 13, dtype=np.float64).reshape((11, 13))\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n    assert_sums_agree(bm, nd)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sum_with_sparsify",
+    "line": 681,
+    "body": "@fails_local_backend\n@fails_service_backend(reason='ExecuteContext.scoped requires SparkBackend')\ndef test_sum_with_sparsify():\n    nd = np.zeros(shape=(5, 7))\n    nd[2, 4] = 1.0\n    nd[2, 5] = 2.0\n    nd[3, 4] = 3.0\n    nd[3, 5] = 4.0\n    hnd = hl.nd.array(nd)\n    bm = BlockMatrix.from_ndarray(hnd, block_size=2).sparsify_rectangles([[2, 4, 4, 6]])\n    bm2 = BlockMatrix.from_ndarray(hnd, block_size=2).sparsify_rectangles([[2, 4, 4, 6], [0, 5, 0, 1]])\n    bm3 = BlockMatrix.from_ndarray(hnd, block_size=2).sparsify_rectangles([[2, 4, 4, 6], [0, 1, 0, 7]])\n    nd4 = np.zeros(shape=(5, 7))\n    bm4 = BlockMatrix.fill(5, 7, value=0.0, block_size=2).sparsify_rectangles([])\n    assert_sums_agree(bm, nd)\n    assert_sums_agree(bm2, nd)\n    assert_sums_agree(bm3, nd)\n    assert_sums_agree(bm4, nd4)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_slicing_0",
+    "line": 705,
+    "body": "@pytest.mark.parametrize('indices', [(0, 0), (5, 7), (-3, 9), (-8, -10)])\ndef test_slicing_0(indices):\n    nd = np.array(np.arange(0, 80, dtype=float)).reshape(8, 10)\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n    _assert_eq(bm[indices], nd[indices])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_slicing_1",
+    "line": 724,
+    "body": "@pytest.mark.parametrize('indices', [(slice(0, 8), slice(0, 10)), (slice(0, 8, 2), slice(0, 10, 2)), (slice(2, 4), slice(5, 7)), (slice(-8, -1), slice(-10, -1)), (slice(-8, -1, 2), slice(-10, -1, 2)), (slice(None, 4, 1), slice(None, 4, 1)), (slice(4, None), slice(4, None)), (slice(None, None), slice(None, None))])\ndef test_slicing_1(indices):\n    nd = np.array(np.arange(0, 80, dtype=float)).reshape(8, 10)\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n    _assert_eq(bm[indices], nd[indices])\n    _assert_eq(bm[indices][:, :2], nd[indices][:, :2])\n    _assert_eq(bm[indices][:2, :], nd[indices][:2, :])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_slicing_2",
+    "line": 745,
+    "body": "@pytest.mark.parametrize('indices, axis', [((0, slice(3, 4)), 0), ((1, slice(3, 4)), 0), ((-8, slice(3, 4)), 0), ((-1, slice(3, 4)), 0), ((slice(3, 4), 0), 1), ((slice(3, 4), 1), 1), ((slice(3, 4), -8), 1), ((slice(3, 4), -1), 1)])\ndef test_slicing_2(indices, axis):\n    nd = np.array(np.arange(0, 80, dtype=float)).reshape(8, 10)\n    bm = BlockMatrix.from_ndarray(hl.literal(nd), block_size=3)\n    _assert_eq(bm[indices], np.expand_dims(nd[indices], axis))\n    _assert_eq(bm[indices] - bm, nd[indices] - nd)\n    _assert_eq(bm - bm[indices], nd - nd[indices])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_illegal_indexing",
+    "line": 773,
+    "body": "@pytest.mark.parametrize('expr', ['square[0, ]', 'square[9, 0]', 'square[-9, 0]', 'square[0, 11]', 'square[0, -11]', 'square[::-1, 0]', 'square[0, ::-1]', 'square[:0, 0]', 'square[0, :0]', 'square[0:9, 0]', 'square[-9:, 0]', 'square[:-9, 0]', 'square[0, :11]', 'square[0, -11:]', 'square[0, :-11] '])\ndef test_block_matrix_illegal_indexing(block_matrix_bindings, expr):\n    with pytest.raises(ValueError):\n        eval(expr, block_matrix_bindings)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_diagonal_sparse",
+    "line": 778,
+    "body": "def test_diagonal_sparse():\n    nd = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0], [13.0, 14.0, 15.0, 16.0], [17.0, 18.0, 19.0, 20.0]])\n    bm = BlockMatrix.from_numpy(nd, block_size=2)\n    bm = bm.sparsify_row_intervals([0, 0, 0, 0, 0], [2, 2, 2, 2, 2])\n    _assert_eq(bm.diagonal(), np.array([[1.0, 6.0, 0.0, 0.0]]))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_slices_with_sparsify",
+    "line": 796,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_slices_with_sparsify():\n    nd = np.array(np.arange(0, 80, dtype=float)).reshape(8, 10)\n    bm = BlockMatrix.from_numpy(nd, block_size=3)\n    bm2 = bm.sparsify_row_intervals([0, 0, 0, 0, 0, 0, 0, 0], [2, 0, 0, 0, 0, 0, 0, 0])\n    assert bm2[0, 1] == 1.0\n    assert bm2[0, 2] == 0.0\n    assert bm2[0, 9] == 0.0\n    nd2 = np.zeros(shape=(8, 10))\n    nd2[0, 1] = 1.0\n    _assert_eq(bm2[:, :], nd2)\n    _assert_eq(bm2[:, 1], nd2[:, 1:2])\n    _assert_eq(bm2[1, :], nd2[1:2, :])\n    _assert_eq(bm2[0:5, 0:5], nd2[0:5, 0:5])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparsify_row_intervals_0",
+    "line": 813,
+    "body": "def test_sparsify_row_intervals_0():\n    nd = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0], [13.0, 14.0, 15.0, 16.0]])\n    bm = BlockMatrix.from_numpy(nd, block_size=2)\n    _assert_eq(bm.sparsify_row_intervals(starts=[1, 0, 2, 2], stops=[2, 0, 3, 4]), np.array([[0.0, 2.0, 0.0, 0.0], [0.0, 0.0, 0.0, 0.0], [0.0, 0.0, 11.0, 0.0], [0.0, 0.0, 15.0, 16.0]]))\n    _assert_eq(bm.sparsify_row_intervals(starts=[1, 0, 2, 2], stops=[2, 0, 3, 4], blocks_only=True), np.array([[1.0, 2.0, 0.0, 0.0], [5.0, 6.0, 0.0, 0.0], [0.0, 0.0, 11.0, 12.0], [0.0, 0.0, 15.0, 16.0]]))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_row_intervals_1",
+    "line": 836,
+    "body": "@pytest.mark.parametrize('starts, stops', [([0, 1, 2, 3, 4, 5, 6, 7], [1, 2, 3, 4, 5, 6, 7, 8]), ([0, 0, 5, 3, 4, 5, 8, 2], [9, 0, 5, 3, 4, 5, 9, 5]), ([0, 5, 10, 8, 7, 6, 5, 4], [0, 5, 10, 9, 8, 7, 6, 5])])\ndef test_row_intervals_1(starts, stops):\n    nd2 = np.random.normal(size=(8, 10))\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n    actual = bm2.sparsify_row_intervals(starts, stops, blocks_only=False).to_numpy()\n    expected = nd2.copy()\n    for i in range(0, 8):\n        for j in range(0, starts[i]):\n            expected[i, j] = 0.0\n        for j in range(stops[i], 10):\n            expected[i, j] = 0.0\n    _assert_eq(actual, expected)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparsify_band_0",
+    "line": 849,
+    "body": "def test_sparsify_band_0():\n    nd = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0], [13.0, 14.0, 15.0, 16.0]])\n    bm = BlockMatrix.from_numpy(nd, block_size=2)\n    _assert_eq(bm.sparsify_band(lower=-1, upper=2), np.array([[1.0, 2.0, 3.0, 0.0], [5.0, 6.0, 7.0, 8.0], [0.0, 10.0, 11.0, 12.0], [0.0, 0.0, 15.0, 16.0]]))\n    _assert_eq(bm.sparsify_band(lower=0, upper=0, blocks_only=True), np.array([[1.0, 2.0, 0.0, 0.0], [5.0, 6.0, 0.0, 0.0], [0.0, 0.0, 11.0, 12.0], [0.0, 0.0, 15.0, 16.0]]))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparsify_band_1",
+    "line": 865,
+    "body": "@pytest.mark.parametrize('lower, upper', [(0, 0), (1, 1), (2, 2), (-5, 5), (-7, 0), (0, 9), (-100, 100)])\ndef test_sparsify_band_1(lower, upper):\n    nd2 = np.arange(0, 80, dtype=float).reshape(8, 10)\n    bm2 = BlockMatrix.from_numpy(nd2, block_size=3)\n    actual = bm2.sparsify_band(lower, upper, blocks_only=False).to_numpy()\n    mask = np.fromfunction(lambda i, j: (lower <= j - i) * (j - i <= upper), (8, 10))\n    _assert_eq(actual, nd2 * mask)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparsify_triangle",
+    "line": 873,
+    "body": "def test_sparsify_triangle():\n    nd = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0], [13.0, 14.0, 15.0, 16.0]])\n    bm = BlockMatrix.from_numpy(nd, block_size=2)\n    _assert_eq(bm.sparsify_triangle(), np.array([[1.0, 2.0, 3.0, 4.0], [0.0, 6.0, 7.0, 8.0], [0.0, 0.0, 11.0, 12.0], [0.0, 0.0, 0.0, 16.0]]))\n    _assert_eq(bm.sparsify_triangle(lower=True), np.array([[1.0, 0.0, 0.0, 0.0], [5.0, 6.0, 0.0, 0.0], [9.0, 10.0, 11.0, 0.0], [13.0, 14.0, 15.0, 16.0]]))\n    _assert_eq(bm.sparsify_triangle(blocks_only=True), np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [0.0, 0.0, 11.0, 12.0], [0.0, 0.0, 15.0, 16.0]]))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparsify_rectangles",
+    "line": 897,
+    "body": "def test_sparsify_rectangles():\n    nd = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0], [13.0, 14.0, 15.0, 16.0]])\n    bm = BlockMatrix.from_numpy(nd, block_size=2)\n    _assert_eq(bm.sparsify_rectangles([[0, 1, 0, 1], [0, 3, 0, 2], [1, 2, 0, 4]]), np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 0.0, 0.0], [13.0, 14.0, 0.0, 0.0]]))\n    _assert_eq(bm.sparsify_rectangles([]), np.zeros(shape=(4, 4)))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_export_rectangles",
+    "line": 934,
+    "body": "@fails_service_backend()\n@fails_local_backend()\n@pytest.mark.parametrize('rects,block_size,binary', [(rects, block_size, binary) for binary in [False, True] for block_size in [3, 4, 10] for rects in [[[0, 1, 0, 1], [4, 5, 7, 8]], [[4, 5, 0, 10], [0, 8, 4, 5]], [[0, 1, 0, 1], [1, 2, 1, 2], [2, 3, 2, 3], [3, 5, 3, 6], [3, 6, 3, 7], [3, 7, 3, 8], [4, 5, 0, 10], [0, 8, 4, 5], [0, 8, 0, 10]]]])\ndef test_export_rectangles(rects, block_size, binary):\n    nd = np.arange(0, 80, dtype=float).reshape(8, 10)\n    bm = BlockMatrix.from_numpy(nd, block_size=block_size)\n    with hl.TemporaryDirectory() as rect_uri:\n        bm.export_rectangles(rect_uri, rects, binary=binary)\n        _assert_rectangles_eq(nd, rect_uri, rects, binary=binary)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_export_rectangles_sparse",
+    "line": 944,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_export_rectangles_sparse():\n    with hl.TemporaryDirectory() as rect_uri:\n        nd = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0], [13.0, 14.0, 15.0, 16.0]])\n        bm = BlockMatrix.from_numpy(nd, block_size=2)\n        sparsify_rects = [[0, 1, 0, 1], [0, 3, 0, 2], [1, 2, 0, 4]]\n        export_rects = [[0, 1, 0, 1], [0, 3, 0, 2], [1, 2, 0, 4], [2, 4, 2, 4]]\n        bm.sparsify_rectangles(sparsify_rects).export_rectangles(rect_uri, export_rects)\n        expected = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 0.0, 0.0], [13.0, 14.0, 0.0, 0.0]])\n        _assert_rectangles_eq(expected, rect_uri, export_rects)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_export_rectangles_filtered",
+    "line": 959,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_export_rectangles_filtered():\n    with hl.TemporaryDirectory() as rect_uri:\n        nd = np.array([[1.0, 2.0, 3.0, 4.0], [5.0, 6.0, 7.0, 8.0], [9.0, 10.0, 11.0, 12.0], [13.0, 14.0, 15.0, 16.0]])\n        bm = BlockMatrix.from_numpy(nd)\n        bm = bm[1:3, 1:3]\n        export_rects = [[0, 1, 0, 2], [1, 2, 0, 2]]\n        bm.export_rectangles(rect_uri, export_rects)\n        expected = np.array([[6.0, 7.0], [10.0, 11.0]])\n        _assert_rectangles_eq(expected, rect_uri, export_rects)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_export_blocks",
+    "line": 974,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_export_blocks():\n    nd = np.ones(shape=(8, 10))\n    bm = BlockMatrix.from_numpy(nd, block_size=20)\n    with hl.TemporaryDirectory() as bm_uri:\n        bm.export_blocks(bm_uri, binary=True)\n        actual = BlockMatrix.rectangles_to_numpy(bm_uri, binary=True)\n        _assert_eq(nd, actual)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_rectangles_to_numpy",
+    "line": 987,
+    "body": "@fails_service_backend()\n@fails_local_backend()\n@pytest.mark.parametrize('binary', [True, False])\ndef test_rectangles_to_numpy(binary):\n    nd = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])\n    rects = [[0, 3, 0, 1], [1, 2, 0, 2]]\n    expected = np.array([[1.0, 0.0], [4.0, 5.0], [7.0, 0.0]])\n    with hl.TemporaryDirectory() as rect_uri:\n        BlockMatrix.from_numpy(nd).export_rectangles(rect_uri, rects, binary=binary)\n        _assert_eq(expected, BlockMatrix.rectangles_to_numpy(rect_uri, binary=binary))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_to_ndarray",
+    "line": 996,
+    "body": "def test_to_ndarray():\n    np_mat = np.arange(12).reshape((4, 3)).astype(np.float64)\n    mat = BlockMatrix.from_ndarray(hl.nd.array(np_mat)).to_ndarray()\n    assert np.array_equal(np_mat, hl.eval(mat))\n    blocks_to_sparsify = [1, 4, 7, 12, 20, 42, 48]\n    sparsed_numpy = sparsify_numpy(np.arange(25 * 25).reshape((25, 25)), 4, blocks_to_sparsify)\n    sparsed = BlockMatrix.from_ndarray(hl.nd.array(sparsed_numpy), block_size=4)._sparsify_blocks(blocks_to_sparsify).to_ndarray()\n    assert np.array_equal(sparsed_numpy, hl.eval(sparsed))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_block_matrix_entries",
+    "line": 1013,
+    "body": "@test_timeout(batch=5 * 60)\n@pytest.mark.parametrize('block_size', [1, 2, 1024])\ndef test_block_matrix_entries(block_size):\n    n_rows, n_cols = (5, 3)\n    rows = [{'i': i, 'j': j, 'entry': float(i + j)} for i in range(n_rows) for j in range(n_cols)]\n    schema = hl.tstruct(i=hl.tint32, j=hl.tint32, entry=hl.tfloat64)\n    table = hl.Table.parallelize([hl.struct(i=row['i'], j=row['j'], entry=row['entry']) for row in rows], schema)\n    table = table.annotate(i=hl.int64(table.i), j=hl.int64(table.j)).key_by('i', 'j')\n    ndarray = np.reshape(list(map(lambda row: row['entry'], rows)), (n_rows, n_cols))\n    block_matrix = BlockMatrix.from_ndarray(hl.literal(ndarray), block_size)\n    entries_table = block_matrix.entries()\n    assert entries_table.count() == n_cols * n_rows\n    assert len(entries_table.row) == 3\n    assert table._same(entries_table)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_from_entry_expr_filtered",
+    "line": 1029,
+    "body": "def test_from_entry_expr_filtered():\n    mt = hl.utils.range_matrix_table(1, 1).filter_entries(False)\n    bm = hl.linalg.BlockMatrix.from_entry_expr(mt.row_idx + mt.col_idx, mean_impute=True)\n    assert np.isnan(bm.entries().entry.collect()[0])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_array_windows",
+    "line": 1035,
+    "body": "def test_array_windows():\n\n    def assert_eq(a, b):\n        assert np.array_equal(a, np.array(b))\n    starts, stops = hl.linalg.utils.array_windows(np.array([1, 2, 4, 4, 6, 8]), 2)\n    assert_eq(starts, [0, 0, 1, 1, 2, 4])\n    assert_eq(stops, [2, 4, 5, 5, 6, 6])\n    starts, stops = hl.linalg.utils.array_windows(np.array([-10.0, -2.5, 0.0, 0.0, 1.2, 2.3, 3.0]), 2.5)\n    assert_eq(starts, [0, 1, 1, 1, 2, 2, 4])\n    assert_eq(stops, [1, 4, 6, 6, 7, 7, 7])\n    starts, stops = hl.linalg.utils.array_windows(np.array([0, 0, 1]), 0)\n    assert_eq(starts, [0, 0, 2])\n    assert_eq(stops, [2, 2, 3])\n    starts, stops = hl.linalg.utils.array_windows(np.array([]), 1)\n    assert starts.size == 0\n    assert stops.size == 0\n    starts, stops = hl.linalg.utils.array_windows(np.array([-float('inf'), -1, 0, 1, float('inf')]), 1)\n    assert_eq(starts, [0, 1, 1, 2, 4])\n    assert_eq(stops, [1, 3, 4, 4, 5])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_array_windows_illegal_arguments",
+    "line": 1072,
+    "body": "@pytest.mark.parametrize('array,radius', [([1, 0], -1), ([0, float('nan')], 1), ([float('nan')], 1), ([0.0, float('nan')], 1), ([None], 1), ([], -1), (['str'], 1)])\ndef test_array_windows_illegal_arguments(array, radius):\n    with pytest.raises(ValueError):\n        hl.linalg.utils.array_windows(np.array(array), radius)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_per_contig",
+    "line": 1077,
+    "body": "def test_locus_windows_per_contig():\n    f = hl._locus_windows_per_contig([[1.0, 3.0, 4.0], [2.0, 2.0], [5.0]], 1.0)\n    assert hl.eval(f) == ([0, 1, 1, 3, 3, 5], [1, 3, 3, 5, 5, 6])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_1",
+    "line": 1082,
+    "body": "def test_locus_windows_1():\n    centimorgans = hl.literal([0.1, 1.0, 1.0, 1.5, 1.9])\n    mt = hl.balding_nichols_model(1, 5, 5).add_row_index()\n    mt = mt.annotate_rows(cm=centimorgans[hl.int32(mt.row_idx)]).cache()\n    starts, stops = hl.linalg.utils.locus_windows(mt.locus, 2)\n    assert_np_arrays_eq(starts, [0, 0, 0, 1, 2])\n    assert_np_arrays_eq(stops, [3, 4, 5, 5, 5])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_2",
+    "line": 1093,
+    "body": "def test_locus_windows_2():\n    centimorgans = hl.literal([0.1, 1.0, 1.0, 1.5, 1.9])\n    mt = hl.balding_nichols_model(1, 5, 5).add_row_index()\n    mt = mt.annotate_rows(cm=centimorgans[hl.int32(mt.row_idx)]).cache()\n    starts, stops = hl.linalg.utils.locus_windows(mt.locus, 0.5, coord_expr=mt.cm)\n    assert_np_arrays_eq(starts, [0, 1, 1, 1, 3])\n    assert_np_arrays_eq(stops, [1, 4, 4, 5, 5])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_3",
+    "line": 1104,
+    "body": "def test_locus_windows_3():\n    centimorgans = hl.literal([0.1, 1.0, 1.0, 1.5, 1.9])\n    mt = hl.balding_nichols_model(1, 5, 5).add_row_index()\n    mt = mt.annotate_rows(cm=centimorgans[hl.int32(mt.row_idx)]).cache()\n    starts, stops = hl.linalg.utils.locus_windows(mt.locus, 1.0, coord_expr=2 * centimorgans[hl.int32(mt.row_idx)])\n    assert_np_arrays_eq(starts, [0, 1, 1, 1, 3])\n    assert_np_arrays_eq(stops, [1, 4, 4, 5, 5])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_4",
+    "line": 1115,
+    "body": "def test_locus_windows_4():\n    rows = [{'locus': hl.Locus('1', 1), 'cm': 1.0}, {'locus': hl.Locus('1', 2), 'cm': 3.0}, {'locus': hl.Locus('1', 4), 'cm': 4.0}, {'locus': hl.Locus('2', 1), 'cm': 2.0}, {'locus': hl.Locus('2', 1), 'cm': 2.0}, {'locus': hl.Locus('3', 3), 'cm': 5.0}]\n    ht = hl.Table.parallelize(rows, hl.tstruct(locus=hl.tlocus('GRCh37'), cm=hl.tfloat64), key=['locus'])\n    starts, stops = hl.linalg.utils.locus_windows(ht.locus, 1)\n    assert_np_arrays_eq(starts, [0, 0, 2, 3, 3, 5])\n    assert_np_arrays_eq(stops, [2, 2, 3, 5, 5, 6])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_5",
+    "line": 1145,
+    "body": "def test_locus_windows_5():\n    ht = dummy_table_with_loci_and_cms()\n    starts, stops = hl.linalg.utils.locus_windows(ht.locus, 1.0, coord_expr=ht.cm)\n    assert_np_arrays_eq(starts, [0, 1, 1, 3, 3, 5])\n    assert_np_arrays_eq(stops, [1, 3, 3, 5, 5, 6])"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_6",
+    "line": 1152,
+    "body": "def test_locus_windows_6():\n    ht = dummy_table_with_loci_and_cms()\n    with pytest.raises(HailUserError, match='ascending order'):\n        hl.linalg.utils.locus_windows(ht.order_by(ht.cm).locus, 1.0)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_7",
+    "line": 1158,
+    "body": "def test_locus_windows_7():\n    ht = dummy_table_with_loci_and_cms()\n    with pytest.raises(ExpressionException, match='different source'):\n        hl.linalg.utils.locus_windows(ht.locus, 1.0, coord_expr=hl.utils.range_table(1).idx)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_8",
+    "line": 1164,
+    "body": "def test_locus_windows_8():\n    with pytest.raises(ExpressionException, match='no source'):\n        hl.linalg.utils.locus_windows(hl.locus('1', 1), 1.0)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_9",
+    "line": 1169,
+    "body": "def test_locus_windows_9():\n    ht = dummy_table_with_loci_and_cms()\n    with pytest.raises(ExpressionException, match='no source'):\n        hl.linalg.utils.locus_windows(ht.locus, 1.0, coord_expr=0.0)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_10",
+    "line": 1175,
+    "body": "def test_locus_windows_10():\n    ht = dummy_table_with_loci_and_cms()\n    ht = ht.annotate_globals(x=hl.locus('1', 1), y=1.0)\n    with pytest.raises(ExpressionException, match='row-indexed'):\n        hl.linalg.utils.locus_windows(ht.x, 1.0)\n    with pytest.raises(ExpressionException, match='row-indexed'):\n        hl.linalg.utils.locus_windows(ht.locus, 1.0, ht.y)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_11",
+    "line": 1185,
+    "body": "def test_locus_windows_11():\n    ht = hl.Table.parallelize([{'locus': hl.missing(hl.tlocus()), 'cm': 1.0}], hl.tstruct(locus=hl.tlocus('GRCh37'), cm=hl.tfloat64), key=['locus'])\n    with pytest.raises(HailUserError, match=\"missing value for 'locus_expr'\"):\n        hl.linalg.utils.locus_windows(ht.locus, 1.0)\n    with pytest.raises(HailUserError, match=\"missing value for 'locus_expr'\"):\n        hl.linalg.utils.locus_windows(ht.locus, 1.0, coord_expr=ht.cm)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_locus_windows_12",
+    "line": 1198,
+    "body": "def test_locus_windows_12():\n    ht = hl.Table.parallelize([{'locus': hl.Locus('1', 1), 'cm': hl.missing(hl.tfloat64)}], hl.tstruct(locus=hl.tlocus('GRCh37'), cm=hl.tfloat64), key=['locus'])\n    with pytest.raises(FatalError, match=\"missing value for 'coord_expr'\"):\n        hl.linalg.utils.locus_windows(ht.locus, 1.0, coord_expr=ht.cm)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_write_overwrite",
+    "line": 1208,
+    "body": "def test_write_overwrite():\n    with hl.TemporaryDirectory(ensure_exists=False) as path:\n        bm = BlockMatrix.from_numpy(np.array([[0]]))\n        bm.write(path)\n        with pytest.raises(FatalError):\n            bm.write(path)\n        bm2 = BlockMatrix.from_numpy(np.array([[1]]))\n        bm2.write(path, overwrite=True)\n        _assert_eq(BlockMatrix.read(path), bm2)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_stage_locally",
+    "line": 1220,
+    "body": "def test_stage_locally():\n    nd = np.arange(0, 80, dtype=float).reshape(8, 10)\n    with hl.TemporaryDirectory(ensure_exists=False) as bm_uri:\n        BlockMatrix.from_numpy(nd, block_size=3).write(bm_uri, stage_locally=True)\n        bm = BlockMatrix.read(bm_uri)\n        _assert_eq(nd, bm)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_svd",
+    "line": 1228,
+    "body": "def test_svd():\n\n    def assert_same_columns_up_to_sign(a, b):\n        for j in range(a.shape[1]):\n            assert np.allclose(a[:, j], b[:, j]) or np.allclose(-a[:, j], b[:, j])\n    x0 = np.array([[-2.0, 0.0, 3.0], [-1.0, 2.0, 4.0]])\n    u0, s0, vt0 = np.linalg.svd(x0, full_matrices=False)\n    x = BlockMatrix.from_numpy(x0)\n    u, s, vt = x.svd()\n    assert_same_columns_up_to_sign(u, u0)\n    assert np.allclose(s, s0)\n    assert_same_columns_up_to_sign(vt.T, vt0.T)\n    s = x.svd(compute_uv=False)\n    assert np.allclose(s, s0)\n    u, s, vt = x.svd(complexity_bound=0)\n    assert_same_columns_up_to_sign(u, u0)\n    assert np.allclose(s, s0)\n    assert_same_columns_up_to_sign(vt.to_numpy().T, vt0.T)\n    s = x.svd(compute_uv=False, complexity_bound=0)\n    assert np.allclose(s, s0)\n    x = BlockMatrix.from_numpy(x0.T)\n    u, s, vt = x.svd(complexity_bound=0)\n    assert_same_columns_up_to_sign(u.to_numpy(), vt0.T)\n    assert np.allclose(s, s0)\n    assert_same_columns_up_to_sign(vt.T, u0)\n    s = x.svd(compute_uv=False, complexity_bound=0)\n    assert np.allclose(s, s0)\n    x = BlockMatrix.from_numpy(x0[:, :2])\n    u, s, vt = x.svd(complexity_bound=0)\n    assert isinstance(u, np.ndarray)\n    assert isinstance(vt, BlockMatrix)\n    a = np.array([[0.0, 1.0, np.e, np.pi, 10.0, 25.0]])\n    x0 = a.T @ a\n    _, _ = np.linalg.eigh(x0 @ x0.T)\n    x = BlockMatrix.from_numpy(x0)\n    s = x.svd(complexity_bound=0, compute_uv=False)\n    assert np.all(s >= 0.0)\n    s = x.svd(compute_uv=False, complexity_bound=0)\n    assert np.all(s >= 0)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_filtering",
+    "line": 1285,
+    "body": "def test_filtering():\n    np_square = np.arange(16, dtype=np.float64).reshape((4, 4))\n    bm = BlockMatrix.from_numpy(np_square)\n    assert np.array_equal(bm.filter([3], [3]).to_numpy(), np.array([[15]]))\n    assert np.array_equal(bm.filter_rows([3]).filter_cols([3]).to_numpy(), np.array([[15]]))\n    assert np.array_equal(bm.filter_cols([3]).filter_rows([3]).to_numpy(), np.array([[15]]))\n    assert np.array_equal(bm.filter_rows([2]).filter_rows([0]).to_numpy(), np_square[2:3, :])\n    assert np.array_equal(bm.filter_cols([2]).filter_cols([0]).to_numpy(), np_square[:, 2:3])\n    with pytest.raises(ValueError) as exc:\n        bm.filter_cols([0]).filter_cols([3]).to_numpy()\n    assert 'index' in str(exc.value)\n    with pytest.raises(ValueError) as exc:\n        bm.filter_rows([0]).filter_rows([3]).to_numpy()\n    assert 'index' in str(exc.value)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_is_sparse",
+    "line": 1304,
+    "body": "@fails_service_backend()\ndef test_is_sparse():\n    block_list = [1, 2]\n    np_square = np.arange(16, dtype=np.float64).reshape((4, 4))\n    bm = BlockMatrix.from_numpy(np_square, block_size=2)\n    bm = bm._sparsify_blocks(block_list)\n    assert bm.is_sparse\n    assert np.array_equal(bm.to_numpy(), np.array([[0, 0, 2, 3], [0, 0, 6, 7], [8, 9, 0, 0], [12, 13, 0, 0]]))"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparsify_blocks",
+    "line": 1314,
+    "body": "@pytest.mark.parametrize('block_list,nrows,ncols,block_size', [([1, 2], 4, 4, 2), ([4, 8, 10, 12, 13, 14], 15, 15, 4)])\ndef test_sparsify_blocks(block_list, nrows, ncols, block_size):\n    np_square = np.arange(nrows * ncols, dtype=np.float64).reshape((nrows, ncols))\n    bm = BlockMatrix.from_numpy(np_square, block_size=block_size)\n    bm = bm._sparsify_blocks(block_list)\n    sparse_numpy = sparsify_numpy(np_square, block_size, block_list)\n    assert np.array_equal(bm.to_numpy(), sparse_numpy)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_sparse_transposition",
+    "line": 1331,
+    "body": "@pytest.mark.parametrize('block_list,nrows,ncols,block_size', [([1, 2], 4, 4, 2), ([4, 8, 10, 12, 13, 14], 15, 15, 4), ([2, 5, 8, 10, 11], 10, 15, 4), ([2, 5, 8, 10, 11], 15, 11, 4)])\ndef test_sparse_transposition(block_list, nrows, ncols, block_size):\n    np_square = np.arange(nrows * ncols, dtype=np.float64).reshape((nrows, ncols))\n    bm = BlockMatrix.from_numpy(np_square, block_size=block_size)\n    sparse_bm = bm._sparsify_blocks(block_list).T\n    sparse_np = sparsify_numpy(np_square, block_size, block_list).T\n    assert np.array_equal(sparse_bm.to_numpy(), sparse_np)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_row_blockmatrix_sum",
+    "line": 1339,
+    "body": "def test_row_blockmatrix_sum():\n    row = BlockMatrix.from_numpy(np.arange(10))\n    col = row.T\n    b = col.sum(axis=0)\n    assert b.to_numpy().shape == (1, 1)\n    d = row.sum(axis=1)\n    assert d.to_numpy().shape == (1, 1)\n    e = row.sum(axis=0)\n    assert e.to_numpy().shape == (1, 10)\n    f = col.sum(axis=1)\n    assert f.to_numpy().shape == (10, 1)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_map",
+    "line": 1361,
+    "body": "@fails_spark_backend()\ndef test_map():\n    np_mat = np.arange(20, dtype=np.float64).reshape((4, 5))\n    bm = BlockMatrix.from_ndarray(hl.nd.array(np_mat))\n    bm_mapped_arith = bm._map_dense(lambda x: x * x + 5)\n    _assert_eq(bm_mapped_arith, np_mat * np_mat + 5)\n    bm_mapped_if = bm._map_dense(lambda x: hl.if_else(x >= 1, x, -8.0))\n    np_if = np_mat.copy()\n    np_if[0, 0] = -8.0\n    _assert_eq(bm_mapped_if, np_if)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_from_entry_expr_simple_gt_n_alt_alleles",
+    "line": 1373,
+    "body": "def test_from_entry_expr_simple_gt_n_alt_alleles():\n    mt = hl.utils.range_matrix_table(346, 100)\n    mt = mt.annotate_entries(x=mt.row_idx * mt.col_idx % 3)\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(mt.x))\n    expected = np.array([x * y % 3 for x in range(346) for y in range(100)]).reshape((346, 100))\n    actual = hl.eval(BlockMatrix.from_entry_expr(hl.or_else(mt.GT.n_alt_alleles(), 0), block_size=32).to_ndarray())\n    assert np.array_equal(expected, actual)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_from_entry_expr_simple_direct_from_field",
+    "line": 1382,
+    "body": "def test_from_entry_expr_simple_direct_from_field():\n    mt = hl.utils.range_matrix_table(346, 100)\n    mt = mt.annotate_entries(x=mt.row_idx * mt.col_idx % 3)\n    expected = np.array([x * y % 3 for x in range(346) for y in range(100)]).reshape((346, 100))\n    actual = hl.eval(BlockMatrix.from_entry_expr(mt.x, block_size=32).to_ndarray())\n    assert np.array_equal(expected, actual)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_from_entry_expr_simple_with_float_conversion",
+    "line": 1391,
+    "body": "def test_from_entry_expr_simple_with_float_conversion():\n    mt = hl.utils.range_matrix_table(346, 100)\n    mt = mt.annotate_entries(x=mt.row_idx * mt.col_idx % 3)\n    expected = np.array([x * y % 3 for x in range(346) for y in range(100)]).reshape((346, 100))\n    actual = hl.eval(BlockMatrix.from_entry_expr(hl.float64(mt.x), block_size=32).to_ndarray())\n    assert np.array_equal(expected, actual)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_write_from_entry_expr_simple",
+    "line": 1400,
+    "body": "def test_write_from_entry_expr_simple():\n    mt = hl.utils.range_matrix_table(346, 100)\n    mt = mt.annotate_entries(x=mt.row_idx * mt.col_idx % 3)\n    expected = np.array([x * y % 3 for x in range(346) for y in range(100)]).reshape((346, 100))\n    with hl.TemporaryDirectory(ensure_exists=False) as path:\n        BlockMatrix.write_from_entry_expr(mt.x, path, block_size=32)\n        actual = hl.eval(BlockMatrix.read(path).to_ndarray())\n        assert np.array_equal(expected, actual)"
+  },
+  {
+    "module": "linalg/test_linalg.py",
+    "name": "test_write_block_matrix_with_block_size_eq_n_cols",
+    "line": 1411,
+    "body": "def test_write_block_matrix_with_block_size_eq_n_cols():\n    n_cols = 10\n    mt = hl.utils.range_matrix_table(10, n_cols)\n    mt = mt.annotate_entries(x=mt.row_idx * mt.col_idx)\n    bm = hl.linalg.BlockMatrix.from_entry_expr(mt.x, block_size=n_cols)\n    assert bm.shape == bm.to_numpy().shape"
+  }
+]

@@ -1,0 +1,10 @@
+E                                                                        [100%]
+==================================== ERRORS ====================================
+______________ ERROR at setup of TestAnnotationDB.test_uniqueness ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-qxevk1q4/upstream_hail/experimental/test_annotation_db.py:10: in db_json
+    t = hl.utils.genomic_range_table(10)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.utils' has no attribute 'genomic_range_table'
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-qxevk1q4/upstream_hail/experimental/test_annotation_db.py::TestAnnotationDB::test_uniqueness
+1 error in 0.08s

@@ -2,6 +2,7 @@
 //! actions lower expression IR and pull Arrow batches through the graph.
 pub mod aggregation;
 pub mod comparison;
+mod deferred_logical;
 pub mod globals;
 mod initialized_aggregate;
 mod initialized_scan;
@@ -10,7 +11,6 @@ mod join_interval;
 mod joins;
 pub mod line_source;
 mod logical;
-mod deferred_logical;
 mod logical_aggregate_init;
 mod logical_aggregation;
 mod logical_globals;
@@ -1862,7 +1862,22 @@ impl TableIR {
         if let Some(count) = self.known_n_partitions() {
             return Ok(count);
         }
-        Ok(partitioned::prepare(self.clone()).await?.parts.len())
+        match &self.node {
+            TableNode::IntervalRead {
+                child,
+                intervals,
+                point_type,
+                filter,
+            } => interval_read::n_partitions(child, intervals, point_type, *filter).await,
+            TableNode::MapGlobals { child }
+            | TableNode::Filter { child, .. }
+            | TableNode::Explode { child, .. }
+            | TableNode::MapRows { child, .. }
+            | TableNode::GroupWithinPartitions { child, .. }
+            | TableNode::MapPartitions { child, .. }
+            | TableNode::KeyBy { child, .. } => Box::pin(child.n_partitions()).await,
+            _ => Ok(partitioned::prepare(self.clone()).await?.parts.len()),
+        }
     }
     /// Pull execution batches directly into the bounded storage writer.
     pub async fn write(self: &Arc<Self>, path: &str, overwrite: bool) -> Result<()> {

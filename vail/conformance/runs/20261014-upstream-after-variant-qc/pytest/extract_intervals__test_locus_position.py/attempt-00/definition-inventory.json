@@ -1,0 +1,62 @@
+[
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_mt_lt",
+    "line": 4,
+    "body": "def test_mt_lt(mt):\n    expr = mt.filter_rows(mt.locus.position < 17434581)\n    assert expr.n_partitions() == 15\n    assert expr.count() == (245, 100)"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_mt_le",
+    "line": 10,
+    "body": "def test_mt_le(mt):\n    expr = mt.filter_rows(mt.locus.position <= 17434581)\n    assert expr.n_partitions() == 15\n    assert expr.count() == (246, 100)"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_mt_eq",
+    "line": 16,
+    "body": "def test_mt_eq(mt):\n    expr = mt.filter_rows(mt.locus.position == 17434581)\n    assert expr.n_partitions() == 1\n    actual = expr.GT.collect()\n    expected = [hl.Call([0, int(i in (13, 17))]) for i in range(100)]\n    assert actual == expected"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_mt_ge",
+    "line": 24,
+    "body": "def test_mt_ge(mt):\n    expr = mt.filter_rows(mt.locus.position >= 17434581)\n    assert expr.n_partitions() == 6\n    assert expr.count() == (101, 100)"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_mt_gt",
+    "line": 30,
+    "body": "def test_mt_gt(mt):\n    expr = mt.filter_rows(mt.locus.position > 17434581)\n    assert expr.n_partitions() == 6\n    assert expr.count() == (100, 100)"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_ht_lt",
+    "line": 36,
+    "body": "def test_ht_lt(ht):\n    expr = ht.filter(ht.locus.position < 17434581)\n    assert expr.n_partitions() == 15\n    assert expr.count() == 245"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_ht_le",
+    "line": 42,
+    "body": "def test_ht_le(ht):\n    expr = ht.filter(ht.locus.position <= 17434581)\n    assert expr.n_partitions() == 15\n    assert expr.count() == 246"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_ht_eq",
+    "line": 48,
+    "body": "def test_ht_eq(ht):\n    expr = ht.filter(ht.locus.position == 17434581)\n    assert expr.n_partitions() == 1\n    actual = expr.collect()\n    expected = [hl.Struct(locus=hl.Locus(contig=20, position=17434581, reference_genome='GRCh37'), alleles=['A', 'G'], rsid='rs16999198', qual=21384.8, filters=set(), info=hl.Struct(NEGATIVE_TRAIN_SITE=False, HWP=1.0, AC=[2], culprit='InbreedingCoeff', MQ0=0, ReadPosRankSum=0.534, AN=200, InbreedingCoeff=-0.0134, AF=[0.013], GQ_STDDEV=134.2, FS=2.944, DP=22586, GQ_MEAN=83.43, POSITIVE_TRAIN_SITE=True, VQSLOD=4.77, ClippingRankSum=0.175, BaseQRankSum=4.78, MLEAF=[0.013], MLEAC=[23], MQ=59.75, QD=14.65, END=None, DB=True, HaplotypeScore=None, MQRankSum=-0.192, CCC=1740, NCC=0, DS=False))]\n    assert actual == expected"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_ht_ge",
+    "line": 94,
+    "body": "def test_ht_ge(ht):\n    expr = ht.filter(ht.locus.position >= 17434581)\n    assert expr.n_partitions() == 6\n    assert expr.count() == 101"
+  },
+  {
+    "module": "extract_intervals/test_locus_position.py",
+    "name": "test_ht_gt",
+    "line": 100,
+    "body": "def test_ht_gt(ht):\n    expr = ht.filter(ht.locus.position > 17434581)\n    assert expr.n_partitions() == 6\n    assert expr.count() == 100"
+  }
+]

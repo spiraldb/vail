@@ -1,0 +1,27 @@
+{
+  "module": "utils/test_placement_tree.py",
+  "name": "Tests.test_realistic",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'PlacementTree' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/utils/test_placement_tree.py\", line 37, in test_realistic\n    tree = PlacementTree.from_named_type('row', dtype)\n           ^^^^^^^^^^^^^\nNameError: name 'PlacementTree' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.utils.placement_tree'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

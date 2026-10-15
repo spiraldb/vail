@@ -1,0 +1,19 @@
+
+==================================== ERRORS ====================================
+__________________ ERROR collecting test_hail_in_notebook.py ___________________
+ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-7gfevmhd/upstream_hail/test_hail_in_notebook.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-7gfevmhd/upstream_hail/test_hail_in_notebook.py:4: in <module>
+    from hailtop.utils.process import sync_check_exec
+/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/utils/__init__.py:1: in <module>
+    from . import rich_progress_bar, serialization
+/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/hailtop/utils/rich_progress_bar.py:3: in <module>
+    from rich import filesize
+E   ModuleNotFoundError: No module named 'rich'
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-7gfevmhd/upstream_hail/test_hail_in_notebook.py
+1 error in 0.03s

@@ -1,0 +1,122 @@
+[
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_hwe_normalized_pca",
+    "line": 14,
+    "body": "@fails_local_backend()\n@test_timeout(batch=10 * 60)\ndef test_hwe_normalized_pca():\n    mt = hl.balding_nichols_model(3, 100, 50)\n    eigenvalues, scores, loadings = hl.hwe_normalized_pca(mt.GT, k=2, compute_loadings=True)\n    assert len(eigenvalues) == 2\n    assert isinstance(scores, hl.Table)\n    assert scores.count() == 100\n    assert isinstance(loadings, hl.Table)\n    _, _, loadings = hl.hwe_normalized_pca(mt.GT, k=2, compute_loadings=False)\n    assert loadings is None"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_pca_against_numpy",
+    "line": 29,
+    "body": "@fails_local_backend()\n@test_timeout(batch=10 * 60)\ndef test_pca_against_numpy():\n    mt = hl.import_vcf(resource('tiny_m.vcf'))\n    mt = mt.annotate_rows(AC=hl.agg.sum(mt.GT.n_alt_alleles()), n_called=hl.agg.count_where(hl.is_defined(mt.GT)))\n    n_rows = 3\n    n_cols = 4\n    k = 3\n    mean = mt.AC / mt.n_called\n    eigen, scores, loadings = hl.pca(hl.coalesce((mt.GT.n_alt_alleles() - mean) / hl.sqrt(mean * (2 - mean) * n_rows / 2), 0), k=k, compute_loadings=True)\n    hail_scores = scores.explode('scores').scores.collect()\n    hail_loadings = loadings.explode('loadings').loadings.collect()\n    assert len(hail_scores) == n_cols * k\n    assert len(hail_loadings) == n_rows * k\n\n    def normalize(a):\n        ms = np.mean(a, axis=0, keepdims=True)\n        return np.divide(np.subtract(a, ms), np.sqrt(2.0 * np.multiply(ms / 2.0, 1 - ms / 2.0) * a.shape[1]))\n    g = np.pad(np.diag([1.0, 1, 2]), ((0, 1), (0, 0)), mode='constant')\n    g[1, 0] = 1.0 / 3\n    n = normalize(g)\n    U, s, V = np.linalg.svd(n, full_matrices=0)\n    np_scores = U.dot(np.diag(s)).flatten()\n    np_loadings = V.transpose().flatten()\n    np_eigenvalues = np.multiply(s, s).flatten()\n    np.testing.assert_allclose(eigen, np_eigenvalues, rtol=1e-05)\n    np.testing.assert_allclose(np.abs(hail_scores), np.abs(np_scores), rtol=1e-05)\n    np.testing.assert_allclose(np.abs(hail_loadings), np.abs(np_loadings), rtol=1e-05)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_blanczos_against_numpy",
+    "line": 68,
+    "body": "@test_timeout(batch=10 * 60)\ndef test_blanczos_against_numpy():\n\n    def concatToNumpy(blocks, horizontal=True):\n        if horizontal:\n            return np.concatenate(blocks, axis=0)\n        else:\n            return np.concatenate(blocks, axis=1)\n    mt = hl.import_vcf(resource('tiny_m.vcf'))\n    mt = mt.annotate_rows(AC=hl.agg.sum(mt.GT.n_alt_alleles()), n_called=hl.agg.count_where(hl.is_defined(mt.GT)))\n    n_rows = 3\n    n_cols = 4\n    k = 3\n    mean = mt.AC / mt.n_called\n    float_expr = hl.coalesce((mt.GT.n_alt_alleles() - mean) / hl.sqrt(mean * (2 - mean) * n_rows / 2), 0)\n    eigens, scores_t, loadings_t = hl._blanczos_pca(float_expr, k=k, q_iterations=7, compute_loadings=True)\n    A = np.array(float_expr.collect()).reshape((3, 4)).T\n    scores_blocks = scores_t.scores.collect()\n    scores = concatToNumpy(scores_blocks)\n    scores = np.reshape(scores, (len(scores) // k, k))\n    loadings_blocks = loadings_t.loadings.collect()\n    loadings = concatToNumpy(loadings_blocks)\n    loadings = np.reshape(loadings, (len(loadings) // k, k))\n    assert len(eigens) == 3\n    assert len(scores) == n_cols\n    assert len(loadings) == n_rows\n    np.testing.assert_almost_equal(A @ loadings, scores)\n    assert len(scores_t.globals) == 0\n    assert len(loadings_t.globals) == 0\n\n    def normalize(a):\n        ms = np.mean(a, axis=0, keepdims=True)\n        return np.divide(np.subtract(a, ms), np.sqrt(2.0 * np.multiply(ms / 2.0, 1 - ms / 2.0) * a.shape[1]))\n    g = np.pad(np.diag([1.0, 1, 2]), ((0, 1), (0, 0)), mode='constant')\n    g[1, 0] = 1.0 / 3\n    n = normalize(g)\n    U, s, V = np.linalg.svd(n, full_matrices=0)\n    np_loadings = V.transpose()\n    np_eigenvalues = np.multiply(s, s)\n\n    def bound(vs, us):\n        return 1 / k * sum([np.linalg.norm(us.T @ vs[:, i]) for i in range(k)])\n    np.testing.assert_allclose(eigens, np_eigenvalues, rtol=0.05)\n    assert bound(np_loadings, loadings) > 0.9"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_blanczos_T",
+    "line": 134,
+    "body": "@test_timeout(batch=5 * 60)\ndef test_blanczos_T():\n    k, m, n = (10, 100, 200)\n    sigma = [spec1(i + 1, k) for i in range(m)]\n    seed = 1025\n    np.random.seed(seed)\n    U = np.linalg.qr(np.random.normal(0, 1, (m, m)))[0]\n    V = np.linalg.qr(np.random.normal(0, 1, (n, m)))[0]\n    A = U * sigma @ V.T\n    mt_A_T = matrix_table_from_numpy(A.T)\n    eigenvalues, scores, loadings = hl._blanczos_pca(mt_A_T.ent, k=k, oversampling_param=k, q_iterations=4, compute_loadings=True, transpose=True)\n    singulars = np.sqrt(eigenvalues)\n    hail_V = (np.array(scores.scores.collect()) / singulars).T\n    hail_U = np.array(loadings.loadings.collect())\n    approx_A = hail_U @ np.diag(singulars) @ hail_V\n    norm_of_diff = np.linalg.norm(A - approx_A, 2)\n    np.testing.assert_allclose(norm_of_diff, spec1(k + 1, k), rtol=0.01)\n    np.testing.assert_allclose(singulars, sigma[:k], rtol=0.1)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_blanczos_flags",
+    "line": 166,
+    "body": "@pytest.mark.parametrize('compute_loadings,compute_scores,transpose', [(compute_loadings, compute_scores, transpose) for compute_loadings in [True, False] for compute_scores in [True, False] for transpose in [True, False]])\n@skip_when_service_backend()\ndef test_blanczos_flags(compute_loadings, compute_scores, transpose):\n    k, m, n = (10, 100, 200)\n    sigma = [spec1(i + 1, k) for i in range(m)]\n    seed = 1025\n    np.random.seed(seed)\n    U = np.linalg.qr(np.random.normal(0, 1, (m, m)))[0]\n    V = np.linalg.qr(np.random.normal(0, 1, (n, m)))[0]\n    A = U * sigma @ V.T\n    mt_A = matrix_table_from_numpy(A)\n    mt_A_T = matrix_table_from_numpy(A.T)\n    U = np.abs(U[:, :k])\n    V = np.abs(V[:, :k])\n    Vsigma = V * sigma[:k]\n    mt = mt_A_T if transpose else mt_A\n    eigenvalues, scores, loadings = hl._blanczos_pca(mt.ent, k=k, oversampling_param=k, q_iterations=4, compute_loadings=compute_loadings, compute_scores=compute_scores, transpose=transpose)\n    if compute_loadings:\n        loadings = np.array(loadings.loadings.collect())\n        np.testing.assert_allclose(np.abs(loadings), U, rtol=0.01)\n    else:\n        assert loadings is None\n    if compute_scores:\n        scores = np.array(scores.scores.collect())\n        np.testing.assert_allclose(np.abs(scores), Vsigma, rtol=0.01)\n    else:\n        assert scores is None\n    singulars = np.sqrt(eigenvalues)\n    np.testing.assert_allclose(singulars, sigma[:k], rtol=0.1)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_1",
+    "line": 268,
+    "body": "@pytest.mark.parametrize('triplet', dim_triplets)\n@test_timeout(5 * 60, batch=8 * 60)\ndef test_spectra_1(triplet):\n    spectra_helper(spec1, triplet)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_2",
+    "line": 274,
+    "body": "@pytest.mark.parametrize('triplet', dim_triplets)\n@test_timeout(5 * 60, batch=8 * 60)\ndef test_spectra_2(triplet):\n    spectra_helper(spec2, triplet)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_3",
+    "line": 280,
+    "body": "@pytest.mark.parametrize('triplet', dim_triplets)\n@test_timeout(5 * 60, batch=8 * 60)\ndef test_spectra_3(triplet):\n    spectra_helper(spec3, triplet)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_4",
+    "line": 286,
+    "body": "@pytest.mark.parametrize('triplet', dim_triplets)\n@test_timeout(5 * 60, batch=8 * 60)\ndef test_spectra_4(triplet):\n    spectra_helper(spec4, triplet)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_5",
+    "line": 292,
+    "body": "@pytest.mark.parametrize('triplet', dim_triplets)\n@test_timeout(5 * 60, batch=8 * 60)\ndef test_spectra_5(triplet):\n    spectra_helper(spec5, triplet)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_1",
+    "line": 315,
+    "body": "@skip_when_service_backend(reason='v slow & OOms')\n@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectral_moments_1():\n    spectral_moments_helper(spec1)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_2",
+    "line": 321,
+    "body": "@skip_when_service_backend(reason='v slow & OOms')\n@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectral_moments_2():\n    spectral_moments_helper(spec2)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_3",
+    "line": 327,
+    "body": "@skip_when_service_backend(reason='v slow & OOms')\n@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectral_moments_3():\n    spectral_moments_helper(spec3)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_4",
+    "line": 333,
+    "body": "@skip_when_service_backend(reason='v slow & OOms')\n@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectral_moments_4():\n    spectral_moments_helper(spec4)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_5",
+    "line": 339,
+    "body": "@skip_when_service_backend(reason='v slow & OOms')\n@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectral_moments_5():\n    spectral_moments_helper(spec5)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_1",
+    "line": 373,
+    "body": "@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectra_and_moments_1():\n    spectra_and_moments_helper(spec1)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_2",
+    "line": 378,
+    "body": "@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectra_and_moments_2():\n    spectra_and_moments_helper(spec2)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_3",
+    "line": 383,
+    "body": "@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectra_and_moments_3():\n    spectra_and_moments_helper(spec3)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_4",
+    "line": 388,
+    "body": "@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectra_and_moments_4():\n    spectra_and_moments_helper(spec4)"
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_5",
+    "line": 393,
+    "body": "@test_timeout(4 * 60, batch=8 * 60)\ndef test_spectra_and_moments_5():\n    spectra_and_moments_helper(spec5)"
+  }
+]

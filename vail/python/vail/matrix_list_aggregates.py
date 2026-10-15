@@ -76,6 +76,10 @@ def reduce_list(
             return [bind(v, context) for v in node]
         if not isinstance(node, dict) or node.get("op") == "literal":
             return node
+        if node.get("op") == "matrix_num_cols":
+            value = matrix._mir.column_records.length()
+            refs.update(value._global_refs)
+            return value.to_ir()
         if node.get("op") == "matrix_scope":
             return bind(node["value"], context)
         if node.get("op") == "matrix_column_position":
@@ -113,6 +117,10 @@ def reduce_list(
                 return [bind_entry(value, cell) for value in node]
             if not isinstance(node, dict) or node.get("op") == "literal":
                 return node
+            if node.get("op") == "matrix_num_cols":
+                value = matrix._mir.column_records.length()
+                refs.update(value._global_refs)
+                return value.to_ir()
             if node.get("op") == "matrix_scope":
                 return bind_entry(node["value"], cell)
             if node.get("op") == "matrix_field":
@@ -457,7 +465,7 @@ def reduce_list(
             return (
                 cast(result, dtype).to_ir() if result.dtype != dtype else result.to_ir()
             )
-        if op in ("matrix_field", "matrix_scope"):
+        if op in ("matrix_field", "matrix_scope", "matrix_num_cols"):
             return bind(node, fixed)
         return {k: walk(v, items, fixed) for k, v in node.items()}
 

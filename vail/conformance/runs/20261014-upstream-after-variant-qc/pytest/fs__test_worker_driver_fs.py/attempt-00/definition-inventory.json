@@ -1,0 +1,56 @@
+[
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_no_settings",
+    "line": 18,
+    "body": "@skip_in_azure\n@pytest.mark.uninitialized\ndef test_requester_pays_no_settings():\n    with pytest.raises(FatalError, match='Bucket is a requester pays bucket but no user project provided'):\n        hl_init_for_test(gcs_requester_pays_configuration=None)\n        hl.import_table('gs://hail-test-requester-pays-fds32/hello')"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_write_no_settings",
+    "line": 26,
+    "body": "@skip_in_azure\n@pytest.mark.uninitialized\ndef test_requester_pays_write_no_settings():\n    with pytest.raises(ClientResponseError, match='Bucket is a requester pays bucket but no user project provided'):\n        hl_init_for_test(gcs_requester_pays_configuration=None)\n        random_filename = 'gs://hail-test-requester-pays-fds32/test_requester_pays_on_worker_driver_' + secret_alnum_string(10)\n        hl.utils.range_table(4, n_partitions=4).write(random_filename, overwrite=True)\n        Env.fs().rmtree(random_filename)"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_write_with_project",
+    "line": 38,
+    "body": "@skip_in_azure\n@pytest.mark.uninitialized\ndef test_requester_pays_write_with_project():\n    hl_init_for_test(gcs_requester_pays_configuration='hail-vdc')\n    random_filename = 'gs://hail-test-requester-pays-fds32/test_requester_pays_on_worker_driver_' + secret_alnum_string(10)\n    try:\n        hl.utils.range_table(4, n_partitions=4).write(random_filename, overwrite=True)\n    finally:\n        hl.current_backend().fs.rmtree(random_filename)"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_with_project",
+    "line": 60,
+    "body": "@skip_in_azure\n@pytest.mark.uninitialized\n@test_timeout(local=5 * 60, batch=5 * 60)\n@pytest.mark.parametrize('requester_pays', ['hail-vdc', ('hail-vdc', ['hail-test-requester-pays-fds32']), ('hail-vdc', ['hail-test-requester-pays-fds32', 'other-bucket'])])\ndef test_requester_pays_with_project(requester_pays):\n    hl_init_for_test(gcs_requester_pays_configuration=requester_pays)\n    assert hl.import_table('gs://hail-test-requester-pays-fds32/hello', no_header=True).collect() == [hl.Struct(f0='hello')]"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_no_project",
+    "line": 69,
+    "body": "@skip_in_azure\n@pytest.mark.uninitialized\ndef test_requester_pays_no_project():\n    hl_init_for_test(gcs_requester_pays_configuration=('hail-vdc', ['other-bucket']))\n    with pytest.raises(Exception, match='Bucket is a requester pays bucket but no user project provided'):\n        hl.import_table('gs://hail-test-requester-pays-fds32/hello')"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_with_project_more_than_one_partition",
+    "line": 86,
+    "body": "@skip_in_azure\n@pytest.mark.uninitialized\n@test_timeout(local=5 * 60, batch=5 * 60)\n@pytest.mark.parametrize('requester_pays', ['hail-vdc', ('hail-vdc', ['hail-test-requester-pays-fds32']), ('hail-vdc', ['hail-test-requester-pays-fds32', 'other-bucket'])])\ndef test_requester_pays_with_project_more_than_one_partition(requester_pays):\n    expected_file_contents = [hl.Struct(f0='idx'), hl.Struct(f0='0'), hl.Struct(f0='1'), hl.Struct(f0='2'), hl.Struct(f0='3'), hl.Struct(f0='4'), hl.Struct(f0='5'), hl.Struct(f0='6'), hl.Struct(f0='7'), hl.Struct(f0='8'), hl.Struct(f0='9')]\n    hl_init_for_test(gcs_requester_pays_configuration=requester_pays)\n    assert hl.import_table('gs://hail-test-requester-pays-fds32/zero-to-nine', no_header=True, min_partitions=8).collect() == expected_file_contents"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_with_project_more_than_one_partition_no_project",
+    "line": 119,
+    "body": "@skip_in_azure\n@pytest.mark.uninitialized\n@test_timeout(local=5 * 60, batch=5 * 60)\ndef test_requester_pays_with_project_more_than_one_partition_no_project():\n    hl_init_for_test(gcs_requester_pays_configuration=('hail-vdc', ['other-bucket']))\n    with pytest.raises(Exception, match='Bucket is a requester pays bucket but no user project provided'):\n        hl.import_table('gs://hail-test-requester-pays-fds32/zero-to-nine', min_partitions=8)"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_can_access_public_blobs",
+    "line": 126,
+    "body": "@run_if_azure\ndef test_can_access_public_blobs():\n    public_mt = 'https://azureopendatastorage.blob.core.windows.net/gnomad/release/3.1/mt/genomes/gnomad.genomes.v3.1.hgdp_1kg_subset.mt'\n    assert hl.hadoop_exists(public_mt)\n    with hl.hadoop_open(f'{public_mt}/README.txt') as readme:\n        assert len(readme.read()) > 0\n    mt = hl.read_matrix_table(public_mt)\n    mt.describe()"
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_qob_can_use_sas_tokens",
+    "line": 137,
+    "body": "@run_if_azure\n@fails_local_backend\nasync def test_qob_can_use_sas_tokens():\n    vcf = resource('sample.vcf')\n    account = AzureAsyncFS.parse_url(vcf).account\n    sub_id = os.environ['HAIL_AZURE_SUBSCRIPTION_ID']\n    rg = os.environ['HAIL_AZURE_RESOURCE_GROUP']\n    sas_token = asyncio.run(AzureAsyncFS().generate_sas_token(sub_id, rg, account, 'rl'))\n    mt = hl.import_vcf(f'{vcf}?{sas_token}', min_partitions=4)\n    mt._force_count_rows()"
+  }
+]

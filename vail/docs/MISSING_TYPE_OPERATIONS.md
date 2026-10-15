@@ -91,33 +91,16 @@ missing `nd.array` name. The other listed ndarray operations are absent.
 
 ## Strings
 
-Implemented with DataFusion built-ins: string concatenation and repetition
-(including reflected forms), UTF-16 `length`/`hl.len`, `lower`, `upper`, Java-style
-`strip`, `contains`, `startswith`, `endswith`, unbounded `find`, and joins of
-string arrays/sets. Missingness follows the Hail oracle, including missing-string
-repetition by zero producing an empty string and joined missing members becoming
-`"null"`.
+Vail deliberately uses valid UTF-8 and Unicode scalar positions, not Hail's
+UTF-16 units. Length, indexing, slicing, search, reversal, translation, hamming
+and entropy follow codepoint semantics for literals and dynamic expressions.
+Stepped slices and general codepoint translation are supported. Regex methods
+accept dynamic patterns and replacements using the DataFusion/Rust regex engine;
+Java-only regex constructs remain outside that engine's grammar.
 
-Partial support with explicit rejection of unsupported inputs:
-
-- `s[i]`, `s[start:stop]`, and `reverse`: supported for provably BMP literal input. Slice bounds may be expressions; integer indexing requires a constant index. `s[:]` is identity for arbitrary inputs. General row-valued UTF-16 indexing/slicing/reversal remain unsupported.
-- `matches`, `replace`, `split`: plain literal patterns only. General Java regex syntax, capture groups (`first_match_in`), replacement templates, expression-valued patterns, zero-width split/replacement, and split limits remain unsupported.
-- `translate`: concrete or literal-dictionary BMP character mappings, including deletion. Expression-valued dictionaries and replacements longer than one character remain unsupported.
-- `hl.delimit`: string collections only. Non-string elements need Hail-specific formatting not provided by the built-ins used here.
-- `hl.reverse_complement`: BMP literal strings only; general inputs need Hail-compatible reversal.
-
-Not implemented because the pinned DataFusion functions do not provide the full
-Hail behavior:
-
-- [ ] Bounded `find(sub, start, end)` with UTF-16 positions.
-- [ ] `hl.format`, `hl.json`, `hl.parse_json` with Hail formatting/type semantics.
-- [ ] `hl.hamming`, `hl.entropy`.
-- [ ] `hl.parse_int32`, `parse_int64`, `parse_float32`, `parse_float64`, and aliases. Hail accepts Unicode decimal digits for integers and JVM hexadecimal/suffixed floating-point forms that Arrow/DataFusion casts do not match.
-
-These gaps raise `NotImplementedError`, rather than using new Vail evaluators.
-See [String operations](STRING_OPERATIONS.md), including runtime oracle evidence
-and notes on locale/Unicode versions. Hail does not support explicit string slice
-steps; Vail rejects them too.
+Separate missing APIs: Java-specific `parse_int*`/`parse_float*`, `hl.format`,
+`hl.json`, and `hl.parse_json`. See [String operations](STRING_OPERATIONS.md)
+for the explicit compatibility decision and full operation contract.
 
 ## Arrays and shared collection helpers
 

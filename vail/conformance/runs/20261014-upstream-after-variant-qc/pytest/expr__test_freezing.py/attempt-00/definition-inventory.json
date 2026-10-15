@@ -1,0 +1,98 @@
+[
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_list",
+    "line": 8,
+    "body": "def test_collect_as_set_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=['hello'])\n    result = t.aggregate_entries(hl.agg.collect_as_set(t.l))\n    assert result == {frozenlist(['hello'])}"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_list",
+    "line": 16,
+    "body": "def test_counter_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=['hello'])\n    result = t.aggregate_entries(hl.agg.counter(t.l))\n    assert list(result) == [frozenlist(['hello'])]\n    assert list(result.values()) == [1]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_tuple_of_list",
+    "line": 26,
+    "body": "def test_collect_as_set_tuple_of_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=(['hello'],))\n    result = t.aggregate_entries(hl.agg.collect_as_set(t.l))\n    assert result == {(frozenlist(['hello']),)}"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_tuple_of_list",
+    "line": 34,
+    "body": "def test_counter_tuple_of_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=(['hello'],))\n    result = t.aggregate_entries(hl.agg.counter(t.l))\n    assert list(result) == [(frozenlist(['hello']),)]\n    assert list(result.values()) == [1]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_struct_of_list",
+    "line": 44,
+    "body": "def test_collect_as_set_struct_of_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.struct(bad=['hello'], good=3))\n    result = t.aggregate_entries(hl.agg.collect_as_set(t.l))\n    assert result == {hl.Struct(bad=frozenlist(['hello']), good=3)}"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_struct_of_list",
+    "line": 52,
+    "body": "def test_counter_struct_of_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.struct(bad=['hello'], good=3))\n    result = t.aggregate_entries(hl.agg.counter(t.l))\n    assert list(result) == [hl.Struct(bad=frozenlist(['hello']), good=3)]\n    assert list(result.values()) == [1]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_dict_value_list",
+    "line": 62,
+    "body": "def test_collect_as_set_dict_value_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.dict([(3, ['hello'])]))\n    result = t.aggregate_entries(hl.agg.collect_as_set(t.l))\n    assert result == {frozendict({3: frozenlist(['hello'])})}"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_dict_value_list",
+    "line": 70,
+    "body": "def test_counter_dict_value_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.dict([(3, ['hello'])]))\n    result = t.aggregate_entries(hl.agg.counter(t.l))\n    assert list(result) == [frozendict({3: frozenlist(['hello'])})]\n    assert list(result.values()) == [1]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_list_list_list_set_list",
+    "line": 80,
+    "body": "def test_collect_as_set_list_list_list_set_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=[[[hl.set([['hello']])]]])\n    result = t.aggregate_entries(hl.agg.collect_as_set(t.l))\n    assert result == {frozenlist([frozenlist([frozenlist([frozenset([frozenlist(['hello'])])])])])}"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_list_list_list_set_list",
+    "line": 88,
+    "body": "def test_counter_list_list_list_set_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=[[[hl.set([['hello']])]]])\n    result = t.aggregate_entries(hl.agg.counter(t.l))\n    assert list(result) == [frozenlist([frozenlist([frozenlist([frozenset([frozenlist(['hello'])])])])])]\n    assert list(result.values()) == [1]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_dict_value_list",
+    "line": 98,
+    "body": "def test_collect_dict_value_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.dict([(3, ['hello'])]))\n    result = t.aggregate_entries(hl.agg.collect(t.l))\n    assert result == [frozendict({3: ['hello']})]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_dict_key_list",
+    "line": 111,
+    "body": "def test_collect_dict_key_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.dict([(['hello'], 3)]))\n    result = t.aggregate_entries(hl.agg.collect(t.l))\n    assert result == [frozendict({frozenlist(['hello']): 3})]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_dict_key_and_value_list",
+    "line": 119,
+    "body": "def test_collect_dict_key_and_value_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.dict([(['hello'], ['goodbye'])]))\n    result = t.aggregate_entries(hl.agg.collect(t.l))\n    assert result == [frozendict({frozenlist(['hello']): ['goodbye']})]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_set_list",
+    "line": 128,
+    "body": "def test_collect_set_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.set([['hello']]))\n    result = t.aggregate_entries(hl.agg.collect(t.l))\n    assert result == [frozenset({frozenlist(['hello'])})]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_set_dict_list_list",
+    "line": 136,
+    "body": "def test_collect_set_dict_list_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.set([hl.dict([(['hello'], ['goodbye'])])]))\n    result = t.aggregate_entries(hl.agg.collect(t.l))\n    d: Dict[frozenlist[str], frozenlist[str]] = {frozenlist(['hello']): frozenlist(['goodbye'])}\n    assert result == [frozenset({frozendict(d)})]"
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_set_tuple_struct_struct_list",
+    "line": 145,
+    "body": "def test_collect_set_tuple_struct_struct_list():\n    t = hl.utils.range_matrix_table(1, 1)\n    t = t.annotate_entries(l=hl.set([(hl.struct(a=hl.struct(inside=['hello'], aside=4.0), b='abc'), 3)]))\n    result = t.aggregate_entries(hl.agg.collect(t.l))\n    assert result == [frozenset({(hl.Struct(a=hl.Struct(inside=frozenlist(['hello']), aside=4.0), b='abc'), 3)})]"
+  }
+]

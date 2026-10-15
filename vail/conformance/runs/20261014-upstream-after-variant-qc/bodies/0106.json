@@ -1,0 +1,26 @@
+{
+  "module": "methods/test_pca.py",
+  "name": "test_spectra_and_moments_5",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "ndarray indexing is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 394, in test_spectra_and_moments_5\n    spectra_and_moments_helper(spec5)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 353, in spectra_and_moments_helper\n    mt_A = matrix_table_from_numpy(A)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/methods/test_pca.py\", line 125, in matrix_table_from_numpy\n    mt = mt.annotate_entries(ent=mt.entries_global[mt.row_idx, mt.col_idx])\n                                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 406, in __getitem__\n    raise NotImplementedError(\"ndarray indexing is not implemented\")\nNotImplementedError: ndarray indexing is not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

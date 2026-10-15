@@ -1,0 +1,30 @@
+{
+  "module": "backend/test_service_backend.py",
+  "name": "test_big_worker_has_big_memory",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "fixture",
+      "error_type": "KeyError",
+      "error": "'mocker'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 239, in worker\n    kwargs[key] = fixture(key)\n                  ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 228, in fixture\n    else fixture(p)\n         ^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 225, in fixture\n    factory = scope[name]\n              ~~~~~^^^^^^\nKeyError: 'mocker'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.backend.service_backend'; 'vail.backend' is not a package",
+    "module 'vail.utils' has no attribute 'ANY_REGION'",
+    "No module named 'aiohttp'",
+    "No module named 'rich'",
+    "No module named 'rich'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

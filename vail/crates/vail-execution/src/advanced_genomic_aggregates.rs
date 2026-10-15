@@ -9,7 +9,6 @@ use arrow_buffer::OffsetBuffer;
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
-use statrs::function::gamma::ln_gamma;
 use std::sync::Arc;
 
 fn bad(s: impl Into<String>) -> DataFusionError {
@@ -776,9 +775,10 @@ impl Accumulator for GenomicAccumulator {
     }
 }
 
-// Levene-Haldane conditional distribution. Log gamma from statrs keeps the
-// normalization stable for large genotype counts; states remain three counters.
-fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64, f64) {
+// Levene-Haldane conditional distribution; aggregate states remain three counters.
+pub(crate) fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64, f64) {
+    // Hail's LeveneHaldane recurrence, including normalization and summation
+    // order. Sharing this kernel keeps scalar and aggregate tests identical.
     let n = hom_ref + het + hom_var;
     if n == 0 {
         return (f64::NAN, 0.5);
@@ -787,46 +787,90 @@ fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64, f64) {
     let major = 2 * n - minor;
     let freq = (minor as f64 * major as f64) / (2 * n - 1) as f64 / n as f64;
     let parity = minor % 2;
-    let mut probs = Vec::new();
-    let mut h = parity;
-    while h <= minor {
-        let x = (minor - h) / 2;
-        let y = (major - h) / 2;
-        let logp = (h as f64) * std::f64::consts::LN_2
-            - ln_gamma(h as f64 + 1.)
-            - ln_gamma(x as f64 + 1.)
-            - ln_gamma(y as f64 + 1.);
-        probs.push((h, logp));
+    let center = (minor as f64 + 1.) * (major as f64 + 1.) / (2 * n + 3) as f64;
+    let mode = 2 * ((center - parity as f64) / 2.).round() as i64 + parity;
+    let mut right = vec![1.];
+    let mut h = mode;
+    while h < minor {
+        let p = right.last().unwrap() * (minor - h) as f64 * (major - h) as f64
+            / ((h as f64 + 2.) * (h + 1) as f64);
+        right.push(p);
+        if p == 0. {
+            break;
+        }
         h += 2;
     }
-    let max = probs.iter().map(|x| x.1).fold(f64::NEG_INFINITY, f64::max);
-    let weights = probs
+    let mut left = vec![1.];
+    h = mode;
+    while h > parity {
+        let p = left.last().unwrap() * h as f64 * (h - 1) as f64
+            / (((minor - h) as f64 + 2.) * ((major - h) as f64 + 2.));
+        left.push(p);
+        if p == 0. {
+            break;
+        }
+        h -= 2;
+    }
+    let norm = right
         .iter()
-        .map(|x| (x.0, (x.1 - max).exp()))
-        .collect::<Vec<_>>();
-    let total: f64 = weights.iter().map(|x| x.1).sum();
-    let observed = weights.iter().find(|x| x.0 == het).map_or(0., |x| x.1);
-    let tail: f64 = weights
-        .iter()
-        .filter(|x| {
-            if one_sided {
-                x.0 > het
-            } else {
-                x.1 < observed * (1. - 1e-12)
-            }
-        })
-        .map(|x| x.1)
-        .sum();
-    let equal: f64 = if one_sided {
-        observed
+        .copied()
+        .take_while(|p| *p > 1e-16)
+        .sum::<f64>()
+        + left.iter().copied().take_while(|p| *p > 1e-16).sum::<f64>()
+        - 1.;
+    let observed = if het >= mode {
+        right
+            .get(((het - mode) / 2) as usize)
+            .copied()
+            .unwrap_or(0.)
     } else {
-        weights
-            .iter()
-            .filter(|x| (x.1 - observed).abs() <= observed * 1e-12)
-            .map(|x| x.1)
-            .sum()
+        left.get(((mode - het) / 2) as usize).copied().unwrap_or(0.)
     };
-    (freq, ((tail + 0.5 * equal) / total).min(1.))
+    let p = if one_sided {
+        let tail = if het >= mode {
+            let start = ((het - mode) / 2 + 1) as usize;
+            let cutoff = right.get(start).copied().unwrap_or(0.) * 1e-16;
+            right
+                .iter()
+                .skip(start)
+                .copied()
+                .take_while(|p| *p > cutoff)
+                .sum::<f64>()
+        } else {
+            left.iter()
+                .skip(1)
+                .take(((mode - het + 1) / 2 - 1) as usize)
+                .copied()
+                .take_while(|p| *p > 1e-16)
+                .sum::<f64>()
+                + right
+                    .iter()
+                    .copied()
+                    .take_while(|p| *p > 1e-16)
+                    .sum::<f64>()
+        };
+        tail / norm + 0.5 * (observed / norm)
+    } else if observed <= f64::MIN_POSITIVE {
+        0.
+    } else {
+        let mid_tail = |weights: &[f64]| {
+            let p0 = (observed / norm) * norm;
+            let equal =
+                |p: f64| (p - p0).abs() <= f64::MIN_POSITIVE + 1e-12 * p.abs().max(p0.abs());
+            let mut iter = weights
+                .iter()
+                .copied()
+                .skip_while(|p| *p > p0 && !equal(*p))
+                .peekable();
+            let mut eq = 0.;
+            while iter.peek().is_some_and(|p| equal(*p)) {
+                eq += iter.next().unwrap();
+            }
+            0.5 * eq + iter.take_while(|p| *p > p0 * 0.5e-16).sum::<f64>()
+        };
+        (mid_tail(&left[1..]) + mid_tail(&right)) / norm
+    };
+    (freq, p)
 }
 
 #[cfg(test)]
@@ -899,6 +943,8 @@ mod tests {
 
     #[test]
     fn hwe_matches_hail_examples_and_mid_p() {
+        assert_eq!(hwe(1, 1, 1, false), (0.6, 0.7));
+        assert_eq!(hwe(1, 1, 1, true), (0.6, 0.7000000000000001));
         let (freq, p) = hwe(250, 500, 250, false);
         assert!((freq - 0.5002501250625313).abs() < 1e-12);
         assert!((p - 0.9747844394217698).abs() < 1e-10);

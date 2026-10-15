@@ -1,0 +1,8 @@
+[
+  {
+    "module": "utils/test_placement_tree.py",
+    "name": "Tests.test_realistic",
+    "line": 8,
+    "body": "def test_realistic(self):\n    dtype = hl.dtype('struct{\\nlocus: locus<GRCh37>,\\nalleles: array<str>,\\nrsid: str,\\nqual: float64,\\nfilters: set<str>,\\ninfo: struct{\\n  NEGATIVE_TRAIN_SITE: bool,\\n  HWP: float64,\\n  AC: array<int32>},\\nempty_struct: struct{\\n},\\nvariant_qc: struct{\\n  dp_stats: struct{\\n    mean: float64,\\n    stdev: float64,\\n    min: float64,\\n    max: float64},\\n  gq_stats: struct{\\n    mean: float64,\\n    stdev: float64,\\n    min: float64,\\n    max: float64},\\n  AC: array<int32>,\\n  AF: array<float64>,\\n  AN: int32,\\n  homozygote_count: array<int32>,\\n  call_rate: float64}}')\n    tree = PlacementTree.from_named_type('row', dtype)\n    grid = tree.to_grid()\n    assert len(grid) == 4\n    row1 = grid[1]\n    assert len(row1) == 8\n    for i in range(5):\n        assert row1[i] == (None, 1)\n    assert row1[5] == (None, 3)\n    assert row1[7] == ('variant_qc', 13)\n    row2 = grid[2]\n    assert len(row2) == 14\n    for i in range(5):\n        assert row2[i] == (None, 1)\n    assert row2[5] == ('info', 3)\n    assert row2[7] == ('dp_stats', 4)\n    assert row2[8] == ('gq_stats', 4)\n    for i in range(9, 13):\n        assert row2[i] == (None, 1)\n    row3 = grid[3]\n    assert row3 == [('locus', 1), ('alleles', 1), ('rsid', 1), ('qual', 1), ('filters', 1), ('NEGATIVE_TRAIN_SITE', 1), ('HWP', 1), ('AC', 1), ('mean', 1), ('stdev', 1), ('min', 1), ('max', 1), ('mean', 1), ('stdev', 1), ('min', 1), ('max', 1), ('AC', 1), ('AF', 1), ('AN', 1), ('homozygote_count', 1), ('call_rate', 1)]"
+  }
+]

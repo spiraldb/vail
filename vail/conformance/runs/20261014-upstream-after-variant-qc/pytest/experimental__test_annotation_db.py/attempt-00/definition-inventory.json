@@ -1,0 +1,8 @@
+[
+  {
+    "module": "experimental/test_annotation_db.py",
+    "name": "TestAnnotationDB.test_uniqueness",
+    "line": 53,
+    "body": "def test_uniqueness(self, db_json):\n    db = hl.experimental.DB(region='us-central1', cloud='gcp', config=db_json)\n    t = hl.utils.genomic_range_table(10)\n    t = db.annotate_rows_db(t, 'unique_dataset', 'nonunique_dataset')\n    assert t.unique_dataset.dtype == hl.dtype('struct{annotation: str}')\n    assert t.nonunique_dataset.dtype == hl.dtype('array<struct{annotation: str}>')"
+  }
+]

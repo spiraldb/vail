@@ -1,0 +1,28 @@
+{
+  "module": "methods/test_qc.py",
+  "name": "Tests.test_variant_qc",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "AssertionError",
+      "error": "0.7000000000000004 != 0.7",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"../hail/hail/python/test/hail/methods/test_qc.py\", line 111, in test_variant_qc\n    self.assertEqual(r[0].vqc.p_value_hwe, 0.7)\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 885, in assertEqual\n    assertion_func(first, second, msg=msg)\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 878, in _baseAssertEqual\n    raise self.failureException(msg)\nAssertionError: 0.7000000000000004 != 0.7\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'",
+    "No module named 'vail.methods'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

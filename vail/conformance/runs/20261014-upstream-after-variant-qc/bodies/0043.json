@@ -1,0 +1,26 @@
+{
+  "module": "expr/test_freezing.py",
+  "name": "test_collect_set_tuple_struct_struct_list",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "unhashable type: 'list'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/expr/test_freezing.py\", line 148, in test_collect_set_tuple_struct_struct_list\n    result = t.aggregate_entries(hl.agg.collect(t.l))\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1141, in aggregate_entries\n    return self._aggregate(\"entry\", expr, _localize)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 1132, in _aggregate\n    return table.aggregate(self._lower(expr, table), _localize=localize)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1175, in aggregate\n    return eval(result)\n           ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 1946, in eval\n    return decode_rows(data, tstruct(value=expr.dtype))[0].value\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/arrow.py\", line 196, in decode_rows\n    return [Struct(**{name: _logical(row[name], ty) for name, ty in schema.items()}) for row in rows]\n                            ^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/arrow.py\", line 228, in _logical\n    return [_logical(v, dtype.element_type) for v in value]\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/arrow.py\", line 226, in _logical\n    return set(_hashable(v, dtype.element_type) for v in value)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 332, in __hash__\n    return 37 + hash(tuple(sorted(self._fields.items())))\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 332, in __hash__\n    return 37 + hash(tuple(sorted(self._fields.items())))\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: unhashable type: 'list'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'frozenlist'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

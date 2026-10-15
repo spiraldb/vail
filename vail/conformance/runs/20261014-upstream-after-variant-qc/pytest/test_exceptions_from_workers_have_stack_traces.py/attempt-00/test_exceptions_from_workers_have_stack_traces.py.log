@@ -1,0 +1,12 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________ test_exceptions_from_workers_have_stack_traces ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-djzwhzza/upstream_hail/test_exceptions_from_workers_have_stack_traces.py:27: in test_exceptions_from_workers_have_stack_traces
+    ht.collect()
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1072: in collect
+    return decode_rows(self._native.collect_arrow(), self._schema)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: Arrow expression failed: Compute error: integer division or modulo by zero
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-djzwhzza/upstream_hail/test_exceptions_from_workers_have_stack_traces.py::test_exceptions_from_workers_have_stack_traces
+1 failed in 0.16s

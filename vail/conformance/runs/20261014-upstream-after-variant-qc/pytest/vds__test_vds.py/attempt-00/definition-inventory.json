@@ -1,0 +1,194 @@
+[
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_validate",
+    "line": 43,
+    "body": "def test_validate():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    vds.validate()\n    with pytest.raises(ValueError):\n        hl.vds.VariantDataset(vds.reference_data.annotate_rows(arr=[0, 1]).explode_rows('arr'), vds.variant_data).validate()\n    with pytest.raises(ValueError):\n        hl.vds.VariantDataset(vds.reference_data.annotate_entries(LEN=hl.or_missing(vds.reference_data.locus.position % 2 == 0, vds.reference_data.LEN)), vds.variant_data).validate()\n    with pytest.raises(ValueError):\n        hl.vds.VariantDataset(vds.reference_data.annotate_entries(LEN=vds.reference_data.LEN + 1), vds.variant_data).validate()"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_multi_write",
+    "line": 68,
+    "body": "@qobtest\ndef test_multi_write():\n    vds1 = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    to_keep = vds1.variant_data.filter_cols(vds1.variant_data.s == 'HG00187').cols()\n    vds2 = hl.vds.filter_samples(vds1, to_keep)\n    path1 = new_temp_file()\n    path2 = new_temp_file()\n    hl.vds.write_variant_datasets([vds1, vds2], [path1, path2])\n    assert hl.vds.read_vds(path1)._same(vds1)\n    assert hl.vds.read_vds(path2)._same(vds2)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_sampleqc_old_new_equivalence",
+    "line": 81,
+    "body": "def test_sampleqc_old_new_equivalence():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    sqc = hl.vds.sample_qc(vds)\n    dense = hl.vds.to_dense_mt(vds)\n    dense = dense.transmute_entries(GT=hl.vds.lgt_to_gt(dense.LGT, dense.LA))\n    res = hl.sample_qc(dense)\n    res = res.annotate_cols(sample_qc_new=sqc[res.s])\n    fields_to_test = ['n_het', 'n_hom_var', 'n_non_ref', 'n_singleton', 'n_snp', 'n_insertion', 'n_deletion', 'n_transition', 'n_transversion', 'n_star', 'r_ti_tv', 'r_het_hom_var', 'r_insertion_deletion']\n    assert res.aggregate_cols(hl.all(*(hl.agg.all(res.sample_qc[field] == res.sample_qc_new[field]) for field in fields_to_test)))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_sampleqc_gq_dp",
+    "line": 112,
+    "body": "def test_sampleqc_gq_dp():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    sqc = hl.vds.sample_qc(vds)\n    assert hl.eval(sqc.index_globals()) == hl.Struct(gq_bins=(0, 20, 60), dp_bins=(0, 1, 10, 20, 30))\n    hg00320 = sqc.filter(sqc.s == 'HG00320').select('bases_over_gq_threshold', 'bases_over_dp_threshold').collect()[0]\n    assert hg00320 == hl.Struct(s='HG00320', bases_over_gq_threshold=(334822, 515, 82), bases_over_dp_threshold=(334822, 10484, 388, 111, 52))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_sampleqc_singleton_r_ti_tv",
+    "line": 124,
+    "body": "def test_sampleqc_singleton_r_ti_tv():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    sqc = hl.vds.sample_qc(vds)\n    hg00313 = sqc.filter(sqc.s == 'HG00313').select('r_ti_tv_singleton', 'n_singleton_ti', 'n_singleton_tv').collect()[0]\n    assert hg00313 == hl.Struct(s='HG00313', r_ti_tv_singleton=4.0, n_singleton_ti=4, n_singleton_tv=1)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_samples_and_merge",
+    "line": 134,
+    "body": "def test_filter_samples_and_merge():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    vds.reference_data = vds.reference_data.drop('ref_allele')\n    samples = vds.variant_data.cols()\n    samples = samples.add_index()\n    samples1 = samples.filter(samples.idx < 2)\n    samples2 = samples.filter(samples.idx >= 2)\n    split1 = hl.vds.filter_samples(vds, samples1, remove_dead_alleles=True)\n    assert split1.variant_data.count_cols() == 2\n    assert split1.reference_data.count_cols() == 2\n    split2 = hl.vds.filter_samples(vds, samples2, remove_dead_alleles=True)\n    assert split2.variant_data.count_cols() == 3\n    assert split2.reference_data.count_cols() == 3\n    merged = hl.vds.combiner.combine_variant_datasets([split1, split2])\n    assert merged.reference_data._same(vds.reference_data)\n    assert merged.variant_data._same(vds.variant_data)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_samples_array",
+    "line": 160,
+    "body": "def test_filter_samples_array():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    samples = ['HG00187', 'HG00190']\n    other = ['HG00308', 'HG00313', 'HG00320']\n    filt_in = hl.vds.filter_samples(vds, samples, keep=True)\n    filt_out = hl.vds.filter_samples(vds, samples, keep=False)\n    assert filt_in.reference_data.s.collect() == samples\n    assert filt_in.variant_data.s.collect() == samples\n    assert filt_out.reference_data.s.collect() == other\n    assert filt_out.variant_data.s.collect() == other"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_segment_intervals",
+    "line": 176,
+    "body": "def test_segment_intervals():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    contig_len = vds.reference_data.locus.dtype.reference_genome.lengths['chr22']\n    breakpoints = hl.literal([*range(1, contig_len, 5000000), contig_len])\n    intervals = hl.range(hl.len(breakpoints) - 1).map(lambda i: hl.struct(interval=hl.locus_interval('chr22', breakpoints[i], breakpoints[i + 1], reference_genome='GRCh38')))\n    intervals_ht = hl.Table.parallelize(intervals, key='interval')\n    path = new_temp_file()\n    r = hl.vds.segment_reference_blocks(vds.reference_data, intervals_ht)\n    r.write(path)\n    after = hl.read_matrix_table(path)\n    es = after.entries()\n    es = es.filter((es.END < es.locus.position) | (es.END >= es.interval.end.position))\n    if es.count() > 0:\n        es.show(width=1000)\n        assert False, 'found entries with END < position or END >= interval end'\n    before = vds.reference_data\n    sum_per_sample_before = before.select_cols(ref_block_bases=hl.agg.sum(before.END + 1 - before.locus.position)).cols()\n    sum_per_sample_after = after.select_cols(ref_block_bases=hl.agg.sum(after.END + 1 - after.locus.position)).cols()\n    before_coverage = sum_per_sample_before.collect()\n    after_coverage = sum_per_sample_after.collect()\n    assert before_coverage == after_coverage"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_interval_coverage",
+    "line": 212,
+    "body": "@test_timeout(batch=5 * 60)\ndef test_interval_coverage():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    interval1 = 'chr22:10678825-10678835'\n    interval2 = 'chr22:10678970-10678979'\n    intervals = hl.Table.parallelize(list((hl.struct(interval=hl.parse_locus_interval(x, reference_genome='GRCh38')) for x in [interval1, interval2])), key='interval')\n    checkpoint_path = new_temp_file()\n    r = hl.vds.interval_coverage(vds, intervals, gq_thresholds=(1, 21), dp_thresholds=(0, 1, 6)).checkpoint(checkpoint_path)\n    assert r.aggregate_rows(hl.agg.collect((hl.format('%s:%d-%d', r.interval.start.contig, r.interval.start.position, r.interval.end.position), r.interval_size))) == [(interval1, 10), (interval2, 9)]\n    observed = r.aggregate_entries(hl.agg.collect(r.entry))\n    expected = [hl.Struct(bases_over_gq_threshold=(10, 0), bases_over_dp_threshold=(10, 10, 5), sum_dp=55, fraction_over_gq_threshold=(1.0, 0.0), fraction_over_dp_threshold=(1.0, 1.0, 0.5), mean_dp=5.5), hl.Struct(bases_over_gq_threshold=(10, 0), bases_over_dp_threshold=(10, 10, 0), sum_dp=45, fraction_over_gq_threshold=(1.0, 0.0), fraction_over_dp_threshold=(1.0, 1.0, 0), mean_dp=4.5), hl.Struct(bases_over_gq_threshold=(0, 0), bases_over_dp_threshold=(10, 0, 0), sum_dp=0, fraction_over_gq_threshold=(0.0, 0.0), fraction_over_dp_threshold=(1.0, 0, 0), mean_dp=0), hl.Struct(bases_over_gq_threshold=(10, 0), bases_over_dp_threshold=(10, 10, 0), sum_dp=30, fraction_over_gq_threshold=(1.0, 0.0), fraction_over_dp_threshold=(1.0, 1.0, 0.0), mean_dp=3.0), hl.Struct(bases_over_gq_threshold=(9, 0), bases_over_dp_threshold=(10, 10, 0), sum_dp=10, fraction_over_gq_threshold=(0.9, 0.0), fraction_over_dp_threshold=(1.0, 1.0, 0.0), mean_dp=1.0), hl.Struct(bases_over_gq_threshold=(9, 9), bases_over_dp_threshold=(9, 9, 9), sum_dp=153, fraction_over_gq_threshold=(1.0, 1.0), fraction_over_dp_threshold=(1.0, 1.0, 1.0), mean_dp=17.0), hl.Struct(bases_over_gq_threshold=(9, 9), bases_over_dp_threshold=(9, 9, 9), sum_dp=159, fraction_over_gq_threshold=(1.0, 1.0), fraction_over_dp_threshold=(1.0, 1.0, 1.0), mean_dp=159 / 9), hl.Struct(bases_over_gq_threshold=(9, 9), bases_over_dp_threshold=(9, 9, 9), sum_dp=98, fraction_over_gq_threshold=(1.0, 1.0), fraction_over_dp_threshold=(1.0, 1.0, 1.0), mean_dp=98 / 9), hl.Struct(bases_over_gq_threshold=(9, 9), bases_over_dp_threshold=(9, 9, 9), sum_dp=72, fraction_over_gq_threshold=(1.0, 1.0), fraction_over_dp_threshold=(1.0, 1.0, 1.0), mean_dp=8), hl.Struct(bases_over_gq_threshold=(9, 0), bases_over_dp_threshold=(9, 9, 0), sum_dp=20, fraction_over_gq_threshold=(1.0, 0.0), fraction_over_dp_threshold=(1.0, 1.0, 0.0), mean_dp=2 / 9)]\n    for i in range(len(expected)):\n        obs = observed[i]\n        exp = expected[i]\n        assert obs.bases_over_gq_threshold == exp.bases_over_gq_threshold, i\n        assert obs.sum_dp == exp.sum_dp, i\n        assert obs.bases_over_dp_threshold == exp.bases_over_dp_threshold, i\n        assert obs.fraction_over_gq_threshold == exp.fraction_over_gq_threshold, i\n        assert obs.fraction_over_dp_threshold == exp.fraction_over_dp_threshold, i\n        pytest.approx(obs.mean_dp, exp.mean_dp)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_impute_sex_chr_ploidy_from_interval_coverage",
+    "line": 329,
+    "body": "def test_impute_sex_chr_ploidy_from_interval_coverage():\n    norm_interval_1 = hl.parse_locus_interval('20:10-30', reference_genome='GRCh37')\n    norm_interval_2 = hl.parse_locus_interval('20:40-45', reference_genome='GRCh37')\n    x_interval_1 = hl.parse_locus_interval('X:10-20', reference_genome='GRCh37')\n    x_interval_2 = hl.parse_locus_interval('X:25-35', reference_genome='GRCh37')\n    y_interval_1 = hl.parse_locus_interval('Y:10-20', reference_genome='GRCh37')\n    y_interval_2 = hl.parse_locus_interval('Y:25-30', reference_genome='GRCh37')\n    mt = hl.Table.parallelize([hl.Struct(s='sample_xx', interval=norm_interval_1, sum_dp=195), hl.Struct(s='sample_xx', interval=norm_interval_2, sum_dp=55), hl.Struct(s='sample_xx', interval=x_interval_1, sum_dp=95), hl.Struct(s='sample_xx', interval=x_interval_2, sum_dp=85), hl.Struct(s='sample_xy', interval=norm_interval_1, sum_dp=190), hl.Struct(s='sample_xy', interval=norm_interval_2, sum_dp=85), hl.Struct(s='sample_xy', interval=x_interval_1, sum_dp=61), hl.Struct(s='sample_xy', interval=x_interval_2, sum_dp=49), hl.Struct(s='sample_xy', interval=y_interval_1, sum_dp=54), hl.Struct(s='sample_xy', interval=y_interval_2, sum_dp=45)], schema=hl.dtype('struct{s:str,interval:interval<locus<GRCh37>>,sum_dp:int32}')).to_matrix_table(row_key=['interval'], col_key=['s'])\n    mt = mt.annotate_rows(interval_size=mt.interval.end.position - mt.interval.start.position)\n    r = hl.vds.impute_sex_chr_ploidy_from_interval_coverage(mt, normalization_contig='20')\n    assert r.collect() == [hl.Struct(s='sample_xx', autosomal_mean_dp=10.0, x_mean_dp=9.0, x_ploidy=1.8, y_mean_dp=0.0, y_ploidy=0.0), hl.Struct(s='sample_xy', autosomal_mean_dp=11.0, x_mean_dp=5.5, x_ploidy=1.0, y_mean_dp=6.6, y_ploidy=1.2)]"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_impute_sex_chromosome_ploidy_1",
+    "line": 493,
+    "body": "def test_impute_sex_chromosome_ploidy_1():\n    ref_mt = get_impute_sex_chromosome_ploidy_ref_mt()\n    var_mt = hl.Table.parallelize([], schema=hl.dtype('struct{locus:locus<GRCh37>,alleles:array<str>,s:str,LA:array<int32>,LGT:call,GQ:int32,DP:int32}')).to_matrix_table(row_key=['locus', 'alleles'], col_key=['s'])\n    vds = hl.vds.VariantDataset(ref_mt, var_mt)\n    calling_intervals = [hl.parse_locus_interval('22:1000010-1000020', reference_genome='GRCh37'), hl.parse_locus_interval(f'X:{X_PAR_END}-{X_PAR_END + 20}', reference_genome='GRCh37'), hl.parse_locus_interval(f'Y:{Y_PAR_END}-{Y_PAR_END + 20}', reference_genome='GRCh37')]\n    r = hl.vds.impute_sex_chromosome_ploidy(vds, calling_intervals, normalization_contig='22')\n    assert r.collect() == [hl.Struct(s='sample_xx', autosomal_mean_dp=5.0, x_mean_dp=5.5, x_ploidy=2.2, y_mean_dp=0.0, y_ploidy=0.0), hl.Struct(s='sample_xy', autosomal_mean_dp=5.0, x_mean_dp=2.5, x_ploidy=1.0, y_mean_dp=3.5, y_ploidy=1.4)]"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_impute_sex_chromosome_ploidy_2",
+    "line": 516,
+    "body": "def test_impute_sex_chromosome_ploidy_2():\n    ref_mt = get_impute_sex_chromosome_ploidy_ref_mt()\n    var_mt = get_impute_sex_chromosome_ploidy_var_mt()\n    vds = hl.vds.VariantDataset(ref_mt, var_mt)\n    calling_intervals = [hl.parse_locus_interval('22:1000010-1000020', reference_genome='GRCh37'), hl.parse_locus_interval('22:2000020-2000030', reference_genome='GRCh37'), hl.parse_locus_interval(f'X:{X_PAR_END}-{X_PAR_END + 20}', reference_genome='GRCh37'), hl.parse_locus_interval(f'X:{X_PAR_END + 32}-{X_PAR_END + 40}', reference_genome='GRCh37'), hl.parse_locus_interval(f'Y:{Y_PAR_END}-{Y_PAR_END + 20}', reference_genome='GRCh37'), hl.parse_locus_interval(f'Y:{Y_PAR_END + 32}-{Y_PAR_END + 40}', reference_genome='GRCh37')]\n    r = hl.vds.impute_sex_chromosome_ploidy(vds, calling_intervals, normalization_contig='22', use_variant_dataset=True)\n    assert r.collect() == [hl.Struct(s='sample_xx', autosomal_mean_dp=5.0, x_mean_dp=5.0, x_ploidy=2.0, y_mean_dp=0.0, y_ploidy=0.0), hl.Struct(s='sample_xy', autosomal_mean_dp=5.0, x_mean_dp=3.0, x_ploidy=1.2, y_mean_dp=2.0, y_ploidy=0.8)]"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_segment",
+    "line": 538,
+    "body": "@test_timeout(local=4 * 60, batch=6 * 60)\ndef test_filter_intervals_segment():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    intervals = [hl.parse_locus_interval('chr22:10514784-10517000', reference_genome='GRCh38')]\n    filt = hl.vds.filter_intervals(vds, intervals, split_reference_blocks=True)\n    assert hl.vds.to_dense_mt(filt)._same(hl.filter_intervals(hl.vds.to_dense_mt(vds), intervals))\n    ref = filt.reference_data\n    var = filt.variant_data\n    assert ref.aggregate_rows(hl.agg.all(intervals[0].contains(ref.locus)))\n    assert var.aggregate_rows(hl.agg.all(intervals[0].contains(var.locus)))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_segment_table",
+    "line": 553,
+    "body": "@test_timeout(local=4 * 60, batch=6 * 60)\ndef test_filter_intervals_segment_table():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    intervals = [hl.parse_locus_interval('chr22:10514784-10517000', reference_genome='GRCh38')]\n    intervals_table = hl.Table.parallelize(hl.array(intervals).map(lambda x: hl.struct(interval=x)), key='interval')\n    filt = hl.vds.filter_intervals(vds, intervals_table, split_reference_blocks=True)\n    assert hl.vds.to_dense_mt(filt)._same(hl.filter_intervals(hl.vds.to_dense_mt(vds), intervals))\n    ref = filt.reference_data\n    var = filt.variant_data\n    assert ref.aggregate_rows(hl.agg.all(intervals[0].contains(ref.locus)))\n    assert var.aggregate_rows(hl.agg.all(intervals[0].contains(var.locus)))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_default",
+    "line": 568,
+    "body": "def test_filter_intervals_default():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    intervals = [hl.parse_locus_interval('chr22:10514784-10517000', reference_genome='GRCh38')]\n    filt = hl.vds.filter_intervals(vds, intervals)\n    assert hl.vds.to_dense_mt(filt)._same(hl.filter_intervals(hl.vds.to_dense_mt(vds), intervals))\n    var = filt.variant_data\n    assert var.aggregate_rows(hl.agg.all(intervals[0].contains(var.locus)))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_default_table",
+    "line": 580,
+    "body": "def test_filter_intervals_default_table():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    intervals = [hl.parse_locus_interval('chr22:10514784-10517000', reference_genome='GRCh38')]\n    intervals_table = hl.Table.parallelize(hl.array(intervals).map(lambda x: hl.struct(interval=x)), key='interval')\n    filt = hl.vds.filter_intervals(vds, intervals_table)\n    assert hl.vds.to_dense_mt(filt)._same(hl.filter_intervals(hl.vds.to_dense_mt(vds), intervals))\n    var = filt.variant_data\n    assert var.aggregate_rows(hl.agg.all(intervals[0].contains(var.locus)))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_chromosomes",
+    "line": 593,
+    "body": "def test_filter_chromosomes():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    autosomes = [f'chr{i}' for i in range(1, 23)]\n    sex_chrs = ['chrX', 'chrY']\n    all_chrs = autosomes + sex_chrs\n\n    def assert_contigs(vds, expected):\n        expected_set = set(expected)\n        rd = vds.reference_data\n        vd = vds.variant_data\n        assert rd.aggregate_rows(hl.agg.collect_as_set(rd.locus.contig)) == expected_set\n        assert vd.aggregate_rows(hl.agg.collect_as_set(vd.locus.contig)) == expected_set\n    assert_contigs(vds, all_chrs)\n    vds_keep_1_5 = hl.vds.filter_chromosomes(vds, keep=['chr1', 'chr5'])\n    assert_contigs(vds_keep_1_5, ['chr1', 'chr5'])\n    vds_remove_1_5 = hl.vds.filter_chromosomes(vds, remove=['chr1', 'chr5'])\n    assert_contigs(vds_remove_1_5, [x for x in all_chrs if x not in ['chr1', 'chr5']])\n    vds_auto = hl.vds.filter_chromosomes(vds, keep_autosomes=True)\n    assert_contigs(vds_auto, autosomes)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_to_dense_mt",
+    "line": 622,
+    "body": "def test_to_dense_mt():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    vds = hl.vds.filter_chromosomes(vds, keep='chr22')\n    dense = hl.vds.to_dense_mt(vds).select_entries('LGT', 'LA', 'GQ', 'DP')\n    assert dense.rows().select()._same(vds.variant_data.rows().select()), 'rows differ between variant data and dense mt'\n    assert dense.filter_entries(hl.is_defined(dense.LA))._same(vds.variant_data.select_entries('LGT', 'LA', 'GQ', 'DP')), 'cannot recover variant data'\n    as_dict = dense.aggregate_entries(hl.dict(hl.zip(hl.agg.collect((hl.str(dense.locus), dense.s)), hl.agg.collect(dense.entry))))\n    assert as_dict.get(('chr22:10514784', 'NA12891')) is None\n    assert as_dict.get(('chr22:10514784', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=23, DP=4)\n    assert as_dict.get(('chr22:10516102', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 0]), LA=None, GQ=12, DP=7)\n    assert as_dict.get(('chr22:10516102', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=26, DP=3)\n    assert as_dict.get(('chr22:10516150', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=64, DP=4)\n    assert as_dict.get(('chr22:10516150', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=99, DP=10)\n    assert as_dict.get(('chr22:10519088', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=99, DP=21)\n    assert as_dict.get(('chr22:10519088', 'NA12878')) is None\n    assert as_dict.get(('chr22:10557694', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=28, DP=19)\n    assert as_dict.get(('chr22:10557694', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 0]), LA=None, GQ=13, DP=16)\n    assert as_dict.get(('chr22:10562435', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=99, DP=15)\n    assert as_dict.get(('chr22:10562435', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 0]), LA=None, GQ=21, DP=9)\n    assert as_dict.get(('chr22:10562436', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=99, DP=15)\n    assert as_dict.get(('chr22:10562436', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 0]), LA=None, GQ=21, DP=9)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_read_dense_mt_and_to_dense_mt_equivalence",
+    "line": 663,
+    "body": "@test_timeout(local=5 * 60, batch=8 * 60)\ndef test_read_dense_mt_and_to_dense_mt_equivalence():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    vds = hl.vds.filter_chromosomes(vds, keep='chr22')\n    to_dense_mt_mt = hl.vds.to_dense_mt(vds).select_entries('LGT', 'LA', 'GQ', 'DP')\n    mt = hl.vds.read_dense_mt(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    mt = hl.filter_intervals(mt, [hl.parse_locus_interval('chr22', 'GRCh38')])\n    read_dense_mt_mt = mt.select_entries('LGT', 'LA', 'GQ', 'DP')\n    assert to_dense_mt_mt._same(read_dense_mt_mt)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_to_dense_mt_haploid",
+    "line": 675,
+    "body": "def test_to_dense_mt_haploid():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    vds = hl.vds.filter_chromosomes(vds, keep='chr22')\n    vds.reference_data = vds.reference_data.annotate_entries(LGT=hl.call(0))\n    dense = hl.vds.to_dense_mt(vds).select_entries('LGT', 'LA', 'GQ', 'DP')\n    assert dense.rows().select()._same(vds.variant_data.rows().select()), 'rows differ between variant data and dense mt'\n    assert dense.filter_entries(hl.is_defined(dense.LA))._same(vds.variant_data.select_entries('LGT', 'LA', 'GQ', 'DP')), 'cannot recover variant data'\n    as_dict = dense.aggregate_entries(hl.dict(hl.zip(hl.agg.collect((hl.str(dense.locus), dense.s)), hl.agg.collect(dense.entry))))\n    assert as_dict.get(('chr22:10514784', 'NA12891')) is None\n    assert as_dict.get(('chr22:10514784', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=23, DP=4)\n    assert as_dict.get(('chr22:10516102', 'NA12891')) == hl.Struct(LGT=hl.Call([0]), LA=None, GQ=12, DP=7)\n    assert as_dict.get(('chr22:10516102', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=26, DP=3)\n    assert as_dict.get(('chr22:10516150', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=64, DP=4)\n    assert as_dict.get(('chr22:10516150', 'NA12878')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=99, DP=10)\n    assert as_dict.get(('chr22:10519088', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=99, DP=21)\n    assert as_dict.get(('chr22:10519088', 'NA12878')) is None\n    assert as_dict.get(('chr22:10557694', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=28, DP=19)\n    assert as_dict.get(('chr22:10557694', 'NA12878')) == hl.Struct(LGT=hl.Call([0]), LA=None, GQ=13, DP=16)\n    assert as_dict.get(('chr22:10562435', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=99, DP=15)\n    assert as_dict.get(('chr22:10562435', 'NA12878')) == hl.Struct(LGT=hl.Call([0]), LA=None, GQ=21, DP=9)\n    assert as_dict.get(('chr22:10562436', 'NA12891')) == hl.Struct(LGT=hl.Call([0, 1]), LA=[0, 1], GQ=99, DP=15)\n    assert as_dict.get(('chr22:10562436', 'NA12878')) == hl.Struct(LGT=hl.Call([0]), LA=None, GQ=21, DP=9)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_merge_reference_blocks",
+    "line": 717,
+    "body": "@test_timeout(6 * 60)\ndef test_merge_reference_blocks():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    vds = hl.vds.filter_samples(vds, ['HG00187'])\n    rd = vds.reference_data\n    vds.reference_data = rd.annotate_entries(GQ=rd.GQ - rd.GQ % 10)\n    vds.reference_data = vds.reference_data.annotate_entries(LEN=vds.reference_data.END - vds.reference_data.locus.position + 1, N_BLOCKS=1)\n    sampqc_1 = hl.vds.sample_qc(vds, gq_bins=(0, 10, 20, 30), dp_bins=()).select('bases_over_gq_threshold')\n    merged = hl.vds.merge_reference_blocks(vds, equivalence_function=lambda b1, b2: b1.GQ == b2.GQ, merge_functions={'LEN': 'sum', 'MIN_DP': 'min', 'N_BLOCKS': 'sum'}).checkpoint(new_temp_file(extension='vds'))\n    sampqc_2 = hl.vds.sample_qc(merged, gq_bins=(0, 10, 20, 30), dp_bins=()).select('bases_over_gq_threshold')\n    assert sampqc_1._same(sampqc_2), \"gq bins aren't the same\"\n    mrd = merged.reference_data\n    n_blocks_original = vds.reference_data.entries().count()\n    n_blocks_merged, sum_n = mrd.aggregate_entries((hl.agg.count(), hl.agg.sum(mrd.N_BLOCKS)))\n    assert n_blocks_original == sum_n\n    assert mrd.aggregate_entries(hl.agg.all(mrd.LEN == mrd.END - mrd.locus.position + 1))\n    assert hl.vds.to_dense_mt(vds)._same(hl.vds.to_dense_mt(merged))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_truncate_reference_blocks",
+    "line": 746,
+    "body": "@test_timeout(local=3 * 60, batch=6 * 60)\ndef test_truncate_reference_blocks():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    rd = vds.reference_data.select_globals()\n    rd = rd.filter_entries(rd.GQ > 0)\n    vds.reference_data = rd\n    sampqc_1 = hl.vds.sample_qc(vds, gq_bins=(0, 10, 20, 30), dp_bins=()).select('bases_over_gq_threshold')\n    max_bases = 20\n    vds_trunc = hl.vds.truncate_reference_blocks(vds, max_ref_block_base_pairs=max_bases)\n    sampqc_2 = hl.vds.sample_qc(vds_trunc, gq_bins=(0, 10, 20, 30), dp_bins=()).select('bases_over_gq_threshold')\n    rd2 = vds_trunc.reference_data\n    assert rd2.aggregate_entries(hl.agg.all(rd2.END - rd2.locus.position + 1 <= max_bases)), 'long ref blocks remain'\n    assert sampqc_1._same(sampqc_2), \"gq bins aren't the same\"\n    assert hl.vds.to_dense_mt(vds)._same(hl.vds.to_dense_mt(vds_trunc))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_union_rows1",
+    "line": 766,
+    "body": "@test_timeout(local=3 * 60)\ndef test_union_rows1():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    vds1 = hl.vds.filter_intervals(vds, [hl.parse_locus_interval('chr22:start-10754094', reference_genome='GRCh38')], split_reference_blocks=True)\n    vds2 = hl.vds.filter_intervals(vds, [hl.parse_locus_interval('chr22:10754094-end', reference_genome='GRCh38')], split_reference_blocks=True)\n    vds_union = vds1.union_rows(vds2)\n    assert hl.vds.to_dense_mt(vds)._same(hl.vds.to_dense_mt(vds_union))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_union_rows2",
+    "line": 781,
+    "body": "@test_timeout(local=3 * 60)\ndef test_union_rows2():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    vds1 = hl.vds.filter_intervals(vds, [hl.parse_locus_interval('chr22:start-10754094', reference_genome='GRCh38')], split_reference_blocks=True)\n    vds2 = hl.vds.filter_intervals(vds, [hl.parse_locus_interval('chr22:10754094-end', reference_genome='GRCh38')], split_reference_blocks=True)\n    vds1_trunc = hl.vds.truncate_reference_blocks(vds1, max_ref_block_base_pairs=50)\n    vds2_trunc = hl.vds.truncate_reference_blocks(vds1, max_ref_block_base_pairs=75)\n    vds_trunc_union = vds1_trunc.union_rows(vds2_trunc)\n    assert hl.eval(vds_trunc_union.reference_data.index_globals()[hl.vds.VariantDataset.ref_block_max_length_field]) == 75\n    assert 'max_ref_block_length' not in vds1_trunc.union_rows(vds2).reference_data.globals"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_combiner_max_len",
+    "line": 802,
+    "body": "def test_combiner_max_len():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    all_samples = vds.reference_data.s.collect()\n    samp1 = all_samples[:len(all_samples) // 2]\n    samp2 = all_samples[len(all_samples) // 2:]\n    vds1 = hl.vds.filter_samples(vds, samp1, remove_dead_alleles=True)\n    vds2 = hl.vds.filter_samples(vds, samp2, remove_dead_alleles=True)\n    vds1_trunc = hl.vds.truncate_reference_blocks(vds1, max_ref_block_base_pairs=50)\n    vds2_trunc = hl.vds.truncate_reference_blocks(vds2, max_ref_block_base_pairs=75)\n    from hail.vds.combiner.combine import combine_references\n    combined1 = combine_references([vds1_trunc.reference_data, vds2_trunc.reference_data])\n    assert hl.eval(combined1.index_globals()[hl.vds.VariantDataset.ref_block_max_length_field]) == 75\n    combined2 = combine_references([vds1_trunc.reference_data, vds2.reference_data.drop(hl.vds.VariantDataset.ref_block_max_length_field)])\n    assert hl.vds.VariantDataset.ref_block_max_length_field not in combined2.globals"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_split_sparse_roundtrip",
+    "line": 828,
+    "body": "@qobtest\n@test_timeout(4 * 60, local=6 * 60)\ndef test_split_sparse_roundtrip():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    vds.reference_data = vds.reference_data.annotate_entries(LGT=hl.call(0, 0))\n    smt = hl.vds.to_merged_sparse_mt(vds)\n    smt = hl.experimental.sparse_split_multi(smt)\n    vds2 = hl.vds.VariantDataset.from_merged_representation(smt, ref_block_fields=list(vds.reference_data.entry), is_split=True)\n    vds_split = hl.vds.split_multi(vds)\n    assert vds2.variant_data.select_entries(*vds_split.variant_data.entry).select_globals()._same(vds_split.variant_data)\n    assert vds2.reference_data._same(vds_split.reference_data.drop('ref_allele'))"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_split_alters_ref_gt",
+    "line": 846,
+    "body": "def test_split_alters_ref_gt():\n    vds_base = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    vds_split = hl.vds.split_multi(vds_base)\n    assert 'GT' not in vds_split.reference_data.entry, vds_split.reference_data.entry\n    assert 'LGT' not in vds_split.reference_data.entry, vds_split.reference_data.entry\n    vds = VariantDataset(vds_base.reference_data.annotate_entries(LGT=hl.call(0, 0)), vds_base.variant_data)\n    vds_split = hl.vds.split_multi(vds)\n    assert 'GT' in vds_split.reference_data.entry, vds_split.reference_data.entry\n    assert 'LGT' not in vds_split.reference_data.entry, vds_split.reference_data.entry\n    vds = VariantDataset(vds_base.reference_data.annotate_entries(GT=hl.call(0, 0)), vds_base.variant_data)\n    vds_split = hl.vds.split_multi(vds)\n    assert 'GT' in vds_split.reference_data.entry, vds_split.reference_data.entry\n    assert 'LGT' not in vds_split.reference_data.entry, vds_split.reference_data.entry\n    vds = VariantDataset(vds_base.reference_data.annotate_entries(LGT=hl.call(0, 0), GT=hl.call(0, 0)), vds_base.variant_data)\n    vds_split = hl.vds.split_multi(vds)\n    assert 'GT' in vds_split.reference_data.entry, vds_split.reference_data.entry\n    assert 'LGT' not in vds_split.reference_data.entry, vds_split.reference_data.entry"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_ref_block_max_len_patch",
+    "line": 875,
+    "body": "def test_ref_block_max_len_patch():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    if 'ref_block_max_len' in vds.reference_data.globals:\n        vds.reference_data = vds.reference_data.drop('ref_block_max_len')\n    max_rb_len = vds.reference_data.aggregate_entries(hl.agg.max(vds.reference_data.END - vds.reference_data.locus.position + 1))\n    with hl.TemporaryDirectory() as tmpdir:\n        vds_path = os.path.join(tmpdir, 'to_patch.vds')\n        vds.write(vds_path)\n        hl.vds.store_ref_block_max_length(vds_path)\n        vds2 = hl.vds.read_vds(vds_path)\n        assert hl.eval(vds2.reference_data.index_globals()[hl.vds.VariantDataset.ref_block_max_length_field]) == max_rb_len"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_table",
+    "line": 895,
+    "body": "def test_filter_intervals_table():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    filter_vars = vds.variant_data.rows().head(10).select()\n    filter_intervals = filter_vars.key_by(interval=hl.interval(filter_vars.locus, filter_vars.locus, includes_end=True))\n    vds_filt = hl.vds.filter_intervals(vds, filter_intervals)\n    assert vds_filt.variant_data.rows().select()._same(filter_vars)"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_ref_block_does_not_densify_to_next_contig",
+    "line": 905,
+    "body": "def test_ref_block_does_not_densify_to_next_contig():\n    vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_2samples_starts.vds'))\n    vds = hl.vds.filter_chromosomes(vds, keep=['chr1', 'chr2'])\n    ref = vds.reference_data\n    var = vds.variant_data.filter_entries(False)\n    chr1_end = hl.parse_locus_interval('chr1', reference_genome=ref.locus.dtype.reference_genome).end.position\n    ref = ref.annotate_entries(LEN=hl.if_else(ref.locus.contig == 'chr1', chr1_end - ref.locus.position + 1, 1))\n    vds = hl.vds.VariantDataset(reference_data=ref, variant_data=var)\n    mt = hl.vds.to_dense_mt(vds)\n    mt = mt.filter_rows(mt.locus.contig == 'chr2')\n    assert mt.aggregate_entries(hl.agg.count()) == 0"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_haploid_lpl_import",
+    "line": 925,
+    "body": "def test_haploid_lpl_import():\n    mt = hl.utils.range_matrix_table(1, 1)\n    mt = mt.annotate_rows(alleles=['A', 'T', '<NON_REF>'], info=hl.struct(END=hl.missing(hl.tint32)))\n    mt = mt.annotate_entries(GT=hl.call(1), PL=[10, 0, 1000])\n    mt = mt.transmute_rows(locus=hl.locus('chrX', mt.row_idx + 1000, reference_genome='GRCh38'))\n    mt = mt.transmute_cols(s=hl.str(mt.col_idx))\n    mt = mt.key_rows_by('locus', 'alleles').key_cols_by('s')\n    vds = hl.vds.combiner.transform_gvcf(mt, reference_entry_fields_to_keep=[])\n    vd = vds.variant_data\n    lpl = vd.aggregate_entries(hl.agg.collect(vd.LPL))\n    lpl = lpl[0]\n    assert lpl == [10, 0]"
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_basic_impex",
+    "line": 939,
+    "body": "def test_basic_impex():\n    orig_vds = hl.vds.read_vds(os.path.join(resource('vds'), '1kg_chr22_5_samples.vds'))\n    path = new_temp_file(extension='vcf.bgz')\n    hl.vds.export_vcf(orig_vds, path)\n    metadata = hl.get_vcf_metadata(path)\n    format_md = metadata['format']\n    assert 'GT' in format_md, format_md\n    assert 'LGT' not in format_md, format_md\n    assert 'LAA' in format_md, format_md\n    assert 'LA' not in format_md, format_md\n    assert 'gvcf_info' not in format_md, format_md\n    assert 'PGT' in format_md, format_md\n    assert 'LPGT' not in format_md, format_md\n    new_vds = hl.vds.import_vcf(path, reference_genome=orig_vds.variant_data.locus.dtype.reference_genome)\n    assert VariantDataset.ref_block_max_length_field in new_vds.reference_data.globals, 'failed to parse ref_block_max_length line from header'\n    orig_rbml = hl.eval(orig_vds.reference_data[VariantDataset.ref_block_max_length_field])\n    new_rbml = hl.eval(new_vds.reference_data[VariantDataset.ref_block_max_length_field])\n    assert orig_rbml == new_rbml\n    assert orig_vds.variant_data.count() == new_vds.variant_data.count()\n    assert orig_vds.variant_data.aggregate_entries(hl.agg.count()) == new_vds.variant_data.aggregate_entries(hl.agg.count())\n    assert orig_vds.reference_data.count() == new_vds.reference_data.count()\n    assert orig_vds.reference_data.aggregate_entries(hl.agg.count()) == new_vds.reference_data.aggregate_entries(hl.agg.count())\n    new_vds.variant_data._force_count_rows()\n    new_vds.reference_data._force_count_rows()"
+  }
+]
