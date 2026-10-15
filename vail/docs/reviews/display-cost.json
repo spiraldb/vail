@@ -1,0 +1,196 @@
+{
+  "reviewed_base": "82502bad",
+  "native_sha256": "e68027134ed583e535ac41b47406cf6b67d18dc6353c1d2e5bb5672940951d40",
+  "display_source_sha256": "39d6ba70228a2c1133a1d3d561014e5ef162db5c87ad947a6816bc46106f639b",
+  "workloads": {
+    "array": "one list<int32> cell with size elements",
+    "nested": "one nested list containing size int32 elements",
+    "string": "one string repeating Unicode alpha, backslash and newline size times",
+    "sentinel": "show(n=0) on one list<int32> cell with size elements",
+    "wide": "size int32 columns and16rows; show one row"
+  },
+  "baseline": [
+    {
+      "workload": "array",
+      "size": 4096,
+      "seconds": 0.007387249999737833,
+      "max_rss_bytes": 128565248
+    },
+    {
+      "workload": "array",
+      "size": 65536,
+      "seconds": 0.10525045800022781,
+      "max_rss_bytes": 133971968
+    },
+    {
+      "workload": "array",
+      "size": 1048576,
+      "seconds": 1.6981014580014744,
+      "max_rss_bytes": 254230528
+    },
+    {
+      "workload": "nested",
+      "size": 4096,
+      "seconds": 0.007617584000399802,
+      "max_rss_bytes": 128827392
+    },
+    {
+      "workload": "nested",
+      "size": 65536,
+      "seconds": 0.10439695799868787,
+      "max_rss_bytes": 134660096
+    },
+    {
+      "workload": "nested",
+      "size": 1048576,
+      "seconds": 1.6283318329951726,
+      "max_rss_bytes": 248561664
+    },
+    {
+      "workload": "string",
+      "size": 4096,
+      "seconds": 0.0011906660001841374,
+      "max_rss_bytes": 127107072
+    },
+    {
+      "workload": "string",
+      "size": 65536,
+      "seconds": 0.0031835000045248307,
+      "max_rss_bytes": 129187840
+    },
+    {
+      "workload": "string",
+      "size": 1048576,
+      "seconds": 0.03402075000485638,
+      "max_rss_bytes": 180830208
+    },
+    {
+      "workload": "wide",
+      "size": 64,
+      "seconds": 0.00424850000126753,
+      "max_rss_bytes": 128909312
+    },
+    {
+      "workload": "wide",
+      "size": 256,
+      "seconds": 0.015822499997739214,
+      "max_rss_bytes": 129056768
+    },
+    {
+      "workload": "wide",
+      "size": 1024,
+      "seconds": 0.11210841699357843,
+      "max_rss_bytes": 135315456
+    },
+    {
+      "workload": "sentinel",
+      "size": 1048576,
+      "seconds": 0.03641733300173655,
+      "max_rss_bytes": 182648832
+    }
+  ],
+  "final": [
+    {
+      "workload": "array",
+      "size": 4096,
+      "seconds": 0.0016758749989094213,
+      "max_rss_bytes": 129466368
+    },
+    {
+      "workload": "array",
+      "size": 65536,
+      "seconds": 0.0015707499987911433,
+      "max_rss_bytes": 130727936
+    },
+    {
+      "workload": "array",
+      "size": 1048576,
+      "seconds": 0.0015369159955298528,
+      "max_rss_bytes": 134905856
+    },
+    {
+      "workload": "nested",
+      "size": 4096,
+      "seconds": 0.0014987079994170927,
+      "max_rss_bytes": 128385024
+    },
+    {
+      "workload": "nested",
+      "size": 65536,
+      "seconds": 0.0014643329996033572,
+      "max_rss_bytes": 129302528
+    },
+    {
+      "workload": "nested",
+      "size": 1048576,
+      "seconds": 0.0014485829960904084,
+      "max_rss_bytes": 132481024
+    },
+    {
+      "workload": "string",
+      "size": 4096,
+      "seconds": 0.0015843330038478598,
+      "max_rss_bytes": 128221184
+    },
+    {
+      "workload": "string",
+      "size": 65536,
+      "seconds": 0.0013616669966722839,
+      "max_rss_bytes": 129531904
+    },
+    {
+      "workload": "string",
+      "size": 1048576,
+      "seconds": 0.0015278330029104836,
+      "max_rss_bytes": 147177472
+    },
+    {
+      "workload": "sentinel",
+      "size": 4096,
+      "seconds": 0.0013150830054655671,
+      "max_rss_bytes": 127893504
+    },
+    {
+      "workload": "sentinel",
+      "size": 65536,
+      "seconds": 0.0013325830004760064,
+      "max_rss_bytes": 126763008
+    },
+    {
+      "workload": "sentinel",
+      "size": 1048576,
+      "seconds": 0.001341374998446554,
+      "max_rss_bytes": 131743744
+    },
+    {
+      "workload": "wide",
+      "size": 64,
+      "seconds": 0.0029316250002011657,
+      "max_rss_bytes": 127614976
+    },
+    {
+      "workload": "wide",
+      "size": 256,
+      "seconds": 0.00885204099904513,
+      "max_rss_bytes": 128499712
+    },
+    {
+      "workload": "wide",
+      "size": 1024,
+      "seconds": 0.06742933300120058,
+      "max_rss_bytes": 134987776
+    }
+  ],
+  "validation": [
+    "52 public Python show/convenience/native-memory tests passed after strict incremental UTF8 hardening.",
+    "Escaped Unicode and nested visible prefixes, logical values, parent validity with hidden Arrow children, sentinel/zero-field rows, ASCII wrapping and numeric alignment verified."
+  ],
+  "limitations": [
+    "Each workload runs in a fresh subprocess, after runtime initialization and source construction;15second cap. RSS is whole-process peak on macOS including input buffers, not isolated display allocation.",
+    "Budget-proportional localization/rendering applies to ordinary strings and recursive array/set/dict/tuple/struct cells. Full native execution and source data construction are not made budget-proportional.",
+    "Locus/Call atoms retain prepared logical conversion and validation. Compound interval endpoints retain logical-converter/repr fallback, which can fully localize a large endpoint.",
+    "Nullable integer ndarray compatibility fallback can fully localize before its prior conversion/error behavior. Ordinary numeric ndarray uses Arrow-backed NumPy storage; rendering obeys existing NumPy print settings, and a user-set very large print threshold can still render a large representation before truncation.",
+    "Set enumeration now follows canonical native storage order instead of constructing a Python set; enumeration order is unspecified, spellings/content retained.",
+    "Remaining native/schema execution costs can dominate wide-table display; no claim of linear end-to-end cost for arbitrary schema width."
+  ]
+}

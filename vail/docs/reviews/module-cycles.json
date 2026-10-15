@@ -238,6 +238,25 @@
       ],
       "reports": [
         "vail/docs/reviews/expression-input-cost.json"
+      ],
+      "merged_commit": "82502bad"
+    },
+    {
+      "module": "Vail table display formatter",
+      "reviewed_base": "82502bad",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "slice displayed Arrow rows before localizing sentinel cells",
+        "prepare ordered field paths/types/formatters once, avoiding per-row native name searches",
+        "stream ordinary nested cells and strict escaped Unicode prefixes to the display budget",
+        "preserve logical atom/parent-null/ASCII behavior with explicit exceptional repr limitations"
+      ],
+      "validation": [
+        "52 public Python display/convenience/native-memory tests passed",
+        "bounded array/nested/string/sentinel/wide workloads recorded"
+      ],
+      "reports": [
+        "vail/docs/reviews/display-cost.json"
       ]
     }
   ],

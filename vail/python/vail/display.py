@@ -3,39 +3,142 @@
 Copyright (c) 2015-2023, Hail Authors. MIT license; see licenses/HAIL.txt.
 Collection and value formatting are Vail adapters, independent of the JVM.
 """
-import itertools
+from dataclasses import dataclass
+import codecs
 import math
 import shutil
 
-from .types import tarray, tset, tdict, ttuple, tstruct, tint32, tint64, tfloat32, tfloat64
+from .types import (tarray, tset, tdict, ttuple, tstruct, tstr,
+                    tinterval, tndarray, tint32, tint64, tfloat32, tfloat64)
 
 
-def _is_numeric(dtype):
-    return dtype in (tint32, tint64, tfloat32, tfloat64)
+def _text(value, budget):
+    # A UTF-8 codepoint occupies at most four bytes. Copy only enough bytes to
+    # supply the requested output prefix, withholding a partial final codepoint.
+    data = value.as_buffer()
+    prefix = data.slice(0, min(data.size, 4 * budget)).to_pybytes()
+    return codecs.getincrementaldecoder('utf-8')().decode(prefix, final=len(prefix) == data.size)
 
 
-def _value(value, dtype):
-    if value is None:
-        return 'NA'
-    if dtype in (tfloat32, tfloat64):
-        if math.isnan(value):
-            return 'NaN'
-        if math.isinf(value):
-            return 'Infinity' if value > 0 else '-Infinity'
-        return format(value, '.2e')
-    if isinstance(value, str):
-        escaped = value.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n').replace('\r', '\\r').replace('\t', '\\t')
-        return '"' + escaped + '"'
-    if isinstance(dtype, (tarray, tset)):
-        bounds = ('[', ']') if isinstance(dtype, tarray) else ('{', '}')
-        return bounds[0] + ','.join(_value(v, dtype.element_type) for v in value) + bounds[1]
-    if isinstance(dtype, tdict):
-        return '{' + ','.join(_value(k, dtype.key_type) + ':' + _value(v, dtype.value_type) for k, v in value.items()) + '}'
-    if isinstance(dtype, ttuple):
-        return '(' + ','.join(_value(v, t) for v, t in zip(value, dtype.types)) + ')'
-    if isinstance(dtype, tstruct):
-        return '(' + ','.join(_value(value[k], dtype[k]) for k in dtype) + ')'
-    return str(value)
+def _prepare(dtype):
+    """Compile ordered child formatters once; consume Arrow scalars lazily."""
+    if dtype == tstr:
+        escapes = {'\\': '\\\\', '"': '\\"', '\n': '\\n', '\r': '\\r', '\t': '\\t'}
+        def render(value, budget):
+            yield '"'
+            for char in _text(value, budget):
+                yield escapes.get(char, char)
+            yield '"'
+    elif dtype in (tfloat32, tfloat64):
+        def render(value, budget):
+            number = value.as_py()
+            yield ('NaN' if math.isnan(number) else
+                   'Infinity' if number == math.inf else
+                   '-Infinity' if number == -math.inf else format(number, '.2e'))
+    elif isinstance(dtype, (tarray, tset)):
+        child = _prepare(dtype.element_type)
+        left, right = ('[', ']') if isinstance(dtype, tarray) else ('{', '}')
+        def render(value, budget):
+            yield left
+            for index, item in enumerate(value.values):
+                if index:
+                    yield ','
+                yield from child(item, budget)
+            yield right
+    elif isinstance(dtype, tdict):
+        key, item = _prepare(dtype.key_type), _prepare(dtype.value_type)
+        def render(value, budget):
+            yield '{'
+            for index, entry in enumerate(value.values):
+                if index:
+                    yield ','
+                yield from key(entry[0], budget)
+                yield ':'
+                yield from item(entry[1], budget)
+            yield '}'
+    elif isinstance(dtype, (ttuple, tstruct)):
+        types = dtype.types if isinstance(dtype, ttuple) else tuple(ty for _, ty in dtype.items())
+        children = tuple(_prepare(ty) for ty in types)
+        def render(value, budget):
+            yield '('
+            for index, child in enumerate(children):
+                if index:
+                    yield ','
+                yield from child(value[index], budget)
+            yield ')'
+    elif isinstance(dtype, tndarray):
+        from .arrow import _logical_converter
+        convert = _logical_converter(dtype)
+        def render(value, budget):
+            # Arrow numeric storage is already contiguous. NumPy's normal
+            # summary formatting can inspect its edges without localizing a
+            # Python list of every element.
+            data = value['__vail_ndarray_data'].values
+            shape = tuple(value['__vail_ndarray_shape'].values.to_pylist())
+            if data.null_count and dtype.element_type in (tint32, tint64):
+                yield str(convert(value.as_py()))
+            else:
+                yield str(data.to_numpy(zero_copy_only=False).reshape(shape))
+    elif isinstance(dtype, tinterval) and dtype.point_type in (
+        tint32, tint64, tfloat32, tfloat64, tstr
+    ):
+        point_type = dtype.point_type
+        def render(value, budget):
+            end_inclusive = value['__vail_interval_end_inclusive'].as_py()
+            if type(end_inclusive) is not bool:
+                raise TypeError('interval inclusivity flags must be bool')
+            yield '(' if value['__vail_interval_start_exclusive'].as_py() else '['
+            for index, name in enumerate(('__vail_interval_start', '__vail_interval_end')):
+                if index:
+                    yield '-'
+                point = value[name]
+                yield (_text(point, budget) if point_type == tstr and point.is_valid
+                       else str(point.as_py()))
+            yield ']' if end_inclusive else ')'
+    else:
+        from .arrow import _logical_converter
+        convert = _logical_converter(dtype)
+        def render(value, budget):
+            yield str(convert(value.as_py()))
+
+    def nullable(value, budget):
+        if value is None or not value.is_valid:
+            yield 'NA'
+        else:
+            yield from render(value, budget)
+    return nullable
+
+
+def _bounded(value, render, limit):
+    pieces, size = [], 0
+    for piece in render(value, limit + 1):
+        pieces.append(piece[:limit + 1 - size])
+        size += len(pieces[-1])
+        if size > limit:
+            return ''.join(pieces)[:limit - 3] + '...'
+    return ''.join(pieces)
+
+
+@dataclass(frozen=True)
+class _Column:
+    name: str
+    dtype: object
+    path: tuple
+    render: object
+    right_align: bool
+
+
+def _columns(dtype):
+    columns = []
+    def visit(name, ty, path):
+        if isinstance(ty, tstruct):
+            for index, (field, child) in enumerate(ty.items()):
+                visit(f'{name}.{field}' if name else field, child, (*path, index))
+        else:
+            columns.append(_Column(name, ty, path, _prepare(ty),
+                                   ty in (tint32, tint64, tfloat32, tfloat64)))
+    visit('', dtype, ())
+    return tuple(columns)
 
 
 class TableDisplay:
@@ -53,99 +156,67 @@ class TableDisplay:
 
     def data(self):
         if self._data is None:
-            table = self.table.flatten()
-            dtype = table.row.dtype
-            if self.n < 0:
-                rows = table.collect()
-            else:
-                from .arrow import decode_rows
-                rows = decode_rows(table._native.sample_arrow(self.n + 1), dtype)
-            has_more = self.n >= 0 and len(rows) > self.n
+            import pyarrow as pa
+            columns = _columns(self.table._schema)
+            values = (self.table.to_arrow() if self.n < 0 else
+                      pa.table(self.table._native.sample_arrow(self.n + 1)))
+            has_more = self.n >= 0 and values.num_rows > self.n
             if self.n >= 0:
-                rows = rows[:self.n]
-            self._data = ([{k: _value(row[k], dtype[k]) for k in dtype} for row in rows], has_more, dtype)
+                # The sentinel proves cardinality; none of its cells are read.
+                values = values.slice(0, self.n)
+            roots = tuple(values.columns)
+            rows = []
+            for row in range(values.num_rows):
+                cells = []
+                for column in columns:
+                    value = roots[column.path[0]][row]
+                    for index in column.path[1:]:
+                        if not value.is_valid:
+                            value = None
+                            break
+                        value = value[index]
+                    cells.append(_bounded(value, column.render, self.truncate))
+                rows.append(cells)
+            self._data = rows, has_more, columns
         return self._data
 
     def _ascii_str(self):
-                truncate = self.truncate
-                types = self.types
+        def trunc(text):
+            return text[:self.truncate - 3] + '...' if len(text) > self.truncate else text
 
-                def trunc(s):
-                    if len(s) > truncate:
-                        return s[: truncate - 3] + "..."
-                    return s
+        rows, has_more, columns = self.data()
+        fields = [trunc(column.name) for column in columns]
+        types = [trunc(str(column.dtype)) for column in columns] if self.types else [''] * len(columns)
+        align = [column.right_align for column in columns]
+        widths = [max(len(name), len(ty), max((len(row[i]) for row in rows), default=0))
+                  for i, (name, ty) in enumerate(zip(fields, types))]
+        blocks, start, width = [], 0, 0
+        for index, cell_width in enumerate(widths):
+            added = cell_width + (4 if index == start else 3)
+            if index > start and width + added > self.width:
+                blocks.append((start, index))
+                start, width, added = index, 0, cell_width + 4
+            width += added
+        blocks.append((start, len(columns)))
 
-                rows, has_more, dtype = self.data()
-                fields = list(dtype)
-                trunc_fields = [trunc(f) for f in fields]
-                n_fields = len(fields)
+        def line(values, widths, align):
+            if not values:
+                return '||\n'
+            cells = [value.rjust(width) if right else value.ljust(width)
+                     for value, width, right in zip(values, widths, align)]
+            return '| ' + ' | '.join(cells) + ' |\n'
 
-                type_strs = [trunc(str(dtype[f])) for f in fields] if types else [''] * len(fields)
-                right_align = [_is_numeric(dtype[f]) for f in fields]
-
-                rows = [[trunc(row[f]) for f in fields] for row in rows]
-
-                def max_value_width(i):
-                    return max(itertools.chain([0], (len(row[i]) for row in rows)))
-
-                column_width = [max(len(trunc_fields[i]), len(type_strs[i]), max_value_width(i)) for i in range(n_fields)]
-
-                column_blocks = []
-                start = 0
-                i = 1
-                w = column_width[0] + 4 if column_width else 0
-                while i < n_fields:
-                    w = w + column_width[i] + 3
-                    if w > self.width:
-                        column_blocks.append((start, i))
-                        start = i
-                        w = column_width[i] + 4
-                    i = i + 1
-                column_blocks.append((start, i))
-
-                def format_hline(widths):
-                    if not widths:
-                        return "++\n"
-                    return '+-' + '-+-'.join(['-' * w for w in widths]) + '-+\n'
-
-                def pad(v, w, ra):
-                    e = w - len(v)
-                    if ra:
-                        return ' ' * e + v
-                    else:
-                        return v + ' ' * e
-
-                def format_line(values, widths, right_align):
-                    if not values:
-                        return "||\n"
-                    values = map(pad, values, widths, right_align)
-                    return '| ' + ' | '.join(values) + ' |\n'
-
-                s = ''
-                first = True
-                for start, end in column_blocks:
-                    if first:
-                        first = False
-                    else:
-                        s += '\n'
-
-                    block_column_width = column_width[start:end]
-                    block_right_align = right_align[start:end]
-                    hline = format_hline(block_column_width)
-
-                    s += hline
-                    s += format_line(trunc_fields[start:end], block_column_width, block_right_align)
-                    s += hline
-                    if types:
-                        s += format_line(type_strs[start:end], block_column_width, block_right_align)
-                        s += hline
-                    for row in rows:
-                        _row = row[start:end]
-                        s += format_line(_row, block_column_width, block_right_align)
-                    s += hline
-
-                if has_more:
-                    n_rows = len(rows)
-                    s += f"showing top {n_rows} {'row' if n_rows == 1 else 'rows'}\n"
-
-                return s
+        output = []
+        for block_index, (start, end) in enumerate(blocks):
+            if block_index:
+                output.append('\n')
+            block_widths, block_align = widths[start:end], align[start:end]
+            rule = '+-' + '-+-'.join('-' * width for width in block_widths) + '-+\n' if block_widths else '++\n'
+            output.extend((rule, line(fields[start:end], block_widths, block_align), rule))
+            if self.types:
+                output.extend((line(types[start:end], block_widths, block_align), rule))
+            output.extend(line(row[start:end], block_widths, block_align) for row in rows)
+            output.append(rule)
+        if has_more:
+            output.append(f"showing top {len(rows)} {'row' if len(rows) == 1 else 'rows'}\n")
+        return ''.join(output)
