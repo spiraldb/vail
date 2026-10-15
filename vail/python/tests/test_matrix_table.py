@@ -746,6 +746,20 @@ def test_row_aligned_entry_lookup_filters_preserve_presence():
     assert filtered.unfilter_entries().x.collect() == [None, None, 15, 16]
 
 
+def test_column_sum_preserves_positions_missing_entries_and_empty_rows():
+    m = hl.range_matrix_table(4, 5, 3)
+    m = m.annotate_entries(x=hl.or_missing(m.row_idx != 1, m.row_idx * 10 + m.col_idx))
+    m = m.key_cols_by().choose_cols([4, 1, 4])
+    m = m.filter_entries(m.col_idx != 1)
+    result = m.annotate_cols(total=hl.agg.sum(m.x))
+    assert [(row.col_idx, row.total) for row in result.cols().collect()] == [
+        (4, 62), (1, 0), (4, 62),
+    ]
+    empty = hl.range_matrix_table(0, 3, 2)
+    empty = empty.annotate_entries(x=hl.int32(1))
+    assert empty.annotate_cols(total=hl.agg.sum(empty.x)).total.collect() == [0, 0, 0]
+
+
 def test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback():
     import vail.matrixtable as module
 

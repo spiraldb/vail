@@ -680,6 +680,36 @@ class MatrixTable:
             from .matrix_list_aggregates import reduce_list
 
             return reduce_list(self, expr, base, self._row_contexts(base))
+        node = expr.to_ir()
+        if (axis == "col" and node.get("op") == "aggregate"
+                and node.get("function") == "sum"
+                and not _uses_axis_field(node["value"], "col")
+                and not node.get("init")
+                and set(node.get("options", {})) <= {"__vail_result_type"}):
+            # Cell positions already align with the global column array.
+            # Reduce each position with DataFusion's coordinate aggregate,
+            # avoiding an explode and a hash lookup for every matrix entry.
+            from . import agg, cast, is_missing, len as length, repeat
+
+            core = self._mir.core
+            argument = _expression(expr.dtype, self, node["value"], expr)
+            values = core[_CELLS].map(lambda cell: if_else(
+                cell[_PRESENT],
+                cast(self._lower_cell(argument, core, cell, struct()), expr.dtype),
+                missing(expr.dtype),
+            ))
+            totals = core.aggregate(agg.array_sum(values), _localize=False)
+            # An empty row axis still has one zero result per column.
+            totals = if_else(
+                is_missing(totals) | (length(totals) == 0),
+                repeat(literal(0, expr.dtype), length(self._mir.column_records)),
+                totals,
+            )
+            records = _zip_arrays(self._mir.column_records, totals).map(
+                lambda pair: struct(**{_CID: pair["1"][_CID], "value": pair["2"]})
+            )
+            results = Table.parallelize(records).key_by(_CID)
+            return results.index(base[_CID]).value
         context = self._context("entry")
         refs, lookups = dict(expr._global_refs), dict(expr._lookup_refs)
 
