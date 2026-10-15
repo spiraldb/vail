@@ -207,7 +207,15 @@ fn previous_nonnull_argument(fold: &VExpr) -> Option<&VExpr> {
     else {
         return None;
     };
-    if !matches!(initial.as_ref(), VExpr::Literal { value, .. } if value.is_null()) {
+    let initial_is_null = match initial.as_ref() {
+        VExpr::Literal { value, .. } => value.is_null(),
+        // Scan initialization binds fold state into a RuntimeLiteral before
+        // lowering the executable plan. Accept that semantically identical
+        // null so `_prev_nonnull` keeps using the native lag/last-value path.
+        VExpr::RuntimeLiteral { value } => value.is_null(),
+        _ => false,
+    };
+    if !initial_is_null {
         return None;
     }
     fn defined(condition: &VExpr, argument: &VExpr) -> bool {
@@ -1162,4 +1170,85 @@ pub(crate) fn plan_initialized(
         ))
     }
     .boxed()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use datafusion_common::ScalarValue;
+    use vail_execution::expressions::UnaryOperator;
+
+    fn previous_nonnull_fold(initial: VExpr, argument: VExpr) -> VExpr {
+        let defined = |value: VExpr| VExpr::Unary {
+            operator: UnaryOperator::Not,
+            value: Box::new(VExpr::IsMissing {
+                value: Box::new(value),
+            }),
+        };
+        let state = VExpr::LambdaVariable {
+            name: "state".into(),
+        };
+        let left = VExpr::LambdaVariable {
+            name: "left".into(),
+        };
+        let right = VExpr::LambdaVariable {
+            name: "right".into(),
+        };
+        VExpr::AggregateFold {
+            initial: Box::new(initial),
+            seq: Box::new(VExpr::IfElse {
+                condition: Box::new(defined(argument.clone())),
+                consequent: Box::new(argument.clone()),
+                alternate: Box::new(state),
+            }),
+            combine: Box::new(VExpr::IfElse {
+                condition: Box::new(defined(right.clone())),
+                consequent: Box::new(right),
+                alternate: Box::new(left),
+            }),
+            state_parameter: "state".into(),
+            left_parameter: "left".into(),
+            right_parameter: "right".into(),
+        }
+    }
+
+    #[test]
+    fn previous_nonnull_recognizes_initialized_null_fold_state() {
+        let argument = VExpr::Column { name: "row".into() };
+        let runtime_null = previous_nonnull_fold(
+            VExpr::RuntimeLiteral {
+                value: ScalarValue::Int64(None),
+            },
+            argument.clone(),
+        );
+        let scan = VExpr::Aggregate {
+            function: "__scan_fold".into(),
+            value: Some(Box::new(runtime_null)),
+            options: serde_json::json!({"__vail_scan": true}),
+            init: vec![],
+        };
+        assert_eq!(
+            native_prefix_kind(&scan),
+            Some(("previous_nonnull", Some(&argument)))
+        );
+
+        let literal_null = previous_nonnull_fold(
+            VExpr::Literal {
+                dtype: vail_execution::expressions::Type::Primitive(
+                    vail_execution::expressions::PrimitiveType::Int64,
+                ),
+                value: serde_json::Value::Null,
+            },
+            argument.clone(),
+        );
+        assert_eq!(previous_nonnull_argument(&literal_null), Some(&argument));
+
+        let non_null = previous_nonnull_fold(
+            VExpr::RuntimeLiteral {
+                value: ScalarValue::Int64(Some(7)),
+            },
+            argument,
+        );
+        assert_eq!(previous_nonnull_argument(&non_null), None);
+    }
 }

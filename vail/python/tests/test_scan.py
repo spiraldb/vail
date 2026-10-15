@@ -391,6 +391,12 @@ def test_native_previous_nonnull_arrays_and_empty_partitions(partitions):
     assert "vail_scan_state" not in result._native.physical_plan()
     assert result.n_partitions() == partitions
 
+    all_missing = hl.Table.parallelize(
+        [{"x": None} for _ in range(7)],
+        schema=hl.tstruct(x=hl.tarray(hl.tint32)), n_partitions=partitions,
+    )
+    assert all_missing.annotate(prev=hl.scan._prev_nonnull(all_missing.x)).prev.collect() == [None] * 7
+
 
 def test_previous_nonnull_optimization_does_not_change_nonmissing_fold_initial_state():
     table = hl.Table.parallelize([{"x": x} for x in [None, 1, None, 2]])
@@ -404,9 +410,14 @@ def test_previous_nonnull_optimization_does_not_change_nonmissing_fold_initial_s
 
 def test_scan_prev_nonnull_and_dense_arrays():
     table = hl.range_table(17, n_partitions=8)
+    table = table.annotate(x=hl.range(0, table.idx % 25))
     prev = hl.scan._prev_nonnull(hl.or_missing(table.idx % 3 != 0, table.row)).collect()
-    assert [None if row is None else row.idx for row in prev] == [
-        None if i < 2 else i - 2 if (i - 1) % 3 == 0 else i - 1 for i in range(17)
+    assert [None if row is None else (row.idx, row.x) for row in prev] == [
+        None if i < 2 else (
+            (i - 2 if (i - 1) % 3 == 0 else i - 1),
+            list(range((i - 2 if (i - 1) % 3 == 0 else i - 1) % 25)),
+        )
+        for i in range(17)
     ]
     table = hl.range_table(6, n_partitions=4).annotate_globals(length=6)
     sparse = hl.range(6).map(lambda i: hl.or_missing(i == table.idx, i))
