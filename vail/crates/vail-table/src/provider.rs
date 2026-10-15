@@ -31,6 +31,13 @@ use vail_storage::local_table::LocalRead;
 /// Build the DataFusion scan for a leaf `TableIR`. The scan preserves the
 /// source's established partition numbering and private partition column.
 pub(crate) fn provider(table: &TableRef) -> Result<Arc<dyn TableProvider>> {
+    provider_with_nested_projection_paths(table, Vec::new())
+}
+
+pub(crate) fn provider_with_nested_projection_paths(
+    table: &TableRef,
+    nested_projection_paths: Vec<Vec<String>>,
+) -> Result<Arc<dyn TableProvider>> {
     if !matches!(
         table.node(),
         TableNode::Read { .. }
@@ -47,6 +54,7 @@ pub(crate) fn provider(table: &TableRef) -> Result<Arc<dyn TableProvider>> {
     Ok(Arc::new(VailSourceProvider {
         table: table.clone(),
         schema: plan::physical_schema(table),
+        nested_projection_paths,
     }))
 }
 
@@ -54,6 +62,7 @@ pub(crate) fn provider(table: &TableRef) -> Result<Arc<dyn TableProvider>> {
 struct VailSourceProvider {
     table: TableRef,
     schema: SchemaRef,
+    nested_projection_paths: Vec<Vec<String>>,
 }
 
 #[async_trait::async_trait]
@@ -137,16 +146,129 @@ impl TableProvider for VailSourceProvider {
                         queries = intersect_intervals(&queries, &ranges, source)?;
                     }
                 }
-                if !constrained {
-                    make_source_parts(&self.table, self.schema.clone())?
-                } else {
+                let tag = self.schema.fields().len() - 1;
+                let requested = projection
+                    .cloned()
+                    .unwrap_or_else(|| (0..self.schema.fields().len()).collect());
+                let mut internal = Vec::with_capacity(requested.len() + filters.len() + 1);
+                for &index in &requested {
+                    if !internal.contains(&index) {
+                        internal.push(index);
+                    }
+                }
+                // Inexact filters still execute above the provider. Keep
+                // their referenced fields (and key fields) available until
+                // that residual predicate has run, then trim to `requested`.
+                for name in self.table.keys() {
+                    if let Ok(index) = self.schema.index_of(name)
+                        && !internal.contains(&index)
+                    {
+                        internal.push(index);
+                    }
+                }
+                for filter in filters {
+                    for column in filter.column_refs() {
+                        if let Ok(index) = self.schema.index_of(&column.name)
+                            && !internal.contains(&index)
+                        {
+                            internal.push(index);
+                        }
+                    }
+                }
+                internal.retain(|&index| index != tag);
+                internal.push(tag);
+                let row_indices = internal
+                    .iter()
+                    .copied()
+                    .filter(|&index| index != tag)
+                    .collect::<Vec<_>>();
+                let projected_rows = Arc::new(
+                    self.table
+                        .schema()
+                        .project(&row_indices)
+                        .map_err(DataFusionError::from)?,
+                );
+                let projected_schema = Arc::new(
+                    self.schema
+                        .project(&internal)
+                        .map_err(DataFusionError::from)?,
+                );
+                let field_ids = row_indices
+                    .iter()
+                    .map(|&index| {
+                        source.field_ids().get(index).copied().ok_or_else(|| {
+                            DataFusionError::Plan(format!(
+                                "read projection field {index} is out of range"
+                            ))
+                        })
+                    })
+                    .collect::<DFResult<Vec<_>>>()?;
+                let nested_paths = self
+                    .nested_projection_paths
+                    .iter()
+                    .filter(|path| {
+                        path.first().is_some_and(|root| {
+                            // The scan advertises the original key ordering.
+                            // Its certified key values must remain intact.
+                            !self.table.keys().contains(root)
+                                && self
+                                    .table
+                                    .schema()
+                                    .index_of(root)
+                                    .ok()
+                                    .and_then(|index| source.field_ids().get(index))
+                                    .is_some_and(|id| field_ids.contains(id))
+                        })
+                    })
+                    .cloned()
+                    .collect::<Vec<_>>();
+                let scan: Arc<dyn ExecutionPlan> = if constrained {
                     Arc::new(ReadKeyFilteredExec::new(
                         source.clone(),
                         self.table.clone(),
-                        self.schema.clone(),
+                        projected_rows,
+                        projected_schema,
+                        field_ids,
                         queries,
+                        nested_paths,
                     ))
+                } else {
+                    let parts = (0..source.partition_rows().len())
+                        .map(|part| {
+                            plan::source_partition_projected_with_nested_paths(
+                                &self.table,
+                                part,
+                                Some(&internal),
+                                nested_paths.clone(),
+                            )
+                            .map_err(to_df_error)
+                        })
+                        .collect::<DFResult<Vec<_>>>()?;
+                    Arc::new(PartitionSetExec::new(parts, projected_schema))
+                };
+                if let Some(indices) = projection {
+                    let exprs = indices
+                        .iter()
+                        .map(|&index| {
+                            let position = internal
+                                .iter()
+                                .position(|&candidate| candidate == index)
+                                .ok_or_else(|| {
+                                    DataFusionError::Plan(format!(
+                                        "read projection field {index} is out of range"
+                                    ))
+                                })?;
+                            let field = self.schema.field(index);
+                            Ok((
+                                Arc::new(Column::new(field.name(), position))
+                                    as Arc<dyn datafusion::physical_expr::PhysicalExpr>,
+                                field.name().clone(),
+                            ))
+                        })
+                        .collect::<DFResult<Vec<_>>>()?;
+                    return Ok(Arc::new(ProjectionExec::try_new(exprs, scan)?));
                 }
+                return Ok(scan);
             }
             _ => make_source_parts(&self.table, self.schema.clone())?,
         };
@@ -555,9 +677,11 @@ fn scalar_to_key(value: &ScalarValue, key: &KeyField) -> Option<KeyValue> {
 #[derive(Debug)]
 struct ReadKeyFilteredExec {
     source: Arc<LocalRead>,
-    table: TableRef,
+    row_schema: SchemaRef,
     schema: SchemaRef,
+    field_ids: Vec<i32>,
     queries: Vec<QueryInterval>,
+    nested_projection_paths: Vec<Vec<String>>,
     concurrency: Arc<tokio::sync::Semaphore>,
     properties: Arc<PlanProperties>,
 }
@@ -566,8 +690,11 @@ impl ReadKeyFilteredExec {
     fn new(
         source: Arc<LocalRead>,
         table: TableRef,
+        row_schema: SchemaRef,
         schema: SchemaRef,
+        field_ids: Vec<i32>,
         queries: Vec<QueryInterval>,
+        nested_projection_paths: Vec<Vec<String>>,
     ) -> Self {
         let mut equivalence = EquivalenceProperties::new(schema.clone());
         if !table.keys().is_empty() {
@@ -591,9 +718,11 @@ impl ReadKeyFilteredExec {
         ));
         Self {
             source,
-            table,
+            row_schema,
             schema,
+            field_ids,
             queries,
+            nested_projection_paths,
             properties,
             concurrency: Arc::new(tokio::sync::Semaphore::new(crate::EXECUTION_CONCURRENCY)),
         }
@@ -653,9 +782,12 @@ impl ExecutionPlan for ReadKeyFilteredExec {
             .ok_or_else(|| DataFusionError::Execution("partition offset overflow".into()))?;
         let source = self.source.clone();
         let queries = self.queries.clone();
-        let row_schema = self.table.schema().clone();
+        let row_schema = self.row_schema.clone();
         let schema = self.schema.clone();
-        let mut batches = source.interval_batches_in_rows(&queries, start..end);
+        let field_ids = self.field_ids.clone();
+        let source = source.with_nested_projection_paths(self.nested_projection_paths.clone());
+        let mut batches =
+            source.projected_interval_batches_in_rows(&queries, start..end, &field_ids);
         let concurrency = self.concurrency.clone();
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
@@ -977,5 +1109,192 @@ mod interval_intersection_tests {
                 assert_eq!(actual, expected, "seed={seed}, key={value}");
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod projected_provider_tests {
+    use super::*;
+    use arrow_array::{Array, BooleanArray, Int32Array, ListArray, RecordBatch, StructArray};
+    use arrow_buffer::{OffsetBuffer, ScalarBuffer};
+    use arrow_schema::{DataType, Field, Schema};
+    use datafusion::execution::context::SessionContext;
+    use futures::TryStreamExt;
+    use serde_json::json;
+
+    #[tokio::test]
+    async fn read_projection_reaches_storage_and_returns_only_selected_field() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("projected-read");
+        let schema = Arc::new(Schema::new(vec![
+            Field::new("k", DataType::Int32, false),
+            Field::new("payload", DataType::Int32, false),
+        ]));
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![
+                Arc::new(Int32Array::from(vec![1, 2, 3])),
+                Arc::new(Int32Array::from(vec![10, 20, 30])),
+            ],
+        )
+        .unwrap();
+        vail_storage::local_table::write_local(
+            path.to_str().unwrap(),
+            false,
+            schema,
+            vec![vec![batch]],
+            json!([["k", "int32"], ["payload", "int32"]]),
+            vec!["k".into()],
+        )
+        .await
+        .unwrap();
+
+        let table = crate::TableIR::read(path.to_str().unwrap()).await.unwrap();
+        let provider = provider(&table).unwrap();
+        let context = SessionContext::new();
+        let plan = provider
+            .scan(&context.state(), Some(&vec![1]), &[], None)
+            .await
+            .unwrap();
+        assert_eq!(plan.schema().fields().len(), 1);
+        assert_eq!(plan.schema().field(0).name(), "payload");
+        let batches = plan
+            .execute(0, context.task_ctx())
+            .unwrap()
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+        assert_eq!(
+            batches
+                .iter()
+                .map(RecordBatch::num_columns)
+                .collect::<Vec<_>>(),
+            vec![1]
+        );
+        let values = batches
+            .iter()
+            .flat_map(|batch| {
+                batch
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap()
+                    .values()
+                    .iter()
+                    .copied()
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(values, vec![10, 20, 30]);
+    }
+
+    #[tokio::test]
+    async fn map_rows_nested_array_projection_reads_selected_struct_child() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("nested-projected-read");
+        let value_fields = vec![
+            Arc::new(Field::new("GT", DataType::Int32, true)),
+            Arc::new(Field::new("DP", DataType::Int32, true)),
+        ];
+        let cell_fields = vec![
+            Arc::new(Field::new("cid", DataType::Int32, true)),
+            Arc::new(Field::new("present", DataType::Boolean, true)),
+            Arc::new(Field::new(
+                "value",
+                DataType::Struct(value_fields.clone().into()),
+                true,
+            )),
+        ];
+        let cells_type = DataType::List(Arc::new(Field::new(
+            "item",
+            DataType::Struct(cell_fields.clone().into()),
+            true,
+        )));
+        let schema = Arc::new(Schema::new(vec![
+            Field::new("k", DataType::Int32, false),
+            Field::new("cells", cells_type, true),
+        ]));
+        let values = Arc::new(StructArray::new(
+            value_fields.into(),
+            vec![
+                Arc::new(Int32Array::from(vec![10, 11, 20])),
+                Arc::new(Int32Array::from(vec![90, 91, 92])),
+            ],
+            None,
+        ));
+        let cells = Arc::new(StructArray::new(
+            cell_fields.into(),
+            vec![
+                Arc::new(Int32Array::from(vec![0, 1, 0])),
+                Arc::new(BooleanArray::from(vec![true, false, true])),
+                values,
+            ],
+            None,
+        ));
+        let list = Arc::new(ListArray::new(
+            Arc::new(Field::new("item", cells.data_type().clone(), true)),
+            OffsetBuffer::new(ScalarBuffer::from(vec![0_i32, 2, 3])),
+            cells,
+            None,
+        ));
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![Arc::new(Int32Array::from(vec![1, 2])), list],
+        )
+        .unwrap();
+        vail_storage::local_table::write_local(
+            path.to_str().unwrap(),
+            false,
+            schema,
+            vec![vec![batch]],
+            json!([["k", "int32"], ["cells", {"array": {"struct": [["cid", "int32"], ["present", "bool"], ["value", {"struct": [["GT", "int32"], ["DP", "int32"]]}]]}}]]),
+            vec!["k".into()],
+        )
+        .await
+        .unwrap();
+
+        let table = crate::TableIR::read(path.to_str().unwrap()).await.unwrap();
+        let mapped = table
+            .map_rows(vec![
+                ("k".into(), crate::ScalarIR::Column { name: "k".into() }),
+                (
+                    "genotypes".into(),
+                    crate::ScalarIR::ArrayMap {
+                        value: Box::new(crate::ScalarIR::Column {
+                            name: "cells".into(),
+                        }),
+                        parameter: "cell".into(),
+                        body: Box::new(crate::ScalarIR::GetField {
+                            value: Box::new(crate::ScalarIR::GetField {
+                                value: Box::new(crate::ScalarIR::LambdaVariable {
+                                    name: "cell".into(),
+                                }),
+                                name: "value".into(),
+                            }),
+                            name: "GT".into(),
+                        }),
+                    },
+                ),
+            ])
+            .unwrap();
+        let rows = mapped.collect_partitions().await.unwrap();
+        let genotypes = rows
+            .iter()
+            .flatten()
+            .flat_map(|batch| {
+                let arrays = batch
+                    .column(1)
+                    .as_any()
+                    .downcast_ref::<ListArray>()
+                    .unwrap();
+                arrays
+                    .values()
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap()
+                    .values()
+                    .to_vec()
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(genotypes, vec![10, 11, 20]);
     }
 }

@@ -21,10 +21,7 @@ use std::cmp::Ordering;
 use std::{fmt, sync::Arc};
 use vail_execution::expressions::{Expr, Type, lower_with_global_columns};
 use vail_storage::{
-    fragment_index::{
-        Endpoint, IndexBinding, KeyValue, QueryInterval, compare_typed_key_components,
-        make_typed_key_comparators,
-    },
+    fragment_index::{Endpoint, IndexBinding, KeyValue, QueryInterval, make_typed_key_comparators},
     local_table::LocalRead,
 };
 
@@ -32,6 +29,7 @@ use vail_storage::{
 struct IntervalSourceExec {
     source: Arc<LocalRead>,
     query: QueryInterval,
+    rows: Option<std::ops::Range<u64>>,
     row_schema: SchemaRef,
     schema: SchemaRef,
     cache: Arc<PlanProperties>,
@@ -52,6 +50,7 @@ impl IntervalSourceExec {
         Self {
             source,
             query,
+            rows: None,
             row_schema,
             schema,
             cache,
@@ -100,9 +99,16 @@ impl ExecutionPlan for IntervalSourceExec {
                 "interval source requires partition zero".into(),
             ));
         }
-        let mut batches = self
-            .source
-            .interval_batches(std::slice::from_ref(&self.query));
+        let mut batches = if let Some(rows) = self.rows.clone() {
+            self.source.projected_interval_batches_in_rows(
+                std::slice::from_ref(&self.query),
+                rows,
+                self.source.field_ids(),
+            )
+        } else {
+            self.source
+                .interval_batches(std::slice::from_ref(&self.query))
+        };
         let row_schema = self.row_schema.clone();
         let schema = self.schema.clone();
         Ok(Box::pin(RecordBatchStreamAdapter::new(
@@ -117,6 +123,19 @@ impl ExecutionPlan for IntervalSourceExec {
             },
         )))
     }
+}
+
+pub(crate) fn source_interval_in_rows(
+    table: &TableRef,
+    source: Arc<LocalRead>,
+    query: QueryInterval,
+    rows: std::ops::Range<u64>,
+) -> PhysicalPlan {
+    let row_schema = table.schema().clone();
+    let schema = plan::physical_schema(table);
+    let mut exec = IntervalSourceExec::new(source, query, row_schema, schema);
+    exec.rows = Some(rows);
+    Arc::new(exec)
 }
 
 pub(crate) async fn prepare(
@@ -753,7 +772,7 @@ impl PrefixPartitionIndex {
         if self.endpoints.is_empty() {
             return Ok(Vec::new());
         }
-        let mut start = lower
+        let start = lower
             .map(|lower| prefix_lower_bound(&self.endpoints, lower, binding))
             .transpose()?
             .unwrap_or(0);

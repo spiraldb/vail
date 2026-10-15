@@ -1,0 +1,14 @@
+{
+  "variant": "array_avg",
+  "rows": 10000000,
+  "partitions": 16,
+  "median_wall_seconds": 6.285566125,
+  "median_core_seconds": 65.810427125,
+  "median_average_cores": 10.167042213901759,
+  "package": "/private/tmp/vail-parallel-tests/lib/python3.11/site-packages/vail/__init__.py",
+  "logical_cpus": 14,
+  "sampling_hz": 10,
+  "cpu_scope": "worker plus live descendants; warmups excluded; includes in-process monitor",
+  "semantic_note": "raw array_avg returns null for empty arrays; composed/Hail return NaN; force_count forces evaluation without inspecting m",
+  "native_sha256": "75980401767072c5843dc7730b2c718529bce950e36edef97959bee702a2e153"
+}

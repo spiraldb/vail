@@ -1,0 +1,49 @@
+{
+  "machine": "macOS-15.8-arm64-arm-64bit",
+  "results": [
+    {
+      "variant": "hail",
+      "rows": 10000000,
+      "partitions": 16,
+      "median_wall_seconds": 0.488000042,
+      "median_core_seconds": 3.888983875,
+      "median_average_cores": 8.030809503495902,
+      "package": "/private/tmp/vail-range-means-hail/lib/python3.11/site-packages/hail/__init__.py",
+      "logical_cpus": 14,
+      "sampling_hz": 10,
+      "cpu_scope": "worker plus live descendants; warmups excluded; includes in-process monitor",
+      "semantic_note": "raw array_avg returns null for empty arrays; composed/Hail return NaN; force_count forces evaluation without inspecting m",
+      "peak_measured_rss_gib": 0.916107177734375
+    },
+    {
+      "variant": "composed",
+      "rows": 10000000,
+      "partitions": 16,
+      "median_wall_seconds": 10.941926209,
+      "median_core_seconds": 105.20019170833334,
+      "median_average_cores": 9.615302535705263,
+      "package": "/private/tmp/vail-parallel-tests/lib/python3.11/site-packages/vail/__init__.py",
+      "logical_cpus": 14,
+      "sampling_hz": 10,
+      "cpu_scope": "worker plus live descendants; warmups excluded; includes in-process monitor",
+      "semantic_note": "raw array_avg returns null for empty arrays; composed/Hail return NaN; force_count forces evaluation without inspecting m",
+      "native_sha256": "75980401767072c5843dc7730b2c718529bce950e36edef97959bee702a2e153",
+      "peak_measured_rss_gib": 7.05108642578125
+    },
+    {
+      "variant": "array_avg",
+      "rows": 10000000,
+      "partitions": 16,
+      "median_wall_seconds": 6.285566125,
+      "median_core_seconds": 65.810427125,
+      "median_average_cores": 10.167042213901759,
+      "package": "/private/tmp/vail-parallel-tests/lib/python3.11/site-packages/vail/__init__.py",
+      "logical_cpus": 14,
+      "sampling_hz": 10,
+      "cpu_scope": "worker plus live descendants; warmups excluded; includes in-process monitor",
+      "semantic_note": "raw array_avg returns null for empty arrays; composed/Hail return NaN; force_count forces evaluation without inspecting m",
+      "native_sha256": "75980401767072c5843dc7730b2c718529bce950e36edef97959bee702a2e153",
+      "peak_measured_rss_gib": 6.949951171875
+    }
+  ]
+}

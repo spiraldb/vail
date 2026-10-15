@@ -1,0 +1,2 @@
+Projection: vail_source.idx, vail_restore_arrow_type(array_avg(CAST(CAST(range(Int64(0), CAST(vail_semantic_kernel_modulo_2(vail_source.idx) AS Int64), Int64(1)) AS List(Int32)) AS List(Float64)))) AS m, vail_source.__vail_partition
+  TableScan: vail_source projection=[idx, __vail_partition]

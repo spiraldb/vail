@@ -20,7 +20,11 @@ use futures::TryStreamExt;
 use intervaltree::IntervalTree;
 use std::cmp::Ordering;
 use std::sync::Arc;
-use vail_storage::fragment_index::{compare_typed_key_components, make_typed_key_comparators};
+use vail_storage::fragment_index::{
+    Endpoint, KeyValue, QueryInterval, compare_typed_key_components, encode_typed_key_component,
+    make_typed_key_comparators, normalize_typed_key_component,
+};
+use vail_storage::local_table::LocalRead;
 
 #[derive(Clone, Debug)]
 struct Bound {
@@ -238,6 +242,43 @@ fn clipped_parts(
             selected.push(reset(part.clone())?);
             continue;
         }
+        if let TableNode::Read { source } = table.node()
+            && let Some(query) = read_query_for_cell(table, source, cell, join_key)?
+        {
+            let rows = source.partition_rows();
+            let start = rows[..index].iter().try_fold(0u64, |sum, &n| {
+                sum.checked_add(n as u64)
+                    .ok_or_else(|| TableError::Invalid("partition offset overflow".into()))
+            })?;
+            let end = start
+                .checked_add(rows[index] as u64)
+                .ok_or_else(|| TableError::Invalid("partition offset overflow".into()))?;
+            let rows_plan = crate::interval_read::source_interval_in_rows(
+                table,
+                source.clone(),
+                query,
+                start..end,
+            );
+            let key = key_expressions(part, &table.keys()[..join_key])?;
+            let predicate = match cell {
+                Cell::Point(value) => tuple_compare_expr(&key, value, Operator::Eq)?,
+                Cell::Between(lower, upper) => Arc::new(BinaryExpr::new(
+                    tuple_compare_expr(&key, lower, Operator::Gt)?,
+                    Operator::And,
+                    tuple_compare_expr(&key, upper, Operator::Lt)?,
+                )) as Arc<dyn PhysicalExpr>,
+            };
+            selected.push(Arc::new(FilterExec::try_new(predicate, rows_plan)?) as PhysicalPlan);
+            continue;
+        }
+        if matches!(table.node(), TableNode::Range { .. })
+            && join_key == 1
+            && table.keys().first().is_some_and(|key| key == "idx")
+            && let Some((lower, upper)) = integer_range_cell(cell)?
+        {
+            selected.push(plan::range_partition_clipped(table, index, lower, upper)?);
+            continue;
+        }
         let key = key_expressions(part, &table.keys()[..join_key])?;
         let predicate = match cell {
             Cell::Point(value) => tuple_compare_expr(&key, value, Operator::Eq)?,
@@ -251,6 +292,101 @@ fn clipped_parts(
             .push(Arc::new(FilterExec::try_new(predicate, reset(part.clone())?)?) as PhysicalPlan);
     }
     Ok(selected)
+}
+
+fn read_query_for_cell(
+    table: &TableRef,
+    source: &LocalRead,
+    cell: &Cell,
+    join_key: usize,
+) -> Result<Option<QueryInterval>> {
+    let Ok(binding) = source.index_binding() else {
+        return Ok(None);
+    };
+    // The fragment index requires complete composite endpoints. Prefix joins
+    // keep their existing partition scan plus residual filter semantics.
+    if join_key == 0 || join_key != binding.key_fields.len() {
+        return Ok(None);
+    }
+    // The interval endpoints are in TableIR key order. Only use the fragment
+    // index when that order exactly matches the snapshot's field-ID order.
+    if table.keys().len() != binding.key_fields.len()
+        || binding.key_fields.iter().any(|key| key.descending)
+        || table
+            .keys()
+            .iter()
+            .zip(&binding.key_fields)
+            .any(|(name, key)| {
+                table
+                    .schema()
+                    .index_of(name)
+                    .ok()
+                    .and_then(|index| source.field_ids().get(index))
+                    != Some(&key.field_id)
+            })
+    {
+        return Ok(None);
+    }
+    let endpoint = |components: &[ArrayRef], inclusive: bool| -> Result<Option<Endpoint>> {
+        if components.len() < join_key {
+            return Ok(None);
+        }
+        let mut key = Vec::with_capacity(join_key);
+        for (array, field) in components.iter().take(join_key).zip(&binding.key_fields) {
+            let one = array.slice(0, 1);
+            let Ok(normalized) = normalize_typed_key_component(&one, &field.physical_type) else {
+                // Index pruning is an optimization. Keep the original scan
+                // and residual filter for null or unsupported cell endpoints.
+                return Ok(None);
+            };
+            let Ok(encoded) = encode_typed_key_component(&normalized) else {
+                return Ok(None);
+            };
+            key.push(KeyValue::ArrowIpc(encoded));
+        }
+        Ok(Some(Endpoint { key, inclusive }))
+    };
+    let (lower, upper) = match cell {
+        Cell::Point(point) => (endpoint(point, true)?, endpoint(point, true)?),
+        Cell::Between(lower, upper) => (endpoint(lower, false)?, endpoint(upper, false)?),
+    };
+    Ok(Some(QueryInterval { lower, upper }))
+}
+
+/// Convert a join cell to the half-open range interval for RangeExec's
+/// zero-based Int32 `idx` values. This lets the source avoid generating rows
+/// outside the cell; the normal FilterExec remains for other source types.
+fn integer_range_cell(cell: &Cell) -> Result<Option<(usize, usize)>> {
+    let value = |key: &[ArrayRef]| -> Result<Option<i64>> {
+        let Some(array) = key.first() else {
+            return Ok(None);
+        };
+        let Some(array) = array.as_any().downcast_ref::<Int32Array>() else {
+            return Ok(None);
+        };
+        if array.is_null(0) {
+            Ok(None)
+        } else {
+            Ok(Some(i64::from(array.value(0))))
+        }
+    };
+    let (start, end) = match cell {
+        Cell::Point(point) => {
+            let Some(value) = value(point)? else {
+                return Ok(None);
+            };
+            (value, value + 1)
+        }
+        Cell::Between(lower, upper) => {
+            let (Some(lower), Some(upper)) = (value(lower)?, value(upper)?) else {
+                return Ok(None);
+            };
+            (lower + 1, upper)
+        }
+    };
+    let start = start.max(0) as usize;
+    let end = end.max(0) as usize;
+    Ok(Some((start.min(end), end)))
 }
 
 fn clipped_bounds_parts(
@@ -432,7 +568,9 @@ fn candidates_by_cell(bounds: &[Option<Bound>], cells: &[Cell]) -> Result<Vec<Ve
     let mut starts = vec![Vec::new(); point_cells.len()];
     let mut ends = vec![Vec::new(); point_cells.len()];
     for (partition, bound) in bounds.iter().enumerate() {
-        let Some(bound) = bound else { continue };
+        if bound.is_none() {
+            continue;
+        }
         let (first_row, last_row) = lookup_rows[partition].expect("bound has lookup rows");
         if compare_indexed_keys(
             &lookup_columns,
@@ -1113,5 +1251,22 @@ mod tests {
         let bounds = inherited_bounds(&mostly_empty, 1).unwrap().unwrap();
         assert_eq!(bounds.len(), 2);
         assert!(bounds.iter().all(Option::is_some));
+    }
+
+    #[test]
+    fn integer_join_cells_clip_range_before_row_generation() {
+        assert_eq!(
+            integer_range_cell(&Cell::Point(key(8))).unwrap(),
+            Some((8, 9))
+        );
+        assert_eq!(
+            integer_range_cell(&Cell::Between(key(2), key(7))).unwrap(),
+            Some((3, 7))
+        );
+        let table = TableIR::range(10, 3).unwrap();
+        let clipped = plan::range_partition_clipped(&table, 1, 5, 6).unwrap();
+        let debug = format!("{clipped:?}");
+        assert!(debug.contains("start: 5"), "{debug}");
+        assert!(debug.contains("end: 6"), "{debug}");
     }
 }

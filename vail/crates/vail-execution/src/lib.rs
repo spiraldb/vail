@@ -539,6 +539,7 @@ pub mod advanced_collection_aggregates;
 pub mod advanced_genomic_aggregates;
 pub mod advanced_numeric_aggregates;
 pub mod array_length_aggregate;
+pub mod array_aggregate;
 
 pub mod fold_aggregate;
 

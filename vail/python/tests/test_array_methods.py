@@ -47,10 +47,18 @@ def test_array_fold_scan_missingness_promotion_and_row_capture():
 
 
 def test_array_mean_median():
+    mean_expr = hl.mean([1, None, 5])
     assert math.isnan(hl.eval(hl.mean(hl.empty_array(hl.tint32))))
-    assert hl.eval_typed(hl.mean([1, None, 5])) == (3.0, hl.tfloat64)
+    assert hl.eval_typed(mean_expr) == (3.0, hl.tfloat64)
     assert hl.eval(hl.mean([1, None, 5], filter_missing=False)) is None
     assert hl.eval(hl.mean(hl.missing(hl.tarray(hl.tint32)))) is None
+    assert math.isnan(
+        hl.eval(hl.mean(hl.literal([None, None], hl.tarray(hl.tint32))))
+    )
+    assert math.isnan(hl.eval(hl.mean(hl.empty_array(hl.tfloat64))))
+    nan_mean = hl.eval(hl.mean([1.0, float("nan"), 3.0]))
+    assert math.isnan(nan_mean)
+    assert hl.eval(hl.mean(hl.set([1, 2, 3]))) == 2.0
     assert hl.eval(hl.median([1, 9, None, 3, 5])) == 3
     assert hl.eval(hl.median(hl.empty_array(hl.tint32))) is None
     assert hl.eval(hl.median(hl.set([2, 3, 1]))) == 2

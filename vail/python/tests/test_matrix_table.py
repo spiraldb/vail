@@ -14,6 +14,25 @@ def matrix(nr=3, nc=4, partitions=2):
     return m.annotate_entries(x=m.row_idx * 10 + m.col_idx + m.offset)
 
 
+def test_row_scoped_entry_projection_and_filter_skip_column_context_zip(monkeypatch):
+    m = matrix(2, 3)
+    original = hl.MatrixTable._cell_contexts
+
+    def unexpected_column_context(self, base):
+        raise AssertionError("row-scoped entry expression zipped column records")
+
+    monkeypatch.setattr(hl.MatrixTable, "_cell_contexts", unexpected_column_context)
+    annotated = m.annotate_entries(row_value=hl.int32(m.row_idx + m.x))
+    selected = annotated.select_entries("row_value")
+    filtered = annotated.filter_entries(annotated.row_idx == 1)
+    transmuted = annotated.transmute_entries(row_value=hl.int32(annotated.row_idx + 1))
+    monkeypatch.setattr(hl.MatrixTable, "_cell_contexts", original)
+
+    assert [row.row_value for row in selected.entries().collect()] == [5, 6, 7, 16, 17, 18]
+    assert [row.row_value for row in filtered.entries().collect()] == [16, 17, 18]
+    assert [row.row_value for row in transmuted.entries().collect()] == [1, 1, 1, 2, 2, 2]
+
+
 @pytest.mark.parametrize("nr,nc", [(0, 0), (0, 3), (3, 0), (2, 3)])
 def test_range_dimensions_schema_and_empty_axes(nr, nc):
     m = hl.range_matrix_table(nr, nc, 2)

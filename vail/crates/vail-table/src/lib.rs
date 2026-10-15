@@ -18,6 +18,7 @@ mod logical_nested_aggregation;
 mod logical_same;
 mod logical_scan;
 mod lookup;
+mod nested_projection;
 mod nested_scan;
 mod partition_grouping;
 mod partition_map;
