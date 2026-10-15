@@ -428,6 +428,19 @@ fn lower(
             restore_type(udf.call(arguments), dtype)
         }
         Expr::StringFunction { function, args } => {
+            // Regex compilation and checked Unicode adapters can fail. Preserve
+            // the existing row-evaluation barrier across optimizer rewrites.
+            if matches!(
+                function.as_str(),
+                "regexp_like"
+                    | "regexp_replace"
+                    | "regex_split"
+                    | "first_match_in"
+                    | "unicode_slice"
+                    | "unicode_translate"
+            ) {
+                return logical_kernel(expr, schema, globals, bindings, scope);
+            }
             let (udf, _, _) = crate::expressions::string_function(function)?;
             udf.call(args.iter().map(recurse).collect::<Result<Vec<_>, _>>()?)
         }

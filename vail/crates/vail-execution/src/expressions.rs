@@ -4175,6 +4175,27 @@ pub(crate) fn string_function(
             vec![text],
             Type::Primitive(PrimitiveType::Float64),
         ),
+        "unicode_slice" => (
+            crate::string_kernels::udf(name),
+            vec![
+                text.clone(),
+                int32.clone(),
+                int32.clone(),
+                int32.clone(),
+                int32,
+            ],
+            text,
+        ),
+        "unicode_translate" => (
+            crate::string_kernels::udf(name),
+            vec![
+                text.clone(),
+                Type::Dict {
+                    dict: Box::new((text.clone(), text.clone())),
+                },
+            ],
+            text,
+        ),
         "strpos" => (unicode::strpos(), vec![text.clone(), text], int32),
         "substr" => (
             unicode::substr(),

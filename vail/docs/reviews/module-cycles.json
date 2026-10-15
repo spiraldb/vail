@@ -114,6 +114,26 @@
       ],
       "validation": [
         "73 allele and string-conversion tests passed including final empty projection"
+      ],
+      "merged_commit": "d8f0210"
+    },
+    {
+      "module": "Vail Python strings and Rust string kernels",
+      "reviewed_base": "d8f0210",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "direct Unicode strided slicing and indexed dynamic translation",
+        "retain scalar arguments and split operation-specific loops",
+        "reject missing dynamic translation keys consistently",
+        "reproduced regex constant error across excluding filter; retain fallible expression barrier",
+        "replace Rust physical-node assertion with public Arrow execution tests"
+      ],
+      "validation": [
+        "3 Rust public string integration tests passed",
+        "123 Python string/codepoint/formatting/allele tests passed against rebuilt release native"
+      ],
+      "reports": [
+        "vail/docs/reviews/string-traversal-cost.json"
       ]
     }
   ],
