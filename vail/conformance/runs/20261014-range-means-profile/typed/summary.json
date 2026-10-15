@@ -1,0 +1,20 @@
+{
+  "variant": "typed",
+  "rows": 10000000,
+  "partitions": 16,
+  "median_wall_seconds": 0.895579083,
+  "median_core_seconds": 11.114119333333331,
+  "median_average_cores": 12.409980921063262,
+  "package": "/private/tmp/vail-parallel-tests/lib/python3.11/site-packages/vail/__init__.py",
+  "logical_cpus": 14,
+  "sampling_hz": 10,
+  "cpu_scope": "worker plus live descendants; warmups excluded; includes in-process monitor",
+  "semantic_note": "raw array_avg returns null for empty arrays; composed/Hail return NaN; force_count forces evaluation without inspecting m",
+  "native_sha256": "016f3a43b45a74460101a8de36dc26f6ab1d6a8e4146c72a9cf5ca17a2578ebb",
+  "peak_measured_rss_gib": 2.59564208984375,
+  "source_commit": "eb9f337cd0d3320a76af6cd08966729cdc2bbaff",
+  "validation": {
+    "rust_execution_tests_passed": 88,
+    "python_tests_passed": 95
+  }
+}
