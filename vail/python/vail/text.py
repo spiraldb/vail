@@ -6,7 +6,7 @@ from collections.abc import Mapping
 from urllib.parse import unquote, urlparse
 
 from .collections import _function
-from .expressions import Expression, cast, literal
+from .expressions import Expression, as_expr, cast, literal
 from .types import (tarray, tstr, tint64, tstruct, tint32, tfloat32, tfloat64,
                     tbool, type_to_wire, type_from_wire)
 
@@ -89,7 +89,10 @@ def _split_line(value, delimiter, quote, missing, expected_fields=0):
 
 
 def split_line(value, delimiter, missing=None, quote=None, regex=False):
-    """Build Hail's private single-line delimited parsing expression."""
+    """Parse one delimited record, preserving missing rows and configured markers."""
+    value = as_expr(value)
+    if value.dtype != tstr:
+        raise TypeError('split_line requires a string')
     _byte(delimiter, 'delimiter')
     if regex:
         raise NotImplementedError('regex-delimited line parsing is not implemented')
@@ -116,6 +119,7 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
     """Import single-line delimited records using a DataFusion CSV expression.
 
     Header discovery evaluates one row, as Hail does. The remaining table is lazy.
+    Raw headers are removed before find_replace transforms data records.
     Regex delimiters and type imputation are not implemented.
     """
     delimiter = _byte(delimiter, 'delimiter')
@@ -156,24 +160,25 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
         raise ValueError('no lines remaining after filters')
     header_text = first[0]['text']
     raw_names = eval_expression(_split_line(literal(header_text), delimiter, quote, []))
-    if find_replace is not None:
-        if len(find_replace) != 2:
-            raise ValueError('find_replace must contain a pattern and replacement')
-        table = table.annotate(text=table.text.replace(*find_replace))
     if no_header:
         names = [f'f{i}' for i in range(len(raw_names))]
     else:
         # Hail removes every row equal to the first header, including repeated
         # headers in subsequent files. Preserve that behavior deliberately.
         table = table.filter(table.text != header_text)
-        names, used = [], set()
+        names, used, next_suffix = [], set(), {}
         for name in raw_names:
-            candidate, suffix = name, 1
+            candidate, suffix = name, next_suffix.get(name, 1)
             while candidate in used:
                 candidate = f'{name}_{suffix}'
                 suffix += 1
+            next_suffix[name] = suffix
             used.add(candidate)
             names.append(candidate)
+    if find_replace is not None:
+        if len(find_replace) != 2:
+            raise ValueError('find_replace must contain a pattern and replacement')
+        table = table.annotate(text=table.text.replace(*find_replace))
     unknown = set(types) - set(names)
     if unknown:
         raise ValueError(f'types contains unknown fields: {sorted(unknown)}')

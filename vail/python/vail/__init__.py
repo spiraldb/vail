@@ -87,7 +87,7 @@ from .reference_genome import (ReferenceGenome, Locus, GRCh37, GRCh38, get_refer
                                default_reference, reference_genomes, resolve_reference)
 from . import agg
 from . import scan
-from .text import import_lines, import_table, read_csv, read_json
+from .text import import_lines, import_table, read_csv, read_json, split_line
 from .lookups import index as _index_table, resolve as _resolve_lookups
 from .collections import set_ as set, dict_ as dict, empty_set, empty_array, empty_dict, length as len
 from .strings import delimit, reverse_complement, hamming, entropy, reversed_ as reversed, unsupported as _unsupported_string

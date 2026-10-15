@@ -5385,9 +5385,9 @@ mod tests {
             missing: vec![],
             expected_fields: 3,
         };
-        let comma_physical = lower(&comma, &batch.schema()).unwrap();
-        let pipe_physical = lower(&pipe, &batch.schema()).unwrap();
-        assert!(comma_physical.as_ref() != pipe_physical.as_ref());
+        let comma_result = project_batch(&batch, &[("fields".into(), comma)]).unwrap();
+        assert_eq!(comma_result.num_rows(), 2);
+        assert!(project_batch(&batch, &[("fields".into(), pipe)]).is_err());
     }
 
     fn eval_string(value_type: Type, value: Value) -> Option<String> {

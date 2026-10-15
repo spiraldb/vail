@@ -154,6 +154,27 @@
       ],
       "reports": [
         "vail/docs/reviews/arrow-runtime-cost.json"
+      ],
+      "merged_commit": "010a343"
+    },
+    {
+      "module": "Vail CSV-line parser and Python text helpers",
+      "reviewed_base": "010a343",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "remove raw repeated headers before replacing data text",
+        "track next suffix per original header name",
+        "prepare missing-marker hash lookup and append borrowed parsed fields to Arrow with reused record scratch",
+        "bundle validated quote grammar and explicit field-count mode in prepared configuration",
+        "replace private parse/manual-grammar/physical-node assertions with public APIs and executed results"
+      ],
+      "validation": [
+        "62 Python text/codepoint tests passed",
+        "3 public Rust CSV integration tests passed",
+        "existing Rust expression CSV projection test passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/csv-cost.json"
       ]
     }
   ],
