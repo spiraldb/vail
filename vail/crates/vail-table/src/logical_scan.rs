@@ -194,6 +194,54 @@ fn frame() -> WindowFrame {
     frame
 }
 
+fn previous_nonnull_argument(fold: &VExpr) -> Option<&VExpr> {
+    use vail_execution::expressions::UnaryOperator;
+    let VExpr::AggregateFold {
+        initial,
+        seq,
+        combine,
+        state_parameter,
+        left_parameter,
+        right_parameter,
+    } = fold
+    else {
+        return None;
+    };
+    if !matches!(initial.as_ref(), VExpr::Literal { value, .. } if value.is_null()) {
+        return None;
+    }
+    fn defined(condition: &VExpr, argument: &VExpr) -> bool {
+        matches!(condition, VExpr::Unary { operator: UnaryOperator::Not, value }
+            if matches!(value.as_ref(), VExpr::IsMissing { value } if value.as_ref() == argument))
+    }
+    fn variable(expr: &VExpr, parameter: &str) -> bool {
+        matches!(expr, VExpr::LambdaVariable { name } if name == parameter)
+    }
+    let VExpr::IfElse {
+        condition,
+        consequent,
+        alternate,
+    } = seq.as_ref()
+    else {
+        return None;
+    };
+    if !defined(condition, consequent) || !variable(alternate, state_parameter) {
+        return None;
+    }
+    let VExpr::IfElse {
+        condition,
+        consequent: right,
+        alternate: left,
+    } = combine.as_ref()
+    else {
+        return None;
+    };
+    (defined(condition, right)
+        && variable(right, right_parameter)
+        && variable(left, left_parameter))
+    .then_some(consequent.as_ref())
+}
+
 fn native_prefix_kind(expr: &VExpr) -> Option<(&'static str, Option<&VExpr>)> {
     let VExpr::Aggregate {
         function,
@@ -220,6 +268,10 @@ fn native_prefix_kind(expr: &VExpr) -> Option<(&'static str, Option<&VExpr>)> {
     match function.as_str() {
         "count" if value.is_none() => Some(("count", None)),
         "sum" => Some(("sum", Some(value.as_deref()?))),
+        "__scan_fold" => Some((
+            "previous_nonnull",
+            Some(previous_nonnull_argument(value.as_deref()?)?),
+        )),
         _ => None,
     }
 }
@@ -315,6 +367,7 @@ fn lower_native_prefix(
         // kernel handles its exclusive local prefix and partition total.
         let udf = match *kind {
             "sum" | "count" => datafusion_functions_aggregate::sum::sum_udaf(),
+            "previous_nonnull" => datafusion_functions_aggregate::first_last::last_value_udaf(),
             _ => unreachable!(),
         };
         let mut arg = match value {
@@ -343,10 +396,21 @@ fn lower_native_prefix(
             }
         }
         let local_name = unique(&mut used, &format!("__scan_native_local_{i}"));
-        let mut local_window = WindowFunction::new(
-            WindowFunctionDefinition::AggregateUDF(udf.clone()),
-            vec![arg.clone()],
-        );
+        let mut local_window = if *kind == "previous_nonnull" {
+            let mut window = WindowFunction::new(
+                WindowFunctionDefinition::WindowUDF(
+                    datafusion_functions_window::lead_lag::lag_udwf(),
+                ),
+                vec![arg.clone(), datafusion_expr::lit(1_i64)],
+            );
+            window.params.null_treatment = Some(datafusion_expr::expr::NullTreatment::IgnoreNulls);
+            window
+        } else {
+            WindowFunction::new(
+                WindowFunctionDefinition::AggregateUDF(udf.clone()),
+                vec![arg.clone()],
+            )
+        };
         local_window.params.partition_by = vec![part.clone()];
         local_window.params.order_by = vec![datafusion_expr::col(&ordinal_name).sort(true, true)];
         local_window.params.window_frame = frame();
@@ -354,7 +418,13 @@ fn lower_native_prefix(
         local_names.push(local_name);
 
         let total_name = unique(&mut used, &format!("__scan_native_total_{i}"));
-        total_aggregates.push(udf.call(vec![arg]).alias(&total_name));
+        let mut total = udf.call(vec![arg]);
+        if *kind == "previous_nonnull" {
+            total = total
+                .null_treatment(datafusion_expr::expr::NullTreatment::IgnoreNulls)
+                .build()?;
+        }
+        total_aggregates.push(total.alias(&total_name));
         total_names.push(total_name);
     }
     local = LogicalPlanBuilder::from(local)
@@ -372,6 +442,7 @@ fn lower_native_prefix(
         // the exclusive prefix across partitions.
         let udf = match *kind {
             "sum" | "count" => datafusion_functions_aggregate::sum::sum_udaf(),
+            "previous_nonnull" => datafusion_functions_aggregate::first_last::last_value_udaf(),
             _ => unreachable!(),
         };
         let carry_name = unique(&mut used, &format!("__scan_native_carry_{i}"));
@@ -381,6 +452,9 @@ fn lower_native_prefix(
         );
         carry.params.order_by = vec![datafusion_expr::col(&summary_part).sort(true, true)];
         carry.params.window_frame = frame();
+        if *kind == "previous_nonnull" {
+            carry.params.null_treatment = Some(datafusion_expr::expr::NullTreatment::IgnoreNulls);
+        }
         carry_windows.push(Expr::WindowFunction(Box::new(carry)).alias(&carry_name));
         carry_names.push(carry_name);
     }
@@ -424,7 +498,20 @@ fn lower_native_prefix(
         .map(Expr::Column)
         .collect::<Vec<_>>();
     let mut scans = Vec::with_capacity(nodes.len());
-    for (i, ((node, _), _)) in nodes.iter().zip(kinds.iter()).enumerate() {
+    for (i, ((node, _), (kind, _))) in nodes.iter().zip(kinds.iter()).enumerate() {
+        if *kind == "previous_nonnull" {
+            let name = unique(&mut used, &format!("__scan_native_value_{i}"));
+            completed.push(
+                datafusion_functions::core::coalesce()
+                    .call(vec![
+                        datafusion_expr::col(&local_names[i]),
+                        datafusion_expr::col(&carry_names[i]),
+                    ])
+                    .alias(&name),
+            );
+            scans.push((node.clone(), name));
+            continue;
+        }
         let total_type = joined
             .schema()
             .field_with_name(None, &local_names[i])?

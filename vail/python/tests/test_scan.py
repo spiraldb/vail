@@ -1,3 +1,4 @@
+import pytest
 import vail as hl
 
 
@@ -368,6 +369,29 @@ def test_scan_result_projection_uses_current_row():
     ]
     result = hl.scan.array_agg(lambda x: hl.scan.sum(x) + table.idx, hl.array([table.idx, table.idx + 1]))
     assert result.collect() == [None, [1, 2], [3, 5], [6, 9], [10, 14]]
+
+
+@pytest.mark.parametrize("partitions", [1, 3, 8])
+def test_native_previous_nonnull_arrays_and_empty_partitions(partitions):
+    table = hl.Table.parallelize(
+        [{"x": x} for x in [None, [1], None, None, [2, 3], None]],
+        schema=hl.tstruct(x=hl.tarray(hl.tint32)), n_partitions=partitions,
+    )
+    result = table.annotate(prev=hl.scan._prev_nonnull(table.x), n=hl.scan.count())
+    assert [row.prev for row in result.collect()] == [None, None, [1], [1], [1], [2, 3]]
+    assert result.n.collect() == list(range(6))
+    assert "vail_scan_state" not in result._native.physical_plan()
+    assert result.n_partitions() == partitions
+
+
+def test_previous_nonnull_optimization_does_not_change_nonmissing_fold_initial_state():
+    table = hl.Table.parallelize([{"x": x} for x in [None, 1, None, 2]])
+    result = hl.scan.fold(
+        -7,
+        lambda state: hl.if_else(hl.is_defined(table.x), table.x, state),
+        lambda left, right: hl.if_else(hl.is_defined(right), right, left),
+    )
+    assert result.collect() == [-7, -7, 1, 1]
 
 
 def test_scan_prev_nonnull_and_dense_arrays():
