@@ -1,6 +1,7 @@
 """Matrix semantics over native lazy Table plans; no Python cell evaluator."""
 
 import json
+import math
 import subprocess
 import os
 import sys
@@ -301,6 +302,97 @@ def test_row_column_aggregation_and_empty_initialization():
     ] * 3
     assert m.filter_rows(hl.agg.sum(m.x) > 20).row_idx.collect() == [1, 2]
     assert hl.eval(m.aggregate_cols(hl.agg.count(), _localize=False)) == 2
+
+
+def test_row_boolean_aggregations_handle_missing_and_empty_values():
+    m = hl.range_matrix_table(1, 3, 1)
+    predicate = hl.if_else(
+        m.col_idx == 0,
+        True,
+        hl.if_else(m.col_idx == 1, False, hl.missing(hl.tbool)),
+    )
+
+    def aggregate(matrix):
+        return matrix.annotate_rows(
+            n=hl.agg.count_where(matrix.predicate),
+            any=hl.agg.any(matrix.predicate),
+            all=hl.agg.all(matrix.predicate),
+            fraction=hl.agg.fraction(matrix.predicate),
+        ).rows().collect()[0]
+
+    mixed = aggregate(m.annotate_entries(predicate=predicate))
+    assert (mixed.n, mixed.any, mixed.all, mixed.fraction) == (1, True, False, 1 / 3)
+
+    all_missing = aggregate(m.annotate_entries(predicate=hl.missing(hl.tbool)))
+    assert (all_missing.n, all_missing.any, all_missing.all, all_missing.fraction) == (
+        0, False, True, 0.0
+    )
+
+    empty = aggregate(m.annotate_entries(predicate=predicate).filter_entries(False))
+    assert (empty.n, empty.any, empty.all) == (0, False, True)
+    assert math.isnan(empty.fraction)
+
+
+def test_row_aggregation_prunes_unused_entry_and_column_context_fields(monkeypatch):
+    import vail.matrix_list_aggregates as list_aggs
+
+    m = hl.range_matrix_table(2, 3, 1)
+    m = m.annotate_cols(sex=hl.if_else(m.col_idx == 0, "F", "M"))
+    m = m.annotate_entries(
+        record=hl.struct(
+            gt=m.col_idx,
+            nested=hl.struct(keep=m.col_idx > 0, unused=m.row_idx),
+        ),
+        unrelated=m.row_idx + m.col_idx,
+    )
+    original = list_aggs.reduce_list
+    context_types = []
+
+    def inspect_contexts(matrix, expr, base, contexts, *args, **kwargs):
+        context_types.append(contexts.dtype.element_type)
+        return original(matrix, expr, base, contexts, *args, **kwargs)
+
+    monkeypatch.setattr(list_aggs, "reduce_list", inspect_contexts)
+    rows = m.annotate_rows(
+        selected=hl.agg.count_where(
+            (m.record.nested.keep) & (m.sex == "M")
+        )
+    )
+
+    assert rows.selected.collect() == [2, 2]
+    context = context_types[-1]
+    assert set(context["entry"]) == {"record"}
+    assert set(context["col"]) == {"sex"}
+    assert set(context["entry"]["record"]) == {"nested"}
+    assert set(context["entry"]["record"]["nested"]) == {"keep"}
+
+    ancestor_and_leaf = m.annotate_rows(
+        selected=hl.agg.count_where(
+            hl.is_defined(m.record) & m.record.nested.keep
+        )
+    )
+    assert ancestor_and_leaf.selected.collect() == [2, 2]
+    context = context_types[-1]
+    assert set(context["entry"]["record"]) == {"gt", "nested"}
+
+    missing_parent = m.annotate_entries(
+        record=hl.if_else(
+            m.col_idx == 0,
+            hl.missing(m.record.dtype),
+            m.record,
+        )
+    )
+    missing_rows = missing_parent.annotate_rows(
+        selected=hl.agg.count_where(hl.is_defined(missing_parent.record.nested.keep))
+    )
+    assert missing_rows.selected.collect() == [2, 2]
+
+    whole = m.annotate_rows(records=hl.agg.collect(m.entry))
+    assert whole.records.collect()[0] == [
+        {"record": {"gt": 0, "nested": {"keep": False, "unused": 0}}, "unrelated": 0},
+        {"record": {"gt": 1, "nested": {"keep": True, "unused": 0}}, "unrelated": 1},
+        {"record": {"gt": 2, "nested": {"keep": True, "unused": 0}}, "unrelated": 2},
+    ]
 
 
 @pytest.mark.parametrize(

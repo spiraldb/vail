@@ -81,6 +81,58 @@ def _axes(node, *, outside_aggregates=False):
     return set()
 
 
+def _matrix_context_fields(node):
+    """Return the entry and column fields referenced by a matrix expression."""
+    fields = {"entry": set(), "col": set()}
+
+    def field_path(value):
+        path = []
+        while isinstance(value, dict) and value.get("op") == "get_field":
+            path.append(value["name"])
+            value = value["value"]
+        if isinstance(value, dict) and value.get("op") == "matrix_field":
+            axis = value.get("axis")
+            if axis in fields:
+                fields[axis].add((value["name"], *reversed(path)))
+                return True
+        return False
+
+    def visit(value):
+        if isinstance(value, dict):
+            if value.get("op") == "literal":
+                return
+            if value.get("op") == "get_field" and field_path(value):
+                return
+            if value.get("op") == "matrix_field" and value.get("axis") in fields:
+                fields[value["axis"]].add((value["name"],))
+                return
+            for child in value.values():
+                visit(child)
+        elif isinstance(value, list):
+            for child in value:
+                visit(child)
+
+    visit(node)
+    return fields
+
+
+def _project_context_fields(value, paths):
+    if paths is None:
+        return value
+    if () in paths:
+        return value
+    children = {}
+    for name in sorted({path[0] for path in paths if path}):
+        tails = {path[1:] for path in paths if path and path[0] == name}
+        child = value[name]
+        children[name] = (
+            child
+            if () in tails or not isinstance(child.dtype, tstruct)
+            else _project_context_fields(child, tails)
+        )
+    return struct(**children)
+
+
 def _uses_axis_field(node, axis):
     """Whether an expression directly reads a row/column field."""
     if isinstance(node, dict):
@@ -408,10 +460,17 @@ class MatrixTable:
         positions = columns.aggregate(agg.collect(columns[self._column_position_name]), _localize=False)
         return self._with_column_positions(positions)
 
-    def _cell_contexts(self, base):
+    def _cell_contexts(self, base, *, col_fields=None):
         # Zip columns before entering any lambda. Capturing the whole column
         # list inside the callback makes DF replicate it for every cell.
-        return _zip_arrays(_indexed_cells(base[_CELLS]), self._mir.column_records)
+        columns = self._mir.column_records
+        if col_fields is not None:
+            columns = columns.map(
+                lambda record: struct(
+                    **{_COL: _project_context_fields(record[_COL], col_fields)}
+                )
+            )
+        return _zip_arrays(_indexed_cells(base[_CELLS]), columns)
 
     def _without_row_index_keys(self):
         names = self._mir.row_index_keys
@@ -672,12 +731,18 @@ class MatrixTable:
 
         return Expression(expr.dtype, base, _IR(rewrite(expr.to_ir()), refs, lookups))
 
-    def _row_contexts(self, base, *, filter_present=True, with_position=True):
+    def _row_contexts(
+        self, base, *, filter_present=True, with_position=True,
+        entry_fields=None, col_fields=None,
+    ):
         cells = base[_CELLS]
         if with_position:
-            contexts = self._cell_contexts(base).map(
+            contexts = self._cell_contexts(base, col_fields=col_fields).map(
                 lambda item: struct(
-                    entry=item["1"]["1"][_VALUE] if len(self.entry.dtype) else struct(),
+                    entry=(
+                        _project_context_fields(item["1"]["1"][_VALUE], entry_fields)
+                        if len(self.entry.dtype) else struct()
+                    ),
                     present=item["1"]["1"][_PRESENT],
                     column_id=item["1"]["1"][_CID],
                     position=item["1"]["2"],
@@ -691,7 +756,10 @@ class MatrixTable:
             # the scalar values are projected.
             contexts = cells.map(
                 lambda cell: struct(
-                    entry=(cell[_VALUE] if len(self.entry.dtype) else struct()),
+                    entry=(
+                        _project_context_fields(cell[_VALUE], entry_fields)
+                        if len(self.entry.dtype) else struct()
+                    ),
                     present=cell[_PRESENT],
                     bindings=struct(),
                 )
@@ -704,8 +772,15 @@ class MatrixTable:
         if axis == "row":
             from .matrix_list_aggregates import reduce_list
 
+            required = _matrix_context_fields(expr.to_ir())
             return reduce_list(self, expr, base, self._row_contexts(
-                base, with_position=_uses_axis_field(expr.to_ir(), "col"),
+                base,
+                with_position=(
+                    _uses_axis_field(expr.to_ir(), "col")
+                    or _uses_column_position(expr.to_ir())
+                ),
+                entry_fields=required["entry"],
+                col_fields=required["col"],
             ))
         node = expr.to_ir()
         if (axis == "col" and node.get("op") == "aggregate"
