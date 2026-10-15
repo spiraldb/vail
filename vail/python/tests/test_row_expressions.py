@@ -1,47 +1,7 @@
 import unittest
 import math
-from unittest.mock import patch
 
 import vail as hl
-
-
-class _NativeTableSpy:
-    """Record projection wire calls while leaving execution to the Rust bridge."""
-
-    def __init__(self, native, calls):
-        self._native = native
-        self._calls = calls
-
-    def __getattr__(self, name):
-        value = getattr(self._native, name)
-        if not callable(value):
-            return value
-
-        def invoke(*args, **kwargs):
-            if name == "project":
-                self._calls.append((name, args, kwargs))
-            result = value(*args, **kwargs)
-            if hasattr(result, "collect_arrow"):
-                return _NativeTableSpy(result, self._calls)
-            return result
-
-        return invoke
-
-
-class _NativeSessionSpy:
-    def __init__(self, native, calls):
-        self._native = native
-        self._calls = calls
-
-    def __getattr__(self, name):
-        value = getattr(self._native, name)
-        if name != "parallelize_arrow":
-            return value
-
-        def parallelize(*args, **kwargs):
-            return _NativeTableSpy(value(*args, **kwargs), self._calls)
-
-        return parallelize
 
 
 class RowExpressionTests(unittest.TestCase):
@@ -182,19 +142,17 @@ class RowExpressionTests(unittest.TestCase):
         after_projection = table.select("name", rank=table.rank).order_by("rank").head(2)
         self.assertEqual(after_projection.collect(), [hl.Struct(name="amy", rank=1), hl.Struct(name="cal", rank=3)])
 
-    def test_row_projection_is_dispatched_to_native_bridge(self):
-        calls = []
-        native_session = hl._native_session()
-        spy_session = _NativeSessionSpy(native_session, calls)
-        with patch.object(hl, "_native_session", return_value=spy_session):
-            table = hl.Table.parallelize(
-                [{"x": 2}, {"x": 4}], schema=hl.tstruct(x=hl.tint32)
-            )
-            projected = table.annotate(y=table.x + hl.int32(3)).select("y")
-            self.assertEqual(projected.collect(), [hl.Struct(y=5), hl.Struct(y=7)])
-
-        self.assertGreaterEqual(len(calls), 2)
-        self.assertTrue(all(name == "project" for name, _, _ in calls))
+    def test_row_projection_keeps_literal_ownership_and_lazy_errors(self):
+        values = [3, None]
+        table = hl.Table.parallelize([{"x": 2}, {"x": 4}], schema=hl.tstruct(x=hl.tint32))
+        projected = table.annotate(y=table.x + 3, values=hl.literal(values, hl.tarray(hl.tint32)))
+        projected = projected.select("y", "values")
+        values[:] = [99]
+        del table
+        self.assertEqual(projected.collect(), [hl.Struct(y=5, values=[3, None]), hl.Struct(y=7, values=[3, None])])
+        lazy = projected.select(value=hl.int32('invalid'))
+        with self.assertRaises(RuntimeError):
+            lazy.collect()
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 //! Immutable, typed TableIR. Construction checks types and shares child nodes;
 //! actions lower expression IR and pull Arrow batches through the graph.
 pub mod aggregation;
+pub mod arrow_batches;
+use arrow_batches::ArrowBatches;
 pub mod comparison;
 mod deferred_logical;
 pub mod globals;
@@ -204,7 +206,7 @@ pub enum TableNode {
         options_json: Value,
     },
     Parallelize {
-        rows: RecordBatch,
+        rows: ArrowBatches,
         n_partitions: usize,
     },
     /// Lazy expression source: the array expression is evaluated at action
@@ -733,9 +735,19 @@ impl TableIR {
     /// Owning Arrow buffers here is allowed: these are the input context, not an
     /// executed table. Partitioning/slicing happens only when an action polls it.
     pub fn parallelize(rows: RecordBatch, n_partitions: usize) -> Result<TableRef> {
+        Self::parallelize_batches(rows.schema(), vec![rows], n_partitions)
+    }
+
+    /// Retain a schema-aligned batch sequence without concatenating value buffers.
+    pub fn parallelize_batches(
+        schema: SchemaRef,
+        batches: Vec<RecordBatch>,
+        n_partitions: usize,
+    ) -> Result<TableRef> {
         if n_partitions == 0 {
             return Err(TableError::Invalid("n_partitions must be positive".into()));
         }
+        let rows = ArrowBatches::new(schema, batches)?;
         Ok(Self::new(
             rows.schema(),
             vec![],
@@ -1594,10 +1606,7 @@ impl TableIR {
             TableNode::TextRead { .. } => None,
             TableNode::Parallelize { rows, n_partitions } => Some(
                 (0..*n_partitions)
-                    .map(|p| {
-                        rows.num_rows() * (p + 1) / n_partitions
-                            - rows.num_rows() * p / n_partitions
-                    })
+                    .map(|p| rows.partition_bounds(p, *n_partitions).len())
                     .collect(),
             ),
             TableNode::Expression { .. } => None,

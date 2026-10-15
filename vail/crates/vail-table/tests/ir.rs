@@ -60,7 +60,7 @@ async fn range_is_lazy_and_head_stops_batch_generation() {
 }
 
 #[tokio::test]
-async fn parallelize_keeps_shared_input_buffers_without_prepartitioning() {
+async fn parallelize_preserves_requested_partitions_and_values() {
     let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, false)]));
     let values = Arc::new(Int32Array::from(vec![1, 2, 3]));
     let source = TableIR::parallelize(
@@ -68,22 +68,22 @@ async fn parallelize_keeps_shared_input_buffers_without_prepartitioning() {
         5,
     )
     .unwrap();
-    let TableNode::Parallelize { rows, n_partitions } = source.node() else {
-        panic!("expected Parallelize")
-    };
-    assert_eq!(*n_partitions, 5);
-    assert_eq!(rows.num_rows(), 3);
-    assert_eq!(
-        rows.column(0)
-            .as_any()
-            .downcast_ref::<Int32Array>()
-            .unwrap()
-            .values()
-            .as_ptr(),
-        values.values().as_ptr()
-    );
     let partitions = source.collect_partitions().await.unwrap();
     assert_eq!(partitions.len(), 5);
+    assert_eq!(
+        partitions
+            .iter()
+            .flatten()
+            .flat_map(|batch| batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .to_vec())
+            .collect::<Vec<_>>(),
+        vec![1, 2, 3]
+    );
     assert_eq!(
         partitions
             .iter()
@@ -146,4 +146,72 @@ async fn write_streams_transformed_rows_into_rolled_files() {
         })
         .collect::<Vec<_>>();
     assert_eq!(values, (4..20).collect::<Vec<_>>());
+}
+
+#[test]
+fn zero_column_input_partition_cardinality_does_not_overflow() {
+    use arrow_array::RecordBatchOptions;
+    let schema = Arc::new(Schema::empty());
+    let rows = RecordBatch::try_new_with_options(
+        schema.clone(),
+        vec![],
+        &RecordBatchOptions::new().with_row_count(Some(usize::MAX)),
+    )
+    .unwrap();
+    let table = TableIR::parallelize_batches(schema, vec![rows], 2).unwrap();
+    assert_eq!(table.known_count(), Some(usize::MAX));
+    assert_eq!(
+        table
+            .filter_partitions(vec![0], true)
+            .unwrap()
+            .known_count(),
+        Some(usize::MAX / 2)
+    );
+    assert_eq!(
+        table
+            .filter_partitions(vec![1], true)
+            .unwrap()
+            .known_count(),
+        Some(usize::MAX / 2 + 1)
+    );
+}
+
+#[tokio::test]
+async fn multibatch_inputs_keep_order_across_empty_batches_and_partitions() {
+    let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, true)]));
+    let batches = vec![
+        RecordBatch::new_empty(schema.clone()),
+        RecordBatch::try_new(
+            schema.clone(),
+            vec![Arc::new(Int32Array::from(vec![Some(1), None]))],
+        )
+        .unwrap(),
+        RecordBatch::new_empty(schema.clone()),
+        RecordBatch::try_new(
+            schema.clone(),
+            vec![Arc::new(Int32Array::from(vec![Some(3), Some(4), Some(5)]))],
+        )
+        .unwrap(),
+    ];
+    for partitions in [1, 2, 7] {
+        let table =
+            TableIR::parallelize_batches(schema.clone(), batches.clone(), partitions).unwrap();
+        let result = table.collect_partitions().await.unwrap();
+        assert_eq!(result.len(), partitions);
+        let values = result
+            .iter()
+            .flatten()
+            .flat_map(|batch| {
+                batch
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap()
+                    .iter()
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(values, vec![Some(1), None, Some(3), Some(4), Some(5)]);
+    }
+    assert!(TableIR::parallelize_batches(Arc::new(Schema::empty()), batches, 1).is_err());
 }

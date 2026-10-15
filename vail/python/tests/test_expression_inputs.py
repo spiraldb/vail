@@ -1,5 +1,5 @@
-import json
-from unittest.mock import patch
+import gc
+import shutil
 
 import pytest
 import vail as hl
@@ -28,44 +28,35 @@ def test_parallelize_array_expression_and_lazy_scalar_dependencies():
     assert globals_table.collect() == [hl.Struct(x=7), hl.Struct(x=8)]
 
 
-def test_parallelize_expression_source_is_lazy_and_uses_arrow_literal_bindings(tmp_path):
-    class Spy:
-        def __init__(self, native):
-            self.native = native
-            self.wires = []
-            self.literal_buffers = []
-        def __getattr__(self, name):
-            return getattr(self.native, name)
-        def scalar_arrow(self, data):
-            self.literal_buffers.append(data)
-            return self.native.scalar_arrow(data)
-        def parallelize_expression(self, expression, n_partitions, references):
-            self.wires.append(expression)
-            return self.native.parallelize_expression(expression, n_partitions, references=references)
-    spy = Spy(hl._native_session())
-    with patch.object(hl, '_native_session', return_value=spy):
-        table = hl.Table.parallelize([hl.struct(x=hl.int32('invalid'))])
-    from vail._native import NativeExpr
-    assert spy.wires and all(isinstance(node, NativeExpr) for node in spy.wires)
-    assert all(hasattr(data, "__arrow_c_stream__") for data in spy.literal_buffers)
-    def no_data_literals(node):
-        if isinstance(node, dict):
-            # Literals now own native scalar/Arrow memory; no wire payload exists.
-            assert not isinstance(node.get('value'), bytes)
-            for value in node.values(): no_data_literals(value)
-        elif isinstance(node, list):
-            for value in node: no_data_literals(value)
-    for wire in spy.wires: no_data_literals(wire)
+def test_parallelize_expression_sources_remain_lazy_until_action(tmp_path):
+    table = hl.Table.parallelize([hl.struct(x=hl.int32('invalid'))])
     with pytest.raises(RuntimeError):
         table.collect()
-    path = tmp_path/'source'
+    path = tmp_path / 'source'
     hl.range_table(4, n_partitions=2).write(path)
     source = hl.read_table(path)
-    for file in path.rglob('*.vortex'):
-        file.unlink()
+    shutil.rmtree(path)
     lazy = hl.Table.parallelize(source.collect(_localize=False), n_partitions=2)
-    with pytest.raises(Exception):
+    with pytest.raises((ValueError, RuntimeError, OSError)):
         lazy.collect()
+
+
+def test_arrow_and_literal_inputs_outlive_python_producers():
+    import pyarrow as pa
+    values = pa.array([1, None, 3], type=pa.int32())
+    producer = pa.record_batch([values], names=['x'])
+    table = hl.Table.parallelize(producer, n_partitions=2)
+    literal_values = [1, None, 3]
+    expr = hl.literal(literal_values, hl.tarray(hl.tint32))
+    del producer, values
+    literal_values[:] = [99]
+    del literal_values
+    gc.collect()
+    assert table.collect() == [hl.Struct(x=1), hl.Struct(x=None), hl.Struct(x=3)]
+    assert hl.eval(expr) == [1, None, 3]
+    annotated = table.annotate_globals(values=expr)
+    assert hl.eval(annotated.values) == [1, None, 3]
+    assert annotated.x.collect() == [1, None, 3]
 
 
 def test_parallelize_expression_validation_and_empty_rows():

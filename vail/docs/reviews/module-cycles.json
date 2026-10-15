@@ -134,6 +134,26 @@
       ],
       "reports": [
         "vail/docs/reviews/string-traversal-cost.json"
+      ],
+      "merged_commit": "b6ec0a0"
+    },
+    {
+      "module": "Vail Python runtime bridge and Arrow batch input source",
+      "reviewed_base": "b6ec0a0",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "replace session spies/private export assertions with public ownership/laziness/Arrow export behavior",
+        "retain imported batches in an indexed zero-copy source instead of concatenating",
+        "bound scalar imports and scalar literal inputs to one retained row, rejecting the second row immediately",
+        "avoid usize multiplication overflow in proportional partition boundaries"
+      ],
+      "scope_note": "backend.py and context.py reviewed without findings; source helpers extend into vail-table batch source to address review",
+      "validation": [
+        "67 public Python runtime/table tests passed against final native",
+        "7 Rust ir tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/arrow-runtime-cost.json"
       ]
     }
   ],
@@ -252,6 +272,7 @@
     "vail/python/vail/utils/misc.py",
     "vail/python/vail/variant.py",
     "vail/python/vail/vcf.py",
-    "vail/python/vail/vcf_export.py"
+    "vail/python/vail/vcf_export.py",
+    "vail/crates/vail-table/src/arrow_batches.rs"
   ]
 }

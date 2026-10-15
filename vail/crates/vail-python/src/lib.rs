@@ -158,15 +158,7 @@ impl NativeSession {
 
     /// Retain one Arrow row as native scalar globals using the C Stream protocol.
     fn scalar_arrow(&self, data: &Bound<'_, PyAny>) -> PyResult<NativeGlobals> {
-        let reader = arrow_memory::import(data)?;
-        let schema = reader.schema();
-        let batches = reader.collect::<Result<Vec<_>, _>>().map_err(value_error)?;
-        let batch = arrow_select::concat::concat_batches(&schema, &batches).map_err(value_error)?;
-        if batch.num_rows() != 1 {
-            return Err(value_error(
-                "scalar Arrow input must contain exactly one row",
-            ));
-        }
+        let batch = arrow_memory::scalar(data)?;
         Ok(NativeGlobals {
             ir: vail_table::globals::GlobalsIR::arrow_literal(batch).map_err(table_error)?,
         })
@@ -248,8 +240,8 @@ impl NativeSession {
             Type::from_arrow(field.data_type()).map_err(value_error)?;
         }
         let batches = reader.collect::<Result<Vec<_>, _>>().map_err(value_error)?;
-        let batch = arrow_select::concat::concat_batches(&schema, &batches).map_err(value_error)?;
-        let ir = TableIR::parallelize(batch, n_partitions).map_err(table_error)?;
+        let ir =
+            TableIR::parallelize_batches(schema, batches, n_partitions).map_err(table_error)?;
         Ok(NativeTable {
             runtime: self.runtime.clone(),
             ir,

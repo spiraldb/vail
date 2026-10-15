@@ -111,7 +111,7 @@ enum Source {
         partitions: usize,
     },
     Parallelize {
-        rows: RecordBatch,
+        rows: crate::arrow_batches::ArrowBatches,
         partitions: usize,
     },
     Globals(Arc<LocalRead>),
@@ -231,10 +231,12 @@ impl ExecutionPlan for SourceExec {
                     }
                     Source::Parallelize { rows, partitions } => {
                         for p in 0..partitions {
-                            let start = rows.num_rows()*p/partitions;
-                            let end = rows.num_rows()*(p+1)/partitions;
-                            for offset in (start..end).step_by(65536) {
-                                yield tag(rows.slice(offset, (end-offset).min(65536)), p, schema.clone())?;
+                            let bounds=rows.partition_bounds(p,partitions);
+                            let window=rows.slice(bounds.start,bounds.len());
+                            for batch in window.batches() {
+                                for offset in (0..batch.num_rows()).step_by(65536) {
+                                    yield tag(batch.slice(offset,(batch.num_rows()-offset).min(65536)),p,schema.clone())?;
+                                }
                             }
                         }
                     }
@@ -422,10 +424,9 @@ pub(crate) fn source_partition_projected_with_nested_paths(
             }));
         }
         TableNode::Parallelize { rows, n_partitions } => {
-            let start = rows.num_rows() * part / n_partitions;
-            let end = rows.num_rows() * (part + 1) / n_partitions;
+            let bounds = rows.partition_bounds(part, *n_partitions);
             Source::Parallelize {
-                rows: rows.slice(start, end - start),
+                rows: rows.slice(bounds.start, bounds.len()),
                 partitions: 1,
             }
         }

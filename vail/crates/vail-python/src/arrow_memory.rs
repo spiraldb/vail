@@ -1,7 +1,7 @@
 //! Arrow C Stream ownership transfer. No IPC buffers or row-value encoding.
 use crate::value_error;
 use arrow_array::ffi_stream::{ArrowArrayStreamReader, FFI_ArrowArrayStream};
-use arrow_array::{RecordBatch, RecordBatchIterator, RecordBatchReader};
+use arrow_array::{RecordBatch, RecordBatchIterator};
 use arrow_schema::SchemaRef;
 use pyo3::prelude::*;
 use pyo3::types::{PyCapsule, PyCapsuleMethods};
@@ -16,11 +16,24 @@ pub(crate) fn import(value: &Bound<'_, PyAny>) -> PyResult<ArrowArrayStreamReade
     ArrowArrayStreamReader::try_new(stream).map_err(value_error)
 }
 
-pub(crate) fn batch(value: &Bound<'_, PyAny>) -> PyResult<RecordBatch> {
+/// Scalar consumers require exactly one row. Retain at most that row and the
+/// current producer batch; reject immediately upon observing any extra row.
+pub(crate) fn scalar(value: &Bound<'_, PyAny>) -> PyResult<RecordBatch> {
     let reader = import(value)?;
-    let schema = reader.schema();
-    let batches = reader.collect::<Result<Vec<_>, _>>().map_err(value_error)?;
-    arrow_select::concat::concat_batches(&schema, &batches).map_err(value_error)
+    let mut single = None;
+    for batch in reader {
+        let batch = batch.map_err(value_error)?;
+        if batch.num_rows() == 0 {
+            continue;
+        }
+        if batch.num_rows() != 1 || single.is_some() {
+            return Err(value_error(
+                "scalar Arrow input must contain exactly one row",
+            ));
+        }
+        single = Some(batch);
+    }
+    single.ok_or_else(|| value_error("scalar Arrow input must contain exactly one row"))
 }
 
 #[pyclass(frozen)]

@@ -1073,6 +1073,16 @@ class Table:
         from .arrow import decode_rows
         return decode_rows(self._native.collect_arrow(), self._schema)
 
+    def to_arrow(self):
+        """Execute to a PyArrow table retaining native Arrow buffers and type metadata.
+
+        Imports and unmodified projections share value buffers. Operations that
+        compute or reorder values may allocate their own output buffers. The
+        returned table owns its data independently of this Vail table.
+        """
+        from .arrow import read_arrow
+        return read_arrow(self._native.collect_arrow())[1]
+
     @classmethod
     def from_pandas(cls, df, key=()):
         """Build a lazy Arrow source from a pandas DataFrame, excluding its index."""

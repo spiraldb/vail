@@ -761,7 +761,7 @@ impl NativeExpr {
             .extract::<PyRef<'_, crate::arrow_memory::NativeArrow>>()
             .is_ok()
         {
-            let batch = crate::arrow_memory::batch(value)?;
+            let batch = crate::arrow_memory::scalar(value)?;
             if batch.num_rows() != 1 || batch.num_columns() != 1 {
                 return Err(value_error("literal requires one Arrow value"));
             }
@@ -784,7 +784,7 @@ impl NativeExpr {
                 }
                 Type::Primitive(PrimitiveType::Str) => ScalarValue::Utf8(Some(value.extract()?)),
                 _ => {
-                    let batch = crate::arrow_memory::batch(value)?;
+                    let batch = crate::arrow_memory::scalar(value)?;
                     if batch.num_rows() != 1 || batch.num_columns() != 1 {
                         return Err(value_error("literal requires one typed Arrow value"));
                     }
