@@ -1,5 +1,7 @@
 """Matrix semantics over native lazy Table plans; no Python cell evaluator."""
 
+from vail.expressions import IR_NODE_TYPES
+
 import json
 import subprocess
 import os
@@ -55,7 +57,7 @@ def test_annotations_actions_globals_and_native_plan():
     assert m.col_idx.collect() == [0, 1, 2, 3]
     assert m.x.take(3) == [5, 6, 7]
     assert hl.eval(m.x.collect(_localize=False)) == m.x.collect()
-    assert "array_map" in m._mir.core._native.ir_json()
+    assert _has_native_op(m._mir.core._native.ir(), "array_map")
     assert "__vail_matrix_row_id" not in m._mir.core._schema
     assert m.entries().collect() == m.entries().collect()
     with pytest.raises(ValueError):
@@ -67,7 +69,7 @@ def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
     mt = mt.filter_cols(mt.col_idx != 3)
 
     def cell_index_count(node):
-        if isinstance(node, dict):
+        if isinstance(node, IR_NODE_TYPES):
             is_cell_index = (
                 node.get("op") == "array_index"
                 and node.get("value")
@@ -79,7 +81,7 @@ def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
         return 0
 
     previous_cell_index_count = cell_index_count(
-        json.loads(mt._mir.core._native.ir_json())
+        mt._mir.core._native.ir()
     )
     mt = mt.annotate_entries(
         base_value=hl.if_else(
@@ -97,9 +99,9 @@ def test_entry_annotation_zips_cells_with_positions_after_column_reordering():
     assert mt.col_idx.collect() == [4, 1]
     assert [row.value for row in mt.entries().collect()] == [2, 8, None, None, 204, 210]
     assert mt.aggregate_entries(hl.agg.sum(mt.value)) == 424
-    core_ir = mt._mir.core._native.ir_json()
-    assert '"function":"arrays_zip"' in core_ir
-    assert cell_index_count(json.loads(core_ir)) == previous_cell_index_count
+    core_ir = mt._mir.core._native.ir()
+    assert _has_native_op(core_ir, "nested_function", function="arrays_zip")
+    assert cell_index_count(core_ir) == previous_cell_index_count
 
     empty = hl.range_matrix_table(2, 0, 1).annotate_entries(value=hl.int32(1))
     assert empty.entries().count() == 0
@@ -774,7 +776,7 @@ def test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback():
     lookup = m.annotate_entries(copy=m[m.row_key, m.col_key].x)
     assert lookup.copy.collect() == m.x.collect()
     for result in (rows, grouped_rows, grouped_cols, exploded, lookup):
-        plan = result._mir.core._native.ir_json()
+        plan = result._mir.core._native.ir()
         assert "__vail_matrix_row_id" not in plan
         assert "TableMapPartitions" not in plan
         assert set(result._mir.core._schema) == {module._ROW, module._CELLS}
@@ -818,7 +820,7 @@ def test_column_lookups_inside_entries_preserve_values_and_missingness():
     assert result.row_exists.collect() == [True] * 8
     assert result.col_exists.collect() == [True] * 8
     assert result.entry_copy.collect() == m.x.collect()
-    assert "__vail_matrix_row_id" not in result._mir.core._native.ir_json()
+    assert "__vail_matrix_row_id" not in repr(result._mir.core._native.ir())
 
 
 def test_missing_native_list_kernels_are_reported_without_row_index_fallback():
@@ -829,3 +831,15 @@ def test_missing_native_list_kernels_are_reported_without_row_index_fallback():
         target = hl.range_table(2)
         target = target.annotate(v=target.idx)
         m.annotate_entries(v=target[m.x % 2].v)
+
+
+def _has_native_op(node, op, **properties):
+    if isinstance(node, IR_NODE_TYPES):
+        if node.get('op') == op and all(node.get(k) == v for k, v in properties.items()):
+            return True
+        if node.get('op') == 'literal':
+            return False
+        return any(_has_native_op(child, op, **properties) for child in node.values())
+    if isinstance(node, (list, tuple)):
+        return any(_has_native_op(child, op, **properties) for child in node)
+    return False

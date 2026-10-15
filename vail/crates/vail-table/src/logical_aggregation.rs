@@ -32,6 +32,7 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
             function,
             value: argument,
             options,
+            result_type,
             init,
         } = body.as_ref()
         {
@@ -54,33 +55,26 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                 if matches!(function.as_str(), "sum" | "mean" | "stddev_pop") {
                     // The frontend declares the aggregate's widened result.
                     let dtype = if function == "sum" {
-                        options
-                            .get("__vail_result_type")
-                            .cloned()
-                            .map(serde_json::from_value::<Type>)
-                            .transpose()
-                            .map_err(|error| {
-                                TableError::Invalid(format!(
-                                    "invalid coordinate result type: {error}"
-                                ))
-                            })?
+                        result_type
+                            .clone()
                             .unwrap_or(Type::Primitive(PrimitiveType::Int64))
                     } else {
                         Type::Primitive(PrimitiveType::Float64)
                     };
                     element = Expr::Cast {
-                        value: Box::new(element),
+                        value: Arc::new(element),
                         dtype,
                     };
                 }
                 return Ok(Expr::Aggregate {
                     function: format!("__coordinate_{function}"),
-                    value: Some(Box::new(Expr::ArrayMap {
+                    value: Some(Arc::new(Expr::ArrayMap {
                         value: value.clone(),
                         parameter: parameter.clone(),
-                        body: Box::new(element),
+                        body: Arc::new(element),
                     })),
                     options: options.clone(),
+                    result_type: result_type.clone(),
                     init: vec![],
                 });
             }

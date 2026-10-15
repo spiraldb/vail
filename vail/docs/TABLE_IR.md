@@ -3,8 +3,10 @@
 A Python Table wraps a Rust `Arc<TableIR>`. Construction creates immutable, typed
 nodes with shared children; it never executes transformations or caches results.
 Read construction loads snapshot metadata, while Parallelize owns the caller's
-initial Arrow buffers. Range stores bounds. Python builds scalar expression IR;
-Rust checks row/global scope, names, types, and key preservation.
+initial Arrow buffers. Range stores bounds. Python constructs native Rust scalar expression nodes through PyO3 handles, with
+shared child nodes and native type handles. Rust checks row/global scope, names,
+types, and key preservation. The boundary does not encode expressions, schemas,
+or Arrow arrays; see [Native Python / Rust boundary](ARROW_PYTHON_BRIDGE.md).
 
 An action lowers TableIR into one DataFusion logical tree, runs the logical
 optimizer, and lowers that optimized tree with DataFusion's physical planner.

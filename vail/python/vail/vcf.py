@@ -35,7 +35,7 @@ def _paths(paths):
 
 def get_vcf_metadata(path):
     from . import _native_session
-    return json.loads(_native_session().vcf_metadata(_local_path(path)))
+    return _native_session().vcf_metadata(_local_path(path))
 
 
 def import_vcf(
@@ -73,13 +73,12 @@ def import_vcf(
         contig_recoding=contig_recoding or {}, call_fields=sorted(set(call_fields) | {"GT"}),
         entry_float32=entry_float_type == tfloat32,
         array_elements_required=array_elements_required, skip_invalid_loci=skip_invalid_loci,
-        drop_samples=drop_samples, filter=filter, find_replace=find_replace,
+        drop_samples=drop_samples, filter=filter, find_replace=None if find_replace is None else tuple(find_replace),
     )
-    native, samples_json, _ = _native_session().read_vcf(
-        _paths(path), None if header_file is None else _local_path(header_file), json.dumps(options),
+    native, samples, _ = _native_session().read_vcf(
+        _paths(path), None if header_file is None else _local_path(header_file), options,
     )
     core = Table(native, _schema_from_native(native), ())
-    samples = json.loads(samples_json)
     cols = Table.parallelize(
         [{_CID: i, _COL: {"s": sample}} for i, sample in enumerate(samples)],
         schema=tstruct(**{_CID: tint64, _COL: tstruct(s=tstr)}),

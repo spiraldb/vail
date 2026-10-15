@@ -29,7 +29,7 @@ def test_grouped_aggregate_null_keys_empty_table_and_lazy_plan():
         schema=hl.tstruct(g=hl.tstr, x=hl.tint32),
     )
     lazy = table.group_by(table.g).aggregate(n=hl.agg.count(), total=hl.agg.sum(table.x))
-    assert json.loads(lazy._native.ir_json())["node"] == "TableGroupedAggregate"
+    assert lazy._native.ir()["node"] == "TableGroupedAggregate"
     assert {r.g: (r.n, r.total) for r in lazy.collect()} == {None: (2, 6), "a": (1, 5)}
     empty = hl.Table.parallelize([], schema=hl.tstruct(g=hl.tstr, x=hl.tint32))
     empty_result = empty.group_by("g").aggregate(n=hl.agg.count())
@@ -67,7 +67,7 @@ def test_grouped_aggregate_no_keys_globals_and_key_shadowing_are_lazy():
         n=hl.agg.count(), shifted_total=hl.agg.sum(table.x + table.offset)
     )
     assert shadowed._keys == ("g",)
-    assert json.loads(shadowed._native.ir_json())["node"] == "TableGroupedAggregate"
+    assert shadowed._native.ir()["node"] == "TableGroupedAggregate"
     assert {row.g: (row.n, row.shifted_total) for row in shadowed.collect()} == {
         11: (2, 19), 12: (1, 12)
     }

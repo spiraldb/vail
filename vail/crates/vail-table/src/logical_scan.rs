@@ -57,7 +57,7 @@ fn explode_leaves(
         let filter = match filter {
             Some(previous) => VExpr::Binary {
                 operator: vail_execution::expressions::BinaryOperator::And,
-                left: Box::new(previous),
+                left: Arc::new(previous),
                 right: predicate.clone(),
             },
             None => (**predicate).clone(),
@@ -68,15 +68,16 @@ fn explode_leaves(
         function,
         value,
         options,
+        result_type,
         init,
     } = expr
     {
         if marked_scan(expr) {
             let source = match filter {
                 Some(predicate) => VExpr::ArrayFilter {
-                    value: Box::new(array.clone()),
+                    value: Arc::new(array.clone()),
                     parameter: parameter.into(),
-                    predicate: Box::new(predicate),
+                    predicate: Arc::new(predicate),
                 },
                 None => array.clone(),
             };
@@ -87,9 +88,9 @@ fn explode_leaves(
                 value: serde_json::json!(1),
             });
             let mapped = VExpr::ArrayMap {
-                value: Box::new(source),
+                value: Arc::new(source),
                 parameter: parameter.into(),
-                body: Box::new(element),
+                body: Arc::new(element),
             };
             let argument = if options
                 .get("__vail_exploded")
@@ -97,7 +98,7 @@ fn explode_leaves(
                 == Some(true)
             {
                 VExpr::ArrayFlatten {
-                    value: Box::new(mapped),
+                    value: Arc::new(mapped),
                 }
             } else {
                 mapped
@@ -106,8 +107,9 @@ fn explode_leaves(
             options["__vail_exploded"] = serde_json::Value::Bool(true);
             return Ok(VExpr::Aggregate {
                 function: function.clone(),
-                value: Some(Box::new(argument)),
+                value: Some(Arc::new(argument)),
                 options,
+                result_type: result_type.clone(),
                 init: init.clone(),
             });
         }
@@ -148,7 +150,7 @@ fn collect_scans(
         let combined = match filter {
             Some(previous) => VExpr::Binary {
                 operator: vail_execution::expressions::BinaryOperator::And,
-                left: Box::new(previous),
+                left: Arc::new(previous),
                 right: predicate.clone(),
             },
             None => (**predicate).clone(),
@@ -200,6 +202,7 @@ fn native_prefix_kind(expr: &VExpr) -> Option<(&'static str, Option<&VExpr>)> {
         value,
         options,
         init,
+        ..
     } = expr
     else {
         return None;
@@ -786,7 +789,7 @@ fn replace_scans(expr: &VExpr, leaves: &[Leaf], filter: Option<VExpr>) -> Result
         let combined = match filter {
             Some(previous) => VExpr::Binary {
                 operator: vail_execution::expressions::BinaryOperator::And,
-                left: Box::new(previous),
+                left: Arc::new(previous),
                 right: predicate.clone(),
             },
             None => (**predicate).clone(),

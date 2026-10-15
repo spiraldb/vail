@@ -4,7 +4,7 @@ import statistics
 
 import pytest
 import vail as hl
-from vail.arrow import rows_to_ipc
+from vail.arrow import rows_to_arrow
 
 
 @pytest.mark.parametrize('value', [(), (1,), (1, 'x', 3), [1, 'x'], {'a': 1}])
@@ -18,7 +18,7 @@ def test_parallelize_rejects_tuple_arity_or_representation_mismatch(value):
 def test_arrow_bridge_and_literals_cannot_truncate_or_pad_tuples(value):
     dtype = hl.ttuple(hl.tint32, hl.tstr)
     with pytest.raises(TypeError, match='tuple'):
-        rows_to_ipc([{'x': value}], hl.tstruct(x=dtype))
+        rows_to_arrow([{'x': value}], hl.tstruct(x=dtype))
     with pytest.raises(TypeError, match='tuple'):
         hl.literal(value, dtype)
 

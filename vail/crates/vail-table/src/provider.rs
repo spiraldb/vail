@@ -1259,13 +1259,13 @@ mod projected_provider_tests {
                 (
                     "genotypes".into(),
                     crate::ScalarIR::ArrayMap {
-                        value: Box::new(crate::ScalarIR::Column {
+                        value: Arc::new(crate::ScalarIR::Column {
                             name: "cells".into(),
                         }),
                         parameter: "cell".into(),
-                        body: Box::new(crate::ScalarIR::GetField {
-                            value: Box::new(crate::ScalarIR::GetField {
-                                value: Box::new(crate::ScalarIR::LambdaVariable {
+                        body: Arc::new(crate::ScalarIR::GetField {
+                            value: Arc::new(crate::ScalarIR::GetField {
+                                value: Arc::new(crate::ScalarIR::LambdaVariable {
                                     name: "cell".into(),
                                 }),
                                 name: "value".into(),

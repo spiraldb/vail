@@ -31,7 +31,7 @@ def test_join_modes_cartesian_duplicate_keys_missing_and_lazy_plan():
         (10, 20), (10, 21), (11, 20), (11, 21),
     ]
     inner = left.join(right, "inner")
-    assert json.loads(inner._native.ir_json())["node"] == "TableJoin"
+    assert inner._native.ir()["node"] == "TableJoin"
     assert "JoinExec" in inner._native.physical_plan()
     assert [(r.left, r.right) for r in inner.collect()] == expected_matches
     assert [(r.k, r.left, r.right) for r in left.join(right, "left").collect()] == [
@@ -237,7 +237,7 @@ def test_multi_way_zip_join_values_globals_and_schema_validation():
         schema=row_schema, globals={"g": "R"},
     )
     zipped = hl.Table.multi_way_zip_join([left, right], "data", "globals")
-    assert json.loads(zipped._native.ir_json())["node"] == "TableMultiWayZipJoin"
+    assert zipped._native.ir()["node"] == "TableMultiWayZipJoin"
     assert zipped._native.physical_plan()
     assert [(r.k, r.data) for r in zipped.collect()] == [
         (0, [hl.Struct(nested=hl.Struct(value="left")), None]),
@@ -331,7 +331,7 @@ def test_join_written_inputs_and_missing_read_fail_only_on_action(tmp_path):
     left.write(left_path)
     right.write(right_path)
     joined = hl.read_table(left_path).join(hl.read_table(right_path))
-    assert json.loads(joined._native.ir_json())["node"] == "TableJoin"
+    assert joined._native.ir()["node"] == "TableJoin"
     assert joined.collect() == [hl.Struct(k=1, v="left", v_1="right")]
 
     missing_path = tmp_path / "removed-data.ht"
@@ -341,7 +341,7 @@ def test_join_written_inputs_and_missing_read_fail_only_on_action(tmp_path):
     assert data_files
     data_files[0].unlink()
     lazy_join = left.join(missing, "left")
-    assert json.loads(lazy_join._native.ir_json())["node"] == "TableJoin"
+    assert lazy_join._native.ir()["node"] == "TableJoin"
     with pytest.raises(FileNotFoundError):
         lazy_join.collect()
 

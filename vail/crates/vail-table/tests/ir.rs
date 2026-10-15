@@ -17,8 +17,8 @@ fn int(value: i32) -> ScalarIR {
 fn greater(left: ScalarIR, right: ScalarIR) -> ScalarIR {
     ScalarIR::Binary {
         operator: BinaryOperator::Gt,
-        left: Box::new(left),
-        right: Box::new(right),
+        left: Arc::new(left),
+        right: Arc::new(right),
     }
 }
 

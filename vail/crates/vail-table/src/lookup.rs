@@ -42,11 +42,11 @@ fn private_name(base: &str, schema: &arrow_schema::Schema) -> String {
 
 fn empty_payload_rows(name: &str) -> Expr {
     Expr::ArrayMap {
-        value: Box::new(Expr::Column {
+        value: Arc::new(Expr::Column {
             name: name.to_owned(),
         }),
         parameter: "__vail_empty_payload_item".into(),
-        body: Box::new(Expr::Struct { fields: vec![] }),
+        body: Arc::new(Expr::Struct { fields: vec![] }),
     }
 }
 
@@ -444,13 +444,13 @@ fn join_partition(
                 ));
             };
             Expr::IntervalContains {
-                interval: Box::new(crate::interval_read::ordered_key_interval(
+                interval: Arc::new(crate::interval_read::ordered_key_interval(
                     Expr::Column {
                         name: left_key.to_owned(),
                     },
                     &point_type,
                 )),
-                point: Box::new(crate::interval_read::ordered_key_point(
+                point: Arc::new(crate::interval_read::ordered_key_point(
                     Expr::Column {
                         name: right_key.to_owned(),
                     },
@@ -459,10 +459,10 @@ fn join_partition(
             }
         } else {
             Expr::IntervalContains {
-                interval: Box::new(Expr::Column {
+                interval: Arc::new(Expr::Column {
                     name: right_key.to_owned(),
                 }),
-                point: Box::new(Expr::Column {
+                point: Arc::new(Expr::Column {
                     name: left_key.to_owned(),
                 }),
             }
@@ -630,10 +630,10 @@ fn join_partition(
             projection.push((
                 vail_execution::expressions::lower(
                     &Expr::ArrayIndex {
-                        value: Box::new(Expr::Column {
+                        value: Arc::new(Expr::Column {
                             name: format!("__vail_left_value_{i}"),
                         }),
-                        index: Box::new(Expr::Literal {
+                        index: Arc::new(Expr::Literal {
                             value: serde_json::json!(0),
                             dtype: Type::Primitive(
                                 vail_execution::expressions::PrimitiveType::Int32,
@@ -654,16 +654,16 @@ fn join_partition(
             }
         };
         let collected_expr = Expr::IfElse {
-            condition: Box::new(Expr::IsMissing {
-                value: Box::new(Expr::Column {
+            condition: Arc::new(Expr::IsMissing {
+                value: Arc::new(Expr::Column {
                     name: row_name.clone(),
                 }),
             }),
-            consequent: Box::new(Expr::Array {
+            consequent: Arc::new(Expr::Array {
                 element_type: item_type,
                 elements: vec![],
             }),
-            alternate: Box::new(if right_payload.is_empty() {
+            alternate: Arc::new(if right_payload.is_empty() {
                 empty_payload_rows(&row_name)
             } else {
                 Expr::Column { name: row_name }
@@ -723,16 +723,16 @@ fn join_partition(
                 }
             };
             Expr::IfElse {
-                condition: Box::new(Expr::IsMissing {
-                    value: Box::new(Expr::Column {
+                condition: Arc::new(Expr::IsMissing {
+                    value: Arc::new(Expr::Column {
                         name: right_marker.to_owned(),
                     }),
                 }),
-                consequent: Box::new(Expr::Array {
+                consequent: Arc::new(Expr::Array {
                     element_type: item_type,
                     elements: vec![],
                 }),
-                alternate: Box::new(if right_payload.is_empty() {
+                alternate: Arc::new(if right_payload.is_empty() {
                     empty_payload_rows(matches_field.ok_or_else(|| {
                         TableError::Invalid("missing collected lookup values".into())
                     })?)
@@ -748,15 +748,15 @@ fn join_partition(
             }
         } else {
             Expr::IfElse {
-                condition: Box::new(Expr::IsMissing {
-                    value: Box::new(Expr::Column {
+                condition: Arc::new(Expr::IsMissing {
+                    value: Arc::new(Expr::Column {
                         name: right_marker.to_owned(),
                     }),
                 }),
-                consequent: Box::new(Expr::RuntimeLiteral {
+                consequent: Arc::new(Expr::RuntimeLiteral {
                     value: ScalarValue::try_from(payload_type)?,
                 }),
-                alternate: Box::new(Expr::Struct {
+                alternate: Arc::new(Expr::Struct {
                     fields: right_payload
                         .iter()
                         .map(|(field, name)| (field.clone(), Expr::Column { name: name.clone() }))

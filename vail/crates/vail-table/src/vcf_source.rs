@@ -23,9 +23,7 @@ pub struct VcfSource {
     projection: Option<datafusion_physical_expr::projection::ProjectionExprs>,
 }
 impl VcfSource {
-    pub fn new(schema: SchemaRef, json: &str) -> Result<Self> {
-        let value: serde_json::Value =
-            serde_json::from_str(json).map_err(|e| DataFusionError::Execution(e.to_string()))?;
+    pub fn new(schema: SchemaRef, value: &serde_json::Value) -> Result<Self> {
         let header: vail_vcf::Header = serde_json::from_value(value["header"].clone())
             .map_err(|e| DataFusionError::Execution(e.to_string()))?;
         let options: vail_vcf::Options = serde_json::from_value(value["options"].clone())

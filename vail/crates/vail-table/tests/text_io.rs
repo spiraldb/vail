@@ -1,6 +1,5 @@
-use std::sync::Arc;
-
 use arrow_schema::{DataType, Field, Schema};
+use std::sync::Arc;
 use vail_table::TableIR;
 
 #[tokio::test]
@@ -22,7 +21,7 @@ async fn csv_text_read_is_lazy_partitioned_and_streams_to_single_file() {
             second.to_string_lossy().into_owned(),
         ],
         "csv",
-        r#"{"has_header":true}"#,
+        &serde_json::json!({"has_header":true}),
     )
     .unwrap();
     assert_eq!(table.known_count(), None);
@@ -35,7 +34,7 @@ async fn csv_text_read_is_lazy_partitioned_and_streams_to_single_file() {
     assert_eq!(sampled[0].num_columns(), 2);
     assert_eq!(table.count().await.unwrap(), 2);
     table
-        .export_text(output.to_str().unwrap(), "text", "{}")
+        .export_text(output.to_str().unwrap(), "text", &serde_json::json!({}))
         .await
         .unwrap();
     assert_eq!(
@@ -57,7 +56,7 @@ async fn line_read_adds_source_path_as_file_column() {
         schema,
         vec![path.to_string_lossy().into_owned()],
         "lines",
-        "{}",
+        &serde_json::json!({}),
     )
     .unwrap();
     let partitions = table.collect_partitions().await.unwrap();

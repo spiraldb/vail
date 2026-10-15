@@ -1,3 +1,4 @@
+from vail.expressions import _native_expression, _native_projection
 """Typed array filtering runs as a DataFusion higher-order expression."""
 import json
 
@@ -65,7 +66,7 @@ def test_filter_rejects_bad_callbacks_and_native_ir_types():
         'parameter': 'x', 'predicate': hl.literal(1).to_ir(),
     }
     with pytest.raises(ValueError, match='requires bool'):
-        t._native.project_json(json.dumps([['bad', malformed]]))
+        t._native.project(_native_projection([['bad', malformed]]))
 
 
 def test_filter_rejects_unbound_or_duplicate_lambda_binders_and_mixed_sources():
@@ -77,7 +78,7 @@ def test_filter_rejects_unbound_or_duplicate_lambda_binders_and_mixed_sources():
     unbound = {'op': 'array_filter', 'value': array, 'parameter': 'x',
                'predicate': {'op': 'lambda_variable', 'name': 'missing'}}
     with pytest.raises(ValueError, match='unbound lambda'):
-        t._native.project_json(json.dumps([['bad', unbound]]))
+        t._native.project(_native_projection([['bad', unbound]]))
 
     duplicate = {
         'op': 'array_map', 'value': array, 'parameter': 'x',
@@ -86,7 +87,7 @@ def test_filter_rejects_unbound_or_duplicate_lambda_binders_and_mixed_sources():
                                'left': x, 'right': hl.literal(0).to_ir()}},
     }
     with pytest.raises(ValueError, match='duplicate lambda'):
-        t._native.project_json(json.dumps([['bad', duplicate]]))
+        t._native.project(_native_projection([['bad', duplicate]]))
 
     left, right = hl.range_table(2), hl.range_table(2)
     with pytest.raises(ValueError, match='source mismatch'):

@@ -68,6 +68,12 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
     }
 
     match expression {
+        Expr::MatrixScope { .. }
+        | Expr::MatrixField { .. }
+        | Expr::MatrixNumCols { .. }
+        | Expr::MatrixColumnPosition { .. }
+        | Expr::TableLookup { .. } => walk_all_columns(expression, arrays, deps),
+
         Expr::Column { name } => {
             deps.full.insert(name.clone());
         }
@@ -222,6 +228,7 @@ fn walk_all_columns(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::Arc;
 
     fn column(name: &str) -> Expr {
         Expr::Column { name: name.into() }
@@ -233,7 +240,7 @@ mod tests {
 
     fn field(value: Expr, name: &str) -> Expr {
         Expr::GetField {
-            value: Box::new(value),
+            value: Arc::new(value),
             name: name.into(),
         }
     }
@@ -241,9 +248,9 @@ mod tests {
     #[test]
     fn map_paths_union_across_outputs_and_keep_field_names_atomic() {
         let mapped = |leaf: &str| Expr::ArrayMap {
-            value: Box::new(column("cells.with.dot")),
+            value: Arc::new(column("cells.with.dot")),
             parameter: "cell".into(),
-            body: Box::new(field(lambda("cell"), leaf)),
+            body: Arc::new(field(lambda("cell"), leaf)),
         };
         let paths = map_rows_paths(&[
             ("gt".into(), mapped("GT")),
@@ -261,9 +268,9 @@ mod tests {
     #[test]
     fn bare_container_use_disables_its_nested_hints() {
         let mapped = Expr::ArrayMap {
-            value: Box::new(column("cells")),
+            value: Arc::new(column("cells")),
             parameter: "cell".into(),
-            body: Box::new(field(lambda("cell"), "GT")),
+            body: Arc::new(field(lambda("cell"), "GT")),
         };
         assert_eq!(
             map_rows_paths(&[("gt".into(), mapped), ("raw".into(), column("cells"))]),
@@ -274,14 +281,14 @@ mod tests {
     #[test]
     fn returning_whole_lambda_element_disables_nested_hints() {
         let mapped = Expr::ArrayMap {
-            value: Box::new(column("cells")),
+            value: Arc::new(column("cells")),
             parameter: "cell".into(),
-            body: Box::new(lambda("cell")),
+            body: Arc::new(lambda("cell")),
         };
         let gt = Expr::ArrayMap {
-            value: Box::new(column("cells")),
+            value: Arc::new(column("cells")),
             parameter: "cell".into(),
-            body: Box::new(field(lambda("cell"), "GT")),
+            body: Arc::new(field(lambda("cell"), "GT")),
         };
         assert_eq!(
             map_rows_paths(&[("raw".into(), mapped), ("gt".into(), gt)]),
@@ -292,14 +299,14 @@ mod tests {
     #[test]
     fn nested_array_map_falls_back_to_full_source_column() {
         let inner = Expr::ArrayMap {
-            value: Box::new(field(lambda("cell"), "nested")),
+            value: Arc::new(field(lambda("cell"), "nested")),
             parameter: "inner".into(),
-            body: Box::new(field(lambda("inner"), "GT")),
+            body: Arc::new(field(lambda("inner"), "GT")),
         };
         let outer = Expr::ArrayMap {
-            value: Box::new(column("cells")),
+            value: Arc::new(column("cells")),
             parameter: "cell".into(),
-            body: Box::new(inner),
+            body: Arc::new(inner),
         };
         assert_eq!(
             map_rows_paths(&[("gt".into(), outer)]),
@@ -310,12 +317,12 @@ mod tests {
     #[test]
     fn captured_columns_are_full_while_lambda_fields_are_narrow() {
         let mapped = Expr::ArrayMap {
-            value: Box::new(column("cells")),
+            value: Arc::new(column("cells")),
             parameter: "cell".into(),
-            body: Box::new(Expr::Binary {
+            body: Arc::new(Expr::Binary {
                 operator: vail_execution::expressions::BinaryOperator::Add,
-                left: Box::new(field(lambda("cell"), "GT")),
-                right: Box::new(column("offset")),
+                left: Arc::new(field(lambda("cell"), "GT")),
+                right: Arc::new(column("offset")),
             }),
         };
         assert_eq!(
@@ -327,14 +334,14 @@ mod tests {
     #[test]
     fn nested_lambda_shadowing_keeps_the_correct_source_root() {
         let nested = Expr::ArrayMap {
-            value: Box::new(column("other_cells")),
+            value: Arc::new(column("other_cells")),
             parameter: "cell".into(),
-            body: Box::new(field(lambda("cell"), "DP")),
+            body: Arc::new(field(lambda("cell"), "DP")),
         };
         let outer = Expr::ArrayMap {
-            value: Box::new(column("cells")),
+            value: Arc::new(column("cells")),
             parameter: "cell".into(),
-            body: Box::new(Expr::Struct {
+            body: Arc::new(Expr::Struct {
                 fields: vec![
                     ("gt".into(), field(lambda("cell"), "GT")),
                     ("nested".into(), nested),

@@ -13,7 +13,7 @@ def test_explode_array_is_lazy_and_drops_empty_or_missing_arrays():
         n_partitions=2,
     )
     exploded = table.explode("xs")
-    assert json.loads(exploded._native.ir_json())["node"] == "TableExplode"
+    assert exploded._native.ir()["node"] == "TableExplode"
     assert exploded._schema == hl.tstruct(id=hl.tint32, xs=hl.tint32)
     assert exploded.count() == 3
     assert [(row.id, row.xs) for row in exploded.collect()] == [(0, 2), (0, None), (0, 3)]

@@ -168,7 +168,7 @@ async fn captured_globals_share_ir_without_retaining_table_rows() {
     );
     let dtype = Type::from_arrow(&DataType::Struct(captured.schema().fields().clone())).unwrap();
     let expression = ScalarIR::GetField {
-        value: Box::new(ScalarIR::ExternalGlobal {
+        value: Arc::new(ScalarIR::ExternalGlobal {
             reference: "other".into(),
             dtype,
         }),

@@ -1,6 +1,8 @@
 """Exclusive, table-order scans over the built-in aggregate reducers."""
 from __future__ import annotations
 
+from .expressions import IR_NODE_TYPES
+
 import builtins
 from . import agg as _agg
 from .expressions import Expression, ExpressionException, _IR
@@ -8,7 +10,7 @@ from .expressions import Expression, ExpressionException, _IR
 def _mark(result):
     ir = result.to_ir()
     def mark(value):
-        if isinstance(value, dict):
+        if isinstance(value, IR_NODE_TYPES):
             if value.get("op") == "aggregate" and value.get("function") == "__scan_fold":
                 return value
             value = {k: mark(v) for k, v in value.items()}
@@ -35,7 +37,7 @@ def _scan(function, *args, **kwargs):
 
 
 def _has_aggregate(value):
-    if isinstance(value, dict):
+    if isinstance(value, IR_NODE_TYPES):
         return value.get("op") in ("aggregate", "aggregate_fold") or builtins.any(_has_aggregate(v) for v in value.values())
     if isinstance(value, list): return builtins.any(_has_aggregate(v) for v in value)
     return False

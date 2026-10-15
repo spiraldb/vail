@@ -57,7 +57,7 @@ def test_multifile_read_and_endpoints(tmp_path):
     hl.range_table(20, n_partitions=4).write(path)
     table = hl.read_table(path)
     selected = hl.filter_intervals(table, [hl.Interval(5, 10, False, True)])
-    assert selected._native.ir_json().find('TableReadIntervals') >= 0
+    assert repr(selected._native.ir()).find('TableReadIntervals') >= 0
     assert [r.idx for r in selected.collect()] == [6, 7, 8, 9, 10]
     assert hl.filter_intervals(table, [hl.Interval(5, 10)], keep=False).count() == 15
 

@@ -18,7 +18,7 @@ class _NativeTableSpy:
             return value
 
         def invoke(*args, **kwargs):
-            if name == "project_json":
+            if name == "project":
                 self._calls.append((name, args, kwargs))
             result = value(*args, **kwargs)
             if hasattr(result, "collect_arrow"):
@@ -194,7 +194,7 @@ class RowExpressionTests(unittest.TestCase):
             self.assertEqual(projected.collect(), [hl.Struct(y=5), hl.Struct(y=7)])
 
         self.assertGreaterEqual(len(calls), 2)
-        self.assertTrue(all(name == "project_json" for name, _, _ in calls))
+        self.assertTrue(all(name == "project" for name, _, _ in calls))
 
 
 if __name__ == "__main__":

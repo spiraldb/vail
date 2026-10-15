@@ -162,7 +162,7 @@ fn compose(expr: &Expr, context: &Context<'_>) -> Result<Built> {
         if let Expr::Column { name } = expr {
             if names.index_of(name).is_ok() {
                 return Ok(Expr::GetField {
-                    value: Box::new(Expr::LambdaVariable {
+                    value: Arc::new(Expr::LambdaVariable {
                         name: parameter.into(),
                     }),
                     name: name.clone(),
@@ -284,8 +284,8 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
             let child = compose(body, context)?;
             let guarded = Expr::IfElse {
                 condition: predicate.clone(),
-                consequent: Box::new(child.argument.clone()),
-                alternate: Box::new(Expr::Literal {
+                consequent: Arc::new(child.argument.clone()),
+                alternate: Arc::new(Expr::Literal {
                     dtype: Type::from_arrow(&child.input)?,
                     value: serde_json::Value::Null,
                 }),
@@ -336,7 +336,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
             let argument = Expr::ArrayMap {
                 value: value.clone(),
                 parameter: parameter.clone(),
-                body: Box::new(child.argument.clone()),
+                body: Arc::new(child.argument.clone()),
             };
             let input = context.dtype(&argument)?.to_arrow()?;
             let udf = if matches!(expr, Expr::AggArray { .. }) {
@@ -369,30 +369,30 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     name: index_name.clone(),
                 };
                 let entry = Expr::ArrayIndex {
-                    value: Box::new(slot.clone()),
-                    index: Box::new(index.clone()),
+                    value: Arc::new(slot.clone()),
+                    index: Arc::new(index.clone()),
                 };
                 let current = Expr::ArrayIndex {
                     value: value.clone(),
-                    index: Box::new(index.clone()),
+                    index: Arc::new(index.clone()),
                 };
                 let body = substitute(&child.finish(entry)?, parameter, &current)?;
                 Expr::ArrayMap {
-                    value: Box::new(Expr::StreamRange {
-                        start: Box::new(Expr::Literal {
+                    value: Arc::new(Expr::StreamRange {
+                        start: Arc::new(Expr::Literal {
                             dtype: Type::Primitive(PrimitiveType::Int32),
                             value: serde_json::json!(0),
                         }),
-                        stop: Box::new(Expr::ArrayLength {
-                            value: Box::new(slot),
+                        stop: Arc::new(Expr::ArrayLength {
+                            value: Arc::new(slot),
                         }),
-                        step: Box::new(Expr::Literal {
+                        step: Arc::new(Expr::Literal {
                             dtype: Type::Primitive(PrimitiveType::Int32),
                             value: serde_json::json!(1),
                         }),
                     }),
                     parameter: index_name,
-                    body: Box::new(body),
+                    body: Arc::new(body),
                 }
             } else {
                 child.finish(slot)?
@@ -441,26 +441,26 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     (
                         "key".into(),
                         Expr::GetField {
-                            value: Box::new(entry.clone()),
+                            value: Arc::new(entry.clone()),
                             name: "key".into(),
                         },
                     ),
                     (
                         "value".into(),
                         child.finish(Expr::GetField {
-                            value: Box::new(entry),
+                            value: Arc::new(entry),
                             name: "value".into(),
                         })?,
                     ),
                 ],
             };
             result.finish = Expr::CollectionCast {
-                value: Box::new(Expr::ArrayMap {
-                    value: Box::new(Expr::LambdaVariable {
+                value: Arc::new(Expr::ArrayMap {
+                    value: Arc::new(Expr::LambdaVariable {
                         name: result.parameter.clone(),
                     }),
                     parameter: entry_name,
-                    body: Box::new(body),
+                    body: Arc::new(body),
                 }),
                 dtype: context.dtype(expr)?,
             };

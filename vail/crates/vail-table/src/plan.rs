@@ -280,7 +280,8 @@ pub(crate) fn source_partition_projected_with_nested_paths(
         let metadata = std::fs::metadata(path)
             .map_err(|e| TableError::Invalid(format!("cannot stat text input {path:?}: {e}")))?;
         let options: serde_json::Map<String, serde_json::Value> =
-            serde_json::from_str(options_json).map_err(|e| TableError::Invalid(e.to_string()))?;
+            serde_json::from_value(options_json.clone())
+                .map_err(|e| TableError::Invalid(e.to_string()))?;
         let (file_schema, source): (SchemaRef, Arc<dyn datafusion_datasource::file::FileSource>) =
             match format.as_str() {
                 "vcf" => (
@@ -849,7 +850,7 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
                 };
                 for part in &path[1..] {
                     nested = crate::ScalarIR::GetField {
-                        value: Box::new(nested),
+                        value: Arc::new(nested),
                         name: part.clone(),
                     };
                 }
@@ -913,14 +914,14 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
                                         field.data_type(),
                                         &path[1..],
                                         crate::ScalarIR::GetField {
-                                            value: Box::new(value.clone()),
+                                            value: Arc::new(value.clone()),
                                             name: field.name().clone(),
                                         },
                                         exploded,
                                     )?
                                 } else {
                                     crate::ScalarIR::GetField {
-                                        value: Box::new(value.clone()),
+                                        value: Arc::new(value.clone()),
                                         name: field.name().clone(),
                                     }
                                 };
@@ -1170,10 +1171,10 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             let row_index = group_names.len().max(1);
             let row_column = vail_execution::expressions::lower(
                 &Expr::ArrayIndex {
-                    value: Box::new(Expr::Column {
+                    value: Arc::new(Expr::Column {
                         name: grouped.schema().field(row_index).name().clone(),
                     }),
-                    index: Box::new(Expr::Literal {
+                    index: Arc::new(Expr::Literal {
                         value: serde_json::json!(0),
                         dtype: vail_execution::expressions::Type::Primitive(
                             vail_execution::expressions::PrimitiveType::Int32,

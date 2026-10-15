@@ -1,3 +1,4 @@
+from vail.expressions import _native_expression, _native_projection
 """Execution boundaries and relational plans for whole-table aggregation."""
 import json
 
@@ -8,7 +9,7 @@ from vail.expressions import _global_bindings
 
 def plan(table, expression):
     return table._native.aggregate_physical_plan(
-        json.dumps(expression.to_ir()), _global_bindings([expression]))
+        expression.to_ir(), _global_bindings([expression]))
 
 
 def test_common_reducers_share_one_datafusion_aggregate():
@@ -101,4 +102,4 @@ def test_native_scope_validation_rejects_forged_aggregate_ir():
     ]
     for expression in invalid:
         with pytest.raises(ValueError):
-            t._native.aggregate_globals_json(json.dumps(expression))
+            t._native.aggregate_globals(_native_expression(expression))

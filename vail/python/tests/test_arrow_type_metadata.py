@@ -2,7 +2,7 @@ import pyarrow as pa
 import pytest
 
 import vail as hl
-from vail.arrow import TYPE_DESCRIPTOR, TYPE_VERSION, arrow_type, as_ipc, dtype_from_arrow, read_ipc
+from vail.arrow import TYPE_DESCRIPTOR, TYPE_VERSION, arrow_type, as_arrow, dtype_from_arrow, read_arrow
 
 
 def untagged(ty):
@@ -59,7 +59,7 @@ def test_untagged_sentinel_names_are_ordinary_arrow_types(dtype, value, ordinary
 def test_tagged_types_survive_execution_export_and_storage(dtype, value, tmp_path):
     table = hl.Table.parallelize([{'x': value}, {'x': None}], schema=hl.tstruct(x=dtype), n_partitions=2)
     table = table.select(x=table.x)
-    schema, exported = read_ipc(table._native.collect_arrow())
+    schema, exported = read_arrow(table._native.collect_arrow())
     assert dtype_from_arrow(schema.field('x').type) == dtype
     imported = hl.Table.parallelize(exported)
     assert imported.x.dtype == dtype
@@ -74,7 +74,7 @@ def test_tagged_types_survive_execution_export_and_storage(dtype, value, tmp_pat
 def test_computed_tuples_and_nested_sets_restore_metadata():
     table = hl.range_table(3, 2).key_by()
     table = table.select(x=hl.tuple([table.idx, hl.set([table.idx])]))
-    schema, exported = read_ipc(table._native.collect_arrow())
+    schema, exported = read_arrow(table._native.collect_arrow())
     expected = hl.ttuple(hl.tint32, hl.tset(hl.tint32))
     assert dtype_from_arrow(schema.field('x').type) == expected
     assert hl.Table.parallelize(exported)._same(table)
@@ -101,7 +101,7 @@ def test_invalid_metadata_rejected_by_python_and_native_arrow_inputs(metadata, m
     # Bypass frontend validation to verify Rust enforces the same contract.
     from vail import _native_session
     with pytest.raises(ValueError, match=match):
-        _native_session().parallelize_arrow(as_ipc(raw), 1)
+        _native_session().parallelize_arrow(as_arrow(raw), 1)
 
 
 def test_local_global_collections_keep_metadata_when_broadcast():
@@ -109,7 +109,7 @@ def test_local_global_collections_keep_metadata_when_broadcast():
     table = table.annotate(copied=table.members, mapped=table.mapping)
     assert [(r.copied, r.mapped) for r in table.collect()] == [({1, 2}, {'a': (7,)})] * 3
     assert table._same(table)
-    _, exported = read_ipc(table._native.collect_arrow())
+    _, exported = read_arrow(table._native.collect_arrow())
     # The Arrow input does not carry table globals; restore them explicitly.
     assert hl.Table.parallelize(exported, key='idx').annotate_globals(
         members={1, 2}, mapping={'a': (7,)})._same(table)
@@ -138,4 +138,4 @@ def test_unknown_nested_metadata_version_is_rejected():
         hl.Table.parallelize(raw)
     from vail import _native_session
     with pytest.raises(ValueError, match='version'):
-        _native_session().parallelize_arrow(as_ipc(raw), 1)
+        _native_session().parallelize_arrow(as_arrow(raw), 1)

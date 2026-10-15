@@ -103,6 +103,5 @@ def test_initializer_validation_does_not_interpret_literal_payload_as_ir():
     from vail.agg import _validate_initializer
     from vail.expressions import Expression
 
-    literal = Expression(hl.tint32, None,
-                         {"op": "literal", "value": {"op": "column", "name": "payload"}})
+    literal = hl.literal(hl.Struct(op="column", name="payload"))
     _validate_initializer(literal, "test")

@@ -1,17 +1,19 @@
-//! Initial in-process Table bridge. The supported scalar subset is deliberately explicit.
+mod ir_view;
+mod native_ir;
+use native_ir::{NativeExpr, NativeType};
+mod arrow_memory;
+use arrow_array::RecordBatchReader;
+use arrow_memory::NativeArrow;
+// In-process native Table bridge.
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use arrow_array::{
-    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
-    StringArray, StringViewArray, StructArray,
-};
+use arrow_array::{Array, ArrayRef, BooleanArray, StructArray};
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::ScalarValue;
 use futures::TryStreamExt;
 use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
-use serde_json::Value;
 use tokio::runtime::{Builder, Runtime};
 use vail_execution::expressions::{Expr, Type};
 use vail_table::{RepartitionStrategy, TableError, TableIR, TableJoinKind, TableRef};
@@ -75,21 +77,40 @@ struct NativeSession {
 
 #[pymethods]
 impl NativeSession {
-    fn vcf_metadata(&self, py: Python<'_>, path: String) -> PyResult<String> {
+    fn vcf_metadata<'py>(&self, py: Python<'py>, path: String) -> PyResult<Bound<'py, PyAny>> {
         let header = py
             .detach(|| vail_vcf::read_header(&path, &vail_vcf::Options::default()))
             .map_err(value_error)?;
-        serde_json::to_string(&header.metadata).map_err(value_error)
+        Ok(header.metadata.into_pyobject(py)?.into_any())
     }
     /// Read only headers now; retain a bounded lazy native VCF source for rows.
-    fn read_vcf(
+    fn read_vcf<'py>(
         &self,
-        py: Python<'_>,
+        py: Python<'py>,
         paths: Vec<String>,
         header_file: Option<String>,
-        options_json: &str,
-    ) -> PyResult<(NativeTable, String, String)> {
-        let options: vail_vcf::Options = serde_json::from_str(options_json).map_err(value_error)?;
+        options: &Bound<'_, PyAny>,
+    ) -> PyResult<(NativeTable, Vec<String>, Bound<'py, PyAny>)> {
+        let reference = options.get_item("reference")?;
+        let options = vail_vcf::Options {
+            reference: if reference.is_none() {
+                None
+            } else {
+                Some(native_ir::reference(&reference)?)
+            },
+            contig_recoding: options.get_item("contig_recoding")?.extract()?,
+            call_fields: options
+                .get_item("call_fields")?
+                .extract::<Vec<String>>()?
+                .into_iter()
+                .collect(),
+            entry_float32: options.get_item("entry_float32")?.extract()?,
+            array_elements_required: options.get_item("array_elements_required")?.extract()?,
+            skip_invalid_loci: options.get_item("skip_invalid_loci")?.extract()?,
+            drop_samples: options.get_item("drop_samples")?.extract()?,
+            filter: options.get_item("filter")?.extract()?,
+            find_replace: options.get_item("find_replace")?.extract()?,
+        };
         let (header, options) = py
             .detach(|| -> Result<_, String> {
                 let first = header_file
@@ -106,16 +127,14 @@ impl NativeSession {
             })
             .map_err(value_error)?;
         let schema = header.core_schema(&options).map_err(value_error)?;
-        let samples = serde_json::to_string(if options.drop_samples {
-            &[] as &[String]
+        let samples = if options.drop_samples {
+            Vec::new()
         } else {
-            &header.samples
-        })
-        .map_err(value_error)?;
-        let metadata = serde_json::to_string(&header.metadata).map_err(value_error)?;
+            header.samples.clone()
+        };
+        let metadata = header.metadata.clone().into_pyobject(py)?.into_any();
         let config = serde_json::json!({"header": header, "options": options});
-        let ir =
-            TableIR::read_text(schema, paths, "vcf", &config.to_string()).map_err(table_error)?;
+        let ir = TableIR::read_text(schema, paths, "vcf", &config).map_err(table_error)?;
         Ok((
             NativeTable {
                 runtime: self.runtime.clone(),
@@ -137,11 +156,9 @@ impl NativeSession {
         })
     }
 
-    /// Retain one Arrow row as native scalar globals. Values cross the Python
-    /// boundary only as Arrow IPC, never through JSON.
-    fn scalar_arrow(&self, data: &[u8]) -> PyResult<NativeGlobals> {
-        let reader = arrow_ipc::reader::StreamReader::try_new(std::io::Cursor::new(data), None)
-            .map_err(value_error)?;
+    /// Retain one Arrow row as native scalar globals using the C Stream protocol.
+    fn scalar_arrow(&self, data: &Bound<'_, PyAny>) -> PyResult<NativeGlobals> {
+        let reader = arrow_memory::import(data)?;
         let schema = reader.schema();
         let batches = reader.collect::<Result<Vec<_>, _>>().map_err(value_error)?;
         let batch = arrow_select::concat::concat_batches(&schema, &batches).map_err(value_error)?;
@@ -169,20 +186,19 @@ impl NativeSession {
         ))
     }
 
-    /// Build a lazy DataFusion CSV/JSON scan. `schema_json` is an explicit
-    /// list of `(field_name, wire_type)` pairs; input rows are never decoded in
+    /// Build a lazy DataFusion CSV/JSON scan. `schema` is an explicit
+    /// list of `(field_name, NativeType)` pairs; input rows are never decoded in
     /// Python and no data batches are read during construction.
     fn read_text(
         &self,
-        schema_json: &str,
+        schema: Vec<(String, PyRef<'_, NativeType>)>,
         paths: Vec<String>,
         format: &str,
-        options_json: &str,
+        options: &Bound<'_, PyAny>,
     ) -> PyResult<NativeTable> {
-        let fields: Vec<(String, Type)> = serde_json::from_str(schema_json).map_err(value_error)?;
+        let fields = schema.into_iter().map(|(n, t)| (n, (*t.inner).clone()));
         let schema = Arc::new(Schema::new(
             fields
-                .into_iter()
                 .map(|(name, dtype)| {
                     Ok(Field::new(
                         name,
@@ -194,7 +210,8 @@ impl NativeSession {
         ));
         Ok(NativeTable {
             runtime: self.runtime.clone(),
-            ir: TableIR::read_text(schema, paths, format, options_json).map_err(table_error)?,
+            ir: TableIR::read_text(schema, paths, format, &native_ir::option_value(options)?)
+                .map_err(table_error)?,
         })
     }
 
@@ -203,31 +220,25 @@ impl NativeSession {
         py: Python<'_>,
         paths: Vec<String>,
         format: &str,
-        options_json: &str,
-    ) -> PyResult<String> {
+        options: &Bound<'_, PyAny>,
+    ) -> PyResult<Vec<(String, NativeType)>> {
+        let options = native_ir::option_value(options)?;
         let schema = py
-            .detach(|| vail_table::text_schema::infer(&paths, format, options_json))
+            .detach(|| vail_table::text_schema::infer(&paths, format, &options))
             .map_err(table_error)?;
-        let fields = schema
-            .fields()
-            .iter()
-            .map(|field| {
-                Ok((
-                    field.name().clone(),
-                    Type::from_arrow(field.data_type()).map_err(value_error)?,
-                ))
-            })
-            .collect::<PyResult<Vec<_>>>()?;
-        serde_json::to_string(&fields).map_err(value_error)
+        native_schema(&schema)
     }
 
-    /// Arrow IPC is the sole row-data transport for in-memory table sources.
-    fn parallelize_arrow(&self, data: &[u8], n_partitions: usize) -> PyResult<NativeTable> {
+    /// Import an Arrow C Stream, retaining the producer's data buffers.
+    fn parallelize_arrow(
+        &self,
+        data: &Bound<'_, PyAny>,
+        n_partitions: usize,
+    ) -> PyResult<NativeTable> {
         if n_partitions == 0 {
             return Err(value_error("n_partitions must be positive"));
         }
-        let reader = arrow_ipc::reader::StreamReader::try_new(std::io::Cursor::new(data), None)
-            .map_err(value_error)?;
+        let reader = arrow_memory::import(data)?;
         let schema = reader.schema();
         let mut names = HashSet::new();
         for field in schema.fields() {
@@ -245,14 +256,14 @@ impl NativeSession {
         })
     }
 
-    #[pyo3(signature = (expression_json, n_partitions, references=None))]
+    #[pyo3(signature = (expression, n_partitions, references=None))]
     fn parallelize_expression(
         &self,
-        expression_json: &str,
+        expression: &NativeExpr,
         n_partitions: usize,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
     ) -> PyResult<NativeTable> {
-        let expression: Expr = serde_json::from_str(expression_json).map_err(value_error)?;
+        let expression = (*expression.inner).clone();
         let ir =
             TableIR::parallelize_expression(expression, global_bindings(references)?, n_partitions)
                 .map_err(table_error)?;
@@ -286,66 +297,6 @@ impl NativeSession {
     }
 }
 
-#[cfg(test)]
-fn float_value(value: &Value) -> PyResult<f64> {
-    if let Some(number) = value.as_f64() {
-        return Ok(number);
-    }
-    if let Some(object) = value.as_object() {
-        match (object.len(), object.get("$float").and_then(Value::as_str)) {
-            (1, Some("nan")) => return Ok(f64::NAN),
-            (1, Some("inf")) => return Ok(f64::INFINITY),
-            (1, Some("-inf")) => return Ok(f64::NEG_INFINITY),
-            (2, Some("nan")) => {
-                let bits = float_nan_bits(object.get("bits"), 16)?;
-                if bits & 0x7ff0000000000000 != 0x7ff0000000000000 || bits & 0x000fffffffffffff == 0
-                {
-                    return Err(value_error("NaN bit pattern does not encode a NaN"));
-                }
-                return Ok(f64::from_bits(bits));
-            }
-            _ => (),
-        }
-    }
-    Err(value_error("invalid floating-point value"))
-}
-
-#[cfg(test)]
-fn float32_value(value: &Value) -> PyResult<f32> {
-    if let Some(number) = value.as_f64() {
-        return Ok(number as f32);
-    }
-    if let Some(object) = value.as_object() {
-        match (object.len(), object.get("$float").and_then(Value::as_str)) {
-            (1, Some("nan")) => return Ok(f32::NAN),
-            (1, Some("inf")) => return Ok(f32::INFINITY),
-            (1, Some("-inf")) => return Ok(f32::NEG_INFINITY),
-            (2, Some("nan")) => {
-                let bits = float_nan_bits(object.get("bits"), 8)? as u32;
-                if bits & 0x7f800000 != 0x7f800000 || bits & 0x007fffff == 0 {
-                    return Err(value_error("NaN bit pattern does not encode a NaN"));
-                }
-                return Ok(f32::from_bits(bits));
-            }
-            _ => (),
-        }
-    }
-    Err(value_error("invalid floating-point value"))
-}
-
-#[cfg(test)]
-fn float_nan_bits(value: Option<&Value>, digits: usize) -> PyResult<u64> {
-    let text = value
-        .and_then(Value::as_str)
-        .ok_or_else(|| value_error("NaN bit pattern must be fixed-width hexadecimal"))?;
-    if text.len() != digits || !text.bytes().all(|b| b.is_ascii_hexdigit()) {
-        return Err(value_error(
-            "NaN bit pattern must be fixed-width hexadecimal",
-        ));
-    }
-    u64::from_str_radix(text, 16).map_err(value_error)
-}
-
 #[pyclass(frozen)]
 struct NativeGlobals {
     ir: vail_table::globals::GlobalsRef,
@@ -353,8 +304,8 @@ struct NativeGlobals {
 
 #[pymethods]
 impl NativeGlobals {
-    fn schema_json(&self) -> PyResult<String> {
-        serde_json::to_string(&self.ir.logical_type().map_err(table_error)?).map_err(value_error)
+    fn schema(&self) -> PyResult<Vec<(String, NativeType)>> {
+        native_schema(self.ir.schema())
     }
 }
 
@@ -383,17 +334,17 @@ impl NativeTable {
         self.ir.keys().to_vec()
     }
 
-    #[pyo3(signature = (other, keys_json, field, all_matches=false, references=None, query_interval=false))]
-    fn lookup_json(
+    #[pyo3(signature = (other, keys, field, all_matches=false, references=None, query_interval=false))]
+    fn lookup(
         &self,
         other: &NativeTable,
-        keys_json: &str,
+        keys: Vec<PyRef<'_, NativeExpr>>,
         field: String,
         all_matches: bool,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
         query_interval: bool,
     ) -> PyResult<Self> {
-        let keys: Vec<Expr> = serde_json::from_str(keys_json).map_err(value_error)?;
+        let keys = keys.iter().map(|v| (*v.inner).clone()).collect();
         Ok(Self {
             runtime: self.runtime.clone(),
             ir: self
@@ -469,14 +420,14 @@ impl NativeTable {
                 .map_err(table_error)?,
         })
     }
-    #[pyo3(signature = (rows_name, body_json, references=None))]
-    fn map_partitions_json(
+    #[pyo3(signature = (rows_name, body, references=None))]
+    fn map_partitions(
         &self,
         rows_name: &str,
-        body_json: &str,
+        body: &NativeExpr,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
     ) -> PyResult<Self> {
-        let body: Expr = serde_json::from_str(body_json).map_err(value_error)?;
+        let body = (*body.inner).clone();
         Ok(Self {
             runtime: self.runtime.clone(),
             ir: self
@@ -485,32 +436,82 @@ impl NativeTable {
                 .map_err(table_error)?,
         })
     }
-    fn calculate_new_partitions_json(&self, py: Python<'_>, n: usize) -> PyResult<String> {
-        if n == 0 {
-            return Ok("[]".to_owned());
+    fn calculate_new_partitions(&self, py: Python<'_>, n: usize) -> PyResult<NativeArrow> {
+        let calculated = if n == 0 {
+            Vec::new()
+        } else {
+            py.detach(|| self.runtime.block_on(self.ir.calculate_new_partitions(n)))
+                .map_err(table_error)?
+        };
+        let key_fields = self
+            .ir
+            .keys()
+            .iter()
+            .map(|key| {
+                self.ir
+                    .schema()
+                    .field_with_name(key)
+                    .map(|f| Arc::new(f.clone().with_nullable(true)))
+            })
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(value_error)?;
+        let point_type = DataType::Struct(key_fields.clone().into());
+        let interval_type = Type::Interval {
+            interval: Box::new(Type::from_arrow(&point_type).map_err(value_error)?),
         }
-        let calculated = py
-            .detach(|| self.runtime.block_on(self.ir.calculate_new_partitions(n)))
-            .map_err(table_error)?;
-        let keys = self.ir.keys();
-        let mut encoded = Vec::with_capacity(calculated.len());
+        .to_arrow()
+        .map_err(value_error)?;
+        let DataType::Struct(interval_fields) = &interval_type else {
+            unreachable!()
+        };
+        let mut values = Vec::new();
         for (start, end, includes_start, includes_end) in calculated {
-            encoded.push(serde_json::json!({
-                "start": scalar_key_json(&start, keys, self.ir.schema())?,
-                "end": scalar_key_json(&end, keys, self.ir.schema())?,
-                "includes_start": includes_start,
-                "includes_end": includes_end,
-            }));
+            let point = |components: Vec<ScalarValue>| -> PyResult<ArrayRef> {
+                let columns = components
+                    .into_iter()
+                    .map(|v| v.to_array_of_size(1))
+                    .collect::<Result<Vec<_>, _>>()
+                    .map_err(value_error)?;
+                Ok(Arc::new(
+                    StructArray::try_new(key_fields.clone().into(), columns, None)
+                        .map_err(value_error)?,
+                ))
+            };
+            values.push(Arc::new(
+                StructArray::try_new(
+                    interval_fields.clone(),
+                    vec![
+                        point(start)?,
+                        Arc::new(BooleanArray::from(vec![!includes_start])),
+                        point(end)?,
+                        Arc::new(BooleanArray::from(vec![includes_end])),
+                    ],
+                    None,
+                )
+                .map_err(value_error)?,
+            ) as ArrayRef);
         }
-        serde_json::to_string(&encoded).map_err(value_error)
+        let array = if values.is_empty() {
+            arrow_array::new_empty_array(&interval_type)
+        } else {
+            arrow_select::concat::concat(&values.iter().map(|v| v.as_ref()).collect::<Vec<_>>())
+                .map_err(value_error)?
+        };
+        let schema = Arc::new(Schema::new(vec![Field::new(
+            "interval",
+            interval_type,
+            true,
+        )]));
+        Ok(NativeArrow::single(
+            arrow_array::RecordBatch::try_new(schema, vec![array]).map_err(value_error)?,
+        ))
     }
     fn is_read_source(&self) -> bool {
         self.ir.can_pushdown_interval_read()
     }
 
-    fn filter_intervals_arrow(&self, data: &[u8], filter: bool) -> PyResult<Self> {
-        let reader = arrow_ipc::reader::StreamReader::try_new(std::io::Cursor::new(data), None)
-            .map_err(value_error)?;
+    fn filter_intervals_arrow(&self, data: &Bound<'_, PyAny>, filter: bool) -> PyResult<Self> {
+        let reader = arrow_memory::import(data)?;
         if reader.schema().fields().len() != 1 {
             return Err(value_error("interval input must have exactly one column"));
         }
@@ -574,22 +575,23 @@ impl NativeTable {
         py: Python<'_>,
         path: String,
         format: &str,
-        options_json: &str,
+        options: &Bound<'_, PyAny>,
     ) -> PyResult<()> {
+        let options = native_ir::option_value(options)?;
         py.detach(|| {
             self.runtime
-                .block_on(self.ir.export_text(&path, format, options_json))
+                .block_on(self.ir.export_text(&path, format, &options))
         })
         .map_err(table_error)
     }
-    #[pyo3(signature = (expression_json, keep, references=None))]
-    fn filter_json(
+    #[pyo3(signature = (expression, keep, references=None))]
+    fn filter(
         &self,
-        expression_json: &str,
+        expression: &NativeExpr,
         keep: bool,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
     ) -> PyResult<Self> {
-        let expression: Expr = serde_json::from_str(expression_json).map_err(value_error)?;
+        let expression = (*expression.inner).clone();
         Ok(Self {
             runtime: self.runtime.clone(),
             ir: self
@@ -598,14 +600,16 @@ impl NativeTable {
                 .map_err(table_error)?,
         })
     }
-    #[pyo3(signature = (projections_json, references=None))]
-    fn project_json(
+    #[pyo3(signature = (projections, references=None))]
+    fn project(
         &self,
-        projections_json: &str,
+        projections: Vec<(String, PyRef<'_, NativeExpr>)>,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
     ) -> PyResult<Self> {
-        let projections: Vec<(String, Expr)> =
-            serde_json::from_str(projections_json).map_err(value_error)?;
+        let projections = projections
+            .into_iter()
+            .map(|(n, v)| (n, (*v.inner).clone()))
+            .collect();
         Ok(Self {
             runtime: self.runtime.clone(),
             ir: self
@@ -614,15 +618,21 @@ impl NativeTable {
                 .map_err(table_error)?,
         })
     }
-    #[pyo3(signature = (keys_json, fields_json, references=None))]
-    fn grouped_aggregate_json(
+    #[pyo3(signature = (keys, fields, references=None))]
+    fn grouped_aggregate(
         &self,
-        keys_json: &str,
-        fields_json: &str,
+        keys: Vec<(String, PyRef<'_, NativeExpr>)>,
+        fields: Vec<(String, PyRef<'_, NativeExpr>)>,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
     ) -> PyResult<Self> {
-        let keys = serde_json::from_str(keys_json).map_err(value_error)?;
-        let fields = serde_json::from_str(fields_json).map_err(value_error)?;
+        let keys = keys
+            .into_iter()
+            .map(|(n, v)| (n, (*v.inner).clone()))
+            .collect();
+        let fields = fields
+            .into_iter()
+            .map(|(n, v)| (n, (*v.inner).clone()))
+            .collect();
         Ok(Self {
             runtime: self.runtime.clone(),
             ir: self
@@ -631,17 +641,16 @@ impl NativeTable {
                 .map_err(table_error)?,
         })
     }
-    fn global_schema_json(&self) -> PyResult<String> {
-        serde_json::to_string(&self.ir.globals().logical_type().map_err(table_error)?)
-            .map_err(value_error)
+    fn global_schema(&self) -> PyResult<Vec<(String, NativeType)>> {
+        native_schema(self.ir.globals().schema())
     }
-    #[pyo3(signature = (expression_json, references=None))]
-    fn aggregate_globals_json(
+    #[pyo3(signature = (expression, references=None))]
+    fn aggregate_globals(
         &self,
-        expression_json: &str,
+        expression: &NativeExpr,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
     ) -> PyResult<NativeGlobals> {
-        let expression = serde_json::from_str(expression_json).map_err(value_error)?;
+        let expression = (*expression.inner).clone();
         let ir = vail_table::globals::GlobalsIR::aggregate(
             self.ir.clone(),
             expression,
@@ -650,13 +659,13 @@ impl NativeTable {
         .map_err(table_error)?;
         Ok(NativeGlobals { ir })
     }
-    #[pyo3(signature = (expression_json, references=None))]
+    #[pyo3(signature = (expression, references=None))]
     fn aggregate_physical_plan(
         &self,
-        expression_json: &str,
+        expression: &NativeExpr,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
     ) -> PyResult<String> {
-        let expression = serde_json::from_str(expression_json).map_err(value_error)?;
+        let expression = (*expression.inner).clone();
         let ir = vail_table::globals::GlobalsIR::aggregate(
             self.ir.clone(),
             expression,
@@ -671,12 +680,15 @@ impl NativeTable {
         }
     }
     #[pyo3(signature = (fields, references=None))]
-    fn project_globals_json(
+    fn project_globals(
         &self,
-        fields: &str,
+        fields: Vec<(String, PyRef<'_, NativeExpr>)>,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
     ) -> PyResult<Self> {
-        let fields = serde_json::from_str(fields).map_err(value_error)?;
+        let fields = fields
+            .into_iter()
+            .map(|(n, v)| (n, (*v.inner).clone()))
+            .collect();
         Ok(Self {
             runtime: self.runtime.clone(),
             ir: self
@@ -689,10 +701,10 @@ impl NativeTable {
     fn eval_global_arrow<'py>(
         &self,
         py: Python<'py>,
-        expression: &str,
+        expression: &NativeExpr,
         references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
-    ) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
-        let expression = serde_json::from_str(expression).map_err(value_error)?;
+    ) -> PyResult<NativeArrow> {
+        let expression = (*expression.inner).clone();
         let globals = self
             .ir
             .globals()
@@ -704,16 +716,11 @@ impl NativeTable {
         let batch = py
             .detach(|| self.runtime.block_on(globals.evaluate()))
             .map_err(table_error)?;
-        let mut bytes = Vec::new();
-        let mut writer = arrow_ipc::writer::StreamWriter::try_new(&mut bytes, &batch.schema())
-            .map_err(value_error)?;
-        writer.write(&batch).map_err(value_error)?;
-        writer.finish().map_err(value_error)?;
-        drop(writer);
-        Ok(pyo3::types::PyBytes::new(py, &bytes))
+        Ok(NativeArrow::single(batch))
     }
-    fn schema_json(&self) -> PyResult<String> {
-        serde_json::to_string(&self.ir.row_type().map_err(table_error)?).map_err(value_error)
+
+    fn schema(&self) -> PyResult<Vec<(String, NativeType)>> {
+        native_schema(self.ir.schema())
     }
     #[pyo3(signature = (other, tolerance=Some(1e-6), absolute=false, reorder_fields=false))]
     fn same_physical_plan(
@@ -740,8 +747,8 @@ impl NativeTable {
     fn physical_plan(&self) -> PyResult<String> {
         self.ir.physical_plan().map_err(table_error)
     }
-    fn ir_json(&self) -> PyResult<String> {
-        serde_json::to_string(&self.ir.explain()).map_err(value_error)
+    fn ir<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        Ok(ir_view::table(py, &self.ir)?.into_any())
     }
     fn key_by(&self, keys: Vec<String>) -> PyResult<Self> {
         Ok(Self {
@@ -803,256 +810,64 @@ impl NativeTable {
         py.detach(|| self.runtime.block_on(self.ir.n_partitions()))
             .map_err(table_error)
     }
-    fn collect_arrow<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
-        let bytes = py.detach(|| {
+    fn collect_arrow<'py>(&self, py: Python<'py>) -> PyResult<NativeArrow> {
+        let batches = py.detach(|| {
             self.runtime.block_on(async {
                 let schema = self.ir.schema().clone();
-                let mut bytes = Vec::new();
-                let mut writer = arrow_ipc::writer::StreamWriter::try_new(&mut bytes, &schema)
-                    .map_err(value_error)?;
+                let mut batches = Vec::new();
                 let mut input = self.ir.execute();
                 while let Some(event) = input.try_next().await.map_err(table_error)? {
                     if let vail_table::PartitionEvent::Batch(batch) = event {
-                        let batch = vail_storage::local_table::normalize(&batch, schema.clone())
-                            .map_err(value_error)?;
-                        writer.write(&batch).map_err(value_error)?;
+                        batches.push(
+                            vail_storage::local_table::normalize(&batch, schema.clone())
+                                .map_err(value_error)?,
+                        );
                     }
                 }
-                writer.finish().map_err(value_error)?;
-                drop(writer);
-                Ok::<_, PyErr>(bytes)
+                Ok::<_, PyErr>(batches)
             })
         })?;
-        Ok(pyo3::types::PyBytes::new(py, &bytes))
+        Ok(NativeArrow {
+            schema: self.ir.schema().clone(),
+            batches,
+        })
     }
 
-    /// Bounded metadata sampling. Unlike partition-preserving Table.head, this
-    /// action does not count unknown source partitions before reading a prefix.
-    fn sample_arrow<'py>(
-        &self,
-        py: Python<'py>,
-        limit: usize,
-    ) -> PyResult<Bound<'py, pyo3::types::PyBytes>> {
-        let bytes = py.detach(|| {
-            self.runtime.block_on(async {
-                let batches = self.ir.sample(limit).await.map_err(table_error)?;
-                let mut bytes = Vec::new();
-                let mut writer =
-                    arrow_ipc::writer::StreamWriter::try_new(&mut bytes, self.ir.schema())
-                        .map_err(value_error)?;
-                for batch in batches {
-                    let batch =
-                        vail_storage::local_table::normalize(&batch, self.ir.schema().clone())
-                            .map_err(value_error)?;
-                    writer.write(&batch).map_err(value_error)?;
-                }
-                writer.finish().map_err(value_error)?;
-                drop(writer);
-                Ok::<_, PyErr>(bytes)
-            })
-        })?;
-        Ok(pyo3::types::PyBytes::new(py, &bytes))
-    }
-}
-
-fn scalar_key_json(values: &[ScalarValue], keys: &[String], schema: &Schema) -> PyResult<Value> {
-    if values.len() != keys.len() {
-        return Err(value_error("partition key width does not match table key"));
-    }
-    let mut object = serde_json::Map::new();
-    for (key, scalar) in keys.iter().zip(values) {
-        let index = schema.index_of(key).map_err(value_error)?;
-        let field = schema.field(index);
-        let array = scalar.to_array_of_size(1).map_err(value_error)?;
-        if array.data_type() != field.data_type() {
-            return Err(value_error(format!(
-                "partition key value for {key:?} has type {}, expected {}",
-                array.data_type(),
-                field.data_type()
-            )));
-        }
-        object.insert(key.clone(), array_value(&array, 0).map_err(value_error)?);
-    }
-    Ok(Value::Object(object))
-}
-
-fn array_value(array: &ArrayRef, row: usize) -> Result<Value, String> {
-    if array.is_null(row) {
-        return Ok(Value::Null);
-    }
-    match array.data_type() {
-        DataType::Int32 => Ok(Value::from(
-            array
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap()
-                .value(row),
-        )),
-        DataType::Int64 => Ok(Value::from(
-            array
-                .as_any()
-                .downcast_ref::<Int64Array>()
-                .unwrap()
-                .value(row),
-        )),
-        DataType::Float32 => Ok(encode_float32(
-            array
-                .as_any()
-                .downcast_ref::<Float32Array>()
-                .unwrap()
-                .value(row),
-        )),
-        DataType::Float64 => Ok(encode_float(
-            array
-                .as_any()
-                .downcast_ref::<Float64Array>()
-                .unwrap()
-                .value(row),
-        )),
-        DataType::Boolean => Ok(Value::from(
-            array
-                .as_any()
-                .downcast_ref::<BooleanArray>()
-                .unwrap()
-                .value(row),
-        )),
-        DataType::Utf8 => Ok(Value::from(
-            array
-                .as_any()
-                .downcast_ref::<StringArray>()
-                .unwrap()
-                .value(row),
-        )),
-        DataType::Utf8View => Ok(Value::from(
-            array
-                .as_any()
-                .downcast_ref::<StringViewArray>()
-                .unwrap()
-                .value(row),
-        )),
-        DataType::Struct(fields) => {
-            let values = array.as_any().downcast_ref::<StructArray>().unwrap();
-            let special_names: Option<Vec<&str>> =
-                if fields.len() == 4 && fields[0].name() == "__vail_interval_start" {
-                    Some(vec!["start", "includes_start", "end", "includes_end"])
-                } else {
-                    None
-                };
-            let object = fields
-                .iter()
-                .zip(values.columns())
-                .enumerate()
-                .map(|(i, (field, column))| {
-                    array_value(column, row).map(|mut value| {
-                        if special_names.is_some()
-                            && i == 1
-                            && let Some(flag) = value.as_bool()
-                        {
-                            value = Value::Bool(!flag);
-                        }
-                        (
-                            special_names
-                                .as_ref()
-                                .map_or_else(|| field.name().clone(), |n| n[i].to_owned()),
-                            value,
-                        )
-                    })
-                })
-                .collect::<Result<serde_json::Map<_, _>, _>>()?;
-            Ok(Value::Object(object))
-        }
-        DataType::List(_) => {
-            let values = array
-                .as_any()
-                .downcast_ref::<ListArray>()
-                .unwrap()
-                .value(row);
-            Ok(Value::Array(
-                (0..values.len())
-                    .map(|i| array_value(&values, i))
-                    .collect::<Result<Vec<_>, _>>()?,
-            ))
-        }
-        other => Err(format!("unsupported output type {other}")),
-    }
-}
-
-fn encode_float(value: f64) -> Value {
-    if value.is_finite() {
-        Value::from(value)
-    } else if value.is_nan() {
-        serde_json::json!({"$float": "nan", "bits": format!("{:016x}", value.to_bits())})
-    } else {
-        serde_json::json!({"$float": if value.is_sign_positive() { "inf" } else { "-inf" }})
-    }
-}
-
-fn encode_float32(value: f32) -> Value {
-    if value.is_finite() {
-        Value::from(f64::from(value))
-    } else if value.is_nan() {
-        serde_json::json!({"$float": "nan", "bits": format!("{:08x}", value.to_bits())})
-    } else {
-        serde_json::json!({"$float": if value.is_sign_positive() { "inf" } else { "-inf" }})
-    }
-}
-
-#[cfg(test)]
-mod float_wire_tests {
-    use super::{encode_float, encode_float32, float_value, float32_value};
-    use serde_json::json;
-
-    #[test]
-    fn float_nan_wire_preserves_payload_sign_and_signaling_bit() {
-        for bits in [0x7f80_0001, 0x7fc0_1234, 0xffc0_1234] {
-            let value = f32::from_bits(bits);
-            let encoded = encode_float32(value);
-            assert_eq!(
-                encoded,
-                json!({"$float":"nan", "bits":format!("{bits:08x}")})
-            );
-            assert_eq!(float32_value(&encoded).unwrap().to_bits(), bits);
-        }
-        for bits in [
-            0x7ff0_0000_0000_0001,
-            0x7ff8_0000_0000_1234,
-            0xfff8_0000_0000_1234,
-        ] {
-            let value = f64::from_bits(bits);
-            let encoded = encode_float(value);
-            assert_eq!(
-                encoded,
-                json!({"$float":"nan", "bits":format!("{bits:016x}")})
-            );
-            assert_eq!(float_value(&encoded).unwrap().to_bits(), bits);
-        }
-    }
-
-    #[test]
-    fn float_nan_wire_rejects_malformed_tags_and_keeps_legacy_specials() {
-        for value in [
-            json!({"$float":"nan", "bits":"7ff"}),
-            json!({"$float":"nan", "bits":"7ff0000000000000"}),
-            json!({"$float":"nan", "bits":"7ff8000000000001", "extra":true}),
-        ] {
-            assert!(float_value(&value).is_err());
-        }
-        assert!(float_value(&json!({"$float":"nan"})).unwrap().is_nan());
-        assert_eq!(
-            float_value(&json!({"$float":"-inf"})).unwrap(),
-            f64::NEG_INFINITY
-        );
-        assert_eq!(
-            float32_value(&json!({"$float":"inf"})).unwrap(),
-            f32::INFINITY
-        );
+    fn sample_arrow(&self, py: Python<'_>, limit: usize) -> PyResult<NativeArrow> {
+        let batches = py
+            .detach(|| self.runtime.block_on(self.ir.sample(limit)))
+            .map_err(table_error)?;
+        Ok(NativeArrow {
+            schema: self.ir.schema().clone(),
+            batches,
+        })
     }
 }
 
 #[pymodule]
 fn _native(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_class::<NativeSession>()?;
+    module.add_class::<NativeArrow>()?;
+    module.add_class::<NativeExpr>()?;
+    module.add_class::<NativeType>()?;
     module.add_class::<NativeTable>()?;
     module.add_class::<NativeGlobals>()?;
     Ok(())
+}
+
+fn native_schema(schema: &arrow_schema::Schema) -> PyResult<Vec<(String, NativeType)>> {
+    schema
+        .fields()
+        .iter()
+        .map(|f| {
+            Ok((
+                f.name().clone(),
+                NativeType::new_type(Type::from_arrow(f.data_type()).map_err(value_error)?),
+            ))
+        })
+        .collect()
+}
+
+fn vail_scalar_at(array: &ArrayRef, row: usize) -> PyResult<ScalarValue> {
+    vail_execution::expressions::scalar_at(array, row).map_err(value_error)
 }

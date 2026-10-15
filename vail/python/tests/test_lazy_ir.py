@@ -81,7 +81,7 @@ def test_large_range_is_a_small_plan_and_head_pulls_bounded_batches():
     branch = table.annotate(y=table.idx + 5)
     assert branch.count() == 2**31 - 1  # cardinality metadata, no execution
     assert [r.y for r in branch.head(3).collect()] == [5, 6, 7]
-    ir = json.loads(branch._native.ir_json())
+    ir = branch._native.ir()
     assert ir['node'] == 'TableMapRows'
     assert ir['child']['node'] == 'TableRange'
     assert ir['fields'][-1][1]['op'] == 'binary'
@@ -96,7 +96,7 @@ def test_parallelize_context_and_branches_are_immutable():
     assert [r.x for r in table.collect()] == [1, 2, 3]
     assert [r.y for r in left.collect()] == [11, 12, 13]
     assert [r.x for r in right.collect()] == [2, 3]
-    assert json.loads(left._native.ir_json())['child']['node'] == 'TableParallelize'
+    assert left._native.ir()['child']['node'] == 'TableParallelize'
 
 
 def test_scalar_evaluation_is_deferred_until_an_action():

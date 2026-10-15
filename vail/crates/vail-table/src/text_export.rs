@@ -39,7 +39,7 @@ fn sink_config(path: &str, extension: &str, schema: SchemaRef) -> Result<FileSin
     })
 }
 
-pub async fn export(table: TableRef, path: &str, format: &str, options_json: &str) -> Result<()> {
+pub async fn export(table: TableRef, path: &str, format: &str, options_json: &Value) -> Result<()> {
     if path.contains("://") && !path.starts_with("file://") {
         return Err(TableError::Invalid(
             "text export supports local paths only".into(),
@@ -58,8 +58,8 @@ pub async fn export(table: TableRef, path: &str, format: &str, options_json: &st
             "unsupported export format {format:?}"
         )));
     }
-    let options: Value =
-        serde_json::from_str(options_json).map_err(|e| TableError::Invalid(e.to_string()))?;
+    let options: Value = serde_json::from_value(options_json.clone())
+        .map_err(|e| TableError::Invalid(e.to_string()))?;
     let map = options
         .as_object()
         .ok_or_else(|| TableError::Invalid("text export options must be a JSON object".into()))?;

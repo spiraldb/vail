@@ -235,7 +235,7 @@ fn lower_stream(
                                 fields.iter().find(|(n, _)| n == &name).unwrap().1.clone()
                             }
                             _ => ScalarIR::GetField {
-                                value: Box::new(expression.clone()),
+                                value: Arc::new(expression.clone()),
                                 name: name.clone(),
                             },
                         };
@@ -300,7 +300,7 @@ fn lower_stream(
                         (
                             field.clone(),
                             ScalarIR::GetField {
-                                value: Box::new(ScalarIR::Column { name: name.clone() }),
+                                value: Arc::new(ScalarIR::Column { name: name.clone() }),
                                 name: field,
                             },
                         )

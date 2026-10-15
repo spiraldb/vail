@@ -43,7 +43,7 @@ pub enum ExprError {
     DataFusion(#[from] DataFusionError),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PrimitiveType {
     Int32,
@@ -55,7 +55,7 @@ pub enum PrimitiveType {
     Call,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum Type {
     Primitive(PrimitiveType),
@@ -327,7 +327,9 @@ impl Type {
             DataType::Float32 => Self::Primitive(PrimitiveType::Float32),
             DataType::Float64 => Self::Primitive(PrimitiveType::Float64),
             DataType::Boolean => Self::Primitive(PrimitiveType::Bool),
-            DataType::Utf8 => Self::Primitive(PrimitiveType::Str),
+            DataType::Utf8 | DataType::LargeUtf8 | DataType::Utf8View => {
+                Self::Primitive(PrimitiveType::Str)
+            }
             DataType::Struct(fields) => Self::Struct {
                 r#struct: fields
                     .iter()
@@ -383,47 +385,66 @@ pub enum ArrayReduction {
     Max,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "op", rename_all = "snake_case")]
 pub enum Expr {
-    /// Bound at execution time from an Arrow singleton, never accepted on the wire.
+    /// Frontend scopes are native nodes and must be resolved before lowering.
+    MatrixField {
+        axis: String,
+        name: String,
+    },
+    MatrixScope {
+        axis: String,
+        value: Arc<Expr>,
+    },
+    MatrixNumCols {},
+    MatrixColumnPosition {},
+    TableLookup {
+        reference: String,
+        keys: Vec<Expr>,
+        all_matches: bool,
+        query_interval: bool,
+    },
+    /// Native Arrow scalar retained directly; never deserialized as an expression.
     #[serde(skip)]
     RuntimeLiteral {
         value: ScalarValue,
     },
     Aggregate {
         function: String,
-        value: Option<Box<Expr>>,
+        value: Option<Arc<Expr>>,
         #[serde(default)]
         options: Value,
+        #[serde(default)]
+        result_type: Option<Type>,
         #[serde(default)]
         init: Vec<(String, Expr)>,
     },
     AggregateFold {
-        initial: Box<Expr>,
-        seq: Box<Expr>,
-        combine: Box<Expr>,
+        initial: Arc<Expr>,
+        seq: Arc<Expr>,
+        combine: Arc<Expr>,
         state_parameter: String,
         left_parameter: String,
         right_parameter: String,
     },
     AggGroupBy {
-        key: Box<Expr>,
-        body: Box<Expr>,
+        key: Arc<Expr>,
+        body: Arc<Expr>,
     },
     AggArray {
-        value: Box<Expr>,
+        value: Arc<Expr>,
         parameter: String,
-        body: Box<Expr>,
+        body: Arc<Expr>,
     },
     AggFilter {
-        predicate: Box<Expr>,
-        body: Box<Expr>,
+        predicate: Arc<Expr>,
+        body: Arc<Expr>,
     },
     AggExplode {
-        value: Box<Expr>,
+        value: Arc<Expr>,
         parameter: String,
-        body: Box<Expr>,
+        body: Arc<Expr>,
     },
     LambdaVariable {
         name: String,
@@ -436,13 +457,13 @@ pub enum Expr {
     },
     /// Change logical collection tags without changing the element representation.
     CollectionCast {
-        value: Box<Expr>,
+        value: Arc<Expr>,
         dtype: Type,
     },
     IntegerBinary {
         operator: BinaryOperator,
-        left: Box<Expr>,
-        right: Box<Expr>,
+        left: Arc<Expr>,
+        right: Arc<Expr>,
     },
     // Keep the original wire spelling while sharing the scalar UDF registry.
     #[serde(alias = "scalar_function")]
@@ -454,37 +475,37 @@ pub enum Expr {
         elements: Vec<Expr>,
     },
     ArrayMap {
-        value: Box<Expr>,
+        value: Arc<Expr>,
         parameter: String,
-        body: Box<Expr>,
+        body: Arc<Expr>,
     },
     ArrayFold {
-        value: Box<Expr>,
-        zero: Box<Expr>,
+        value: Arc<Expr>,
+        zero: Arc<Expr>,
         accumulator: String,
         parameter: String,
-        body: Box<Expr>,
+        body: Arc<Expr>,
         scan: bool,
     },
     ArrayPredicate {
-        value: Box<Expr>,
+        value: Arc<Expr>,
         parameter: String,
-        predicate: Box<Expr>,
+        predicate: Arc<Expr>,
         first: bool,
     },
     ArrayFilter {
-        value: Box<Expr>,
+        value: Arc<Expr>,
         parameter: String,
-        predicate: Box<Expr>,
+        predicate: Arc<Expr>,
     },
     StreamRange {
-        start: Box<Expr>,
-        stop: Box<Expr>,
-        step: Box<Expr>,
+        start: Arc<Expr>,
+        stop: Arc<Expr>,
+        step: Arc<Expr>,
     },
     ArrayGrouped {
-        value: Box<Expr>,
-        size: Box<Expr>,
+        value: Arc<Expr>,
+        size: Arc<Expr>,
     },
     ExternalGlobal {
         reference: String,
@@ -502,102 +523,102 @@ pub enum Expr {
     },
     Binary {
         operator: BinaryOperator,
-        left: Box<Expr>,
-        right: Box<Expr>,
+        left: Arc<Expr>,
+        right: Arc<Expr>,
     },
     Unary {
         operator: UnaryOperator,
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     Cast {
         dtype: Type,
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     ToString {
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     GetField {
-        value: Box<Expr>,
+        value: Arc<Expr>,
         name: String,
     },
     Interval {
-        start: Box<Expr>,
-        end: Box<Expr>,
-        includes_start: Box<Expr>,
-        includes_end: Box<Expr>,
+        start: Arc<Expr>,
+        end: Arc<Expr>,
+        includes_start: Arc<Expr>,
+        includes_end: Arc<Expr>,
     },
     IntervalContains {
-        interval: Box<Expr>,
-        point: Box<Expr>,
+        interval: Arc<Expr>,
+        point: Arc<Expr>,
     },
     IntervalOverlaps {
-        left: Box<Expr>,
-        right: Box<Expr>,
+        left: Arc<Expr>,
+        right: Arc<Expr>,
     },
     Struct {
         fields: Vec<(String, Expr)>,
     },
     IfElse {
-        condition: Box<Expr>,
-        consequent: Box<Expr>,
-        alternate: Box<Expr>,
+        condition: Arc<Expr>,
+        consequent: Arc<Expr>,
+        alternate: Arc<Expr>,
     },
     Die {
-        message: Box<Expr>,
+        message: Arc<Expr>,
         dtype: Type,
     },
     IsMissing {
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     Array {
         element_type: Type,
         elements: Vec<Expr>,
     },
     ArrayFlatten {
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     ArrayLength {
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     ArrayIndex {
-        value: Box<Expr>,
-        index: Box<Expr>,
+        value: Arc<Expr>,
+        index: Arc<Expr>,
     },
     ArraySlice {
-        value: Box<Expr>,
-        start: Option<Box<Expr>>,
-        stop: Option<Box<Expr>>,
-        step: Option<Box<Expr>>,
+        value: Arc<Expr>,
+        start: Option<Arc<Expr>>,
+        stop: Option<Arc<Expr>>,
+        step: Option<Arc<Expr>>,
     },
     ArrayReduce {
         operation: ArrayReduction,
         filter_missing: bool,
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     Locus {
         reference: ReferenceDefinition,
-        contig: Box<Expr>,
-        position: Box<Expr>,
+        contig: Arc<Expr>,
+        position: Arc<Expr>,
     },
     LocusOp {
         operation: String,
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     LocusValid {
         reference: ReferenceDefinition,
-        contig: Box<Expr>,
-        position: Box<Expr>,
+        contig: Arc<Expr>,
+        position: Arc<Expr>,
     },
     LocusFromGlobalPosition {
         reference: ReferenceDefinition,
-        position: Box<Expr>,
+        position: Arc<Expr>,
     },
     ParseLocus {
         reference: ReferenceDefinition,
-        value: Box<Expr>,
+        value: Arc<Expr>,
     },
     ParseCsvLine {
-        value: Box<Expr>,
+        value: Arc<Expr>,
         delimiter: String,
         quote: Option<String>,
         #[serde(default)]
@@ -662,6 +683,15 @@ impl Expr {
     pub fn visit(&self, f: &mut impl FnMut(&Expr)) {
         f(self);
         match self {
+            Self::MatrixScope { value, .. } => value.visit(f),
+            Self::TableLookup { keys, .. } => {
+                for key in keys {
+                    key.visit(f);
+                }
+            }
+            Self::MatrixField { .. }
+            | Self::MatrixNumCols { .. }
+            | Self::MatrixColumnPosition { .. } => {}
             Self::Aggregate { value, init, .. } => {
                 if let Some(value) = value {
                     value.visit(f);
@@ -831,9 +861,18 @@ impl Expr {
     ) -> Result<Expr, E> {
         let mut result = self.clone();
         match &mut result {
+            Self::MatrixScope { value, .. } => *value = Arc::new(f(value)?),
+            Self::TableLookup { keys, .. } => {
+                for key in keys {
+                    *key = f(key)?;
+                }
+            }
+            Self::MatrixField { .. }
+            | Self::MatrixNumCols { .. }
+            | Self::MatrixColumnPosition { .. } => {}
             Self::Aggregate { value, init, .. } => {
                 if let Some(value) = value {
-                    **value = f(value)?;
+                    *value = Arc::new(f(value)?);
                 }
                 for (_, expr) in init {
                     *expr = f(expr)?;
@@ -845,21 +884,21 @@ impl Expr {
                 combine,
                 ..
             } => {
-                **initial = f(initial)?;
-                **seq = f(seq)?;
-                **combine = f(combine)?;
+                *initial = Arc::new(f(initial)?);
+                *seq = Arc::new(f(seq)?);
+                *combine = Arc::new(f(combine)?);
             }
             Self::AggGroupBy { key, body } => {
-                **key = f(key)?;
-                **body = f(body)?;
+                *key = Arc::new(f(key)?);
+                *body = Arc::new(f(body)?);
             }
             Self::AggArray { value, body, .. } => {
-                **value = f(value)?;
-                **body = f(body)?;
+                *value = Arc::new(f(value)?);
+                *body = Arc::new(f(body)?);
             }
             Self::AggFilter { predicate, body } => {
-                **predicate = f(predicate)?;
-                **body = f(body)?;
+                *predicate = Arc::new(f(predicate)?);
+                *body = Arc::new(f(body)?);
             }
             Self::Tuple { elements: args }
             | Self::StringFunction { args, .. }
@@ -869,15 +908,15 @@ impl Expr {
                 }
             }
             Self::AggExplode { value, body, .. } | Self::ArrayMap { value, body, .. } => {
-                **value = f(value)?;
-                **body = f(body)?;
+                *value = Arc::new(f(value)?);
+                *body = Arc::new(f(body)?);
             }
             Self::ArrayFold {
                 value, zero, body, ..
             } => {
-                **value = f(value)?;
-                **zero = f(zero)?;
-                **body = f(body)?;
+                *value = Arc::new(f(value)?);
+                *zero = Arc::new(f(zero)?);
+                *body = Arc::new(f(body)?);
             }
             Self::ArrayPredicate {
                 value, predicate, ..
@@ -885,21 +924,21 @@ impl Expr {
             | Self::ArrayFilter {
                 value, predicate, ..
             } => {
-                **value = f(value)?;
-                **predicate = f(predicate)?;
+                *value = Arc::new(f(value)?);
+                *predicate = Arc::new(f(predicate)?);
             }
             Self::StreamRange { start, stop, step } => {
-                **start = f(start)?;
-                **stop = f(stop)?;
-                **step = f(step)?;
+                *start = Arc::new(f(start)?);
+                *stop = Arc::new(f(stop)?);
+                *step = Arc::new(f(step)?);
             }
             Self::ArrayGrouped { value, size } => {
-                **value = f(value)?;
-                **size = f(size)?;
+                *value = Arc::new(f(value)?);
+                *size = Arc::new(f(size)?);
             }
             Self::IntegerBinary { left, right, .. } | Self::Binary { left, right, .. } => {
-                **left = f(left)?;
-                **right = f(right)?;
+                *left = Arc::new(f(left)?);
+                *right = Arc::new(f(right)?);
             }
             Self::Die { message: value, .. }
             | Self::Unary { value, .. }
@@ -910,25 +949,25 @@ impl Expr {
             | Self::IsMissing { value }
             | Self::ArrayFlatten { value }
             | Self::ArrayLength { value }
-            | Self::ArrayReduce { value, .. } => **value = f(value)?,
+            | Self::ArrayReduce { value, .. } => *value = Arc::new(f(value)?),
             Self::Interval {
                 start,
                 end,
                 includes_start,
                 includes_end,
             } => {
-                **start = f(start)?;
-                **end = f(end)?;
-                **includes_start = f(includes_start)?;
-                **includes_end = f(includes_end)?;
+                *start = Arc::new(f(start)?);
+                *end = Arc::new(f(end)?);
+                *includes_start = Arc::new(f(includes_start)?);
+                *includes_end = Arc::new(f(includes_end)?);
             }
             Self::IntervalContains { interval, point } => {
-                **interval = f(interval)?;
-                **point = f(point)?;
+                *interval = Arc::new(f(interval)?);
+                *point = Arc::new(f(point)?);
             }
             Self::IntervalOverlaps { left, right } => {
-                **left = f(left)?;
-                **right = f(right)?;
+                *left = Arc::new(f(left)?);
+                *right = Arc::new(f(right)?);
             }
             Self::Struct { fields } => {
                 for (_, expr) in fields {
@@ -940,9 +979,9 @@ impl Expr {
                 consequent,
                 alternate,
             } => {
-                **condition = f(condition)?;
-                **consequent = f(consequent)?;
-                **alternate = f(alternate)?;
+                *condition = Arc::new(f(condition)?);
+                *consequent = Arc::new(f(consequent)?);
+                *alternate = Arc::new(f(alternate)?);
             }
             Self::Array { elements, .. } => {
                 for expr in elements {
@@ -950,34 +989,34 @@ impl Expr {
                 }
             }
             Self::ArrayIndex { value, index } => {
-                **value = f(value)?;
-                **index = f(index)?;
+                *value = Arc::new(f(value)?);
+                *index = Arc::new(f(index)?);
             }
             Self::Locus {
                 contig, position, ..
             } => {
-                **contig = f(contig)?;
-                **position = f(position)?;
+                *contig = Arc::new(f(contig)?);
+                *position = Arc::new(f(position)?);
             }
             Self::LocusOp { value, .. }
             | Self::ParseLocus { value, .. }
-            | Self::ParseCsvLine { value, .. } => **value = f(value)?,
+            | Self::ParseCsvLine { value, .. } => *value = Arc::new(f(value)?),
             Self::LocusValid {
                 contig, position, ..
             } => {
-                **contig = f(contig)?;
-                **position = f(position)?;
+                *contig = Arc::new(f(contig)?);
+                *position = Arc::new(f(position)?);
             }
-            Self::LocusFromGlobalPosition { position, .. } => **position = f(position)?,
+            Self::LocusFromGlobalPosition { position, .. } => *position = Arc::new(f(position)?),
             Self::ArraySlice {
                 value,
                 start,
                 stop,
                 step,
             } => {
-                **value = f(value)?;
+                *value = Arc::new(f(value)?);
                 for expr in [start, stop, step].into_iter().flatten() {
-                    **expr = f(expr)?;
+                    *expr = Arc::new(f(expr)?);
                 }
             }
             Self::Column { .. }
@@ -1027,10 +1066,18 @@ impl Expr {
         scope: &[(String, Type, usize)],
     ) -> Result<Type, ExprError> {
         match self {
+            Self::MatrixScope { .. }
+            | Self::TableLookup { .. }
+            | Self::MatrixField { .. }
+            | Self::MatrixNumCols { .. }
+            | Self::MatrixColumnPosition { .. } => Err(ExprError::Invalid(
+                "unresolved frontend expression scope".into(),
+            )),
             Self::Aggregate {
                 function,
                 value,
                 options,
+                result_type,
                 ..
             } if options.get("__vail_scan").and_then(Value::as_bool) == Some(true) => {
                 if function == "__scan_fold" {
@@ -1041,9 +1088,8 @@ impl Expr {
                     }
                     return Err(ExprError::Invalid("scan fold requires fold IR".into()));
                 }
-                if let Some(dtype) = options.get("__vail_result_type") {
-                    return serde_json::from_value(dtype.clone())
-                        .map_err(|e| ExprError::Invalid(format!("invalid scan result type: {e}")));
+                if let Some(dtype) = result_type {
+                    return Ok(dtype.clone());
                 }
                 let value_type = value
                     .as_ref()
@@ -2091,8 +2137,91 @@ fn validate_literal(value: &Value, dtype: &Type) -> Result<(), ExprError> {
     }
     Ok(())
 }
-/// Deduplicate set literals with Arrow's typed scalar equality, then use Arrow's
-/// native ordering to give set values their canonical iteration order.
+/// Canonicalize sets in native literal buffers, using the same scalar equality
+/// and sort order as the legacy literal reader. Ordinary buffers stay shared.
+pub fn normalize_literal_array(array: &ArrayRef, dtype: &Type) -> Result<ArrayRef, ExprError> {
+    fn has_sets(t: &Type) -> bool {
+        match t {
+            Type::Set { .. } => true,
+            Type::Array { array } | Type::Interval { interval: array } => has_sets(array),
+            Type::Struct { r#struct: fields } => fields.iter().any(|(_, t)| has_sets(t)),
+            Type::Tuple { tuple } => tuple.iter().any(has_sets),
+            Type::Dict { dict } => has_sets(&dict.0) || has_sets(&dict.1),
+            _ => false,
+        }
+    }
+    if !has_sets(dtype) {
+        return Ok(array.clone());
+    }
+    if let Some(storage) = dtype.storage_type() {
+        return normalize_literal_array(array, &storage);
+    }
+    match dtype {
+        Type::Array { array: element } => {
+            let lists = down::<ListArray>(array.as_ref())?;
+            Ok(Arc::new(ListArray::new(
+                match lists.data_type() {
+                    DataType::List(f) => f.clone(),
+                    _ => unreachable!(),
+                },
+                lists.offsets().clone(),
+                normalize_literal_array(lists.values(), element)?,
+                lists.nulls().cloned(),
+            )))
+        }
+        Type::Set { set: element } => {
+            let lists = down::<ListArray>(array.as_ref())?;
+            let mut chunks = Vec::new();
+            let mut lengths = Vec::new();
+            for row in 0..lists.len() {
+                let values = normalize_literal_array(&lists.value(row), element)?;
+                let mut unique = HashSet::new();
+                let mut indices = Vec::new();
+                for i in 0..values.len() {
+                    let scalar = scalar_at(&values, i)?;
+                    if unique.insert(scalar) {
+                        indices.push(i as u32);
+                    }
+                }
+                let selected = take(values.as_ref(), &UInt32Array::from(indices), None)?;
+                let order = set_literal_sort_indices(selected.as_ref())?;
+                let selected = take(selected.as_ref(), &order, None)?;
+                lengths.push(selected.len());
+                chunks.push(selected);
+            }
+            let values = if chunks.is_empty() {
+                arrow_array::new_empty_array(&element.to_arrow()?)
+            } else {
+                concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
+            };
+            Ok(Arc::new(ListArray::new(
+                match lists.data_type() {
+                    DataType::List(f) => f.clone(),
+                    _ => unreachable!(),
+                },
+                OffsetBuffer::from_lengths(lengths),
+                values,
+                lists.nulls().cloned(),
+            )))
+        }
+        Type::Struct { r#struct: fields } => {
+            let structure = down::<StructArray>(array.as_ref())?;
+            let columns = structure
+                .columns()
+                .iter()
+                .zip(fields)
+                .map(|(a, (_, t))| normalize_literal_array(a, t))
+                .collect::<Result<Vec<_>, _>>()?;
+            Ok(Arc::new(StructArray::try_new(
+                structure.fields().clone(),
+                columns,
+                structure.nulls().cloned(),
+            )?))
+        }
+        _ => Ok(array.clone()),
+    }
+}
+
 pub fn unique_set_elements(value: &Value, element_type: &Type) -> Result<Vec<Value>, ExprError> {
     let items = value
         .as_array()
@@ -4236,6 +4365,15 @@ fn lower_scoped(
         .to_arrow()?;
     let output_type = dtype.clone();
     let result: Arc<dyn PhysicalExpr> = match expr {
+        Expr::MatrixScope { .. }
+        | Expr::TableLookup { .. }
+        | Expr::MatrixField { .. }
+        | Expr::MatrixNumCols { .. }
+        | Expr::MatrixColumnPosition { .. } => {
+            return Err(ExprError::Invalid(
+                "unresolved frontend expression scope".into(),
+            ));
+        }
         Expr::Aggregate { .. }
         | Expr::AggFilter { .. }
         | Expr::AggExplode { .. }
@@ -4460,38 +4598,38 @@ fn lower_scoped(
             };
             let remaining = Expr::Binary {
                 operator: BinaryOperator::Sub,
-                left: Box::new(length.clone()),
-                right: Box::new(variable.clone()),
+                left: Arc::new(length.clone()),
+                right: Arc::new(variable.clone()),
             };
             let capped_stop = Expr::IfElse {
-                condition: Box::new(Expr::Binary {
+                condition: Arc::new(Expr::Binary {
                     operator: BinaryOperator::Ge,
                     left: size.clone(),
-                    right: Box::new(remaining),
+                    right: Arc::new(remaining),
                 }),
-                consequent: Box::new(length),
-                alternate: Box::new(Expr::Binary {
+                consequent: Arc::new(length),
+                alternate: Arc::new(Expr::Binary {
                     operator: BinaryOperator::Add,
-                    left: Box::new(variable.clone()),
+                    left: Arc::new(variable.clone()),
                     right: size.clone(),
                 }),
             };
             let grouped = Expr::ArrayMap {
-                value: Box::new(Expr::StreamRange {
-                    start: Box::new(Expr::Literal {
+                value: Arc::new(Expr::StreamRange {
+                    start: Arc::new(Expr::Literal {
                         dtype: Type::Primitive(PrimitiveType::Int32),
                         value: json!(0),
                     }),
-                    stop: Box::new(Expr::ArrayLength {
+                    stop: Arc::new(Expr::ArrayLength {
                         value: value.clone(),
                     }),
                     step: size.clone(),
                 }),
                 parameter,
-                body: Box::new(Expr::ArraySlice {
+                body: Arc::new(Expr::ArraySlice {
                     value: value.clone(),
-                    start: Some(Box::new(variable)),
-                    stop: Some(Box::new(capped_stop)),
+                    start: Some(Arc::new(variable)),
+                    stop: Some(Arc::new(capped_stop)),
                     step: None,
                 }),
             };
@@ -4863,7 +5001,7 @@ fn lower_scoped(
                 )));
             }
             let get = |value: &Expr, name: &str| Expr::GetField {
-                value: Box::new(value.clone()),
+                value: Arc::new(value.clone()),
                 name: name.into(),
             };
             let l_start = lower_scoped(&get(left, "start"), schema, globals, scope)?;
@@ -5186,7 +5324,7 @@ mod tests {
         )
         .unwrap();
         let expression = Expr::ParseCsvLine {
-            value: Box::new(Expr::Column {
+            value: Arc::new(Expr::Column {
                 name: "line".into(),
             }),
             delimiter: ",".into(),
@@ -5213,7 +5351,7 @@ mod tests {
         assert_eq!(fields.value(5), "z");
 
         let comma = Expr::ParseCsvLine {
-            value: Box::new(Expr::Column {
+            value: Arc::new(Expr::Column {
                 name: "line".into(),
             }),
             delimiter: ",".into(),
@@ -5222,7 +5360,7 @@ mod tests {
             expected_fields: 3,
         };
         let pipe = Expr::ParseCsvLine {
-            value: Box::new(Expr::Column {
+            value: Arc::new(Expr::Column {
                 name: "line".into(),
             }),
             delimiter: "|".into(),
@@ -5238,7 +5376,7 @@ mod tests {
     fn eval_string(value_type: Type, value: Value) -> Option<String> {
         let batch = source(vec![Some(0)]);
         let expression = Expr::ToString {
-            value: Box::new(Expr::Literal {
+            value: Arc::new(Expr::Literal {
                 dtype: value_type,
                 value,
             }),
@@ -5581,8 +5719,8 @@ mod tests {
                 .collect(),
         };
         let grouped = Expr::ArrayGrouped {
-            value: Box::new(array),
-            size: Box::new(Expr::Literal {
+            value: Arc::new(array),
+            size: Arc::new(Expr::Literal {
                 dtype: int,
                 value: json!(2),
             }),
@@ -5969,7 +6107,7 @@ mod tests {
         )]));
         let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(outer)]).unwrap();
         let expression = Expr::ArrayFlatten {
-            value: Box::new(Expr::Column { name: "a".into() }),
+            value: Arc::new(Expr::Column { name: "a".into() }),
         };
         let result = lower(&expression, &schema)
             .unwrap()
@@ -5987,13 +6125,13 @@ mod tests {
         let empty = source(vec![]);
         let int32 = Type::Primitive(PrimitiveType::Int32);
         let bad_index = Expr::ArrayIndex {
-            value: Box::new(Expr::Literal {
+            value: Arc::new(Expr::Literal {
                 dtype: Type::Array {
                     array: Box::new(int32.clone()),
                 },
                 value: json!([1]),
             }),
-            index: Box::new(Expr::Literal {
+            index: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Float64),
                 value: json!(0.0),
             }),
@@ -6003,7 +6141,7 @@ mod tests {
         let bad_reduction = Expr::ArrayReduce {
             operation: ArrayReduction::Sum,
             filter_missing: true,
-            value: Box::new(Expr::Literal {
+            value: Arc::new(Expr::Literal {
                 dtype: Type::Array {
                     array: Box::new(Type::Primitive(PrimitiveType::Bool)),
                 },

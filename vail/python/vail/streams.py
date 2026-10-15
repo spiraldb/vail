@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from .expressions import IR_NODE_TYPES
+
 from .expressions import Expression, as_expr
 from .types import tarray, tint32
 
@@ -104,7 +106,7 @@ class StreamExpression:
             def rewrite(node, inside=False):
                 if isinstance(node, list):
                     return [rewrite(v, inside) for v in node]
-                if not isinstance(node, dict) or node.get("op") == "literal":
+                if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                     return node
                 if node.get("op") == "lambda_variable" and node["name"] == value_name:
                     return (element if inside else current).to_ir()

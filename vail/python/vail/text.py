@@ -54,12 +54,12 @@ def _byte(value, name):
 def _schema_wire(schema):
     if not isinstance(schema, tstruct) or not len(schema):
         raise TypeError('schema must be a nonempty tstruct')
-    return json.dumps([[name, type_to_wire(ty)] for name, ty in schema.items()])
+    return [(name, type_to_wire(ty)) for name, ty in schema.items()]
 
 
 def _read(paths, schema, format, options):
     from . import Table, _native_session
-    native = _native_session().read_text(_schema_wire(schema), paths, format, json.dumps(options))
+    native = _native_session().read_text(_schema_wire(schema), paths, format, options)
     return Table(native, schema, ())
 
 
@@ -101,7 +101,8 @@ def split_line(value, delimiter, missing=None, quote=None, regex=False):
         ir = missing.to_ir()
         if missing.dtype != tarray(tstr) or ir.get('op') != 'literal':
             raise NotImplementedError('expression-valued missing markers require a literal array')
-        missing = ir['value']
+        from . import eval
+        missing = eval(missing)
     markers = ['NA'] if missing is None else ([missing] if isinstance(missing, str) else list(missing))
     if any(not isinstance(marker, str) for marker in markers):
         raise TypeError('missing markers must be strings')
@@ -150,7 +151,7 @@ def import_table(paths, key=None, min_partitions=None, impute=False, no_header=F
     if skip_blank_lines:
         table = table.filter(table.text != '')
     import pyarrow as pa
-    first = pa.ipc.open_stream(table._native.sample_arrow(1)).read_all().to_pylist()
+    first = pa.table(table._native.sample_arrow(1)).to_pylist()
     if not first:
         raise ValueError('no lines remaining after filters')
     header_text = first[0]['text']
@@ -209,7 +210,7 @@ def read_csv(paths, schema=None, *, delimiter=',', quote='"', header=True):
     if type(header) is not bool:
         raise TypeError('header must be bool')
     if schema is None:
-        fields = json.loads(_native_session().infer_text_schema(paths, 'csv', json.dumps(options)))
+        fields = _native_session().infer_text_schema(paths, 'csv', options)
         if len({name for name, _ in fields}) != len(fields):
             raise ValueError('duplicate CSV header names; use import_table for Hail header deduplication')
         schema = tstruct(**{name: type_from_wire(ty) for name, ty in fields})
@@ -221,7 +222,7 @@ def read_json(paths, schema=None):
     from . import _native_session
     paths = _paths(paths)
     if schema is None:
-        fields = json.loads(_native_session().infer_text_schema(paths, 'json', '{}'))
+        fields = _native_session().infer_text_schema(paths, 'json', {})
         schema = tstruct(**{name: type_from_wire(ty) for name, ty in fields})
     return _read(paths, schema, 'json', {})
 
@@ -237,19 +238,19 @@ def export(table, output, types_file=None, header=True, parallel=None, delimiter
         raise NotImplementedError('nested text export needs Hail-compatible JSON serialization')
     if any(ty in (tfloat32, tfloat64) for ty in table._schema.values()):
         raise NotImplementedError('Hail text export uses four-digit scientific float formatting; use export_csv for DataFusion formatting')
-    table._native.export_text(_local_path(output), 'text', json.dumps({
+    table._native.export_text(_local_path(output), 'text', {
         'delimiter': ord(delimiter), 'has_header': header, 'null_value': 'NA',
-    }))
+    })
 
 
 def export_csv(table, output, *, delimiter=',', quote='"', header=True):
     if type(header) is not bool:
         raise TypeError('header must be bool')
-    table._native.export_text(_local_path(output), 'csv', json.dumps({
+    table._native.export_text(_local_path(output), 'csv', {
         'delimiter': ord(_byte(delimiter, 'delimiter')), 'quote': ord(_byte(quote, 'quote')),
         'has_header': header,
-    }))
+    })
 
 
 def export_json(table, output):
-    table._native.export_text(_local_path(output), 'json', '{}')
+    table._native.export_text(_local_path(output), 'json', {})

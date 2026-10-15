@@ -229,7 +229,7 @@ fn combined_globals(left: &GlobalsRef, right: &GlobalsRef) -> Result<GlobalsRef>
         fields.push((
             field.name().clone(),
             ScalarIR::GetField {
-                value: Box::new(ScalarIR::ExternalGlobal {
+                value: Arc::new(ScalarIR::ExternalGlobal {
                     reference: "right_join_globals".into(),
                     dtype: dtype.clone(),
                 }),

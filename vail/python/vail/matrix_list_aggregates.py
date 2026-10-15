@@ -4,6 +4,8 @@ No partition materialization, row labels, coordinate regrouping, or Python cell
 execution. Unsupported shared list kernels are explicit capability boundaries.
 """
 
+from .expressions import IR_NODE_TYPES
+
 from .expressions import Expression, _IR, cast
 from .types import tarray, tbool, tint32, tint64, tfloat64, type_from_wire
 
@@ -40,7 +42,7 @@ def reduce_list(
             if isinstance(node, list):
                 for v in node:
                     variables(v, lexical)
-            elif isinstance(node, dict) and node.get("op") != "literal":
+            elif isinstance(node, IR_NODE_TYPES) and node.get("op") != "literal":
                 if node.get("op") == "lambda_variable":
                     if node["name"] not in lexical:
                         free.add(node["name"])
@@ -74,7 +76,7 @@ def reduce_list(
     def bind(node, context):
         if isinstance(node, list):
             return [bind(v, context) for v in node]
-        if not isinstance(node, dict) or node.get("op") == "literal":
+        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
             return node
         if node.get("op") == "matrix_num_cols":
             value = matrix._mir.column_records.length()
@@ -115,7 +117,7 @@ def reduce_list(
         def bind_entry(node, cell):
             if isinstance(node, list):
                 return [bind_entry(value, cell) for value in node]
-            if not isinstance(node, dict) or node.get("op") == "literal":
+            if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                 return node
             if node.get("op") == "matrix_num_cols":
                 value = matrix._mir.column_records.length()
@@ -176,7 +178,7 @@ def reduce_list(
     def walk(node, items, fixed):
         if isinstance(node, list):
             return [walk(v, items, fixed) for v in node]
-        if not isinstance(node, dict) or node.get("op") == "literal":
+        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
             return node
         op = node.get("op")
         if op == "agg_filter":
@@ -213,7 +215,7 @@ def reduce_list(
                     for child in expression:
                         context_uses(child, lexical)
                     return
-                if not isinstance(expression, dict) or expression.get("op") == "literal":
+                if not isinstance(expression, IR_NODE_TYPES) or expression.get("op") == "literal":
                     return
                 op = expression.get("op")
                 if op == "matrix_field":

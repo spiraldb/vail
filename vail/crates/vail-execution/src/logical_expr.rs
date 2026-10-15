@@ -135,6 +135,15 @@ fn lower(
 ) -> Result<LogicalExpr, ExprError> {
     let recurse = |e: &Expr| lower(e, schema, globals, bindings, scope);
     Ok(match expr {
+        Expr::MatrixScope { .. }
+        | Expr::TableLookup { .. }
+        | Expr::MatrixField { .. }
+        | Expr::MatrixNumCols { .. }
+        | Expr::MatrixColumnPosition { .. } => {
+            return Err(ExprError::Invalid(
+                "unresolved frontend expression scope".into(),
+            ));
+        }
         Expr::RuntimeLiteral { value } => lit(value.clone()),
         Expr::Literal { dtype, value } => {
             if !matches!(dtype, Type::Primitive(_)) {
@@ -836,8 +845,8 @@ mod tests {
     fn ordinary_binary_expression_stays_visible_to_optimizer() {
         let expr = Expr::Binary {
             operator: BinaryOperator::Add,
-            left: Box::new(Expr::Column { name: "x".into() }),
-            right: Box::new(Expr::Literal {
+            left: Arc::new(Expr::Column { name: "x".into() }),
+            right: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Float64),
                 value: json!(4.0),
             }),
@@ -864,8 +873,8 @@ mod tests {
         let schema = schema();
         let expr = Expr::Binary {
             operator: BinaryOperator::Eq,
-            left: Box::new(Expr::Column { name: "x".into() }),
-            right: Box::new(Expr::Literal {
+            left: Arc::new(Expr::Column { name: "x".into() }),
+            right: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Float64),
                 value: serde_json::json!(1.0),
             }),
@@ -885,8 +894,8 @@ mod tests {
         };
         let expr = Expr::Binary {
             operator: BinaryOperator::Eq,
-            left: Box::new(set.clone()),
-            right: Box::new(set),
+            left: Arc::new(set.clone()),
+            right: Arc::new(set),
         };
         assert!(matches!(
             lower_logical(&expr, &schema),
@@ -898,7 +907,7 @@ mod tests {
     fn distinct_physical_kernels_have_distinct_optimizer_identities() {
         let schema = DFSchema::empty();
         let make_die = |message| Expr::Die {
-            message: Box::new(Expr::Literal {
+            message: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Str),
                 value: json!(message),
             }),
@@ -923,12 +932,12 @@ mod tests {
         )]))
         .unwrap();
         let expr = Expr::ArrayMap {
-            value: Box::new(Expr::Column { name: "xs".into() }),
+            value: Arc::new(Expr::Column { name: "xs".into() }),
             parameter: "x".into(),
-            body: Box::new(Expr::Binary {
+            body: Arc::new(Expr::Binary {
                 operator: BinaryOperator::Add,
-                left: Box::new(Expr::LambdaVariable { name: "x".into() }),
-                right: Box::new(Expr::Literal {
+                left: Arc::new(Expr::LambdaVariable { name: "x".into() }),
+                right: Arc::new(Expr::Literal {
                     dtype: Type::Primitive(PrimitiveType::Int64),
                     value: json!(1),
                 }),
@@ -947,14 +956,14 @@ mod tests {
     #[test]
     fn if_else_keeps_null_condition_branch_explicit() {
         let expr = Expr::IfElse {
-            condition: Box::new(Expr::Column {
+            condition: Arc::new(Expr::Column {
                 name: "flag".into(),
             }),
-            consequent: Box::new(Expr::Literal {
+            consequent: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
                 value: json!(1),
             }),
-            alternate: Box::new(Expr::Literal {
+            alternate: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
                 value: json!(0),
             }),
@@ -1001,8 +1010,8 @@ mod tests {
                 .unwrap();
         let annotate = |n| Expr::Binary {
             operator: BinaryOperator::Add,
-            left: Box::new(Expr::Column { name: "x".into() }),
-            right: Box::new(Expr::Literal {
+            left: Arc::new(Expr::Column { name: "x".into() }),
+            right: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
                 value: json!(n),
             }),
@@ -1046,8 +1055,8 @@ mod tests {
         .unwrap();
         let division = Expr::Binary {
             operator: BinaryOperator::Div,
-            left: Box::new(Expr::Column { name: "x".into() }),
-            right: Box::new(Expr::Literal {
+            left: Arc::new(Expr::Column { name: "x".into() }),
+            right: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
                 value: json!(2),
             }),
@@ -1059,8 +1068,8 @@ mod tests {
 
         let addition = Expr::Binary {
             operator: BinaryOperator::Add,
-            left: Box::new(Expr::Column { name: "x".into() }),
-            right: Box::new(Expr::Literal {
+            left: Arc::new(Expr::Column { name: "x".into() }),
+            right: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
                 value: json!(1),
             }),
@@ -1090,18 +1099,18 @@ mod tests {
         )])
         .unwrap();
         let die = |message| Expr::Die {
-            message: Box::new(Expr::Literal {
+            message: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Str),
                 value: json!(message),
             }),
             dtype: Type::Primitive(PrimitiveType::Int64),
         };
         let expr = Expr::IfElse {
-            condition: Box::new(Expr::Column {
+            condition: Arc::new(Expr::Column {
                 name: "flag".into(),
             }),
-            consequent: Box::new(die("unselected")),
-            alternate: Box::new(Expr::Literal {
+            consequent: Arc::new(die("unselected")),
+            alternate: Arc::new(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
                 value: json!(9),
             }),

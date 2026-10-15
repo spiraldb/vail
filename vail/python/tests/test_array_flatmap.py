@@ -1,3 +1,4 @@
+from vail.expressions import _native_expression, _native_projection
 """One-level flattening with Hail's missing-array semantics."""
 import json
 
@@ -64,7 +65,7 @@ def test_flatmap_type_and_source_validation():
     with pytest.raises(ValueError):
         hl.array([a.idx]).flatmap(lambda x: [x + b.idx])
     with pytest.raises(ValueError, match='array of arrays'):
-        a._native.project_json(json.dumps([['bad', {'op': 'array_flatten', 'value': hl.array([1]).to_ir()}]]))
+        a._native.project(_native_projection([['bad', {'op': 'array_flatten', 'value': hl.array([1]).to_ir()}]]))
 
 
 def test_variable_lengths_slicing_and_storage(tmp_path):

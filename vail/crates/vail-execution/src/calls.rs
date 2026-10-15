@@ -1,6 +1,7 @@
 //! Packed Call adaptation. Expression operations compose DataFusion arithmetic
 //! and array kernels; scalar decoding is confined to ingestion/aggregate adapters.
 use crate::expressions::{BinaryOperator as B, Expr, PrimitiveType as P, Type};
+use std::sync::Arc;
 pub use vail_ordering::call::{pack, unpack};
 fn ty(p: P) -> Type {
     Type::Primitive(p)
@@ -14,26 +15,26 @@ fn n(v: i64) -> Expr {
 fn b(op: B, l: Expr, r: Expr) -> Expr {
     Expr::Binary {
         operator: op,
-        left: Box::new(l),
-        right: Box::new(r),
+        left: Arc::new(l),
+        right: Arc::new(r),
     }
 }
 fn c(p: P, v: Expr) -> Expr {
     Expr::Cast {
         dtype: ty(p),
-        value: Box::new(v),
+        value: Arc::new(v),
     }
 }
 fn choose(cond: Expr, yes: Expr, no: Expr) -> Expr {
     Expr::IfElse {
-        condition: Box::new(cond),
-        consequent: Box::new(yes),
-        alternate: Box::new(no),
+        condition: Arc::new(cond),
+        consequent: Arc::new(yes),
+        alternate: Arc::new(no),
     }
 }
 fn field(value: &Expr, name: &str) -> Expr {
     Expr::GetField {
-        value: Box::new(value.clone()),
+        value: Arc::new(value.clone()),
         name: name.into(),
     }
 }
@@ -52,7 +53,7 @@ fn null(t: Type) -> Expr {
 fn error(t: Type) -> Expr {
     Expr::Die {
         dtype: t,
-        message: Box::new(Expr::Literal {
+        message: Arc::new(Expr::Literal {
             dtype: ty(P::Str),
             value: serde_json::json!("invalid packed Call or allele representation"),
         }),
@@ -60,7 +61,7 @@ fn error(t: Type) -> Expr {
 }
 fn missing(value: Expr) -> Expr {
     Expr::IsMissing {
-        value: Box::new(value),
+        value: Arc::new(value),
     }
 }
 fn word_parts(value: &Expr) -> (Expr, Expr, Expr) {
@@ -131,15 +132,15 @@ pub fn construct(value: &Expr) -> Expr {
     let len = c(
         P::Int64,
         Expr::ArrayLength {
-            value: Box::new(alleles.clone()),
+            value: Arc::new(alleles.clone()),
         },
     );
     let item = |i: i32| {
         c(
             P::Int64,
             Expr::ArrayIndex {
-                value: Box::new(alleles.clone()),
-                index: Box::new(Expr::Literal {
+                value: Arc::new(alleles.clone()),
+                index: Arc::new(Expr::Literal {
                     dtype: ty(P::Int32),
                     value: serde_json::json!(i),
                 }),
@@ -189,7 +190,7 @@ pub fn construct(value: &Expr) -> Expr {
     );
     let storage = Expr::Cast {
         dtype: ty(P::Call),
-        value: Box::new(Expr::Struct {
+        value: Arc::new(Expr::Struct {
             fields: vec![("__vail_call_word".into(), c(P::Int32, signed))],
         }),
     };

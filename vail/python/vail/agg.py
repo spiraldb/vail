@@ -1,6 +1,8 @@
 """Scalar table aggregation expressions."""
 from __future__ import annotations
 
+from .expressions import IR_NODE_TYPES
+
 import builtins
 from uuid import uuid4
 
@@ -11,7 +13,7 @@ from .types import tarray, tbool, tfloat32, tfloat64, tint32, tint64, tset, tstr
 def _validate_initializer(expr, function):
     """Ensure an aggregate initializer is independent of rows and aggregation state."""
     def contains_row_scope(node, bound=frozenset()):
-        if isinstance(node, dict):
+        if isinstance(node, IR_NODE_TYPES):
             if node.get("op") == "literal":
                 return False
             op = node.get("op")

@@ -1,110 +1,120 @@
-"""Small recursive type and value codecs for Vail's Hail-shaped frontend."""
+"""Native type wrappers and Python value localization for the Vail frontend."""
 from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
 import math
 import pprint
-import struct
 
 
-@dataclass(frozen=True)
-class _PrimitiveType:
-    name: str
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return self.name
+from ._native import NativeType
 
 
-@dataclass(frozen=True)
-class tarray:
-    element_type: object
+class _NativeType:
+    """API wrapper; all type structure is owned by a native Type handle."""
+    __slots__ = ('_native_type',)
 
-    def __post_init__(self):
-        if not is_type(self.element_type):
-            raise TypeError("tarray requires a Vail type")
+    def _set_native(self, native):
+        object.__setattr__(self, '_native_type', native)
 
-    def __str__(self):
-        return f"array<{self.element_type}>"
+    def __setattr__(self, name, value):
+        raise TypeError("Types are immutable")
 
-    def __repr__(self):
-        return f"tarray({self.element_type!r})"
+    def __eq__(self, other):
+        return isinstance(other, _NativeType) and self._native_type == other._native_type
 
-
-@dataclass(frozen=True)
-class tset:
-    element_type: object
-
-    def __post_init__(self):
-        if not is_type(self.element_type):
-            raise TypeError("tset requires a Vail type")
-
-    def __str__(self):
-        return f"set<{self.element_type}>"
-
-    def __repr__(self):
-        return f"tset({self.element_type!r})"
+    def __hash__(self):
+        return hash(self._native_type)
 
 
-@dataclass(frozen=True, init=False)
-class ttuple:
-    types: tuple
+class _PrimitiveType(_NativeType):
+    def __init__(self, name):
+        self._set_native(NativeType(name))
 
+    @property
+    def name(self):
+        return self._native_type.kind
+
+    def __str__(self): return self.name
+    def __repr__(self): return self.name
+
+
+class tarray(_NativeType):
+    def __init__(self, element_type):
+        if not is_type(element_type): raise TypeError("tarray requires a Vail type")
+        self._set_native(NativeType.construct('array', [type_to_wire(element_type)]))
+
+    @property
+    def element_type(self): return _wrap_native_type(self._native_type.children[0])
+    def __str__(self): return f"array<{self.element_type}>"
+    def __repr__(self): return f"tarray({self.element_type!r})"
+
+
+class tset(_NativeType):
+    def __init__(self, element_type):
+        if not is_type(element_type): raise TypeError("tset requires a Vail type")
+        self._set_native(NativeType.construct('set', [type_to_wire(element_type)]))
+    @property
+    def element_type(self): return _wrap_native_type(self._native_type.children[0])
+    def __str__(self): return f"set<{self.element_type}>"
+    def __repr__(self): return f"tset({self.element_type!r})"
+
+
+class ttuple(_NativeType):
     def __init__(self, *types):
-        if not all(is_type(t) for t in types):
-            raise TypeError("ttuple requires Vail types")
-        object.__setattr__(self, "types", tuple(types))
-
+        if not all(is_type(t) for t in types): raise TypeError("ttuple requires Vail types")
+        self._set_native(NativeType.construct('tuple', [type_to_wire(t) for t in types]))
+    @property
+    def types(self): return tuple(_wrap_native_type(t) for t in self._native_type.children)
     def _validate_value(self, value):
-        if not isinstance(value, tuple):
-            raise TypeError("expected a Python tuple")
+        if not isinstance(value, tuple): raise TypeError("expected a Python tuple")
         if len(value) != len(self.types):
             raise TypeError(f"expected a tuple with {len(self.types)} elements, found {len(value)}")
+    def __repr__(self): return f"ttuple({', '.join(repr(t) for t in self.types)})"
 
 
-@dataclass(frozen=True)
-class tdict:
-    key_type: object
-    value_type: object
+class tdict(_NativeType):
+    def __init__(self, key_type, value_type):
+        if not is_type(key_type) or not is_type(value_type): raise TypeError("tdict requires Vail key and value types")
+        self._set_native(NativeType.construct('dict', [type_to_wire(key_type), type_to_wire(value_type)]))
+    @property
+    def key_type(self): return _wrap_native_type(self._native_type.children[0])
+    @property
+    def value_type(self): return _wrap_native_type(self._native_type.children[1])
+    def __repr__(self): return f"tdict({self.key_type!r}, {self.value_type!r})"
 
-    def __post_init__(self):
-        if not is_type(self.key_type) or not is_type(self.value_type):
-            raise TypeError("tdict requires Vail key and value types")
 
-
-@dataclass(frozen=True)
-class tndarray:
-    element_type: object
-    ndim: int
-
-    def __post_init__(self):
-        if self.element_type not in (tint32, tint64, tfloat32, tfloat64) or type(self.ndim) is not int or self.ndim < 0:
+class tndarray(_NativeType):
+    def __init__(self, element_type, ndim):
+        if element_type not in (tint32, tint64, tfloat32, tfloat64) or type(ndim) is not int or ndim < 0:
             raise TypeError("tndarray requires a numeric type and nonnegative rank")
+        self._set_native(NativeType.construct('ndarray', [type_to_wire(element_type)], rank=ndim))
+    @property
+    def element_type(self): return _wrap_native_type(self._native_type.children[0])
+    @property
+    def ndim(self): return self._native_type.ndim
+    def __repr__(self): return f"tndarray({self.element_type!r}, {self.ndim})"
 
 
-@dataclass(frozen=True)
-class tinterval:
-    point_type: object
-
-    def __post_init__(self):
-        if not is_type(self.point_type):
-            raise TypeError("tinterval requires a Vail point type")
-
+class tinterval(_NativeType):
+    def __init__(self, point_type):
+        if not is_type(point_type): raise TypeError("tinterval requires a Vail point type")
+        self._set_native(NativeType.construct('interval', [type_to_wire(point_type)]))
+    @property
+    def point_type(self): return _wrap_native_type(self._native_type.children[0])
     def __str__(self): return f"interval<{self.point_type}>"
     def __repr__(self): return f"tinterval({self.point_type!r})"
 
 
-@dataclass(frozen=True)
-class tlocus:
-    reference_genome: object = "default"
-
-    def __post_init__(self):
+class tlocus(_NativeType):
+    def __init__(self, reference_genome='default'):
         from .reference_genome import resolve_reference
-        object.__setattr__(self, "reference_genome", resolve_reference(self.reference_genome))
-
+        reference = resolve_reference(reference_genome)
+        self._set_native(NativeType.construct('locus', [], reference_value=reference.to_wire()))
+    @property
+    def reference_genome(self):
+        from .reference_genome import ReferenceGenome
+        return ReferenceGenome.from_wire(self._native_type.reference())
     def __str__(self): return f"locus<{self.reference_genome.name}>"
     def __repr__(self): return f"tlocus({self.reference_genome.name!r})"
 
@@ -268,29 +278,18 @@ tint = tint32
 tfloat = tfloat64
 
 
-class tstruct(Mapping):
+class tstruct(_NativeType, Mapping):
     def __init__(self, **fields):
         for name, dtype in fields.items():
-            if not isinstance(name, str):
-                raise TypeError("struct field names must be strings")
-            if not is_type(dtype):
-                raise TypeError(f"unsupported type for {name!r}: {dtype}")
-        self._fields = dict(fields)
+            if not isinstance(name, str): raise TypeError("struct field names must be strings")
+            if not is_type(dtype): raise TypeError(f"unsupported type for {name!r}: {dtype}")
+        self._set_native(NativeType.construct('struct', [type_to_wire(t) for t in fields.values()], names=list(fields)))
+    def __iter__(self): return iter(self._native_type.field_names)
+    def __len__(self): return len(self._native_type.field_names)
+    def __getitem__(self, name): return _wrap_native_type(self._native_type.field(name))
+    def __repr__(self): return "struct{" + ", ".join(f"{k}: {v}" for k, v in self.items()) + "}"
 
-    def __iter__(self):
-        return iter(self._fields)
 
-    def __len__(self):
-        return len(self._fields)
-
-    def __getitem__(self, name):
-        return self._fields[name]
-
-    def __repr__(self):
-        return "struct{" + ", ".join(f"{k}: {v}" for k, v in self.items()) + "}"
-
-    def __eq__(self, other):
-        return isinstance(other, tstruct) and tuple(self.items()) == tuple(other.items())
 
 
 class Struct(Mapping):
@@ -513,28 +512,27 @@ class _TypeParser:
 
 
 def type_to_wire(dtype):
-    if isinstance(dtype, tlocus):
-        return {"locus": dtype.reference_genome.to_wire()}
-    if isinstance(dtype, _PrimitiveType):
-        return dtype.name
-    if isinstance(dtype, ttuple):
-        return {"tuple": [type_to_wire(t) for t in dtype.types]}
-    if isinstance(dtype, tdict):
-        return {"dict": [type_to_wire(dtype.key_type), type_to_wire(dtype.value_type)]}
-    if isinstance(dtype, tndarray):
-        return {"ndarray": [type_to_wire(dtype.element_type), dtype.ndim]}
-    if isinstance(dtype, tinterval):
-        return {"interval": type_to_wire(dtype.point_type)}
-    if isinstance(dtype, tarray):
-        return {"array": type_to_wire(dtype.element_type)}
-    if isinstance(dtype, tset):
-        return {"set": type_to_wire(dtype.element_type)}
-    if isinstance(dtype, tstruct):
-        return {"struct": [[name, type_to_wire(field_type)] for name, field_type in dtype.items()]}
+    """Return native type memory; retained spelling for existing API constructors."""
+    if isinstance(dtype, NativeType): return dtype
+    if isinstance(dtype, _NativeType): return dtype._native_type
     raise TypeError(f"not a Vail type: {dtype!r}")
 
 
+def _wrap_native_type(native):
+    kind = native.kind
+    primitives = {t.name: t for t in (tint32, tint64, tfloat32, tfloat64, tbool, tstr, tcall)}
+    if kind in primitives: return primitives[kind]
+    classes = {'array': tarray, 'set': tset, 'dict': tdict, 'tuple': ttuple,
+               'struct': tstruct, 'interval': tinterval, 'ndarray': tndarray, 'locus': tlocus}
+    result = object.__new__(classes[kind])
+    result._set_native(native)
+    return result
+
+
 def type_from_wire(value):
+    from ._native import NativeType
+    if isinstance(value, NativeType):
+        return _wrap_native_type(value)
     if isinstance(value, dict) and set(value) == {"locus"}:
         from .reference_genome import ReferenceGenome
         return tlocus(ReferenceGenome.from_wire(value["locus"]))
@@ -661,69 +659,6 @@ def unify_types(left, right):
     return None
 
 
-def encode_value(value, dtype=None):
-    if value is None:
-        return None
-    if isinstance(dtype, tlocus):
-        from .reference_genome import Locus
-        if not isinstance(value, Locus) or value.reference_genome != dtype.reference_genome:
-            raise TypeError(f"value must be a Locus on reference genome {dtype.reference_genome.name}")
-        ordinal = dtype.reference_genome.contigs.index(value.contig)
-        return {"__vail_locus_ordinal": ordinal, "__vail_locus_contig": value.contig,
-                "__vail_locus_position": value.position}
-    if isinstance(dtype, tinterval):
-        if not isinstance(value, Interval) or value.point_type != dtype.point_type:
-            raise TypeError(f"value must be an Interval with point type {dtype.point_type}")
-        return {"start": encode_value(value.start, dtype.point_type), "end": encode_value(value.end, dtype.point_type),
-                "includes_start": value.includes_start, "includes_end": value.includes_end}
-    if isinstance(dtype, tdict):
-        return [{"key": encode_value(k, dtype.key_type), "value": encode_value(v, dtype.value_type)} for k, v in value.items()]
-    if isinstance(dtype, ttuple):
-        dtype._validate_value(value)
-        if not dtype.types:
-            return {"__vail_tuple_empty": False}
-        return {f"__vail_tuple_{i}": encode_value(value[i], ty) for i, ty in enumerate(dtype.types)}
-    if isinstance(dtype, tndarray):
-        import numpy as np
-        if isinstance(value, Mapping) and "__vail_ndarray_data" in value:
-            return {
-                "__vail_ndarray_data": encode_value(value["__vail_ndarray_data"], tarray(dtype.element_type)),
-                "__vail_ndarray_shape": encode_value(value["__vail_ndarray_shape"]),
-            }
-        a = np.asarray(value, dtype=str(dtype.element_type))
-        if a.ndim != dtype.ndim:
-            raise ValueError("ndarray rank does not match dtype")
-        return {
-            "__vail_ndarray_data": encode_value(a.ravel().tolist(), tarray(dtype.element_type)),
-            "__vail_ndarray_shape": list(a.shape),
-        }
-    if isinstance(dtype, (tarray, tset)):
-        return [encode_value(v, dtype.element_type) for v in value]
-    if isinstance(dtype, tstruct):
-        return {name: encode_value(value[name], ty) for name, ty in dtype.items()}
-    if isinstance(value, Call):
-        return {"__vail_call_word": _pack_call(value)}
-    if isinstance(value, Struct):
-        value = dict(value)
-    if isinstance(value, Mapping):
-        return {name: encode_value(item) for name, item in value.items()}
-    if isinstance(value, (list, tuple)):
-        return [encode_value(item) for item in value]
-    if isinstance(value, (set, frozenset)):
-        # Preserve the elements for native typed canonicalization. A generic
-        # JSON codec cannot sort all Vail values with their type's semantics.
-        return [encode_value(item) for item in value]
-    if isinstance(value, float) and not math.isfinite(value):
-        if math.isnan(value):
-            if dtype == tfloat32:
-                bits = struct.unpack(">I", struct.pack(">f", value))[0]
-                return {"$float": "nan", "bits": f"{bits:08x}"}
-            bits = struct.unpack(">Q", struct.pack(">d", value))[0]
-            return {"$float": "nan", "bits": f"{bits:016x}"}
-        return {"$float": "inf" if value > 0 else "-inf"}
-    return value
-
-
 def decode_value(value, dtype=None):
     if value is None:
         return None
@@ -749,32 +684,6 @@ def decode_value(value, dtype=None):
         import numpy as np
         data = [decode_value(v, dtype.element_type) for v in value["__vail_ndarray_data"]]
         return np.asarray(data, dtype=str(dtype.element_type)).reshape(value["__vail_ndarray_shape"])
-    if dtype is None and isinstance(value, dict) and set(value) in ({"$float"}, {"$float", "bits"}):
-        # Generic codec callers have no declared type; the tag carries its width.
-        bits = value.get("bits")
-        dtype = tfloat32 if isinstance(bits, str) and len(bits) == 8 else tfloat64
-    if dtype in (tfloat32, tfloat64) and isinstance(value, dict):
-        if set(value) == {"$float"}:
-            try:
-                return {"nan": float("nan"), "inf": float("inf"), "-inf": float("-inf")}[value["$float"]]
-            except (KeyError, TypeError) as exc:
-                raise ValueError("invalid floating-point tag") from exc
-        if set(value) == {"$float", "bits"} and value["$float"] == "nan":
-            width = 32 if dtype == tfloat32 else 64
-            bits_text = value["bits"]
-            if not isinstance(bits_text, str) or len(bits_text) != width // 4:
-                raise ValueError("invalid NaN bit pattern")
-            if not all(c in "0123456789abcdefABCDEF" for c in bits_text):
-                raise ValueError("invalid NaN bit pattern")
-            try:
-                bits = int(bits_text, 16)
-            except ValueError as exc:
-                raise ValueError("invalid NaN bit pattern") from exc
-            exponent_mask, fraction_mask = ((0x7F800000, 0x007FFFFF) if width == 32 else (0x7FF0000000000000, 0x000FFFFFFFFFFFFF))
-            if bits >= 1 << width or bits & exponent_mask != exponent_mask or bits & fraction_mask == 0:
-                raise ValueError("NaN bit pattern does not encode a NaN")
-            return struct.unpack(">f" if width == 32 else ">d", bits.to_bytes(width // 8, "big"))[0]
-        raise ValueError("invalid floating-point tag")
     if isinstance(dtype, tstruct) and isinstance(value, dict):
         return Struct(**{name: decode_value(value.get(name), field_type) for name, field_type in dtype.items()})
     if isinstance(dtype, tarray) and isinstance(value, list):

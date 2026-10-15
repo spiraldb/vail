@@ -1,3 +1,4 @@
+from vail.expressions import _native_expression, _native_projection
 """Typed array lambdas execute in DataFusion, including lexical captures."""
 import pytest
 import vail as hl
@@ -87,4 +88,4 @@ def test_native_ir_validates_lambda_scope_and_input_type():
          'unbound lambda'),
     ]:
         with pytest.raises(ValueError, match=message):
-            t._native.project_json(json.dumps([['bad', expression]]))
+            t._native.project(_native_projection([['bad', expression]]))

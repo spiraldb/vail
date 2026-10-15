@@ -9,7 +9,7 @@ def test_total_reductions_use_native_partial_and_final_aggregation():
     t = hl.range_table(97, 40)
     t = t.annotate(value=hl.int64(t.idx) * 3)
     expression = hl.agg.sum(t.value)
-    plan = t._native.aggregate_physical_plan(json.dumps(expression.to_ir()))
+    plan = t._native.aggregate_physical_plan(expression.to_ir())
     assert "mode=Partial" in plan
     assert "mode=Final" in plan
     assert "OrderedConcatExec" not in plan

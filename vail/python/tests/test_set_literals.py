@@ -4,7 +4,10 @@ import vail as hl
 
 def test_set_type_wire_and_dtype_are_distinct_from_array():
     assert hl.dtype("set<int32>") == hl.tset(hl.tint32)
-    assert hl.type_to_wire(hl.tset(hl.tint32)) == {"set": "int32"}
+    from vail._native import NativeType
+    native = hl.type_to_wire(hl.tset(hl.tint32))
+    assert isinstance(native, NativeType)
+    assert native.kind == "set" and native.children[0].kind == "int32"
     assert hl.type_from_wire({"set": "int32"}) == hl.tset(hl.tint32)
     assert hl.tset(hl.tint32) != hl.tarray(hl.tint32)
 
@@ -120,8 +123,7 @@ def test_nested_set_localization_uses_hashable_frozensets():
     nested_type = hl.tset(hl.tset(hl.tint32))
     value = hl.decode_value([[1, 2], [3]], nested_type)
     assert value == {frozenset({1, 2}), frozenset({3})}
-    encoded = hl.encode_value(value)
-    assert hl.decode_value(encoded, nested_type) == value
+    assert hl.eval(hl.literal(value, nested_type)) == value
 
 
 def test_set_type_keeps_array_element_logical_type():

@@ -111,6 +111,7 @@ pub(crate) fn extract(
             value,
             options,
             init,
+            ..
         } => {
             if !init.is_empty() {
                 return Err(TableError::Invalid(
@@ -257,9 +258,9 @@ pub(crate) fn bind_initializers(
         Expr::AggregateFold { initial, .. }
             if !matches!(initial.as_ref(), Expr::RuntimeLiteral { .. }) =>
         {
-            **initial = Expr::RuntimeLiteral {
+            *initial = Arc::new(Expr::RuntimeLiteral {
                 value: bind("fold", initial)?,
-            };
+            });
         }
         _ => (),
     }

@@ -1,7 +1,6 @@
 import pytest
 
 import vail as hl
-from vail.types import decode_value, encode_value
 
 
 @pytest.mark.parametrize('alleles,phased,expected', [
@@ -21,7 +20,7 @@ def test_call_public_list_and_immutable_hash_state(alleles, phased, expected):
     exposed.append(98)
     assert call.alleles == expected
     assert values[same] == 'present'
-    assert decode_value(encode_value(call, hl.tcall), hl.tcall) == call
+    assert hl.eval(hl.literal(call, hl.tcall)) == call
     assert hl.eval(hl.literal(call)).alleles == expected
     table = hl.Table.parallelize([{'gt': call}], schema=hl.tstruct(gt=hl.tcall))
     assert table.collect()[0].gt.alleles == expected

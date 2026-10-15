@@ -1,9 +1,36 @@
-# Python data transport
+# Native Python / Rust boundary
 
-Python table inputs and results use Arrow IPC streams. `Table.parallelize` builds typed Arrow arrays from Python values and passes IPC bytes to Rust. Rust decodes the stream into a `RecordBatch` held by the lazy `TableIR::Parallelize` source; transformations do not execute during construction. Arrow Table and RecordBatch inputs use the same transport.
+Python and Rust exchange Arrow data using the Arrow C Stream protocol. Inputs
+provide `__arrow_c_stream__`; Rust takes ownership of the stream's release
+callback and retains Arrow buffers. Results expose independent C Stream exports
+over shared Rust record batches. Neither direction builds an IPC byte stream.
+Python row inputs still require construction of typed Arrow arrays, and combining
+multiple input batches can require concatenation. These are explicit data
+materialization steps, not serialization at the language boundary.
 
-`Table.collect` and `Table.to_pandas` execute the DataFusion plan and encode ordered output batches as an Arrow IPC stream. Scalar evaluation and bounded text-import sampling also return Arrow IPC streams. `Table.from_pandas` builds Arrow columns and feeds the same lazy source; `to_pandas` uses PyArrow conversion.
+Expressions are immutable `NativeExpr` PyO3 objects containing shared Rust
+`Arc<Expr>` nodes. Python expression methods construct Rust enum variants directly;
+transient argument mappings contain native child handles, not encoded subtrees.
+Inspection returns shallow views with native child handles. Python retains dataset
+owners needed by captured globals and lookups. Reusing an expression as two child
+arguments shares its Rust node rather than copying the expression tree.
 
-This bridge preserves Arrow validity separately from floating-point NaNs. It does not use JSON to transport input rows, collected rows, or evaluated scalar results. Locus metadata and ndarray rank remain part of the physical Arrow schema.
+Hail-compatible Python type classes wrap `NativeType` objects. Their fields,
+children, and Arrow representation come from the Rust type definition. Schemas
+cross as native type handles. Scalar literals use native scalars or Arrow buffers;
+interval filters and calculated partition bounds use Arrow too. Configuration
+arguments cross as ordinary Python values extracted by PyO3, without a text codec.
 
-The broader migration is incomplete: expression IR still uses JSON and currently embeds literal values. Interval-read options and calculated partition bounds also retain legacy JSON boundaries. These are remaining data-serialization violations, not approved exceptions. Schema descriptors and expression operators currently use JSON as control-plane representation; changing that representation requires a separate IR transport migration.
+Serialized formats remain at actual storage boundaries: Vortex files, globals
+Arrow IPC files, persisted matrix descriptors, reference-genome files, CSV/JSON/VCF import and export, and
+Arrow schema metadata used to persist Vail semantic types. These metadata tags
+also accompany schemas in the Arrow C Stream protocol for external Arrow
+interoperability; Rust owns the encoder and decoder. VCF header descriptions
+also require escaping as part of the VCF format. Human-readable plan strings are
+diagnostics. None is an expression or data transport codec between Python and Rust.
+
+`python/tests/test_native_memory_boundary.py` checks shared buffer addresses in
+both directions, repeated stream export and lifetime after garbage collection,
+shared expression node identity, immutable nodes, native type wrappers,
+a 64-level shared expression graph, and execution with Python JSON and Arrow IPC
+encoding and decoding disabled.

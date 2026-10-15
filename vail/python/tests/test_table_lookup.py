@@ -71,7 +71,7 @@ def test_lookup_example_missing_rows_and_missing_values():
     assert result.n_partitions() == source.n_partitions()
     assert result.count() == source.count()
     assert set(result.row.dtype) == {'person_id', 'visit', 'age', 'person', 'absent'}
-    assert json.loads(result._native.ir_json())['child']['node'] == 'TableLookup'
+    assert result._native.ir()['child']['node'] == 'TableLookup'
 
 
 def test_duplicate_target_keys_never_multiply_source_rows():

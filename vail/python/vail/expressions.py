@@ -2,13 +2,12 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-import json
+from ._native import NativeExpr
 
 from .types import (
     Struct,
     _PrimitiveType,
     decode_value,
-    encode_value,
     infer_type,
     tarray,
     tset,
@@ -49,7 +48,7 @@ def _validate_ndarray_scope(base, operands):
     axes = set()
 
     def visit(value):
-        if isinstance(value, dict):
+        if isinstance(value, IR_NODE_TYPES):
             if value.get("op") == "matrix_field" and value.get("axis") != "global":
                 axes.add(value["axis"])
             else:
@@ -96,20 +95,35 @@ def as_expr(value):
     return literal(value)
 
 
-class _IR(dict):
-    """Wire IR with native singleton references retained outside its JSON payload."""
-    def __init__(self, value, references, lookups=None, row_indexed=False):
-        super().__init__(value)
-        self.references = dict(references)
-        self.lookups = dict(lookups or {})
-        self.row_indexed = row_indexed
+class _IR(NativeExpr):
+    """Native IR handle with Python owners for captured dataset dependencies."""
+    def __new__(cls, value, references, lookups=None, row_indexed=None):
+        return super().__new__(cls, value)
+
+    def __init__(self, value, references, lookups=None, row_indexed=None):
+        if row_indexed is None:
+            self.references = _references(value) | dict(references)
+            self.lookups = _lookup_references(value) | dict(lookups or {})
+            self.row_indexed = _row_indexed(value)
+        else:
+            # Existing expression handles already carry complete dependency metadata.
+            self.references = dict(references)
+            self.lookups = dict(lookups or {})
+            self.row_indexed = row_indexed
+
+    @property
+    def _native_expr(self):
+        return self
+
+
+IR_NODE_TYPES = (dict, NativeExpr)
 
 
 def _row_indexed(ir):
     """Retain row scope even for expressions such as an empty row struct."""
-    if isinstance(ir, _IR) and ir.row_indexed:
-        return True
-    if isinstance(ir, dict):
+    if isinstance(ir, _IR):
+        return ir.row_indexed
+    if isinstance(ir, IR_NODE_TYPES):
         if ir.get("op") == "literal":
             return False
         if ir.get("op") in ("matrix_field", "matrix_scope") and ir.get("axis") != "global":
@@ -123,8 +137,8 @@ def _row_indexed(ir):
 def _references(ir):
     result = {}
     if isinstance(ir, _IR):
-        result.update(ir.references)
-    if isinstance(ir, dict):
+        return dict(ir.references)
+    if isinstance(ir, IR_NODE_TYPES):
         if ir.get("op") != "literal":
             for value in ir.values():
                 result.update(_references(value))
@@ -144,8 +158,8 @@ def _global_bindings(expressions):
 def _lookup_references(ir):
     result = {}
     if isinstance(ir, _IR):
-        result.update(ir.lookups)
-    if isinstance(ir, dict) and ir.get("op") != "literal":
+        return dict(ir.lookups)
+    if isinstance(ir, IR_NODE_TYPES) and ir.get("op") != "literal":
         for value in ir.values():
             result.update(_lookup_references(value))
     elif isinstance(ir, list):
@@ -164,7 +178,7 @@ def _external_globals(native, dtype):
 
 
 class Expression:
-    __slots__ = ("dtype", "source", "_ir_json", "_selection_name", "_top_level_name", "_global_refs", "_lookup_refs", "_row_indexed")
+    __slots__ = ("dtype", "source", "_native_expr", "_selection_name", "_top_level_name", "_global_refs", "_lookup_refs", "_row_indexed")
 
     def __new__(cls, *args, **kwargs):
         if cls is Expression:
@@ -183,7 +197,7 @@ class Expression:
         object.__setattr__(self, "_row_indexed", _row_indexed(ir) if row_indexed is None else row_indexed)
         object.__setattr__(self, "dtype", dtype)
         object.__setattr__(self, "source", source)
-        object.__setattr__(self, "_ir_json", json.dumps(ir, separators=(",", ":")))
+        object.__setattr__(self, "_native_expr", NativeExpr(ir))
         object.__setattr__(self, "_selection_name", selection_name)
         object.__setattr__(self, "_top_level_name", top_level_name)
 
@@ -195,8 +209,8 @@ class Expression:
 
     @property
     def _ir(self):
-        # Return a fresh tree so callers cannot mutate an expression behind its type/source.
-        return _IR(json.loads(self._ir_json), self._global_refs, self._lookup_refs, self._row_indexed)
+        # Return another immutable handle sharing the existing native expression node.
+        return _IR(self._native_expr, self._global_refs, self._lookup_refs, self._row_indexed)
 
     def to_ir(self):
         return self._ir
@@ -909,7 +923,11 @@ def literal(value, dtype=None):
         dtype = parse_dtype(dtype)
     elif not _valid_type(dtype):
         raise TypeError(f"literal dtype must be a Vail type, found {dtype!r}")
-    return Expression(dtype, None, {"op": "literal", "dtype": type_to_wire(dtype), "value": encode_value(value, dtype)})
+    native_type = type_to_wire(dtype)
+    if value is not None and not isinstance(dtype, _PrimitiveType) or dtype == tcall and value is not None:
+        from .arrow import rows_to_arrow
+        value = rows_to_arrow([{"value": value}], tstruct(value=dtype))
+    return Expression(dtype, None, NativeExpr.literal(native_type, value))
 
 
 def struct(**fields):
@@ -1366,7 +1384,7 @@ def bind(function, *values):
         if isinstance(node, list):
             for child in node:
                 check_scope(child, aggregate_scope)
-        elif isinstance(node, dict) and node.get("op") != "literal":
+        elif isinstance(node, IR_NODE_TYPES) and node.get("op") != "literal":
             op = node.get("op")
             if op == "lambda_variable" and node.get("name") == parameter and aggregate_scope:
                 raise ExpressionException("aggregation expressions cannot capture an outer bind variable")
@@ -1383,3 +1401,15 @@ def bind(function, *values):
         "parameter": parameter, "body": body.to_ir(),
     })
     return bound[0]
+
+
+def _native_expression(value):
+    return value if isinstance(value, NativeExpr) else NativeExpr(value)
+
+
+def _native_expressions(values):
+    return [_native_expression(value) for value in values]
+
+
+def _native_projection(fields):
+    return [(name, _native_expression(value)) for name, value in fields]

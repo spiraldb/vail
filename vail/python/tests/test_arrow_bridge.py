@@ -3,7 +3,7 @@ import struct
 import pytest
 
 import vail as hl
-from vail.arrow import arrow_type, decode_rows, rows_to_ipc
+from vail.arrow import arrow_type, decode_rows, rows_to_arrow
 
 
 def _float_bits(value, width):
@@ -48,7 +48,7 @@ def test_arrow_nested_physical_types_round_trip():
 
 def test_arrow_helper_supports_zero_field_rows_and_type_mapping():
     schema = hl.tstruct()
-    ipc = rows_to_ipc([{}, {}, {}], schema)
+    ipc = rows_to_arrow([{}, {}, {}], schema)
     assert len(decode_rows(ipc, schema)) == 3
     assert arrow_type(hl.tfloat32).bit_width == 32
 

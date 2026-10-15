@@ -1,7 +1,7 @@
 import pytest
 
 import vail as hl
-from vail.types import decode_value, encode_value, type_from_wire, type_to_wire
+from vail.types import type_from_wire, type_to_wire
 
 
 def test_interval_types_wire_and_parser_support_nested_points():
@@ -17,7 +17,7 @@ def test_interval_values_roundtrip_and_validate_bounds():
     end = {"left": 2**40 + 1, "right": ["b"]}
     interval = hl.Interval(start, end, False, True, point_type=point_type)
     assert interval.point_type == point_type
-    decoded = decode_value(encode_value(interval, hl.tinterval(point_type)), hl.tinterval(point_type))
+    decoded = hl.eval(hl.literal(interval, hl.tinterval(point_type)))
     assert decoded == interval
     with pytest.raises(TypeError):
         hl.Interval(1, 2, includes_start=1)
@@ -29,7 +29,7 @@ def test_typed_interval_can_have_missing_endpoints():
     interval = hl.Interval(None, 3, point_type=hl.tint32)
     assert interval.start is None
     assert interval.end == 3
-    assert decode_value(encode_value(interval, hl.tinterval(hl.tint32)), hl.tinterval(hl.tint32)) == interval
+    assert hl.eval(hl.literal(interval, hl.tinterval(hl.tint32))) == interval
 
 
 def test_interval_expression_fields_and_operations_are_typed():

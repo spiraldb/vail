@@ -32,7 +32,7 @@ def test_collect_by_key_struct_values_missing_keys_globals_and_lazy_plan():
     assert list(collected.key) == ['k']
     assert collected.rows.dtype == hl.tarray(hl.tstruct(v=hl.tstr))
     assert hl.eval(collected.g) == 7
-    assert 'TableGroupedAggregate' in collected._native.ir_json()
+    assert 'TableGroupedAggregate' in repr(collected._native.ir())
     assert 'AggregateExec' in collected._native.physical_plan()
     rows = collected.collect()
     assert [r.k for r in rows] == [1, None]
@@ -49,7 +49,7 @@ def test_checkpoint_replaces_lineage_preserves_types_globals_and_overwrites(tmp_
     table = table.annotate(x=table.idx * 2)
     path = tmp_path / 'table'
     checkpoint = table.checkpoint(path)
-    assert 'TableRead' in checkpoint._native.ir_json()
+    assert 'TableRead' in repr(checkpoint._native.ir())
     assert checkpoint._same(table)
     assert checkpoint.n_partitions() == table.n_partitions()
     replacement = table.filter(table.idx < 2)

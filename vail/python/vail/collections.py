@@ -1,4 +1,6 @@
 """Collection APIs composed from DataFusion functions and typed expressions."""
+
+from .expressions import IR_NODE_TYPES
 import builtins
 import uuid
 
@@ -124,7 +126,7 @@ def empty_array(element_type):
 
 
 def dict_(collection):
-    if isinstance(collection, builtins.dict):
+    if isinstance(collection, IR_NODE_TYPES):
         from .expressions import array
         key_type = array(list(collection.keys())).dtype.element_type
         value_type = array(list(collection.values())).dtype.element_type
@@ -173,7 +175,7 @@ def _ensure_key_supported(dtype):
 
 
 def _literal_container_ir(node):
-    if not isinstance(node, dict):
+    if not isinstance(node, IR_NODE_TYPES):
         return True
     op = node.get("op")
     if op == "literal":

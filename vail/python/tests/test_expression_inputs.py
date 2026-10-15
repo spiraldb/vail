@@ -40,15 +40,18 @@ def test_parallelize_expression_source_is_lazy_and_uses_arrow_literal_bindings(t
             self.literal_buffers.append(data)
             return self.native.scalar_arrow(data)
         def parallelize_expression(self, expression, n_partitions, references):
-            self.wires.append(json.loads(expression))
+            self.wires.append(expression)
             return self.native.parallelize_expression(expression, n_partitions, references=references)
     spy = Spy(hl._native_session())
     with patch.object(hl, '_native_session', return_value=spy):
         table = hl.Table.parallelize([hl.struct(x=hl.int32('invalid'))])
-    assert spy.literal_buffers and all(isinstance(data, bytes) for data in spy.literal_buffers)
+    from vail._native import NativeExpr
+    assert spy.wires and all(isinstance(node, NativeExpr) for node in spy.wires)
+    assert all(hasattr(data, "__arrow_c_stream__") for data in spy.literal_buffers)
     def no_data_literals(node):
         if isinstance(node, dict):
-            assert node.get('op') != 'literal'
+            # Literals now own native scalar/Arrow memory; no wire payload exists.
+            assert not isinstance(node.get('value'), bytes)
             for value in node.values(): no_data_literals(value)
         elif isinstance(node, list):
             for value in node: no_data_literals(value)

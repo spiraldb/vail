@@ -1,4 +1,8 @@
 """Resolve captured table lookups into lazy native TableIR dependencies."""
+
+from .expressions import _native_expression, _native_expressions, _native_projection
+
+from .expressions import IR_NODE_TYPES
 from uuid import uuid4
 import json
 
@@ -63,8 +67,8 @@ def resolve(native, expressions, *, random_scope="row"):
         targets.update(expr._lookup_refs)
     if not targets:
         return native, expressions
-    occupied = {name for name, _ in json.loads(native.schema_json())}
-    occupied.update(name for name, _ in json.loads(native.global_schema_json()))
+    occupied = {name for name, _ in native.schema()}
+    occupied.update(name for name, _ in native.global_schema())
     resolved = {}
     bindings = _global_bindings(expressions)
 
@@ -72,7 +76,7 @@ def resolve(native, expressions, *, random_scope="row"):
         nonlocal native
         if isinstance(node, list):
             return [rewrite(child) for child in node]
-        if not isinstance(node, dict) or node.get("op") == "literal":
+        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
             return node
         if node.get("op") == "table_lookup":
             reference = node["reference"]
@@ -82,7 +86,7 @@ def resolve(native, expressions, *, random_scope="row"):
                 while name in occupied:
                     name += "_"
                 occupied.add(name)
-                native = native.lookup_json(targets[reference], json.dumps(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
+                native = native.lookup(targets[reference], _native_expressions(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
                 resolved[reference] = name
             return {"op": "column", "name": resolved[reference]}
         return {name: rewrite(child) for name, child in node.items()}

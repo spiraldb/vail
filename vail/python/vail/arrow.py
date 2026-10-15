@@ -1,8 +1,7 @@
-"""Arrow IPC bridge for moving typed table data across the Python boundary."""
+"""Arrow C Stream bridge sharing typed buffers across the Python boundary."""
 from __future__ import annotations
 
 from collections.abc import Mapping
-import json
 from math import prod
 
 from .types import (
@@ -23,25 +22,6 @@ TYPE_VERSION = b"vail.type.version"
 TYPE_DESCRIPTOR = b"vail.type"
 
 
-def _type_metadata(ty):
-    pa = _pa()
-    field = ty.field(0) if pa.types.is_struct(ty) and ty.num_fields else (
-        ty.value_field if pa.types.is_list(ty) or pa.types.is_large_list(ty) else None)
-    metadata = field.metadata or {} if field is not None else {}
-    version, descriptor = metadata.get(TYPE_VERSION), metadata.get(TYPE_DESCRIPTOR)
-    if version is None and descriptor is None:
-        return None
-    if version is None or descriptor is None:
-        raise TypeError("incomplete Arrow logical type metadata")
-    if version != b"1":
-        raise TypeError("unsupported Arrow logical type metadata version")
-    try:
-        from .types import type_from_wire
-        return type_from_wire(json.loads(descriptor))
-    except (ValueError, KeyError, TypeError, NotImplementedError) as exc:
-        raise TypeError("invalid Arrow logical type metadata") from exc
-
-
 def same_arrow_layout(left, right):
     """Validate buffers and names, allowing Arrow's large-offset variants."""
     pa = _pa()
@@ -56,55 +36,8 @@ def same_arrow_layout(left, right):
 
 
 def arrow_type(dtype):
-    pa = _pa()
-    ty = _arrow_storage_type(dtype)
-    if dtype == tcall or isinstance(dtype, (ttuple, tlocus, tinterval, tdict, tset, tndarray)):
-        from .types import type_to_wire
-        field = ty.field(0) if pa.types.is_struct(ty) else ty.value_field
-        metadata = dict(field.metadata or {})
-        metadata.update({TYPE_VERSION: b"1", TYPE_DESCRIPTOR:
-                         json.dumps(type_to_wire(dtype), separators=(",", ":")).encode()})
-        field = field.with_metadata(metadata)
-        ty = pa.struct([field, *list(ty)[1:]]) if pa.types.is_struct(ty) else pa.list_(field)
-    return ty
-
-
-def _arrow_storage_type(dtype):
-    pa = _pa()
-    if isinstance(dtype, tstruct):
-        return pa.struct([pa.field(name, arrow_type(ty), nullable=True) for name, ty in dtype.items()])
-    if isinstance(dtype, ttuple):
-        fields = ([pa.field("__vail_tuple_empty", pa.bool_())] if not dtype.types else
-                  [pa.field(f"__vail_tuple_{i}", arrow_type(ty)) for i, ty in enumerate(dtype.types)])
-        return pa.struct(fields)
-    if isinstance(dtype, tlocus):
-        return pa.struct([
-            pa.field("__vail_locus_ordinal", pa.int32()),
-            pa.field("__vail_locus_contig", pa.string(), metadata={"vail.reference": json.dumps(dtype.reference_genome.to_wire(), separators=(",", ":"))}),
-            pa.field("__vail_locus_position", pa.int32()),
-        ])
-    if dtype == tcall:
-        return pa.struct([pa.field("__vail_call_word", pa.int32())])
-    if isinstance(dtype, tinterval):
-        return pa.struct([pa.field("__vail_interval_start", arrow_type(dtype.point_type)),
-                          pa.field("__vail_interval_start_exclusive", pa.bool_()),
-                          pa.field("__vail_interval_end", arrow_type(dtype.point_type)),
-                          pa.field("__vail_interval_end_inclusive", pa.bool_())])
-    if isinstance(dtype, tdict):
-        return pa.list_(pa.field("__vail_dict_entry", pa.struct([
-            pa.field("key", arrow_type(dtype.key_type)), pa.field("value", arrow_type(dtype.value_type))])))
-    if isinstance(dtype, tndarray):
-        return pa.struct([pa.field("__vail_ndarray_data", pa.list_(pa.field(f"__vail_ndarray_item_{dtype.ndim}", arrow_type(dtype.element_type)))),
-                          pa.field("__vail_ndarray_shape", pa.list_(pa.int64()))])
-    if isinstance(dtype, (tarray, tset)):
-        name = "__vail_set_item" if isinstance(dtype, tset) else "item"
-        return pa.list_(pa.field(name, arrow_type(dtype.element_type)))
-    primitives = {"int32": pa.int32(), "int64": pa.int64(), "float32": pa.float32(),
-                  "float64": pa.float64(), "bool": pa.bool_(), "str": pa.string()}
-    try:
-        return primitives[dtype.name]
-    except (AttributeError, KeyError):
-        raise TypeError(f"unsupported Arrow type {dtype!r}") from None
+    from .types import type_to_wire
+    return _pa().table(type_to_wire(dtype).arrow_type()).schema.field(0).type
 
 
 def _physical(value, dtype):
@@ -155,7 +88,7 @@ def _physical(value, dtype):
     return value
 
 
-def rows_to_ipc(rows, schema):
+def rows_to_arrow(rows, schema):
     pa = _pa()
     arrow_schema = pa.schema([pa.field(name, arrow_type(ty), nullable=True) for name, ty in schema.items()])
     converted = [{name: _physical(row[name], ty) for name, ty in schema.items()} for row in rows]
@@ -164,34 +97,26 @@ def rows_to_ipc(rows, schema):
         table = pa.Table.from_batches([batch], schema=arrow_schema)
     else:
         table = pa.Table.from_pylist(converted, schema=arrow_schema)
-    sink = pa.BufferOutputStream()
-    with pa.ipc.new_stream(sink, arrow_schema) as writer:
-        for batch in table.to_batches():
-            writer.write_batch(batch)
-    return sink.getvalue().to_pybytes()
+    return table
 
 
-def as_ipc(value):
+def as_arrow(value):
     pa = _pa()
     if isinstance(value, pa.RecordBatch):
-        value = pa.Table.from_batches([value])
+        return pa.Table.from_batches([value])
     if isinstance(value, pa.Table):
-        sink = pa.BufferOutputStream()
-        with pa.ipc.new_stream(sink, value.schema) as writer:
-            for batch in value.to_batches():
-                writer.write_batch(batch)
-        return sink.getvalue().to_pybytes()
+        return value
     raise TypeError("rows must be an iterable, pyarrow.Table, or pyarrow.RecordBatch")
 
 
-def read_ipc(data):
-    pa = _pa()
-    reader = pa.ipc.open_stream(data)
-    return reader.schema, reader.read_all()
+def read_arrow(data):
+    # Import Arrow C Stream buffers directly from the native owner.
+    table = _pa().table(data)
+    return table.schema, table
 
 
 def decode_rows(data, schema):
-    _arrow_schema, table = read_ipc(data)
+    _arrow_schema, table = read_arrow(data)
     rows = table.to_pylist()
     return [Struct(**{name: _logical(row[name], ty) for name, ty in schema.items()}) for row in rows]
 
@@ -247,35 +172,12 @@ def _hashable(value, dtype):
 
 
 def dtype_from_arrow(ty):
-    """Infer Vail's logical type from an Arrow type, recognizing Vail storage structs."""
+    """Infer through the native type implementation using Arrow schema memory."""
+    from ._native import NativeType
+    from .types import type_from_wire
     pa = _pa()
-    from .types import (tbool, tfloat32, tfloat64, tint32, tint64, tstr, tarray, tset,
-                        tcall, tinterval, tdict, ttuple, tndarray, tstruct)
-    if pa.types.is_int32(ty): return tint32
-    if pa.types.is_int64(ty): return tint64
-    if pa.types.is_float32(ty): return tfloat32
-    if pa.types.is_float64(ty): return tfloat64
-    if pa.types.is_boolean(ty): return tbool
-    if pa.types.is_string(ty) or pa.types.is_large_string(ty): return tstr
-    logical = _type_metadata(ty)
-    if logical is not None:
-        children = [field.type for field in ty] if pa.types.is_struct(ty) else [ty.value_type]
-        for child in children:
-            dtype_from_arrow(child)  # nested versions must also be understood
-        if not same_arrow_layout(ty, arrow_type(logical)):
-            raise TypeError("Arrow logical type metadata does not match physical layout")
-        from .types import tlocus
-        if isinstance(logical, tlocus):
-            raw = (ty[1].metadata or {}).get(b"vail.reference")
-            try:
-                reference = json.loads(raw) if raw is not None else None
-            except (ValueError, TypeError) as error:
-                raise TypeError("invalid Locus reference metadata") from error
-            if reference != logical.reference_genome.to_wire():
-                raise TypeError("Locus reference metadata disagrees with its logical type")
-        return logical
-    if pa.types.is_list(ty) or pa.types.is_large_list(ty):
-        return tarray(dtype_from_arrow(ty.value_type))
-    if pa.types.is_struct(ty):
-        return tstruct(**{f.name: dtype_from_arrow(f.type) for f in ty})
-    raise TypeError(f"cannot infer a Vail type from Arrow type {ty}")
+    try:
+        native = NativeType.from_arrow(pa.table({'value': pa.array([], type=ty)}))
+    except ValueError as error:
+        raise TypeError(str(error)) from error
+    return type_from_wire(native)

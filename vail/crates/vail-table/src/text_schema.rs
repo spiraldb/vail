@@ -19,13 +19,13 @@ const DEFAULT_INFER_RECORDS: usize = 1000;
 /// `options_json` uses the same DataFusion CSV/JSON option names as table
 /// reads. Each file is sampled independently up to the configured inference
 /// limit, and Arrow merges their fields into one schema.
-pub fn infer(paths: &[String], format: &str, options_json: &str) -> Result<SchemaRef> {
+pub fn infer(paths: &[String], format: &str, options_json: &Value) -> Result<SchemaRef> {
     if paths.is_empty() {
         return Err(TableError::Invalid(
             "schema inference requires at least one input path".into(),
         ));
     }
-    let options: Map<String, Value> = serde_json::from_str(options_json)
+    let options: Map<String, Value> = serde_json::from_value(options_json.clone())
         .map_err(|error| TableError::Invalid(format!("invalid text options: {error}")))?;
 
     let schemas = match format {
@@ -180,7 +180,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let first = write(&dir, "a.csv", "id,count\na,1\nb,2\n");
         let second = write(&dir, "b.csv", "id,count\nc,3\n");
-        let schema = infer(&[first, second], "csv", "{}").unwrap();
+        let schema = infer(&[first, second], "csv", &serde_json::json!({})).unwrap();
         assert_eq!(
             schema.field_with_name("id").unwrap().data_type(),
             &DataType::Utf8
@@ -196,7 +196,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let first = write(&dir, "a.csv", "id,count\na,1\n");
         let second = write(&dir, "b.csv", "count,id\n2,b\n");
-        assert!(infer(&[first, second], "csv", "{}").is_err());
+        assert!(infer(&[first, second], "csv", &serde_json::json!({})).is_err());
     }
 
     #[test]
@@ -204,7 +204,7 @@ mod tests {
         let dir = tempfile::tempdir().unwrap();
         let first = write(&dir, "a.json", "{\"id\":1,\"nested\":{\"ok\":true}}\n");
         let second = write(&dir, "b.json", "{\"name\":\"sample\",\"id\":2}\n");
-        let schema = infer(&[first, second], "ndjson", "{}").unwrap();
+        let schema = infer(&[first, second], "ndjson", &serde_json::json!({})).unwrap();
         assert_eq!(
             schema.field_with_name("id").unwrap().data_type(),
             &DataType::Int64
@@ -220,17 +220,17 @@ mod tests {
         let result = infer(
             &[path.clone()],
             "json",
-            r#"{"newline_delimited":false,"schema_infer_max_rec":1}"#,
+            &serde_json::json!({"newline_delimited":false,"schema_infer_max_rec":1}),
         );
         assert!(result.is_err());
     }
 
     #[test]
     fn unknown_options_and_empty_paths_are_rejected() {
-        assert!(infer(&[], "csv", "{}").is_err());
+        assert!(infer(&[], "csv", &serde_json::json!({})).is_err());
         let dir = tempfile::tempdir().unwrap();
         let path = write(&dir, "a.csv", "a\n1\n");
-        assert!(infer(&[path], "csv", r#"{"typo":true}"#).is_err());
+        assert!(infer(&[path], "csv", &serde_json::json!({"typo":true})).is_err());
         // These are DataFusion configuration keys but this scanner does not
         // implement them; accepting them would silently change import semantics.
         assert!(csv_options(serde_json::from_str(r#"{"null_regex":"NA"}"#).unwrap()).is_err());

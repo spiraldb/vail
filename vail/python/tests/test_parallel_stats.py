@@ -6,7 +6,7 @@ import vail as hl
 
 
 def _physical_plan(table, expression):
-    return table._native.aggregate_physical_plan(json.dumps(expression.to_ir()))
+    return table._native.aggregate_physical_plan(expression.to_ir())
 
 
 def _assert_parallel_aggregate(plan):

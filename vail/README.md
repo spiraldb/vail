@@ -59,13 +59,13 @@ assert [row.position for row in t.take(3)] == [10, 20, 30]
 assert list(t.order_by(hl.desc("position")).key) == []
 ```
 
-The Python slice supports primitive numeric, Boolean and string values, nested structs and arrays, typed row projections (`select`, `annotate`, `transmute`), filtering and collection expressions. Python builds typed TableIR and expression IR; Rust lowers the complete supported graph to DataFusion physical plans. Array construction and length reuse DataFusion functions; indexing, slicing and reductions adapt Hail's bounds, missingness and numeric semantics. Globals support annotate/select/transmute, row expression references, cross-table `index_globals()`, `hl.eval`, and Arrow persistence. Higher-order collection lambdas, sets, and general aggregations remain incomplete. String sort keys use Unicode scalar order, following Vail's UTF-8 contract.
+The Python slice supports primitive numeric, Boolean and string values, nested structs and arrays, typed row projections (`select`, `annotate`, `transmute`), filtering and collection expressions. Python constructs native Rust expression and type handles through PyO3; Rust optimizes and lowers the supported graph through DataFusion logical plans. Arrow arrays cross through the C Stream protocol with shared buffers. Array construction and length reuse DataFusion functions; indexing, slicing and reductions adapt Hail's bounds, missingness and numeric semantics. Globals support annotate/select/transmute, row expression references, cross-table `index_globals()`, `hl.eval`, and Arrow persistence. Higher-order collection lambdas, sets, and general aggregations remain incomplete. String sort keys use Unicode scalar order, following Vail's UTF-8 contract.
 
 `Table._same` checks logical schemas, keys, globals, row sequence, and duplicate
 multiplicity with Hail's recursive value similarity rules. Row comparison uses a
 DataFusion full outer merge join on row ordinals, a comparison expression, and a
 limit on mismatches. Globals are a typed singleton relation, bound to row expressions
-through DataFusion cross joins and persisted as a checksummed Arrow IPC file.
+through DataFusion cross joins and persisted as an Arrow IPC file.
 
 The Python Table wraps a shared Rust TableIR DAG. `parallelize` retains Arrow input
 buffers; `range_table` stores bounds. Transformations build nodes, and actions lower

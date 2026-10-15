@@ -7,6 +7,10 @@ All transformations build native DAGs. Python never evaluates cell expressions.
 
 from __future__ import annotations
 
+from .expressions import _native_expression, _native_expressions, _native_projection
+
+from .expressions import IR_NODE_TYPES
+
 from dataclasses import dataclass
 from functools import cached_property
 import builtins
@@ -46,7 +50,7 @@ _AGG_OPS = {
 
 
 def _has_aggregate(node):
-    if isinstance(node, dict):
+    if isinstance(node, IR_NODE_TYPES):
         if node.get("op") == "literal":
             return False
         if node.get("op") == "aggregate":
@@ -60,7 +64,7 @@ def _has_aggregate(node):
 
 
 def _axes(node, *, outside_aggregates=False):
-    if isinstance(node, dict):
+    if isinstance(node, IR_NODE_TYPES):
         if node.get("op") == "literal":
             return set()
         if outside_aggregates and node.get("op") in _AGG_OPS and _has_aggregate(node):
@@ -83,7 +87,7 @@ def _axes(node, *, outside_aggregates=False):
 
 def _uses_axis_field(node, axis):
     """Whether an expression directly reads a row/column field."""
-    if isinstance(node, dict):
+    if isinstance(node, IR_NODE_TYPES):
         if node.get("op") == "literal":
             return False
         if node.get("op") == "matrix_column_position":
@@ -154,7 +158,7 @@ def _field_indices(node):
     axis_names = {"row": "row", "col": "column", "entry": "entry", "global": "global"}
 
     def visit(value):
-        if isinstance(value, dict):
+        if isinstance(value, IR_NODE_TYPES):
             if value.get("op") == "matrix_field":
                 fields.setdefault(value["name"], set()).add(axis_names[value["axis"]])
                 return
@@ -528,7 +532,7 @@ class MatrixTable:
             )
 
         def check_initializers(node):
-            if isinstance(node, dict) and node.get("op") != "literal":
+            if isinstance(node, IR_NODE_TYPES) and node.get("op") != "literal":
                 if node.get("op") == "aggregate":
                     for _, initializer in node.get("init", []):
                         if _axes(initializer) and not (
@@ -576,7 +580,7 @@ class MatrixTable:
         def rewrite(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
-            if not isinstance(node, dict) or node.get("op") == "literal":
+            if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                 return node
             if node.get("op") == "matrix_num_cols":
                 value = self._mir.column_records.length()
@@ -626,7 +630,7 @@ class MatrixTable:
         def rewrite(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
-            if not isinstance(node, dict) or node.get("op") == "literal":
+            if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                 return node
             if node.get("op") == "matrix_column_position":
                 if position is None:
@@ -686,7 +690,7 @@ class MatrixTable:
         def rewrite(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
-            if not isinstance(node, dict) or node.get("op") == "literal":
+            if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                 return node
             if node.get("op") in _AGG_OPS and _has_aggregate(node):
                 raw = _expression(expr.dtype, self, node, expr)
@@ -695,9 +699,9 @@ class MatrixTable:
                 from .lookups import resolve
 
                 native, resolved = resolve(context._native, [lowered])
-                native = native.grouped_aggregate_json(
-                    json.dumps([[_CID, {"op": "column", "name": _CID}]]),
-                    json.dumps([["value", resolved[0].to_ir()]]),
+                native = native.grouped_aggregate(
+                    _native_projection([[_CID, {"op": "column", "name": _CID}]]),
+                    _native_projection([["value", resolved[0].to_ir()]]),
                     _global_bindings(resolved),
                 )
                 grouped = Table(native, _schema_from_native(native), (_CID,))
@@ -880,7 +884,7 @@ class MatrixTable:
         used = set()
 
         def visit(node):
-            if isinstance(node, dict) and node.get("op") != "literal":
+            if isinstance(node, IR_NODE_TYPES) and node.get("op") != "literal":
                 if node.get("op") == "matrix_field" and node["axis"] == axis:
                     used.add(node["name"])
                 for child in node.values():
@@ -1009,7 +1013,7 @@ class MatrixTable:
             def expose_index_key(node):
                 if isinstance(node, list):
                     return [expose_index_key(value) for value in node]
-                if not isinstance(node, dict):
+                if not isinstance(node, IR_NODE_TYPES):
                     return node
                 if (
                     node.get("op") == "get_field"
@@ -1121,7 +1125,7 @@ class MatrixTable:
             axis == "entry"
             and not expr._lookup_refs
             and expr.dtype in (tint32, tint64, tfloat32, tfloat64)
-            and isinstance(node, dict)
+            and isinstance(node, IR_NODE_TYPES)
             and node.get("op") == "aggregate"
             and node.get("function") == "sum"
             and set((node.get("options") or {})) == {"__vail_result_type"}
@@ -1547,7 +1551,7 @@ class MatrixTable:
                     for child in node:
                         visit(child)
                     return
-                if not isinstance(node, dict) or node.get("op") == "literal":
+                if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                     return
                 if node.get("op") == "table_lookup":
                     reference = node["reference"]
@@ -1598,7 +1602,7 @@ class MatrixTable:
         def rewrite(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
-            if not isinstance(node, dict) or node.get("op") == "literal":
+            if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                 return node
             if node.get("op") == "table_lookup":
                 return replacements[node["reference"]]
@@ -2453,7 +2457,7 @@ class GroupedMatrixTable:
                     def fix(node, inside=False):
                         if isinstance(node, list):
                             return [fix(v, inside) for v in node]
-                        if not isinstance(node, dict) or node.get("op") == "literal":
+                        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
                             return node
                         if node.get("op") in _AGG_OPS and _has_aggregate(node):
                             original = {k: fix(v, True) for k, v in node.items()}

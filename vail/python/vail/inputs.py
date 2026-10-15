@@ -1,4 +1,6 @@
 """Construct lazy, unindexed table inputs with Arrow-backed literal bindings."""
+
+from .expressions import IR_NODE_TYPES
 from collections.abc import Mapping
 
 from .expressions import (Expression, ExpressionException, _IR, _external_globals,
@@ -47,10 +49,10 @@ def infer_input_type(values):
 
 def arrow_literal(value, dtype):
     from . import _native_session, _check_value
-    from .arrow import rows_to_ipc
+    from .arrow import rows_to_arrow
     _check_value(value, dtype, 'value')
     schema = tstruct(value=dtype)
-    native = _native_session().scalar_arrow(rows_to_ipc([{'value': value}], schema))
+    native = _native_session().scalar_arrow(rows_to_arrow([{'value': value}], schema))
     return _external_globals(native, schema)['value']
 
 
@@ -93,12 +95,9 @@ def bind_input(expression):
     source_globals = expression.source.index_globals() if expression.source is not None else None
 
     def visit(node):
-        if isinstance(node, dict):
+        if isinstance(node, IR_NODE_TYPES):
             if node.get('op') == 'literal':
-                ty = type_from_wire(node['dtype'])
-                bound = arrow_literal(decode_value(node['value'], ty), ty)
-                references.update(bound._global_refs)
-                return bound.to_ir()
+                return node
             if node.get('op') == 'global':
                 if source_globals is None:
                     raise ExpressionException("unbound input global field")

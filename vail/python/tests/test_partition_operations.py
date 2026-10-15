@@ -74,7 +74,8 @@ def test_calculate_new_partitions_without_keys_returns_empty_list():
 def test_calculate_new_partitions_zero_returns_empty_list():
     table = hl.range_table(10, n_partitions=4)
     assert table._calculate_new_partitions(0) == []
-    assert table._native.calculate_new_partitions_json(0) == "[]"
+    from vail.arrow import read_arrow
+    assert read_arrow(table._native.calculate_new_partitions(0))[1].num_rows == 0
 
 
 def test_calculate_new_partitions_matches_captured_hail_ranges():

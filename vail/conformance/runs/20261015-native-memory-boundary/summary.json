@@ -1,0 +1,22 @@
+{
+  "base_commit": "ffddaa08967c5117b55da3b8acdda15d4c40507f",
+  "branch": "dk/native-python-boundary",
+  "python": {
+    "passed": 1281,
+    "failed_preexisting": 4,
+    "skipped": 1,
+    "subtests_passed": 19,
+    "seconds": 106.27
+  },
+  "rust": {
+    "passed": 226,
+    "failed": 0,
+    "test_binaries": 19
+  },
+  "upstream_randomness": {
+    "passed": 6,
+    "failed": 0
+  },
+  "native_binary_sha256": "7b6ff7dbc19d0733eaf28d3a0925e457ff4d2697a17052a7ef2c383797e9c32c",
+  "note": "Final full Python run overlapped Rust compilation; timings are not an isolated benchmark."
+}

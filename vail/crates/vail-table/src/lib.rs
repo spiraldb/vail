@@ -201,7 +201,7 @@ pub enum TableNode {
     TextRead {
         paths: Vec<String>,
         format: String,
-        options_json: String,
+        options_json: Value,
     },
     Parallelize {
         rows: RecordBatch,
@@ -647,7 +647,7 @@ impl TableIR {
         schema: SchemaRef,
         paths: Vec<String>,
         format: &str,
-        options_json: &str,
+        options_json: &Value,
     ) -> Result<TableRef> {
         if !matches!(format, "csv" | "json" | "ndjson" | "lines" | "vcf") {
             return Err(TableError::Invalid(format!(
@@ -659,8 +659,8 @@ impl TableIR {
                 "text input requires at least one path".into(),
             ));
         }
-        let options: Value =
-            serde_json::from_str(options_json).map_err(|e| TableError::Invalid(e.to_string()))?;
+        let options: Value = serde_json::from_value(options_json.clone())
+            .map_err(|e| TableError::Invalid(e.to_string()))?;
         let options = options
             .as_object()
             .ok_or_else(|| TableError::Invalid("text read options must be a JSON object".into()))?;
@@ -1501,7 +1501,7 @@ impl TableIR {
                 format,
                 options_json,
             } => {
-                json!({"node":"DataFusionTextRead", "paths":paths, "format":format, "options":serde_json::from_str::<Value>(options_json).unwrap_or(Value::Null)})
+                json!({"node":"DataFusionTextRead", "paths":paths, "format":format, "options":options_json.clone()})
             }
             TableNode::Parallelize { rows, n_partitions } => {
                 json!({"node":"TableParallelize", "rows":rows.num_rows(), "n_partitions":n_partitions})
@@ -1889,7 +1889,7 @@ impl TableIR {
         self: &Arc<Self>,
         path: &str,
         format: &str,
-        options_json: &str,
+        options_json: &Value,
     ) -> Result<()> {
         crate::text_export::export(self.clone(), path, format, options_json).await
     }

@@ -19,7 +19,7 @@ class GenomicAggregateExpressionTests(unittest.TestCase):
         hwe = hl.agg.hardy_weinberg_test(table.gt, one_sided=True)
         self.assertIs(hwe._ir["options"]["one_sided"], True)
         self.assertEqual(hwe._ir["options"]["__vail_result_type"],
-                         {"struct": [["het_freq_hwe", "float64"], ["p_value", "float64"]]})
+                         hwe.dtype._native_type)
         ib = hl.agg.inbreeding(table.gt, table.p)
         self.assertEqual(ib.dtype["f_stat"], hl.tfloat64)
         self.assertEqual(ib._ir["value"]["op"], "struct")

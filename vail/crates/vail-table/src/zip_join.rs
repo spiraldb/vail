@@ -298,11 +298,11 @@ pub(crate) fn lower(
             let candidate = key_value_names[table_index][key_index].clone();
             let marker = marker_names[table_index].clone();
             value = Expr::IfElse {
-                condition: Box::new(Expr::IsMissing {
-                    value: Box::new(Expr::Column { name: marker }),
+                condition: Arc::new(Expr::IsMissing {
+                    value: Arc::new(Expr::Column { name: marker }),
                 }),
-                consequent: Box::new(value),
-                alternate: Box::new(Expr::Column { name: candidate }),
+                consequent: Arc::new(value),
+                alternate: Arc::new(Expr::Column { name: candidate }),
             };
         }
         let expr = lower_with_bindings(
@@ -345,10 +345,10 @@ pub(crate) fn lower(
             name: marker_names[table_index].clone(),
         };
         elements.push(Expr::IfElse {
-            condition: Box::new(Expr::IsMissing {
-                value: Box::new(marker),
+            condition: Arc::new(Expr::IsMissing {
+                value: Arc::new(marker),
             }),
-            consequent: Box::new(Expr::RuntimeLiteral {
+            consequent: Arc::new(Expr::RuntimeLiteral {
                 value: ScalarValue::try_from(DataType::Struct(
                     table
                         .schema()
@@ -359,7 +359,7 @@ pub(crate) fn lower(
                         .collect(),
                 ))?,
             }),
-            alternate: Box::new(row_struct),
+            alternate: Arc::new(row_struct),
         });
     }
     let item_type = Type::Struct {

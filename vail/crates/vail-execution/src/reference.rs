@@ -10,7 +10,7 @@ pub struct ParInterval {
     pub end: i32,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ReferenceDefinition {
     pub name: String,
     pub contigs: Vec<String>,

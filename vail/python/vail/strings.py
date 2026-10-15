@@ -167,8 +167,9 @@ def translate(value, mapping):
     value = _text(value)
     if isinstance(mapping, Expression) and mapping.dtype == tdict(tstr, tstr):
         ir = mapping.to_ir()
-        if ir.get('op') == 'literal' and isinstance(ir.get('value'), list):
-            mapping = {entry['key']: entry['value'] for entry in ir['value']}
+        if ir.get('op') == 'literal':
+            from . import eval
+            mapping = eval(mapping)
     if isinstance(mapping, Expression):
         if mapping.dtype != tdict(tstr, tstr):
             raise TypeError('translate requires a dict<str, str>')

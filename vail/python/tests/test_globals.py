@@ -1,3 +1,4 @@
+from vail.expressions import _native_expression, _native_projection
 """Global scope, singleton DataFusion plans, and immutable Arrow persistence."""
 import json
 import math
@@ -85,9 +86,9 @@ def test_scope_and_name_collisions_are_checked_before_execution(operation):
 def test_native_scope_checks_cannot_be_bypassed():
     t = hl.range_table(1).annotate_globals(g=1)
     with pytest.raises(ValueError):
-        t._native.project_globals_json(json.dumps([['x', {'op': 'column', 'name': 'idx'}]]))
+        t._native.project_globals(_native_projection([['x', {'op': 'column', 'name': 'idx'}]]))
     with pytest.raises(ValueError):
-        t._native.project_json(json.dumps([['idx', {'op': 'column', 'name': 'idx'}],
+        t._native.project(_native_projection([['idx', {'op': 'column', 'name': 'idx'}],
                                           ['g', {'op': 'global', 'name': 'g'}]]))
 
 
@@ -259,7 +260,8 @@ def test_index_globals_does_not_expose_mutable_bindings():
     indexed = source.index_globals()
     wire = indexed.to_ir()
     wire.references.clear()
-    wire['reference'] = 'invalid'
+    with pytest.raises(TypeError):
+        wire['reference'] = 'invalid'
     assert hl.eval(indexed.g) == 5
     with pytest.raises(TypeError):
         indexed._global_refs['new'] = source._native.globals_ref()
@@ -272,9 +274,9 @@ def test_native_rejects_missing_duplicate_and_mistyped_global_references():
     wire = expression.to_ir()
     references = list(wire.references.items())
     with pytest.raises(ValueError, match='unbound'):
-        native.eval_global_arrow(json.dumps(wire))
+        native.eval_global_arrow(_native_expression(wire))
     with pytest.raises(ValueError, match='duplicate'):
-        native.eval_global_arrow(json.dumps(wire), references + references)
-    wire['dtype'] = 'int32'
+        native.eval_global_arrow(_native_expression(wire), references + references)
+    wire = dict(wire, dtype=hl.tint32._native_type)
     with pytest.raises(ValueError, match='type mismatch'):
-        native.eval_global_arrow(json.dumps(wire), references)
+        native.eval_global_arrow(_native_expression(wire), references)

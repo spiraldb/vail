@@ -54,7 +54,7 @@ class TableTests(unittest.TestCase):
         )
         union = left.union(right)
         self.assertEqual(union.count(), 4)
-        self.assertEqual(json.loads(union._native.ir_json())["node"], "TableUnion")
+        self.assertEqual(union._native.ir()["node"], "TableUnion")
         self.assertEqual([row.k for row in union.collect()], [1, 1, 2, 3])
         self.assertEqual({row.k for row in union.distinct().collect()}, {1, 2, 3})
 

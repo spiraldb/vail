@@ -6,9 +6,12 @@ explicitly. The implementation never imports Hail, Spark or Java.
 """
 from __future__ import annotations
 
+from .expressions import _native_expression, _native_expressions, _native_projection
+
+from .expressions import IR_NODE_TYPES
+
 import builtins
 from collections.abc import Mapping, Sequence
-import json as _json
 import os
 import re
 
@@ -57,7 +60,6 @@ from .types import (
     Struct,
     decode_value,
     dtype,
-    encode_value,
     infer_type,
     tarray,
     tset,
@@ -232,7 +234,7 @@ def _parse_primitive_struct(schema):
 def _schema_from_native(native):
     return tstruct(**{
         name: type_from_wire(field_type)
-        for name, field_type in _json.loads(native.schema_json())
+        for name, field_type in native.schema()
     })
 
 
@@ -249,7 +251,7 @@ class Table:
         object.__setattr__(self, "_keys", builtins.tuple(keys))
         object.__setattr__(self, "_key_sources", builtins.dict(key_sources or ((name, name) for name in keys)))
         object.__setattr__(self, "_global_schema", tstruct(**{
-            name: type_from_wire(ty) for name, ty in _json.loads(native.global_schema_json())
+            name: type_from_wire(ty) for name, ty in native.global_schema()
         }))
 
     def __setattr__(self, name, value):
@@ -279,7 +281,7 @@ class Table:
         from .inputs import contains_expression, infer_input_type, input_expression
         if isinstance(rows, Expression):
             return cls._parallelize_expression(rows, schema, key, n_partitions, globals)
-        from .arrow import as_ipc, dtype_from_arrow, arrow_type, same_arrow_layout
+        from .arrow import as_arrow, dtype_from_arrow, arrow_type, same_arrow_layout
         try:
             import pyarrow as _pa
         except ImportError:
@@ -304,7 +306,7 @@ class Table:
                 arrow_table = arrow_table.cast(_pa.schema([_pa.field(name, arrow_type(ty)) for name, ty in schema.items()]))
             n_partitions = 1 if n_partitions is None else n_partitions
             _validate_n(n_partitions, "n_partitions", positive=True)
-            native = _native_session().parallelize_arrow(as_ipc(arrow_table), n_partitions)
+            native = _native_session().parallelize_arrow(as_arrow(arrow_table), n_partitions)
             native_schema = _schema_from_native(native)
             if native_schema != schema:
                 raise TypeError("Arrow field types must match the supplied schema")
@@ -345,8 +347,8 @@ class Table:
                 _check_value(row[name], schema[name], name)
         n_partitions = 1 if n_partitions is None else n_partitions
         _validate_n(n_partitions, "n_partitions")
-        from .arrow import rows_to_ipc
-        native = _native_session().parallelize_arrow(rows_to_ipc(rows, schema), n_partitions)
+        from .arrow import rows_to_arrow
+        native = _native_session().parallelize_arrow(rows_to_arrow(rows, schema), n_partitions)
         table = cls(native, schema)
         if globals is not None:
             table = table.annotate_globals(**globals)
@@ -380,7 +382,7 @@ class Table:
         n_partitions = 1 if n_partitions is None else n_partitions
         _validate_n(n_partitions, "n_partitions", positive=True)
         native = _native_session().parallelize_expression(
-            _json.dumps(rows.to_ir()), n_partitions, references=_global_bindings([rows]))
+            _native_expression(rows.to_ir()), n_partitions, references=_global_bindings([rows]))
         table = cls(native, rows.dtype.element_type)
         if globals is not None:
             table = table.annotate_globals(**globals)
@@ -444,7 +446,7 @@ class Table:
                 raise ExpressionException("expression source mismatch: global belongs to a different Table")
             if _referenced_columns(expr.to_ir()):
                 raise ExpressionException("global expressions cannot reference table rows")
-        native = self._native.project_globals_json(_json.dumps([[name, expr.to_ir()] for name, expr in fields]),
+        native = self._native.project_globals(_native_projection([[name, expr.to_ir()] for name, expr in fields]),
                                                    _global_bindings(expr for _, expr in fields))
         return Table(native, self._schema, self._keys, self._key_sources)
 
@@ -524,13 +526,13 @@ class Table:
         projections = list(projections)
         native, expressions = _resolve_lookups(self._native, [expr for _, expr in projections])
         projections = [(name, expr) for (name, _), expr in builtins.zip(projections, expressions)]
-        projections_json = _json.dumps([[name, expr.to_ir()] for name, expr in projections])
-        native = native.project_json(projections_json, _global_bindings(expressions))
+        native_projections = [[name, expr.to_ir()] for name, expr in projections]
+        native = native.project(_native_projection(native_projections), _global_bindings(expressions))
         schema = {
             name: field_type
             for name, field_type in (
                 (field_name, type_from_wire(field_type))
-                for field_name, field_type in _json.loads(native.schema_json())
+                for field_name, field_type in native.schema()
             )
         }
         projected_keys = self._keys if keys is None else keys
@@ -858,10 +860,10 @@ class Table:
             intervals = _key_filter_intervals(self, expression)
             if intervals is not None:
                 return filter_intervals(self, intervals, _internal=True)
-        native = native.filter_json(_json.dumps(expression.to_ir()), keep, _global_bindings(expressions))
+        native = native.filter(_native_expression(expression.to_ir()), keep, _global_bindings(expressions))
         from .randomness import contains as contains_randomness
         if expr._lookup_refs or contains_randomness(expr.to_ir()):
-            native = native.project_json(_json.dumps([[name, {"op": "column", "name": name}]
+            native = native.project(_native_projection([[name, {"op": "column", "name": name}]
                                                       for name in self._schema]))
         return Table(native, self._schema, self._keys, self._key_sources)
 
@@ -888,7 +890,7 @@ class Table:
         native = self._native.explode(path)
         result = Table(native, tstruct(**{
             field_name: type_from_wire(field_type)
-            for field_name, field_type in _json.loads(native.schema_json())
+            for field_name, field_type in native.schema()
         }), self._keys)
         return result if name is None else result.rename({path[0]: name})
 
@@ -1126,13 +1128,13 @@ class Table:
         """Execute through Arrow and convert to Hail-compatible pandas dtypes."""
         import pandas as pd
         import pyarrow as pa
-        from .arrow import read_ipc, _logical
+        from .arrow import read_arrow, _logical
         if type(flatten) is not builtins.bool:
             raise TypeError("flatten must be a bool")
         if types is not None and not isinstance(types, Mapping):
             raise TypeError("types must be a mapping")
         table = self.flatten() if flatten else self
-        _, arrow_table = read_ipc(table._native.collect_arrow())
+        _, arrow_table = read_arrow(table._native.collect_arrow())
         nullable = {pa.int32(): pd.Int32Dtype(), pa.int64(): pd.Int64Dtype(),
                     pa.float32(): pd.Float32Dtype(), pa.float64(): pd.Float64Dtype(),
                     pa.bool_(): pd.BooleanDtype(), pa.string(): pd.StringDtype()}
@@ -1166,8 +1168,8 @@ class Table:
         ir = expr.to_ir()
         _validate_aggregate_ir(ir)
         native, expressions = _resolve_lookups(self._native, [expr], random_scope="total")
-        native = native.aggregate_globals_json(
-            _json.dumps(expressions[0].to_ir()), _global_bindings(expressions))
+        native = native.aggregate_globals(
+            _native_expression(expressions[0].to_ir()), _global_bindings(expressions))
         result = _external_globals(native, tstruct(value=expr.dtype))["value"]
         try:
             if not _localize:
@@ -1262,8 +1264,9 @@ class Table:
         if not self._keys:
             return []
         point_type = tstruct(**{name: self._schema[name] for name in self._keys})
-        values = _json.loads(self._native.calculate_new_partitions_json(n_partitions))
-        return [decode_value(value, tinterval(point_type)) for value in values]
+        from .arrow import decode_rows
+        values = self._native.calculate_new_partitions(n_partitions)
+        return [row.interval for row in decode_rows(values, tstruct(interval=tinterval(point_type)))]
 
     def repartition(self, n, shuffle=True):
         """Return a lazy table with a requested number of partitions."""
@@ -1302,7 +1305,7 @@ class Table:
         native = self._native.group_within_partitions(name, n)
         schema = tstruct(**{
             field_name: type_from_wire(field_type)
-            for field_name, field_type in _json.loads(native.schema_json())
+            for field_name, field_type in native.schema()
         })
         return Table(native, schema, self._keys)
 
@@ -1328,11 +1331,11 @@ class Table:
                 raise ValueError("Table._map_partitions must preserve key fields")
             if result_schema[key] != self._schema[key]:
                 raise ValueError(f"Table._map_partitions must preserve key field type for {key!r}")
-        native = self._native.map_partitions_json(
-            rows_name, _json.dumps(body.to_ir()), _global_bindings([body])
+        native = self._native.map_partitions(
+            rows_name, _native_expression(body.to_ir()), _global_bindings([body])
         )
         schema = tstruct(**{
-            name: type_from_wire(dtype) for name, dtype in _json.loads(native.schema_json())
+            name: type_from_wire(dtype) for name, dtype in native.schema()
         })
         return Table(native, schema, self._keys)
 
@@ -1350,7 +1353,7 @@ from . import utils  # noqa: E402
 
 
 def _referenced_columns(node, scope="column"):
-    if isinstance(node, builtins.dict):
+    if isinstance(node, IR_NODE_TYPES):
         # Literal payloads are user data, even if they contain keys named op/name.
         if node.get("op") == "literal":
             return builtins.set()
@@ -1369,7 +1372,7 @@ def _referenced_columns(node, scope="column"):
 def _validate_aggregate_ir(node):
     """Reject row references that are not inside an aggregate scope."""
     def has_aggregate(value):
-        if isinstance(value, builtins.dict):
+        if isinstance(value, IR_NODE_TYPES):
             if value.get("op") == "literal":
                 return False
             if value.get("op") in ("aggregate", "agg_filter", "agg_explode", "agg_group_by", "agg_array", "aggregate_fold"):
@@ -1380,7 +1383,7 @@ def _validate_aggregate_ir(node):
         return False
 
     def visit(value, row_allowed=False):
-        if isinstance(value, builtins.dict):
+        if isinstance(value, IR_NODE_TYPES):
             op = value.get("op")
             if op == "literal":
                 return
@@ -1426,7 +1429,7 @@ def _validate_aggregate_ir(node):
 
 
 def _ir_has_aggregate(node):
-    if isinstance(node, builtins.dict):
+    if isinstance(node, IR_NODE_TYPES):
         if node.get("op") == "literal":
             return False
         if node.get("op") == "aggregate":
@@ -1435,7 +1438,7 @@ def _ir_has_aggregate(node):
             return True
         if node.get("op") in ("agg_filter", "agg_explode", "agg_group_by", "agg_array"):
             def has_scan(value):
-                if isinstance(value, builtins.dict):
+                if isinstance(value, IR_NODE_TYPES):
                     if value.get("op") == "literal":
                         return False
                     if value.get("op") == "aggregate" and (value.get("options") or {}).get("__vail_scan"):
@@ -1486,13 +1489,13 @@ class GroupedTable:
         expressions = {name: as_expr(value) for name, value in fields.items()}
         native, resolved = _resolve_lookups(table._native, [expr for _, expr in keys] + list(expressions.values()), random_scope=["row"] * builtins.len(keys) + ["group"] * builtins.len(expressions))
         resolved_keys, resolved_fields = resolved[:builtins.len(keys)], resolved[builtins.len(keys):]
-        key_json = _json.dumps([[name, expr.to_ir()] for (name, _), expr in builtins.zip(keys, resolved_keys)])
-        fields_json = _json.dumps([[name, expr.to_ir()] for name, expr in builtins.zip(expressions, resolved_fields)])
-        native = native.grouped_aggregate_json(key_json, fields_json, _global_bindings(resolved))
+        native_keys = [[name, expr.to_ir()] for (name, _), expr in builtins.zip(keys, resolved_keys)]
+        native_fields = [[name, expr.to_ir()] for name, expr in builtins.zip(expressions, resolved_fields)]
+        native = native.grouped_aggregate(_native_projection(native_keys), _native_projection(native_fields), _global_bindings(resolved))
         if self._npartitions is not None:
             native = native.repartition(self._npartitions, "shuffle")
         schema = tstruct(**{name: type_from_wire(dtype)
-                            for name, dtype in _json.loads(native.schema_json())})
+                            for name, dtype in native.schema()})
         return Table(native, schema, [name for name, _ in keys])
 
 
@@ -1528,7 +1531,7 @@ def _key_filter_intervals(table, expression):
         """Recognize full-key structs whose labels may be public aliases."""
         if builtins.len(keys) == 1:
             return node == key_ir
-        if not isinstance(node, builtins.dict) or node.get("op") != "struct":
+        if not isinstance(node, IR_NODE_TYPES) or node.get("op") != "struct":
             return False
         fields = node.get("fields", [])
         return (builtins.len(fields) == builtins.len(keys)
@@ -1536,15 +1539,15 @@ def _key_filter_intervals(table, expression):
                                  for (_, value), name in builtins.zip(fields, keys)))
 
     def is_defined_guard(node):
-        return (isinstance(node, builtins.dict) and node.get("op") == "unary"
+        return (isinstance(node, IR_NODE_TYPES) and node.get("op") == "unary"
                 and node.get("operator") == "not"
-                and isinstance(node.get("value"), builtins.dict)
+                and isinstance(node.get("value"), IR_NODE_TYPES)
                 and node["value"].get("op") == "is_missing"
                 and node["value"].get("value") == key_ir)
 
     clauses = []
     def flatten_and(node):
-        if isinstance(node, builtins.dict) and node.get("op") == "binary" and node.get("operator") == "and":
+        if isinstance(node, IR_NODE_TYPES) and node.get("op") == "binary" and node.get("operator") == "and":
             return flatten_and(node["left"]) and flatten_and(node["right"])
         clauses.append(node)
         return True
@@ -1554,7 +1557,7 @@ def _key_filter_intervals(table, expression):
     for clause in clauses:
         if is_defined_guard(clause):
             continue
-        if not isinstance(clause, builtins.dict) or clause.get("op") != "binary":
+        if not isinstance(clause, IR_NODE_TYPES) or clause.get("op") != "binary":
             return None
         operator, left, right = clause.get("operator"), clause.get("left"), clause.get("right")
         if operator not in ("eq", "lt", "le", "gt", "ge"):
@@ -1589,7 +1592,7 @@ def _key_filter_intervals(table, expression):
         return None
 
     def ir_type(node):
-        if not isinstance(node, builtins.dict):
+        if not isinstance(node, IR_NODE_TYPES):
             return None
         op = node.get("op")
         if op in ("literal", "external_global"):
@@ -1842,9 +1845,9 @@ def filter_intervals(ds, intervals, keep=True, *, _internal=False):
     if not intervals:
         return ds if not keep else ds.filter(False)
     if keep and ds._native.is_read_source():
-        from .arrow import rows_to_ipc
+        from .arrow import rows_to_arrow
         native = ds._native.filter_intervals_arrow(
-            rows_to_ipc([{"interval": value} for value in intervals],
+            rows_to_arrow([{"interval": value} for value in intervals],
                         tstruct(interval=tinterval(point_type))), True)
         return Table(native, ds._schema, ds._keys, ds._key_sources)
     from .inputs import arrow_literal
@@ -1880,7 +1883,7 @@ def read_table(path, *, _intervals=None, _filter_intervals=False, _n_partitions=
     if _intervals is None and _filter_intervals:
         raise ValueError("_filter_intervals requires _intervals")
     native, keys = _native_session().read_table(os.fspath(path))
-    schema = tstruct(**{name: type_from_wire(dtype) for name, dtype in _json.loads(native.schema_json())})
+    schema = tstruct(**{name: type_from_wire(dtype) for name, dtype in native.schema()})
     if _n_partitions:
         if not keys:
             raise ValueError("_n_partitions requires a keyed table")
@@ -1920,9 +1923,9 @@ def read_table(path, *, _intervals=None, _filter_intervals=False, _n_partitions=
             # empty read. Struct keys support prefix intervals; the full key is the
             # least surprising typed empty representation.
             point_type = tstruct(**{name: schema[name] for name in keys})
-        from .arrow import rows_to_ipc
+        from .arrow import rows_to_arrow
         native = native.filter_intervals_arrow(
-            rows_to_ipc([{"interval": value} for value in intervals],
+            rows_to_arrow([{"interval": value} for value in intervals],
                         tstruct(interval=tinterval(point_type))),
             _filter_intervals,
         )
@@ -1942,7 +1945,7 @@ def eval(expression):
         raise ValueError("eval cannot evaluate row-indexed expressions")
     table = expr.source if expr.source is not None else utils.range_table(0)
     from .arrow import decode_rows
-    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+    data = table._native.eval_global_arrow(_native_expression(expr.to_ir()), _global_bindings([expr]))
     return decode_rows(data, tstruct(value=expr.dtype))[0].value
 
 def eval_typed(expression):

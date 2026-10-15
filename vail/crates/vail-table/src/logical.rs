@@ -519,6 +519,7 @@ fn lower_scans(
             value,
             options,
             init,
+            ..
         } = expr
         {
             if options

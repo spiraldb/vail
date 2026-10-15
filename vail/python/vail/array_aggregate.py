@@ -1,5 +1,7 @@
 """Lower collection aggregations to native list expressions."""
 
+from .expressions import IR_NODE_TYPES
+
 from uuid import uuid4
 from .expressions import Expression, _IR, as_expr, cast
 from .types import tint64, tbool, tarray, tset
@@ -20,7 +22,7 @@ def aggregate(value, f):
     def substitute(node, name, replacement):
         if isinstance(node, list):
             return [substitute(v, name, replacement) for v in node]
-        if not isinstance(node, dict) or node.get("op") == "literal":
+        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
             return node
         if node.get("op") == "lambda_variable" and node["name"] == name:
             return replacement
@@ -33,7 +35,7 @@ def aggregate(value, f):
         return items.map(lambda x: raw(substitute(node, name, x.to_ir()), dtype))
 
     def walk(node, dtype, items=value, name=parameter):
-        if not isinstance(node, dict) or node.get("op") == "literal":
+        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
             return node
         op = node.get("op")
         if op == "agg_explode":
@@ -76,8 +78,8 @@ def aggregate(value, f):
             )
         return {
             k: walk(v, dtype, items, name)
-            if isinstance(v, dict)
-            else [walk(x, dtype, items, name) if isinstance(x, dict) else x for x in v]
+            if isinstance(v, IR_NODE_TYPES)
+            else [walk(x, dtype, items, name) if isinstance(x, IR_NODE_TYPES) else x for x in v]
             if isinstance(v, list)
             else v
             for k, v in node.items()

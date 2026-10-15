@@ -3,6 +3,10 @@
 Each call captures a static UID; consumers bind dynamic row and element UIDs.
 """
 
+from .expressions import _native_expression, _native_expressions, _native_projection
+
+from .expressions import IR_NODE_TYPES
+
 import itertools
 import json
 from uuid import uuid4
@@ -200,14 +204,14 @@ def shuffle(a, seed=None):
 
 def _is_random(node):
     return (
-        isinstance(node, dict)
+        isinstance(node, IR_NODE_TYPES)
         and node.get("op") == "nested_function"
         and node.get("function", "").startswith("random_")
     )
 
 
 def contains(node):
-    if isinstance(node, dict):
+    if isinstance(node, IR_NODE_TYPES):
         return _is_random(node) or (
             node.get("op") != "literal" and any(contains(v) for v in node.values())
         )
@@ -218,7 +222,7 @@ def bind_context(node, uid):
     """Prepend an enclosing lexical context to an expression callback."""
     if isinstance(node, list):
         return [bind_context(v, uid) for v in node]
-    if not isinstance(node, dict) or node.get("op") == "literal":
+    if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
         return node
     result = {k: bind_context(v, uid) for k, v in node.items()}
     if _is_random(node):
@@ -232,7 +236,7 @@ def bind_rows(node, row_uid, mode, inside=None, result_parameters=frozenset()):
         inside = mode == "row"
     if isinstance(node, list):
         return [bind_rows(v, row_uid, mode, inside, result_parameters) for v in node]
-    if not isinstance(node, dict) or node.get("op") == "literal":
+    if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
         return node
     op = node.get("op")
     scopes = {}
@@ -280,7 +284,7 @@ def bind_rows(node, row_uid, mode, inside=None, result_parameters=frozenset()):
         def depends(value):
             if isinstance(value, list):
                 return any(depends(v) for v in value)
-            if not isinstance(value, dict) or value.get("op") == "literal":
+            if not isinstance(value, IR_NODE_TYPES) or value.get("op") == "literal":
                 return False
             return (
                 value.get("op") == "lambda_variable"
@@ -307,9 +311,9 @@ def resolve(native, expressions, mode="row"):
     """Bind row identity before optimizable projections/filters/aggregations."""
     if not any(contains(e.to_ir()) for e in expressions):
         return native, expressions
-    names = [name for name, _ in json.loads(native.schema_json())]
+    names = [name for name, _ in native.schema()]
     occupied = set(names) | {
-        name for name, _ in json.loads(native.global_schema_json())
+        name for name, _ in native.global_schema()
     }
     name = "__vail_rng_row_uid"
     while name in occupied:
@@ -326,7 +330,7 @@ def resolve(native, expressions, mode="row"):
             },
         ]
     )
-    native = native.project_json(json.dumps(fields))
+    native = native.project(_native_projection(fields))
     uid = {"op": "column", "name": name}
     modes = [mode] * len(expressions) if isinstance(mode, str) else mode
     return native, [
@@ -374,7 +378,7 @@ def index_callback(collection, parameter, body):
     def replace(node):
         if isinstance(node, list):
             return [replace(v) for v in node]
-        if not isinstance(node, dict) or node.get("op") == "literal":
+        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
             return node
         if node.get("op") == "lambda_variable" and node.get("name") == parameter:
             return value

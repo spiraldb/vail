@@ -148,24 +148,24 @@ async fn pushed_key_filter_skips_unmatched_files_inside_a_source_partition() {
     let read = TableIR::read(path).await.unwrap();
     let lower = ScalarIR::Binary {
         operator: BinaryOperator::Gt,
-        left: Box::new(ScalarIR::Column { name: "idx".into() }),
-        right: Box::new(ScalarIR::Literal {
+        left: Arc::new(ScalarIR::Column { name: "idx".into() }),
+        right: Arc::new(ScalarIR::Literal {
             dtype: Type::Primitive(PrimitiveType::Int32),
             value: json!(7),
         }),
     };
     let upper = ScalarIR::Binary {
         operator: BinaryOperator::Lt,
-        left: Box::new(ScalarIR::Column { name: "idx".into() }),
-        right: Box::new(ScalarIR::Literal {
+        left: Arc::new(ScalarIR::Column { name: "idx".into() }),
+        right: Arc::new(ScalarIR::Literal {
             dtype: Type::Primitive(PrimitiveType::Int32),
             value: json!(10),
         }),
     };
     let filter = ScalarIR::Binary {
         operator: BinaryOperator::And,
-        left: Box::new(lower),
-        right: Box::new(upper),
+        left: Arc::new(lower),
+        right: Arc::new(upper),
     };
     let selected = read
         .filter(filter, true)
@@ -233,16 +233,16 @@ async fn pushed_key_or_filter_unions_disjoint_fragment_ranges() {
     let read = TableIR::read(path).await.unwrap();
     let comparison = |operator, value| ScalarIR::Binary {
         operator,
-        left: Box::new(ScalarIR::Column { name: "idx".into() }),
-        right: Box::new(ScalarIR::Literal {
+        left: Arc::new(ScalarIR::Column { name: "idx".into() }),
+        right: Arc::new(ScalarIR::Literal {
             dtype: Type::Primitive(PrimitiveType::Int32),
             value: json!(value),
         }),
     };
     let predicate = ScalarIR::Binary {
         operator: BinaryOperator::Or,
-        left: Box::new(comparison(BinaryOperator::Lt, 2)),
-        right: Box::new(comparison(BinaryOperator::Gt, 9)),
+        left: Arc::new(comparison(BinaryOperator::Lt, 2)),
+        right: Arc::new(comparison(BinaryOperator::Gt, 9)),
     };
     let selected = read.filter(predicate, true).unwrap();
     let batches = selected
@@ -303,8 +303,8 @@ async fn pushed_key_filter_prunes_unicode_utf8_string_fragments() {
     let read = TableIR::read(path).await.unwrap();
     let predicate = ScalarIR::Binary {
         operator: BinaryOperator::Gt,
-        left: Box::new(ScalarIR::Column { name: "s".into() }),
-        right: Box::new(ScalarIR::Literal {
+        left: Arc::new(ScalarIR::Column { name: "s".into() }),
+        right: Arc::new(ScalarIR::Literal {
             dtype: Type::Primitive(PrimitiveType::Str),
             value: json!("ø"),
         }),

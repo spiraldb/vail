@@ -28,7 +28,7 @@ datafusion-physical-expr = "=55.0.0"
 datafusion-physical-plan = "=55.0.0"
 futures = "0.3"
 pyo3 = "=0.29.2"
-serde = { version = "1", features = ["derive"] }
+serde = { version = "1", features = ["derive", "rc"] }
 serde_json = "1"
 sha2 = "0.10"
 thiserror = "2"

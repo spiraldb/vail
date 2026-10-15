@@ -1081,7 +1081,7 @@ mod prefix_partition_index_tests {
         };
         let intervals = (0..84)
             .map(|i| Expr::Interval {
-                start: Box::new(Expr::Struct {
+                start: Arc::new(Expr::Struct {
                     fields: vec![(
                         "a".into(),
                         Expr::RuntimeLiteral {
@@ -1089,7 +1089,7 @@ mod prefix_partition_index_tests {
                         },
                     )],
                 }),
-                end: Box::new(Expr::Struct {
+                end: Arc::new(Expr::Struct {
                     fields: vec![(
                         "a".into(),
                         Expr::RuntimeLiteral {
@@ -1097,10 +1097,10 @@ mod prefix_partition_index_tests {
                         },
                     )],
                 }),
-                includes_start: Box::new(Expr::RuntimeLiteral {
+                includes_start: Arc::new(Expr::RuntimeLiteral {
                     value: ScalarValue::Boolean(Some(true)),
                 }),
-                includes_end: Box::new(Expr::RuntimeLiteral {
+                includes_end: Arc::new(Expr::RuntimeLiteral {
                     value: ScalarValue::Boolean(Some(false)),
                 }),
             })
@@ -1248,7 +1248,7 @@ pub(crate) fn ordered_key_point(value: Expr, point_type: &Type) -> Expr {
                 .iter()
                 .map(|(name, _)| {
                     let field = Expr::GetField {
-                        value: Box::new(value.clone()),
+                        value: Arc::new(value.clone()),
                         name: name.clone(),
                     };
                     (
@@ -1258,7 +1258,7 @@ pub(crate) fn ordered_key_point(value: Expr, point_type: &Type) -> Expr {
                                 (
                                     "missing".into(),
                                     Expr::IsMissing {
-                                        value: Box::new(field.clone()),
+                                        value: Arc::new(field.clone()),
                                     },
                                 ),
                                 ("value".into(), field),
@@ -1274,7 +1274,7 @@ pub(crate) fn ordered_key_point(value: Expr, point_type: &Type) -> Expr {
 }
 pub(crate) fn ordered_key_interval(value: Expr, point_type: &Type) -> Expr {
     let field = |name: &str| Expr::GetField {
-        value: Box::new(value.clone()),
+        value: Arc::new(value.clone()),
         name: name.into(),
     };
     let endpoint = |name: &str| {
@@ -1285,25 +1285,25 @@ pub(crate) fn ordered_key_interval(value: Expr, point_type: &Type) -> Expr {
         // unbounded bound into a concrete all-missing key, which sorts after
         // ordinary composite keys and can reject every row in the interval.
         let typed_null = Expr::IfElse {
-            condition: Box::new(Expr::RuntimeLiteral {
+            condition: Arc::new(Expr::RuntimeLiteral {
                 value: ScalarValue::Boolean(None),
             }),
-            consequent: Box::new(ordered.clone()),
-            alternate: Box::new(ordered.clone()),
+            consequent: Arc::new(ordered.clone()),
+            alternate: Arc::new(ordered.clone()),
         };
         Expr::IfElse {
-            condition: Box::new(Expr::IsMissing {
-                value: Box::new(raw),
+            condition: Arc::new(Expr::IsMissing {
+                value: Arc::new(raw),
             }),
-            consequent: Box::new(typed_null),
-            alternate: Box::new(ordered),
+            consequent: Arc::new(typed_null),
+            alternate: Arc::new(ordered),
         }
     };
     Expr::Interval {
-        start: Box::new(endpoint("start")),
-        end: Box::new(endpoint("end")),
-        includes_start: Box::new(field("includes_start")),
-        includes_end: Box::new(field("includes_end")),
+        start: Arc::new(endpoint("start")),
+        end: Arc::new(endpoint("end")),
+        includes_start: Arc::new(field("includes_start")),
+        includes_end: Arc::new(field("includes_end")),
     }
 }
 
@@ -1364,29 +1364,29 @@ fn union_predicate(intervals: &[ScalarIR], keys: &[String], point_type: &Type) -
                 return prefix_interval_predicate(interval, component, &point);
             }
             let get = |name: &str| Expr::GetField {
-                value: Box::new(interval.clone()),
+                value: Arc::new(interval.clone()),
                 name: name.into(),
             };
             let ordered_interval = ordered_key_interval(interval.clone(), &comparison_type);
             let start = Expr::GetField {
-                value: Box::new(ordered_interval.clone()),
+                value: Arc::new(ordered_interval.clone()),
                 name: "start".into(),
             };
             let end = Expr::GetField {
-                value: Box::new(ordered_interval),
+                value: Arc::new(ordered_interval),
                 name: "end".into(),
             };
             let start_unbounded = Expr::IsMissing {
-                value: Box::new(start.clone()),
+                value: Arc::new(start.clone()),
             };
             let end_unbounded = Expr::IsMissing {
-                value: Box::new(end.clone()),
+                value: Arc::new(end.clone()),
             };
             let ordered_point = ordered_key_point(point.clone(), &comparison_type);
             let binary = |left, operator, right| Expr::Binary {
                 operator,
-                left: Box::new(left),
-                right: Box::new(right),
+                left: Arc::new(left),
+                right: Arc::new(right),
             };
             use vail_execution::expressions::BinaryOperator as Op;
             let boundary = |endpoint: Expr, inclusive: Expr, is_lower: bool| {
@@ -1425,8 +1425,8 @@ fn union_predicate(intervals: &[ScalarIR], keys: &[String], point_type: &Type) -
             next.push(if let Some(right) = iter.next() {
                 Expr::Binary {
                     operator: vail_execution::expressions::BinaryOperator::Or,
-                    left: Box::new(left),
-                    right: Box::new(right),
+                    left: Arc::new(left),
+                    right: Arc::new(right),
                 }
             } else {
                 left
@@ -1453,15 +1453,15 @@ fn prefix_interval_predicate(interval: &ScalarIR, component: &str, point: &Expr)
     };
     let binary = |left, operator, right| Expr::Binary {
         operator,
-        left: Box::new(left),
-        right: Box::new(right),
+        left: Arc::new(left),
+        right: Arc::new(right),
     };
     let missing = || Expr::IsMissing {
-        value: Box::new(point.clone()),
+        value: Arc::new(point.clone()),
     };
     let present = || Expr::Unary {
         operator: vail_execution::expressions::UnaryOperator::Not,
-        value: Box::new(missing()),
+        value: Arc::new(missing()),
     };
     let boundary = |index, lower: bool| -> Result<Expr> {
         let endpoint = ScalarValue::try_from_array(fields.column(index).as_ref(), 0)?;

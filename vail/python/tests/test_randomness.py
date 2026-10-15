@@ -48,7 +48,7 @@ class IRNames:
 
 def assert_native_node(value, node):
     if isinstance(value, hl.Table):
-        tree = json.loads(value._native.ir_json())
+        tree = value._native.ir()
         aliases = {
             "TableLeftJoinRightDistinct": "TableLookup",
             "TableIntervalJoin": "TableLookup",
@@ -74,7 +74,7 @@ def assert_native_node(value, node):
         else:
             assert tree
     elif isinstance(value, hl.MatrixTable):
-        assert value._mir.core._native.ir_json()
+        assert value._mir.core._native.ir()
     else:
         assert hl.expressions.as_expr(value).to_ir()
 
