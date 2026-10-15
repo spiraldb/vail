@@ -32,6 +32,7 @@ pub mod csv_line;
 pub mod expressions;
 pub mod logical_expr;
 mod matrix_arrays;
+mod numeric_lists;
 pub mod reference;
 pub mod scan_scopes;
 pub mod scan_state;

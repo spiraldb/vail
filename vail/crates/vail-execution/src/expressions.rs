@@ -4092,6 +4092,8 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
         return Ok(function);
     }
     Ok(match name {
+        "vail_array_mean" => crate::numeric_lists::mean_udf(false),
+        "vail_array_mean_strict" => crate::numeric_lists::mean_udf(true),
         "array_sort" => nested::sort::array_sort_udf(),
         "array_distinct" => nested::set_ops::array_distinct_udf(),
         "array_union" => nested::set_ops::array_union_udf(),
@@ -4102,6 +4104,7 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
         "arrays_zip" => nested::arrays_zip::arrays_zip_udf(),
         "array_compact" => nested::array_compact::array_compact_udf(),
         "flatten" => nested::flatten::flatten_udf(),
+        "array_avg" => nested::array_avg::array_avg_udf(),
         "array_sum" => nested::array_sum::array_sum_udf(),
         "array_product" => nested::array_product::array_product_udf(),
         "array_min" => nested::min_max::array_min_udf(),
@@ -4393,21 +4396,14 @@ fn lower_scoped(
             value, parameter, predicate, "filter", schema, globals, scope,
         )?,
         Expr::StreamRange { start, stop, step } => {
-            let int64 = DataType::Int64;
             let args = [start, stop, step]
                 .iter()
-                .map(|arg| {
-                    let value = lower_scoped(arg, schema, globals, scope)?;
-                    Ok(cast(value, schema, int64.clone())?)
-                })
+                .map(|arg| lower_scoped(arg, schema, globals, scope))
                 .collect::<Result<Vec<_>, ExprError>>()?;
-            let range = Arc::new(ScalarFunctionExpr::try_new(
-                datafusion_functions_nested::range::range_udf(),
-                args,
-                schema,
+            Arc::new(ScalarFunctionExpr::try_new(
+                crate::numeric_lists::range_udf(), args, schema,
                 Arc::new(ConfigOptions::default()),
-            )?);
-            cast(range, schema, dtype)?
+            )?)
         }
         Expr::ArrayGrouped { value, size } => {
             let input_type = value.dtype_scoped(schema, globals.schema(), scope)?;

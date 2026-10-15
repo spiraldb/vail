@@ -95,3 +95,28 @@ def test_fold_ignores_large_unreferenced_nested_columns():
     ).collect()
     assert [row.total for row in result] == [sum(range(256))] * 4
     assert [row.nested for row in result] == [8 * sum(range(256))] * 4
+
+
+@pytest.mark.parametrize('dtype, values', [
+    (hl.tint32, [2147483647, 2147483647]),
+    (hl.tint64, [9223372036854775807, 9223372036854775807]),
+    (hl.tfloat32, [1.0, 2.0, 3.0]),
+    (hl.tfloat64, [1.0, 2.0, 3.0]),
+])
+def test_mean_uses_typed_kernel_without_array_cast(dtype, values):
+    expression = hl.mean(hl.literal(values, hl.tarray(dtype)))
+    assert expression.to_ir()['function'] == 'vail_array_mean'
+    assert hl.eval(expression) == pytest.approx(sum(float(x) for x in values) / len(values))
+
+
+def test_typed_range_mean_in_lazy_dataframe():
+    table = hl.range_table(10, 3)
+    table = table.annotate(values=hl.range(table.idx, -1, -2))
+    result = table.annotate(mean=hl.mean(table.values)).collect()
+    for row in result:
+        expected = list(range(row.idx, -1, -2))
+        assert row["values"] == expected
+        assert row.mean == sum(expected) / len(expected)
+    plan = table._native.logical_plan()
+    assert 'vail_range_int32' in plan
+    assert 'AS List(Int32)' not in plan

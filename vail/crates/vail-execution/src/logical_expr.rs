@@ -470,18 +470,8 @@ fn lower(
             datafusion_functions_nested::flatten::flatten_udf().call(vec![recurse(value)?])
         }
         Expr::StreamRange { start, stop, step } => {
-            let int64 = arrow_schema::DataType::Int64;
-            let start = recurse(start)?.cast_to(&int64, schema)?;
-            let stop = recurse(stop)?.cast_to(&int64, schema)?;
-            let step = recurse(step)?.cast_to(&int64, schema)?;
-            datafusion_functions_nested::range::range_udf()
-                .call(vec![start, stop, step])
-                .cast_to(
-                    &expr
-                        .dtype_with_globals(&schema.as_arrow(), globals)?
-                        .to_arrow()?,
-                    schema,
-                )?
+            crate::numeric_lists::range_udf()
+                .call(vec![recurse(start)?, recurse(stop)?, recurse(step)?])
         }
         Expr::Aggregate { .. }
         | Expr::AggregateFold { .. }
