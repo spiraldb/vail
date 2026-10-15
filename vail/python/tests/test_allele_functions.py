@@ -53,3 +53,35 @@ def test_allele_functions_missingness_row_execution_and_validation():
     other = hl.range_table(2)
     with pytest.raises(hl.ExpressionException, match='source mismatch'):
         hl.is_snp(table.ref, hl.str(other.idx))
+
+
+def test_all_dna_snp_pairs_padded_and_long_alleles():
+    transitions = {('A','G'),('G','A'),('C','T'),('T','C')}
+    pairs = [(ref, alt) for ref in 'ACGTNM' for alt in 'ACGTNM' if ref != alt]
+    cases = [(prefix + ref + suffix, prefix + alt + suffix, (ref, alt) in transitions)
+             for prefix, suffix in [('', ''), ('NM', 'MN'), ('A' * 4096, 'T' * 4096)]
+             for ref,alt in pairs]
+    table = hl.Table.parallelize([{'ref':ref,'alt':alt} for ref,alt,_ in cases])
+    rows = table.select(kind=hl.allele_type(table.ref,table.alt),
+                        snp=hl.is_snp(table.ref,table.alt),
+                        transition=hl.is_transition(table.ref,table.alt),
+                        transversion=hl.is_transversion(table.ref,table.alt)).collect()
+    assert [(r.kind,r.snp,r.transition,r.transversion) for r in rows] == [
+        ('SNP',True,transition,not transition) for _,_,transition in cases]
+
+
+def test_all_classification_predicates_and_half_missing_inputs():
+    cases = [('A','G',1),('AC','GT',2),('A','AT',3),('AT','A',4),
+             ('AC','GTA',5),('A','*',6),('A','<DEL>',7),('A','H',0),
+             (None,'G',None),('A',None,None),('',None,0)]
+    table = hl.Table.parallelize([{'ref':ref,'alt':alt} for ref,alt,_ in cases],
+                                 schema=hl.tstruct(ref=hl.tstr,alt=hl.tstr))
+    functions = [hl.is_snp,hl.is_mnp,hl.is_insertion,hl.is_deletion,hl.is_complex,hl.is_star,hl.is_symbolic]
+    result = table.select(code=hl.numeric_allele_type(table.ref,table.alt),
+                          **{f'p{i}':fn(table.ref,table.alt) for i,fn in enumerate(functions,1)}).collect()
+    for row,(_,_,expected) in zip(result,cases):
+        assert row.code == expected
+        assert [row[f'p{i}'] for i in range(1,8)] == [None if expected is None else expected==i for i in range(1,8)]
+    empty = hl.Table.parallelize([],schema=hl.tstruct(ref=hl.tstr,alt=hl.tstr))
+    assert empty.select(code=hl.numeric_allele_type(empty.ref,empty.alt),
+                        transition=hl.is_transition(empty.ref,empty.alt)).collect()==[]

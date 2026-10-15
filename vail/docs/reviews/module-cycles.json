@@ -94,6 +94,26 @@
       ],
       "reports": [
         "vail/docs/reviews/call-adapter-cost.json"
+      ],
+      "merged_commit": "1ab6499"
+    },
+    {
+      "module": "vail/python/vail/allele_functions.py",
+      "reviewed_base": "1ab6499",
+      "status": "approved_and_merged",
+      "changes": [
+        "replace indexed substring mismatch/transition loops with linear existing string operations",
+        "document ASCII equal-length/single-mismatch preconditions",
+        "public exhaustive/padded/long and all-predicate missingness cases"
+      ],
+      "reports": [
+        "vail/docs/reviews/allele-classification-cost.json"
+      ],
+      "accepted_findings": [
+        "replace per-character substring range/map mismatch and transition work with linear existing kernels"
+      ],
+      "validation": [
+        "73 allele and string-conversion tests passed including final empty projection"
       ]
     }
   ],

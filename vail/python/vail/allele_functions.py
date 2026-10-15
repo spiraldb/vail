@@ -5,7 +5,7 @@ Copyright (c) 2015-2023 Hail Authors, under the MIT license (see
 third_party/HAIL_LICENSE). No general Unicode substring semantics are assumed:
 substring comparisons below execute only for validated ASCII DNA alleles.
 """
-from .expressions import array_sum, case, cast, if_else, literal
+from .expressions import case, cast, if_else, literal
 from .strings import _call, _text
 from .types import tint32, tint64
 
@@ -25,8 +25,9 @@ def _tail(value):
 
 
 def _mismatches(ref, alt):
-    from . import range
-    return array_sum(range(ref.length()).map(lambda i: cast(_char(ref, i) != _char(alt, i), tint32)))
+    # This branch receives equal-length ASCII DNA strings. Count differences
+    # in one traversal rather than materializing indexed character expressions.
+    return _call('hamming', ref, alt)
 
 
 def numeric_allele_type(ref, alt):
@@ -90,11 +91,11 @@ def is_symbolic(ref, alt):
 
 
 def _transition(ref, alt):
-    from . import range
-    def pair(i):
-        r, a = _char(ref, i), _char(alt, i)
-        return ((r == 'A') & (a == 'G')) | ((r == 'G') & (a == 'A')) | ((r == 'C') & (a == 'T')) | ((r == 'T') & (a == 'C'))
-    return array_sum(range(ref.length()).map(lambda i: cast(pair(i), tint32))) > 0
+    # Called only for a validated SNP: equal-length ASCII DNA with exactly one
+    # mismatch. That mismatch is a transition iff purine/pyrimidine classes
+    # agree. N and M remain distinct so ambiguous bases never form transitions.
+    classes = lambda value: _call('translate', value, literal('AGCT'), literal('RRYY'))
+    return classes(ref) == classes(alt)
 
 
 def is_transition(ref, alt):

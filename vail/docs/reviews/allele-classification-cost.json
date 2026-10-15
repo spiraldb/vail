@@ -1,0 +1,40 @@
+{
+  "workload": "benchmarks/check_allele_classification_cost.py;16 identical rows per length, final base A->G; collect allele type, transition, transversion, verify results",
+  "native_sha256": "6936568d26ca9995f73ee3769efab3797718eadb82f7e21319bf4d9777d6b8ab",
+  "limitations": "Sequential sizes in fresh process per revision; first size includes initialization, cumulative RSS high-water; shared machine load, not isolated throughput. Same native binary.",
+  "baseline": [
+    {
+      "length": 128,
+      "seconds": 0.02991695800301386,
+      "max_rss_bytes": 134873088
+    },
+    {
+      "length": 512,
+      "seconds": 0.08127237499866169,
+      "max_rss_bytes": 153141248
+    },
+    {
+      "length": 2048,
+      "seconds": 0.8430462920005084,
+      "max_rss_bytes": 294862848
+    }
+  ],
+  "indexed": [
+    {
+      "length": 128,
+      "seconds": 0.015497209002205636,
+      "max_rss_bytes": 133480448
+    },
+    {
+      "length": 512,
+      "seconds": 0.013745749998633983,
+      "max_rss_bytes": 134397952
+    },
+    {
+      "length": 2048,
+      "seconds": 0.01372908299890696,
+      "max_rss_bytes": 135380992
+    }
+  ],
+  "validation": "73 allele and string conversion tests passed in1.02s; final empty executed projections included"
+}
