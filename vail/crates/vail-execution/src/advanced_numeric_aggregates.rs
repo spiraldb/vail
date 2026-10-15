@@ -843,9 +843,10 @@ fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, Expr
     }
     let xt = fields[1].data_type();
     let n_actual = match xt {
+        DataType::Struct(xs) if xs.iter().all(|f| f.data_type() == &DataType::Float64) => xs.len(),
         DataType::List(f) if *f.data_type() == DataType::Float64 => p,
         DataType::Float64 => 1,
-        _ => return Err(invalid("linreg x must be float64 or array<float64>")),
+        _ => return Err(invalid("linreg x must contain float64 predictors")),
     };
     if n_actual != p {
         return Err(invalid("linreg n_predictors does not match x type"));
@@ -1044,6 +1045,32 @@ impl Accumulator for LinregAccumulator {
             .ok_or_else(|| DataFusionError::Execution("linreg y must be float64".into()))?;
         let xs_list = cols[1].as_any().downcast_ref::<ListArray>();
         let xs_scalar = cols[1].as_any().downcast_ref::<Float64Array>();
+        let xs_columns = cols[1]
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .map(|s| {
+                s.columns()
+                    .iter()
+                    .map(|a| {
+                        a.as_any().downcast_ref::<Float64Array>().ok_or_else(|| {
+                            DataFusionError::Execution("linreg predictors must be float64".into())
+                        })
+                    })
+                    .collect::<DfResult<Vec<_>>>()
+            })
+            .transpose()?;
+        let xs_values = xs_list
+            .map(|l| {
+                l.values()
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Execution("linreg predictors must be float64".into())
+                    })
+            })
+            .transpose()?;
+        // Reuse one small predictor workspace for the entire Arrow batch.
+        let mut scratch = vec![0.0; self.p];
         let weights = if self.weighted {
             Some(
                 cols[2]
@@ -1060,15 +1087,24 @@ impl Accumulator for LinregAccumulator {
             if ys.is_null(r) || cols[1].is_null(r) {
                 continue;
             }
-            let x: Vec<f64> = if let Some(l) = xs_list {
-                let ar = l.value(r);
-                let f = ar.as_any().downcast_ref::<Float64Array>().unwrap();
-                if f.null_count() > 0 || f.len() != self.p {
+            let x: &[f64] = if let Some(xs) = &xs_columns {
+                if xs.iter().any(|a| a.is_null(r)) {
                     continue;
                 }
-                f.values().to_vec()
+                for (value, column) in scratch.iter_mut().zip(xs) {
+                    *value = column.value(r);
+                }
+                &scratch
+            } else if let (Some(l), Some(f)) = (xs_list, xs_values) {
+                let offsets = l.value_offsets();
+                let start = offsets[r] as usize;
+                let end = offsets[r + 1] as usize;
+                if end - start != self.p || (start..end).any(|i| f.is_null(i)) {
+                    continue;
+                }
+                &f.values()[start..end]
             } else if let Some(f) = xs_scalar {
-                vec![f.value(r)]
+                std::slice::from_ref(&f.values()[r])
             } else {
                 continue;
             };
