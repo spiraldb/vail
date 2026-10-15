@@ -611,8 +611,12 @@ struct PartitionSetExec {
 }
 impl PartitionSetExec {
     fn new(parts: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
-        let mut cache = (*properties(schema, EmissionType::Incremental)).clone();
-        cache.partitioning = Partitioning::UnknownPartitioning(parts.len().max(1));
+        let mut cache = (*properties(schema.clone(), EmissionType::Incremental)).clone();
+        cache.partitioning = crate::provider::partition_id_properties(
+            &schema,
+            &mut cache.eq_properties,
+            parts.len(),
+        );
         if let Some(ordering) = parts
             .first()
             .and_then(|part| part.output_ordering())

@@ -156,6 +156,17 @@ impl UserDefinedLogicalNodeCore for RestorePartitionsNode {
     fn expressions(&self) -> Vec<Expr> {
         vec![]
     }
+    fn necessary_children_exprs(&self, output_columns: &[usize]) -> Option<Vec<Vec<usize>>> {
+        let mut required = output_columns.to_vec();
+        let partition = self
+            .input
+            .schema()
+            .index_of_column_by_name(None, &self.partition_name)?;
+        required.push(partition);
+        required.sort_unstable();
+        required.dedup();
+        Some(vec![required])
+    }
     fn fmt_for_explain(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "VailRestorePartitions: {}", self.partitions)
     }
@@ -169,8 +180,10 @@ impl UserDefinedLogicalNodeCore for RestorePartitionsNode {
                 "invalid partition restoration rewrite".into(),
             ));
         }
+        let input = inputs.remove(0);
         Ok(Self {
-            input: inputs.remove(0),
+            schema: input.schema().clone(),
+            input,
             ..self.clone()
         })
     }
@@ -1166,7 +1179,10 @@ impl ExtensionPlanner for VailExtensionPlanner {
             let ranges = RangePartitioning::try_new(
                 LexOrdering::new(vec![PhysicalSortExpr::new(
                     key,
-                    arrow_schema::SortOptions::default(),
+                    arrow_schema::SortOptions {
+                        descending: false,
+                        nulls_first: false,
+                    },
                 )])
                 .expect("one partition sort key"),
                 splits,

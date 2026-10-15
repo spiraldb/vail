@@ -393,13 +393,28 @@ fn lower_native_prefix(
     let right = LogicalPlanBuilder::from(summary)
         .project(right_projection)?
         .build()?;
-    let joined = LogicalPlanBuilder::from(local)
+    // Build only the compact prefix table. Probe with the ordered row stream
+    // and align partition ranges so DataFusion can preserve that stream order.
+    let carry = crate::logical::restore_partitions(
+        right,
+        right_key.clone(),
+        table.known_n_partitions().unwrap_or(1).max(1),
+    );
+    let columns = local
+        .schema()
+        .columns()
+        .into_iter()
+        .chain(carry.schema().columns())
+        .map(Expr::Column)
+        .collect::<Vec<_>>();
+    let joined = LogicalPlanBuilder::from(carry)
         .join(
-            right,
-            JoinType::Left,
-            (vec![part_name.clone()], vec![right_key]),
+            local,
+            JoinType::Right,
+            (vec![right_key], vec![part_name.clone()]),
             None,
         )?
+        .project(columns)?
         .build()?;
 
     let mut completed = joined
@@ -709,13 +724,28 @@ pub(crate) fn lower(
     let right = LogicalPlanBuilder::from(summary)
         .project(right_projection)?
         .build()?;
-    let joined = LogicalPlanBuilder::from(local)
+    // Build only the compact prefix table. Probe with the ordered row stream
+    // and align partition ranges so DataFusion can preserve that stream order.
+    let carry = crate::logical::restore_partitions(
+        right,
+        right_key.clone(),
+        table.known_n_partitions().unwrap_or(1).max(1),
+    );
+    let columns = local
+        .schema()
+        .columns()
+        .into_iter()
+        .chain(carry.schema().columns())
+        .map(Expr::Column)
+        .collect::<Vec<_>>();
+    let joined = LogicalPlanBuilder::from(carry)
         .join(
-            right,
-            JoinType::Left,
-            (vec![part_name.clone()], vec![right_key]),
+            local,
+            JoinType::Right,
+            (vec![right_key], vec![part_name.clone()]),
             None,
         )?
+        .project(columns)?
         .build()?;
 
     let mut completed = joined

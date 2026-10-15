@@ -16,6 +16,8 @@ use datafusion::common::{
 use datafusion::datasource::{TableProvider, TableType};
 use datafusion::logical_expr::{Expr, Operator, TableProviderFilterPushDown};
 use datafusion::physical_expr::{EquivalenceProperties, expressions::Column};
+use datafusion_common::SplitPoint;
+use datafusion_physical_expr::{LexOrdering, PhysicalSortExpr, RangePartitioning};
 use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, PlanProperties,
     SendableRecordBatchStream,
@@ -830,7 +832,7 @@ struct PartitionSetExec {
 
 impl PartitionSetExec {
     fn new(partitions: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
-        let equivalence = partitions
+        let mut equivalence = partitions
             .first()
             .and_then(|first| {
                 let ordering = first
@@ -845,9 +847,13 @@ impl PartitionSetExec {
                     .then(|| first.properties().equivalence_properties().clone())
             })
             .unwrap_or_else(|| EquivalenceProperties::new(schema.clone()));
+        // execute() assigns exactly one private partition ID to each physical
+        // partition. Certify that range distribution so partition-local windows
+        // need neither a hash exchange nor a sort to rediscover it.
+        let partitioning = partition_id_properties(&schema, &mut equivalence, partitions.len());
         let properties = Arc::new(PlanProperties::new(
             equivalence,
-            Partitioning::UnknownPartitioning(partitions.len().max(1)),
+            partitioning,
             EmissionType::Incremental,
             Boundedness::Bounded,
         ));
@@ -858,6 +864,31 @@ impl PartitionSetExec {
             concurrency: Arc::new(tokio::sync::Semaphore::new(crate::EXECUTION_CONCURRENCY)),
         }
     }
+}
+
+/// Both source boundaries replace the last column with their physical ID.
+pub(crate) fn partition_id_properties(
+    schema: &SchemaRef,
+    equivalence: &mut EquivalenceProperties,
+    partitions: usize,
+) -> Partitioning {
+    let index = schema.fields().len() - 1;
+    let ordering = LexOrdering::new(vec![PhysicalSortExpr::new(
+        Arc::new(Column::new(schema.field(index).name(), index)),
+        arrow_schema::SortOptions {
+            descending: false,
+            nulls_first: false,
+        },
+    )])
+    .expect("source partition ordering is nonempty");
+    equivalence.add_ordering(ordering.clone());
+    let splits = (1..partitions)
+        .map(|partition| SplitPoint::new(vec![ScalarValue::UInt64(Some(partition as u64))]))
+        .collect();
+    Partitioning::Range(
+        RangePartitioning::try_new(ordering, splits)
+            .expect("source partition IDs have increasing UInt64 split points"),
+    )
 }
 
 impl DisplayAs for PartitionSetExec {
@@ -1121,6 +1152,28 @@ mod projected_provider_tests {
     use datafusion::execution::context::SessionContext;
     use futures::TryStreamExt;
     use serde_json::json;
+
+    #[tokio::test]
+    async fn source_partition_range_matches_emitted_ids() {
+        let table = crate::TableIR::range(12, 3).unwrap();
+        let source = make_source_parts(&table, plan::physical_schema(&table)).unwrap();
+        let Partitioning::Range(range) = source.properties().output_partitioning() else {
+            panic!("source must advertise its partition ID ranges");
+        };
+        assert_eq!(range.partition_count(), 3);
+        let context = Arc::new(datafusion_execution::TaskContext::default());
+        for partition in 0..3 {
+            let mut rows = 0;
+            let mut stream = source.execute(partition, context.clone()).unwrap();
+            while let Some(batch) = stream.try_next().await.unwrap() {
+                let ids = batch.columns().last().unwrap()
+                    .as_any().downcast_ref::<UInt64Array>().unwrap();
+                assert!(ids.values().iter().all(|id| *id == partition as u64));
+                rows += batch.num_rows();
+            }
+            assert_eq!(rows, 4);
+        }
+    }
 
     #[tokio::test]
     async fn read_projection_reaches_storage_and_returns_only_selected_field() {

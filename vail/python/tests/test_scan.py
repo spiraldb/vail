@@ -84,8 +84,11 @@ def test_scan_row_windows_use_datafusion_partitioned_execution():
     scanned = table.annotate(prefix=hl.scan.sum(table.x))
     plan = scanned._native.physical_plan()
     assert "BoundedWindowAggExec" in plan
-    assert "RepartitionExec: partitioning=Hash([__vail_partition" in plan
-    assert "input_partitions=3" in plan
+    assert "VailSourcePartitions: 3" in plan
+    assert "join_type=Right" in plan
+    assert "RepartitionExec: partitioning=Hash([__vail_partition" not in plan
+    assert "SortExec: expr=[__vail_partition" not in plan
+    assert [row.prefix for row in scanned.collect()] == [sum(range(i)) for i in range(12)]
 
 
 def test_scan_restores_empty_source_partitions():
