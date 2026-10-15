@@ -185,3 +185,29 @@ def test_interval_read_rejects_invalid_options(tmp_path, kwargs, exception):
     table.write(path)
     with pytest.raises(exception):
         hl.read_table(path, **kwargs)
+
+
+@pytest.mark.parametrize('start,end', [(0, 2), (1, None), (None, None), (0, 0)])
+@pytest.mark.parametrize('includes_start,includes_end', [(True, True), (True, False), (False, True), (False, False)])
+def test_composite_prefix_bounds_preserve_nulls_last(tmp_path, start, end, includes_start, includes_end):
+    values = [0, 1, 2, None]
+    table = hl.Table.parallelize(
+        [{'a': a, 'b': b} for a in values for b in range(2)],
+        schema=hl.tstruct(a=hl.tint32, b=hl.tint32), key=('a', 'b'), n_partitions=4,
+    )
+    path = tmp_path / 'prefix-null-bounds'
+    table.write(path)
+    read = hl.read_table(path)
+    interval = hl.Interval(
+        hl.Struct(a=start), hl.Struct(a=end), includes_start, includes_end,
+        point_type=hl.tstruct(a=hl.tint32),
+    )
+    filtered = hl.filter_intervals(read, [interval])
+    rank = lambda a: (a is None, a if a is not None else 0)
+    expected = [
+        (a, b) for a in values for b in range(2)
+        if (rank(a) > rank(start) or includes_start and rank(a) == rank(start))
+        and (rank(a) < rank(end) or includes_end and rank(a) == rank(end))
+    ]
+    assert [(row.a, row.b) for row in filtered.collect()] == expected
+    assert filtered.n_partitions() <= read.n_partitions()

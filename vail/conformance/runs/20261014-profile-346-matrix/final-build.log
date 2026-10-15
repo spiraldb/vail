@@ -1,0 +1,111 @@
+🍹 Building a mixed python/rust project
+🐍 Found CPython 3.14 at /Users/danielking/projects/spiraldb/.venv/bin/python
+🔗 Found pyo3 bindings with abi3-py3.11 support
+📡 Using build options features from pyproject.toml
+💻 Using `MACOSX_DEPLOYMENT_TARGET=11.0` for aarch64-apple-darwin by default
+   Compiling vortex-array v0.86.1 (/Users/danielking/.codex/worktrees/1611/vail/vail/patches/vortex-array)
+   Compiling vail-execution v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-execution)
+   Compiling vail-vcf v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-vcf)
+   Compiling vortex-runend v0.86.1
+   Compiling vortex-fastlanes v0.86.1
+   Compiling vortex-sparse v0.86.1
+   Compiling vortex-zigzag v0.86.1
+   Compiling vortex-zstd v0.86.1
+   Compiling vortex-sequence v0.86.1
+   Compiling vortex-onpair v0.86.1
+   Compiling vortex-compressor v0.86.1
+   Compiling vortex-pco v0.86.1
+   Compiling vortex-fsst v0.86.1
+   Compiling vortex-datetime-parts v0.86.1
+   Compiling vortex-decimal-byte-parts v0.86.1
+   Compiling vortex-arrow v0.86.1
+   Compiling vortex-alp v0.86.1
+   Compiling vortex-io v0.86.1
+   Compiling vortex-btrblocks v0.86.1
+   Compiling vortex-scan v0.86.1
+   Compiling vortex-layout v0.86.1 (/Users/danielking/.codex/worktrees/1611/vail/vail/patches/vortex-layout)
+   Compiling vortex-json v0.86.1
+   Compiling vortex-bytebool v0.86.1
+   Compiling vortex-parquet-variant v0.86.1
+   Compiling vortex-ipc v0.86.1
+   Compiling vortex-file v0.86.1
+   Compiling vortex v0.86.1
+   Compiling iceberg v0.10.1 (/Users/danielking/.codex/worktrees/1611/vail/vail/patches/iceberg-rust/crates/iceberg)
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vail-storage v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-storage)
+   Compiling vail-table v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-table)
+warning: use of deprecated method `datafusion_datasource::file_scan_config::FileScanConfigBuilder::with_projection`: Use with_projection_indices instead
+   --> crates/vail-table/src/plan.rs:340:31
+    |
+340 |             builder = builder.with_projection(file_projection.clone());
+    |                               ^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(deprecated)]` on by default
+
+warning: unused variable: `physical_inputs`
+   --> crates/vail-table/src/logical_globals.rs:229:9
+    |
+229 |         physical_inputs: &[PhysicalPlan],
+    |         ^^^^^^^^^^^^^^^ help: if this is intentional, prefix it with an underscore: `_physical_inputs`
+    |
+    = note: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+warning: type alias `BuildAggregate` is never used
+  --> crates/vail-table/src/initialized_aggregate.rs:17:6
+   |
+17 | type BuildAggregate =
+   |      ^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `initialized_aggregate` is never used
+  --> crates/vail-table/src/initialized_aggregate.rs:26:15
+   |
+26 | pub(crate) fn initialized_aggregate(
+   |               ^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vail-table` (lib) generated 4 warnings (run `cargo fix --lib -p vail-table` to apply 1 suggestion)
+   Compiling vail-python v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-python)
+    Finished `release` profile [optimized] target(s) in 1m 22s
+📦 Including files matching "LICENSE"
+📦 Including files matching "licenses/HAIL.txt"
+📦 Including files matching "python/vail/reference_data/*.json"
+📦 Built wheel for abi3 Python ≥ 3.11 to /private/tmp/vail-filter-final-wheels/vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl

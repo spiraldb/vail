@@ -138,12 +138,20 @@ pub(crate) fn source_interval_in_rows(
     Arc::new(exec)
 }
 
-pub(crate) async fn prepare(
+struct IntervalSelection {
+    source_table: TableRef,
+    bounds: Vec<IntervalBounds>,
+    queries: Vec<QueryInterval>,
+    full_key: bool,
+    candidates: Option<Vec<(usize, Option<Vec<usize>>)>>,
+}
+
+async fn select_intervals(
     child: &TableRef,
     intervals: &[ScalarIR],
     point_type: &Type,
     filter: bool,
-) -> Result<PreparedTable> {
+) -> Result<IntervalSelection> {
     let (source_table, selected_source_partitions) = match child.node() {
         TableNode::Read { .. } => (child, None),
         TableNode::FilterPartitions {
@@ -175,14 +183,6 @@ pub(crate) async fn prepare(
             "interval reads require a table read source".into(),
         ));
     };
-    let schema = plan::physical_schema(child);
-    if intervals.is_empty() {
-        return Ok(PreparedTable {
-            parts: vec![],
-            counts: vec![],
-            schema,
-        });
-    }
     let binding = source.index_binding().map_err(TableError::Storage)?;
     let keys = child.keys();
     let mut bounds = Vec::with_capacity(intervals.len());
@@ -225,7 +225,7 @@ pub(crate) async fn prepare(
     } else {
         vec![QueryInterval::default(); bounds.len()]
     };
-    if filter {
+    let candidates = if filter {
         // Full-key intervals can use the fragment index directly. Prefix
         // intervals cannot form a full-key query, so compare them against the
         // certified per-partition key bounds instead of selecting every source
@@ -244,10 +244,67 @@ pub(crate) async fn prepare(
         if let Some(selected) = &selected_source_partitions {
             candidates.retain(|(partition, _)| selected.contains(partition));
         }
+        Some(candidates)
+    } else {
+        None
+    };
+    Ok(IntervalSelection {
+        source_table: source_table.clone(),
+        bounds,
+        queries,
+        full_key,
+        candidates,
+    })
+}
+
+/// Count selected partitions using snapshot/index metadata, without compiling
+/// residual row filters or creating physical read plans.
+pub(crate) async fn n_partitions(
+    child: &TableRef,
+    intervals: &[ScalarIR],
+    point_type: &Type,
+    filter: bool,
+) -> Result<usize> {
+    if intervals.is_empty() {
+        return Ok(0);
+    }
+    let selected = select_intervals(child, intervals, point_type, filter).await?;
+    Ok(selected
+        .candidates
+        .as_ref()
+        .map_or(selected.queries.len(), Vec::len))
+}
+
+pub(crate) async fn prepare(
+    child: &TableRef,
+    intervals: &[ScalarIR],
+    point_type: &Type,
+    filter: bool,
+) -> Result<PreparedTable> {
+    let schema = plan::physical_schema(child);
+    if intervals.is_empty() {
+        return Ok(PreparedTable {
+            parts: vec![],
+            counts: vec![],
+            schema,
+        });
+    }
+    let IntervalSelection {
+        source_table,
+        bounds,
+        queries,
+        full_key,
+        candidates,
+    } = select_intervals(child, intervals, point_type, filter).await?;
+    let TableNode::Read { source } = source_table.node() else {
+        unreachable!()
+    };
+    let keys = child.keys();
+    if let Some(candidates) = candidates {
         let mut parts = Vec::with_capacity(candidates.len());
         let mut counts = Vec::with_capacity(candidates.len());
         for (part, matching_intervals) in candidates {
-            let rows = source_partition(source_table, part)?;
+            let rows = source_partition(&source_table, part)?;
             let residual_intervals = matching_intervals
                 .map(|indices| {
                     indices
@@ -257,7 +314,7 @@ pub(crate) async fn prepare(
                 })
                 .unwrap_or_else(|| intervals.to_vec());
             let predicate = union_predicate(&residual_intervals, keys, point_type)?;
-            parts.push(apply_filter(rows, &predicate, source_table)?);
+            parts.push(apply_filter(rows, &predicate, &source_table)?);
             counts.push(None);
         }
         return Ok(PreparedTable {
@@ -1012,6 +1069,53 @@ mod prefix_partition_index_tests {
     }
 
     #[test]
+    fn prefix_interval_predicate_growth_is_linear() {
+        // Position predicates may produce one interval per contig. Guard the
+        // generated tree size: null checks must not recursively duplicate the
+        // Boolean combinations of already-checked key comparisons.
+        let point_type = Type::Struct {
+            r#struct: vec![(
+                "a".into(),
+                Type::Primitive(vail_execution::expressions::PrimitiveType::Int32),
+            )],
+        };
+        let intervals = (0..84)
+            .map(|i| Expr::Interval {
+                start: Box::new(Expr::Struct {
+                    fields: vec![(
+                        "a".into(),
+                        Expr::RuntimeLiteral {
+                            value: ScalarValue::Int32(Some(i * 10)),
+                        },
+                    )],
+                }),
+                end: Box::new(Expr::Struct {
+                    fields: vec![(
+                        "a".into(),
+                        Expr::RuntimeLiteral {
+                            value: ScalarValue::Int32(Some(i * 10 + 5)),
+                        },
+                    )],
+                }),
+                includes_start: Box::new(Expr::RuntimeLiteral {
+                    value: ScalarValue::Boolean(Some(true)),
+                }),
+                includes_end: Box::new(Expr::RuntimeLiteral {
+                    value: ScalarValue::Boolean(Some(false)),
+                }),
+            })
+            .collect::<Vec<_>>();
+        let predicate =
+            union_predicate(&intervals, &["a".into(), "b".into()], &point_type).unwrap();
+        let mut nodes = 0;
+        predicate.visit(&mut |_| nodes += 1);
+        assert!(
+            nodes < 200 * intervals.len(),
+            "expanded interval predicate contains {nodes} nodes"
+        );
+    }
+
+    #[test]
     fn indexed_prefix_candidates_match_brute_force_with_overlaps_and_open_bounds() {
         let binding = binding();
         let partitions = vec![
@@ -1255,107 +1359,58 @@ fn union_predicate(intervals: &[ScalarIR], keys: &[String], point_type: &Type) -
     // must retain Hail's missing propagation for a missing endpoint.
     let predicates = intervals
         .iter()
-        .map(|interval| {
+        .map(|interval| -> Result<Expr> {
+            if let Some(component) = &prefix_component {
+                return prefix_interval_predicate(interval, component, &point);
+            }
             let get = |name: &str| Expr::GetField {
                 value: Box::new(interval.clone()),
                 name: name.into(),
             };
-            let raw_start = get("start");
-            let raw_end = get("end");
-            let (start, end, start_unbounded, end_unbounded) =
-                if let Some(component) = &prefix_component {
-                    let component_of = |endpoint| Expr::GetField {
-                        value: Box::new(endpoint),
-                        name: component.clone(),
-                    };
-                    // A missing component inside a present prefix struct is a real
-                    // missing key value; only a missing *whole endpoint* is open.
-                    let start_unbounded = Expr::IsMissing {
-                        value: Box::new(raw_start.clone()),
-                    };
-                    let end_unbounded = Expr::IsMissing {
-                        value: Box::new(raw_end.clone()),
-                    };
-                    (
-                        component_of(raw_start),
-                        component_of(raw_end),
-                        start_unbounded,
-                        end_unbounded,
-                    )
-                } else {
-                    let interval = ordered_key_interval(interval.clone(), &comparison_type);
-                    let start = Expr::GetField {
-                        value: Box::new(interval.clone()),
-                        name: "start".into(),
-                    };
-                    let end = Expr::GetField {
-                        value: Box::new(interval),
-                        name: "end".into(),
-                    };
-                    let start_unbounded = Expr::IsMissing {
-                        value: Box::new(start.clone()),
-                    };
-                    let end_unbounded = Expr::IsMissing {
-                        value: Box::new(end.clone()),
-                    };
-                    (start, end, start_unbounded, end_unbounded)
-                };
-            let ordered_point = if prefix_component.is_some() {
-                point.clone()
-            } else {
-                ordered_key_point(point.clone(), &comparison_type)
+            let ordered_interval = ordered_key_interval(interval.clone(), &comparison_type);
+            let start = Expr::GetField {
+                value: Box::new(ordered_interval.clone()),
+                name: "start".into(),
             };
-            let compare = |left: Expr, operator, right: Expr| {
-                if prefix_component.is_some() {
-                    compare_nullable_key_component(left, operator, right)
-                } else {
-                    Expr::Binary {
-                        operator,
-                        left: Box::new(left),
-                        right: Box::new(right),
-                    }
-                }
+            let end = Expr::GetField {
+                value: Box::new(ordered_interval),
+                name: "end".into(),
             };
+            let start_unbounded = Expr::IsMissing {
+                value: Box::new(start.clone()),
+            };
+            let end_unbounded = Expr::IsMissing {
+                value: Box::new(end.clone()),
+            };
+            let ordered_point = ordered_key_point(point.clone(), &comparison_type);
+            let binary = |left, operator, right| Expr::Binary {
+                operator,
+                left: Box::new(left),
+                right: Box::new(right),
+            };
+            use vail_execution::expressions::BinaryOperator as Op;
             let boundary = |endpoint: Expr, inclusive: Expr, is_lower: bool| {
-                let strict_operator = if is_lower {
-                    vail_execution::expressions::BinaryOperator::Gt
-                } else {
-                    vail_execution::expressions::BinaryOperator::Lt
-                };
-                let strict = compare(ordered_point.clone(), strict_operator, endpoint.clone());
-                let equal = compare(
+                let strict = binary(
                     ordered_point.clone(),
-                    vail_execution::expressions::BinaryOperator::Eq,
-                    endpoint,
+                    if is_lower { Op::Gt } else { Op::Lt },
+                    endpoint.clone(),
                 );
-                let inclusive = compare(
-                    equal,
-                    vail_execution::expressions::BinaryOperator::And,
-                    inclusive,
-                );
-                compare(
-                    strict,
-                    vail_execution::expressions::BinaryOperator::Or,
-                    inclusive,
-                )
+                let equal = binary(ordered_point.clone(), Op::Eq, endpoint);
+                binary(strict, Op::Or, binary(equal, Op::And, inclusive))
             };
-            let lower = compare(
+            let lower = binary(
                 start_unbounded,
-                vail_execution::expressions::BinaryOperator::Or,
+                Op::Or,
                 boundary(start, get("includes_start"), true),
             );
-            let upper = compare(
+            let upper = binary(
                 end_unbounded,
-                vail_execution::expressions::BinaryOperator::Or,
+                Op::Or,
                 boundary(end, get("includes_end"), false),
             );
-            compare(
-                lower,
-                vail_execution::expressions::BinaryOperator::And,
-                upper,
-            )
+            Ok(binary(lower, Op::And, upper))
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
     if predicates.is_empty() {
         return Err(TableError::Invalid("interval query list is empty".into()));
     }
@@ -1382,47 +1437,75 @@ fn union_predicate(intervals: &[ScalarIR], keys: &[String], point_type: &Type) -
     Ok(level.pop().unwrap())
 }
 
-/// Compare one key component with nulls last, without treating a missing value
-/// inside a present Struct prefix as an unbounded endpoint.
-fn compare_nullable_key_component(
-    left: Expr,
-    operator: vail_execution::expressions::BinaryOperator,
-    right: Expr,
-) -> Expr {
+/// Internal interval endpoints are scalar constants. Resolve them once rather
+/// than repeatedly lowering GetField/IsMissing trees with locus type metadata.
+/// Missing whole endpoints are unbounded; a missing field in a present prefix
+/// struct is a real nulls-last key value.
+fn prefix_interval_predicate(interval: &ScalarIR, component: &str, point: &Expr) -> Result<Expr> {
     use vail_execution::expressions::BinaryOperator as Op;
-    let missing = |value: Expr| Expr::IsMissing {
-        value: Box::new(value),
+    let ScalarValue::Struct(fields) = eval_scalar(interval)? else {
+        return Err(TableError::Invalid(
+            "interval literal has invalid storage shape".into(),
+        ));
+    };
+    let literal_bool = |value| Expr::RuntimeLiteral {
+        value: ScalarValue::Boolean(Some(value)),
     };
     let binary = |left, operator, right| Expr::Binary {
         operator,
         left: Box::new(left),
         right: Box::new(right),
     };
-    let is_false = |value: Expr| {
-        binary(
-            value,
-            Op::Eq,
-            Expr::RuntimeLiteral {
-                value: ScalarValue::Boolean(Some(false)),
-            },
-        )
+    let missing = || Expr::IsMissing {
+        value: Box::new(point.clone()),
     };
-    let left_missing = missing(left.clone());
-    let right_missing = missing(right.clone());
-    let left_present = is_false(left_missing.clone());
-    let right_present = is_false(right_missing.clone());
-    let both_present = binary(left_present.clone(), Op::And, right_present.clone());
-    let concrete = binary(binary(left, operator, right), Op::And, both_present);
-    let missing_case = match operator {
-        Op::Eq => binary(left_missing, Op::And, right_missing),
-        Op::Gt => binary(left_missing, Op::And, right_present),
-        Op::Lt => binary(left_present, Op::And, right_missing),
-        _ => {
-            return concrete;
+    let present = || Expr::Unary {
+        operator: vail_execution::expressions::UnaryOperator::Not,
+        value: Box::new(missing()),
+    };
+    let boundary = |index, lower: bool| -> Result<Expr> {
+        let endpoint = ScalarValue::try_from_array(fields.column(index).as_ref(), 0)?;
+        if endpoint.is_null() {
+            return Ok(literal_bool(true));
         }
+        let ScalarValue::Struct(prefix) = endpoint else {
+            return Err(TableError::Invalid(
+                "interval prefix must be a struct".into(),
+            ));
+        };
+        let value = prefix
+            .column_by_name(component)
+            .ok_or_else(|| TableError::Invalid("interval prefix component is missing".into()))?;
+        let value = ScalarValue::try_from_array(value.as_ref(), 0)?;
+        let inclusive = if lower {
+            !scalar_boolean(&ScalarValue::try_from_array(fields.column(1).as_ref(), 0)?)?
+        } else {
+            scalar_boolean(&ScalarValue::try_from_array(fields.column(3).as_ref(), 0)?)?
+        };
+        if value.is_null() {
+            return Ok(match (lower, inclusive) {
+                (true, true) => missing(),
+                (true, false) => literal_bool(false),
+                (false, true) => literal_bool(true),
+                (false, false) => present(),
+            });
+        }
+        let op = match (lower, inclusive) {
+            (true, true) => Op::Ge,
+            (true, false) => Op::Gt,
+            (false, true) => Op::Le,
+            (false, false) => Op::Lt,
+        };
+        let comparison = binary(point.clone(), op, Expr::RuntimeLiteral { value });
+        Ok(if lower {
+            binary(missing(), Op::Or, comparison)
+        } else {
+            binary(present(), Op::And, comparison)
+        })
     };
-    binary(missing_case, Op::Or, concrete)
+    Ok(binary(boundary(0, true)?, Op::And, boundary(2, false)?))
 }
+
 fn apply_filter(rows: PhysicalPlan, predicate: &Expr, child: &TableRef) -> Result<PhysicalPlan> {
     let expression =
         lower_with_global_columns(predicate, &rows.schema(), child.globals().schema())?;
