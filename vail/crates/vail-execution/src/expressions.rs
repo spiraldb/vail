@@ -3780,11 +3780,12 @@ impl PhysicalExpr for HailPhysicalExpr {
                     let child = st.column_by_name(name).ok_or_else(|| {
                         ExprError::Invalid(format!("struct field {name:?} absent"))
                     })?;
-                    let mask = Arc::new(BooleanArray::from(
-                        (0..len).map(|i| parent.is_null(i)).collect::<Vec<_>>(),
-                    )) as ArrayRef;
-                    let mask = mask.as_any().downcast_ref::<BooleanArray>().unwrap();
-                    Ok(nullif(child.as_ref(), mask)?)
+                    if parent.null_count() == 0 {
+                        Ok(child.clone())
+                    } else {
+                        let mask = arrow_arith::boolean::is_null(parent.as_ref())?;
+                        Ok(nullif(child.as_ref(), &mask)?)
+                    }
                 }
                 HailKind::Struct(names) => {
                     let fields = names
