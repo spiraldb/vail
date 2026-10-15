@@ -82,3 +82,22 @@ def split_multi_hts(dataset,keep_star=False,left_aligned=False,vep_root='vep',*,
             quality=hl.or_missing(hl.len(sorted_pl)>=2,sorted_pl[1]-sorted_pl[0])
             updates['GQ']=hl.coalesce(quality,split.GQ)
     return split.annotate_entries(**updates).drop('old_locus','old_alleles').key_rows_by('locus','alleles')
+
+
+def parse_variant(value, reference_genome='default'):
+    """Parse ``contig:position:reference:alternate[,alternate...]`` lazily."""
+    import vail as hl
+    value = hl.as_expr(value)
+    if value.dtype != hl.tstr:
+        raise TypeError('parse_variant requires a string expression')
+
+    def parse(text):
+        fields = text.split(':')
+        fields = hl.case().when(hl.len(fields) == 4, fields).or_error(
+            'parse_variant expects contig:position:reference:alternate')
+        return hl.or_missing(hl.is_defined(text), hl.struct(
+            locus=hl.parse_locus(fields[0] + ':' + fields[1], reference_genome),
+            alleles=hl.array([fields[2]]).extend(fields[3].split(',')),
+        ))
+
+    return hl.bind(parse, value)

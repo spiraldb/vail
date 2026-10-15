@@ -549,3 +549,5 @@ mod collection_lookup;
 mod matrix_transpose;
 
 mod randomness;
+
+mod hwe_counts;

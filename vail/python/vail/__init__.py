@@ -1973,7 +1973,7 @@ from . import expr
 from .expressions import coalesce, approx_equal
 from .backend import current_backend
 from .vcf_export import export_vcf
-from .variant import split_multi_hts
+from .variant import split_multi_hts, parse_variant
 from .allele_functions import (
     allele_type, numeric_allele_type, is_snp, is_mnp, is_insertion,
     is_deletion, is_indel, is_complex, is_star, is_symbolic,
@@ -2001,3 +2001,5 @@ def repeat(value, n):
 from . import linalg
 
 from .simulation import balding_nichols_model
+
+from .qc import variant_qc, hardy_weinberg_test

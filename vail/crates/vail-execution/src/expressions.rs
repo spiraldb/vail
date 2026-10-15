@@ -444,6 +444,8 @@ pub enum Expr {
         left: Box<Expr>,
         right: Box<Expr>,
     },
+    // Keep the original wire spelling while sharing the scalar UDF registry.
+    #[serde(alias = "scalar_function")]
     StringFunction {
         function: String,
         args: Vec<Expr>,
@@ -4008,6 +4010,13 @@ pub(crate) fn string_function(
         array: Box::new(text.clone()),
     };
     Ok(match name {
+        "hardy_weinberg_counts" => (
+            crate::hwe_counts::udf(),
+            vec![int32.clone(), int32.clone(), int32, boolean],
+            Type::Array {
+                array: Box::new(Type::Primitive(PrimitiveType::Float64)),
+            },
+        ),
         "lower" => (string::lower(), vec![text.clone()], text),
         "upper" => (string::upper(), vec![text.clone()], text),
         "reverse" => (unicode::reverse(), vec![text.clone()], text),

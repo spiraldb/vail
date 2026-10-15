@@ -665,6 +665,19 @@ class Expression:
             return self[name]
         if isinstance(dtype, tstruct) and name in dtype:
             return self[name]
+        if isinstance(dtype, tstruct) and name == "select":
+            def select(*fields, **named):
+                if len(set(fields)) != len(fields) or set(fields) & set(named):
+                    raise ValueError("duplicate fields in struct.select")
+                for field in fields:
+                    if not isinstance(field, str) or field not in dtype:
+                        raise ValueError(f"unknown struct field {field!r}")
+                return bind(
+                    lambda value: or_missing(is_defined(value), struct(
+                        **{field: value[field] for field in fields}, **named)),
+                    self,
+                )
+            return select
         if dtype == tstr:
             from . import strings as ops
             if name == '_split_line':

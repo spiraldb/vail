@@ -571,12 +571,17 @@ class MatrixTable:
     def _lower(self, expr, table):
         """Bind matrix axes to private struct columns in a native Table plan."""
         glob = self.index_globals()
+        refs = dict(expr._global_refs) | dict(glob._global_refs)
 
         def rewrite(node):
             if isinstance(node, list):
                 return [rewrite(v) for v in node]
             if not isinstance(node, dict) or node.get("op") == "literal":
                 return node
+            if node.get("op") == "matrix_num_cols":
+                value = self._mir.column_records.length()
+                refs.update(value._global_refs)
+                return value.to_ir()
             if node.get("op") == "matrix_scope":
                 return rewrite(node["value"])
             if node.get("op") == "matrix_field":
@@ -598,7 +603,7 @@ class MatrixTable:
             table,
             _IR(
                 rewrite(expr.to_ir()),
-                dict(expr._global_refs) | dict(glob._global_refs),
+                refs,
                 expr._lookup_refs,
             ),
             selection_name=expr._selection_name,
@@ -627,6 +632,10 @@ class MatrixTable:
                 if position is None:
                     raise NotImplementedError("column lookup requires the owning entry-list position")
                 return position.to_ir()
+            if node.get("op") == "matrix_num_cols":
+                value = self._mir.column_records.length()
+                refs.update(value._global_refs)
+                return value.to_ir()
             if node.get("op") == "matrix_scope":
                 return rewrite(node["value"])
             if node.get("op") == "matrix_field":
@@ -1160,6 +1169,14 @@ class MatrixTable:
         if _localize:
             return self._mir.core.count()
         return self._mir.core.aggregate(agg.count(), _localize=_localize)
+
+    def _num_cols(self):
+        """Lazy matrix-bound total column count, including filtered entries.
+
+        This expression is resolved from the owning plan's global column array;
+        constructing it does not execute a count or materialize columns.
+        """
+        return Expression(tint32, self, {"op": "matrix_num_cols"})
 
     def count_cols(self, _localize=True):
         from . import agg
