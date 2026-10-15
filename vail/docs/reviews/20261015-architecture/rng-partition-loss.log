@@ -1,0 +1,17 @@
+{
+  "filtered": {
+    "partitions": 3,
+    "rows": 8,
+    "partition_zero_rows": 3
+  },
+  "random_annotated": {
+    "partitions": 3,
+    "rows": 8,
+    "partition_zero_rows": 8
+  }
+}
+Traceback (most recent call last):
+  File "/Users/danielking/.codex/worktrees/1611/vail/vail/docs/reviews/20261015-architecture/reproduce_rng_partition_loss.py", line 17, in <module>
+    assert result['filtered'] == result['random_annotated'], result
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'filtered': {'partitions': 3, 'rows': 8, 'partition_zero_rows': 3}, 'random_annotated': {'partitions': 3, 'rows': 8, 'partition_zero_rows': 8}}

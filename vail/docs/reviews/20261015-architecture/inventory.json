@@ -1,0 +1,797 @@
+{
+  "source_commit": "6a61cf9b69c90d0de0620f008c4a50ea5a146429",
+  "native_path": "/private/tmp/vail-matrix-filter-final.dylib",
+  "native_sha256": "13b9d2d49a4282c41081907ecac27d689ee828f63ca53cef0a0832ec644a9cd2",
+  "files": [
+    {
+      "path": "vail/python/vail/__init__.py",
+      "lines": 2005,
+      "sha256": "1ddd30c1419bb16d256f10e5367e9e13475bca47a319bb093b7b229f2688ae99"
+    },
+    {
+      "path": "vail/python/vail/agg.py",
+      "lines": 217,
+      "sha256": "df0a01760def9d0a5b9c5dba1d67d646d30322ebb2f65ebc6a1995bc3ebc5d1c"
+    },
+    {
+      "path": "vail/python/vail/agg_collections.py",
+      "lines": 64,
+      "sha256": "3276be0b6a664462ee28f578bc53b6652f4d2aab42fc2f2ed408dd3681468c06"
+    },
+    {
+      "path": "vail/python/vail/agg_fold.py",
+      "lines": 52,
+      "sha256": "03fbdd3ae1aa8b5bce1b406da9487ed8fa985535c6cf2de2e24d8b62747a0a1c"
+    },
+    {
+      "path": "vail/python/vail/agg_genomics.py",
+      "lines": 75,
+      "sha256": "dd4f52a5a8442a57e9931beee1568a909d207412f722308dceba769ef3674ec5"
+    },
+    {
+      "path": "vail/python/vail/agg_numeric.py",
+      "lines": 121,
+      "sha256": "bf8ece015ea40d8ce594e7ebf1c90d1eaddaafb64a963934267f4030dbe09530"
+    },
+    {
+      "path": "vail/python/vail/allele_functions.py",
+      "lines": 115,
+      "sha256": "56e5f9652957cc7fcdeb209cf064603e5e60d6986775153d2531c5e9e571b457"
+    },
+    {
+      "path": "vail/python/vail/array_aggregate.py",
+      "lines": 90,
+      "sha256": "166184fbf382d7188c95b06ec6f5a23eaec40662439d87ad11dfaba13e024482"
+    },
+    {
+      "path": "vail/python/vail/array_methods.py",
+      "lines": 102,
+      "sha256": "76bfd95b3625306572a43c5eb0107432077d5dda975a116a8899a13afd204fd1"
+    },
+    {
+      "path": "vail/python/vail/arrow.py",
+      "lines": 281,
+      "sha256": "98aa3d3de19285cdfd55d8433c4cfbe80694c69d3dd2271b0cc9a97f39349a97"
+    },
+    {
+      "path": "vail/python/vail/backend.py",
+      "lines": 37,
+      "sha256": "2b6e6fec6c50f5b515000528353f5f3114b896db9209413535432c2d93ddab61"
+    },
+    {
+      "path": "vail/python/vail/builders.py",
+      "lines": 61,
+      "sha256": "7834ad674fef28cd9e3f651e26cca2564c8a732ed768d8693bf2fbb32de1e2b8"
+    },
+    {
+      "path": "vail/python/vail/collection_functions.py",
+      "lines": 153,
+      "sha256": "d0cf3d6716be446a807758e12b430919a3f84c7d2c22661dbd2cd91f6f50fa94"
+    },
+    {
+      "path": "vail/python/vail/collections.py",
+      "lines": 454,
+      "sha256": "085406f150ef03e804e975d8bafb6a64865f2e1ad64753bd1097f1d201058538"
+    },
+    {
+      "path": "vail/python/vail/context.py",
+      "lines": 6,
+      "sha256": "10eeb7c3365cc03511ec67dc4d7d0654a746dc527f045ba368b63a9d5c2fcf82"
+    },
+    {
+      "path": "vail/python/vail/display.py",
+      "lines": 151,
+      "sha256": "9878a013fdfd4997a28ce337c0d7d5bbd0dfc22b40f86796f364c374a1908e7a"
+    },
+    {
+      "path": "vail/python/vail/expr/__init__.py",
+      "lines": 28,
+      "sha256": "eada032e4a01a40d8aee2f471c868b6893bfdb7db3d6d6671ad972685b027185"
+    },
+    {
+      "path": "vail/python/vail/expr/expressions/__init__.py",
+      "lines": 4,
+      "sha256": "04c3fcfac72a2a5bc29f200f6c57ce13f07713ae4d038ed8db78c086901ca7ec"
+    },
+    {
+      "path": "vail/python/vail/expr/expressions/base_expression.py",
+      "lines": 4,
+      "sha256": "fb19085e2f7ad02588a24a993b1fc67ce4c99844616a913a32c1423779b682dc"
+    },
+    {
+      "path": "vail/python/vail/expr/expressions/typed_expressions.py",
+      "lines": 1,
+      "sha256": "a9912c772322b889306284db29290c9eac3679c875e88c5f3053adc1abd76535"
+    },
+    {
+      "path": "vail/python/vail/expr/functions.py",
+      "lines": 29,
+      "sha256": "1f7fa3b88f9f69722063bc35ae0bd010817d4c5097432f9ba1107e8f7c0ab5fe"
+    },
+    {
+      "path": "vail/python/vail/expressions.py",
+      "lines": 1385,
+      "sha256": "01c0e96345207e5432796054d440177add4a1a38cf752e9a3f703ddcbfa28863"
+    },
+    {
+      "path": "vail/python/vail/genetics/__init__.py",
+      "lines": 5,
+      "sha256": "942a41885950a02732e612414eaab20196e895707e34d12b9b9377be7bc27806"
+    },
+    {
+      "path": "vail/python/vail/inputs.py",
+      "lines": 116,
+      "sha256": "a7de52f9477ceee67bc19d0fa1a723670728cc536d42e01f61907495dd0015fe"
+    },
+    {
+      "path": "vail/python/vail/ir/__init__.py",
+      "lines": 10,
+      "sha256": "9309485b0ccc47a5e43c027e125f285a1a4dbbf5dfbc0fe1193aaa11764b72c6"
+    },
+    {
+      "path": "vail/python/vail/ir/renderer.py",
+      "lines": 6,
+      "sha256": "f0f7ce02c0eedc0b7776937817b17d059d9de584ca49b7e02682c0d77dec4250"
+    },
+    {
+      "path": "vail/python/vail/linalg/__init__.py",
+      "lines": 22,
+      "sha256": "bbe472498cff24a7b3bfe065ef73502da8198df320b215415deab1ab047e7e76"
+    },
+    {
+      "path": "vail/python/vail/lookups.py",
+      "lines": 93,
+      "sha256": "fa417229ffd3ee86fb70ce896f7b419437455ea1a5423cdefc52be55c33269ed"
+    },
+    {
+      "path": "vail/python/vail/matrix_list_aggregates.py",
+      "lines": 480,
+      "sha256": "2f0e76a27d400e78c1d9770f74d961e3ca28843d027068cd5460b8425b5e9ee2"
+    },
+    {
+      "path": "vail/python/vail/matrixtable.py",
+      "lines": 2665,
+      "sha256": "a344911f7a05254bc9312fab951dad352755c8f253b6a01172d7b96bdcd8e893"
+    },
+    {
+      "path": "vail/python/vail/nd.py",
+      "lines": 35,
+      "sha256": "6a49019a10adb7309b0d0631bd52cb317fa14045fd3c14ee3faf9a3b85045df8"
+    },
+    {
+      "path": "vail/python/vail/qc.py",
+      "lines": 160,
+      "sha256": "f8fa38c3e36416a4d9d4b99ddd4149a76696f41bff484f27bf09022725ab43ca"
+    },
+    {
+      "path": "vail/python/vail/queries.py",
+      "lines": 121,
+      "sha256": "c3b6bc2c4e2d5d814112d5683bf43e338edad84da78964951f18d26d9d4bb37f"
+    },
+    {
+      "path": "vail/python/vail/randomness.py",
+      "lines": 388,
+      "sha256": "d8c599ae191818a445dd7907d05d28a1fc36edc05bbd784e2eae3849de4f0d87"
+    },
+    {
+      "path": "vail/python/vail/reference_genome.py",
+      "lines": 291,
+      "sha256": "a4afbf3998df15cbf256c73ec3acbd17bad7b0d1b7389ccb3c4d15c2053f3096"
+    },
+    {
+      "path": "vail/python/vail/scan.py",
+      "lines": 193,
+      "sha256": "ae2e165a06e10d63cc2592206fb532fe715a1756dbd18acd6d02e4a677cfd892"
+    },
+    {
+      "path": "vail/python/vail/simulation.py",
+      "lines": 325,
+      "sha256": "7e1221f6fffd575201e92b8ca59c0dd167aa4bd1cb8eb3470ed5763d8787043e"
+    },
+    {
+      "path": "vail/python/vail/streams.py",
+      "lines": 188,
+      "sha256": "eb754be4e217c4c546a6fa767b1496647fb512a052cbf23727a60b1cb2e89495"
+    },
+    {
+      "path": "vail/python/vail/strings.py",
+      "lines": 245,
+      "sha256": "89350f862cac07bc21094a0877499e1f1c2cfa15cd668f0355dfe906ff1d8b22"
+    },
+    {
+      "path": "vail/python/vail/text.py",
+      "lines": 255,
+      "sha256": "328141ac1a66de87553dbb1607f4bdf712c39697790dadeaad1943aff963e189"
+    },
+    {
+      "path": "vail/python/vail/types.py",
+      "lines": 827,
+      "sha256": "bbe85cafac8e661b5d70e134818713674357c3df7c2214945f6501be8cad6dae"
+    },
+    {
+      "path": "vail/python/vail/utils/__init__.py",
+      "lines": 71,
+      "sha256": "2b68df9ee97e53d26651512e2a8147c9f22ed35cad87a82984278b4812782ad5"
+    },
+    {
+      "path": "vail/python/vail/utils/java.py",
+      "lines": 21,
+      "sha256": "46f13828ee47411f5a3108af77fbabd00f270c3cae55498a57963427dbcabdf1"
+    },
+    {
+      "path": "vail/python/vail/utils/misc.py",
+      "lines": 5,
+      "sha256": "0927b75cb01d4532d0642d89bf8c254b47041cb70bdd900b6e6bd12ce3a45247"
+    },
+    {
+      "path": "vail/python/vail/variant.py",
+      "lines": 103,
+      "sha256": "4677a478276d2b795f69a3598b0a436b1062f29adddbec5cd545411069b117ed"
+    },
+    {
+      "path": "vail/python/vail/vcf.py",
+      "lines": 93,
+      "sha256": "496488ba614c512d83378760acc681e2c32035164151e36af195557491e910a5"
+    },
+    {
+      "path": "vail/python/vail/vcf_export.py",
+      "lines": 88,
+      "sha256": "fcc9b3daadfe2f08969fd048fd197930be7fbcfbd0e4abe5b235d66c86982d97"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_collection_aggregates.rs",
+      "lines": 411,
+      "sha256": "0b6d1d371088b9141cc68ea46d64f2d144fa3e3e48e0f5032c819794f8e94fdd"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_genomic_aggregates.rs",
+      "lines": 977,
+      "sha256": "208f987b0a766442357d484698774c1f255fd34e0e8b874f86fae4de772d5fb3"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_numeric_aggregates.rs",
+      "lines": 1154,
+      "sha256": "fee66b94f7bd42ed84e6705fd6d52ffec48f3530ae2bd353afbbb19fd5af6f84"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/aggregate_identity.rs",
+      "lines": 19,
+      "sha256": "094bd28dab5b7028158bf0601ec23067529893ff293368576ca81c72880174a0"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/aggregates.rs",
+      "lines": 977,
+      "sha256": "5d97854dcae8cafbd1c3a590a9aed70983e7e75700e6dd4d19626b5e1ca148a8"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_aggregate.rs",
+      "lines": 622,
+      "sha256": "06be08df6fd9ef6fe1beeb2946f93593a6a9c99057fb770460d84a443b6df53a"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_fold.rs",
+      "lines": 309,
+      "sha256": "4fc7d368c02b087e37d0da4a0de1fbac7a0f3950549262785015f587e25a0b32"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_length_aggregate.rs",
+      "lines": 67,
+      "sha256": "956fb9250734e3d6281b9e7ab806d7d22928dec7004c5a2ba40709d8422c846e"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/calls.rs",
+      "lines": 201,
+      "sha256": "dec67d2ef5752c24b6123f7de8a28c961d21982d3c8862b27df110fbc0bf614c"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collect_aggregate.rs",
+      "lines": 268,
+      "sha256": "0b6b26cd60869e43a83638fa18d89b501e53c5226653d24d1c330d51ce1cc279"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collection_groups.rs",
+      "lines": 335,
+      "sha256": "729b104085518bb51f850805934e04b49bdd0fbf30ba8330e9e93908ecad9fee"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collection_lookup.rs",
+      "lines": 166,
+      "sha256": "d1d8ea6c14dcb2fa60a0aeb423fe30a4de1f2112e3fa450989dae461155d8cf6"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/csv_line.rs",
+      "lines": 289,
+      "sha256": "1173aebca4e31521fcf1381a25185ad13f01caa3e5a4adb4be518b2597efbd72"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/expressions.rs",
+      "lines": 6029,
+      "sha256": "4541b64203691e19b6d68387ea4c4ee5062d839f6d347d4ff5bc5f3cc265d4f4"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/fold_aggregate.rs",
+      "lines": 160,
+      "sha256": "0275e7d579064f16c80f617bb8879ef29b8367c065c0b39895d1783548d34dc2"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/hwe_counts.rs",
+      "lines": 60,
+      "sha256": "192e484f52522ccb009fed941b5ba3625169c8c76c571e605e182f74770cd273"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/lib.rs",
+      "lines": 554,
+      "sha256": "64e48abc93ff4984d06f2cec23677522d37ee5f32a9ca2c8101d014cd2b63bfb"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/logical_expr.rs",
+      "lines": 1114,
+      "sha256": "902d398fe2704113fe04b36e0c0bb685e615cbdd02502901a1329f97bfbddbdd"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/matrix_arrays.rs",
+      "lines": 639,
+      "sha256": "abc47aece17b4b2041177143f172e8529d242271e60913e1153b53abfd5547ae"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/matrix_transpose.rs",
+      "lines": 420,
+      "sha256": "b5765ab9f34d1996eb50f1d104905fcb18a7aa69c9d8bd7ebd212042b2c91376"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/randomness.rs",
+      "lines": 636,
+      "sha256": "a84112508f96f0cdba30ea9f231c668791f29ff56e486f9054ce5937db636063"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/reference.rs",
+      "lines": 312,
+      "sha256": "6592b3280eb21873b040662905f52ab9b8aa944cbba003b34decc8716d81b50d"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/scan_scopes.rs",
+      "lines": 626,
+      "sha256": "fe7b34f74341dafbd7483c672838d35eab24249660c1d256909a7141c39a4e58"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/scan_state.rs",
+      "lines": 498,
+      "sha256": "395a1a212401f1234c0bd251d1e42370cb3d8587aba2b3100a4b61f82ad7f95f"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/string_kernels.rs",
+      "lines": 155,
+      "sha256": "f3e70579815bc5c8d04c1d493c7f9fe92abb340dd53499a691bea3784836fd7a"
+    },
+    {
+      "path": "vail/crates/vail-ordering/src/call.rs",
+      "lines": 99,
+      "sha256": "2af3d5bfa0609d46824737a7c7ef5f17ab4e61857aba6c80f6b6ca2cad7086dc"
+    },
+    {
+      "path": "vail/crates/vail-ordering/src/lib.rs",
+      "lines": 187,
+      "sha256": "03d97d6f3bb495a95f640b807cdf60d2900339ff36f83712446224b027b74682"
+    },
+    {
+      "path": "vail/crates/vail-python/src/lib.rs",
+      "lines": 1058,
+      "sha256": "bb50e00b733cb487f894cd94956068d8fc6d434efacdf547296fa948cda62b37"
+    },
+    {
+      "path": "vail/crates/vail-storage/src/fragment_index.rs",
+      "lines": 1418,
+      "sha256": "219e52a9da8c7455a727a1d150710dad51ca4bafb8fffa255b1ae03f0d630185"
+    },
+    {
+      "path": "vail/crates/vail-storage/src/globals.rs",
+      "lines": 89,
+      "sha256": "2cb0f98ad0f2bd4781d3299afb0e8166f6137449a76b906f579f15ae25f8365f"
+    },
+    {
+      "path": "vail/crates/vail-storage/src/lib.rs",
+      "lines": 1731,
+      "sha256": "0da50091c540760923fec6f25cafa683fb02dcc8dc41125f3f506b665b01d9f8"
+    },
+    {
+      "path": "vail/crates/vail-storage/src/local_table.rs",
+      "lines": 1429,
+      "sha256": "f6b3b6dfb8672c3f41e0c9b2334830459afbb976c5812b51e9f090b6937296f0"
+    },
+    {
+      "path": "vail/crates/vail-table/src/aggregation.rs",
+      "lines": 426,
+      "sha256": "1e3089e2a2423ea00026b8e0da14ba50058462c358926384d85287ca99788855"
+    },
+    {
+      "path": "vail/crates/vail-table/src/comparison.rs",
+      "lines": 576,
+      "sha256": "03578bf7b3748c34d93eb8b0587f9281c34321693d88b838270a9999f60f9757"
+    },
+    {
+      "path": "vail/crates/vail-table/src/deferred_logical.rs",
+      "lines": 96,
+      "sha256": "03a1a756d49edfca722c8db32128b63f73799414547677c1b382cdbb9a190dc9"
+    },
+    {
+      "path": "vail/crates/vail-table/src/globals.rs",
+      "lines": 281,
+      "sha256": "44a6d325aba2d21ed68a03e3cb958123c0f75af5637364b7fdf21194d646ce5b"
+    },
+    {
+      "path": "vail/crates/vail-table/src/initialized_aggregate.rs",
+      "lines": 302,
+      "sha256": "bd4a2632302abe5fd16869ad09a0e8105bad505d5bad66b00c94e19ff78e6043"
+    },
+    {
+      "path": "vail/crates/vail-table/src/initialized_scan.rs",
+      "lines": 252,
+      "sha256": "5bf997b95981b7e85323a413728ac5151bbc0ec831f8e598ca2fc59254eb06a2"
+    },
+    {
+      "path": "vail/crates/vail-table/src/interval_read.rs",
+      "lines": 1516,
+      "sha256": "4db2456e160a1dc5d7881aa66a7967d151e1adb60675540a65626898c0016571"
+    },
+    {
+      "path": "vail/crates/vail-table/src/join_interval.rs",
+      "lines": 1272,
+      "sha256": "6700645e62e94f333eba9375b61c82bb0a4baf4da51ed46fc7f6f8ec18d50f5c"
+    },
+    {
+      "path": "vail/crates/vail-table/src/joins.rs",
+      "lines": 509,
+      "sha256": "01762ed59c7854744bb3695ccec1abcb3b8c58f44557c994cc49ccfae250785d"
+    },
+    {
+      "path": "vail/crates/vail-table/src/lib.rs",
+      "lines": 1963,
+      "sha256": "744c00cf26ceb1604a909704107e049b88779ec607efffbc5c6c252c40dbaf44"
+    },
+    {
+      "path": "vail/crates/vail-table/src/line_source.rs",
+      "lines": 337,
+      "sha256": "db575dc1b7afdbec081c89d1ad2d676b22a36d782ab9133fdbbc23987546477c"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical.rs",
+      "lines": 1396,
+      "sha256": "9a516d85826e83426ef9411a014d8840ea752019b36728a7aac1ce38f5ca9433"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_aggregate_init.rs",
+      "lines": 236,
+      "sha256": "7367575177aad3d95e2fdba23aa6cf0e1874927d2bc46e808e71b12e9bef535c"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_aggregation.rs",
+      "lines": 823,
+      "sha256": "197b9139757cbdbecdbbf0905079c28187b97e8aaa5ae9727e5a73c5a64abd74"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_globals.rs",
+      "lines": 248,
+      "sha256": "242d00c25836e79cc4b750dd6f11a42798396884820ae05f781804bb31178457"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_nested_aggregation.rs",
+      "lines": 262,
+      "sha256": "6ecbaacb1aacb82e5c9fb4921bc2a26654c93c52a4325eb1ba56629575928a39"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_same.rs",
+      "lines": 149,
+      "sha256": "f89b26264295479b28f6e1436a151312c6361979b5ed7fa14bb010e60a007baa"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_scan.rs",
+      "lines": 1017,
+      "sha256": "1db87013e0c52ce6a7df26b22b2ec5dd3a850d29520dd97388a714760d8bb960"
+    },
+    {
+      "path": "vail/crates/vail-table/src/lookup.rs",
+      "lines": 889,
+      "sha256": "f05569470e4b383422d41f3b77243c3ee18047440c3a9179b512a9d2a99e2ba8"
+    },
+    {
+      "path": "vail/crates/vail-table/src/nested_projection.rs",
+      "lines": 352,
+      "sha256": "61fd2cb0a734a2bcbb88c1abe382324ca2505db9312da89593bd7b67f9bc439e"
+    },
+    {
+      "path": "vail/crates/vail-table/src/nested_scan.rs",
+      "lines": 471,
+      "sha256": "93f37db298b6ef0984ecac78aa93b19b5d67fdf54cfb1c84a0130fd8608ab970"
+    },
+    {
+      "path": "vail/crates/vail-table/src/partition_grouping.rs",
+      "lines": 312,
+      "sha256": "9af3bb580c9cca25944b783b40372c2093694395bca178469b95f87eeb56cc5d"
+    },
+    {
+      "path": "vail/crates/vail-table/src/partition_map.rs",
+      "lines": 316,
+      "sha256": "215009b6b5a2947d9c18b84d4b8a5ef7f3640f1ba181f27e6dd8cbe6564c1b6b"
+    },
+    {
+      "path": "vail/crates/vail-table/src/partitioned.rs",
+      "lines": 1818,
+      "sha256": "6a0ffbc6c79fe6d68d8eb81ce67946b982a38812c560f38561ddf61ba481c296"
+    },
+    {
+      "path": "vail/crates/vail-table/src/partitioning.rs",
+      "lines": 233,
+      "sha256": "ab0a92f178f9ad8368e0ae377bddbca74d0851c440df340db0a4b28f5acfca8e"
+    },
+    {
+      "path": "vail/crates/vail-table/src/plan.rs",
+      "lines": 1393,
+      "sha256": "f01547cf18356d535cc5163c6e731125bd5c0be586171f489b5c7232531a2f8c"
+    },
+    {
+      "path": "vail/crates/vail-table/src/provider.rs",
+      "lines": 1300,
+      "sha256": "94d632ceaa68d1a3ee1486a5b5425fea87a1d923b8f9f13acb5fb8391c232336"
+    },
+    {
+      "path": "vail/crates/vail-table/src/rng_context.rs",
+      "lines": 165,
+      "sha256": "5e196643f8ff76da43c80397ff396fd58dbaee5c960300747f75ef6a70dcfb5b"
+    },
+    {
+      "path": "vail/crates/vail-table/src/text_export.rs",
+      "lines": 162,
+      "sha256": "70ff2d6bb5f9cc95c6ba69d91e2d7b8179603a205d0e644aca221da42551379f"
+    },
+    {
+      "path": "vail/crates/vail-table/src/text_schema.rs",
+      "lines": 241,
+      "sha256": "db02b765b289799de9f0cac83c4ff6d25db3cde83d2b95662619c1a05b9dbd21"
+    },
+    {
+      "path": "vail/crates/vail-table/src/vcf_source.rs",
+      "lines": 207,
+      "sha256": "2058e8b4a9171af8c7c9e7591c08107b5a84a36604a0440c352d1829b8a59960"
+    },
+    {
+      "path": "vail/crates/vail-table/src/zip_join.rs",
+      "lines": 392,
+      "sha256": "0b68c5cff303cd242893b85f313201aea3a274a6d39e6eaf6f42f495db5c5344"
+    },
+    {
+      "path": "vail/crates/vail-vcf/src/lib.rs",
+      "lines": 1121,
+      "sha256": "23673a270ce14ee32bcdece0cca61a45cbba305fdbe0e2d714592342c5c7565c"
+    },
+    {
+      "path": "vail/conformance/__init__.py",
+      "lines": 1,
+      "sha256": "83b1db5357de7e436843d900a2a74d002d75371b28358565c8514dd6023431a0"
+    },
+    {
+      "path": "vail/conformance/all_upstream_table_cases.py",
+      "lines": 192,
+      "sha256": "ca5020fa3a3b439a44caee1a1e3157ccca0da5a0d33262887f1286dfec9536e8"
+    },
+    {
+      "path": "vail/conformance/codec.py",
+      "lines": 61,
+      "sha256": "cee34ffbb6a24dcbb912a8df1ad7a67a6c796f85c3bfacd160e9bb2e0f4b144e"
+    },
+    {
+      "path": "vail/conformance/compare.py",
+      "lines": 87,
+      "sha256": "4b6e4f4811a30ed380ba308b43bcdacb2c18929d58149c9963b3f65fd9b38e27"
+    },
+    {
+      "path": "vail/conformance/full_hail_bodies.py",
+      "lines": 311,
+      "sha256": "bdc82054e30ca8742519d9295b4f7d54f0b41c3d1989aa78cbb683fbbeaa4aa1"
+    },
+    {
+      "path": "vail/conformance/full_hail_pytest.py",
+      "lines": 247,
+      "sha256": "323494770725c656b4ae9f84a298cdee1a9d39292689dab44c76dfc16955d871"
+    },
+    {
+      "path": "vail/conformance/oracle_worker.py",
+      "lines": 180,
+      "sha256": "4311d560fea6624ca8e3777c21b8f3b036e03f14404f049abb4321deab3ce10d"
+    },
+    {
+      "path": "vail/conformance/protocol.py",
+      "lines": 175,
+      "sha256": "8b901103ec79ec28045c7599cc8e81010d381519cfc7b50ec9c97045fb14f3c4"
+    },
+    {
+      "path": "vail/conformance/report_filtered_suite.py",
+      "lines": 218,
+      "sha256": "6bfbe3c76dd2c8f0fd68e217b3667d6f86229c55677e8c1b413c3540afc5074a"
+    },
+    {
+      "path": "vail/conformance/run.py",
+      "lines": 137,
+      "sha256": "f9709e6bce45e6804604fa0ee99081df36af30b383d556e9ed441ad8c550b73c"
+    },
+    {
+      "path": "vail/conformance/suite_selection.py",
+      "lines": 68,
+      "sha256": "acc33dc34f6d80dfccc3128f458d5e85bf56371c26c3db2f6141349ba0ec3afb"
+    },
+    {
+      "path": "vail/conformance/summarize_full_hail.py",
+      "lines": 205,
+      "sha256": "1c4e34ccd654793afe1fcbd2a2c5b14450bbf9d603fa8cf1f02099b6eac8d49d"
+    },
+    {
+      "path": "vail/conformance/supplement_filtered_suite.py",
+      "lines": 67,
+      "sha256": "61980a77600301085c5d25bb963c1529591b0d9297dd2a9e56e6404d1f968a41"
+    },
+    {
+      "path": "vail/conformance/upstream_backend.py",
+      "lines": 121,
+      "sha256": "763c9b6dd4711e577f23b1bea7ad74a2b48a4a59eeb3c9bb86c320a35993fd8c"
+    },
+    {
+      "path": "vail/conformance/upstream_matrix_cases.py",
+      "lines": 472,
+      "sha256": "304fa56ff093d365cc3eb685d618a65964153b453f7af119ead1c800a826cc20"
+    },
+    {
+      "path": "vail/conformance/upstream_paths.py",
+      "lines": 78,
+      "sha256": "b7a4f51c9fd3ac074e8d90acf5fc3f6d325d082b46af3b6ec476240de8f4efac"
+    },
+    {
+      "path": "vail/conformance/upstream_scope.py",
+      "lines": 11,
+      "sha256": "cb958ef0c0f13e381b3b584318a580c4e6c9ae2b5d8d817293c8662f5e0ad6a1"
+    },
+    {
+      "path": "vail/conformance/upstream_table_cases.py",
+      "lines": 161,
+      "sha256": "987f2d75949e10448348fb504ace33cdb084ef2a6f8e3a034f1f011650d802a5"
+    },
+    {
+      "path": "vail/conformance/upstream_vcf_cases.py",
+      "lines": 80,
+      "sha256": "22540fef9f99f3605c6d3b877d18a26ee73074f1777c8f9680540ac1570df431"
+    },
+    {
+      "path": "vail/conformance/vcf_golden.py",
+      "lines": 87,
+      "sha256": "e43ab4e8a44dfc8f8b2d70f523fafa2ac1289ca173b07ed5bf80ece480a084df"
+    },
+    {
+      "path": "vail/benchmarks/compare_hail.py",
+      "lines": 222,
+      "sha256": "e38102dde3c03ea269aacd7b72c9e3e5742e5f0e8458223266afac4553bc3d10"
+    },
+    {
+      "path": "vail/benchmarks/profile_annotate.py",
+      "lines": 193,
+      "sha256": "2ff556a30fa1104d04acadc45c2ac770da040613cb42f222eea590870a6d99aa"
+    },
+    {
+      "path": "vail/benchmarks/profile_cloud.py",
+      "lines": 206,
+      "sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b"
+    },
+    {
+      "path": "vail/benchmarks/profile_range_means.py",
+      "lines": 132,
+      "sha256": "937df2e5777c5d5ce04f4ab55bb4b828a74efdfa7fb1bdff620b4f1bd0105550"
+    },
+    {
+      "path": "vail/benchmarks/profile_samples.py",
+      "lines": 236,
+      "sha256": "50a9e05906269749cad95f0f77b7356b2217be6c1dbf07eff688c7607d012db9"
+    },
+    {
+      "path": "vail/benchmarks/render_annotate_profile.py",
+      "lines": 208,
+      "sha256": "94319be3654c7d3b6765e4617bf14432f40064b69dc04e16599ab2709712c8de"
+    },
+    {
+      "path": "vail/benchmarks/render_cloud_benchmarks.py",
+      "lines": 220,
+      "sha256": "1d28c39a26e6f520bc8c4c1d71cf4cd02304ff24713fbada2bc0271c8a37713b"
+    },
+    {
+      "path": "vail/benchmarks/render_cloud_html.py",
+      "lines": 257,
+      "sha256": "af055f93f8a6cd13908b37a31a50320cfc4df6bed8f931e0e1f67701de205f98"
+    },
+    {
+      "path": "vail/benchmarks/render_dimension_scaling.py",
+      "lines": 151,
+      "sha256": "279ebe16ea6d22b8969d5e24a31045a4203938ca943b48b87a4678d4cf1a2e85"
+    },
+    {
+      "path": "vail/benchmarks/render_matrix_layout.py",
+      "lines": 147,
+      "sha256": "20742f796f90f6360e364eaec55cb11bfd128e6777ff5cc1ed17c441b77da271"
+    },
+    {
+      "path": "vail/benchmarks/render_range_means.py",
+      "lines": 37,
+      "sha256": "a25e32dddc02a88f423767d19eef951d4ae15ca8838b3cbd1e18ca0071fdf5d5"
+    },
+    {
+      "path": "vail/benchmarks/render_sample_telemetry.py",
+      "lines": 86,
+      "sha256": "f56b6b2aeb7a688ff554ec8a68c786179725c0c9aa6f709b51ad0d92dbab6ecd"
+    },
+    {
+      "path": "vail/benchmarks/run_cloud_benchmarks.py",
+      "lines": 90,
+      "sha256": "5070c31207f22c71b7039e34e7c1367f7c2e23c3258f3f994262df1771a6fb22"
+    },
+    {
+      "path": "vail/benchmarks/run_dimension_scaling.py",
+      "lines": 96,
+      "sha256": "167587dc2b9a15822e50997ad0cbcddee4f3e4944a7294a3a214bb097e6021c6"
+    },
+    {
+      "path": "vail/benchmarks/upstream_benchmark_coverage.py",
+      "lines": 552,
+      "sha256": "8d1c711c2e1f9734146d2ba8acf7a46ff4637d1bd6fbd0b8406b5aee0519b914"
+    },
+    {
+      "path": "vail/scripts/check_hail_interval_bounds.py",
+      "lines": 105,
+      "sha256": "d4b903e547555b5498d824ae798557289c828c38fd10284de4e27c75359fd3cb"
+    },
+    {
+      "path": "vail/scripts/check_hail_partitions.py",
+      "lines": 150,
+      "sha256": "12399e31f6c15855d5431a4af0401ef94b55259e9930129b5ce95c33fc529326"
+    },
+    {
+      "path": "vail/scripts/check_hail_string_operations.py",
+      "lines": 28,
+      "sha256": "c365a2de5c670dc2761ddcee115d3beb4c4ae1143cd4afd775030963fb5ea371"
+    },
+    {
+      "path": "vail/scripts/check_hail_text_operations.py",
+      "lines": 41,
+      "sha256": "cce7aa15f0c854d976b0d6f95ffcb824000a362055da5b173f69ed59f1840b5c"
+    },
+    {
+      "path": "vail/scripts/hail_inventory_report.py",
+      "lines": 191,
+      "sha256": "387a1b360a2793fe163d2164b5fa303f6eeee9441eab16fe1e73bbb44bac8127"
+    },
+    {
+      "path": "vail/scripts/inventory_hail_api.py",
+      "lines": 211,
+      "sha256": "6a3daead4fd299477a2c727f5e98665dc270ea07c324df719b87f2991aacdade"
+    },
+    {
+      "path": "vail/scripts/inventory_hail_tests.py",
+      "lines": 649,
+      "sha256": "668ad5e1157ceac5d3dce7cb3ae00acb3d242909bf25eaf83b69dd1732abd4ed"
+    },
+    {
+      "path": "vail/scripts/native_conformance_worker.py",
+      "lines": 110,
+      "sha256": "19314aa44a77651050f89b0ba759e34fc95fc30575ebd4947c1761052deecde2"
+    },
+    {
+      "path": "vail/scripts/prepare_reference_manifest.py",
+      "lines": 265,
+      "sha256": "61c41c3a493e2f04510edd22d97c52b7d790c9fcd99410bfeeb606faae85f9e9"
+    },
+    {
+      "path": "vail/scripts/report_table_test_run.py",
+      "lines": 39,
+      "sha256": "2ff6e8798449670f455dcc1a51758b53f51b0b323324dbfab6e4a8f634f77a43"
+    },
+    {
+      "path": "vail/scripts/run_all_tests.py",
+      "lines": 395,
+      "sha256": "20bf4c368bfba4b09ef15524d8c63efddd6603fb7aaa78b07540d1a4fa0bcbb4"
+    }
+  ]
+}

@@ -1,0 +1,854 @@
+--- registry/vortex-array-0.86.1/src/expr/analysis/referenced_field_paths.rs
++++ patches/vortex-array/src/expr/analysis/referenced_field_paths.rs
+@@ -13,6 +13,7 @@
+ use crate::expr::traversal::NodeExt;
+ use crate::expr::traversal::NodeFolderContext;
+ use crate::scalar_fn::fns::get_item::GetItem;
++use crate::scalar_fn::fns::list_project::Project;
+ use crate::scalar_fn::fns::select::Select;
+ 
+ /// Returns the rooted field paths referenced by an expression.
+@@ -76,6 +77,24 @@
+             return Ok(FoldDownContext::Continue(appended));
+         }
+ 
++        if let Some(paths) = node
++            .as_scalar()
++            .and_then(|scalar_fn| scalar_fn.as_opt::<Project>())
++        {
++            if !node.children()[0].is_root() {
++                return Ok(FoldDownContext::Continue(vec![FieldPath::root()]));
++            }
++            let narrowed = paths
++                .0
++                .iter()
++                .map(|projected| projection_source_path(node.children()[0].dtype(), projected))
++                .collect::<VortexResult<Vec<_>>>()?
++                .into_iter()
++                .map(|path| FieldPath::from_iter(path.into_iter().rev()))
++                .collect();
++            return Ok(FoldDownContext::Continue(narrowed));
++        }
++
+         // Keep requested paths whose head is included, expanding a whole-scope request into one
+         // path per included field.
+         if let Some(selection) = node
+@@ -123,6 +142,35 @@
+     }
+ }
+ 
++/// Expand a projection path through list element boundaries into a source field path.
++fn projection_source_path(
++    dtype: &crate::dtype::DType,
++    path: &[crate::dtype::FieldName],
++) -> VortexResult<Vec<Field>> {
++    if path.is_empty() {
++        return Ok(Vec::new());
++    }
++    match dtype {
++        crate::dtype::DType::List(element, _) => {
++            let mut source = vec![Field::ElementType];
++            source.extend(projection_source_path(element, path)?);
++            Ok(source)
++        }
++        crate::dtype::DType::Struct(fields, _) => {
++            let name = &path[0];
++            let field_dtype = fields.field(name).ok_or_else(|| {
++                vortex_err!("project path field {name} does not exist in {dtype}")
++            })?;
++            let mut source = vec![Field::Name(name.clone())];
++            if path.len() > 1 {
++                source.extend(projection_source_path(&field_dtype, &path[1..])?);
++            }
++            Ok(source)
++        }
++        other => vortex_error::vortex_bail!("project path continues past non-struct dtype {other}"),
++    }
++}
++
+ #[cfg(test)]
+ mod tests {
+     use vortex_utils::aliases::hash_set::HashSet;
+--- registry/vortex-array-0.86.1/src/scalar_fn/fns/list_project.rs
++++ patches/vortex-array/src/scalar_fn/fns/list_project.rs
+@@ -0,0 +1,338 @@
++// SPDX-License-Identifier: Apache-2.0
++// SPDX-FileCopyrightText: Copyright the Vortex contributors
++
++//! Nested projection for structs and lists of structs.
++//!
++//! Unlike `select`, this function can descend through a list element boundary. It is primarily
++//! used by list layout readers to push a projection into the element reader while retaining the
++//! original list offsets and validity.
++
++use std::fmt::{Display, Formatter};
++use std::sync::Arc;
++
++use vortex_error::{VortexResult, vortex_bail, vortex_err};
++use vortex_session::VortexSession;
++use vortex_session::registry::CachedId;
++
++use crate::ArrayRef;
++use crate::Canonical;
++use crate::ExecutionCtx;
++use crate::IntoArray;
++use crate::arrays::listview::{ListViewArrayExt, ListViewArraySlotsExt};
++use crate::arrays::struct_::StructArrayExt;
++use crate::arrays::{ListView, ListViewArray, StructArray};
++use crate::dtype::{DType, FieldName, FieldNames, StructFields};
++use crate::expr::Expression;
++use crate::expr::display::ExprDisplay;
++use crate::scalar_fn::{
++    Arity, ChildName, ExecutionArgs, ScalarFnId, ScalarFnVTable, ScalarFnVTableExt,
++};
++
++/// One or more field-name paths, relative to a struct (or list element struct).
++#[derive(Clone, Debug, PartialEq, Eq, Hash)]
++pub struct ProjectPaths(
++    /// Paths to preserve, with each path represented as individual field names.
++    pub Vec<Vec<FieldName>>,
++);
++
++impl Display for ProjectPaths {
++    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
++        write!(f, "{:?}", self.0)
++    }
++}
++
++/// Scalar function that projects nested struct fields within list elements.
++#[derive(Clone)]
++pub struct Project;
++
++impl ScalarFnVTable for Project {
++    type Options = ProjectPaths;
++
++    fn id(&self) -> ScalarFnId {
++        static ID: CachedId = CachedId::new("vortex.list.project");
++        *ID
++    }
++
++    fn serialize(&self, paths: &ProjectPaths) -> VortexResult<Option<Vec<u8>>> {
++        let mut out = Vec::new();
++        put_u32(&mut out, paths.0.len())?;
++        for path in &paths.0 {
++            put_u32(&mut out, path.len())?;
++            for name in path {
++                let bytes = name.as_ref().as_bytes();
++                put_u32(&mut out, bytes.len())?;
++                out.extend_from_slice(bytes);
++            }
++        }
++        Ok(Some(out))
++    }
++
++    fn deserialize(&self, bytes: &[u8], _session: &VortexSession) -> VortexResult<ProjectPaths> {
++        let mut cursor = 0;
++        let n = take_u32(bytes, &mut cursor)?;
++        if n > bytes.len().saturating_sub(cursor) / 4 {
++            vortex_bail!("bad project path count");
++        }
++        let mut paths = Vec::with_capacity(n);
++        for _ in 0..n {
++            let m = take_u32(bytes, &mut cursor)?;
++            if m > bytes.len().saturating_sub(cursor) / 4 {
++                vortex_bail!("bad project field count");
++            }
++            let mut path = Vec::with_capacity(m);
++            for _ in 0..m {
++                let len = take_u32(bytes, &mut cursor)?;
++                let end = cursor
++                    .checked_add(len)
++                    .ok_or_else(|| vortex_err!("bad project path"))?;
++                let value = std::str::from_utf8(
++                    bytes
++                        .get(cursor..end)
++                        .ok_or_else(|| vortex_err!("bad project path"))?,
++                )
++                .map_err(|e| vortex_err!("invalid utf8 in project path: {e}"))?;
++                path.push(FieldName::from(value));
++                cursor = end;
++            }
++            paths.push(path);
++        }
++        if cursor != bytes.len() {
++            vortex_bail!("trailing bytes in project paths");
++        }
++        Ok(ProjectPaths(paths))
++    }
++
++    fn arity(&self, _: &ProjectPaths) -> Arity {
++        Arity::Exact(1)
++    }
++    fn child_name(&self, _: &ProjectPaths, _: usize) -> ChildName {
++        ChildName::from("child")
++    }
++
++    fn fmt_sql(
++        &self,
++        paths: &ProjectPaths,
++        expr: &dyn ExprDisplay,
++        f: &mut Formatter<'_>,
++    ) -> std::fmt::Result {
++        write!(f, "project({}, {})", expr.display_child(0), paths)
++    }
++
++    fn return_dtype(&self, paths: &ProjectPaths, args: &[DType]) -> VortexResult<DType> {
++        project_dtype(&args[0], &paths.0)
++    }
++
++    fn execute(
++        &self,
++        paths: &ProjectPaths,
++        args: &dyn ExecutionArgs,
++        ctx: &mut ExecutionCtx,
++    ) -> VortexResult<ArrayRef> {
++        project_array(args.get(0)?, &paths.0, ctx)
++    }
++}
++
++fn put_u32(out: &mut Vec<u8>, value: usize) -> VortexResult<()> {
++    out.extend_from_slice(
++        &u32::try_from(value)
++            .map_err(|_| vortex_err!("project path too large"))?
++            .to_le_bytes(),
++    );
++    Ok(())
++}
++fn take_u32(bytes: &[u8], cursor: &mut usize) -> VortexResult<usize> {
++    let end = cursor
++        .checked_add(4)
++        .ok_or_else(|| vortex_err!("bad project path"))?;
++    let value = u32::from_le_bytes(
++        bytes
++            .get(*cursor..end)
++            .ok_or_else(|| vortex_err!("bad project path"))?
++            .try_into()
++            .map_err(|_| vortex_err!("bad project path"))?,
++    );
++    *cursor = end;
++    Ok(value as usize)
++}
++
++fn project_dtype(dtype: &DType, paths: &[Vec<FieldName>]) -> VortexResult<DType> {
++    for path in paths {
++        validate_path(dtype, path)?;
++    }
++    match dtype {
++        DType::List(element, nullability) => Ok(DType::List(
++            Arc::new(project_dtype(element, paths)?),
++            *nullability,
++        )),
++        DType::Struct(fields, nullability) => {
++            for path in paths.iter().filter(|path| !path.is_empty()) {
++                if fields.find(path[0].as_ref()).is_none() {
++                    vortex_bail!("project path field {} does not exist in {dtype}", path[0]);
++                }
++            }
++            let mut projected = Vec::new();
++            for (name, field_dtype) in fields.names().iter().zip(fields.fields()) {
++                let matching: Vec<_> = paths
++                    .iter()
++                    .filter(|path| path.first() == Some(name))
++                    .collect();
++                if matching.is_empty() {
++                    continue;
++                }
++                let descendants: Vec<_> = matching
++                    .iter()
++                    .filter_map(|path| path.get(1..))
++                    .filter(|p| !p.is_empty())
++                    .map(|p| p.to_vec())
++                    .collect();
++                let has_whole_field = matching.iter().any(|p| p.len() == 1);
++                let out_dtype = if has_whole_field || descendants.is_empty() {
++                    field_dtype.clone()
++                } else {
++                    project_dtype(&field_dtype, &descendants)?
++                };
++                projected.push((name.clone(), out_dtype));
++            }
++            Ok(DType::Struct(
++                StructFields::from_iter(projected),
++                *nullability,
++            ))
++        }
++        other => vortex_bail!("project paths require struct/list dtype, got {other}"),
++    }
++}
++
++fn validate_path(dtype: &DType, path: &[FieldName]) -> VortexResult<()> {
++    if path.is_empty() {
++        return Ok(());
++    }
++    match dtype {
++        DType::List(element, _) => validate_path(element, path),
++        DType::Struct(fields, _) => {
++            let name = &path[0];
++            let field = fields.field(name).ok_or_else(|| {
++                vortex_err!("project path field {name} does not exist in {dtype}")
++            })?;
++            validate_path(&field, &path[1..])
++        }
++        other => vortex_bail!("project path continues past non-struct dtype {other}"),
++    }
++}
++
++fn project_array(
++    input: ArrayRef,
++    paths: &[Vec<FieldName>],
++    ctx: &mut ExecutionCtx,
++) -> VortexResult<ArrayRef> {
++    match input.dtype().clone() {
++        DType::Struct(..) => project_struct(input.execute::<StructArray>(ctx)?, paths, ctx),
++        DType::List(..) => {
++            let list = input
++                .execute::<Canonical>(ctx)?
++                .into_array()
++                .try_downcast::<ListView>()
++                .map_err(|_| vortex_err!("canonical list projection failed"))?;
++            let elements = project_array(list.elements().clone(), paths, ctx)?;
++            Ok(ListViewArray::try_new(
++                elements,
++                list.offsets().clone(),
++                list.sizes().clone(),
++                list.listview_validity(),
++            )?
++            .into_array())
++        }
++        other => vortex_bail!("project requires struct or list-of-struct, got {other}"),
++    }
++}
++
++fn project_struct(
++    input: StructArray,
++    paths: &[Vec<FieldName>],
++    ctx: &mut ExecutionCtx,
++) -> VortexResult<ArrayRef> {
++    let mut names = Vec::new();
++    let mut columns = Vec::new();
++    for name in input.names().iter() {
++        let matching: Vec<_> = paths
++            .iter()
++            .filter(|path| path.first() == Some(name))
++            .collect();
++        if matching.is_empty() {
++            continue;
++        }
++        names.push(name.clone());
++        let descendants: Vec<_> = matching
++            .iter()
++            .filter_map(|path| path.get(1..))
++            .filter(|p| !p.is_empty())
++            .map(|p| p.to_vec())
++            .collect();
++        if matching.iter().any(|p| p.len() == 1) || descendants.is_empty() {
++            columns.push(input.unmasked_field_by_name(name.as_ref())?.clone());
++        } else {
++            columns.push(project_array(
++                input.unmasked_field_by_name(name.as_ref())?.clone(),
++                &descendants,
++                ctx,
++            )?);
++        }
++    }
++    let validity = input.struct_validity();
++    Ok(StructArray::try_new(
++        FieldNames::from(names.as_slice()),
++        columns,
++        input.len(),
++        validity,
++    )?
++    .into_array())
++}
++
++/// Build a nested projection expression. Paths are relative to `dtype`; an empty path selects
++/// the complete input. `dtype` is used to validate and type-check the expression before execution.
++pub fn project_paths(
++    paths: &[Vec<FieldName>],
++    child: Expression,
++    dtype: &DType,
++) -> VortexResult<Expression> {
++    if paths.iter().any(Vec::is_empty) {
++        return Ok(child);
++    }
++    drop(project_dtype(dtype, paths)?);
++    Ok(Project.new_expr(ProjectPaths(paths.to_vec()), vec![child]))
++}
++
++/// Bound-expression equivalent of [`project_paths`], for layout readers which have already
++/// expanded a struct root into individual field expressions.
++pub fn project_paths_bound(
++    paths: &[Vec<FieldName>],
++    child: crate::expr::BoundExpression,
++) -> VortexResult<crate::expr::BoundExpression> {
++    if paths.iter().any(Vec::is_empty) {
++        return Ok(child);
++    }
++    Project.try_new_bound_expr(ProjectPaths(paths.to_vec()), vec![child])
++}
++
++/// Build a projection for the fields inside each list element.
++pub fn list_project(
++    paths: &[Vec<FieldName>],
++    child: Expression,
++    dtype: &DType,
++) -> VortexResult<Expression> {
++    match dtype {
++        DType::List(..) => project_paths(paths, child, dtype),
++        other => vortex_bail!("list_project requires a list dtype, got {other}"),
++    }
++}
++
++/// Project a struct expression using an explicit list of nested paths.
++pub fn struct_project(
++    paths: &[Vec<FieldName>],
++    child: Expression,
++    dtype: &DType,
++) -> VortexResult<Expression> {
++    match dtype {
++        DType::Struct(..) => project_paths(paths, child, dtype),
++        other => vortex_bail!("struct_project requires a struct dtype, got {other}"),
++    }
++}
+--- registry/vortex-array-0.86.1/src/scalar_fn/fns/mod.rs
++++ patches/vortex-array/src/scalar_fn/fns/mod.rs
+@@ -15,6 +15,7 @@
+ pub mod like;
+ pub mod list_contains;
+ pub mod list_length;
++pub mod list_project;
+ pub mod list_sum;
+ pub mod literal;
+ pub mod mask;
+--- registry/vortex-array-0.86.1/src/scalar_fn/session.rs
++++ patches/vortex-array/src/scalar_fn/session.rs
+@@ -24,6 +24,7 @@
+ use crate::scalar_fn::fns::like::Like;
+ use crate::scalar_fn::fns::list_contains::ListContains;
+ use crate::scalar_fn::fns::list_length::ListLength;
++use crate::scalar_fn::fns::list_project::Project;
+ use crate::scalar_fn::fns::list_sum::ListSum;
+ use crate::scalar_fn::fns::literal::Literal;
+ use crate::scalar_fn::fns::mask::Mask;
+@@ -75,6 +76,7 @@
+         this.register(Like);
+         this.register(ListContains);
+         this.register(ListLength);
++        this.register(Project);
+         this.register(ListSum);
+         this.register(Literal);
+         this.register(Mask);
+--- registry/vortex-layout-0.86.1/src/layouts/list/reader.rs
++++ patches/vortex-layout/src/layouts/list/reader.rs
+@@ -20,7 +20,10 @@
+ use vortex_array::dtype::Nullability;
+ use vortex_array::dtype::PType;
+ use vortex_array::expr::BoundExpression;
++use vortex_array::expr::Expression;
+ use vortex_array::expr::root;
++use vortex_array::scalar_fn::fns::list_project::Project;
++use vortex_array::scalar_fn::fns::list_project::project_paths;
+ use vortex_array::scalar_fn::fns::operators::Operator;
+ use vortex_array::validity::Validity;
+ use vortex_error::VortexExpect;
+@@ -177,7 +180,7 @@
+         let expr = expr.clone();
+ 
+         let offsets_fut = self.fetch_raw_offsets(&(0..row_count))?;
+-        let elements_fut = self.fetch_raw_elements(&(0..elements_row_count))?;
++        let elements_fut = self.fetch_elements_for_projection(&(0..elements_row_count), &expr)?;
+         let validity_fut = fetch_validity(
+             self.validity.as_ref(),
+             &(0..row_count),
+@@ -192,7 +195,11 @@
+                 ListArray::new_unchecked(elements, offsets, create_validity(validity, nullability))
+             }
+             .into_array();
+-            list.apply_bound(&expr)
++            if is_root_list_project(&expr) {
++                Ok(list)
++            } else {
++                list.apply_bound(&expr)
++            }
+         }
+         .boxed())
+     }
+@@ -227,7 +234,7 @@
+             let offsets = offsets_fut.await?;
+ 
+             let elements_range = elements_range_from_offsets(&offsets, &reader.session)?;
+-            let elements_fut = reader.fetch_raw_elements(&elements_range)?;
++            let elements_fut = reader.fetch_elements_for_projection(&elements_range, &expr)?;
+             let validity_fut = fetch_validity(
+                 reader.validity.as_ref(),
+                 &selected_row_range,
+@@ -248,7 +255,11 @@
+             } else {
+                 list.filter(selected_mask)?
+             };
+-            list.apply_bound(&expr)
++            if is_root_list_project(&expr) {
++                Ok(list)
++            } else {
++                list.apply_bound(&expr)
++            }
+         }
+         .boxed())
+     }
+@@ -317,6 +328,37 @@
+         self.elements
+             .projection_evaluation(row_range, &root, MaskFuture::new_true(row_count))
+     }
++
++    /// Fetch elements using the nested paths requested by a list projection when present.
++    /// This lets the child struct reader prune unreferenced element fields (including nested
++    /// fields) while this reader continues to own and preserve offsets and list validity.
++    fn fetch_elements_for_projection(
++        &self,
++        row_range: &Range<u64>,
++        expr: &BoundExpression,
++    ) -> VortexResult<ArrayFuture> {
++        let Some(paths) = expr
++            .as_scalar()
++            .and_then(|scalar_fn| scalar_fn.as_opt::<Project>())
++        else {
++            return self.fetch_raw_elements(row_range);
++        };
++        if !expr.children()[0].is_root() {
++            return self.fetch_raw_elements(row_range);
++        }
++        let projection = project_paths(&paths.0, Expression::Root, self.elements.dtype())?
++            .bind(self.elements.dtype())?;
++        let row_count = usize::try_from(row_range.end - row_range.start)?;
++        self.elements
++            .projection_evaluation(row_range, &projection, MaskFuture::new_true(row_count))
++    }
++}
++
++fn is_root_list_project(expr: &BoundExpression) -> bool {
++    expr.as_scalar()
++        .and_then(|scalar_fn| scalar_fn.as_opt::<Project>())
++        .is_some()
++        && expr.children()[0].is_root()
+ }
+ 
+ fn selected_row_range(mask: &Mask) -> Option<Range<usize>> {
+@@ -615,7 +657,10 @@
+     use vortex_array::arrays::BoolArray;
+     use vortex_array::arrays::ListArray;
+     use vortex_array::arrays::PrimitiveArray;
++    use vortex_array::arrays::StructArray;
+     use vortex_array::assert_arrays_eq;
++    use vortex_array::dtype::FieldName;
++    use vortex_array::dtype::FieldNames;
+     use vortex_array::expr::Expression;
+     use vortex_array::expr::cast;
+     use vortex_array::expr::gt;
+@@ -623,6 +668,7 @@
+     use vortex_array::expr::is_null;
+     use vortex_array::expr::list_length;
+     use vortex_array::expr::lit;
++    use vortex_array::scalar_fn::fns::list_project::list_project;
+     use vortex_buffer::buffer;
+     use vortex_io::session::RuntimeSession;
+     use vortex_io::session::RuntimeSessionExt;
+@@ -635,6 +681,7 @@
+     use crate::layouts::list::writer::ListLayoutStrategy;
+     use crate::layouts::repartition::RepartitionStrategy;
+     use crate::layouts::repartition::RepartitionWriterOptions;
++    use crate::layouts::struct_::StructStrategy;
+     use crate::scan::split_by::SplitBy;
+     use crate::segments::SegmentFuture;
+     use crate::segments::SegmentSource;
+@@ -1113,6 +1160,41 @@
+         request_count: Arc<AtomicUsize>,
+     }
+ 
++    struct RejectSegmentSource {
++        inner: Arc<dyn SegmentSource>,
++        forbidden: Vec<crate::segments::SegmentId>,
++        request_count: Arc<AtomicUsize>,
++    }
++
++    impl SegmentSource for RejectSegmentSource {
++        fn request(&self, id: crate::segments::SegmentId) -> SegmentFuture {
++            self.request_count.fetch_add(1, Ordering::Relaxed);
++            if self.forbidden.contains(&id) {
++                return Box::pin(async move {
++                    Err(vortex_error::vortex_err!(
++                        "unexpected read of pruned segment {id}"
++                    ))
++                });
++            }
++            self.inner.request(id)
++        }
++    }
++
++    fn segment_ids_at_path(
++        layout: &LayoutRef,
++        path: &[&str],
++    ) -> VortexResult<Vec<crate::segments::SegmentId>> {
++        if path.is_empty() {
++            return Ok(layout.segment_ids().to_vec());
++        }
++        for (child_type, child) in layout.child_types().zip(layout.children()?) {
++            if child_type.name().as_ref() == path[0] {
++                return segment_ids_at_path(&child, &path[1..]);
++            }
++        }
++        vortex_error::vortex_bail!("layout has no child at path {path:?}");
++    }
++
+     impl SegmentSource for CountingSegmentSource {
+         fn request(&self, id: crate::segments::SegmentId) -> SegmentFuture {
+             self.request_count.fetch_add(1, Ordering::Relaxed);
+@@ -1161,6 +1243,97 @@
+         let mut exec_ctx = session.create_execution_ctx();
+         assert_arrays_eq!(result, expected, &mut exec_ctx);
+         assert_eq!(request_count.load(Ordering::Relaxed), 2);
++        Ok(())
++    }
++
++    /// Nested list projection reads only the requested element leaves. This exercises the actual
++    /// serialized layout/read path (not just the scalar function's in-memory result).
++    #[tokio::test]
++    async fn nested_list_projection_prunes_unrequested_leaf() -> VortexResult<()> {
++        let nested = StructArray::try_new(
++            FieldNames::from(["GT", "DP"]),
++            vec![
++                buffer![10i32, 20, 30].into_array(),
++                buffer![1i32, 2, 3].into_array(),
++            ],
++            3,
++            Validity::NonNullable,
++        )?;
++        let elements = StructArray::try_new(
++            FieldNames::from(["cid", "present", "value", "unused"]),
++            vec![
++                buffer![1i32, 1, 2].into_array(),
++                BoolArray::from_iter([true, false, true]).into_array(),
++                nested.into_array(),
++                buffer![90i32, 91, 92].into_array(),
++            ],
++            3,
++            Validity::NonNullable,
++        )?;
++        let list = ListArray::try_new(
++            elements.into_array(),
++            buffer![0u32, 2, 3].into_array(),
++            Validity::NonNullable,
++        )?
++        .into_array();
++        let paths = vec![
++            vec![FieldName::from("cid")],
++            vec![FieldName::from("present")],
++            vec![FieldName::from("value"), FieldName::from("GT")],
++        ];
++        let flat: Arc<dyn LayoutStrategy> = Arc::new(FlatLayoutStrategy::default());
++        let value_strategy = StructStrategy::new(Arc::clone(&flat), Arc::clone(&flat))
++            .with_field_writer("GT", Arc::clone(&flat))
++            .with_field_writer("DP", Arc::clone(&flat));
++        let elements_strategy = StructStrategy::new(Arc::clone(&flat), Arc::clone(&flat))
++            .with_field_writer("value", Arc::new(value_strategy));
++        let strategy = ListLayoutStrategy::default().with_elements(Arc::new(elements_strategy));
++        let (segments, layout, session) = write_layout(&strategy, list.clone()).await?;
++        let pruned_segments = segment_ids_at_path(&layout, &["elements", "value", "DP"])?;
++        assert!(
++            !pruned_segments.is_empty(),
++            "DP must have its own physical segment"
++        );
++
++        let full_count = Arc::new(AtomicUsize::new(0));
++        let full_source = Arc::new(CountingSegmentSource {
++            inner: Arc::clone(&segments),
++            request_count: Arc::clone(&full_count),
++        });
++        let full_reader = layout.new_reader(
++            "".into(),
++            full_source,
++            &session,
++            &LayoutReaderContext::new(),
++        )?;
++        let full_expr = root().bind(full_reader.dtype())?;
++        full_reader
++            .projection_evaluation(&(0..2), &full_expr, MaskFuture::new_true(2))?
++            .await?;
++
++        let projected_count = Arc::new(AtomicUsize::new(0));
++        let projected_source = Arc::new(RejectSegmentSource {
++            inner: segments,
++            forbidden: pruned_segments,
++            request_count: Arc::clone(&projected_count),
++        });
++        let projected_reader = layout.new_reader(
++            "".into(),
++            projected_source,
++            &session,
++            &LayoutReaderContext::new(),
++        )?;
++        let projected_expr = list_project(&paths, root(), projected_reader.dtype())?
++            .bind(projected_reader.dtype())?;
++        let projected = projected_reader
++            .projection_evaluation(&(0..2), &projected_expr, MaskFuture::new_true(2))?
++            .await?;
++
++        let expected_expr = list_project(&paths, root(), list.dtype())?;
++        let expected = list.apply(&expected_expr)?;
++        let mut exec_ctx = session.create_execution_ctx();
++        assert_arrays_eq!(projected, expected, &mut exec_ctx);
++        assert!(full_count.load(Ordering::Relaxed) > projected_count.load(Ordering::Relaxed));
+         Ok(())
+     }
+ 
+--- registry/vortex-layout-0.86.1/src/layouts/struct_/reader.rs
++++ patches/vortex-layout/src/layouts/struct_/reader.rs
+@@ -22,6 +22,9 @@
+ use vortex_array::expr::BoundExpression;
+ use vortex_array::expr::ExactBoundExpr;
+ use vortex_array::expr::bound::get_item;
++use vortex_array::expr::bound::is_not_null;
++use vortex_array::expr::bound::mask;
++use vortex_array::expr::bound::not;
+ use vortex_array::expr::bound::pack;
+ use vortex_array::expr::make_bound_free_field_annotator;
+ use vortex_array::expr::root;
+@@ -31,6 +34,11 @@
+ use vortex_array::expr::traversal::Transformed;
+ use vortex_array::expr::traversal::TraversalOrder;
+ use vortex_array::scalar_fn::fns::get_item::GetItem;
++use vortex_array::scalar_fn::fns::list_project::Project;
++use vortex_array::scalar_fn::fns::is_not_null::IsNotNull;
++use vortex_array::scalar_fn::fns::is_null::IsNull;
++use vortex_array::scalar_fn::fns::mask::Mask as MaskFn;
++use vortex_array::scalar_fn::fns::list_project::project_paths_bound;
+ use vortex_array::scalar_fn::fns::merge::Merge;
+ use vortex_array::scalar_fn::fns::pack::Pack;
+ use vortex_array::scalar_fn::fns::select::Select;
+@@ -244,10 +252,15 @@
+         .iter()
+         .map(|name| get_item(name.clone(), root.clone()))
+         .collect::<Vec<_>>();
+-    Ok(pack(
++    let packed = pack(
+         fields.names().iter().cloned().zip(children),
+         Nullability::NonNullable,
+-    ))
++    );
++    if root_dtype.is_nullable() {
++        Ok(mask(packed, is_not_null(root)))
++    } else {
++        Ok(packed)
++    }
+ }
+ 
+ fn expand_struct_root(
+@@ -255,6 +268,20 @@
+     expanded_root: &BoundExpression,
+     fields: &StructFields,
+ ) -> VortexResult<BoundExpression> {
++    let (packed, validity) = if expanded_root
++        .as_scalar()
++        .is_some_and(|scalar_fn| scalar_fn.is::<MaskFn>())
++    {
++        let children = expanded_root.children();
++        (&children[0], Some(&children[1]))
++    } else {
++        (expanded_root, None)
++    };
++    let with_validity = |expr: BoundExpression| match validity {
++        Some(validity) => mask(expr, validity.clone()),
++        None => expr,
++    };
++
+     Ok(expr
+         .transform_down(|node| {
+             if node.is_root() {
+@@ -280,8 +307,9 @@
+                 let idx = fields.find(field_name).ok_or_else(|| {
+                     vortex_err!("Field {field_name} not found while expanding struct root")
+                 })?;
++                let child = packed.children()[idx].clone();
+                 return Ok(Transformed {
+-                    value: expanded_root.children()[idx].clone(),
++                    value: with_validity(child),
+                     changed: true,
+                     order: TraversalOrder::Skip,
+                 });
+@@ -295,16 +323,75 @@
+                         let idx = fields.find(name).vortex_expect(
+                             "normalized selection fields must exist in the struct root",
+                         );
+-                        expanded_root.children()[idx].clone()
++                        packed.children()[idx].clone()
+                     })
+                     .collect();
+                 return Ok(Transformed {
+-                    value: pack(names.into_iter().zip(children), Nullability::NonNullable),
++                    value: with_validity(pack(
++                        names.into_iter().zip(children),
++                        Nullability::NonNullable,
++                    )),
+                     changed: true,
+                     order: TraversalOrder::Skip,
+                 });
+             }
+ 
++            if let Some(paths) = scalar_fn.as_opt::<Project>() {
++                let mut names = Vec::new();
++                let mut children = Vec::new();
++                for name in fields.names().iter() {
++                    let matching: Vec<_> = paths
++                        .0
++                        .iter()
++                        .filter(|path| path.first() == Some(name))
++                        .collect();
++                    if matching.is_empty() {
++                        continue;
++                    }
++                    names.push(name.clone());
++                    let descendants: Vec<_> = matching
++                        .iter()
++                        .filter_map(|path| path.get(1..))
++                        .filter(|path| !path.is_empty())
++                        .map(|path| path.to_vec())
++                        .collect();
++                    let idx = fields.find(name).vortex_expect("project path field exists");
++                    let child = packed.children()[idx].clone();
++                    if matching.iter().any(|path| path.len() == 1) || descendants.is_empty() {
++                        children.push(child);
++                    } else {
++                        children.push(project_paths_bound(&descendants, child)?);
++                    }
++                }
++                return Ok(Transformed {
++                    value: with_validity(pack(
++                        names.into_iter().zip(children),
++                        Nullability::NonNullable,
++                    )),
++                    changed: true,
++                    order: TraversalOrder::Skip,
++                });
++            }
++
++            let Some(validity) = validity else {
++                return Ok(Transformed::no(node));
++            };
++
++            // You can alternatively call optimize_recursive but this is cheaper
++            if scalar_fn.is::<IsNotNull>() {
++                return Ok(Transformed {
++                    value: validity.clone(),
++                    changed: true,
++                    order: TraversalOrder::Skip,
++                });
++            }
++            if scalar_fn.is::<IsNull>() {
++                return Ok(Transformed {
++                    value: not(validity.clone()),
++                    changed: true,
++                    order: TraversalOrder::Skip,
++                });
++            }
+             Ok(Transformed::no(node))
+         })?
+         .into_inner())

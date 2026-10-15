@@ -1,0 +1,869 @@
+VAIL ARCHITECTURAL REVIEW — 2026-10-15
+Reviewed source: 6a61cf9 (before this report). File fingerprints: inventory.json.
+
+VERDICT
+
+Vail has useful foundations, but it is not yet one coherent compiler. Much of
+its complexity comes from preserving Hail's observable order, partition identity,
+missingness, and randomness through a SQL engine that does not express all of
+those properties. Those differences are real. The problem is that Vail handles
+them in several places using physical wrappers, incidental Arrow fields, string
+markers, and separate expression rewrites. A feature can be locally correct
+while its composition with another feature is wrong or disproportionately costly.
+
+The most urgent issue is not the number of missing APIs. It is that an operation's
+physical partition layout, TableIR metadata, and random identity can disagree.
+This review found and reproduced precisely that disagreement with only 12 rows.
+
+This is an architectural source review, not a claim of exhaustive verification.
+I read the central implementations and followed their interactions, inspected
+interfaces and selected implementation paths in the remaining modules, and
+recorded each production module below. I did not read every line of every module,
+rerun the full suite, or audit all third-party dependencies. The inventory makes
+the boundary explicit: 47 Python frontend modules, 65 Rust source modules, and
+support tooling. Tests/examples/data and historical reports are supporting evidence,
+not individually reviewed production modules. Upstream Hail, DataFusion, Iceberg,
+and Vortex checkouts are dependency sources, not Vail-owned modules; the integration
+and patch boundaries are reviewed below. This is not a security audit.
+
+Evidence levels used below:
+  CONFIRMED: reproduced behavior or a direct, unavoidable code-path property.
+  DESIGN: a boundary or representation that predictably creates maintenance,
+          latency, throughput, or semantic risk; not an assertion of a new bug.
+  INVESTIGATE: a plausible failure that this review has not demonstrated.
+A module with no newly isolated defect is not thereby certified correct.
+
+PRIORITY FINDINGS
+
+1. HIGH / CONFIRMED: random annotation changes logical partition membership.
+   Source: crates/vail-table/src/logical.rs, lower_rng_uids, especially
+   child.known_n_partitions().unwrap_or(1) at the restore_partitions call.
+   The restored physical range has one partition whenever the static count is
+   unknown. TableIR's n_partitions still derives the actual interval count.
+
+   Reproduction (reproduce_rng_partition_loss.py, captured log alongside it):
+     write range_table(12, n_partitions=4), read it, filter idx < 8.
+     Before annotation: n_partitions=3, count=8, partition 0 has 3 rows.
+     After annotate(random_value=rand_unif(seed=7)):
+       n_partitions=3, count=8, partition 0 has 8 rows.
+   The earlier 346-row fixture similarly reports 15 partitions, with partition
+   zero changing from 18 rows to all 245 rows after random annotation.
+   No changed upstream assertion is needed to expose this bug. Adding a scalar
+   field must preserve partition membership. The diagnostic script intentionally
+   exits with AssertionError on the reviewed native build.
+
+   Design consequence: UNKNOWN IS NOT ONE. Partition identity needs an explicit
+   logical property/descriptor retained through numbering and lowering. Resolving
+   a metadata count asynchronously, retaining a symbolic layout, or restoring
+   from the actual planned input are possible implementations; silently inventing
+   one partition is not. Audit scan restoration for the same assumption.
+
+2. HIGH / DESIGN: there are still two relational compilers and runtime bridges.
+   Sources: table/logical.rs, plan.rs, partitioned.rs, deferred_logical.rs,
+   initialized_aggregate.rs, initialized_scan.rs, lookup.rs, joins.rs, zip_join.rs.
+   Ordinary nodes lower logically, while special nodes invoke prepare_legacy and
+   construct physical joins/windows/projections directly. DeferredLogicalExec
+   creates a physical plan during execute(); DeferredOrderedExec prepares a
+   TableIR during execute(). Schemas and explain output cannot fully expose the
+   eventual work, and optimizer/resource decisions cross separately planned trees.
+   These bridges are understandable migration devices, not a desirable endpoint.
+   Keep logical extension nodes for genuine Hail semantics, but have their
+   implementation consume already-planned child inputs. Retire the general
+   physical TableIR compiler operator by operator. Merely moving a physical
+   subtree behind a logical extension does not complete this migration.
+
+3. HIGH / CONFIRMED ALGORITHM: stream aggregate-scan recomputes every prefix.
+   Source: python/vail/streams.py, StreamExpression._aggregate_scan.
+   It builds prefix = array[:position], then aggregate(prefix, ...) inside a map
+   over every position. Even count/sum prefixes perform total work proportional
+   to 0+1+...+(n-1), rather than maintaining accumulator state. Arbitrary callback
+   scans can require sequential work; repeating all previous input is avoidable.
+   Give streams a real scan/fold operation using reducer state. Do not advertise
+   this fallback as the same scalable scan abstraction as Table scans. There is
+   no new wall-clock benchmark in this review; the quadratic algorithm is visible
+   directly in the construction.
+
+4. HIGH / DESIGN: aggregate semantics are independently implemented by domain.
+   Sources: Python array_aggregate.py and matrix_list_aggregates.py; Rust
+   logical_aggregation.rs, logical_nested_aggregation.rs, aggregates.rs,
+   advanced_*_aggregates.rs, scan_state.rs and scan_scopes.rs.
+   Matrix row call_stats builds per-allele maps over the calls; table call_stats
+   uses a native accumulator. Matrix mean/stddev build list arithmetic; table
+   statistics have separate accumulator state and empty-result conventions.
+   This is more than choosing a physical strategy: it duplicates the algorithm,
+   null behavior, validation, numerical stability, and supported reducer list.
+   The matrix call_stats path scans calls per allele (O(calls * alleles)); the
+   native counts implementation has a more appropriate state representation.
+   Use one reducer specification (argument types, initializer scope, state,
+   update/merge/finalize, empty identity, ordering requirement) and adapt it to
+   relations, row-owned lists, array coordinates, and scans. array_aggregate.rs's
+   coordinate UDAF is a good example of this direction; do not replace every
+   efficient list operation with relational unnesting.
+
+5. HIGH / DESIGN: opaque volatile UDFs are the default escape hatch for pure work.
+   Source: execution/logical_expr.rs, logical_kernel and restore_type.
+   A kernel is compiled from a captured physical expression, gets a fresh name
+   from NEXT_KERNEL_ID, and is declared Volatile. Referenced columns are correctly
+   explicit arguments (keep this). But equivalent pure kernels have different
+   optimizer identities; constant folding and expression reuse are inhibited.
+   restore_type is also volatile to defend metadata. This uses semantic volatility
+   to compensate for representation/optimizer issues. Introduce stable structural
+   kernel identities and accurate effect classification. Metadata restoration
+   should be a typed boundary, not a reason to mark ordinary arithmetic volatile.
+   Do not simply flip these to Immutable: the existing metadata and random-context
+   invariants must first be made explicit.
+
+6. HIGH / CONFIRMED ALGORITHM: VCF export materializes the whole matrix in Python.
+   Source: python/vail/vcf_export.py, samples=cols().collect() and
+   localize_entries(...).collect() before opening output.
+   Collecting sample IDs is reasonable for a VCF header. Collecting every row and
+   entry before writing is not: peak memory scales with the complete matrix and
+   Python object expansion, and time-to-first-output waits for the whole action.
+   Basic serialization is useful as a fixture implementation, but should not be
+   presented as a general dataset sink. Stream native batches into a bounded
+   writer; keep Python in charge of metadata/options, as native VCF ingestion does.
+
+7. MEDIUM-HIGH / CONFIRMED REPRESENTATION: the frontend repeatedly turns trees
+   into JSON and back during expression construction.
+   Source: python/vail/expressions.py Expression.__init__, _ir, to_ir; nearly every
+   compositional helper calls to_ir on its children and constructs another JSON
+   string. Immutability is good, but JSON is being used as the in-memory AST.
+   A sequential chain of n operators repeatedly traverses prior prefixes, giving
+   quadratic construction/serialization work; reused children become copied trees.
+   Runtime type inference also recursively revisits these trees. Store immutable
+   typed nodes with shared children, binding/source IDs, and memoized type data.
+   Serialize only at the FFI boundary. This should precede adding more ad hoc
+   expression-size guards, and preserve the current protection against mutation.
+
+8. MEDIUM-HIGH / DESIGN: logical types ride on incidental Arrow child metadata.
+   Sources: ordering/lib.rs, Python arrow.py, execution Type::to_arrow/from_arrow,
+   logical_expr.rs restore_type/restore_arrow_array_type, storage normalization.
+   A logical descriptor is stored on the first struct child or list element;
+   kernel-generated fields can discard it. Python and Rust independently encode
+   storage names and descriptors. Restoration/stripping/casting is scattered.
+   Existing upstream/native failures around tagged types are supporting evidence,
+   but this review does not re-diagnose each one. The representation also has
+   asymmetric large-list handling: type_metadata reads LargeList, tag_type only
+   tags List, and same_layout handles only List. This is a concrete inconsistency,
+   not proof of a specific currently supported LargeList query returning bad data.
+   Define one versioned logical-type/storage schema contract, generated/shared
+   where possible, and normalize at a few explicit interfaces. Keep logical type
+   identity in typed IR independently of Arrow kernels' incidental field names.
+
+9. MEDIUM-HIGH / DESIGN: action resource ownership is fragmented.
+   Sources: table/logical.rs session_state constructs a new SessionContext;
+   partitioned.rs, globals.rs, text_export.rs and several helpers create default
+   TaskContexts. NativeSession primarily owns a Tokio runtime, not a shared query
+   session/resource policy. Consequently a coherent host memory/spill/cancellation
+   policy is difficult to carry through runtime planning and nested actions.
+   This is not a measured OOM finding. Introduce a session-owned execution context
+   and an action-owned lifecycle passed through every planner, extension and sink.
+   Planning a special operator must not reset the memory budget or object stores.
+
+10. MEDIUM-HIGH / DESIGN: execution replay uses implicit consumer detection.
+    Source: table/rng_context.rs, RngContextExec.active/Run.used.
+    A repeated request for a partition starts/chooses a new run by examining which
+    partition IDs were already requested. Completed runs remain in active, and
+    the child is hidden from generic physical traversal. This protects stateful
+    repartitioners from optimizer cloning, and the interleaving test is useful.
+    But request order is not an explicit action/consumer identity. Uneven consumer
+    patterns, early cancellation, and repeated actions deserve a lifecycle model,
+    not more partition-request heuristics. No cross-consumer wrong-result repro is
+    claimed here. Carry explicit action/consumer scopes and release completed run
+    state. Preserve shared DAG inputs within an action and reset only across runs.
+
+11. MEDIUM-HIGH / DESIGN: interval semantics exist in several representations.
+    Sources: table/interval_read.rs, provider.rs, join_interval.rs,
+    storage/fragment_index.rs, execution interval expression lowering.
+    The recent fix appropriately separates candidate selection from physical
+    planning. However prefix_interval_predicate has a one-component special case
+    and references physical interval fields by numeric position. Provider filter
+    normalization/intersection and interval_read have separate bound logic.
+    A one-component fast path is legitimate if it implements the same normalized
+    bound algebra; currently the common semantic object is not explicit enough.
+    Introduce typed key-prefix endpoints and inclusive/exclusive/unbounded bounds.
+    Share normalization/comparison rules while distinguishing conservative file
+    candidates from exact row membership. Do not force pruning to evaluate data,
+    and do not assume a fragment's overlap proves every row matches.
+
+12. MEDIUM / DESIGN: several small compositional APIs imply expensive algorithms.
+    Sources: strings.py stepped slicing maps substr over character positions;
+    variant.py _min_rep builds ranges and repeated indexed substring comparisons;
+    array_methods.py mean filters, widens, sums and counts separate expressions;
+    bind is represented as singleton-array map/index rather than a lexical let.
+    These are understandable bootstraps but hide allocation/repeated-work costs.
+    Stepped Unicode slicing needs a single character traversal; minimal variant
+    normalization needs a bounded string kernel; common list statistics need typed
+    numeric buffers; lexical binding needs first-class scope. Exact wall-clock or
+    quadratic substring cost depends on the underlying kernel and is not measured
+    here. Do not replace every composition with a custom UDF—target primitives
+    with a clearly worse cost model. The other agent's later numeric-list work
+    is outside this branch's reviewed commit and may already address array mean.
+
+13. MEDIUM / DESIGN: relational joins assume more than a shared Arc proves.
+    Sources: lookup.rs prepare, zip_join.rs, join_interval.rs.
+    Lookup builds one reduced right plan and clones it into each left partition.
+    That shares a plan object, not necessarily a cached/replay-safe execution.
+    Deferred planning plus repeated right executions can amplify work; interval
+    lookup can use NestedLoopJoinExec. This is an execution-cost/replay question,
+    not a new measured P-fold scan claim. A common logical join with explicit
+    ordering/multiplicity constraints should let the engine own build-side sharing,
+    or a Vail operator must own and document that sharing itself. Keep interval
+    pruning and native sort-merge joins where their preconditions are established.
+
+14. MEDIUM / CONFIRMED SCOPE OMISSION: my new upstream exclusion policy is incomplete.
+    Source: conformance/upstream_scope.py excludes typecheck/, fs/, and
+    utils/test_hl_hadoop_and_hail_fs.py, but utils/test_utils.py still contains
+    25 test_hadoop_* definitions. Full-run selection is module-only there.
+    suite_selection.py independently excludes some of those by name and also
+    excludes randomness, which is stale for the full-scope request.
+    Thus the prior statement that all Hadoop tests were excluded was too strong.
+    Make one scope policy accept module AND definition, apply it consistently to
+    collection/inventory/body adapters, and emit explicit excluded reasons. Historical
+    reports must retain their original scope. This review records the defect; it
+    does not silently change the runners or rewrite historical counts.
+
+15. MEDIUM / DESIGN: tooling can produce precise numbers for incompatible scopes.
+    Sources: full_hail_pytest.py, full_hail_bodies.py, suite_selection.py,
+    summarize_full_hail.py, report_filtered_suite.py, historical run scripts.
+    Preserving raw events, source fingerprints, collection errors, body-only
+    outcomes, and unsupported status is good. But scopes, adapted fixtures, error
+    classifiers, and counts are implemented in multiple scripts. String matching
+    assigns architectural categories from the first exception. The 247-definition
+    API bucket demonstrably mixed filesystem/helpers/IO with API gaps. Keep raw
+    evidence authoritative, share selection/outcome schemas, and label stale
+    reports and alternate body execution unambiguously. A pass count is not an
+    architectural approval or a throughput measurement.
+
+WHAT TO KEEP
+
+- Immutable TableIR DAGs and source validation; do not flatten everything into
+  Python callbacks or materialized row lists.
+- Ordinary DataFusion expressions/operators visible to the optimizer; explicit
+  extension boundaries for ordering/partition/identity semantics it cannot model.
+- Arrow-buffer adapters for matrix gathers/transposes and coordinate aggregation;
+  these are appropriate layout-specific implementations, not inherently hacks.
+- Typed Arrow comparison and certified fragment indexes; IPC key bytes are
+  transport, not a homemade order encoding.
+- Snapshot-pinned lazy local reads and generation-based publication; metadata
+  selection is distinct from exact row filtering.
+- Bounded producer queues, cancellation tests, GIL detachment for native actions,
+  and clear errors at genuinely unsupported capability boundaries.
+- A pure counter/context-based RNG primitive and reuse of the same HWE recurrence
+  by scalar and aggregate entry points.
+
+IMPLEMENTATION ORDER SUGGESTED BY THIS REVIEW
+
+A. Fix partition restoration first; the 12-row reproducer must preserve actual
+   membership, not merely n_partitions(). Define logical partition properties.
+B. Establish action-owned resources and replay identities. This is prerequisite
+   to making nested plans safely compositional, not an optional performance cache.
+C. Converge on logical planning with extension nodes consuming planned children;
+   retire legacy compilation one operator at a time, preserving ordering contracts.
+D. Share reducer semantics/state across table, matrix-list, collection and scan
+   adapters. Replace prefix-rescan and Python full-matrix export implementations.
+E. Replace JSON-as-AST and clarify logical type/effect identity. Make optimization
+   legal by construction rather than suppressing it with blanket Volatile flags.
+F. Consolidate scope/evidence tooling and dependency patch provenance.
+
+These are design changes justified by code invariants. Additional tests should
+protect those invariants, but choosing more tests is not a substitute for them.
+No product fixes were applied during this review, and no new full-suite pass
+count is claimed. The review deliberately includes the author's own recent work.
+
+MODULE LEDGER
+
+The following entries cover every inventoried production module. Related files
+are assessed together where they implement one responsibility. 'Retain' means
+that the boundary is reasonable, not that every branch is correct. Source paths
+below are relative to vail/; inventory.json contains exact fingerprints.
+
+python/vail/__init__.py (2005 lines)
+  Table API mixes public dispatch, scope validation, filter-to-interval recognition, aggregation construction and session creation. Extract typed Table/aggregate analysis from the export namespace. _generate is useful composition, but stream/partition lowering determines its cost. See 2, 7, 11.
+
+python/vail/agg.py (217 lines)
+  Public aggregate expression construction, initializer validation and stats composition are appropriate here. Name/options strings are a weak reducer contract; bind validation and reducer identity belong to common analysis. See 4.
+
+python/vail/agg_collections.py (64 lines)
+  Good small constructor module; collect/set/take/array-sum options need common identities and ordering/empty semantics rather than planner-specific conventions. See 4.
+
+python/vail/agg_fold.py (52 lines)
+  Promotion invokes callbacks repeatedly until types stabilize; callbacks can allocate random call-site IDs, so analysis has observable construction effects. Arbitrary fold needs a first-class typed scope and documented merge laws. See 4, 7.
+
+python/vail/agg_genomics.py (75 lines)
+  Genomic aggregate constructors should remain thin typed wrappers. Allele-count initializer scope and HWE availability must agree across table and matrix-list adapters. See 4.
+
+python/vail/agg_numeric.py (121 lines)
+  Explicit numeric parameter and sketch limitations are preferable to fake support. Runtime initializer and result-type rules duplicate backend knowledge. Shared reducer descriptors should drive these constructors. See 4.
+
+python/vail/allele_functions.py (115 lines)
+  Thin expression-based allele classification is maintainable; avoid proliferating callback/index expressions where one shared string primitive would serve. No new correctness defect established.
+
+python/vail/array_aggregate.py (90 lines)
+  A separate aggregate compiler over collection expressions with a narrower reducer set and result-type-driven rewrites. Consolidate reducer semantics; preserve list-oriented execution. See 4.
+
+python/vail/array_methods.py (102 lines)
+  Fold/scan use explicit lexical parameters and native execution. mean is an allocation-heavy filter/map/sum/count composition in this revision; median sorts all elements. State costs explicitly and use a numeric-buffer kernel where warranted. See 12.
+
+python/vail/arrow.py (281 lines)
+  Arrow IPC is a sound FFI boundary and literal-data path. Type tags on child fields and independent storage names make normalization fragile. Large-offset layout compatibility is broader than some Rust helpers. See 8.
+
+python/vail/backend.py (37 lines)
+  An explicit native backend is better than pretending to be a JVM. Broad capability strings (matrix_table/randomness) are too coarse to convey reducer/options support. Session should own execution resources. See 9.
+
+python/vail/builders.py (61 lines)
+  Conditional builder composition is a reasonable frontend abstraction. Preserve lazy branch/error semantics when lowering; no separate architectural defect isolated.
+
+python/vail/collection_functions.py (153 lines)
+  Conveniences mostly compose primitives, which is preferable to new kernels for every API. zip indexes source arrays inside a generated range map; shared inputs need lexical hoisting to avoid repeated captured-array work. See 7, 12.
+
+python/vail/collections.py (454 lines)
+  Collection constructors, native equality restrictions, set/dict tags and function dispatch concentrate useful boundary checks. Many string-named function calls carry a separately asserted dtype. Share a typed operation registry with Rust rather than adding per-API exceptions. See 8.
+
+python/vail/context.py (6 lines)
+  Test-import placeholder raises on construction. Keep such compatibility artifacts in adapters where possible; production namespace presence is not implemented capability.
+
+python/vail/display.py (151 lines)
+  Bounded presentation belongs in Python. Keep formatting away from execution semantics and make row/sample limits explicit; no newly isolated design blocker.
+
+python/vail/expr/__init__.py (28 lines)
+  Module aliases preserve implementation identity, which is good. construct_expr is an explicit unsupported shim; remove misleading compatibility surface from capability accounting.
+
+python/vail/expr/expressions/__init__.py (4 lines)
+  Re-export-only compatibility module. Keep mechanical; no separate implementation needed.
+
+python/vail/expr/expressions/base_expression.py (4 lines)
+  Re-export-only identity bridge; no new algorithm to review.
+
+python/vail/expr/expressions/typed_expressions.py (1 lines)
+  Two expression-class aliases; not evidence of full Hail typed-expression hierarchy.
+
+python/vail/expr/functions.py (29 lines)
+  Import-path forwarding should remain identity-preserving and mechanical. Private sketch helpers explicitly unsupported. Avoid making this a second function registry.
+
+python/vail/expressions.py (1385 lines)
+  Central scalar AST, source binding, promotion and methods. Immutable expressions are valuable; JSON trees, repeated recursive analysis and bind-as-singleton-array are the main design debts. _validate_ndarray_scope also validates unsupported kernels through a special path. See 7, 12.
+
+python/vail/genetics/__init__.py (5 lines)
+  Value-class re-exports are appropriate; no duplicate execution implementation.
+
+python/vail/inputs.py (116 lines)
+  Retains Arrow literals as native dependencies rather than evaluating row callbacks in Python. Good boundary. bind_input recursively rewrites literals/globals and must remain a single analyzed input-lowering phase, not another general compiler. See 7, 8.
+
+python/vail/ir/__init__.py (10 lines)
+  Explicit unsupported Hail IR namespace. This aids test collection but must not be mistaken for Vail logical IR. Put harness-only contracts in the adapter.
+
+python/vail/ir/renderer.py (6 lines)
+  Explicit placeholder renderer. Fine to reject; not a compiler component.
+
+python/vail/linalg/__init__.py (22 lines)
+  BlockMatrix is a fill-to-entry-table adapter, not blocked numerical algebra. block_size is accepted but unused. Name/document this capability narrowly; do not grow a fake matrix abstraction to satisfy constructors.
+
+python/vail/lookups.py (93 lines)
+  Capturing native Table dependencies is preferable to eager lookup. resolve rewrites scalar IR and appends relational nodes, invoking randomness resolution first: phase ordering is implicit. Move dependency and identity analysis into one compiler pipeline. See 2, 13.
+
+python/vail/matrix_list_aggregates.py (480 lines)
+  Independent per-row aggregate compiler, type probes via synthetic projections, special direct_entry_sum, and hand-built call_stats/numerical formulas. Most urgent frontend semantic duplication. Kernel specialization should follow shared reducer semantics. See 4.
+
+python/vail/matrixtable.py (2665 lines)
+  Row-owned cell arrays plus global column records are a legitimate matrix layout. Axis validation, sparse-presence masks, random identity, Table rewrites and operation dispatch are tightly coupled in one large compiler. Retain physical layout; introduce analyzed matrix operations/properties. See 1, 4, 7.
+
+python/vail/nd.py (35 lines)
+  Arrow-backed numeric literals are appropriate. arange creates a tagged struct via expression composition; numerical execution remains a small subset, not a general ndarray engine. Avoid compatibility-shaped APIs implying broader support.
+
+python/vail/qc.py (160 lines)
+  Ported variant_qc composed from public expressions is a good boundary. Symbolic matrix column count is appropriate. Scalar HWE reuses native logic, but row reducers still need shared semantics rather than QC-specific support. See 4.
+
+python/vail/queries.py (121 lines)
+  Scalar queries eagerly eval their query bounds, while row-indexed queries become lookup joins. Both are defensible strategies but different laziness/cost contracts should be explicit. Dynamic interval lookup cannot assume source pruning. See 11, 13.
+
+python/vail/randomness.py (388 lines)
+  Pure random primitives with explicit call-site and dynamic-context inputs are the right core. UID assignment and repeated context rewrites rely on global counters/string markers and consumer-specific lowering. Give identity a typed IR role. See 1, 10.
+
+python/vail/reference_genome.py (291 lines)
+  Coordinate-only scope and immutable reference definitions are sensible. Registry/default-reference identity and Python/Rust schema duplication need a consistent lifecycle. Sequence/liftover rejection is a capability boundary, not a reason for more shims.
+
+python/vail/scan.py (193 lines)
+  Reuses aggregate constructors, which is good, but mutates semantics via __vail_scan options and a special fold spelling. Make scan a typed scope/effect, not a convention distributed across dictionaries. See 4, 10.
+
+python/vail/simulation.py (325 lines)
+  Porting the Python algorithm avoids inventing a parallel native simulation engine. Its performance and phased compatibility still depend on bind, generation and RNG identities. Do not tune this one workload around compiler deficiencies.
+
+python/vail/streams.py (188 lines)
+  StreamExpression is an array wrapper rather than a genuine streaming IR. Some partition map patterns optimize relationally, but aggregate-scan rescans prefixes. The abstraction currently promises more compositional streaming than its representation supplies. See 3.
+
+python/vail/strings.py (245 lines)
+  Codepoint contract is clear and intentional. Ordinary native functions are reused. Stepped slicing and bind composition reveal missing lexical/string primitives; regex compatibility remains distinct from the UTF-16 break. See 12.
+
+python/vail/text.py (255 lines)
+  Native scan/sink delegation is appropriate. Python path/options logic and Rust schema inference validate related contracts separately; unify option schemas. Keep unsupported cloud/compression separate from correctness claims.
+
+python/vail/types.py (827 lines)
+  Reasonably compact value/type definitions, but encoding, inference, promotion and Python runtime values share one module. Storage representations duplicate Rust. Separate logical type rules from transport codecs; keep explicit validation. See 8.
+
+python/vail/utils/__init__.py (71 lines)
+  Mixes local path helpers, backend access and Hail exception aliases. Separate native public utilities from test compatibility names; filesystem parity is currently out of upstream test scope.
+
+python/vail/utils/java.py (21 lines)
+  Explicit errors for JVM access are honest, but module-wide __getattr__ raising NotImplementedError can surprise introspection. Prefer harness-local adaptation over expanding this production shim.
+
+python/vail/utils/misc.py (5 lines)
+  Mechanical helper re-export; no independent semantics.
+
+python/vail/variant.py (103 lines)
+  HTS splitting is expressed lazily and limitations are explicit. _min_rep materializes index ranges and repeats string accesses; mandatory rekey/sort can dominate. Add a true normalization primitive and make shuffle requirements part of analyzed planning. See 12.
+
+python/vail/vcf.py (93 lines)
+  Header/options-only Python plus lazy native rows is a good ingestion division. Unsupported compressed/range paths should remain explicit and consistent with the native opener.
+
+python/vail/vcf_export.py (88 lines)
+  Whole-matrix Python collect before writing is fixture-scale implementation, not a scalable sink. Replace with bounded native batches and a common format schema contract. See 6.
+
+crates/vail-execution/src/advanced_collection_aggregates.rs (411 lines)
+  Reuses DataFusion distinct/grouping primitives and configured aggregate options. Retain bounded take versus necessarily unbounded collect distinctions; ensure ordering/empty identities are declared by reducer contracts.
+
+crates/vail-execution/src/advanced_genomic_aggregates.rs (977 lines)
+  Native per-allele/shape-sized state is a good domain-specific kernel. Share it with matrix row reductions rather than duplicating formulas. HWE scalar adapter already demonstrates reuse. See 4.
+
+crates/vail-execution/src/advanced_numeric_aggregates.rs (1154 lines)
+  Uses established sketches/linear algebra/histogram libraries rather than custom replacements. Correctly rejects unavailable CDF state. Merge/state semantics and numerical definitions still need common reducer descriptions. See 4.
+
+crates/vail-execution/src/aggregate_identity.rs (19 lines)
+  Configured UDAF names acknowledge captured options affect semantics. Good requirement; extend identity/effect handling coherently to other generated kernels instead of counter-based names. Hash identity is not itself a complete semantic equality contract.
+
+crates/vail-execution/src/aggregates.rs (977 lines)
+  Shared numeric/Boolean UDAFs, including numerically stable stddev, are useful. Their identity/null/empty/merge contracts should drive every list/matrix/scan adapter. See 4.
+
+crates/vail-execution/src/array_aggregate.rs (622 lines)
+  One of the strongest abstractions: lifts mergeable reducer state to coordinates and uses GroupsAccumulator when available. Generalize reducer reuse from this model, while preserving length/null validity and output order. See 4.
+
+crates/vail-execution/src/array_fold.rs (309 lines)
+  Good batched lane strategy for sequential per-array folds, with active owners and Arrow takes. Per-step captures and output histories can still be costly; preserve this adapter rather than replacing it with scalar-per-element evaluation.
+
+crates/vail-execution/src/array_length_aggregate.rs (67 lines)
+  Small equal-width validation reducer is appropriate. Its validation must remain observable when optimizer rewrites coordinate aggregation; do not bypass it for a fast path.
+
+crates/vail-execution/src/calls.rs (201 lines)
+  Expresses call operations using shared packed encoding and DataFusion arithmetic. Reasonable small semantic adapter; ensure malformed packed values are validated at input boundaries, not inferred from field shape.
+
+crates/vail-execution/src/collect_aggregate.rs (268 lines)
+  Preserving Arrow arrays avoids scalar reconstruction and type metadata loss. Collect is inherently output-sized memory; should be an explicit materializing reducer, not an incidental streaming fallback.
+
+crates/vail-execution/src/collection_groups.rs (335 lines)
+  Groups by owner plus key using DataFusion and Arrow gathers. Appropriate batch adapter, avoids custom key equality. Explicit limits/offsets should stay consistent with logical collection support.
+
+crates/vail-execution/src/collection_lookup.rs (166 lines)
+  Batch grouping index, including scalar-dictionary indexing once per batch, is appropriate. Dictionary canonicalization/first-match semantics must be shared with constructors and grouped aggregators.
+
+crates/vail-execution/src/csv_line.rs (289 lines)
+  Reuses CSV parsing rather than bespoke delimiter logic. Per-record parser setup/error semantics should be an explicit primitive cost; options should share read-source validation.
+
+crates/vail-execution/src/expressions.rs (6029 lines)
+  Type representation/inference, physical compiler, literals, collection kernels and formatting share a 6K-line module. Split semantic typing from kernel registration and physical adapters. Repeated inference and copied trees make local fixes expensive. See 7, 8.
+
+crates/vail-execution/src/fold_aggregate.rs (160 lines)
+  Generic arbitrary fold evaluates physical expressions on one-row batches and scalarizes state each row. Sequential dependence is real; per-row Arrow/scalar allocations are additional costs. Common folds should use typed reducers. A suspected multi-fold identity collision was probed and did NOT reproduce (10 and 20 in both field orders); not reported as a bug.
+
+crates/vail-execution/src/hwe_counts.rs (60 lines)
+  Good scalar adapter over the existing HWE recurrence. Retain one numerical implementation; use this as the pattern for table/list parity. See 4.
+
+crates/vail-execution/src/lib.rs (554 lines)
+  Uses Arrow comparison/order requirements rather than a separate byte-key language. Good direction. Module comments still refer to byte encoding and do not accurately describe current internals; update contracts before trusting documentation.
+
+crates/vail-execution/src/logical_expr.rs (1114 lines)
+  Ordinary logical lowering is the right default. logical_kernel preserves input dependencies but fresh volatile identities and casts inhibit optimization. restore_type treats metadata as an execution effect. See 5, 8.
+
+crates/vail-execution/src/matrix_arrays.rs (639 lines)
+  Layout checks and gathers over Arrow buffers are appropriate matrix primitives. Presence masks and column IDs are physical invariants; expose them through a validated layout abstraction rather than string fields spread across compilers.
+
+crates/vail-execution/src/matrix_transpose.rs (420 lines)
+  Batched coordinate transposition is justified by the row-owned layout. Good separation from reducer arithmetic. Large intermediate/output memory should be attributed to the action resource budget. See 9.
+
+crates/vail-execution/src/randomness.rs (636 lines)
+  Threefry/PMAC core and distribution algorithms are isolated native semantics. Keep them independent from table partitions. Distribution compatibility and row-context binding are separate claims; the core alone cannot validate consumer determinism.
+
+crates/vail-execution/src/reference.rs (312 lines)
+  Prepared immutable coordinate indexes and binary search are appropriate. Retain validated references as shared objects instead of repeatedly embedding and re-parsing full descriptors in expression nodes.
+
+crates/vail-execution/src/scan_scopes.rs (626 lines)
+  Adapters reuse group/reducer machinery, but pack and compose nested states with several modes. Share scope analysis with table aggregation instead of another ad hoc IR dialect.
+
+crates/vail-execution/src/scan_state.rs (498 lines)
+  Reuses existing accumulator states, a good semantic direction. Generic finish_states constructs an accumulator for each row; common reducers need vector finishing. Avoid coupling to undocumented native state names/shapes without descriptors.
+
+crates/vail-execution/src/string_kernels.rs (155 lines)
+  Custom kernels are limited to missing native operations and cache regexes per batch. Good scope. Cross-batch compilation and Java/Rust regex differences remain distinct compatibility/performance issues; codepoint policy is explicit.
+
+crates/vail-ordering/src/call.rs (99 lines)
+  Small shared packed Call codec with overflow checks is an appropriate semantic primitive. Python has a separate pack/unpack implementation; generate or centrally specify the bit layout.
+
+crates/vail-ordering/src/lib.rs (187 lines)
+  Crate name suggests ordering but implementation mainly manages type metadata. Rename/separate the responsibility; first-child metadata and LargeList asymmetry need one schema contract. See 8.
+
+crates/vail-python/src/lib.rs (1058 lines)
+  Good: Arrow data transport, native DAG ownership, action GIL detachment, chained error translation. Large hand-maintained JSON operation bridge repeats typing/options contracts. NativeSession should own shared execution resources, not just a runtime. See 8, 9.
+
+crates/vail-storage/src/fragment_index.rs (1418 lines)
+  Typed Arrow comparison, cached decoded fragment endpoints and candidate-only selection form a sound index boundary. Several comparator versions remain for compatibility; isolate transport/version handling from normalized typed bound algebra. See 11.
+
+crates/vail-storage/src/globals.rs (89 lines)
+  Single-row immutable Arrow IPC is appropriate. This revision explicitly ignores legacy sha256 fields while older docs/tests expect checksums. Resolve that contract deliberately; do not treat the failing checksum test as mere nuisance. Native reviewed code contains a test asserting checksum absence/ignore behavior.
+
+crates/vail-storage/src/lib.rs (1731 lines)
+  Descriptor-bound snapshots, certified key ordering and live-file reconciliation are strong invariants. Large module combines transaction hooks, read planning, certification and stream pruning; separate those responsibilities. Manifest enumeration before pruning remains an O(files) metadata latency floor.
+
+crates/vail-storage/src/local_table.rs (1429 lines)
+  Generation-based publish with lazy snapshot-pinned reads is good. Local write lock is create_new plus Drop removal: crashes can leave stale locks. Entry file is synced before persist, but parent-directory durability is not established here. These are recovery/durability design gaps, not a corruption repro. Define guarantees before extending transactions.
+
+crates/vail-table/src/aggregation.rs (426 lines)
+  Scope extraction, binding and common factory support belong in a semantic analysis layer. Fresh strings/option markers and repeated resolve walks should become typed scopes/bindings shared by array/matrix compilers. See 4.
+
+crates/vail-table/src/comparison.rs (576 lines)
+  DataFusion joins and recursive similarity are preferable to collecting whole tables in Python. Shared numeric/null/key semantics still matter. Diagnostic comparison is not an independent oracle because it uses Vail semantics on both inputs.
+
+crates/vail-table/src/deferred_logical.rs (96 lines)
+  Transitional runtime physical compilation hides future work from the enclosing physical tree and uses a new planning context. Keep only as a migration bridge; remove after consumers accept planned children. See 2.
+
+crates/vail-table/src/globals.rs (281 lines)
+  A lazy singleton relation is a good model for globals and external dependencies. Physical and logical lowering both remain; schema derivation can compile substantial logical subtrees during construction. Share analysis and session ownership. See 2, 9.
+
+crates/vail-table/src/initialized_aggregate.rs (302 lines)
+  Runtime build closure plus schema-only template hides actual execution dependencies. Transitional boundary; parameterized aggregate configuration should not require a second arbitrary planner at execution. See 2, 9.
+
+crates/vail-table/src/initialized_scan.rs (252 lines)
+  Same runtime planning/lifecycle issue as initialized aggregates. Configuration dependencies should be explicit planned inputs, with shared action resources. See 2, 9.
+
+crates/vail-table/src/interval_read.rs (1516 lines)
+  Recent separation of metadata selection and execution is good. Prefix specialization and numeric physical field indexing should be replaced by shared typed bounds; independently constructing per-partition predicates still repeats compilation. See 11.
+
+crates/vail-table/src/join_interval.rs (1272 lines)
+  Uses certified key bounds and real DataFusion joins. Good pruning layer. Cell construction, boundary duplication and replay assumptions are complex; use common typed bounds and separately state candidate versus exact membership. See 11, 13.
+
+crates/vail-table/src/joins.rs (509 lines)
+  Native join kernels and explicit top-level missing-key behavior are appropriate. Hand-built physical schemas/order expectations should become logical contracts rather than another full compiler. See 2, 13.
+
+crates/vail-table/src/lib.rs (1963 lines)
+  Typed immutable table constructors are a good base. known_count/partition_rows/known_n_partitions plus async n_partitions duplicate property derivation. My metadata-only count fix belongs here conceptually but exposes disagreement with physical restoration. See 1, 11.
+
+crates/vail-table/src/line_source.rs (337 lines)
+  Native UTF-8 line scan is appropriate. Local-only limitations and per-file partitioning are explicit; compressed/range support is separate work. Reuse action cancellation/resources.
+
+crates/vail-table/src/logical.rs (1396 lines)
+  Central logical compiler plus extension planner, ordering boundaries, RNG numbering, session creation and metadata optimizer. Too many independent invariants. Confirmed unknown-partition fallback bug. Split properties/session/lowering and consume planned children consistently. See 1, 2, 9.
+
+crates/vail-table/src/logical_aggregate_init.rs (236 lines)
+  Runtime configuration is real, but placeholder validation then recompilation duplicates lowering and accepts only scalar/global initializers. Group-dependent options are a missing semantic scope. Type initializer scope explicitly. See 4.
+
+crates/vail-table/src/logical_aggregation.rs (823 lines)
+  Logical group/filter/explode/join structure is the right general fallback. coordinate_reductions recognizes a narrow whitelist and bypasses generic unnesting: good specialization only if common reducer identities/validation are preserved. See 4.
+
+crates/vail-table/src/logical_globals.rs (248 lines)
+  Singleton logical relations and explicit bindings are preferable to eager Python eval. Identity/column placement still relies on conventions; aggregate globals can replay source subtrees. Keep logical visibility, formalize binding slots.
+
+crates/vail-table/src/logical_nested_aggregation.rs (262 lines)
+  Ordinary logical relations preserve optimizer visibility; good replacement for physical nested lowering. Branching input for array lengths and body can replay sources. Shared logical subtrees are not automatically common materialization. See 2, 10.
+
+crates/vail-table/src/logical_same.rs (149 lines)
+  Keeps both logical trees visible before comparison, a sound direction. Preserve row ordering/duplicate multiplicity and common resource ownership at the final physical boundary.
+
+crates/vail-table/src/logical_scan.rs (1017 lines)
+  Local prefixes plus partition summaries/carries is an appropriate parallel scan design. Complexity comes from nested scopes, restoration, runtime configuration and implicit layout assumptions. Audit unknown count handling after finding 1; common reducer-state contracts are essential.
+
+crates/vail-table/src/lookup.rs (889 lines)
+  Preserves left order/multiplicity with ordinals and native joins; correct goals. Repeated right physical plan reuse, ordered windows and interval nested loops need explicit execution sharing and cost ownership. See 13.
+
+crates/vail-table/src/nested_projection.rs (352 lines)
+  Conservative whole-column fallback is the right safety choice. Direct ArrayMap/GetField pattern recognition is narrow and duplicates dependency analysis. Extend through a shared typed access-path analysis, not a growing pattern whitelist.
+
+crates/vail-table/src/nested_scan.rs (471 lines)
+  Reuse of UDAFs is good. Separate scope extraction/substitution repeats aggregation analysis and encoded state handling. Consolidate scope algebra; retain efficient scan-specific physical strategy. See 4.
+
+crates/vail-table/src/partition_grouping.rs (312 lines)
+  Contiguous grouping legitimately depends on observable partition order. Custom tag-based indexing is justified, but physical wrappers should consume explicit ordered partition properties and not assume private-column position.
+
+crates/vail-table/src/partition_map.rs (316 lines)
+  Map/filter/flatmap recognition can avoid whole-partition packing, a useful optimization. The fallback collects a partition array. Make stream versus materializing operators explicit rather than discovering streamability from an array-shaped AST. See 3.
+
+crates/vail-table/src/partitioned.rs (1818 lines)
+  Bounded concurrent ordered producers and explicit partition views are good. Multiple protected wrappers, shared-DAG reset, deferred preparation and legacy dispatcher reveal missing first-class logical properties/lifecycle. See 2, 9, 10.
+
+crates/vail-table/src/partitioning.rs (233 lines)
+  Range/coalesce boundaries are explicit and memory-bounded. key_ranges reads the full ordered input before shuffle; planning can execute work and then replay input. Make multi-pass cost/lifecycle explicit, not invisible metadata work. See 2, 9, 10.
+
+crates/vail-table/src/plan.rs (1393 lines)
+  Legacy physical lowering, source construction and private-column helpers still coexist. Source adapters are useful; keep them while removing duplicated relational operator compilation. See 2.
+
+crates/vail-table/src/provider.rs (1300 lines)
+  Leaf provider with inexact residual filters is a sound boundary. IntervalRead is treated as a leaf although it owns a child DAG. Bound normalization duplicates interval modules; partition meaning must remain aligned with provider output. See 1, 11.
+
+crates/vail-table/src/rng_context.rs (165 lines)
+  Optimizer protection solves a real stateful-repartition replay issue, but hidden children and partition-request-based run assignment need explicit consumer lifecycle. See 10.
+
+crates/vail-table/src/text_export.rs (162 lines)
+  Native DataFusion sink is a better model than Python VCF export. Single-file ordered output limits parallelism by contract; default TaskContext should become action-owned. See 6, 9.
+
+crates/vail-table/src/text_schema.rs (241 lines)
+  Arrow CSV/JSON inference and explicit option validation are good. Eager bounded sampling at construction is a distinct latency contract; Python and native options should be generated from one schema.
+
+crates/vail-table/src/vcf_source.rs (207 lines)
+  Bounded blocking decoder channel and receiver cancellation are good. Projection is applied after full record parsing except count-only path; entry-field projection does not yet imply proportional decoding savings. No byte-range splits means one input file limits scan parallelism.
+
+crates/vail-table/src/zip_join.rs (392 lines)
+  Duplicate-key ordinal semantics are expressed clearly. Serial physical join construction and deferred ordered inputs amplify planning/replay complexity, especially unbalanced inputs. Move semantics into an analyzed logical join operator. See 2, 13.
+
+crates/vail-vcf/src/lib.rs (1121 lines)
+  Native parser uses typed builders and format/header validation; appropriate foundation. Header schema, physical matrix fields and projection requirements are coupled. Expose projected decode requirements rather than decode-all/project-later; share packed Call representation.
+
+SUPPORT MODULES
+
+conformance/__init__.py (1 lines)
+  Package marker; no execution semantics.
+
+conformance/all_upstream_table_cases.py (192 lines)
+  Original-body execution with manual namespace/parameter reconstruction is useful supplemental evidence. Duplicates general body runner logic; consolidate lifecycle/parameter handling rather than adding another adapter.
+
+conformance/codec.py (61 lines)
+  Explicit missing/float JSON codec is a useful independent fixture boundary. Keep types and NaN/signed-zero distinctions versioned; not a general production serializer.
+
+conformance/compare.py (87 lines)
+  Ordered, bag and sort-tie comparisons distinguish meaningful ordering contracts. Bag comparison is quadratic removal-by-search: acceptable for small fixtures, unsuitable as an unnoticed benchmark bottleneck. Exact float equality here differs from Table._same similarity by purpose; label that distinction.
+
+conformance/full_hail_bodies.py (311 lines)
+  Isolated original-body attempts recover useful evidence under collection blockers, but cannot replace pytest lifecycle/fixtures. Broad import setup exception handling and hand-recovered parameters are a different execution mode, not authoritative full-suite passes. See 15.
+
+conformance/full_hail_pytest.py (247 lines)
+  Preserves pytest lifecycle and raw event evidence. AST import/helper adaptation is infrastructure modification and must be fingerprinted. New scope filtering is module-only and misses mixed-module Hadoop definitions. See 14, 15.
+
+conformance/oracle_worker.py (180 lines)
+  Independent Hail process is the right oracle boundary. Supported fixture operations/types are a subset, and source-derived expected values are not equivalent to execution against this worker.
+
+conformance/protocol.py (175 lines)
+  Validates fixtures, step IDs and typed outcomes. Good separation from execution. Keep unsupported/skipped steps visible rather than interpreting them as passing comparisons.
+
+conformance/report_filtered_suite.py (218 lines)
+  Human-readable categories are useful navigation, but substring heuristics mix missing APIs, infrastructure and behavior. Raw outcome fields must remain authoritative. See 15.
+
+conformance/run.py (137 lines)
+  Isolated worker protocol and subprocess timeout are good. Native fixture passes and actual Hail oracle matches must remain separate evidence classes.
+
+conformance/suite_selection.py (68 lines)
+  Older purpose exclusions include randomness and conflict with current full-audit policy. It should be explicitly historical or replaced by the shared policy, not silently reused. See 14, 15.
+
+conformance/summarize_full_hail.py (205 lines)
+  Attempts to avoid double counting across modes, a good goal. Multiple report formats/historical assumptions make denominator drift likely. One versioned result schema should replace ad hoc joins. See 15.
+
+conformance/supplement_filtered_suite.py (67 lines)
+  Timeout-isolated supplementation is useful. Share scope policy and exact-definition selection; historical cached outcomes need source/native provenance checks.
+
+conformance/upstream_backend.py (121 lines)
+  Explicit Vail backend initialization and unsupported placeholders are preferable to no-op JVM emulation. Flag decorators are omitted, so flag-dependent semantics are not tested as upstream intended. Coarse exception classification is not a correctness oracle.
+
+conformance/upstream_matrix_cases.py (472 lines)
+  Large independent MatrixTable body adapter reconstructs imports/fixtures/parameters. Retain it only as a supplemental mode and centralize what it shares with full_hail_bodies.
+
+conformance/upstream_paths.py (78 lines)
+  Fixture path/conversion helpers are a necessary format boundary. Converted Vail fixtures must retain source and conversion provenance, because conversion can omit legacy-format behavior.
+
+conformance/upstream_scope.py (11 lines)
+  Single policy is the right idea but currently module-only, incomplete for mixed-module Hadoop tests. My immediately preceding change needs correction. See 14.
+
+conformance/upstream_table_cases.py (161 lines)
+  Explicit small subset runner is valid when named as such. Do not use subset passes as a whole-table parity claim; share outcome schema with full runner.
+
+conformance/upstream_vcf_cases.py (80 lines)
+  Narrow VCF body adapter preserves assertions but has separate namespace/lifecycle rules. Reuse full adapter where possible; otherwise report its mode explicitly.
+
+conformance/vcf_golden.py (87 lines)
+  Actual Hail golden fixtures add independent expected data. Source/oracle hashes are good. Do not let a converted golden stand in for unsupported format or large-scale throughput testing.
+
+benchmarks/compare_hail.py (222 lines)
+  Action-based comparable workloads and separate engines are useful. Record whether construction, fixture preparation and warmup are included; passed means execution completed, not semantic equivalence across all results.
+
+benchmarks/profile_annotate.py (193 lines)
+  Useful native stack/telemetry collector, but macOS-specific instrumentation and counters are not portable benchmark semantics. Verify action forces requested expression evaluation, not metadata-only count.
+
+benchmarks/profile_cloud.py (206 lines)
+  Linux process-tree/perf collection is a useful complement to macOS profiles. Guest-wide counters include unrelated work; record isolation and attribution limitations.
+
+benchmarks/profile_range_means.py (132 lines)
+  Correctly uses _force_count for annotated means, avoiding optimized count pruning. Tests only final row count, not mean values; this is a throughput probe, not a numerical correctness test. Keep exact versus alternative composition labels.
+
+benchmarks/profile_samples.py (236 lines)
+  Sample-count-dependent workloads and process-tree telemetry expose matrix scaling. Keep warmup, construction, action and fixture conversion intervals separate; RSS sampling is not exact peak memory.
+
+benchmarks/render_annotate_profile.py (208 lines)
+  Presentation layer over measured intervals. Retain weighting/provenance definitions and avoid interpreting stacks as independent correctness evidence.
+
+benchmarks/render_cloud_benchmarks.py (220 lines)
+  Good that missing/failing upstream cases remain visible. Summary ratios need matched workload sets and consistent phases.
+
+benchmarks/render_cloud_html.py (257 lines)
+  Presentation-only standalone report. Curated and upstream results must retain distinct scopes; avoid a headline ratio that silently drops unsupported or timed-out work.
+
+benchmarks/render_dimension_scaling.py (151 lines)
+  Scaling presentation should label work/output dimensions explicitly. No new execution component; validate against raw telemetry when interpreting curves.
+
+benchmarks/render_matrix_layout.py (147 lines)
+  Before/after diagnostic rendering is useful. Must pin both native/source variants and distinguish a targeted fix from broader matrix architectural improvement.
+
+benchmarks/render_range_means.py (37 lines)
+  Small renderer, appropriate separation from measurement. Retain exact workload/variant labels.
+
+benchmarks/render_sample_telemetry.py (86 lines)
+  Mechanical visualization of recorded metrics. Preserve raw repetitions and units; plots do not establish resource attribution beyond collector limitations.
+
+benchmarks/run_cloud_benchmarks.py (90 lines)
+  Serialized benchmark orchestration and environment provenance are appropriate. Do not merge host-specific results or fixture timeouts into a single engine speedup without workload eligibility.
+
+benchmarks/run_dimension_scaling.py (96 lines)
+  Alternates engine order and avoids concurrent benchmark runs. Good. Fixed sample/variant grids assess those workloads only; waiting for compiler processes is a heuristic for idle host state.
+
+benchmarks/upstream_benchmark_coverage.py (552 lines)
+  Separates exact and smoke fixtures, fixture versus benchmark timing, process-tree cleanup and failures. Good evidence boundaries. AST decorator removal/fixture replacement mean smoke is not the exact upstream workload. Keep that distinction in every aggregate/rendered number.
+
+scripts/check_hail_interval_bounds.py (105 lines)
+  Focused pinned-runtime observations help establish partition semantics. Oracle observations are valuable independently of Vail tests; preserve source/runtime provenance.
+
+scripts/check_hail_partitions.py (150 lines)
+  Captures real Hail partition behavior, a good semantic reference. Small observations do not define a general partitioning architecture; document any implementation-dependent expectations.
+
+scripts/check_hail_string_operations.py (28 lines)
+  Focused oracle recorder is appropriate. UTF-16 observations now document intentional divergence, not failures Vail should fix. Separate codepoint contract from other regex/string behavior.
+
+scripts/check_hail_text_operations.py (41 lines)
+  Original-runtime output/error recording is useful. Keep errors as observations with runtime provenance rather than inferring unsupported APIs passed.
+
+scripts/hail_inventory_report.py (191 lines)
+  Reviewed requirements and evidence should remain distinct. Some canned capability notes refer to earlier unsupported states; derive or date them instead of presenting them as current support.
+
+scripts/inventory_hail_api.py (211 lines)
+  AST-based API inventory avoids loading Hail. A declared API/name is not evidence of implementation or executable coverage; keep ledger semantics narrow.
+
+scripts/inventory_hail_tests.py (649 lines)
+  Detailed requirements/source inventory is useful but manual recognition and execution-evidence joins can go stale. Share identity/schema with the authoritative runner and retain parameter coverage.
+
+scripts/native_conformance_worker.py (110 lines)
+  Real native backend adapter is a useful contrast with Hail oracle. Keep codec and exception categories explicit; native passing is not independent equivalence.
+
+scripts/prepare_reference_manifest.py (265 lines)
+  Deterministic metadata-only reference manifests are a sensible boundary. Validate ordering and schema against native reference descriptors; do not conflate coordinate metadata with sequence availability.
+
+scripts/report_table_test_run.py (39 lines)
+  Contains hard-coded validation counts and old unsupported summaries. Treat as a historical report generator, not a current status tool; generate current numbers from structured outcomes.
+
+scripts/run_all_tests.py (395 lines)
+  Strong evidence practices: raw logs, source/native fingerprints, unsupported/unavailable status, classifier self-tests. Parses textual summaries, which is fragile compared with structured events. This runs Vail-owned suites and selected adapters, not automatically the full upstream suite.
+
+DEPENDENCIES, PATCHES, BUILD AND DOCUMENTATION
+
+Cargo workspace / Python packaging:
+  Six crates separate FFI, table planning, execution, storage, VCF and metadata.
+  That is a reasonable top-level decomposition. The ordering crate is misnamed;
+  table/execution internals still contain several compilers. Cargo.lock pins the
+  runtime graph; upstreams.lock.json records research/source provenance and is not
+  the same graph. Do not infer built dependency versions from adjacent checkouts.
+
+patches/iceberg-rust and iceberg-rust-vail.patch:
+  The documented delta is deliberately narrow: workspace/catalog exposure,
+  reserved snapshot identity and initial-commit conflict protection. Those hooks
+  serve the descriptor invariant. Retain a reproducible upstream-base plus delta;
+  extending storage should not mean silently forking transaction behavior.
+
+patches/vortex-array and patches/vortex-layout:
+  These are active [patch.crates-io] replacements, so they are production code,
+  not merely audit references. The patch README currently explains only Iceberg.
+  Missing equivalent maintained base/delta/rationale manifests make local dependency
+  changes difficult to review independently. For this review I compared both copies
+  with the locally cached published 0.86.1 crates and saved vortex-delta.patch plus
+  vortex-delta-files.json. Six Rust source files differ; all six deltas were read.
+  The copied unchanged upstream modules are NOT certified by this review.
+
+Adjacent Hail/DataFusion/Vortex/Iceberg repositories:
+  Consulted as dependency/reference context, not comprehensively reviewed.
+  Upstream code size and ownership make a blanket whole-monorepo claim misleading.
+  The module ledger covers Vail's own production code and support tools; it is not
+  a new quality assertion about millions of third-party lines.
+
+Shell/bootstrap scripts:
+  bootstrap_hail_oracle.sh and benchmarks/cloud_bootstrap.sh are environment setup,
+  not query implementations. Reproducibility depends on pinned binaries/packages,
+  machine settings and external downloads; telemetry should capture actual resolved
+  versions. Neither script was executed or subjected to a deployment/security audit.
+
+Documentation and historical artifacts:
+  Documentation is extensive but combines current contracts, early prototype
+  descriptions, research plans and dated test counts. For example execution/lib.rs
+  still describes byte encoding while current code uses Arrow comparators; globals
+  checksum expectations disagree across current implementation and older tests.
+  Promote a small set of current architecture contracts, link dated evidence as
+  evidence, and avoid synthesizing current behavior from whichever old report is
+  easiest to find. Generated logs/binary profiles should be external artifacts or
+  separately retained evidence when practical, rather than indefinitely growing
+  the code review surface.
+
+REVIEW COMPLETENESS AND LIMITS
+
+inventory.json enumerates 158 modules: 112 production and 46 support modules.
+Each has a ledger entry. Coverage is architectural and selective within modules,
+not a line-by-line code audit. Test files/examples and copied dependencies are not
+counted as production-module coverage. No fuzz campaign, benchmark campaign,
+full upstream rerun, or broad correctness certification was performed here.
+
+Reproducer status: fails as expected on the recorded native build. Additional
+sanity probe: two independent folds in one aggregate return 10 and 20 in either
+field order; the suspected identity-collision hypothesis was not confirmed.
+Source commit/native SHA and per-file hashes are preserved because the installed
+extension is a separate build artifact. The reviewed Python source at 6a61cf9 only
+differs from the built 4da97a1 integration in upstream audit scope tooling.
+
+This review changes the confidence statement: the recent interval latency fix is
+real, but compositional partition correctness is not established and is demonstrably
+broken for a random annotation after an interval-pruned read. That is an architectural
+failure to address before treating the implementation as broadly sound.
+
+
+LOCAL VORTEX SOURCE DELTA REVIEW
+
+Base: published vortex-array/vortex-layout 0.86.1 in the local Cargo registry.
+This is a crate-content comparison, not a claim of a verified upstream Git SHA.
+Packaging differences (omitted crate-local locks/original manifests, added licenses)
+are listed separately in vortex-delta-files.json. Runtime source delta is captured
+in vortex-delta.patch. No changes to the vendored sources were made by this review.
+
+patches/vortex-array/src/scalar_fn/fns/list_project.rs:
+  New nested struct/list projection function. Preserves list offsets/sizes/validity,
+  validates paths and bounds serialized path counts/lengths. This is a legitimate
+  storage expression primitive, not a matrix-specific name check. Recursive list
+  boundaries and nullable structs need a clearly specified path algebra shared
+  with scan dependencies. Execution canonicalizes lists; it is not universally
+  zero-copy. No new defect was demonstrated in this module.
+
+patches/vortex-array/src/expr/analysis/referenced_field_paths.rs:
+  Teaches dependency analysis how Project paths cross list element boundaries.
+  Conservative whole-root fallback for non-root input is appropriate. This forms
+  a paired contract with list_project and layout readers; extending only one half
+  can produce wrong pruning or decode-all behavior.
+
+patches/vortex-array/src/scalar_fn/fns/mod.rs:
+  Exports the new projection module. Mechanical registration boundary.
+
+patches/vortex-array/src/scalar_fn/session.rs:
+  Registers Project for serialization/execution. Appropriate; persisted expressions
+  using vortex.list.project require a reader with this extension, so compatibility
+  and upstreaming/version policy should be explicit.
+
+patches/vortex-layout/src/layouts/list/reader.rs:
+  Pushes root Project into the element reader and retains list offset/validity
+  ownership. Good division of responsibility; avoids an extra projection after
+  elements are already narrowed. Non-root expressions retain the generic path.
+  Added test rejects actual reads of a pruned leaf segment: stronger evidence of
+  IO pushdown than an explain assertion alone. All-row and masked paths are both
+  changed; there is no claim here of exhaustive mask/layout correctness.
+
+patches/vortex-layout/src/layouts/struct_/reader.rs:
+  Adds nested Project expansion and preserves root nullable-struct validity using
+  masks, including is_null/is_not_null rewrites. These are semantic changes beyond
+  a performance projection. Maintaining the parent null bitmap while projecting
+  child fields is essential. This patch should be upstreamed/documented as such,
+  with explicit nullable-root/child contracts, rather than described only as field
+  pruning. No new corruption repro was established.
