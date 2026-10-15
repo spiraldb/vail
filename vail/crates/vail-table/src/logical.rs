@@ -409,6 +409,20 @@ fn is_scan(expr: &vail_execution::expressions::Expr) -> bool {
         if options.get("__vail_scan").and_then(serde_json::Value::as_bool) == Some(true))
 }
 
+fn contains_global(expr: &vail_execution::expressions::Expr) -> bool {
+    let mut found = false;
+    expr.visit(&mut |node| {
+        found |= matches!(node, vail_execution::expressions::Expr::Global { .. });
+    });
+    found
+}
+
+fn contains_scan_expr(expr: &vail_execution::expressions::Expr) -> bool {
+    let mut found = false;
+    expr.visit(&mut |node| found |= is_scan(node));
+    found
+}
+
 fn table_has_scan(table: &TableRef) -> bool {
     (match table.node() {
         TableNode::MapRows { fields, .. } => fields.iter().any(|(_, expr)| {
@@ -784,6 +798,12 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             )
         }
         TableNode::MapGlobals { child } => lower(child),
+        // An empty key list only clears TableIR metadata. It does not reorder,
+        // repartition, or project rows, and the legacy physical planner already
+        // treats it as a passthrough. Keeping a Vail extension here causes each
+        // nested unkey to re-prepare every child partition (a PartitionSet with
+        // N views), multiplying work across deep row-projection chains.
+        TableNode::KeyBy { child, keys } if keys.is_empty() => lower(child),
         // Vail union concatenates observable execution partitions. Native SQL
         // Union permits branch interleaving and repartitioning; the extension
         // keeps each optimized child partition as an independent output.
@@ -862,7 +882,24 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             } else {
                 lower(child)?
             };
-            let input = crate::logical_globals::bind_globals(lowered_child, child)?;
+            // Globals are bound into the row relation as a singleton cross join. Most
+            // row maps do not reference globals; adding that join anyway creates an
+            // optimizer node for every nested projection and makes deep annotation
+            // chains unnecessarily expensive to optimize.
+            let binds_globals = fields.iter().any(|(_, expr)| {
+                contains_global(expr) || is_rng_uid(expr) || contains_scan_expr(expr)
+            });
+            let input = if binds_globals {
+                crate::logical_globals::bind_globals(lowered_child, child)?
+            } else {
+                lowered_child
+            };
+            let empty_globals = arrow_schema::Schema::empty();
+            let globals_schema = if binds_globals {
+                child.globals().schema().as_ref()
+            } else {
+                &empty_globals
+            };
             let (input, indices) = crate::logical_globals::bind_external(input, bindings)?;
             if fields.iter().any(|(_, expr)| is_rng_uid(expr)) {
                 return lower_rng_uids(child, input, fields, &indices);
@@ -887,26 +924,24 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             let projected = fields
                 .iter()
                 .map(|(name, expr)| {
-                    lower_logical_with_bindings(
-                        expr,
-                        input.schema(),
-                        child.globals().schema(),
-                        &indices,
-                    )
-                    .map(|e| match expr {
-                        vail_execution::expressions::Expr::Column { name: source }
-                            if source == name =>
-                        {
-                            e
-                        }
-                        _ => e.alias(name),
-                    })
+                    lower_logical_with_bindings(expr, input.schema(), globals_schema, &indices)
+                        .map(|e| match expr {
+                            vail_execution::expressions::Expr::Column { name: source }
+                                if source == name =>
+                            {
+                                e
+                            }
+                            _ => e.alias(name),
+                        })
                 })
                 .collect::<std::result::Result<Vec<_>, _>>();
             match projected {
                 Ok(mut projected) => {
-                    let partition_index =
-                        child.globals().schema().fields().len() + child.schema().fields().len();
+                    let partition_index = (if binds_globals {
+                        child.globals().schema().fields().len()
+                    } else {
+                        0
+                    }) + child.schema().fields().len();
                     projected.push(indexed_column(&input, partition_index));
                     Ok(LogicalPlanBuilder::from(input)
                         .project(projected)?
@@ -926,18 +961,28 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             keep,
             bindings,
         } => {
-            let input = crate::logical_globals::bind_globals(lower(child)?, child)?;
+            let binds_globals = contains_global(predicate);
+            let input = if binds_globals {
+                crate::logical_globals::bind_globals(lower(child)?, child)?
+            } else {
+                lower(child)?
+            };
             let (input, indices) = crate::logical_globals::bind_external(input, bindings)?;
-            match lower_logical_with_bindings(
-                predicate,
-                input.schema(),
-                child.globals().schema(),
-                &indices,
-            ) {
+            let empty_globals = arrow_schema::Schema::empty();
+            let globals_schema = if binds_globals {
+                child.globals().schema().as_ref()
+            } else {
+                &empty_globals
+            };
+            match lower_logical_with_bindings(predicate, input.schema(), globals_schema, &indices) {
                 Ok(predicate) => {
                     let predicate = if *keep { predicate } else { predicate.not() };
                     let filtered = LogicalPlanBuilder::from(input).filter(predicate)?.build()?;
-                    let offset = child.globals().schema().fields().len();
+                    let offset = if binds_globals {
+                        child.globals().schema().fields().len()
+                    } else {
+                        0
+                    };
                     let projected = (0..=child.schema().fields().len())
                         .map(|i| indexed_column(&filtered, offset + i))
                         .collect::<Vec<_>>();
@@ -1437,4 +1482,25 @@ fn replace_children(table: &TableRef, mut children: Vec<TableRef>) -> Result<Tab
         }
     }
     Ok(table.replacing_node(node))
+}
+
+#[cfg(test)]
+mod global_binding_tests {
+    use super::contains_global;
+    use vail_execution::expressions::{Expr, PrimitiveType, Type};
+
+    #[test]
+    fn global_references_nested_in_array_lambdas_are_detected() {
+        let expression = Expr::ArrayMap {
+            value: Box::new(Expr::Literal {
+                dtype: Type::Array {
+                    array: Box::new(Type::Primitive(PrimitiveType::Int32)),
+                },
+                value: serde_json::json!([1]),
+            }),
+            parameter: "element".into(),
+            body: Box::new(Expr::Global { name: "g".into() }),
+        };
+        assert!(contains_global(&expression));
+    }
 }
