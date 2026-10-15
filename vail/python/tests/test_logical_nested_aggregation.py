@@ -32,7 +32,7 @@ def test_recursive_array_aggregation_over_random_derived_rows(partitions):
     assert result == [[21, 7], [35, 21]]
 
 
-def test_grouped_nested_reducers_have_logical_aggregate_and_unnest():
+def test_grouped_nested_reducers_use_native_coordinate_aggregate():
     table = hl.range_table(12, n_partitions=3)
     table = table.annotate(unused=hl.rand_bool(.5), xs=[table.idx, table.idx + 1])
     grouped = table.group_by(g=table.idx % 2).aggregate(
@@ -41,7 +41,7 @@ def test_grouped_nested_reducers_have_logical_aggregate_and_unnest():
     )
     plan = grouped._native.logical_plan()
     assert 'Aggregate:' in plan
-    assert 'Unnest:' in plan
+    assert 'vail_coordinate_sum' in plan
     assert 'VailPartitionOperation: Aggregate' not in plan
     for _ in range(5):
         assert grouped.collect() == [

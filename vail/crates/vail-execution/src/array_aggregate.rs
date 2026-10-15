@@ -2,7 +2,7 @@
 //! Arithmetic, null handling, partial states and merges remain owned by the
 //! underlying aggregate. A native GroupsAccumulator processes all coordinates
 //! in one batch; other UDAFs receive one Arrow batch per coordinate.
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{Array, ArrayRef, Int64Array, ListArray, UInt32Array, new_empty_array};
 use arrow_buffer::OffsetBuffer;
@@ -30,6 +30,37 @@ fn list_scalar(values: ArrayRef) -> ScalarValue {
 }
 fn error(message: &str) -> DataFusionError {
     DataFusionError::Execution(message.into())
+}
+
+#[derive(Debug)]
+struct CoordinateIndices {
+    width: usize,
+    values: Vec<usize>,
+}
+
+fn coordinate_indices(width: usize, length: usize) -> Result<Arc<CoordinateIndices>> {
+    if width == 0 {
+        return Err(error("coordinate indices require a nonzero width"));
+    }
+    // Concurrent partial aggregates usually have the same shape. Reuse their
+    // immutable coordinate pattern, without retaining it after those users
+    // finish or accumulating a cache entry for every encountered shape.
+    static LAST: Mutex<Weak<CoordinateIndices>> = Mutex::new(Weak::new());
+    let mut last = LAST.lock().map_err(|_| error("coordinate indices cache poisoned"))?;
+    if let Some(indices) = last.upgrade() {
+        if indices.width == width && indices.values.len() >= length {
+            return Ok(indices);
+        }
+    }
+    let mut values = Vec::with_capacity(length);
+    values.extend(0..width.min(length));
+    while values.len() < length {
+        let copied = values.len().min(length - values.len());
+        values.extend_from_within(..copied);
+    }
+    let indices = Arc::new(CoordinateIndices { width, values });
+    *last = Arc::downgrade(&indices);
+    Ok(indices)
 }
 
 /// The adapter accepts any unary UDAF with ordinary mergeable Arrow state.
@@ -94,7 +125,7 @@ struct Coordinates {
     kernels: Kernels,
     width: Option<usize>,
     empty: ScalarValue,
-    group_indices: Vec<usize>,
+    group_indices: Option<Arc<CoordinateIndices>>,
 }
 impl Coordinates {
     fn new(aggregate: Arc<AggregateFunctionExpr>, empty: ScalarValue) -> Result<Self> {
@@ -110,7 +141,7 @@ impl Coordinates {
             kernels,
             width: None,
             empty,
-            group_indices: Vec::new(),
+            group_indices: None,
         })
     }
     fn set_width(&mut self, width: usize) -> Result<()> {
@@ -203,16 +234,17 @@ impl Accumulator for Coordinates {
             }
             concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
         };
-        if matches!(self.kernels, Kernels::Groups(_)) && self.group_indices.len() < flat.len() {
-            self.group_indices
-                .extend((self.group_indices.len()..flat.len()).map(|i| i % width));
+        if matches!(self.kernels, Kernels::Groups(_))
+            && self.group_indices.as_ref().is_none_or(|indices| indices.values.len() < flat.len())
+        {
+            self.group_indices = Some(coordinate_indices(width, flat.len())?);
         }
         match &mut self.kernels {
             Kernels::Groups(kernel) => {
                 let kernel = kernel
                     .get_mut()
                     .map_err(|_| error("coordinate accumulator state poisoned"))?;
-                let groups = &self.group_indices[..flat.len()];
+                let groups = &self.group_indices.as_ref().unwrap().values[..flat.len()];
                 kernel.update_batch(&[flat], groups, None, width)
             }
             Kernels::Coordinates(kernels) => {
@@ -262,7 +294,10 @@ impl Accumulator for Coordinates {
     }
     fn size(&self) -> usize {
         std::mem::size_of::<Self>()
-            + self.group_indices.capacity() * std::mem::size_of::<usize>()
+            + self.group_indices.as_ref().map_or(0, |indices| {
+                // Conservatively charge shared storage to each user.
+                indices.values.capacity() * std::mem::size_of::<usize>()
+            })
             + match &self.kernels {
                 Kernels::Groups(k) => k.lock().map(|k| k.size()).unwrap_or_default(),
                 Kernels::Coordinates(ks) => ks.iter().map(|k| k.size()).sum(),
@@ -396,6 +431,22 @@ mod tests {
             .iter()
             .collect()
     }
+    #[test]
+    fn native_groups_handle_growing_and_shrinking_batches_concurrently() {
+        let threads = (1..=6).map(|width| std::thread::spawn(move || {
+            let mut a = accumulator();
+            let mut rows = 0;
+            for batch_rows in [1, 3, 2, 7, 5] {
+                let values = (1..=width).map(|i| Some(i as i64)).collect::<Vec<_>>();
+                a.update_batch(&[arrays(vec![Some(values); batch_rows])]).unwrap();
+                rows += batch_rows as i64;
+                assert_eq!(result(a.evaluate().unwrap()),
+                    (1..=width).map(|i| Some(rows * i as i64)).collect::<Vec<_>>());
+            }
+        })).collect::<Vec<_>>();
+        for thread in threads { thread.join().unwrap(); }
+    }
+
     #[test]
     fn native_groups_preserve_missing_elements_and_partial_merge() {
         let mut left = accumulator();

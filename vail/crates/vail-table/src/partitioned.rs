@@ -540,6 +540,10 @@ impl ExecutionPlan for ProtectedExec {
 }
 impl PartitionViewExec {
     pub(crate) fn new(input: PhysicalPlan, index: usize) -> Self {
+        let (input, index) = match crate::provider::select_source_partition(&input, index) {
+            Some(selected) => (selected, 0),
+            None => (input, index),
+        };
         let mut cache = (**input.properties()).clone();
         cache.partitioning = Partitioning::UnknownPartitioning(1);
         let requirement = required_ordering(&input);

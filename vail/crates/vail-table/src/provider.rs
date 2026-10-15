@@ -828,6 +828,7 @@ struct PartitionSetExec {
     schema: SchemaRef,
     properties: Arc<PlanProperties>,
     concurrency: Arc<tokio::sync::Semaphore>,
+    partition_offset: usize,
 }
 
 impl PartitionSetExec {
@@ -862,8 +863,20 @@ impl PartitionSetExec {
             schema,
             properties,
             concurrency: Arc::new(tokio::sync::Semaphore::new(crate::EXECUTION_CONCURRENCY)),
+            partition_offset: 0,
         }
     }
+}
+
+/// A partition view needs only its selected source plan, not another copy of
+/// the complete source tree. Preserve the original ID and concurrency gate.
+pub(crate) fn select_source_partition(input: &PhysicalPlan, index: usize) -> Option<PhysicalPlan> {
+    let source = input.as_ref().downcast_ref::<PartitionSetExec>()?;
+    let part = source.partitions.get(index)?.clone();
+    let mut selected = PartitionSetExec::new(vec![part], source.schema.clone());
+    selected.partition_offset = source.partition_offset + index;
+    selected.concurrency = source.concurrency.clone();
+    Some(Arc::new(selected))
 }
 
 /// Both source boundaries replace the last column with their physical ID.
@@ -941,7 +954,10 @@ impl ExecutionPlan for PartitionSetExec {
                 children.len()
             )));
         }
-        Ok(Arc::new(Self::new(children, self.schema.clone())))
+        let mut source = Self::new(children, self.schema.clone());
+        source.partition_offset = self.partition_offset;
+        source.concurrency = self.concurrency.clone();
+        Ok(Arc::new(source))
     }
 
     fn execute(
@@ -963,6 +979,7 @@ impl ExecutionPlan for PartitionSetExec {
         let output_schema = schema.clone();
         // Each child executes as partition zero locally. Expose its actual
         // source partition identity to logical windows and partition operations.
+        let source_partition = self.partition_offset + partition;
         let stream = input.and_then(move |batch| {
             let schema = output_schema.clone();
             async move {
@@ -971,7 +988,7 @@ impl ExecutionPlan for PartitionSetExec {
                     DataFusionError::Internal("source partition tag is absent".into())
                 })?;
                 columns[index] =
-                    Arc::new(UInt64Array::from_value(partition as u64, batch.num_rows()));
+                    Arc::new(UInt64Array::from_value(source_partition as u64, batch.num_rows()));
                 RecordBatch::try_new(schema, columns).map_err(Into::into)
             }
         });
@@ -1152,6 +1169,36 @@ mod projected_provider_tests {
     use datafusion::execution::context::SessionContext;
     use futures::TryStreamExt;
     use serde_json::json;
+
+    #[tokio::test]
+    async fn selected_source_view_keeps_only_one_partition_and_original_id() {
+        let table = crate::TableIR::range(512, 128).unwrap();
+        let source = make_source_parts(&table, plan::physical_schema(&table)).unwrap();
+        let original = source.as_ref().downcast_ref::<PartitionSetExec>().unwrap();
+        for partition in [0, 1, 127] {
+            let selected = select_source_partition(&source, partition).unwrap();
+            let rebuilt = selected.clone().with_new_children(
+                selected.children().into_iter().cloned().collect(),
+            ).unwrap();
+            let inner = rebuilt.as_ref().downcast_ref::<PartitionSetExec>().unwrap();
+            assert_eq!(inner.partitions.len(), 1);
+            assert!(Arc::ptr_eq(&inner.concurrency, &original.concurrency));
+            let view = crate::partitioned::PartitionViewExec::new(source.clone(), partition);
+            assert_eq!(view.children()[0].children().len(), 1);
+            for plan in [rebuilt, Arc::new(view) as PhysicalPlan] {
+                let batches = plan.execute(0, Arc::new(datafusion_execution::TaskContext::default()))
+                    .unwrap().try_collect::<Vec<_>>().await.unwrap();
+                let values = batches.iter().flat_map(|batch| {
+                    let ids = batch.columns().last().unwrap().as_any()
+                        .downcast_ref::<UInt64Array>().unwrap();
+                    assert!(ids.values().iter().all(|id| *id == partition as u64));
+                    batch.column(0).as_any().downcast_ref::<Int32Array>()
+                        .unwrap().values().to_vec()
+                }).collect::<Vec<_>>();
+                assert_eq!(values, (partition as i32 * 4..partition as i32 * 4 + 4).collect::<Vec<_>>());
+            }
+        }
+    }
 
     #[tokio::test]
     async fn source_partition_range_matches_emitted_ids() {

@@ -96,6 +96,18 @@ def _uses_axis_field(node, axis):
     return False
 
 
+def _uses_column_position(node):
+    if isinstance(node, dict):
+        if node.get("op") == "literal":
+            return False
+        return node.get("op") == "matrix_column_position" or any(
+            _uses_column_position(value) for value in node.values()
+        )
+    if isinstance(node, list):
+        return any(_uses_column_position(value) for value in node)
+    return False
+
+
 def _indexed_cells(cells):
     """Zip each cell with its current row-local position using DataFusion."""
     from . import range as array_range, len as length
@@ -784,42 +796,32 @@ class MatrixTable:
             base, prepared = self._prepare_row_lookups(base, [v for _, v in fields])
             fields = [(n, v) for (n, _), v in zip(fields, prepared)]
             uses_column = any(_uses_axis_field(v.to_ir(), "col") for _, v in fields)
+            def project_cell(cell, column, position=None):
+                return struct(**{
+                    _CID: cell[_CID],
+                    _PRESENT: cell[_PRESENT],
+                    _VALUE: struct(**{
+                        n: self._lower_cell(v, base, cell, column, position)
+                        for n, v in fields
+                    }),
+                })
+
             if uses_column:
-                cells = self._cell_contexts(base).map(
-                    lambda item: struct(
-                        **{
-                            _CID: item["1"]["1"][_CID],
-                            _PRESENT: item["1"]["1"][_PRESENT],
-                            _VALUE: struct(
-                                **{
-                                    n: self._lower_cell(
-                                        v, base, item["1"]["1"],
-                                        item["2"][_COL], item["1"]["2"],
-                                    )
-                                    for n, v in fields
-                                }
-                            ),
-                        }
+                if any(_uses_column_position(v.to_ir()) for _, v in fields):
+                    cells = self._cell_contexts(base).map(
+                        lambda item: project_cell(
+                            item["1"]["1"], item["2"][_COL], item["1"]["2"],
+                        )
                     )
-                )
+                else:
+                    cells = _zip_arrays(base[_CELLS], self._mir.column_records).map(
+                        lambda item: project_cell(item["1"], item["2"][_COL])
+                    )
             else:
                 # Entry expressions scoped only to rows/globals/entries need
                 # no column records or positions: preserve the owning cell
                 # identity and presence directly while projecting its value.
-                cells = base[_CELLS].map(
-                    lambda cell: struct(
-                        **{
-                            _CID: cell[_CID],
-                            _PRESENT: cell[_PRESENT],
-                            _VALUE: struct(
-                                **{
-                                    n: self._lower_cell(v, base, cell, struct())
-                                    for n, v in fields
-                                }
-                            ),
-                        }
-                    )
-                )
+                cells = base[_CELLS].map(lambda cell: project_cell(cell, struct()))
             projected = _project(
                 base,
                 [(_ROW, base[_ROW]), (_CELLS, cells)]

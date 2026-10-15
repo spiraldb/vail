@@ -33,6 +33,18 @@ def test_row_scoped_entry_projection_and_filter_skip_column_context_zip(monkeypa
     assert [row.row_value for row in transmuted.entries().collect()] == [1, 1, 1, 2, 2, 2]
 
 
+def test_named_column_entry_projection_does_not_construct_positions(monkeypatch):
+    import vail.matrixtable as module
+
+    m = matrix(2, 3).choose_cols([2, 0, 2])
+    m = m.filter_entries(m.col_idx != 0)
+    def unexpected(*args, **kwargs):
+        raise AssertionError("named column projection constructed position indices")
+    monkeypatch.setattr(module, "_indexed_cells", unexpected)
+    result = m.annotate_entries(y=m.row_idx + m.col_idx + m.x)
+    assert result.y.collect() == [9, 9, 20, 20]
+
+
 @pytest.mark.parametrize("nr,nc", [(0, 0), (0, 3), (3, 0), (2, 3)])
 def test_range_dimensions_schema_and_empty_axes(nr, nc):
     m = hl.range_matrix_table(nr, nc, 2)
@@ -757,6 +769,23 @@ def test_column_sum_preserves_positions_missing_entries_and_empty_rows():
     ]
     empty = hl.range_matrix_table(0, 3, 2)
     empty = empty.annotate_entries(x=hl.int32(1))
+    assert empty.annotate_cols(total=hl.agg.sum(empty.x)).total.collect() == [0, 0, 0]
+
+
+def test_column_sum_preserves_many_partitions_and_missing_values():
+    m = hl.range_matrix_table(80, 3, 80).choose_cols([2, 0, 2])
+    m = m.annotate_entries(x=hl.if_else(
+        m.row_idx % 3 == 0, hl.missing(hl.tint32), m.row_idx * 10 + m.col_idx,
+    ))
+    m = m.filter_entries(m.row_idx % 2 == 0)
+    result = m.annotate_cols(total=hl.agg.sum(m.x))
+    assert result.n_partitions() == 80
+    assert result.total.dtype == hl.tint64
+    assert result.total.collect() == [
+        sum(row * 10 + column for row in range(80) if row % 2 == 0 and row % 3 != 0)
+        for column in [2, 0, 2]
+    ]
+    empty = m.filter_rows(False)
     assert empty.annotate_cols(total=hl.agg.sum(empty.x)).total.collect() == [0, 0, 0]
 
 
