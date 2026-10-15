@@ -33,3 +33,61 @@ def test_call_equality_with_expressions_and_phase_order():
     value, expression = hl.Call([0, 0]), hl.call(0, 0)
     assert hl.eval(value == expression)
     assert hl.eval(expression == value)
+
+
+@pytest.mark.parametrize('word', [6, 7, 8, 9, None])
+@pytest.mark.parametrize('accessor', ['phase', 'alleles', 'ploidy', 'alternate_count', 'first'])
+def test_imported_malformed_call_is_rejected_by_executed_accessors(word, accessor):
+    import pyarrow as pa
+    from vail.arrow import arrow_type
+    dtype = arrow_type(hl.tcall)
+    calls = pa.StructArray.from_arrays([pa.array([word], type=pa.int32())], fields=list(dtype))
+    table = hl.Table.parallelize(pa.table({'c': calls}))
+    value = {'phase': lambda: table.c.phased, 'alleles': lambda: table.c.alleles,
+             'ploidy': lambda: table.c.ploidy, 'alternate_count': lambda: table.c.n_alt_alleles(),
+             'first': lambda: table.c[0]}[accessor]()
+    with pytest.raises((ValueError, RuntimeError), match='Call|call'):
+        table.select(value=value).collect()
+
+
+def test_imported_parent_missing_call_ignores_invalid_hidden_word():
+    import pyarrow as pa
+    from vail.arrow import arrow_type
+    dtype = arrow_type(hl.tcall)
+    calls = pa.StructArray.from_arrays(
+        [pa.array([8, 21], type=pa.int32())], fields=list(dtype), mask=pa.array([True, False]))
+    table = hl.Table.parallelize(pa.table({'c': calls}))
+    rows = table.select(alleles=table.c.alleles, phase=table.c.phased,
+                        ploidy=table.c.ploidy, n=table.c.n_alt_alleles(), first=table.c[0]).collect()
+    assert rows == [hl.Struct(alleles=None, phase=None, ploidy=None, n=None, first=None),
+                    hl.Struct(alleles=[1, 0], phase=True, ploidy=2, n=1, first=1)]
+
+
+@pytest.mark.parametrize('phased', [False, True])
+def test_dynamic_call_construction_missing_values_and_boundaries(phased):
+    pairs = [(0, 32767), (16383, 16384), (1, 0), (None, 1), (1, None)]
+    table = hl.Table.parallelize([{'a': a, 'b': b} for a, b in pairs],
+                                 schema=hl.tstruct(a=hl.tint32, b=hl.tint32))
+    table = table.select(c=hl.call(table.a + 0, table.b * 1, phased=phased))
+    rows = table.select(c=table.c, a=table.c.alleles, phase=table.c.phased, ploidy=table.c.ploidy).collect()
+    expected = [hl.Call([a, b], phased) if a is not None and b is not None else None for a,b in pairs]
+    assert [r.c for r in rows] == expected
+    assert [r.a for r in rows] == [c.alleles if c else None for c in expected]
+    assert [r.phase for r in rows] == [c.phased if c else None for c in expected]
+    assert [r.ploidy for r in rows] == [c.ploidy if c else None for c in expected]
+    for alleles in [(2**31-1,2**31-1),(-1,0),(32767,32767)]:
+        bad = hl.Table.parallelize([{'a':alleles[0],'b':alleles[1]}])
+        with pytest.raises((ValueError,RuntimeError), match='Call|allele'):
+            bad.select(c=hl.call(bad.a,bad.b,phased=phased)).collect()
+
+
+def test_call_adapters_keep_lazy_errors_haploid_and_empty_batches():
+    table = hl.range_table(3)
+    valid = hl.call(table.idx + 1, phased=True)
+    invalid = hl.call(table.idx - 10)
+    chosen = hl.if_else(table.idx >= 0, valid, invalid)
+    rows = table.select(c=chosen, a=chosen.alleles, phase=chosen.phased, ploidy=chosen.ploidy).collect()
+    assert rows == [hl.Struct(idx=i, c=hl.Call([i + 1], True), a=[i + 1], phase=True, ploidy=1) for i in range(3)]
+    empty = hl.range_table(0)
+    c = hl.call(empty.idx, 1)
+    assert empty.select(c=c, a=c.alleles, phase=c.phased).collect() == []

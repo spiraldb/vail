@@ -2959,6 +2959,8 @@ enum HailKind {
     Numeric(BinaryOperator),
     ToString(String),
     GetField(String),
+    CallConstruct,
+    CallAccess(crate::calls::CallAccessor),
     Struct(Vec<String>),
     Interval,
     // DF flatten ignores inner validity. Compact null lists before flattening.
@@ -3885,6 +3887,8 @@ impl PhysicalExpr for HailPhysicalExpr {
                         .map_err(|e| ExprError::Invalid(e.to_string()))?;
                     hail_to_string(&args[0], &input_type)
                 }
+                HailKind::CallConstruct => crate::calls::construct(&args[0], &self.dtype),
+                HailKind::CallAccess(accessor) => crate::calls::access(&args[0], *accessor),
                 HailKind::GetField(name) => {
                     let parent = &args[0];
                     let st = parent
@@ -4667,19 +4671,23 @@ fn lower_scoped(
             dtype: Type::Primitive(PrimitiveType::Call),
             value,
         } if matches!(value.dtype_scoped(schema,globals.schema(),scope)?, Type::Struct { r#struct: fields } if fields.iter().any(|(name,_)| name=="__vail_call_alleles")) => {
-            lower_scoped(&crate::calls::construct(value), schema, globals, scope)?
+            custom(
+                HailKind::CallConstruct,
+                vec![lower_scoped(value, schema, globals, scope)?],
+                dtype,
+            )
         }
         Expr::GetField { value, name }
             if value.dtype_scoped(schema, globals.schema(), scope)?
-                == Type::Primitive(PrimitiveType::Call)
-                && crate::calls::getter(value, name).is_some() =>
+                == Type::Primitive(PrimitiveType::Call) =>
         {
-            lower_scoped(
-                &crate::calls::getter(value, name).unwrap(),
-                schema,
-                globals,
-                scope,
-            )?
+            let accessor = crate::calls::CallAccessor::for_field(name)
+                .ok_or_else(|| ExprError::Invalid(format!("invalid Call field {name:?}")))?;
+            custom(
+                HailKind::CallAccess(accessor),
+                vec![lower_scoped(value, schema, globals, scope)?],
+                dtype,
+            )
         }
         Expr::Cast { dtype, value } => lower_cast(
             lower_scoped(value, schema, globals, scope)?,

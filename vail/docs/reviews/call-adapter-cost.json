@@ -1,0 +1,37 @@
+{
+  "workload": "benchmarks/check_call_adapter_cost.py; phased construction with nontrivial allele expressions; collect constructed Call, phase and alternate count; verify public results; one process, shared machine load; RSS high-water cumulative",
+  "baseline_native_sha256": "fb0f3f4d21d8f53d1900f9a2811e44eba9e9be3c930d27f62e3bc4ef4831dbfc",
+  "baseline": [
+    {
+      "rows": 1000,
+      "seconds": 2.26278666700091,
+      "max_rss_bytes": 161071104
+    },
+    {
+      "rows": 10000,
+      "seconds": 11.323680000001332,
+      "max_rss_bytes": 247283712
+    }
+  ],
+  "indexed_native_sha256": "6936568d26ca9995f73ee3769efab3797718eadb82f7e21319bf4d9777d6b8ab",
+  "indexed": [
+    {
+      "rows": 1000,
+      "seconds": 0.1776596250019793,
+      "max_rss_bytes": 130220032
+    },
+    {
+      "rows": 10000,
+      "seconds": 0.028569082998728845,
+      "max_rss_bytes": 139640832
+    }
+  ],
+  "limitations": "Sequential sizes in one process; first size includes initialization; no isolation from other machine work. Baseline native predates Rust-reference cycle, which does not affect this Call workload.",
+  "validation": {
+    "focused_python": "36 passed,10 deselected; rebuilt release native",
+    "rust_expressions": "17 passed",
+    "broader_python": "153 passed,5 failed: one known excluded Vortex structural-list defect, four absent optional upstream Hail source fixture before Vail evaluation",
+    "build": "maturin develop --release passed",
+    "lazy_empty_haploid": "public test passed"
+  }
+}

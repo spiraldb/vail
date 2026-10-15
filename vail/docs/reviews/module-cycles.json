@@ -75,6 +75,25 @@
       ],
       "reports": [
         "vail/docs/reviews/rust-reference-validation-cost.json"
+      ],
+      "merged_commit": "fa90600"
+    },
+    {
+      "module": "vail/crates/vail-execution/src/calls.rs and Vail call adapters",
+      "reviewed_base": "fa90600",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "validate malformed packed Call accessors consistently including present missing word",
+        "replace repeated arithmetic expansion with checked single-row pack/decode adapters",
+        "replace private call-field and codec expectations with public accessors and independent expected values"
+      ],
+      "validation": [
+        "17 Rust expression tests passed",
+        "36 focused Python Call tests passed against rebuilt release native",
+        "Broader Python suite:153 passed; one known Vortex failure excluded by user and4 absent optional upstream Hail fixtures"
+      ],
+      "reports": [
+        "vail/docs/reviews/call-adapter-cost.json"
       ]
     }
   ],

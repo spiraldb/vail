@@ -388,6 +388,8 @@ class Expression:
         return Expression(tbool, self.source, {"op": "unary", "operator": "not", "value": self.to_ir()})
 
     def __getitem__(self, name):
+        if self.dtype == tcall:
+            return self.alleles[name]
         if self.dtype == tstr:
             from .strings import slice_, index
             return slice_(self, name) if isinstance(name, slice) else index(self, name)
@@ -648,6 +650,10 @@ class Expression:
                     {"op": "get_field", "value": self.to_ir(), "name": field},
                     self._global_refs, self._lookup_refs,
                 ))
+            if name == "alleles":
+                return call_field("__vail_call_alleles", tarray(tint32))
+            if name == "ploidy":
+                return self.alleles.length()
             if name == "phased":
                 return call_field("__vail_call_phased", tbool)
             if name == "n_alt_alleles":
@@ -1297,14 +1303,9 @@ def call(*alleles, phased=False):
     if any(a.dtype != tint32 for a in alleles):
         raise TypeError("call alleles must be int32")
     values = array(alleles)
-    if len(alleles) == 2 and not phased:
-        values = array([array_min(values), array_max(values)])
     packed = struct(__vail_call_alleles=values, __vail_call_phased=phased)
     result = Expression(tcall, packed.source, {"op": "cast", "dtype": "call", "value": packed.to_ir()})
-    missing_allele = is_missing(alleles[0])
-    for allele in alleles[1:]:
-        missing_allele = missing_allele | is_missing(allele)
-    return if_else(missing_allele, missing(tcall), result)
+    return result
 
 
 def locus(contig, pos, reference_genome="default"):
