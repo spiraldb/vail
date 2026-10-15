@@ -1237,6 +1237,7 @@ impl Expr {
                 let expected = if function == "array_sort" {
                     3
                 } else if function == "array_element"
+                    || function == "array_repeat"
                     || function == "arrays_zip"
                     || matches!(
                         function.as_str(),
@@ -1255,7 +1256,10 @@ impl Expr {
                 } else {
                     1
                 };
-                if args.len() != expected || !matches!(args.first(), Some(DataType::List(_))) {
+                if args.len() != expected
+                    || (function != "array_repeat"
+                        && !matches!(args.first(), Some(DataType::List(_))))
+                {
                     return Err(ExprError::Invalid(format!("invalid {function} arguments")));
                 }
                 if function == "array_sort"
@@ -1270,9 +1274,14 @@ impl Expr {
                         "array_element index must be int64".into(),
                     ));
                 }
+                if function == "array_repeat" && args[1] != DataType::Int64 {
+                    return Err(ExprError::Invalid(
+                        "array_repeat count must be int64".into(),
+                    ));
+                }
                 if expected == 2
                     && !matrix_function
-                    && !matches!(function.as_str(), "array_element" | "arrays_zip")
+                    && !matches!(function.as_str(), "array_element" | "arrays_zip" | "array_repeat")
                     && !same_collection_storage(&args[0], &args[1])
                 {
                     return Err(ExprError::Invalid(
@@ -4135,6 +4144,7 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
         "array_except" => nested::except::array_except_udf(),
         "array_element" => nested::extract::array_element_udf(),
         "array_concat" => nested::concat::array_concat_udf(),
+        "array_repeat" => nested::repeat::array_repeat_udf(),
         "arrays_zip" => nested::arrays_zip::arrays_zip_udf(),
         "array_compact" => nested::array_compact::array_compact_udf(),
         "flatten" => nested::flatten::flatten_udf(),
