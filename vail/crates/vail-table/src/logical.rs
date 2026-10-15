@@ -1081,7 +1081,8 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
 /// Display the plan DataFusion will optimize and lower for an action.
 pub(crate) fn display(table: &TableRef) -> Result<String> {
     let state = session_state(max_partitions(table));
-    Ok(state.optimize(&lower(table)?)?.display_indent().to_string())
+    let logical = crate::logical_parameters::parameterize(lower(table)?, state.execution_props())?;
+    Ok(state.optimize(&logical)?.display_indent().to_string())
 }
 
 pub(crate) async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
@@ -1136,6 +1137,7 @@ pub(crate) async fn physical_plan(
     ]);
     use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
     let mut state = session_state(target_partitions);
+    let logical = crate::logical_parameters::parameterize(logical, state.execution_props())?;
     let optimized = state.optimize(&logical)?;
     // DF55 physical filter pushdown can inline volatile projection expressions
     // and evaluate a checked cast before an earlier filter. Keep logical scan

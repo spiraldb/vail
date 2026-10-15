@@ -15,6 +15,7 @@ mod logical_aggregate_init;
 mod logical_aggregation;
 mod logical_globals;
 mod logical_nested_aggregation;
+mod logical_parameters;
 mod logical_same;
 mod logical_scan;
 mod lookup;

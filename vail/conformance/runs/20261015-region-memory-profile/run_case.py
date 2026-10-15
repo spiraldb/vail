@@ -54,7 +54,7 @@ if case == '--memory-guard':
     with (out / 'rss.csv').open('w') as stream:
         stream.write('elapsed_seconds,rss_bytes,physical_footprint_bytes,max_footprint_bytes,user_time_ticks,system_time_ticks,instructions,cycles,disk_read_bytes,disk_write_bytes\n')
         stream.flush()
-        while True:
+        while os.getppid() == pid:
             value = Rusage()
             if lib.proc_pid_rusage(pid, 4, ctypes.byref(value)) != 0:
                 break
@@ -95,7 +95,7 @@ memory_guard = subprocess.Popen(
 
 deadline_guard = subprocess.Popen([
     sys.executable, '-c',
-    "import os,signal,sys,time; time.sleep(60); open(sys.argv[2] + '/guard.txt','w').write('60-second query guard reached; process killed\\n'); os.kill(int(sys.argv[1]), signal.SIGKILL)",
+    "import os,signal,sys,time\nworker=int(sys.argv[1])\ntime.sleep(60)\nif os.getppid()==worker:\n open(sys.argv[2] + '/guard.txt','w').write('60-second query guard reached; process killed\\n')\n os.kill(worker, signal.SIGKILL)",
     str(os.getpid()), str(out),
 ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 construct_start = time.perf_counter()
