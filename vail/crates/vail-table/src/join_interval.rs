@@ -56,6 +56,18 @@ pub(crate) async fn prepare(
     let right_candidates = candidates_by_cell(&right_bounds, &cells)?;
     let mut parts = Vec::with_capacity(cells.len());
     for (index, cell) in cells.iter().enumerate() {
+        // Bounds certify that these cells cannot produce output. Avoid
+        // executing the populated input merely to discover the empty join.
+        let left_empty = left_candidates[index].is_empty();
+        let right_empty = right_candidates[index].is_empty();
+        if match kind {
+            TableJoinKind::Inner | TableJoinKind::Semi => left_empty || right_empty,
+            TableJoinKind::Left | TableJoinKind::Anti => left_empty,
+            TableJoinKind::Right => right_empty,
+            TableJoinKind::Outer => left_empty && right_empty,
+        } {
+            continue;
+        }
         let left_parts = clipped_parts(
             &left_input.parts,
             &left_bounds,
