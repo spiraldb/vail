@@ -1,0 +1,56 @@
+[
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_1",
+    "line": 4,
+    "body": "def test_show_1():\n    mt = hl.balding_nichols_model(3, 10, 10)\n    mt.GT.show()\n    mt.locus.show()"
+  },
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_2",
+    "line": 10,
+    "body": "def test_show_2():\n    mt = hl.balding_nichols_model(3, 10, 10)\n    mt.af.show()\n    mt.pop.show()"
+  },
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_3",
+    "line": 16,
+    "body": "def test_show_3():\n    mt = hl.balding_nichols_model(3, 10, 10)\n    mt.sample_idx.show()\n    mt.bn.show()"
+  },
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_4",
+    "line": 22,
+    "body": "def test_show_4():\n    mt = hl.balding_nichols_model(3, 10, 10)\n    mt.bn.fst.show()\n    mt.GT.n_alt_alleles().show()"
+  },
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_5",
+    "line": 28,
+    "body": "def test_show_5():\n    mt = hl.balding_nichols_model(3, 10, 10)\n    (mt.GT.n_alt_alleles() * mt.GT.n_alt_alleles()).show()\n    (mt.af * mt.GT.n_alt_alleles()).show()"
+  },
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_rows_table",
+    "line": 34,
+    "body": "def test_show_rows_table():\n    t = hl.balding_nichols_model(3, 10, 10).rows()\n    t.af.show()\n    (t.af * 3).show()"
+  },
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_negative",
+    "line": 40,
+    "body": "def test_show_negative():\n    hl.utils.range_table(5).show(-1)"
+  },
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_mt_duplicate_col_key",
+    "line": 44,
+    "body": "def test_show_mt_duplicate_col_key():\n    shown_cols = 2\n    mt = hl.utils.range_matrix_table(5, 5)\n    mt = mt.key_cols_by(c=0)\n    showobj = mt.show(n_cols=shown_cols, handler=lambda x: x)\n    assert len(showobj.table_show.table.row) == len(mt.row) + shown_cols"
+  },
+  {
+    "module": "expr/test_show.py",
+    "name": "test_show_mt_fewer_cols",
+    "line": 54,
+    "body": "def test_show_mt_fewer_cols():\n    shown_cols = 7\n    mt = hl.utils.range_matrix_table(5, 5)\n    mt = mt.key_cols_by(c=0)\n    showobj = mt.show(n_cols=shown_cols, handler=lambda x: x)\n    assert len(showobj.table_show.table.row) == len(mt.row) + mt.count_cols()"
+  }
+]

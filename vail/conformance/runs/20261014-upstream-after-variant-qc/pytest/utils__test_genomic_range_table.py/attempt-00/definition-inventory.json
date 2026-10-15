@@ -1,0 +1,26 @@
+[
+  {
+    "module": "utils/test_genomic_range_table.py",
+    "name": "test_genomic_range_table_grch38",
+    "line": 4,
+    "body": "def test_genomic_range_table_grch38():\n    actual = hl.utils.genomic_range_table(10, reference_genome='GRCh38').collect()\n    expected = [hl.Struct(locus=hl.Locus('chr1', pos + 1, reference_genome='GRCh38')) for pos in range(10)]\n    assert actual == expected"
+  },
+  {
+    "module": "utils/test_genomic_range_table.py",
+    "name": "test_genomic_range_table_grch37",
+    "line": 10,
+    "body": "def test_genomic_range_table_grch37():\n    actual = hl.utils.genomic_range_table(10, reference_genome='GRCh37').collect()\n    expected = [hl.Struct(locus=hl.Locus('1', pos + 1, reference_genome='GRCh37')) for pos in range(10)]\n    assert actual == expected"
+  },
+  {
+    "module": "utils/test_genomic_range_table.py",
+    "name": "test_genomic_range_table_canfam3",
+    "line": 16,
+    "body": "def test_genomic_range_table_canfam3():\n    actual = hl.utils.genomic_range_table(10, reference_genome='CanFam3').collect()\n    expected = [hl.Struct(locus=hl.Locus('chr1', pos + 1, reference_genome='CanFam3')) for pos in range(10)]\n    assert actual == expected"
+  },
+  {
+    "module": "utils/test_genomic_range_table.py",
+    "name": "test_genomic_range_table_grcm38",
+    "line": 22,
+    "body": "def test_genomic_range_table_grcm38():\n    actual = hl.utils.genomic_range_table(10, reference_genome='GRCm38').collect()\n    expected = [hl.Struct(locus=hl.Locus('1', pos + 1, reference_genome='GRCm38')) for pos in range(10)]\n    assert actual == expected"
+  }
+]

@@ -1,0 +1,28 @@
+{
+  "module": "fs/test_worker_driver_fs.py",
+  "name": "test_qob_can_use_sas_tokens",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'AzureAsyncFS' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 243, in worker\n    asyncio.run(target(**kwargs))\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/asyncio/runners.py\", line 195, in run\n    return runner.run(main)\n           ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/asyncio/runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/asyncio/base_events.py\", line 691, in run_until_complete\n    return future.result()\n           ^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/fs/test_worker_driver_fs.py\", line 139, in test_qob_can_use_sas_tokens\n    account = AzureAsyncFS.parse_url(vcf).account\n              ^^^^^^^^^^^^\nNameError: name 'AzureAsyncFS' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'aiohttp'",
+    "No module named 'aiohttp'",
+    "No module named 'rich'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

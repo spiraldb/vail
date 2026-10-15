@@ -1,0 +1,152 @@
+[
+  {
+    "module": "test_ir.py",
+    "name": "test_ir_value_type",
+    "line": 191,
+    "body": "def test_ir_value_type(value_ir):\n    env = value_irs_env()\n    typ = Env.backend().value_type(functools.reduce(lambda res, binding: ir.Let(binding[0], ir.NA(binding[1]), res), reversed([(k, env[k]) for k in value_ir.free_vars]), value_ir))\n    assert value_ir.typ == typ"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_ir_copies",
+    "line": 203,
+    "body": "def test_ir_copies(value_ir):\n    cp = value_ir.copy(*value_ir.children)\n    assert value_ir == cp\n    assert hash(value_ir) == hash(cp)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_table_ir_table_type",
+    "line": 309,
+    "body": "def test_table_ir_table_type(table_ir):\n    typ = Env.backend().table_type(table_ir)\n    assert table_ir.typ == typ"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_table_ir_highly_nested",
+    "line": 314,
+    "body": "def test_table_ir_highly_nested():\n    N = 10\n    M = 250\n    ht = hl.utils.range_table(N)\n    for i in range(M):\n        ht = ht.annotate(**{f'x{i}': i})\n    str(ht._tir)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_matrix_ir_matrix_type",
+    "line": 411,
+    "body": "def test_matrix_ir_matrix_type(matrix_ir):\n    typ = Env.backend().matrix_type(matrix_ir)\n    assert typ == matrix_ir.typ"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_blockmatrix_ir_parses",
+    "line": 487,
+    "body": "@skip_unless_spark_backend()\ndef test_blockmatrix_ir_parses(blockmatrix_ir):\n    Env.backend()._parse_blockmatrix_ir(str(blockmatrix_ir))"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_blockmatrix_ir_persist",
+    "line": 492,
+    "body": "@skip_unless_spark_backend()\ndef test_blockmatrix_ir_persist():\n    backend = Env.backend()\n    bmir = hl.linalg.BlockMatrix.fill(1, 1, 0.0)._bmir\n    backend.execute(ir.BlockMatrixWrite(bmir, ir.BlockMatrixPersistWriter('x', 'MEMORY_ONLY')))\n    persist = ir.BlockMatrixRead(ir.BlockMatrixPersistReader('x', bmir))\n    backend._parse_blockmatrix_ir(str(persist))"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_blockmatrix_ir_blockmatrix_type",
+    "line": 500,
+    "body": "def test_blockmatrix_ir_blockmatrix_type(blockmatrix_ir):\n    typ = Env.backend().blockmatrix_type(blockmatrix_ir)\n    assert blockmatrix_ir.typ == typ"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "ValueTests.test_value_same_after_parsing",
+    "line": 524,
+    "body": "def test_value_same_after_parsing(self):\n    test_exprs = []\n    expecteds = []\n    for t, v in self.values():\n        row_v = ir.Literal(t, v)\n        range = ir.TableRange(1, 1)\n        map_globals_ir = ir.TableMapGlobals(range, ir.InsertFields(ir.Ref('global', range.typ.global_type), [('foo', row_v)], None))\n        test_exprs.append(hl.Table(map_globals_ir).index_globals())\n        expecteds.append(hl.Struct(foo=v))\n    actuals = hl.eval(hl.tuple(test_exprs))\n    for expr, actual, expected in zip(test_exprs, actuals, expecteds):\n        assert actual == expected, str(expr)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_cse",
+    "line": 543,
+    "body": "def test_cse(self):\n    x = ir.I32(5)\n    x = ir.ApplyBinaryPrimOp('+', x, x)\n    expected = '(Let eval __cse_1 (I32 5) (ApplyBinaryPrimOp `+` (Ref __cse_1) (Ref __cse_1)))'\n    assert expected == CSERenderer()(x)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_cse_debug",
+    "line": 549,
+    "body": "def test_cse_debug(self):\n    x = hl.nd.array([0, 1])\n    y = hl.tuple((x, x))\n    dlen = y[0]\n    hl.eval(hl.tuple([hl.if_else(dlen[0] > 1, 1, 1), hl.if_else(dlen[0] > 1, hl.nd.array([0]), dlen)]))"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_cse_complex_lifting",
+    "line": 555,
+    "body": "def test_cse_complex_lifting(self):\n    x = ir.I32(5)\n    sum = ir.ApplyBinaryPrimOp('+', x, x)\n    prod = ir.ApplyBinaryPrimOp('*', sum, sum)\n    cond = ir.If(ir.ApplyComparisonOp('EQ', prod, x), sum, x)\n    expected = '(Let eval __cse_1 (I32 5) (Let eval __cse_2 (ApplyBinaryPrimOp `+` (Ref __cse_1) (Ref __cse_1)) (If (ApplyComparisonOp EQ (ApplyBinaryPrimOp `*` (Ref __cse_2) (Ref __cse_2)) (Ref __cse_1)) (Let eval __cse_3 (I32 5) (ApplyBinaryPrimOp `+` (Ref __cse_3) (Ref __cse_3))) (I32 5))))'\n    assert expected == CSERenderer()(cond)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_stream_cse",
+    "line": 570,
+    "body": "def test_stream_cse(self):\n    x = ir.StreamRange(ir.I32(0), ir.I32(10), ir.I32(1))\n    a1 = ir.ToArray(x)\n    a2 = ir.ToArray(x)\n    t = ir.MakeTuple([a1, a2])\n    expected_re = '(Let eval __cse_1 (I32 0) (Let eval __cse_2 (I32 10) (Let eval __cse_3 (I32 1) (MakeTuple (0 1) (ToArray (StreamRange [0-9]+ False (Ref __cse_1) (Ref __cse_2) (Ref __cse_3))) (ToArray (StreamRange [0-9]+ False (Ref __cse_1) (Ref __cse_2) (Ref __cse_3)))))))'\n    expected_re = expected_re.replace('(', '\\\\(').replace(')', '\\\\)')\n    assert re.match(expected_re, CSERenderer()(t))"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_cse2",
+    "line": 586,
+    "body": "def test_cse2(self):\n    x = ir.I32(5)\n    y = ir.I32(4)\n    sum = ir.ApplyBinaryPrimOp('+', x, x)\n    prod = ir.ApplyBinaryPrimOp('*', sum, y)\n    div = ir.ApplyBinaryPrimOp('/', prod, sum)\n    expected = '(Let eval __cse_1 (I32 5) (Let eval __cse_2 (ApplyBinaryPrimOp `+` (Ref __cse_1) (Ref __cse_1)) (ApplyBinaryPrimOp `/` (ApplyBinaryPrimOp `*` (Ref __cse_2) (I32 4)) (Ref __cse_2))))'\n    assert expected == CSERenderer()(div)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_cse_ifs",
+    "line": 603,
+    "body": "def test_cse_ifs(self):\n    outer_repeated = ir.I32(5)\n    inner_repeated = ir.I32(1)\n    sum = ir.ApplyBinaryPrimOp('+', inner_repeated, inner_repeated)\n    prod = ir.ApplyBinaryPrimOp('*', sum, outer_repeated)\n    cond = ir.If(ir.TrueIR(), prod, outer_repeated)\n    expected = '(If (True) (Let eval __cse_1 (I32 1) (ApplyBinaryPrimOp `*` (ApplyBinaryPrimOp `+` (Ref __cse_1) (Ref __cse_1)) (I32 5))) (I32 5))'\n    assert expected == CSERenderer()(cond)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_shadowing",
+    "line": 619,
+    "body": "def test_shadowing(self):\n    x = ir.ApplyBinaryPrimOp('*', ir.Ref('row', tint32), ir.I32(2))\n    sum = ir.ApplyBinaryPrimOp('+', x, x)\n    inner = ir.Let('row', sum, sum)\n    outer = ir.Let('row', ir.I32(5), inner)\n    expected = '(Let eval __cse_2 (I32 2) (Let eval row (I32 5) (Let eval __cse_1 (ApplyBinaryPrimOp `*` (Ref row) (Ref __cse_2)) (Let eval row (ApplyBinaryPrimOp `+` (Ref __cse_1) (Ref __cse_1)) (Let eval __cse_3 (ApplyBinaryPrimOp `*` (Ref row) (Ref __cse_2)) (ApplyBinaryPrimOp `+` (Ref __cse_3) (Ref __cse_3)))))))'\n    assert expected == CSERenderer()(outer)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_agg_cse",
+    "line": 634,
+    "body": "def test_agg_cse(self):\n    table = ir.TableRange(5, 1)\n    x = ir.GetField(ir.Ref('row', table.typ.row_type), 'idx')\n    inner_sum = ir.ApplyBinaryPrimOp('+', x, x)\n    agg = ir.ApplyAggOp('AggOp', [], [inner_sum])\n    outer_sum = ir.ApplyBinaryPrimOp('+', agg, agg)\n    filter = ir.AggFilter(ir.TrueIR(), outer_sum, False)\n    table_agg = ir.TableAggregate(table, ir.MakeTuple([outer_sum, filter]))\n    expected = '(TableAggregate (TableRange 5 1) (AggLet __cse_1 False (GetField idx (Ref row)) (AggLet __cse_3 False (ApplyBinaryPrimOp `+` (Ref __cse_1) (Ref __cse_1)) (Let eval __cse_2 (ApplyAggOp AggOp () ((Ref __cse_3))) (MakeTuple (0 1) (ApplyBinaryPrimOp `+` (Ref __cse_2) (Ref __cse_2)) (AggFilter False (True) (Let eval __cse_4 (ApplyAggOp AggOp () ((Ref __cse_3))) (ApplyBinaryPrimOp `+` (Ref __cse_4) (Ref __cse_4)))))))))'\n    assert expected == CSERenderer()(table_agg)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_init_op",
+    "line": 655,
+    "body": "def test_init_op(self):\n    x = ir.I32(5)\n    sum = ir.ApplyBinaryPrimOp('+', x, x)\n    agg = ir.ApplyAggOp('CallStats', [sum], [sum])\n    top = ir.ApplyBinaryPrimOp('+', sum, agg)\n    expected = '(Let eval __cse_1 (I32 5) (AggLet __cse_3 False (I32 5) (ApplyBinaryPrimOp `+` (ApplyBinaryPrimOp `+` (Ref __cse_1) (Ref __cse_1)) (ApplyAggOp CallStats ((Let eval __cse_2 (I32 5) (ApplyBinaryPrimOp `+` (Ref __cse_2) (Ref __cse_2)))) ((ApplyBinaryPrimOp `+` (Ref __cse_3) (Ref __cse_3)))))))'\n    assert expected == CSERenderer()(top)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_agg_let",
+    "line": 672,
+    "body": "def test_agg_let(self):\n    agg = ir.ApplyAggOp('AggOp', [], [ir.Ref('foo', tint32)])\n    sum = ir.ApplyBinaryPrimOp('+', agg, agg)\n    agglet = ir.AggLet('foo', ir.I32(2), sum, False)\n    expected = '(AggLet foo False (I32 2) (Let eval __cse_1 (ApplyAggOp AggOp () ((Ref foo))) (ApplyBinaryPrimOp `+` (Ref __cse_1) (Ref __cse_1))))'\n    assert expected == CSERenderer()(agglet)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "CSETests.test_refs",
+    "line": 683,
+    "body": "def test_refs(self):\n    table = ir.TableRange(10, 1)\n    ref = ir.Ref('row', table.typ.row_type)\n    x = ir.TableMapRows(table, ir.MakeStruct([('foo', ir.GetField(ref, 'idx')), ('bar', ir.GetField(ref, 'idx'))]))\n    expected = '(TableMapRows (TableRange 10 1) (MakeStruct (foo (GetField idx (Ref row))) (bar (GetField idx (Ref row)))))'\n    assert expected == CSERenderer()(x)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_literal_encodings",
+    "line": 728,
+    "body": "@pytest.mark.parametrize('value', [1, 5.0, 'foo', [1, 2, 3, 4], (5, 6, 7, 8), {'foo', 'bar', 'baz'}, {'a': {'b': 1}}, {'a': 1, 'b': 2}, {1: 'a', 2: 'b'}, {1: [], 2: [1, 2, 3, 4]}, hl.Call([0, 1]), hl.Call([1, 0], phased=True), hl.Call([2], phased=True), hl.Call([]), hl.Call([1, 1]), hl.Call([17495, 17495])])\ndef test_literal_encodings(value):\n    _assert_encoding_roundtrip(value)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_literal_ndarray_encodings",
+    "line": 742,
+    "body": "@pytest.mark.parametrize('value', [np.array([]), np.array([1]), np.array([1, 2, 3, 4]), np.array([[1, 2], [3, 4], [5, 6]]), np.array([[[[1]], [[2]]], [[[3]], [[4]]], [[[5]], [[6]]]])])\ndef test_literal_ndarray_encodings(value):\n    _assert_encoding_roundtrip(value)\n    _assert_encoding_roundtrip(value.T)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_decoding_multiple_dicts",
+    "line": 747,
+    "body": "def test_decoding_multiple_dicts():\n    dict = {0: 'a', 1: 'b', 2: 'c'}\n    dict2 = {0: 'x', 1: 'y', 2: 'z'}\n    ht = hl.utils.range_table(1).annotate(indices=hl.array([0, 1, 2]))\n    ht.select(a=ht.indices.map(lambda i: hl.struct(x=hl.dict(dict).get(i), y=hl.dict(dict2).get(i)))).collect()"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_locus_interval_encoding",
+    "line": 754,
+    "body": "def test_locus_interval_encoding():\n    start = hl.Locus(contig='chr1', position=10001, reference_genome='GRCh38')\n    end = hl.Locus(contig='chr1', position=11001, reference_genome='GRCh38')\n    interval = hl.Interval(start=start, end=end, includes_start=True, includes_end=False)\n    _assert_encoding_roundtrip(start)\n    _assert_encoding_roundtrip(end)\n    _assert_encoding_roundtrip(interval)"
+  },
+  {
+    "module": "test_ir.py",
+    "name": "test_very_large_ir_deserializes",
+    "line": 763,
+    "body": "def test_very_large_ir_deserializes():\n    large_list = [random.getrandbits(63) for _ in range(5000000)]\n    large_lit = hl.literal(large_list, hl.tarray(hl.tint64))\n    round_trip = hl.eval(large_lit)\n    assert large_list == round_trip"
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "module": "expr/test_math.py",
+    "name": "test_logit",
+    "line": 6,
+    "body": "def test_logit():\n    assert hl.eval(hl.logit(0.5)) == 0.0\n    assert hl.eval(hl.is_infinite(hl.logit(1.0)))\n    assert hl.eval(hl.is_nan(hl.logit(1.01)))\n    assert hl.eval(hl.logit(0.27)) == scsp.logit(0.27)"
+  },
+  {
+    "module": "expr/test_math.py",
+    "name": "test_expit",
+    "line": 13,
+    "body": "def test_expit():\n    assert hl.eval(hl.expit(0.0)) == 0.5\n    assert hl.eval(hl.expit(800)) == 1.0\n    assert hl.eval(hl.expit(-920)) == 0.0\n    assert hl.eval(hl.expit(0.75)) == scsp.expit(0.75)"
+  }
+]

@@ -1,0 +1,24 @@
+{
+  "module": "plot/test_plot.py",
+  "name": "test_manhattan",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "add_index",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/plot/test_plot.py\", line 57, in test_manhattan\n    ht = ht.add_index('idx')\n         ^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 406, in __getattr__\n    raise AttributeError(name)\nAttributeError: add_index\n"
+    }
+  ],
+  "setup_errors": [],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

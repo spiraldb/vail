@@ -1,0 +1,122 @@
+[
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_ld_score_univariate",
+    "line": 38,
+    "body": "@fails_service_backend()\n@fails_local_backend\ndef test_ld_score_univariate(self):\n    mt = self.get_ld_score_mt()\n    ht_univariate = hl.experimental.ld_score(entry_expr=mt.GT.n_alt_alleles(), locus_expr=mt.locus, radius=1.0, coord_expr=mt.cm_position)\n    univariate = ht_univariate.aggregate(hl.struct(chr20=hl.agg.filter((ht_univariate.locus.contig == '20') & (ht_univariate.locus.position == 82079), hl.agg.collect(ht_univariate.univariate))[0], chr22=hl.agg.filter((ht_univariate.locus.contig == '22') & (ht_univariate.locus.position == 16894090), hl.agg.collect(ht_univariate.univariate))[0], mean=hl.agg.mean(ht_univariate.univariate)))\n    self.assertAlmostEqual(univariate.chr20, 1.601, places=3)\n    self.assertAlmostEqual(univariate.chr22, 1.14, places=3)\n    self.assertAlmostEqual(univariate.mean, 3.507, places=3)"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_ld_score_annotated",
+    "line": 65,
+    "body": "@fails_service_backend()\n@fails_local_backend\n@test_timeout(local=6 * 60)\ndef test_ld_score_annotated(self):\n    mt = self.get_ld_score_mt()\n    ht_annotated = hl.experimental.ld_score(entry_expr=mt.GT.n_alt_alleles(), locus_expr=mt.locus, radius=1.0, coord_expr=mt.cm_position, annotation_exprs=[mt.binary, mt.continuous])\n    annotated = ht_annotated.aggregate(hl.struct(chr20=hl.struct(binary=hl.agg.filter((ht_annotated.locus.contig == '20') & (ht_annotated.locus.position == 82079), hl.agg.collect(ht_annotated.binary))[0], continuous=hl.agg.filter((ht_annotated.locus.contig == '20') & (ht_annotated.locus.position == 82079), hl.agg.collect(ht_annotated.continuous))[0]), chr22=hl.struct(binary=hl.agg.filter((ht_annotated.locus.contig == '22') & (ht_annotated.locus.position == 16894090), hl.agg.collect(ht_annotated.binary))[0], continuous=hl.agg.filter((ht_annotated.locus.contig == '22') & (ht_annotated.locus.position == 16894090), hl.agg.collect(ht_annotated.continuous))[0]), mean_stats=hl.struct(binary=hl.agg.mean(ht_annotated.binary), continuous=hl.agg.mean(ht_annotated.continuous))))\n    self.assertAlmostEqual(annotated.chr20.binary, 1.152, places=3)\n    self.assertAlmostEqual(annotated.chr20.continuous, 73.014, places=3)\n    self.assertAlmostEqual(annotated.chr22.binary, 1.107, places=3)\n    self.assertAlmostEqual(annotated.chr22.continuous, 102.174, places=3)\n    self.assertAlmostEqual(annotated.mean_stats.binary, 0.965, places=3)\n    self.assertAlmostEqual(annotated.mean_stats.continuous, 176.528, places=3)"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_plot_roc_curve",
+    "line": 111,
+    "body": "@skip_when_service_backend\n@test_timeout(local=8 * 60, batch=8 * 60)\ndef test_plot_roc_curve(self):\n    x = hl.utils.range_table(100).annotate(score1=hl.rand_norm(), score2=hl.rand_norm())\n    x = x.annotate(tp=hl.if_else(x.score1 > 0, hl.rand_bool(0.7), False), score3=x.score1 + hl.rand_norm())\n    ht = x.annotate(fp=hl.if_else(~x.tp, hl.rand_bool(0.2), False))\n    _, aucs = hl.experimental.plot_roc_curve(ht, ['score1', 'score2', 'score3'])"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_import_keyby_count_ldsc_lowered_shuffle",
+    "line": 117,
+    "body": "def test_import_keyby_count_ldsc_lowered_shuffle(self):\n    ht_scores = hl.import_table(doctest_resource('ld_score_regression.univariate_ld_scores.tsv'), key='SNP', types={'L2': hl.tfloat, 'BP': hl.tint})\n    ht_20160 = hl.import_table(doctest_resource('ld_score_regression.20160.sumstats.tsv'), key='SNP', types={'N': hl.tint, 'Z': hl.tfloat})\n    j1 = ht_scores[ht_20160['SNP']]\n    ht_20160 = ht_20160.annotate(ld_score=j1['L2'], locus=hl.locus(j1['CHR'], j1['BP']), alleles=hl.array([ht_20160['A2'], ht_20160['A1']]))\n    ht_20160 = ht_20160.key_by(ht_20160['locus'], ht_20160['alleles'])\n    assert ht_20160._force_count() == 151"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_ld_score_regression_1",
+    "line": 195,
+    "body": "@pytest.mark.unchecked_allocator\n@test_timeout(6 * 60, local=10 * 60, batch=10 * 60)\ndef test_ld_score_regression_1(self):\n    ht_50_irnt = self.get_ht_50_irnt()\n    ht_20160 = self.get_ht_20160()\n    ht = ht_50_irnt.union(ht_20160)\n    mt = ht.to_matrix_table(row_key=['locus', 'alleles'], col_key=['phenotype'], row_fields=['ld_score'], col_fields=[])\n    mt_tmp = new_temp_file()\n    mt.write(mt_tmp, overwrite=True)\n    mt = hl.read_matrix_table(mt_tmp)\n    ht_results = hl.experimental.ld_score_regression(weight_expr=mt['ld_score'], ld_score_expr=mt['ld_score'], chi_sq_exprs=mt['chi_squared'], n_samples_exprs=mt['n'], n_blocks=20, two_step_threshold=5, n_reference_panel_variants=1173569)\n    results = {x['phenotype']: {'mean_chi_sq': x['mean_chi_sq'], 'intercept_estimate': x['intercept']['estimate'], 'intercept_standard_error': x['intercept']['standard_error'], 'snp_heritability_estimate': x['snp_heritability']['estimate'], 'snp_heritability_standard_error': x['snp_heritability']['standard_error']} for x in ht_results.collect()}\n    self.assertAlmostEqual(results['50_irnt']['mean_chi_sq'], 3.4386, places=4)\n    self.assertAlmostEqual(results['50_irnt']['intercept_estimate'], 0.7727, places=4)\n    self.assertAlmostEqual(results['50_irnt']['intercept_standard_error'], 0.2461, places=4)\n    self.assertAlmostEqual(results['50_irnt']['snp_heritability_estimate'], 0.3845, places=4)\n    self.assertAlmostEqual(results['50_irnt']['snp_heritability_standard_error'], 0.1067, places=4)\n    self.assertAlmostEqual(results['20160']['mean_chi_sq'], 1.5209, places=4)\n    self.assertAlmostEqual(results['20160']['intercept_estimate'], 1.2109, places=4)\n    self.assertAlmostEqual(results['20160']['intercept_standard_error'], 0.2238, places=4)\n    self.assertAlmostEqual(results['20160']['snp_heritability_estimate'], 0.0486, places=4)\n    self.assertAlmostEqual(results['20160']['snp_heritability_standard_error'], 0.0416, places=4)"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_ld_score_regression_2",
+    "line": 243,
+    "body": "@pytest.mark.unchecked_allocator\n@test_timeout(6 * 60, local=10 * 60, batch=10 * 60)\ndef test_ld_score_regression_2(self):\n    ht_50_irnt = self.get_ht_50_irnt()\n    ht_20160 = self.get_ht_20160()\n    ht = ht_50_irnt.annotate(chi_squared_50_irnt=ht_50_irnt['chi_squared'], n_50_irnt=ht_50_irnt['n'], chi_squared_20160=ht_20160[ht_50_irnt.key]['chi_squared'], n_20160=ht_20160[ht_50_irnt.key]['n'])\n    ht_results = hl.experimental.ld_score_regression(weight_expr=ht['ld_score'], ld_score_expr=ht['ld_score'], chi_sq_exprs=[ht['chi_squared_50_irnt'], ht['chi_squared_20160']], n_samples_exprs=[ht['n_50_irnt'], ht['n_20160']], n_blocks=20, two_step_threshold=5, n_reference_panel_variants=1173569)\n    results = {x['phenotype']: {'mean_chi_sq': x['mean_chi_sq'], 'intercept_estimate': x['intercept']['estimate'], 'intercept_standard_error': x['intercept']['standard_error'], 'snp_heritability_estimate': x['snp_heritability']['estimate'], 'snp_heritability_standard_error': x['snp_heritability']['standard_error']} for x in ht_results.collect()}\n    self.assertAlmostEqual(results[0]['mean_chi_sq'], 3.4386, places=4)\n    self.assertAlmostEqual(results[0]['intercept_estimate'], 0.7727, places=4)\n    self.assertAlmostEqual(results[0]['intercept_standard_error'], 0.2461, places=4)\n    self.assertAlmostEqual(results[0]['snp_heritability_estimate'], 0.3845, places=4)\n    self.assertAlmostEqual(results[0]['snp_heritability_standard_error'], 0.1067, places=4)\n    self.assertAlmostEqual(results[1]['mean_chi_sq'], 1.5209, places=4)\n    self.assertAlmostEqual(results[1]['intercept_estimate'], 1.2109, places=4)\n    self.assertAlmostEqual(results[1]['intercept_standard_error'], 0.2238, places=4)\n    self.assertAlmostEqual(results[1]['snp_heritability_estimate'], 0.0486, places=4)\n    self.assertAlmostEqual(results[1]['snp_heritability_standard_error'], 0.0416, places=4)"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_sparse",
+    "line": 288,
+    "body": "@test_timeout(local=6 * 60)\ndef test_sparse(self):\n    expected_split_mt = hl.import_vcf(resource('sparse_split_test_b.vcf'))\n    unsplit_mt = hl.import_vcf(resource('sparse_split_test.vcf'), call_fields=['LGT', 'LPGT'])\n    mt = hl.experimental.sparse_split_multi(unsplit_mt).drop('a_index', 'was_split').select_entries(*expected_split_mt.entry.keys())\n    assert mt._same(expected_split_mt)"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_sparse_split_haploid",
+    "line": 298,
+    "body": "def test_sparse_split_haploid(self):\n    lines = [{'locus': hl.Locus(contig='Y', position=10000), 'alleles': ['A', 'C', 'T'], 'entries': [{'LGT': hl.Call([1]), 'LA': [0, 2], 'LPL': [100, 0]}]}, {'locus': hl.Locus(contig='Y', position=11000), 'alleles': ['A', 'AT', 'ATT', 'T'], 'entries': [{'LGT': hl.Call([2]), 'LA': [0, 2, 3], 'LPL': [100, 200, 0]}]}]\n    ht = hl.Table.parallelize(lines, key=['locus', 'alleles'])\n    ht = ht.annotate_globals(cols=[hl.Struct(s='S1')])\n    mt = ht._unlocalize_entries('entries', 'cols', ['s'])\n    mt = hl.experimental.sparse_split_multi(mt)\n    expected = [hl.Struct(locus=hl.Locus(contig='Y', position=10000, reference_genome='GRCh37'), alleles=['A', 'C'], a_index=1, was_split=True, s='S1', GT=hl.Call(alleles=[0], phased=False), PL=None), hl.Struct(locus=hl.Locus(contig='Y', position=10000, reference_genome='GRCh37'), alleles=['A', 'T'], a_index=2, was_split=True, s='S1', GT=hl.Call(alleles=[1], phased=False), PL=[100, 0]), hl.Struct(locus=hl.Locus(contig='Y', position=11000, reference_genome='GRCh37'), alleles=['A', 'AT'], a_index=1, was_split=True, s='S1', GT=hl.Call(alleles=[0], phased=False), PL=None), hl.Struct(locus=hl.Locus(contig='Y', position=11000, reference_genome='GRCh37'), alleles=['A', 'ATT'], a_index=2, was_split=True, s='S1', GT=hl.Call(alleles=[0], phased=False), PL=[0, 200]), hl.Struct(locus=hl.Locus(contig='Y', position=11000, reference_genome='GRCh37'), alleles=['A', 'T'], a_index=3, was_split=True, s='S1', GT=hl.Call(alleles=[1], phased=False), PL=[100, 0])]\n    result = mt.entries().collect()\n    assert expected == result"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_define_function",
+    "line": 365,
+    "body": "def test_define_function(self):\n    f1 = hl.experimental.define_function(lambda a, b: (a + 7) * b, hl.tint32, hl.tint32)\n    self.assertEqual(hl.eval(f1(1, 3)), 24)\n    f2 = hl.experimental.define_function(lambda a, b: (a + 7) * b, hl.tint32, hl.tint32)\n    self.assertEqual(hl.eval(f1(1, 3)), 24)\n    self.assertEqual(hl.eval(f2(1, 3)), 24)"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_pc_project",
+    "line": 374,
+    "body": "@fails_local_backend()\n@test_timeout(batch=8 * 60)\ndef test_pc_project(self):\n    mt = hl.balding_nichols_model(3, 100, 50)\n    _, _, loadings_ht = hl.hwe_normalized_pca(mt.GT, k=10, compute_loadings=True)\n    mt = mt.annotate_rows(af=hl.agg.mean(mt.GT.n_alt_alleles()) / 2)\n    loadings_ht = loadings_ht.annotate(af=mt.rows()[loadings_ht.key].af)\n    mt_to_project = hl.balding_nichols_model(3, 100, 50)\n    ht = hl.experimental.pc_project(mt_to_project.GT, loadings_ht.loadings, loadings_ht.af)\n    assert ht._force_count() == 100"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_mt_full_outer_join",
+    "line": 383,
+    "body": "def test_mt_full_outer_join(self):\n    mt1 = hl.utils.range_matrix_table(10, 10)\n    mt1 = mt1.annotate_cols(c1=hl.rand_unif(0, 1))\n    mt1 = mt1.annotate_rows(r1=hl.rand_unif(0, 1))\n    mt1 = mt1.annotate_entries(e1=hl.rand_unif(0, 1))\n    mt2 = hl.utils.range_matrix_table(10, 10)\n    mt2 = mt2.annotate_cols(c1=hl.rand_unif(0, 1))\n    mt2 = mt2.annotate_rows(r1=hl.rand_unif(0, 1))\n    mt2 = mt2.annotate_entries(e1=hl.rand_unif(0, 1))\n    mtj = hl.experimental.full_outer_join_mt(mt1, mt2)\n    assert mtj.aggregate_entries(hl.agg.all(mtj.left_entry == mt1.index_entries(mtj.row_key, mtj.col_key)))\n    assert mtj.aggregate_entries(hl.agg.all(mtj.right_entry == mt2.index_entries(mtj.row_key, mtj.col_key)))\n    mt2 = mt2.key_cols_by(new_col_key=5 - mt2.col_idx // 2)\n    mt1 = mt1.key_rows_by(new_row_key=5 - mt1.row_idx // 2)\n    mtj = hl.experimental.full_outer_join_mt(mt1, mt2)\n    assert mtj.count() == (15, 15)"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_mt_full_outer_join_self",
+    "line": 404,
+    "body": "def test_mt_full_outer_join_self(self):\n    mt = hl.import_vcf(resource('sample.vcf'))\n    jmt = hl.experimental.full_outer_join_mt(mt, mt)\n    assert jmt.filter_cols(hl.is_defined(jmt.left_col) & hl.is_defined(jmt.right_col)).count_cols() == mt.count_cols()\n    assert jmt.filter_rows(hl.is_defined(jmt.left_row) & hl.is_defined(jmt.right_row)).count_rows() == mt.count_rows()\n    assert jmt.filter_entries(hl.is_defined(jmt.left_entry) & hl.is_defined(jmt.right_entry)).entries().count() == mt.entries().count()"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_block_matrices_tofiles",
+    "line": 420,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_block_matrices_tofiles(self):\n    data = [np.random.rand(11 * 12), np.random.rand(5 * 17)]\n    bms = [hl.linalg.BlockMatrix._create(11, 12, data[0].tolist(), block_size=4), hl.linalg.BlockMatrix._create(5, 17, data[1].tolist(), block_size=8)]\n    with hl.TemporaryDirectory() as prefix:\n        hl.experimental.block_matrices_tofiles(bms, f'{prefix}/files')\n        for i in range(len(bms)):\n            a = data[i]\n            a2 = np.frombuffer(hl.current_backend().fs.open(f'{prefix}/files/{i}', mode='rb').read())\n            self.assertTrue(np.array_equal(a, a2))"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_export_block_matrices",
+    "line": 435,
+    "body": "@fails_service_backend()\n@fails_local_backend()\ndef test_export_block_matrices(self):\n    data = [np.random.rand(11 * 12), np.random.rand(5 * 17)]\n    arrs = [data[0].reshape((11, 12)), data[1].reshape((5, 17))]\n    bms = [hl.linalg.BlockMatrix._create(11, 12, data[0].tolist(), block_size=4), hl.linalg.BlockMatrix._create(5, 17, data[1].tolist(), block_size=8)]\n    with hl.TemporaryDirectory() as prefix:\n        hl.experimental.export_block_matrices(bms, f'{prefix}/files')\n        for i in range(len(bms)):\n            a = arrs[i]\n            a2 = np.loadtxt(hl.current_backend().fs.open(f'{prefix}/files/{i}.tsv'))\n            self.assertTrue(np.array_equal(a, a2))\n    with hl.TemporaryDirectory() as prefix2:\n        custom_names = ['nameA', 'inner/nameB.tsv']\n        hl.experimental.export_block_matrices(bms, f'{prefix2}/files', custom_filenames=custom_names)\n        for i in range(len(bms)):\n            a = arrs[i]\n            a2 = np.loadtxt(hl.current_backend().fs.open(f'{prefix2}/files/{custom_names[i]}'))\n            self.assertTrue(np.array_equal(a, a2))"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_trivial_loop",
+    "line": 457,
+    "body": "def test_trivial_loop(self):\n    assert hl.eval(hl.experimental.loop(lambda recur: 0, hl.tint32)) == 0"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_loop",
+    "line": 460,
+    "body": "def test_loop(self):\n\n    def triangle_with_ints(n):\n        return hl.experimental.loop(lambda f, x, c: hl.if_else(x > 0, f(x - 1, c + x), c), hl.tint32, n, 0)\n\n    def triangle_with_tuple(n):\n        return hl.experimental.loop(lambda f, xc: hl.if_else(xc[0] > 0, f((xc[0] - 1, xc[1] + xc[0])), xc[1]), hl.tint32, (n, 0))\n    for triangle in [triangle_with_ints, triangle_with_tuple]:\n        assert_evals_to(triangle(20), sum(range(21)))\n        assert_evals_to(triangle(0), 0)\n        assert_evals_to(triangle(-1), 0)\n\n    def fails_typecheck(regex, f):\n        with self.assertRaisesRegex(TypeError, regex):\n            hl.eval(hl.experimental.loop(f, hl.tint32, 1))\n    fails_typecheck('outside of tail position', lambda f, x: x + f(x))\n    fails_typecheck('wrong number of arguments', lambda f, x: f(x, x + 1))\n    fails_typecheck('bound value', lambda f, x: hl.bind(lambda x: x, f(x)))\n    fails_typecheck('branch condition', lambda f, x: hl.if_else(f(x) == 0, x, 1))\n    fails_typecheck('Type error', lambda f, x: hl.if_else(x == 0, f('foo'), 1))"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_nested_loops",
+    "line": 484,
+    "body": "def test_nested_loops(self):\n\n    def triangle_loop(n, add_f):\n        recur = lambda f, x, c: hl.if_else(x <= n, f(x + 1, add_f(x, c)), c)\n        return hl.experimental.loop(recur, hl.tint32, 0, 0)\n    assert_evals_to(triangle_loop(5, lambda x, c: c + x), 15)\n    assert_evals_to(triangle_loop(5, lambda x, c: c + triangle_loop(x, lambda x2, c2: c2 + x2)), 15 + 10 + 6 + 3 + 1)\n    n1 = 5\n    calls_recur_from_nested_loop = hl.experimental.loop(lambda f, x1, c1: hl.if_else(x1 <= n1, hl.experimental.loop(lambda f2, x2, c2: hl.if_else(x2 <= x1, f2(x2 + 1, c2 + x2), f(x1 + 1, c1 + c2)), 'int32', 0, 0), c1), 'int32', 0, 0)\n    assert_evals_to(calls_recur_from_nested_loop, 15 + 10 + 6 + 3 + 1)"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_loop_errors",
+    "line": 510,
+    "body": "def test_loop_errors(self):\n    with pytest.raises(TypeError, match='requested type ndarray<int32, 2> does not match inferred type ndarray<float64, 2>'):\n        hl.experimental.loop(lambda f, my_nd: hl.if_else(my_nd[0, 0] == 1000, my_nd, f(my_nd + 1)), hl.tndarray(hl.tint32, 2), hl.nd.zeros((20, 10), hl.tfloat64))"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_loop_with_struct_of_strings",
+    "line": 520,
+    "body": "def test_loop_with_struct_of_strings(self):\n\n    def loop_func(recur_f, my_struct):\n        return hl.if_else(hl.len(my_struct.s1) > hl.len(my_struct.s2), my_struct, recur_f(hl.struct(s1=my_struct.s1 + my_struct.s2[-1], s2=my_struct.s2[:-1])))\n    initial_struct = hl.struct(s1='a', s2='gfedcb')\n    assert hl.eval(hl.experimental.loop(loop_func, hl.tstruct(s1=hl.tstr, s2=hl.tstr), initial_struct)) == hl.Struct(s1='abcd', s2='gfe')"
+  },
+  {
+    "module": "experimental/test_experimental.py",
+    "name": "Tests.test_loop_memory",
+    "line": 533,
+    "body": "def test_loop_memory(self):\n\n    def foo(recur, arr, idx):\n        return hl.if_else(idx > 10, arr, recur(arr.append(hl.str(idx)), idx + 1))\n    assert hl.eval(hl.experimental.loop(foo, hl.tarray(hl.tstr), hl.literal(['foo']), 1)) == ['foo', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']"
+  }
+]

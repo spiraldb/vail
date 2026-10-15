@@ -1,0 +1,28 @@
+{
+  "module": "fs/test_worker_driver_fs.py",
+  "name": "test_requester_pays_write_with_project",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'secret_alnum_string' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/fs/test_worker_driver_fs.py\", line 40, in test_requester_pays_write_with_project\n    random_filename = 'gs://hail-test-requester-pays-fds32/test_requester_pays_on_worker_driver_' + secret_alnum_string(\n                                                                                                    ^^^^^^^^^^^^^^^^^^^\nNameError: name 'secret_alnum_string' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'aiohttp'",
+    "No module named 'aiohttp'",
+    "No module named 'rich'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

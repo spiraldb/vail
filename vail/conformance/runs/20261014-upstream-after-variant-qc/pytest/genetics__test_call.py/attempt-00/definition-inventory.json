@@ -1,0 +1,38 @@
+[
+  {
+    "module": "genetics/test_call.py",
+    "name": "Tests.test_hom_ref",
+    "line": 8,
+    "body": "def test_hom_ref(self):\n    c_hom_ref = Call([0, 0])\n    self.assertEqual(c_hom_ref.alleles, [0, 0])\n    self.assertEqual(c_hom_ref.ploidy, 2)\n    self.assertFalse(c_hom_ref.phased)\n    self.assertFalse(c_hom_ref.is_haploid())\n    self.assertTrue(c_hom_ref.is_diploid())\n    self.assertEqual(c_hom_ref.n_alt_alleles(), 0)\n    self.assertTrue(c_hom_ref.one_hot_alleles(2) == [2, 0])\n    self.assertTrue(c_hom_ref.is_hom_ref())\n    self.assertFalse(c_hom_ref.is_het())\n    self.assertFalse(c_hom_ref.is_hom_var())\n    self.assertFalse(c_hom_ref.is_non_ref())\n    self.assertFalse(c_hom_ref.is_het_non_ref())\n    self.assertFalse(c_hom_ref.is_het_ref())\n    self.assertTrue(c_hom_ref.unphased_diploid_gt_index() == 0)"
+  },
+  {
+    "module": "genetics/test_call.py",
+    "name": "Tests.test_het",
+    "line": 25,
+    "body": "def test_het(self):\n    c_het_phased = Call([1, 0], phased=True)\n    self.assertEqual(c_het_phased.alleles, [1, 0])\n    self.assertEqual(c_het_phased.ploidy, 2)\n    self.assertTrue(c_het_phased.phased)\n    self.assertFalse(c_het_phased.is_haploid())\n    self.assertTrue(c_het_phased.is_diploid())\n    self.assertEqual(c_het_phased.n_alt_alleles(), 1)\n    self.assertTrue(c_het_phased.one_hot_alleles(2) == [1, 1])\n    self.assertFalse(c_het_phased.is_hom_ref())\n    self.assertTrue(c_het_phased.is_het())\n    self.assertFalse(c_het_phased.is_hom_var())\n    self.assertTrue(c_het_phased.is_non_ref())\n    self.assertFalse(c_het_phased.is_het_non_ref())\n    self.assertTrue(c_het_phased.is_het_ref())"
+  },
+  {
+    "module": "genetics/test_call.py",
+    "name": "Tests.test_hom_var",
+    "line": 41,
+    "body": "def test_hom_var(self):\n    c_hom_var = Call([1, 1])\n    self.assertEqual(c_hom_var.alleles, [1, 1])\n    self.assertEqual(c_hom_var.ploidy, 2)\n    self.assertFalse(c_hom_var.phased)\n    self.assertFalse(c_hom_var.is_haploid())\n    self.assertTrue(c_hom_var.is_diploid())\n    self.assertEqual(c_hom_var.n_alt_alleles(), 2)\n    self.assertTrue(c_hom_var.one_hot_alleles(2) == [0, 2])\n    self.assertFalse(c_hom_var.is_hom_ref())\n    self.assertFalse(c_hom_var.is_het())\n    self.assertTrue(c_hom_var.is_hom_var())\n    self.assertTrue(c_hom_var.is_non_ref())\n    self.assertFalse(c_hom_var.is_het_non_ref())\n    self.assertFalse(c_hom_var.is_het_ref())\n    self.assertTrue(c_hom_var.unphased_diploid_gt_index() == 2)"
+  },
+  {
+    "module": "genetics/test_call.py",
+    "name": "Tests.test_haploid",
+    "line": 58,
+    "body": "def test_haploid(self):\n    c_haploid = Call([2], phased=True)\n    self.assertEqual(c_haploid.alleles, [2])\n    self.assertEqual(c_haploid.ploidy, 1)\n    self.assertTrue(c_haploid.phased)\n    self.assertTrue(c_haploid.is_haploid())\n    self.assertFalse(c_haploid.is_diploid())\n    self.assertEqual(c_haploid.n_alt_alleles(), 1)\n    self.assertTrue(c_haploid.one_hot_alleles(3) == [0, 0, 1])\n    self.assertFalse(c_haploid.is_hom_ref())\n    self.assertFalse(c_haploid.is_het())\n    self.assertTrue(c_haploid.is_hom_var())\n    self.assertTrue(c_haploid.is_non_ref())\n    self.assertFalse(c_haploid.is_het_non_ref())\n    self.assertFalse(c_haploid.is_het_ref())"
+  },
+  {
+    "module": "genetics/test_call.py",
+    "name": "Tests.test_zeroploid",
+    "line": 74,
+    "body": "def test_zeroploid(self):\n    c_zeroploid = Call([])\n    self.assertEqual(c_zeroploid.alleles, [])\n    self.assertEqual(c_zeroploid.ploidy, 0)\n    self.assertFalse(c_zeroploid.phased)\n    self.assertFalse(c_zeroploid.is_haploid())\n    self.assertFalse(c_zeroploid.is_diploid())\n    self.assertEqual(c_zeroploid.n_alt_alleles(), 0)\n    self.assertTrue(c_zeroploid.one_hot_alleles(3) == [0, 0, 0])\n    self.assertFalse(c_zeroploid.is_hom_ref())\n    self.assertFalse(c_zeroploid.is_het())\n    self.assertFalse(c_zeroploid.is_hom_var())\n    self.assertFalse(c_zeroploid.is_non_ref())\n    self.assertFalse(c_zeroploid.is_het_non_ref())\n    self.assertFalse(c_zeroploid.is_het_ref())\n    self.assertRaisesRegex(NotImplementedError, 'Calls with greater than 2 alleles are not supported.', Call, [1, 1, 1, 1])"
+  },
+  {
+    "module": "genetics/test_call.py",
+    "name": "test_call_rich_comparison",
+    "line": 95,
+    "body": "def test_call_rich_comparison():\n    val = Call([0, 0])\n    expr = hl.call(0, 0)\n    assert hl.eval(val == expr)\n    assert hl.eval(expr == val)"
+  }
+]

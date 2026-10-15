@@ -1,0 +1,38 @@
+[
+  {
+    "module": "utils/test_pickle.py",
+    "name": "test_simple_struct_pickle",
+    "line": 8,
+    "body": "def test_simple_struct_pickle():\n    x = hl.Struct(key='group', value='adj')\n    assert x == pickle.loads(pickle.dumps(x))"
+  },
+  {
+    "module": "utils/test_pickle.py",
+    "name": "test_simple_struct_dill",
+    "line": 13,
+    "body": "def test_simple_struct_dill():\n    x = hl.Struct(key='group', value='adj')\n    assert x == dill.loads(dill.dumps(x))"
+  },
+  {
+    "module": "utils/test_pickle.py",
+    "name": "test_frozendict_pickle",
+    "line": 18,
+    "body": "def test_frozendict_pickle():\n    x = {hl.utils.frozendict({'abc': 123, 'def': 'hello'}): 10}\n    assert x == pickle.loads(pickle.dumps(x))"
+  },
+  {
+    "module": "utils/test_pickle.py",
+    "name": "test_frozendict_dill",
+    "line": 23,
+    "body": "def test_frozendict_dill():\n    x = {hl.utils.frozendict({'abc': 123, 'def': 'hello'}): 10}\n    assert x == dill.loads(dill.dumps(x))"
+  },
+  {
+    "module": "utils/test_pickle.py",
+    "name": "test_locus_pickle",
+    "line": 28,
+    "body": "def test_locus_pickle():\n    x = hl.Locus('1', 123)\n    assert x == pickle.loads(pickle.dumps(x))"
+  },
+  {
+    "module": "utils/test_pickle.py",
+    "name": "test_locus_dill",
+    "line": 33,
+    "body": "def test_locus_dill():\n    x = hl.Locus('1', 123)\n    assert x == dill.loads(dill.dumps(x))"
+  }
+]

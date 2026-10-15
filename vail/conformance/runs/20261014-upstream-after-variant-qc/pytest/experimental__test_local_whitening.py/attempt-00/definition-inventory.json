@@ -1,0 +1,14 @@
+[
+  {
+    "module": "experimental/test_local_whitening.py",
+    "name": "test_local_whitening",
+    "line": 34,
+    "body": "@test_timeout(local=5 * 60, batch=12 * 60)\ndef test_local_whitening():\n    run_local_whitening_test(vec_size=100, num_rows=10000, chunk_size=32, window_size=64, partition_size=32 * 40, initial_num_partitions=50)"
+  },
+  {
+    "module": "experimental/test_local_whitening.py",
+    "name": "test_local_whitening_singleton_final_partition",
+    "line": 41,
+    "body": "@test_timeout(local=5 * 60, batch=12 * 60)\ndef test_local_whitening_singleton_final_partition():\n    run_local_whitening_test(vec_size=100, num_rows=32 * 40 * 8 + 1, chunk_size=32, window_size=64, partition_size=32 * 40, initial_num_partitions=50)"
+  }
+]

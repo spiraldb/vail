@@ -1,0 +1,42 @@
+.FFFF                                                                    [100%]
+=================================== FAILURES ===================================
+__________________________ test_ibd_default_arguments __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py:58: in test_ibd_default_arguments
+    plink_results = plinkify(ds)
+                    ^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py:24: in plinkify
+    local_tmpdir = utils.new_local_temp_dir()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.utils' has no attribute 'new_local_temp_dir'. Did you mean: 'new_local_temp_file'?
+_______________________________ test_ibd_0_and_1 _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py:76: in test_ibd_0_and_1
+    plink_results = plinkify(ds, min=0.0, max=1.0)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py:24: in plinkify
+    local_tmpdir = utils.new_local_temp_dir()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.utils' has no attribute 'new_local_temp_dir'. Did you mean: 'new_local_temp_file'?
+________________ test_ibd_does_not_error_with_dummy_maf_float64 ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py:94: in test_ibd_does_not_error_with_dummy_maf_float64
+    hl.identity_by_descent(ds, ds['dummy_maf'], min=0.0, max=1.0)
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'identity_by_descent'
+________________ test_ibd_does_not_error_with_dummy_maf_float32 ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py:101: in test_ibd_does_not_error_with_dummy_maf_float32
+    hl.identity_by_descent(ds, hl.float32(ds['dummy_maf']), min=0.0, max=1.0)
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'identity_by_descent'
+=============================== warnings summary ===============================
+test_identity_by_descent.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_identity_by_descent.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py::test_ibd_default_arguments
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py::test_ibd_0_and_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py::test_ibd_does_not_error_with_dummy_maf_float64
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-jckcjkbb/upstream_hail/methods/relatedness/test_identity_by_descent.py::test_ibd_does_not_error_with_dummy_maf_float32
+4 failed, 1 passed, 1 warning in 3.35s

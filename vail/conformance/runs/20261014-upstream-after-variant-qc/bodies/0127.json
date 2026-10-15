@@ -1,0 +1,28 @@
+{
+  "module": "methods/test_qc.py",
+  "name": "Tests.test_vep_grch38_against_dataproc",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "compressed text IO is not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/methods/test_qc.py\", line 469, in test_vep_grch38_against_dataproc\n    dataproc_result = hl.import_table(\n                      ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 139, in import_table\n    paths = _paths(paths)\n            ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 34, in _paths\n    path = _local_path(path)\n           ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 26, in _local_path\n    raise NotImplementedError('compressed text IO is not implemented')\nNotImplementedError: compressed text IO is not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'",
+    "No module named 'vail.methods'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

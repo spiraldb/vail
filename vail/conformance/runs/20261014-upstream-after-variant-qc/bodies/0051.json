@@ -1,0 +1,28 @@
+{
+  "module": "expr/test_types.py",
+  "name": "Tests.test_rename_not_unique",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'tstruct' object has no attribute '_rename'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/expr/test_types.py\", line 117, in test_rename_not_unique\n    hl.tstruct(a=hl.tbool, b=hl.tint32, c=hl.tint32)._rename({'b': 'x', 'c': 'x'})\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'tstruct' object has no attribute '_rename'\n"
+    }
+  ],
+  "setup_errors": [
+    "module 'vail.expr' has no attribute 'coercer_from_dtype'",
+    "module 'vail.types' has no attribute 'HailType'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

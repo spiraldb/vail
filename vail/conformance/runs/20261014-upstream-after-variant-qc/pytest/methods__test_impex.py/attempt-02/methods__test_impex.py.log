@@ -1,0 +1,29 @@
+........F....F                                                           [100%]
+=================================== FAILURES ===================================
+_ VCFTests.test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements _
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9efdla51/upstream_hail/methods/test_impex.py:133: in test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements
+    mt._force_count_rows()
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:1194: in _force_count_rows
+    return self._mir.core._force_count()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1254: in _force_count
+    return self._native.force_count()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/missingInfoArray.vcf:15: Missing value in INFO array. Use 'hl.import_vcf(..., array_elements_required=False)'.
+__________________ VCFTests.test_import_vcf_skip_invalid_loci __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9efdla51/upstream_hail/methods/test_impex.py:157: in test_import_vcf_skip_invalid_loci
+    hl.import_vcf(resource('skip_invalid_loci.vcf')).count()
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:1191: in count
+    return self.count_rows(), self.count_cols()
+           ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py:1170: in count_rows
+    return self._mir.core.count()
+           ^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1251: in count
+    return self._native.count()
+           ^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/skip_invalid_loci.vcf:89: Invalid locus 0:1 for reference GRCh37
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9efdla51/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9efdla51/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci
+2 failed, 12 passed, 187 deselected in 0.89s

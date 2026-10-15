@@ -1,0 +1,23 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_scan_tail",
+  "variants": [
+    {
+      "status": "passed",
+      "parameters": {}
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "passed"
+}

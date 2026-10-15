@@ -1,0 +1,28 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_group_aggregate_by_key",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "AttributeError",
+      "error": "'GroupedTable' object has no attribute '_set_buffer_size'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/table/test_table.py\", line 298, in test_group_aggregate_by_key\n    r1 = ht.group_by(k=ht.idx % 5)._set_buffer_size(3).aggregate(n=hl.agg.count())\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'GroupedTable' object has no attribute '_set_buffer_size'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,27 @@
+{
+  "module": "table/test_table.py",
+  "name": "test_literal_of_pandas_NA_and_numpy_int64",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "cannot infer a Vail type for NAType",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/table/test_table.py\", line 2260, in test_literal_of_pandas_NA_and_numpy_int64\n    hl.eval(hl.literal(x))\n            ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py\", line 906, in literal\n    dtype = infer_type(value)\n            ^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 599, in infer_type\n    types = [infer_type(x) for x in value if x is not None]\n             ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py\", line 622, in infer_type\n    raise TypeError(f\"cannot infer a Vail type for {type(value).__name__}\")\nTypeError: cannot infer a Vail type for NAType\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

@@ -1,0 +1,28 @@
+{
+  "module": "methods/test_qc.py",
+  "name": "Tests.test_vep_grch38_with_large_positions",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "BGZF and gzip text scans are not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/methods/test_qc.py\", line 523, in test_vep_grch38_with_large_positions\n    bad_variants = hl.import_table(\n                   ^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 142, in import_table\n    table = import_lines(paths, force_bgz=force_bgz, force=force)\n            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 70, in import_lines\n    raise NotImplementedError('BGZF and gzip text scans are not implemented')\nNotImplementedError: BGZF and gzip text scans are not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'",
+    "No module named 'vail.methods'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

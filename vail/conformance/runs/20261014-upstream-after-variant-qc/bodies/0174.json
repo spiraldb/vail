@@ -1,0 +1,28 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_errors",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "TypeError",
+      "error": "Table is immutable",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/table/test_table.py\", line 432, in test_errors\n    self.assertRaises(NotImplementedError, f)\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 778, in assertRaises\n    return context.handle('assertRaises', args, kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py\", line 238, in handle\n    callable_obj(*args, **kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/table/test_table.py\", line 430, in f\n    kt.a = 5\n    ^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 256, in __setattr__\n    raise TypeError(\"Table is immutable\")\nTypeError: Table is immutable\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

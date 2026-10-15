@@ -1,0 +1,28 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_export_parallel_manifest",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "unsupported",
+      "phase": "body",
+      "error_type": "NotImplementedError",
+      "error": "types files and parallel text export are not implemented",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/table/test_table.py\", line 1063, in test_export_parallel_manifest\n    t.export(tmp_file, parallel='separate_header')\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 498, in export\n    return export(self, output, types_file, header, parallel, delimiter)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/text.py\", line 232, in export\n    raise NotImplementedError('types files and parallel text export are not implemented')\nNotImplementedError: types files and parallel text export are not implemented\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

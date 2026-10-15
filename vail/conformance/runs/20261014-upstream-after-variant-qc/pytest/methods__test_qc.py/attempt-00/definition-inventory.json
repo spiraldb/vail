@@ -1,0 +1,134 @@
+[
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_sample_qc",
+    "line": 41,
+    "body": "@pytest.mark.backend('batch')\ndef test_sample_qc(self):\n    data = [{'v': '1:1:A:T', 's': '1', 'GT': hl.Call([0, 0]), 'GQ': 10, 'DP': 0}, {'v': '1:2:A:T,C', 's': '1', 'GT': hl.Call([1]), 'GQ': 15, 'DP': 5}, {'v': '1:3:A:G,C', 's': '1', 'GT': hl.Call([2, 2]), 'GQ': 10, 'DP': 4}, {'v': '1:4:G:A', 's': '1', 'GT': hl.Call([0, 1]), 'GQ': None, 'DP': 5}, {'v': '1:5:C:CG', 's': '1', 'GT': hl.Call([1, 1]), 'GQ': 20, 'DP': 3}, {'v': '1:6:C:A', 's': '1', 'GT': None, 'GQ': 0, 'DP': None}]\n    ht = hl.Table.parallelize(data, hl.dtype('struct{v: str, s: str, GT: call, GQ: int, DP: int}'))\n    ht = ht.transmute(**hl.parse_variant(ht.v))\n    mt = ht.to_matrix_table(['locus', 'alleles'], ['s'])\n    mt = hl.sample_qc(mt, 'sqc')\n    r = mt.cols().select('sqc').collect()\n    self.assertAlmostEqual(r[0].sqc.gq_stats.mean, 11)\n    self.assertAlmostEqual(r[0].sqc.gq_stats.stdev, 6.6332495807)\n    self.assertAlmostEqual(r[0].sqc.gq_stats.min, 0)\n    self.assertAlmostEqual(r[0].sqc.gq_stats.max, 20)\n    self.assertAlmostEqual(r[0].sqc.dp_stats.mean, 3.399999999)\n    self.assertAlmostEqual(r[0].sqc.dp_stats.stdev, 1.854723699)\n    self.assertAlmostEqual(r[0].sqc.dp_stats.min, 0)\n    self.assertAlmostEqual(r[0].sqc.dp_stats.max, 5)\n    self.assertAlmostEqual(r[0].sqc.call_rate, 0.8333333333)\n    self.assertEqual(r[0].sqc.n_called, 5)\n    self.assertEqual(r[0].sqc.n_not_called, 1)\n    self.assertEqual(r[0].sqc.n_hom_ref, 1)\n    self.assertEqual(r[0].sqc.n_het, 1)\n    self.assertEqual(r[0].sqc.n_hom_var, 3)\n    self.assertEqual(r[0].sqc.n_insertion, 2)\n    self.assertEqual(r[0].sqc.n_deletion, 0)\n    self.assertEqual(r[0].sqc.n_singleton, 2)\n    self.assertEqual(r[0].sqc.n_transition, 1)\n    self.assertEqual(r[0].sqc.n_transversion, 3)\n    self.assertEqual(r[0].sqc.n_star, 0)\n    self.assertEqual(r[0].sqc.n_non_ref, 4)\n    self.assertAlmostEqual(r[0].sqc.r_ti_tv, 0.333333333)\n    self.assertAlmostEqual(r[0].sqc.r_het_hom_var, 0.3333333333)\n    self.assertAlmostEqual(r[0].sqc.r_insertion_deletion, None)"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_variant_qc",
+    "line": 83,
+    "body": "@pytest.mark.backend('batch')\ndef test_variant_qc(self):\n    data = [{'v': '1:1:A:T', 's': '1', 'GT': hl.Call([0, 0]), 'GQ': 10, 'DP': 0}, {'v': '1:1:A:T', 's': '2', 'GT': hl.Call([1, 1]), 'GQ': 10, 'DP': 5}, {'v': '1:1:A:T', 's': '3', 'GT': hl.Call([0, 1]), 'GQ': 11, 'DP': 100}, {'v': '1:1:A:T', 's': '4', 'GT': None, 'GQ': None, 'DP': 100}, {'v': '1:2:A:T,C', 's': '1', 'GT': hl.Call([1, 2]), 'GQ': 10, 'DP': 5}, {'v': '1:2:A:T,C', 's': '2', 'GT': hl.Call([2, 2]), 'GQ': 10, 'DP': 5}, {'v': '1:2:A:T,C', 's': '3', 'GT': hl.Call([0, 1]), 'GQ': 10, 'DP': 5}, {'v': '1:2:A:T,C', 's': '4', 'GT': hl.Call([1, 1]), 'GQ': 10, 'DP': 5}]\n    ht = hl.Table.parallelize(data, hl.dtype('struct{v: str, s: str, GT: call, GQ: int, DP: int}'))\n    ht = ht.transmute(**hl.parse_variant(ht.v))\n    mt = ht.to_matrix_table(['locus', 'alleles'], ['s'])\n    mt = hl.variant_qc(mt, 'vqc')\n    r = mt.rows().collect()\n    self.assertEqual(r[0].vqc.AF, [0.5, 0.5])\n    self.assertEqual(r[0].vqc.AC, [3, 3])\n    self.assertEqual(r[0].vqc.AN, 6)\n    self.assertEqual(r[0].vqc.homozygote_count, [1, 1])\n    self.assertEqual(r[0].vqc.n_called, 3)\n    self.assertEqual(r[0].vqc.n_not_called, 1)\n    self.assertEqual(r[0].vqc.call_rate, 0.75)\n    self.assertEqual(r[0].vqc.n_het, 1)\n    self.assertEqual(r[0].vqc.n_non_ref, 2)\n    self.assertEqual(r[0].vqc.het_freq_hwe, 0.6)\n    self.assertEqual(r[0].vqc.p_value_hwe, 0.7)\n    self.assertEqual(r[0].vqc.p_value_excess_het, 0.7000000000000001)\n    self.assertEqual(r[0].vqc.dp_stats.min, 0)\n    self.assertEqual(r[0].vqc.dp_stats.max, 100)\n    self.assertEqual(r[0].vqc.dp_stats.mean, 51.25)\n    self.assertAlmostEqual(r[0].vqc.dp_stats.stdev, 48.782040752719645)\n    self.assertEqual(r[0].vqc.gq_stats.min, 10)\n    self.assertEqual(r[0].vqc.gq_stats.max, 11)\n    self.assertAlmostEqual(r[0].vqc.gq_stats.mean, 10.333333333333334)\n    self.assertAlmostEqual(r[0].vqc.gq_stats.stdev, 0.4714045207910317)\n    self.assertEqual(r[1].vqc.AF, [0.125, 0.5, 0.375])\n    self.assertEqual(r[1].vqc.AC, [1, 4, 3])\n    self.assertEqual(r[1].vqc.AN, 8)\n    self.assertEqual(r[1].vqc.homozygote_count, [0, 1, 1])\n    self.assertEqual(r[1].vqc.n_called, 4)\n    self.assertEqual(r[1].vqc.n_not_called, 0)\n    self.assertEqual(r[1].vqc.call_rate, 1.0)\n    self.assertEqual(r[1].vqc.n_het, 2)\n    self.assertEqual(r[1].vqc.n_non_ref, 4)\n    self.assertEqual(r[1].vqc.p_value_hwe, None)\n    self.assertEqual(r[1].vqc.p_value_excess_het, None)\n    self.assertEqual(r[1].vqc.het_freq_hwe, None)\n    self.assertEqual(r[1].vqc.dp_stats.min, 5)\n    self.assertEqual(r[1].vqc.dp_stats.max, 5)\n    self.assertEqual(r[1].vqc.dp_stats.mean, 5)\n    self.assertEqual(r[1].vqc.dp_stats.stdev, 0.0)\n    self.assertEqual(r[1].vqc.gq_stats.min, 10)\n    self.assertEqual(r[1].vqc.gq_stats.max, 10)\n    self.assertEqual(r[1].vqc.gq_stats.mean, 10)\n    self.assertEqual(r[1].vqc.gq_stats.stdev, 0)"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_variant_qc_alleles_field",
+    "line": 143,
+    "body": "def test_variant_qc_alleles_field(self):\n    mt = hl.balding_nichols_model(1, 1, 1)\n    mt = mt.key_rows_by().drop('alleles')\n    with pytest.raises(ValueError, match=\"Method 'variant_qc' requires a field 'alleles' \\\\(type 'array<str>'\\\\).*\"):\n        hl.variant_qc(mt).variant_qc.collect()\n    mt = hl.balding_nichols_model(1, 1, 1)\n    mt = mt.key_rows_by().drop('locus')\n    hl.variant_qc(mt).variant_qc.collect()"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_concordance",
+    "line": 156,
+    "body": "@test_timeout(batch=5 * 60)\ndef test_concordance(self):\n    dataset = get_dataset()\n    glob_conc, cols_conc, rows_conc = hl.concordance(dataset, dataset)\n    self.assertEqual(sum([sum(glob_conc[i]) for i in range(5)]), dataset.count_rows() * dataset.count_cols())\n    counts = dataset.aggregate_entries(hl.Struct(n_het=agg.filter(dataset.GT.is_het(), agg.count()), n_hom_ref=agg.filter(dataset.GT.is_hom_ref(), agg.count()), n_hom_var=agg.filter(dataset.GT.is_hom_var(), agg.count()), nNoCall=agg.filter(hl.is_missing(dataset.GT), agg.count())))\n    self.assertEqual(glob_conc[0][0], 0)\n    self.assertEqual(glob_conc[1][1], counts.nNoCall)\n    self.assertEqual(glob_conc[2][2], counts.n_hom_ref)\n    self.assertEqual(glob_conc[3][3], counts.n_het)\n    self.assertEqual(glob_conc[4][4], counts.n_hom_var)\n    [self.assertEqual(glob_conc[i][j], 0) for i in range(5) for j in range(5) if i != j]\n    self.assertTrue(cols_conc.all(hl.sum(hl.flatten(cols_conc.concordance)) == dataset.count_rows()))\n    self.assertTrue(rows_conc.all(hl.sum(hl.flatten(rows_conc.concordance)) == dataset.count_cols()))\n    with hl.TemporaryDirectory(ensure_exists=False) as outfile:\n        cols_conc.write(outfile, overwrite=True)\n        rows_conc.write(outfile, overwrite=True)"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_concordance_n_discordant_1",
+    "line": 186,
+    "body": "@test_timeout(local=3 * 60)\ndef test_concordance_n_discordant_1(self):\n    dataset = get_dataset()\n    _, cols_conc, _ = hl.concordance(dataset, dataset)\n    assert cols_conc.aggregate(hl.agg.count_where(cols_conc.n_discordant != 0)) == 0"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_concordance_n_discordant_2",
+    "line": 192,
+    "body": "@test_timeout(local=3 * 60)\ndef test_concordance_n_discordant_2(self):\n    rows1 = [hl.Struct(**{'locus': hl.Locus('1', 100), 'alleles': ['A', 'T'], 's': '1', 'GT': hl.Call([0, 0])}), hl.Struct(**{'locus': hl.Locus('1', 100), 'alleles': ['A', 'T'], 's': '2', 'GT': hl.Call([0, 0])}), hl.Struct(**{'locus': hl.Locus('1', 100), 'alleles': ['A', 'T'], 's': '3', 'GT': hl.Call([1, 1])}), hl.Struct(**{'locus': hl.Locus('1', 100), 'alleles': ['A', 'T'], 's': '4', 'GT': hl.Call([1, 1])}), hl.Struct(**{'locus': hl.Locus('1', 101), 'alleles': ['A', 'T'], 's': '1', 'GT': hl.Call([1, 1])})]\n    rows2 = [hl.Struct(**{'locus': hl.Locus('1', 100), 'alleles': ['A', 'T'], 's': '1', 'GT': None}), hl.Struct(**{'locus': hl.Locus('1', 100), 'alleles': ['A', 'T'], 's': '2', 'GT': hl.Call([0, 1])}), hl.Struct(**{'locus': hl.Locus('1', 100), 'alleles': ['A', 'T'], 's': '3', 'GT': hl.Call([0, 1])}), hl.Struct(**{'locus': hl.Locus('1', 100), 'alleles': ['A', 'T'], 's': '4', 'GT': hl.Call([1, 1])})]\n\n    def make_mt(rows):\n        ht = hl.Table.parallelize(rows, schema='struct{locus:locus<GRCh37>,alleles:array<str>,s:str,GT:call}')\n        return ht.to_matrix_table(row_key=['locus', 'alleles'], col_key=['s'])\n    global_conc_2, cols_conc_2, rows_conc_2 = hl.concordance(make_mt(rows1), make_mt(rows2))\n    assert cols_conc_2.collect() == [hl.Struct(s='1', concordance=[[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 1, 0, 0, 0], [0, 0, 0, 0, 0], [1, 0, 0, 0, 0]], n_discordant=0), hl.Struct(s='2', concordance=[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0]], n_discordant=1), hl.Struct(s='3', concordance=[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 0]], n_discordant=1), hl.Struct(s='4', concordance=[[1, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 1]], n_discordant=0)]\n    assert global_conc_2 == [[3, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 1, 0, 1, 0], [0, 0, 0, 0, 0], [1, 0, 0, 1, 1]]\n    assert rows_conc_2.collect() == [hl.Struct(locus=hl.Locus('1', 100), alleles=['A', 'T'], concordance=[[0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 1, 0, 1, 0], [0, 0, 0, 0, 0], [0, 0, 0, 1, 1]], n_discordant=2), hl.Struct(locus=hl.Locus('1', 101), alleles=['A', 'T'], concordance=[[3, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [0, 0, 0, 0, 0], [1, 0, 0, 0, 0]], n_discordant=0)]"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_concordance_no_values_doesnt_error",
+    "line": 251,
+    "body": "def test_concordance_no_values_doesnt_error(self):\n    dataset = get_dataset().filter_rows(False)\n    _, cols_conc, rows_conc = hl.concordance(dataset, dataset)\n    cols_conc._force_count()\n    rows_conc._force_count()"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles",
+    "line": 257,
+    "body": "def test_filter_alleles(self):\n    paths = [resource('sample.vcf'), resource('multipleChromosomes.vcf'), resource('sample2.vcf')]\n    for path in paths:\n        ds = hl.import_vcf(path)\n        self.assertEqual(hl.filter_alleles(ds, lambda a, i: False).count_rows(), 0)\n        self.assertEqual(hl.filter_alleles(ds, lambda a, i: True).count_rows(), ds.count_rows())"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles_hts_1",
+    "line": 265,
+    "body": "def test_filter_alleles_hts_1(self):\n    ds = hl.import_vcf(resource('filter_alleles/input.vcf'))\n    self.assertTrue(hl.filter_alleles_hts(ds, lambda a, i: a == 'T', subset=True).drop('old_alleles', 'old_locus', 'new_to_old', 'old_to_new')._same(hl.import_vcf(resource('filter_alleles/keep_allele1_subset.vcf'))))"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles_hts_2",
+    "line": 275,
+    "body": "def test_filter_alleles_hts_2(self):\n    ds = hl.import_vcf(resource('filter_alleles/input.vcf'))\n    self.assertTrue(hl.filter_alleles_hts(ds, lambda a, i: a == 'G', subset=True).drop('old_alleles', 'old_locus', 'new_to_old', 'old_to_new')._same(hl.import_vcf(resource('filter_alleles/keep_allele2_subset.vcf'))))"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles_hts_3",
+    "line": 285,
+    "body": "def test_filter_alleles_hts_3(self):\n    ds = hl.import_vcf(resource('filter_alleles/input.vcf'))\n    self.assertTrue(hl.filter_alleles_hts(ds, lambda a, i: a != 'G', subset=False).drop('old_alleles', 'old_locus', 'new_to_old', 'old_to_new')._same(hl.import_vcf(resource('filter_alleles/keep_allele1_downcode.vcf'))))"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles_hts_4",
+    "line": 295,
+    "body": "def test_filter_alleles_hts_4(self):\n    ds = hl.import_vcf(resource('filter_alleles/input.vcf'))\n    self.assertTrue(hl.filter_alleles_hts(ds, lambda a, i: a == 'G', subset=False).drop('old_alleles', 'old_locus', 'new_to_old', 'old_to_new')._same(hl.import_vcf(resource('filter_alleles/keep_allele2_downcode.vcf'))))"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_sample_and_variant_qc_call_rate",
+    "line": 305,
+    "body": "def test_sample_and_variant_qc_call_rate(self):\n    mt = hl.import_vcf(resource('sample.vcf'))\n    n_rows, n_cols = mt.count()\n    mt = mt.filter_entries(mt.GQ > 5)\n    mt = hl.variant_qc(hl.sample_qc(mt))\n    assert mt.aggregate_cols(hl.agg.all(hl.approx_equal(mt.sample_qc.call_rate, mt.sample_qc.n_called / n_rows)))\n    assert mt.aggregate_rows(hl.agg.all(hl.approx_equal(mt.variant_qc.call_rate, mt.variant_qc.n_called / n_cols)))"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_summarize_variants_ti_tv",
+    "line": 315,
+    "body": "def test_summarize_variants_ti_tv(self):\n    mt = hl.import_vcf(resource('sample.vcf'))\n    hl.summarize_variants(mt, handler=lambda s: ())\n    r = hl.summarize_variants(mt, show=False)\n    assert r['allele_types'] == {'Deletion': 27, 'Insertion': 18, 'SNP': 301}\n    assert r['contigs'] == {'20': 346}\n    assert r['n_variants'] == 346\n    assert r['r_ti_tv'] == 2.5\n    assert r['allele_counts'] == {2: 346}"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_charr",
+    "line": 326,
+    "body": "def test_charr(self):\n    mt = hl.import_vcf(resource('sample.vcf'))\n    charr = hl.compute_charr(mt, ref_AF=0.9)\n    d = charr.aggregate(hl.dict(hl.agg.collect((charr.s, charr.charr))))\n    assert pytest.approx(d['C1046::HG02024'], abs=0.0001) == 0.00126\n    assert pytest.approx(d['C1046::HG02025'], abs=0.0001) == 0.00124"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch37_consequence_true",
+    "line": 338,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.cloud('gcp')\n@pytest.mark.vep\n@test_timeout(batch=10 * 60)\ndef test_vep_grch37_consequence_true(self):\n    gnomad_vep_result = hl.import_vcf(resource('sample.gnomad.exomes.r2.1.1.sites.chr1.vcf.gz'), reference_genome='GRCh37', force=True)\n    hail_vep_result = hl.vep(gnomad_vep_result, self.vep_config_grch37_85, csq=True)\n    expected = gnomad_vep_result.select_rows(vep=gnomad_vep_result.info.vep.map(lambda x: x.split('|')[:8])).rows()\n    actual = hail_vep_result.select_rows(vep=hail_vep_result.vep.map(lambda x: x.split('|')[:8])).rows().drop('vep_csq_header')\n    assert expected._same(actual)\n    vep_csq_header = hl.eval(hail_vep_result.vep_csq_header)\n    assert 'Consequence annotations from Ensembl VEP' in vep_csq_header, vep_csq_header"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch38_consequence_true",
+    "line": 361,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.cloud('gcp')\n@pytest.mark.vep\n@test_timeout(batch=10 * 60)\ndef test_vep_grch38_consequence_true(self):\n    gnomad_vep_result = hl.import_vcf(resource('sample.gnomad.genomes.r3.0.sites.chr1.vcf.gz'), reference_genome='GRCh38', force=True)\n    hail_vep_result = hl.vep(gnomad_vep_result, self.vep_config_grch38_95, csq=True)\n    expected = gnomad_vep_result.select_rows(vep=gnomad_vep_result.info.vep.map(lambda x: x.split('\\\\|')[:8])).rows()\n    actual = hail_vep_result.select_rows(vep=hail_vep_result.vep.map(lambda x: x.split('\\\\|')[:8])).rows().drop('vep_csq_header')\n    assert expected._same(actual)\n    vep_csq_header = hl.eval(hail_vep_result.vep_csq_header)\n    assert 'Consequence annotations from Ensembl VEP' in vep_csq_header, vep_csq_header"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch37_consequence_false",
+    "line": 386,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.cloud('gcp')\n@pytest.mark.vep\n@test_timeout(batch=10 * 60)\ndef test_vep_grch37_consequence_false(self):\n    mt = hl.import_vcf(resource('sample.gnomad.exomes.r2.1.1.sites.chr1.vcf.gz'), reference_genome='GRCh37', force=True)\n    hail_vep_result = hl.vep(mt, self.vep_config_grch37_85, csq=False)\n    ht = hail_vep_result.rows()\n    ht = ht.select(variant_class=ht.vep.variant_class)\n    result = ht.head(1).collect()[0]\n    assert result.variant_class == 'SNV', result"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch38_consequence_false",
+    "line": 400,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.cloud('gcp')\n@pytest.mark.vep\n@test_timeout(batch=10 * 60)\ndef test_vep_grch38_consequence_false(self):\n    mt = hl.import_vcf(resource('sample.gnomad.genomes.r3.0.sites.chr1.vcf.gz'), reference_genome='GRCh38', force=True)\n    hail_vep_result = hl.vep(mt, self.vep_config_grch38_95, csq=False)\n    ht = hail_vep_result.rows()\n    ht = ht.select(variant_class=ht.vep.variant_class)\n    result = ht.head(1).collect()[0]\n    assert result.variant_class == 'SNV', result"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch37_against_dataproc",
+    "line": 414,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.cloud('gcp')\n@pytest.mark.vep\n@test_timeout(batch=10 * 60)\ndef test_vep_grch37_against_dataproc(self):\n    mt = hl.import_vcf(resource('sample.vcf.gz'), reference_genome='GRCh37', force_bgz=True, n_partitions=4)\n    mt = mt.head(20)\n    hail_vep_result = hl.vep(mt, self.vep_config_grch37_85)\n    initial_vep_dtype = hail_vep_result.vep.dtype\n    hail_vep_result = hail_vep_result.annotate_rows(vep=hail_vep_result.vep.annotate(input=hl.str('\\t').join([hail_vep_result.locus.contig, hl.str(hail_vep_result.locus.position), '.', hail_vep_result.alleles[0], hail_vep_result.alleles[1], '.', '.', 'GT'])))\n    hail_vep_result = hail_vep_result.rows().select('vep')\n\n    def parse_lof_info_into_dict(ht):\n\n        def tuple2(arr):\n            return hl.tuple([arr[0], arr[1]])\n        return ht.annotate(vep=ht.vep.annotate(transcript_consequences=ht.vep.transcript_consequences.map(lambda csq: csq.annotate(lof_info=hl.or_missing(csq.lof_info != 'null', hl.dict(csq.lof_info.split(',').map(lambda kv: tuple2(kv.split(':')))))))))\n    hail_vep_result = parse_lof_info_into_dict(hail_vep_result)\n    dataproc_result = hl.import_table(resource('dataproc_vep_grch37_annotations.tsv.gz'), key=['locus', 'alleles'], types={'locus': hl.tlocus('GRCh37'), 'alleles': hl.tarray(hl.tstr), 'vep': initial_vep_dtype}, force=True)\n    dataproc_result = parse_lof_info_into_dict(dataproc_result)\n    assert hail_vep_result._same(dataproc_result)"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch38_against_dataproc",
+    "line": 468,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.cloud('gcp')\n@pytest.mark.vep\n@test_timeout(batch=10 * 60)\ndef test_vep_grch38_against_dataproc(self):\n    dataproc_result = hl.import_table(resource('dataproc_vep_grch38_annotations.tsv.gz'), key=['locus', 'alleles'], types={'locus': hl.tlocus('GRCh38'), 'alleles': hl.tarray(hl.tstr), 'vep': hl.tstr}, force=True)\n    loftee_variants = dataproc_result.select()\n    hail_vep_result = hl.vep(loftee_variants, self.vep_config_grch38_95)\n    hail_vep_result = hail_vep_result.annotate(vep=hail_vep_result.vep.annotate(input=hl.str('\\t').join([hail_vep_result.locus.contig, hl.str(hail_vep_result.locus.position), '.', hail_vep_result.alleles[0], hail_vep_result.alleles[1], '.', '.', 'GT'])))\n    hail_vep_result = hail_vep_result.select('vep')\n\n    def parse_lof_info_into_dict(ht):\n\n        def tuple2(arr):\n            return hl.tuple([arr[0], arr[1]])\n        return ht.annotate(vep=ht.vep.annotate(transcript_consequences=ht.vep.transcript_consequences.map(lambda csq: csq.annotate(lof_info=hl.or_missing(csq.lof_info != 'null', hl.dict(csq.lof_info.split(',').map(lambda kv: tuple2(kv.split(':')))))))))\n    dataproc_result = dataproc_result.annotate(vep=hl.parse_json(dataproc_result.vep, hail_vep_result.vep.dtype))\n    hail_vep_result = parse_lof_info_into_dict(hail_vep_result)\n    dataproc_result = parse_lof_info_into_dict(dataproc_result)\n    assert hail_vep_result._same(dataproc_result)"
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch38_with_large_positions",
+    "line": 522,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.cloud('gcp')\n@pytest.mark.vep\n@test_timeout(batch=10 * 60)\ndef test_vep_grch38_with_large_positions(self):\n    bad_variants = hl.import_table(resource('vep_grch38_input_req_indexed_cache.tsv'), key=['locus', 'alleles'], types={'locus': hl.tlocus('GRCh38'), 'alleles': hl.tarray(hl.tstr)}, force=True, delimiter=' ')\n    loftee_variants = bad_variants.select()\n    hail_vep_result = hl.vep(loftee_variants, self.vep_config_grch38_95)\n    hail_vep_result = hail_vep_result.annotate(vep=hail_vep_result.vep.annotate(input=hl.str('\\t').join([hail_vep_result.locus.contig, hl.str(hail_vep_result.locus.position), '.', hail_vep_result.alleles[0], hail_vep_result.alleles[1], '.', '.', 'GT'])))\n    hail_vep_result = hail_vep_result.select('vep')\n    hail_vep_result.collect()"
+  }
+]

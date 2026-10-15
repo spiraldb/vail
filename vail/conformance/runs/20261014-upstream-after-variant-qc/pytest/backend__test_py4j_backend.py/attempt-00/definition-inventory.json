@@ -1,0 +1,74 @@
+[
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_interrupt_propagates",
+    "line": 80,
+    "body": "def test_interrupt_propagates():\n    connection = fake_connection(interrupt)\n    with pytest.raises(Interrupt):\n        connection.send_command('command')"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_interrupt_closes_the_connection",
+    "line": 86,
+    "body": "def test_interrupt_closes_the_connection():\n    connection = fake_connection(interrupt)\n    with pytest.raises(Interrupt):\n        connection.send_command('command')\n    assert connection.closed_with_reset is True"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_exceptions_do_not_close_the_connection",
+    "line": 93,
+    "body": "def test_exceptions_do_not_close_the_connection():\n    connection = fake_connection(raising(ValueError))\n    with pytest.raises(ValueError):\n        connection.send_command('command')\n    assert connection.closed_with_reset is None"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_successful_commands_pass_through",
+    "line": 100,
+    "body": "def test_successful_commands_pass_through():\n    connection = fake_connection(lambda command: f'!yv{command}')\n    assert connection.send_command('command') == '!yvcommand'"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_patching_is_idempotent",
+    "line": 105,
+    "body": "def test_patching_is_idempotent():\n    cls = type(fake_connection(lambda command: command))\n    patched = cls.send_command\n    _make_interrupt_safe(cls)\n    assert cls.send_command is patched"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_py4j_connections_are_interrupt_safe",
+    "line": 113,
+    "body": "@pytest.mark.parametrize('cls', [GatewayConnection, py4j.clientserver.ClientServerConnection])\ndef test_py4j_connections_are_interrupt_safe(cls):\n    assert getattr(cls.send_command, '_hail_interrupt_safe', False)"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_log_suppress_shutdown_exceptions_swallows_exceptions",
+    "line": 117,
+    "body": "def test_log_suppress_shutdown_exceptions_swallows_exceptions():\n    _log_suppress_exceptions(raising(ValueError))"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_log_suppress_shutdown_exceptions_propagates_interrupts",
+    "line": 121,
+    "body": "def test_log_suppress_shutdown_exceptions_propagates_interrupts():\n    with pytest.raises(Interrupt):\n        _log_suppress_exceptions(interrupt)"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_rpc_failures_cancel_the_operation_and_propagate",
+    "line": 127,
+    "body": "@pytest.mark.parametrize('failure', [Interrupt, requests.exceptions.ConnectionError])\ndef test_rpc_failures_cancel_the_operation_and_propagate(rpc, failure):\n    cancelled = []\n    with pytest.raises(failure):\n        rpc(raising(failure), FakeJBackend(cancel=lambda: cancelled.append(True)))\n    assert cancelled"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_rpc_cancel_failures_do_not_mask_the_original_failure",
+    "line": 134,
+    "body": "def test_rpc_cancel_failures_do_not_mask_the_original_failure(rpc):\n    with pytest.raises(Interrupt):\n        rpc(interrupt, FakeJBackend(cancel=raising(ValueError)))"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_rpc_returns_successful_responses",
+    "line": 139,
+    "body": "def test_rpc_returns_successful_responses(rpc):\n    assert rpc(lambda *a, **k: response(200, b'payload'), FakeJBackend(cancel=lambda: pytest.fail('cancel should not have been called'))) == b'payload'"
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_rpc_java_errors_raise_fatal_errors",
+    "line": 149,
+    "body": "def test_rpc_java_errors_raise_fatal_errors(rpc):\n    with pytest.raises(FatalError):\n        rpc(lambda *a, **k: java_error(), FakeJBackend(cancel=lambda: pytest.fail('cancel should not have been called')))"
+  }
+]

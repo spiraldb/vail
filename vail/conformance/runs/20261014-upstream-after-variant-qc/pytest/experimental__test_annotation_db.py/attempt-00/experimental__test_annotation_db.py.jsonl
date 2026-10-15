@@ -1,0 +1,4 @@
+{"kind": "inventory", "items": ["test_annotation_db.py::TestAnnotationDB::test_uniqueness"]}
+{"kind": "started", "nodeid": "test_annotation_db.py::TestAnnotationDB::test_uniqueness"}
+{"kind": "test", "nodeid": "test_annotation_db.py::TestAnnotationDB::test_uniqueness", "when": "setup", "outcome": "failed", "duration": 0.005495792021974921, "category": "harness_error", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-qxevk1q4/upstream_hail/experimental/test_annotation_db.py:10: in db_json\n    t = hl.utils.genomic_range_table(10)\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nE   AttributeError: module 'vail.utils' has no attribute 'genomic_range_table'"}
+{"kind": "test", "nodeid": "test_annotation_db.py::TestAnnotationDB::test_uniqueness", "when": "teardown", "outcome": "passed", "duration": 0.0004191668704152107, "category": null, "error": ""}

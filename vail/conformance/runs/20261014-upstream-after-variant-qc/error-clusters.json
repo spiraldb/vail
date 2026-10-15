@@ -1,0 +1,2700 @@
+[
+  {
+    "error": "AttributeError: type object 'BlockMatrix' has no attribute '_create'",
+    "cases": 209,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_block_matrices_tofiles",
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_export_block_matrices",
+      "linalg/test_linalg.py::test_linalg.py::test_numpy_round_trip_force_blocking",
+      "linalg/test_linalg.py::test_linalg.py::test_to_table[1-1]",
+      "linalg/test_linalg.py::test_linalg.py::test_to_table[1-2]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'tstream'. Did you mean: 'streams'?",
+    "cases": 162,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_ir_value_type[0]",
+      "test_ir.py::test_ir.py::test_ir_value_type[1]",
+      "test_ir.py::test_ir.py::test_ir_value_type[2]",
+      "test_ir.py::test_ir.py::test_ir_value_type[3]",
+      "test_ir.py::test_ir.py::test_ir_value_type[4]"
+    ]
+  },
+  {
+    "error": "AttributeError: type object 'BlockMatrix' has no attribute 'from_numpy'",
+    "cases": 48,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_block_matrix_from_numpy",
+      "linalg/test_linalg.py::test_linalg.py::test_block_matrix_from_numpy_transpose",
+      "linalg/test_linalg.py::test_linalg.py::test_block_matrix_persist_unpersist",
+      "linalg/test_linalg.py::test_linalg.py::test_diagonal_sparse",
+      "linalg/test_linalg.py::test_linalg.py::test_slices_with_sparsify"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.F64 is not implemented",
+    "cases": 36,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_blockmatrix_ir_parses[0]",
+      "test_ir.py::test_ir.py::test_blockmatrix_ir_parses[1]",
+      "test_ir.py::test_ir.py::test_blockmatrix_ir_parses[2]",
+      "test_ir.py::test_ir.py::test_blockmatrix_ir_parses[3]",
+      "test_ir.py::test_ir.py::test_blockmatrix_ir_parses[4]"
+    ]
+  },
+  {
+    "error": "AttributeError: type object 'BlockMatrix' has no attribute 'from_ndarray'",
+    "cases": 31,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_bm_to_numpy",
+      "linalg/test_linalg.py::test_linalg.py::test_bm_transpose_to_numpy",
+      "linalg/test_linalg.py::test_linalg.py::test_sparse_broadcast_add[x0-y0]",
+      "linalg/test_linalg.py::test_linalg.py::test_sparse_broadcast_add[x1-y1]",
+      "linalg/test_linalg.py::test_linalg.py::test_sum"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MakeStruct is not implemented",
+    "cases": 29,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_matrix_ir_matrix_type[0]",
+      "test_ir.py::test_ir.py::test_matrix_ir_matrix_type[1]",
+      "test_ir.py::test_ir.py::test_matrix_ir_matrix_type[2]",
+      "test_ir.py::test_ir.py::test_matrix_ir_matrix_type[3]",
+      "test_ir.py::test_ir.py::test_matrix_ir_matrix_type[4]"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.TrueIR is not implemented",
+    "cases": 28,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_table_ir_table_type[0]",
+      "test_ir.py::test_ir.py::test_table_ir_table_type[1]",
+      "test_ir.py::test_ir.py::test_table_ir_table_type[2]",
+      "test_ir.py::test_ir.py::test_table_ir_table_type[3]",
+      "test_ir.py::test_ir.py::test_table_ir_table_type[4]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?",
+    "cases": 26,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_aggregator_info_score_works_with_bgen_import",
+      "methods/test_impex.py::test_impex.py::BGENTests::test_drop",
+      "methods/test_impex.py::test_impex.py::BGENTests::test_export_bgen",
+      "methods/test_impex.py::test_impex.py::BGENTests::test_export_bgen_parallel",
+      "methods/test_impex.py::test_impex.py::BGENTests::test_export_bgen_zstd"
+    ]
+  },
+  {
+    "error": "AttributeError: export",
+    "cases": 26,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table",
+      "methods/test_impex.py::test_impex.py::ImportMatrixTableTests::test_import_row_id_multiple_partitions",
+      "methods/test_impex.py::test_impex.py::test_import_matrix_table_round_trip[.-,-True-str_]",
+      "methods/test_impex.py::test_impex.py::test_import_matrix_table_round_trip[.-,-True-int32]",
+      "methods/test_impex.py::test_impex.py::test_import_matrix_table_round_trip[.-,-True-float64]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'TemporaryFilename'",
+    "cases": 23,
+    "category": "harness_or_fixture_setup",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_export_genetic_data",
+      "expr/test_expr.py::test_expr.py::test_export_entry[True-NA-\\t]",
+      "expr/test_expr.py::test_expr.py::test_export_entry[True-NA-,]",
+      "expr/test_expr.py::test_expr.py::test_export_entry[True-NA-@]",
+      "expr/test_expr.py::test_expr.py::test_export_entry[True-null-\\t]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'Pedigree'",
+    "cases": 18,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_family_methods.py::test_family_methods.py::Tests::test_de_novo",
+      "methods/test_family_methods.py::test_family_methods.py::Tests::test_mendel_errors_1",
+      "methods/test_family_methods.py::test_family_methods.py::Tests::test_mendel_errors_2",
+      "methods/test_family_methods.py::test_family_methods.py::Tests::test_mendel_errors_3",
+      "methods/test_family_methods.py::test_family_methods.py::Tests::test_mendel_errors_4"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.linalg' has no attribute 'utils'",
+    "cases": 17,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_array_windows",
+      "linalg/test_linalg.py::test_linalg.py::test_array_windows_illegal_arguments[array0--1]",
+      "linalg/test_linalg.py::test_linalg.py::test_array_windows_illegal_arguments[array1-1]",
+      "linalg/test_linalg.py::test_linalg.py::test_array_windows_illegal_arguments[array2-1]",
+      "linalg/test_linalg.py::test_linalg.py::test_array_windows_illegal_arguments[array3-1]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'experimental'",
+    "cases": 16,
+    "category": "missing_high_level_api",
+    "examples": [
+      "experimental/test_dsp_necessary_functions_have_not_moved.py::test_dsp_necessary_functions_have_not_moved.py::test_dsp_used_functions_have_not_moved",
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_define_function",
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_ld_score_regression_1",
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_ld_score_regression_2",
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_loop"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'TemporaryDirectory'",
+    "cases": 16,
+    "category": "harness_or_fixture_setup",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_expr_persist",
+      "expr/test_expr.py::test_expr.py::test_approx_cdf_accuracy[True]",
+      "expr/test_expr.py::test_expr.py::test_cdf_combine[True]",
+      "expr/test_expr.py::test_expr.py::test_approx_cdf_accuracy[False]",
+      "expr/test_expr.py::test_expr.py::test_cdf_combine[False]"
+    ]
+  },
+  {
+    "error": "FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'",
+    "cases": 16,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_aggregate_cols_scope_violation",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_export_import_plink_same",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_export_plink_call_expression",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_export_plink_default_arguments",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_export_plink_non_default_arguments"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?",
+    "cases": 14,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file",
+      "methods/test_impex.py::test_impex.py::ImportMatrixTableTests::test_headers_not_identical",
+      "methods/test_impex.py::test_impex.py::ImportMatrixTableTests::test_headers_same_len_diff_elem",
+      "methods/test_impex.py::test_impex.py::ImportMatrixTableTests::test_import_matrix_comment",
+      "methods/test_impex.py::test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1"
+    ]
+  },
+  {
+    "error": "AttributeError: type object 'BlockMatrix' has no attribute 'from_entry_expr'",
+    "cases": 13,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_from_entry_expr_options[True-False-False-<lambda>]",
+      "linalg/test_linalg.py::test_linalg.py::test_from_entry_expr_options[True-False-True-<lambda>]",
+      "linalg/test_linalg.py::test_linalg.py::test_from_entry_expr_options[True-True-False-<lambda>]",
+      "linalg/test_linalg.py::test_linalg.py::test_from_entry_expr_options[True-True-True-<lambda>]",
+      "linalg/test_linalg.py::test_linalg.py::test_write_from_entry_expr_overwrite"
+    ]
+  },
+  {
+    "error": "NotImplementedError: compressed VCF export is not implemented",
+    "cases": 12,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_empty_read_write",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_same_bgzip",
+      "methods/test_impex.py::test_impex.py::test_import_export_same[0]",
+      "methods/test_impex.py::test_impex.py::test_import_export_same[1]",
+      "methods/test_impex.py::test_impex.py::test_import_export_same[2]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?",
+    "cases": 11,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_aggregator_info_score",
+      "methods/test_impex.py::test_impex.py::BGENTests::test_import_bgen_gavin_example",
+      "methods/test_impex.py::test_impex.py::BGENTests::test_import_bgen_random",
+      "methods/test_impex.py::test_impex.py::GENTests::test_export_gen",
+      "methods/test_impex.py::test_impex.py::GENTests::test_export_gen_exprs"
+    ]
+  },
+  {
+    "error": "AttributeError: show",
+    "cases": 11,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_array_and_if_requiredness",
+      "expr/test_expr.py::test_expr.py::Tests::test_show_expression",
+      "expr/test_expr.py::test_expr.py::Tests::test_show_row_key_regression",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_show",
+      "expr/test_show.py::test_show.py::test_show_1"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?",
+    "cases": 9,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_ld_score_annotated",
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_ld_score_univariate",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_contig_recoding_defaults",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_import_plink_and_ignore_rows",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_import_plink_no_reference_specified"
+    ]
+  },
+  {
+    "error": "AttributeError: '_PrimitiveType' object has no attribute '_from_encoding'",
+    "cases": 9,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_literal_encodings[1]",
+      "test_ir.py::test_ir.py::test_literal_encodings[5.0]",
+      "test_ir.py::test_ir.py::test_literal_encodings[foo]",
+      "test_ir.py::test_ir.py::test_literal_encodings[value10]",
+      "test_ir.py::test_ir.py::test_literal_encodings[value11]"
+    ]
+  },
+  {
+    "error": "NotImplementedError: ndarray indexing is not implemented",
+    "cases": 8,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_ref",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_ref_bounds_check",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_slice",
+      "linalg/test_linalg.py::test_linalg.py::test_from_entry_expr_options[False-False-False-<lambda>]",
+      "linalg/test_linalg.py::test_linalg.py::test_from_entry_expr_options[False-False-True-<lambda>]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'vstack'",
+    "cases": 8,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_vstack[data0]",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_vstack[data1]",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_vstack[data2]",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_vstack[data3]",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_vstack_2[a0-b0]"
+    ]
+  },
+  {
+    "error": "TypeError: nd.array requires int32/int64/float32/float64 data",
+    "cases": 7,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_eval",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_shape",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_big",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarrays_transmute_ops",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_agg_ndarray_sum_0_to_10"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'import_fam'. Did you mean: 'import_vcf'?",
+    "cases": 7,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_import_fam",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linear_regression_with_import_fam_boolean",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linear_regression_with_import_fam_quant",
+      "methods/test_statgen.py::test_statgen.py::test_logistic_regression_epacts_wald",
+      "methods/test_statgen.py::test_statgen.py::test_logistic_regression_epacts_lrt"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'ld_prune'",
+    "cases": 7,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_prune",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_prune_call_expression",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_prune_identical_variants",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_prune_inputs",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_prune_missing_entries"
+    ]
+  },
+  {
+    "error": "NotImplementedError: MatrixTable caching requires native Table result-cache support",
+    "cases": 6,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_locus_windows_1",
+      "linalg/test_linalg.py::test_linalg.py::test_locus_windows_2",
+      "linalg/test_linalg.py::test_linalg.py::test_locus_windows_3",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_prune_maf",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linreg_basic"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'maximal_independent_set'",
+    "cases": 6,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_misc.py::test_misc.py::Tests::test_maximal_independent_set",
+      "methods/test_misc.py::test_misc.py::Tests::test_maximal_independent_set2",
+      "methods/test_misc.py::test_misc.py::Tests::test_maximal_independent_set3",
+      "methods/test_misc.py::test_misc.py::Tests::test_maximal_independent_set_on_floats",
+      "methods/test_misc.py::test_misc.py::Tests::test_maximal_independent_set_string_node_names"
+    ]
+  },
+  {
+    "error": "NotImplementedError: Vail backend does not support hl.logistic_regression_rows",
+    "cases": 6,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_logistic_regression_lrt",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_logistic_regression_rows_max_iter_explodes",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_logistic_regression_score",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_logistic_regression_wald_test",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_logistic_regression_wald_test_apply_multi_pheno"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'vds'",
+    "cases": 6,
+    "category": "missing_high_level_api",
+    "examples": [
+      "vds/test_vds_functions.py::test_vds_functions.py::test_lgt_to_gt",
+      "vds/test_vds_functions.py::test_vds_functions.py::test_lgt_to_gt_invalid",
+      "vds/test_vds_functions.py::test_vds_functions.py::test_local_to_global",
+      "vds/test_vds_functions.py::test_vds_functions.py::test_local_to_global_alleles_non_increasing",
+      "vds/test_vds_functions.py::test_vds_functions.py::test_local_to_global_missing_fill"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.utils' has no attribute 'genomic_range_table'",
+    "cases": 5,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "experimental/test_annotation_db.py::test_annotation_db.py::TestAnnotationDB::test_uniqueness",
+      "utils/test_genomic_range_table.py::test_genomic_range_table.py::test_genomic_range_table_grch38",
+      "utils/test_genomic_range_table.py::test_genomic_range_table.py::test_genomic_range_table_grch37",
+      "utils/test_genomic_range_table.py::test_genomic_range_table.py::test_genomic_range_table_canfam3",
+      "utils/test_genomic_range_table.py::test_genomic_range_table.py::test_genomic_range_table_grcm38"
+    ]
+  },
+  {
+    "error": "ValueError: invalid expression: incompatible types Array { array: Primitive(Float32) } and Array { array: Primitive(Float64) }",
+    "cases": 5,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_addition",
+      "expr/test_expr.py::test_expr.py::Tests::test_floor_division",
+      "expr/test_expr.py::test_expr.py::Tests::test_modulus",
+      "expr/test_expr.py::test_expr.py::Tests::test_multiplication",
+      "expr/test_expr.py::test_expr.py::Tests::test_subtraction"
+    ]
+  },
+  {
+    "error": "TypeError: keywords must be strings",
+    "cases": 5,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_literal_with_empty_struct_key",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_collect_cols_by_key",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_order_by_intervals",
+      "methods/test_misc.py::test_misc.py::Tests::test_summarize_variants",
+      "test_ir.py::test_ir.py::test_literal_encodings[value8]"
+    ]
+  },
+  {
+    "error": "AttributeError: 'Call' object has no attribute 'is_haploid'",
+    "cases": 5,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "genetics/test_call.py::test_call.py::Tests::test_haploid",
+      "genetics/test_call.py::test_call.py::Tests::test_het",
+      "genetics/test_call.py::test_call.py::Tests::test_hom_ref",
+      "genetics/test_call.py::test_call.py::Tests::test_hom_var",
+      "genetics/test_call.py::test_call.py::Tests::test_zeroploid"
+    ]
+  },
+  {
+    "error": "FileNotFoundError: No such file or directory (os error 2)",
+    "cases": 5,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_legacy_files_with_required_globals",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_read_stored_cols",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_read_stored_globals",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_read_stored_rows",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linear_regression_equivalence_between_ds_and_gt"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.context.TemporaryFilename is not implemented",
+    "cases": 5,
+    "category": "harness_or_fixture_setup",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_export_vcf",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_export_vcf_haploid",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_export_vcf_invalid_format_types",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_export_vcf_invalid_info_types",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_export_vcf_quotes_and_backslash_in_description"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_vcf'?",
+    "cases": 5,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_bed",
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_bed_badly_defined_intervals",
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_bed_kwargs_to_import_table",
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_bed_no_reference_specified",
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_bed_recoding"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'import_locus_intervals'",
+    "cases": 5,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_locus_intervals",
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_locus_intervals_badly_defined_intervals",
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_locus_intervals_no_reference_specified",
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_import_locus_intervals_recoding",
+      "methods/test_impex.py::test_impex.py::LocusIntervalTests::test_pass_through_args"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'logistic_regression_rows'",
+    "cases": 5,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_firth_logistic_regression_rows_does_converge_with_more_iterations",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_firth_logistic_regression_rows_does_not_converge_with_105_iterations",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_firth_logistic_regression_rows_explodes_in_12_steps",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_regression_field_dependence",
+      "methods/test_statgen.py::test_statgen.py::test_logistic_regression_y_parameter_sanity"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'poisson_regression_rows'",
+    "cases": 5,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_poission_regression_wald_test",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_poisson_pass_through",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_poisson_regression_lrt",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_poisson_regression_max_iterations",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_poisson_regression_score_test"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.I32 is not implemented",
+    "cases": 5,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::CSETests::test_cse",
+      "test_ir.py::test_ir.py::CSETests::test_cse2",
+      "test_ir.py::test_ir.py::CSETests::test_cse_complex_lifting",
+      "test_ir.py::test_ir.py::CSETests::test_cse_ifs",
+      "test_ir.py::test_ir.py::CSETests::test_init_op"
+    ]
+  },
+  {
+    "error": "AttributeError: 'tndarray' object has no attribute '_from_encoding'",
+    "cases": 5,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_literal_ndarray_encodings[value0]",
+      "test_ir.py::test_ir.py::test_literal_ndarray_encodings[value1]",
+      "test_ir.py::test_ir.py::test_literal_ndarray_encodings[value2]",
+      "test_ir.py::test_ir.py::test_literal_ndarray_encodings[value3]",
+      "test_ir.py::test_ir.py::test_literal_ndarray_encodings[value4]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'parse_locus_interval'",
+    "cases": 4,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_genetics_constructors",
+      "expr/test_expr.py::test_expr.py::Tests::test_interval_ops",
+      "methods/test_misc.py::test_misc.py::Tests::test_matrix_filter_intervals",
+      "methods/test_misc.py::test_misc.py::Tests::test_table_filter_intervals"
+    ]
+  },
+  {
+    "error": "TypeError: cannot infer a Vail type for Expression",
+    "cases": 4,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_hardy_weinberg_agg_1",
+      "expr/test_expr.py::test_expr.py::Tests::test_hardy_weinberg_agg_2",
+      "expr/test_expr.py::test_expr.py::Tests::test_literal_with_nested_expr",
+      "expr/test_functions.py::test_functions.py::test_literal_free_vars"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'uniroot'",
+    "cases": 4,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_uniroot_1",
+      "expr/test_expr.py::test_expr.py::Tests::test_uniroot_2",
+      "expr/test_expr.py::test_expr.py::Tests::test_uniroot_3",
+      "expr/test_expr.py::test_expr.py::Tests::test_uniroot_multiple_roots"
+    ]
+  },
+  {
+    "error": "NotImplementedError: approx_cdf is unsupported: Hail-compatible retained items and compaction state are unavailable",
+    "cases": 4,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_approx_cdf",
+      "expr/test_expr.py::test_expr.py::test_approx_cdf_col_aggregate",
+      "expr/test_expr.py::test_expr.py::test_error_from_cdf",
+      "expr/test_expr.py::test_expr.py::test_approx_cdf_array_agg"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'hstack'",
+    "cases": 4,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_hstack[a0-b0]",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_hstack[a1-b1]",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_hstack[a2-b2]",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_hstack[a3-b3]"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'ones'",
+    "cases": 4,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_agg_ndarray_sum_ones_1d",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_agg_ndarray_sum_ones_2d",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_agg_ndarray_mismatched_dims_raises_fatal_error",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_indices_aggregations"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixMapCols is not implemented",
+    "cases": 4,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_cols_with_body_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_cols_with_agg_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_cols_with_scan_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_cols_without_body_randomness"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixMapRows is not implemented",
+    "cases": 4,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_rows",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_rows_with_agg_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_rows_with_scan_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_rows_without_body_randomness"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'export_plink'",
+    "cases": 4,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_export_plink_struct_locus",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_import_plink_partitions",
+      "methods/test_impex.py::test_impex.py::PLINKTests::test_import_plink_same_locus"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'ld_matrix'",
+    "cases": 4,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_matrix_1",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_matrix_2",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_matrix_3",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_ld_matrix_4"
+    ]
+  },
+  {
+    "error": "AttributeError: add_index",
+    "cases": 3,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_aggregators_linreg",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_range",
+      "methods/test_impex.py::test_impex.py::ImportTableTests::test_source_file"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'bit_lshift'",
+    "cases": 3,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_bit_shift_edge_cases",
+      "expr/test_expr.py::test_expr.py::Tests::test_bit_shift_errors",
+      "expr/test_expr.py::test_expr.py::Tests::test_bit_shifts"
+    ]
+  },
+  {
+    "error": "TypeError: arithmetic requires a numeric expression",
+    "cases": 3,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_bools_can_math",
+      "expr/test_expr.py::test_expr.py::test_locus_addition",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_map2"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'unphased_diploid_gt_index_call'",
+    "cases": 3,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_call_stats_init",
+      "linalg/test_linalg.py::test_linalg.py::test_from_entry_expr_simple_gt_n_alt_alleles",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_sorted"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.utils' has no attribute 'frozendict'",
+    "cases": 3,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_frozendict_as_literal",
+      "utils/test_pickle.py::test_pickle.py::test_frozendict_pickle",
+      "utils/test_pickle.py::test_pickle.py::test_frozendict_dill"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'pl_dosage'",
+    "cases": 3,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_pl_dosage",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linear_regression_pl",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_logistic_regression_wald_test_pl"
+    ]
+  },
+  {
+    "error": "NotImplementedError: ndarray reshape is not implemented",
+    "cases": 3,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_reshape",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_agg_ndarray_sum_with_transposes",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_read_write_all_types"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixAggregateRowsByKey is not implemented",
+    "cases": 3,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_aggregate_rows_by_key_with_body_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_aggregate_rows_by_key_then_aggregate_entries_with_agg_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_aggregate_rows_by_key_without_body_randomness"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixAggregateColsByKey is not implemented",
+    "cases": 3,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_aggregate_cols_by_key_with_body_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_aggregate_cols_by_key_with_agg_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_aggregate_cols_by_key_without_body_randomness"
+    ]
+  },
+  {
+    "error": "ModuleNotFoundError: No module named 'vail.vds'",
+    "cases": 3,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_combiner_works",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_haploid_combiner_ok"
+    ]
+  },
+  {
+    "error": "NotImplementedError: parallel VCF export, tabix, and appended headers are not implemented",
+    "cases": 3,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_tabix_export",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_tabix_export_file_exists",
+      "methods/test_impex.py::test_impex.py::VCFTests::test_vcf_parallel_separate_header_export"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'split_multi'. Did you mean: 'split_multi_hts'?",
+    "cases": 3,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_issue_4527",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_split_multi_shuffle",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_split_multi_table"
+    ]
+  },
+  {
+    "error": "AttributeError: values",
+    "cases": 3,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linear_regression_multi_pheno_same",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linear_regression_with_cov",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_weighted_linear_regression"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'",
+    "cases": 2,
+    "category": "missing_high_level_api",
+    "examples": [
+      "experimental/test_experimental.py::test_experimental.py::Tests::test_pc_project",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_lower_row_agg_init_arg"
+    ]
+  },
+  {
+    "error": "AttributeError: cache",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_aggregator_any_and_all",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_logistic_regression_wald_test_multi_pheno_bgen_dosage"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: DataFusion expression failed: Execution error: foo",
+    "cases": 2,
+    "category": "planning_or_execution",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_case",
+      "expr/test_expr.py::test_expr.py::Tests::test_switch"
+    ]
+  },
+  {
+    "error": "NotImplementedError: Set/Dictionary/ndarray ordering and keying are unsupported",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_dict_keyed_by_dict",
+      "expr/test_expr.py::test_expr.py::Tests::test_dict_keyed_by_set"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'locus_interval'",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_locus_interval_constructors",
+      "expr/test_expr.py::test_expr.py::Tests::test_parse_json"
+    ]
+  },
+  {
+    "error": "AttributeError: window",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_locus_window",
+      "expr/test_expr.py::test_expr.py::Tests::test_locus_window_type"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'min_rep'",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_min_rep",
+      "expr/test_expr.py::test_expr.py::Tests::test_min_rep_error"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'pchisqtail'",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_pchisqtail",
+      "expr/test_functions.py::test_functions.py::test_pchisqtail"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: step can't be 0 for function range(start [, stop, step])",
+    "cases": 2,
+    "category": "planning_or_execution",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_range",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_arange"
+    ]
+  },
+  {
+    "error": "AttributeError: rename",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_struct_expression_expr_rename",
+      "expr/test_expr.py::test_expr.py::test_struct_expr_rename_order"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'binom_test'",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_functions.py::test_functions.py::test_deprecated_binom_test",
+      "expr/test_functions.py::test_functions.py::test_binom_test"
+    ]
+  },
+  {
+    "error": "NotImplementedError: typed text imports currently support primitive fields",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_functions.py::test_functions.py::test_pgenchisq",
+      "methods/test_impex.py::test_impex.py::ImportTableTests::test_error_with_context"
+    ]
+  },
+  {
+    "error": "AttributeError: T",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_transposed_slice",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_transpose"
+    ]
+  },
+  {
+    "error": "NotImplementedError: ndarray matrix multiplication is not implemented",
+    "cases": 2,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_matmul",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_matmul_dgemv"
+    ]
+  },
+  {
+    "error": "AttributeError: map",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_mixed",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_emitter_extract"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'concatenate'",
+    "cases": 2,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_concatenate",
+      "expr/test_ndarrays.py::test_ndarrays.py::test_concatenate_differing_shapes"
+    ]
+  },
+  {
+    "error": "AttributeError: 'str' object has no attribute 'table_show'",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_show.py::test_show.py::test_show_mt_duplicate_col_key",
+      "expr/test_show.py::test_show.py::test_show_mt_fewer_cols"
+    ]
+  },
+  {
+    "error": "AttributeError: 'ReferenceGenome' object has no attribute 'locus_from_global_position'",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "genetics/test_reference_genome.py::test_reference_genome.py::test_locus_from_global_position_negative_pos",
+      "genetics/test_reference_genome.py::test_reference_genome.py::test_locus_from_global_position_too_long"
+    ]
+  },
+  {
+    "error": "AttributeError: type object 'BlockMatrix' has no attribute 'random'",
+    "cases": 2,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_random_uniform",
+      "linalg/test_linalg.py::test_linalg.py::test_to_matrix_table_1"
+    ]
+  },
+  {
+    "error": "AttributeError: type object 'Env' has no attribute 'hail'",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_codecs_matrix",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_codecs_table"
+    ]
+  },
+  {
+    "error": "NotImplementedError: matrix list aggregation requires a native per-list hardy_weinberg_test reducer",
+    "cases": 2,
+    "category": "planning_or_execution",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_hardy_weinberg_test",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_hw_func_and_agg_agree"
+    ]
+  },
+  {
+    "error": "TypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'",
+    "cases": 2,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_partitioned_write",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_partitioned_write_coerce"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixFilterRows is not implemented",
+    "cases": 2,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_filter_rows_with_cond_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_filter_rows_without_cond_randomness"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixMapEntries is not implemented",
+    "cases": 2,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_entries_with_body_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_entries_without_body_randomness"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixFilterEntries is not implemented",
+    "cases": 2,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_filter_entries_with_cond_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_filter_entries_without_cond_randomness"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixMapGlobals is not implemented",
+    "cases": 2,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_globals_with_body_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_map_globals_without_body_randomness"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixFilterCols is not implemented",
+    "cases": 2,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_filter_cols_with_cond_randomness",
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_filter_cols_without_cond_randomness"
+    ]
+  },
+  {
+    "error": "ValueError: provide row and column dimensions through rows, cols, or entries",
+    "cases": 2,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "matrixtable/test_matrix_table_from_parts.py::test_matrix_table_from_parts.py::test_raises_when_no_rows_and_entries",
+      "matrixtable/test_matrix_table_from_parts.py::test_matrix_table_from_parts.py::test_raises_when_no_cols_and_entries"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.utils' has no attribute 'new_local_temp_dir'. Did you mean: 'new_local_temp_file'?",
+    "cases": 2,
+    "category": "harness_or_fixture_setup",
+    "examples": [
+      "methods/relatedness/test_identity_by_descent.py::test_identity_by_descent.py::test_ibd_default_arguments",
+      "methods/relatedness/test_identity_by_descent.py::test_identity_by_descent.py::test_ibd_0_and_1"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'identity_by_descent'",
+    "cases": 2,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/relatedness/test_identity_by_descent.py::test_identity_by_descent.py::test_ibd_does_not_error_with_dummy_maf_float64",
+      "methods/relatedness/test_identity_by_descent.py::test_identity_by_descent.py::test_ibd_does_not_error_with_dummy_maf_float32"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'lambda_gc'",
+    "cases": 2,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_misc.py::test_misc.py::Tests::test_lambda_gc",
+      "methods/test_misc.py::test_misc.py::Tests::test_lambda_gc_nans"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'methods'",
+    "cases": 2,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_misc.py::test_misc.py::Tests::test_verify_biallelic",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_warn_if_no_intercept"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute '_linear_regression_rows_nd'",
+    "cases": 2,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_errors_weighted_linear_regression",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_weighted_linear_regression__missing_weights_are_excluded"
+    ]
+  },
+  {
+    "error": "NotImplementedError: Vail backend does not support hl.linear_regression_rows",
+    "cases": 2,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linear_regression_without_intercept",
+      "methods/test_statgen.py::test_statgen.py::Tests::test_linreg_pass_through"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'gq_from_pl'",
+    "cases": 2,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::test_gq_from_pl_missing",
+      "methods/test_statgen.py::test_statgen.py::test_gq_from_pl_all_missing"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.TableRange is not implemented",
+    "cases": 2,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::CSETests::test_agg_cse",
+      "test_ir.py::test_ir.py::CSETests::test_refs"
+    ]
+  },
+  {
+    "error": "AttributeError: 'tstruct' object has no attribute '_from_encoding'",
+    "cases": 2,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_literal_encodings[value6]",
+      "test_ir.py::test_ir.py::test_literal_encodings[value7]"
+    ]
+  },
+  {
+    "error": "RecursionError: maximum recursion depth exceeded",
+    "cases": 2,
+    "category": "planning_or_execution",
+    "examples": [
+      "utils/test_pickle.py::test_pickle.py::test_simple_struct_pickle",
+      "utils/test_pickle.py::test_pickle.py::test_simple_struct_dill"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'abs'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_abs"
+    ]
+  },
+  {
+    "error": "TypeError: phased must be bool",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_agg_collect_all_types_runs"
+    ]
+  },
+  {
+    "error": "AssertionError: nan != 0.0",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_agg_minmax"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute '_values_similar'",
+    "cases": 1,
+    "category": "harness_or_fixture_setup",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_agg_prev_nonnull"
+    ]
+  },
+  {
+    "error": "AssertionError: Struct(x=4950, y=9.33262154439441e+157) != Struct(x=4950, y=9.332621544394414e+157)",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_aggfold_agg"
+    ]
+  },
+  {
+    "error": "TypeError: bind() got an unexpected keyword argument '_ctx'",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_aggregator_bindings"
+    ]
+  },
+  {
+    "error": "NotImplementedError: array_sort is not yet enabled for this element type",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_aggregator_group_by_sorts_result"
+    ]
+  },
+  {
+    "error": "ValueError: invalid expression: unbound lambda variable \"43cafb17b7234b2db03f43ad6f561926\"",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_aggregator_scope"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'argmax'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_argmin_and_argmax"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: invalid expression: step cannot be 0 for array slice",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_array_slicing"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'binary_search'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_binary_search"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'bit_and'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_bit_ops_types"
+    ]
+  },
+  {
+    "error": "TypeError: call requires at most two alleles and a Boolean phased flag",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_call"
+    ]
+  },
+  {
+    "error": "AttributeError: contains_allele",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_call_contains_allele"
+    ]
+  },
+  {
+    "error": "AttributeError: unphase",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_call_unphase"
+    ]
+  },
+  {
+    "error": "AttributeError: unphased_diploid_gt_index",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_call_unphase_diploid_gt_index"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'chi_squared_test'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_chi_squared_test"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'cochran_mantel_haenszel_test'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_cochran_mantel_haenszel_test"
+    ]
+  },
+  {
+    "error": "AttributeError: inner",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_collection_getitem"
+    ]
+  },
+  {
+    "error": "AssertionError: (True, False); assert True == False",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_comparisons"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'contingency_table_test'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_contingency_table_test"
+    ]
+  },
+  {
+    "error": "assert [([], 2), ([1...1), (None, 1)] == [([], 2), ([1...2), (None, 1)]; E     At index 1 diff: ([1, 2, 3], 2) != ([1, 2], 1); Use -v to get more diff",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_counter"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'cumulative_sum'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_cumulative_sum"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'dchisq'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_dchisq"
+    ]
+  },
+  {
+    "error": "TypeError: array expects a list or an array expression",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_dict_conversions"
+    ]
+  },
+  {
+    "error": "AttributeError: 'KeysView' object has no attribute 'contains'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_dict_methods"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: DataFusion expression failed: Execution error: dictionary key is missing",
+    "cases": 1,
+    "category": "planning_or_execution",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_dict_missing_error"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'dnorm'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_dnorm"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'fisher_exact_test'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_fisher_exact_test"
+    ]
+  },
+  {
+    "error": "NotImplementedError: DataFusion has no Hail-compatible Java printf formatting implementation",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_format"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'gp_dosage'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_gp_dosage"
+    ]
+  },
+  {
+    "error": "External error: task 913 panicked with message \"called `Result::unwrap()` on an `Err` value: InvalidArgumentError(\\\"use StructArray::try_new_with_length or StructArray::new_empty_fields to create a struct array with no fields so that the length can be set correctly\\\")\"",
+    "cases": 1,
+    "category": "timeout_or_native_crash",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_initop_matrix_aggregate_rows_by_key_rows"
+    ]
+  },
+  {
+    "error": "TypeError: only struct expressions can be expanded as mappings",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_iter"
+    ]
+  },
+  {
+    "error": "AttributeError: '_PrimitiveType' object has no attribute '_to_encoding'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_large_allele_encoding"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'nanmax'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_max"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'mendel_error_code'",
+    "cases": 1,
+    "category": "missing_high_level_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_mendel_error_code"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'nanmin'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_min"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'is_finite'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_nan_inf_checks"
+    ]
+  },
+  {
+    "error": "TypeError: cannot infer a Vail type for int32",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_numpy_conversions"
+    ]
+  },
+  {
+    "error": "TypeError: incompatible comparison types: ttuple(types=(bool, float64)) and ttuple(types=(float64, float64))",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_operators"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'pF'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_pF"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'pT'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_pT"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'pl_to_gp'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_pl_to_gp"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'pnorm'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_pnorm"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.agg' has no attribute '_prev_nonnull'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_prev_non_null"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'qchisqtail'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_qchisqtail"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'qnorm'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_qnorm"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'contig_length'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_reference_genome_fns"
+    ]
+  },
+  {
+    "error": "AttributeError: _warn_on_shadowed_name",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_shadowed_struct_fields"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'sign'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_sign"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute '_sort_by'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_sort_by"
+    ]
+  },
+  {
+    "error": "NotImplementedError: expression-valued sorted keys are not yet implemented",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_sorted"
+    ]
+  },
+  {
+    "error": "ValueError: delimiter must be a single ASCII character",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_split_line"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'is_nan'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_str_parsing"
+    ]
+  },
+  {
+    "error": "AssertionError: Regex pattern did not match.; Expected regex: 'has no field'; Actual message: 'y'",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_struct_collection_getattr"
+    ]
+  },
+  {
+    "error": "KeyError: slice(1, None, None)",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_struct_slice"
+    ]
+  },
+  {
+    "error": "AttributeError: summarize",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_summarize_runs"
+    ]
+  },
+  {
+    "error": "TypeError: len requires an array, set, or dictionary expression",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_tuple_ops"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'variant_str'. Did you mean: 'variant_qc'?",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_variant_str"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'zeros'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::Tests::test_zeros"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.NA is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_stream_randomness"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'keyed_intersection'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_keyed_intersection"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'keyed_union'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_keyed_union"
+    ]
+  },
+  {
+    "error": "AttributeError: _to_relational_preserving_rows_and_cols",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_to_relational_row_and_col_refs"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.agg' has no attribute '_reservoir_sample'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_reservoir_sampling_pointer_type"
+    ]
+  },
+  {
+    "error": "TypeError: Table._generate() missing 1 required positional argument: 'rowfn'",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_reservoir_sampling"
+    ]
+  },
+  {
+    "error": "Failed: DID NOT RAISE ExpressionException",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_cannot_aggregate_in_local_scan"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute '_zip_join_producers'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_expr.py::test_expr.py::test_zip_join_producers"
+    ]
+  },
+  {
+    "error": "TypeError: array conversion requires an array, set, or dictionary",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_functions.py::test_functions.py::test_array"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'logit'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_math.py::test_math.py::test_logit"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'expit'. Did you mean: 'expr'?",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_math.py::test_math.py::test_expit"
+    ]
+  },
+  {
+    "error": "TypeError: expected an array or set expression",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_map1"
+    ]
+  },
+  {
+    "error": "AttributeError: sum",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_sum"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'zeros'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_full"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'diagonal'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_diagonal"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'solve_triangular'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_solve_triangular"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'solve'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_solve"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'qr'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_qr"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'svd'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_svd"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'eigh'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_eigh"
+    ]
+  },
+  {
+    "error": "TypeError: ndarray elements must be int32/int64/float32/float64",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_numpy_interop"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'inv'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_inv"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'eye'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_eye"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail.nd' has no attribute 'identity'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_identity"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'sqrt'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_broadcasting_with_decorator"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'log'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "expr/test_ndarrays.py::test_ndarrays.py::test_ndarray_log_broadcasting"
+    ]
+  },
+  {
+    "error": "assert 20 == 15; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x14785deb0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_lt[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 15; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x14785e810>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_le[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 1; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x14785fda0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_eq[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x14785d970>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_ge[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x14785e510>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_gt[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x14785f170>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_ge_with_bindings[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 15; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x14785da00>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_lt[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 15; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x14785dc40>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_le[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 1; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x14785ddf0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_eq[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x148baab10>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_ge[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x148bab260>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_gt[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x148ba9fd0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_ge_with_bindings[locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 15; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x148d30a70>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_lt[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 15; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x148d31af0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_le[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 1; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x148d333b0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_eq[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x148d32720>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_ge[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x148baa420>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_gt[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x106f03cb0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_mt_ge_with_bindings[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 15; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x148bab740>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_lt[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 15; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x148ba90d0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_le[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 1; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x148bab3b0>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_eq[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x120659220>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_ge[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x148ba8950>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_gt[Locus]"
+    ]
+  },
+  {
+    "error": "assert 20 == 6; +  where 20 = n_partitions(); +    where n_partitions = <vail.Table object at 0x148bab470>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_ht_ge_with_bindings[Locus]"
+    ]
+  },
+  {
+    "error": "assert 10 == 1; +  where 10 = n_partitions(); +    where n_partitions = <vail.matrixtable.MatrixTable object at 0x120ab1940>.n_partitions",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "extract_intervals/test_key_prefix.py::test_key_prefix.py::test_GRCh38"
+    ]
+  },
+  {
+    "error": "External test timeout after 185.0s (limit 180s)",
+    "cases": 1,
+    "category": "timeout_or_native_crash",
+    "examples": [
+      "extract_intervals/test_locus_position.py::test_locus_position.py::test_ht_lt"
+    ]
+  },
+  {
+    "error": "AttributeError: type object 'Locus' has no attribute 'parse'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "genetics/test_locus.py::test_locus.py::test_constructor"
+    ]
+  },
+  {
+    "error": "AssertionError: assert ('X',) == ['X']; E     Use -v to get more diff",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "genetics/test_reference_genome.py::test_reference_genome.py::test_reference_genome"
+    ]
+  },
+  {
+    "error": "NotImplementedError: FASTA-backed reference construction is not implemented",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "genetics/test_reference_genome.py::test_reference_genome.py::test_reference_genome_sequence"
+    ]
+  },
+  {
+    "error": "AttributeError: 'ReferenceGenome' object has no attribute 'has_liftover'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "genetics/test_reference_genome.py::test_reference_genome.py::test_reference_genome_liftover"
+    ]
+  },
+  {
+    "error": "AttributeError: 'ReferenceGenome' object has no attribute 'add_liftover'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "genetics/test_reference_genome.py::test_reference_genome.py::test_liftover_strand"
+    ]
+  },
+  {
+    "error": "AttributeError: 'NativeBackend' object has no attribute '_references'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "genetics/test_reference_genome.py::test_reference_genome.py::test_read_custom_reference_genome"
+    ]
+  },
+  {
+    "error": "AttributeError: 'ReferenceGenome' object has no attribute 'global_positions_dict'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "genetics/test_reference_genome.py::test_reference_genome.py::test_locus_from_global_position"
+    ]
+  },
+  {
+    "error": "AssertionError: Regex pattern did not match.; Expected regex: 'Cannot construct an ndarray with missing values'; Actual message: \"type object 'BlockMatrix' has no attribute 'from_entry_expr'\"",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_from_entry_expr_raises_when_values_missing"
+    ]
+  },
+  {
+    "error": "AttributeError: 'BlockMatrix' object has no attribute 'block_size'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_fill"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute '_locus_windows_per_contig'",
+    "cases": 1,
+    "category": "missing_matrix_numerical_api",
+    "examples": [
+      "linalg/test_linalg.py::test_linalg.py::test_locus_windows_per_contig"
+    ]
+  },
+  {
+    "error": "ValueError: positional grouping requires field references",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "matrixtable/test_grouped_matrix_table.py::test_grouped_matrix_table.py::Tests::test_errors_caught_correctly"
+    ]
+  },
+  {
+    "error": "ValueError: invalid expression: unbound lambda variable \"5be23f039a0847dca430c3da96b007b2\"",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "matrixtable/test_grouped_matrix_table.py::test_grouped_matrix_table.py::Tests::test_group_cols_by_aggregate"
+    ]
+  },
+  {
+    "error": "ValueError: invalid expression: unbound lambda variable \"da6d5d01bc35439688ebd0d3cc3d5a1f\"",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "matrixtable/test_grouped_matrix_table.py::test_grouped_matrix_table.py::Tests::test_group_rows_by_aggregate"
+    ]
+  },
+  {
+    "error": "ValueError: invalid expression: unbound lambda variable \"c0439506116446e382acf56970f73252\"",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "matrixtable/test_grouped_matrix_table.py::test_grouped_matrix_table.py::Tests::test_joins_work_correctly"
+    ]
+  },
+  {
+    "error": "NotImplementedError: matrix-axis aggregate initialization requires native Table support for group-dependent initializers",
+    "cases": 1,
+    "category": "planning_or_execution",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_aggregate_cols_by_init_op"
+    ]
+  },
+  {
+    "error": "ValueError: invalid TableIR: row fields must be inside an aggregator in Table.aggregate",
+    "cases": 1,
+    "category": "planning_or_execution",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_annotate_col_agg_lowering"
+    ]
+  },
+  {
+    "error": "TypeError: incompatible comparison types: struct{n_filtered: int64, n_remaining: int64, fraction_filtered: float64} and struct{n_filtered: int32, n_remaining: int32, fraction_filtered: float32}",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_entry_filter_stats"
+    ]
+  },
+  {
+    "error": "FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/0.1-1fd5cc7.vds/_vail_matrix.json'",
+    "cases": 1,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_invalid_metadata"
+    ]
+  },
+  {
+    "error": "ValueError: field names must be nonempty strings",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_make_table_empty_entry_field"
+    ]
+  },
+  {
+    "error": "AttributeError: _type",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_matrix_type_equality"
+    ]
+  },
+  {
+    "error": "FileExistsError: /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/HLAmZ4KZLZ1GN7LL6xtstU.mt",
+    "cases": 1,
+    "category": "planning_or_execution",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_overwrite"
+    ]
+  },
+  {
+    "error": "AttributeError: _type. Did you mean: 'dtype'?",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_rename"
+    ]
+  },
+  {
+    "error": "AssertionError: ExpressionException not raised",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_row_joins_into_table_2"
+    ]
+  },
+  {
+    "error": "NotImplementedError: matrix codecs and staging are not implemented",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::Tests::test_write_stage_locally"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixRead is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_read"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixChooseCols is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_choose_cols"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixUnionCols is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_union_cols"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixKeyRowsBy is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_key_rows_by"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixCollectColsByKey is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_collect_cols_by_key"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixExplodeRows is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_explode_rows"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixRepartition is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_repartition"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixUnionRows is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_union_rows"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixDistinctByRow is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_distinct_by_row"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixRowsHead is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_rows_head"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixColsHead is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_cols_head"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixRowsTail is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_rows_tail"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixColsTail is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_cols_tail"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixExplodeCols is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_explode_cols"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.CastTableToMatrix is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_cast_table_to_matrix"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixAnnotateRowsTable is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_annotate_rows_table"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixAnnotateColsTable is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_annotate_cols_table"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixToMatrixApply is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_to_matrix_apply"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixRename is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_rename"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.MatrixFilterIntervals is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_matrix_randomness_filter_intervals"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute '_with_flags'",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "matrixtable/test_matrix_table.py::test_matrix_table.py::test_struct_of_arrays_encoding"
+    ]
+  },
+  {
+    "error": "AssertionError: expected pattern not found; assert False",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_contigs_header"
+    ]
+  },
+  {
+    "error": "TypeError: export_vcf requires a MatrixTable",
+    "cases": 1,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_export_sites_only_from_table"
+    ]
+  },
+  {
+    "error": "AssertionError: False is not true",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_export_vcf_no_alt_alleles"
+    ]
+  },
+  {
+    "error": "AssertionError: assert 'GT:AD:DP:GQ:PL\\t1/1:0,6:6:18:234,18,0\\t1/1:0,4:4:12:159,12,0\\t1/1:0,4:4:12:163,12,0\\t1/1:0,12:12:36:479,36,0\\t1/1:0,4...1:0,6:6:18:232,18,0\\t1/1:0,6:6:18:242,18,0\\t1/1:0,3:3:9:119,9,0\\t1/1:0,9:9:27:374,27,0\\t./.:1,0:1\\t1/1:0,3:3:9:133,9,0' in '20\\t13029920\\trs934335\\tC\\tG\\t181727.0\\tPASS\\tHWP=0.0;AC=172;culprit=MQ;MQ0=0;ReadPosRankSum=0.0;AN=172;InbreedingCoe...3:9:114,9,0\\t./.:2,0:2:.:.\\t1/1:0,3:3:9:124,9,0\\t1/1:0,6:6:18:257,18,0\\t1/1:0,4:4:12:154,12,0\\t1/1:0,6:6:18:252,18,0\\n'",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_format_genotypes"
+    ]
+  },
+  {
+    "error": "AttributeError: 'tarray' object has no attribute '_convert_to_json'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_import_gvcfs"
+    ]
+  },
+  {
+    "error": "External test timeout after 185.1s (limit 180s)",
+    "cases": 1,
+    "category": "timeout_or_native_crash",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_import_vcf"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/infochar.vcf:124: Missing value in INFO array. Use 'hl.import_vcf(..., array_elements_required=False)'.",
+    "cases": 1,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_info_char"
+    ]
+  },
+  {
+    "error": "ModuleNotFoundError: No module named 'hail'",
+    "cases": 1,
+    "category": "harness_or_fixture_setup",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_invalid_info_fields"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/malformed.vcf:54: invalid character in numeric literal \"rs685723\"",
+    "cases": 1,
+    "category": "planning_or_execution",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_malformed"
+    ]
+  },
+  {
+    "error": "ValueError: invalid sample IDs: VCF headers differ",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_not_identical_headers"
+    ]
+  },
+  {
+    "error": "ValueError: Check that all files have same INFO fields",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_vcf_different_info_errors"
+    ]
+  },
+  {
+    "error": "FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'",
+    "cases": 1,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37"
+    ]
+  },
+  {
+    "error": "FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'",
+    "cases": 1,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'export_bgen'. Did you mean: 'export_vcf'?",
+    "cases": 1,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::BGENTests::test_error_if_no_gp"
+    ]
+  },
+  {
+    "error": "NotImplementedError: BGZF and gzip text scans are not implemented",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::ImportLinesTest::test_import_lines_bgz"
+    ]
+  },
+  {
+    "error": "ValueError: no lines remaining after filters; AssertionError: assert 'Invalid file: no lines remaining after filters\\n Files provided: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/empty.tsv' in 'no lines remaining after filters'",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::ImportTableTests::test_import_table_empty"
+    ]
+  },
+  {
+    "error": "NotImplementedError: compressed text IO is not implemented",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::ImportTableTests::test_import_table_force_bgz"
+    ]
+  },
+  {
+    "error": "NotImplementedError: Hail type imputation is not implemented; supply types explicitly",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::ImportTableTests::test_type_imputation"
+    ]
+  },
+  {
+    "error": "ModuleNotFoundError: No module named 'vail.backend.service_backend'; 'vail.backend' is not a package",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::GrepTests::test_grep_show_false"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'import_avro'. Did you mean: 'import_vcf'?",
+    "cases": 1,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::AvroTests::test_simple_avro"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/missingInfoArray.vcf:15: Missing value in INFO array. Use 'hl.import_vcf(..., array_elements_required=False)'.",
+    "cases": 1,
+    "category": "format_io_and_fixture_compatibility",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: /Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/skip_invalid_loci.vcf:89: Invalid locus 0:1 for reference GRCh37",
+    "cases": 1,
+    "category": "planning_or_execution",
+    "examples": [
+      "methods/test_impex.py::test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'rename_duplicates'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_misc.py::test_misc.py::Tests::test_rename_duplicates"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'segment_intervals'. Did you mean: 'filter_intervals'?",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_misc.py::test_misc.py::Tests::test_segment_intervals"
+    ]
+  },
+  {
+    "error": "AssertionError: Lists differ: [[1, 0], [1, 0], [0, 0], [1, 1], [1, 1], [1[152 chars], 1]] != [[0, 0], [0, 0], [0, 0], [0, 0], [0, 0], [1[152 chars], 1]]; E   First differing element 0:; [1, 0]; [0, 0]; E   - [[1, 0],; ?   ^; E   + [[0, 0],; ?   ^; E   -  [1, 0],; ?   ^; E   +  [0, 0],; ?   ^; E   +  [0, 0],; +  [0, 0],; [0, 0],; [1, 1],; [1, 1],; [1, 1],; +  [1, 0],; [1, 1],; [1, 1],; -  [1, 1],; ?   ^; E   +  [0, 1],; ?   ^; E      [1, 0],; -  [0, 0],; ?   ^; E   +  [1, 0],; ?   ^; E   -  [0, 0],; -  [1, 1],; [0, 1],; [0, 0],; [0, 0],; [0, 0],; [0, 0],; -  [0, 0],; -  [0, 0],; -  [0, 1],; -  [0, 1],; [1, 0],; [1, 1],; +  [1, 1],; -  [0, 1]]; ?        ^; E   +  [0, 1],; ?        ^; E   +  [1, 1],; +  [1, 1]]",
+    "cases": 1,
+    "category": "behavior_or_assertion_mismatch",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_balding_nichols_model_phased"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'impute_sex'",
+    "cases": 1,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_impute_sex_same_as_plink"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'logistic_regression_rows'; assert 'Failed to fit logistic regression null model (standard MLE with covariates only): Newton iteration failed to converge' in \"module 'vail' has no attribute 'logistic_regression_rows'\"",
+    "cases": 1,
+    "category": "missing_high_level_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_logistic_regression_rows_max_iter_zero"
+    ]
+  },
+  {
+    "error": "AttributeError: module 'vail' has no attribute 'row_correlation'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_row_correlation_vs_hardcode"
+    ]
+  },
+  {
+    "error": "External test timeout after 185.2s (limit 180s)",
+    "cases": 1,
+    "category": "timeout_or_native_crash",
+    "examples": [
+      "methods/test_statgen.py::test_statgen.py::Tests::test_split_multi_hts"
+    ]
+  },
+  {
+    "error": "AttributeError: 'LocalFilesystem' object has no attribute 'exists'",
+    "cases": 1,
+    "category": "missing_expression_or_table_api",
+    "examples": [
+      "test_call_caching.py::test_call_caching.py::test_execution_cache_creation"
+    ]
+  },
+  {
+    "error": "RuntimeError: Execution error: Arrow expression failed: Compute error: integer division or modulo by zero",
+    "cases": 1,
+    "category": "planning_or_execution",
+    "examples": [
+      "test_exceptions_from_workers_have_stack_traces.py::test_exceptions_from_workers_have_stack_traces.py::test_exceptions_from_workers_have_stack_traces"
+    ]
+  },
+  {
+    "error": "AttributeError: _tir",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_table_ir_highly_nested"
+    ]
+  },
+  {
+    "error": "AttributeError: type object 'Env' has no attribute 'backend'",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_blockmatrix_ir_persist"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.Literal is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::ValueTests::test_value_same_after_parsing"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.ApplyAggOp is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::CSETests::test_agg_let"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.ApplyBinaryPrimOp is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::CSETests::test_shadowing"
+    ]
+  },
+  {
+    "error": "NotImplementedError: vail.ir.StreamRange is not implemented",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::CSETests::test_stream_cse"
+    ]
+  },
+  {
+    "error": "AttributeError: 'tarray' object has no attribute '_from_encoding'",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_literal_encodings[value3]"
+    ]
+  },
+  {
+    "error": "AttributeError: 'ttuple' object has no attribute '_from_encoding'",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_literal_encodings[value4]"
+    ]
+  },
+  {
+    "error": "AttributeError: 'tset' object has no attribute '_from_encoding'",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_literal_encodings[value5]"
+    ]
+  },
+  {
+    "error": "ValueError: cannot infer an array element type from an empty array",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_literal_encodings[value9]"
+    ]
+  },
+  {
+    "error": "AttributeError: 'tlocus' object has no attribute '_from_encoding'",
+    "cases": 1,
+    "category": "hail_ir_jvm_or_backend_internals",
+    "examples": [
+      "test_ir.py::test_ir.py::test_locus_interval_encoding"
+    ]
+  },
+  {
+    "error": "TypeError: cannot pickle 'mappingproxy' object",
+    "cases": 1,
+    "category": "expression_typing_scope_or_validation",
+    "examples": [
+      "utils/test_pickle.py::test_pickle.py::test_locus_pickle"
+    ]
+  }
+]

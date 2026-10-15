@@ -1,0 +1,85 @@
+FFFFFEEEEFFF.                                                            [100%]
+==================================== ERRORS ====================================
+____________ ERROR at setup of test_logistic_regression_epacts_wald ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:961: in logistic_epacts_mt
+    fam = hl.import_fam(resource('regressionLogisticEpacts.fam'))
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_fam'. Did you mean: 'import_vcf'?
+____________ ERROR at setup of test_logistic_regression_epacts_lrt _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:961: in logistic_epacts_mt
+    fam = hl.import_fam(resource('regressionLogisticEpacts.fam'))
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_fam'. Did you mean: 'import_vcf'?
+___________ ERROR at setup of test_logistic_regression_epacts_score ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:961: in logistic_epacts_mt
+    fam = hl.import_fam(resource('regressionLogisticEpacts.fam'))
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_fam'. Did you mean: 'import_vcf'?
+___________ ERROR at setup of test_logistic_regression_epacts_firth ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:961: in logistic_epacts_mt
+    fam = hl.import_fam(resource('regressionLogisticEpacts.fam'))
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_fam'. Did you mean: 'import_vcf'?
+=================================== FAILURES ===================================
+________________________ Tests.test_split_multi_shuffle ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:771: in test_split_multi_shuffle
+    alleles = hl.split_multi(ht, permit_shuffle=True).alleles.collect()
+              ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'split_multi'. Did you mean: 'split_multi_hts'?
+_________________________ Tests.test_split_multi_table _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:753: in test_split_multi_table
+    ds1 = hl.split_multi(ds1)
+          ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'split_multi'. Did you mean: 'split_multi_hts'?
+_______________________ Tests.test_warn_if_no_intercept ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:946: in test_warn_if_no_intercept
+    self.assertTrue(hl.methods.statgen._warn_if_no_intercept('', covariates))
+                    ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'methods'
+____________________ Tests.test_weighted_linear_regression _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:332: in test_weighted_linear_regression
+    my_covs = [1.0, *list(covariates[mt.s].values())]
+                          ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: values
+_____ Tests.test_weighted_linear_regression__missing_weights_are_excluded ______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:358: in test_weighted_linear_regression__missing_weights_are_excluded
+    ht_with_missing_weights = hl._linear_regression_rows_nd(y=[[mt.y], [hl.abs(mt.y)]], x=mt.x, covariates=[1], weights=[weights[mt.s].Weight1, weights[mt.s].Weight2])
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_linear_regression_rows_nd'
+_________________ test_logistic_regression_y_parameter_sanity __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:1051: in test_logistic_regression_y_parameter_sanity
+    hl.logistic_regression_rows(test='wald', x=mt.prod, y=mt.row_idx, covariates=[1.0]).describe()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'logistic_regression_rows'
+___________________________ test_gq_from_pl_missing ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:1054: in test_gq_from_pl_missing
+    result = hl.eval(hl.gq_from_pl([450, None, 73, 85, 0, None]))
+                     ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'gq_from_pl'
+_________________________ test_gq_from_pl_all_missing __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:1058: in test_gq_from_pl_all_missing
+    result = hl.eval(hl.gq_from_pl(hl.literal([None, None, None], hl.tarray(hl.tint32))))
+                     ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'gq_from_pl'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:121
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py:121: PytestUnknownMarkWarning: Unknown pytest.mark.unchecked_allocator - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unchecked_allocator
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::Tests::test_split_multi_shuffle
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::Tests::test_split_multi_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::Tests::test_warn_if_no_intercept
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::Tests::test_weighted_linear_regression
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::Tests::test_weighted_linear_regression__missing_weights_are_excluded
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::test_logistic_regression_y_parameter_sanity
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::test_gq_from_pl_missing
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::test_gq_from_pl_all_missing
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::test_logistic_regression_epacts_wald
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::test_logistic_regression_epacts_lrt
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::test_logistic_regression_epacts_score
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9v7v039n/upstream_hail/methods/test_statgen.py::test_logistic_regression_epacts_firth
+8 failed, 1 passed, 59 deselected, 1 warning, 4 errors in 139.56s (0:02:19)

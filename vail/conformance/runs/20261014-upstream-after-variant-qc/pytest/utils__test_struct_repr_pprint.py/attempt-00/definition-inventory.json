@@ -1,0 +1,110 @@
+[
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_repr_empty_struct",
+    "line": 6,
+    "body": "def test_repr_empty_struct():\n    assert repr(hl.Struct()) == 'Struct()'"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_repr_identifier_key_struct",
+    "line": 10,
+    "body": "def test_repr_identifier_key_struct():\n    assert repr(hl.Struct(x=3)) == 'Struct(x=3)'"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_repr_two_identifier_keys_struct",
+    "line": 14,
+    "body": "def test_repr_two_identifier_keys_struct():\n    assert repr(hl.Struct(x=3, y=3)) == 'Struct(x=3, y=3)'"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_repr_non_identifier_key_struct",
+    "line": 18,
+    "body": "def test_repr_non_identifier_key_struct():\n    assert repr(hl.Struct(**{'x': 3, 'y ': 3})) == \"Struct(**{'x': 3, 'y ': 3})\""
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_repr_struct_in_struct_all_identifiers",
+    "line": 22,
+    "body": "def test_repr_struct_in_struct_all_identifiers():\n    assert repr(hl.Struct(x=3, y=3, z=hl.Struct(a=5))) == 'Struct(x=3, y=3, z=Struct(a=5))'"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_repr_struct_in_struct_some_non_identifiers1",
+    "line": 26,
+    "body": "def test_repr_struct_in_struct_some_non_identifiers1():\n    assert repr(hl.Struct(x=3, y=3, z=hl.Struct(**{'a ': 5}))) == \"Struct(x=3, y=3, z=Struct(**{'a ': 5}))\""
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_repr_struct_in_struct_some_non_identifiers2",
+    "line": 30,
+    "body": "def test_repr_struct_in_struct_some_non_identifiers2():\n    assert repr(hl.Struct(**{'x': 3, 'y ': 3, 'z': hl.Struct(a=5)})) == \"Struct(**{'x': 3, 'y ': 3, 'z': Struct(a=5)})\""
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_empty_struct",
+    "line": 34,
+    "body": "def test_pformat_empty_struct():\n    assert pformat(hl.Struct()) == 'Struct()'"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_identifier_key_struct",
+    "line": 38,
+    "body": "def test_pformat_identifier_key_struct():\n    assert pformat(hl.Struct(x=3)) == 'Struct(x=3)'"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_two_identifier_keys_struct",
+    "line": 42,
+    "body": "def test_pformat_two_identifier_keys_struct():\n    assert pformat(hl.Struct(x=3, y=3)) == 'Struct(x=3, y=3)'"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_non_identifier_key_struct",
+    "line": 46,
+    "body": "def test_pformat_non_identifier_key_struct():\n    assert pformat(hl.Struct(**{'x': 3, 'y ': 3})) == \"Struct(**{'x': 3, 'y ': 3})\""
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_struct_in_struct_all_identifiers",
+    "line": 50,
+    "body": "def test_pformat_struct_in_struct_all_identifiers():\n    assert pformat(hl.Struct(x=3, y=3, z=hl.Struct(a=5))) == 'Struct(x=3, y=3, z=Struct(a=5))'"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_struct_in_struct_some_non_identifiers1",
+    "line": 54,
+    "body": "def test_pformat_struct_in_struct_some_non_identifiers1():\n    assert pformat(hl.Struct(x=3, y=3, z=hl.Struct(**{'a ': 5}))) == \"Struct(x=3, y=3, z=Struct(**{'a ': 5}))\""
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_struct_in_struct_some_non_identifiers2",
+    "line": 58,
+    "body": "def test_pformat_struct_in_struct_some_non_identifiers2():\n    assert pformat(hl.Struct(**{'x': 3, 'y ': 3, 'z': hl.Struct(a=5)})) == \"Struct(**{'x': 3, 'y ': 3, 'z': Struct(a=5)})\""
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_small_struct_in_big_struct",
+    "line": 64,
+    "body": "def test_pformat_small_struct_in_big_struct():\n    x = hl.Struct(a0=0, a1=1, a2=2, a3=3, a4=4, a5=hl.Struct(b0='', b1='na', b2='nana', b3='nanana'))\n    expected = \"\\nStruct(a0=0,\\n       a1=1,\\n       a2=2,\\n       a3=3,\\n       a4=4,\\n       a5=Struct(b0='', b1='na', b2='nana', b3='nanana'))\\n\".strip()\n    assert pformat(x) == expected"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_pformat_big_struct_in_small_struct",
+    "line": 77,
+    "body": "def test_pformat_big_struct_in_small_struct():\n    x = hl.Struct(a5=hl.Struct(b0='', b1='na', b2='nana', b3='nanana', b5='ndasdfhjwafdhjskfdshjkfhdjksfhdsjk'))\n    expected = \"\\nStruct(a5=Struct(b0='',\\n                 b1='na',\\n                 b2='nana',\\n                 b3='nanana',\\n                 b5='ndasdfhjwafdhjskfdshjkfhdjksfhdsjk'))\\n\".strip()\n    assert pformat(x) == expected"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_array_of_struct_all_identifier",
+    "line": 89,
+    "body": "def test_array_of_struct_all_identifier():\n    expected = '\\n[Struct(x=3243),\\n Struct(x=3243),\\n Struct(x=3243),\\n Struct(x=3243),\\n Struct(x=3243),\\n Struct(x=3243),\\n Struct(x=3243),\\n Struct(x=3243),\\n Struct(x=3243),\\n Struct(x=3243)]\\n'.strip()\n    assert pformat([hl.Struct(**{'x': 3243}) for _ in range(10)]) == expected"
+  },
+  {
+    "module": "utils/test_struct_repr_pprint.py",
+    "name": "test_array_of_struct_non_identifier",
+    "line": 105,
+    "body": "def test_array_of_struct_non_identifier():\n    expected = \"\\n[Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123}),\\n Struct(**{'x': 3243, 'y ': 123})]\\n\".strip()\n    assert pformat([hl.Struct(**{'x': 3243, 'y ': 123}) for _ in range(10)]) == expected"
+  }
+]

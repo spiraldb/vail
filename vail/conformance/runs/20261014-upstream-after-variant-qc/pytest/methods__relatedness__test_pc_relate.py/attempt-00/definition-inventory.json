@@ -1,0 +1,56 @@
+[
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_against_R_truth",
+    "line": 7,
+    "body": "@test_timeout(local=6 * 60, batch=14 * 60)\ndef test_pc_relate_against_R_truth():\n    with hl.TemporaryDirectory(ensure_exists=False) as vcf_f, hl.TemporaryDirectory(ensure_exists=False) as hail_kin_f:\n        mt = hl.import_vcf(resource('pc_relate_bn_input.vcf.bgz')).checkpoint(vcf_f)\n        hail_kin = hl.pc_relate(mt.GT, 0.0, k=2).checkpoint(hail_kin_f)\n        with hl.TemporaryDirectory(ensure_exists=False) as r_kin_f:\n            r_kin = hl.import_table(resource('pc_relate_r_truth.tsv.bgz'), types={'i': 'struct{s:str}', 'j': 'struct{s:str}', 'kin': 'float', 'ibd0': 'float', 'ibd1': 'float', 'ibd2': 'float'}, key=['i', 'j']).checkpoint(r_kin_f)\n            assert r_kin.select('kin')._same(hail_kin.select('kin'), tolerance=0.001, absolute=True)\n            assert r_kin.select('ibd0')._same(hail_kin.select('ibd0'), tolerance=0.013, absolute=True)\n            assert r_kin.select('ibd1')._same(hail_kin.select('ibd1'), tolerance=0.026, absolute=True)\n            assert r_kin.select('ibd2')._same(hail_kin.select('ibd2'), tolerance=0.013, absolute=True)"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_simple_example",
+    "line": 32,
+    "body": "@qobtest\ndef test_pc_relate_simple_example():\n    gs = hl.literal([[0, 0, 0, 0, 1, 1, 1, 1], [0, 0, 1, 1, 0, 0, 1, 1], [0, 1, 0, 1, 0, 1, 0, 1], [0, 0, 1, 1, 0, 0, 1, 1]])\n    scores = hl.literal([[1, 1], [-1, 0], [1, -1], [-1, 0]])\n    mt = hl.utils.range_matrix_table(n_rows=8, n_cols=4)\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(gs[mt.col_idx][mt.row_idx]))\n    mt = mt.annotate_cols(scores=scores[mt.col_idx])\n    pcr = hl.pc_relate(mt.GT, min_individual_maf=0, scores_expr=mt.scores)\n    expected = [hl.Struct(i=0, j=1, kin=0.0, ibd0=1.0, ibd1=0.0, ibd2=0.0), hl.Struct(i=0, j=2, kin=0.0, ibd0=1.0, ibd1=0.0, ibd2=0.0), hl.Struct(i=0, j=3, kin=0.0, ibd0=1.0, ibd1=0.0, ibd2=0.0), hl.Struct(i=1, j=2, kin=0.0, ibd0=1.0, ibd1=0.0, ibd2=0.0), hl.Struct(i=1, j=3, kin=0.0, ibd0=1.0, ibd1=0.0, ibd2=0.0), hl.Struct(i=2, j=3, kin=0.0, ibd0=1.0, ibd1=0.0, ibd2=0.0)]\n    ht_expected = hl.Table.parallelize(expected)\n    ht_expected = ht_expected.key_by(i=hl.struct(col_idx=ht_expected.i), j=hl.struct(col_idx=ht_expected.j))\n    assert ht_expected._same(pcr, tolerance=1e-12, absolute=True)"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_paths_1",
+    "line": 60,
+    "body": "@test_timeout(6 * 60, batch=14 * 60)\n@skip_when_service_backend_in_azure(reason='takes >14 minutes in QoB in Azure')\ndef test_pc_relate_paths_1():\n    with hl.TemporaryDirectory(ensure_exists=False) as bn_f, hl.TemporaryDirectory(ensure_exists=False) as scores_f, hl.TemporaryDirectory(ensure_exists=False) as kin1_f, hl.TemporaryDirectory(ensure_exists=False) as kins1_f:\n        mt = hl.balding_nichols_model(3, 50, 100).checkpoint(bn_f)\n        _, scores3, _ = hl._hwe_normalized_blanczos(mt.GT, k=3, compute_loadings=False, q_iterations=10)\n        scores3 = scores3.checkpoint(scores_f)\n        kin1 = hl.pc_relate(mt.GT, 0.1, k=2, statistics='kin', block_size=64).checkpoint(kin1_f)\n        kin_s1 = hl.pc_relate(mt.GT, 0.1, scores_expr=scores3[mt.col_key].scores[:2], statistics='kin', block_size=64).checkpoint(kins1_f)\n        assert kin1._same(kin_s1, tolerance=0.0001)\n        assert kin1.count() == 50 * 49 / 2"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_paths_2",
+    "line": 81,
+    "body": "@test_timeout(6 * 60, batch=14 * 60)\ndef test_pc_relate_paths_2():\n    mt = hl.balding_nichols_model(3, 50, 100).cache()\n    kin2 = hl.pc_relate(mt.GT, 0.05, k=2, min_kinship=0.01, statistics='kin2', block_size=128).cache()\n    assert kin2.count() > 0\n    assert kin2.filter(kin2.kin < 0.01).count() == 0"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_paths_3",
+    "line": 90,
+    "body": "@test_timeout(6 * 60, batch=14 * 60)\ndef test_pc_relate_paths_3():\n    mt = hl.balding_nichols_model(3, 50, 100).cache()\n    kin3 = hl.pc_relate(mt.GT, 0.02, k=3, min_kinship=0.1, statistics='kin20', block_size=64).cache()\n    assert kin3.count() > 0\n    assert kin3.filter(kin3.kin < 0.1).count() == 0"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_self_kinship_1",
+    "line": 99,
+    "body": "@test_timeout(6 * 60, batch=14 * 60)\ndef test_self_kinship_1():\n    mt = hl.balding_nichols_model(3, 10, 50).cache()\n    with hl.TemporaryDirectory(ensure_exists=False) as f:\n        with_self = hl.pc_relate(mt.GT, 0.1, k=2, statistics='kin', block_size=16, include_self_kinship=True).checkpoint(f)\n        assert with_self.count() == 55\n        with_self_self_kin_only = with_self.filter(with_self.i.sample_idx == with_self.j.sample_idx)\n        assert with_self_self_kin_only.count() == 10, with_self_self_kin_only.collect()"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_self_kinship_2",
+    "line": 111,
+    "body": "@test_timeout(6 * 60, batch=14 * 60)\ndef test_self_kinship_2():\n    mt = hl.balding_nichols_model(3, 10, 50).cache()\n    with hl.TemporaryDirectory(ensure_exists=False) as f:\n        without_self = hl.pc_relate(mt.GT, 0.1, k=2, statistics='kin', block_size=16).checkpoint(f)\n        assert without_self.count() == 45\n        without_self_self_kin_only = without_self.filter(without_self.i.sample_idx == without_self.j.sample_idx)\n        assert without_self_self_kin_only.count() == 0, without_self_self_kin_only.collect()"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_self_kinship_3",
+    "line": 121,
+    "body": "@test_timeout(6 * 60, batch=14 * 60)\ndef test_self_kinship_3():\n    mt = hl.balding_nichols_model(3, 10, 50).cache()\n    with hl.TemporaryDirectory(ensure_exists=False) as with_self_f, hl.TemporaryDirectory(ensure_exists=False) as without_self_f:\n        with_self = hl.pc_relate(mt.GT, 0.1, k=2, statistics='kin20', block_size=16, include_self_kinship=True).checkpoint(with_self_f)\n        without_self = hl.pc_relate(mt.GT, 0.1, k=2, statistics='kin20', block_size=16).checkpoint(without_self_f)\n        with_self_no_self_kin = with_self.filter(with_self.i.sample_idx != with_self.j.sample_idx)\n        assert with_self_no_self_kin._same(without_self)"
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_issue_5263",
+    "line": 138,
+    "body": "@skip_when_service_backend(reason='intermittent tolerance failures')\n@test_timeout(local=6 * 60, batch=14 * 60)\ndef test_pc_relate_issue_5263():\n    mt = hl.balding_nichols_model(3, 50, 100)\n    expected = hl.pc_relate(mt.GT, 0.1, k=2, statistics='all')\n    mt = mt.select_entries(GT2=mt.GT, GT=hl.call(hl.rand_bool(0.5), hl.rand_bool(0.5)))\n    actual = hl.pc_relate(mt.GT2, 0.1, k=2, statistics='all')\n    assert expected._same(actual, tolerance=0.001)"
+  }
+]

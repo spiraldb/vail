@@ -1,0 +1,98 @@
+[
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_negative_weights_errors",
+    "line": 10,
+    "body": "@pytest.mark.parametrize('skat_model', [('hl._linear_skat', hl._linear_skat), ('hl._logistic_skat', hl._logistic_skat)])\ndef test_skat_negative_weights_errors(skat_model):\n    skat_name, skat = skat_model\n    genotypes = [[2, 1, 1, 1, 0, 1, 1, 2, 1, 1, 2, 1, 0, 0, 1], [1, 0, 1, 1, 1, 2, 0, 2, 1, 1, 0, 1, 1, 0, 0], [0, 2, 0, 0, 2, 1, 1, 2, 2, 1, 1, 1, 0, 1, 1], [1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 0]]\n    covariates = [[1], [1], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [1], [1], [0]]\n    phenotypes = [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0]\n    weights = [-1, 0, 1, -1]\n    mt = hl.utils.range_matrix_table(4, 15)\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(hl.literal(genotypes)[mt.row_idx][mt.col_idx]))\n    mt = mt.annotate_cols(phenotype=hl.literal(phenotypes)[mt.col_idx], cov1=hl.literal(covariates)[mt.col_idx][0])\n    mt = mt.annotate_rows(weight=hl.literal(weights)[mt.row_idx])\n    mt = mt.annotate_globals(group=0)\n    ht = skat(mt.group, mt.weight, mt.phenotype, mt.GT.n_alt_alleles(), [1.0, mt.cov1])\n    try:\n        ht.collect()\n    except Exception as exc:\n        assert skat_name + ': every weight must be positive, in group 0, the weights were: [-1.0,0.0,1.0,-1.0]' in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_logistic_skat_phenotypes_are_binary",
+    "line": 40,
+    "body": "@qobtest\ndef test_logistic_skat_phenotypes_are_binary():\n    genotypes = [[2, 1, 1, 1, 0, 1, 1, 2, 1, 1, 2, 1, 0, 0, 1], [1, 0, 1, 1, 1, 2, 0, 2, 1, 1, 0, 1, 1, 0, 0], [0, 2, 0, 0, 2, 1, 1, 2, 2, 1, 1, 1, 0, 1, 1], [1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 0]]\n    covariates = [[1], [1], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [1], [1], [0]]\n    phenotypes = [0, 0, 0, 3, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0]\n    weights = [1, 1, 1, 1]\n    mt = hl.utils.range_matrix_table(4, 15)\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(hl.literal(genotypes)[mt.row_idx][mt.col_idx]))\n    mt = mt.annotate_cols(phenotype=hl.literal(phenotypes)[mt.col_idx], cov1=hl.literal(covariates)[mt.col_idx][0])\n    mt = mt.annotate_rows(weight=hl.literal(weights)[mt.row_idx])\n    mt = mt.annotate_globals(group=0)\n    try:\n        ht = hl._logistic_skat(mt.group, mt.weight, mt.phenotype, mt.GT.n_alt_alleles(), [1.0, mt.cov1])\n        ht.collect()\n    except Exception as exc:\n        assert 'hl._logistic_skat: phenotypes must either be True, False, 0, or 1, found: 3.0 of type float64' in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_logistic_skat_no_weights_R_truth",
+    "line": 69,
+    "body": "@qobtest\ndef test_logistic_skat_no_weights_R_truth():\n    expected_p_value = 0.5819739\n    expected_Q_value = 1.869576\n    genotypes = [[2, 1, 1, 1, 0, 1, 1, 2, 1, 1, 2, 1, 0, 0, 1], [1, 0, 1, 1, 1, 2, 0, 2, 1, 1, 0, 1, 1, 0, 0], [0, 2, 0, 0, 2, 1, 1, 2, 2, 1, 1, 1, 0, 1, 1], [1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 0]]\n    covariates = [[1], [1], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [1], [1], [0]]\n    phenotypes = [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0]\n    weights = [1, 1, 1, 1]\n    mt = hl.utils.range_matrix_table(4, 15)\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(hl.literal(genotypes)[mt.row_idx][mt.col_idx]))\n    mt = mt.annotate_cols(phenotype=hl.literal(phenotypes)[mt.col_idx], cov1=hl.literal(covariates)[mt.col_idx][0])\n    mt = mt.annotate_rows(weight=hl.literal(weights)[mt.row_idx])\n    mt = mt.annotate_globals(group=0)\n    ht = hl._logistic_skat(mt.group, mt.weight, mt.phenotype, mt.GT.n_alt_alleles(), [1.0, mt.cov1])\n    results = ht.collect()\n    assert len(results) == 1\n    result = results[0]\n    assert result.size == 4\n    assert result.q_stat == pytest.approx(expected_Q_value, abs=5e-07)\n    assert result.p_value == pytest.approx(expected_p_value, abs=5e-08)\n    assert result.fault == 0"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_logistic_skat_R_truth",
+    "line": 124,
+    "body": "def test_logistic_skat_R_truth():\n    expected_p_value = 0.5335765\n    expected_Q_value = 2.515238\n    genotypes = [[2, 1, 1, 1, 0, 1, 1, 2, 1, 1, 2, 1, 0, 0, 1], [1, 0, 1, 1, 1, 2, 0, 2, 1, 1, 0, 1, 1, 0, 0], [0, 2, 0, 0, 2, 1, 1, 2, 2, 1, 1, 1, 0, 1, 1], [1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 0]]\n    covariates = [[1], [1], [0], [0], [0], [0], [0], [0], [0], [0], [0], [0], [1], [1], [0]]\n    phenotypes = [0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0]\n    weights = [1, 2, 1, 1]\n    mt = hl.utils.range_matrix_table(4, 15)\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(hl.literal(genotypes)[mt.row_idx][mt.col_idx]))\n    mt = mt.annotate_cols(phenotype=hl.literal(phenotypes)[mt.col_idx], cov1=hl.literal(covariates)[mt.col_idx][0])\n    mt = mt.annotate_rows(weight=hl.literal(weights)[mt.row_idx])\n    mt = mt.annotate_globals(group=0)\n    ht = hl._logistic_skat(mt.group, mt.weight, mt.phenotype, mt.GT.n_alt_alleles(), [1.0, mt.cov1])\n    results = ht.collect()\n    assert len(results) == 1\n    result = results[0]\n    assert result.size == 4\n    assert result.q_stat == pytest.approx(expected_Q_value, abs=5e-07)\n    assert result.p_value == pytest.approx(expected_p_value, abs=5e-08)\n    assert result.fault == 0"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_logistic_skat_on_big_matrix",
+    "line": 180,
+    "body": "def test_logistic_skat_on_big_matrix():\n    expected_p_value = 2.697155e-24\n    expected_Q_value = 10046.37\n    mt = hl.import_matrix_table(resource('skat_genotype_matrix_variants_are_rows.csv'), delimiter=',', row_fields={'row_idx': hl.tint64}, row_key=['row_idx'])\n    mt = mt.key_cols_by(col_id=hl.int64(mt.col_id))\n    ht = hl.import_table(resource('skat_phenotypes.csv'), no_header=True, types={'f0': hl.tfloat})\n    ht = ht.add_index('idx')\n    ht = ht.key_by('idx')\n    mt = mt.annotate_cols(pheno=ht[mt.col_key].f0 > 2)\n    mt = mt.annotate_globals(group=1)\n    ht = hl._logistic_skat(mt.group, hl.literal(1), mt.pheno, mt.x, [1.0])\n    results = ht.collect()\n    assert len(results) == 1\n    result = results[0]\n    assert result.size == 100\n    assert result.q_stat == pytest.approx(expected_Q_value, rel=5e-07)\n    assert result.p_value == pytest.approx(expected_p_value, rel=5e-08)\n    assert result.fault == 0"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_linear_skat_no_weights_R_truth",
+    "line": 219,
+    "body": "def test_linear_skat_no_weights_R_truth():\n    expected_p_value = 0.2700286\n    expected_Q_value = 2.854975\n    genotypes = [[0, 1, 0, 0, 0], [1, 0, 0, 0, 0], [0, 1, 2, 0, 2], [1, 0, 0, 2, 1]]\n    covariates = [[1, 2], [3, 4], [0, 9], [6, 1], [1, 1]]\n    phenotypes = [3, 4, 6, 4, 1]\n    weights = [1, 1, 1, 1]\n    mt = hl.utils.range_matrix_table(4, 5)\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(hl.literal(genotypes)[mt.row_idx][mt.col_idx]))\n    mt = mt.annotate_cols(phenotype=hl.literal(phenotypes)[mt.col_idx], cov1=hl.literal(covariates)[mt.col_idx][0], cov2=hl.literal(covariates)[mt.col_idx][1])\n    mt = mt.annotate_rows(weight=hl.literal(weights)[mt.row_idx])\n    mt = mt.annotate_globals(group=0)\n    ht = hl._linear_skat(mt.group, mt.weight, mt.phenotype, mt.GT.n_alt_alleles(), [1.0, mt.cov1, mt.cov2])\n    results = ht.collect()\n    assert len(results) == 1\n    result = results[0]\n    assert result.size == 4\n    assert result.q_stat == pytest.approx(expected_Q_value, abs=5e-07)\n    assert result.p_value == pytest.approx(expected_p_value, abs=5e-08)\n    assert result.fault == 0"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_linear_skat_R_truth",
+    "line": 262,
+    "body": "def test_linear_skat_R_truth():\n    expected_p_value = 0.2497489\n    expected_Q_value = 3.404505\n    genotypes = [[0, 1, 0, 0, 0], [1, 0, 0, 0, 0], [0, 1, 2, 0, 2], [1, 0, 0, 2, 1]]\n    covariates = [[1, 2], [3, 4], [0, 9], [6, 1], [1, 1]]\n    phenotypes = [3, 4, 6, 4, 1]\n    weights = [1, 2, 1, 1]\n    mt = hl.utils.range_matrix_table(4, 5)\n    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(hl.literal(genotypes)[mt.row_idx][mt.col_idx]))\n    mt = mt.annotate_cols(phenotype=hl.literal(phenotypes)[mt.col_idx], cov1=hl.literal(covariates)[mt.col_idx][0], cov2=hl.literal(covariates)[mt.col_idx][1])\n    mt = mt.annotate_rows(weight=hl.literal(weights)[mt.row_idx])\n    mt = mt.annotate_globals(group=0)\n    ht = hl._linear_skat(mt.group, mt.weight, mt.phenotype, mt.GT.n_alt_alleles(), [1.0, mt.cov1, mt.cov2])\n    results = ht.collect()\n    assert len(results) == 1\n    result = results[0]\n    assert result.size == 4\n    assert result.q_stat == pytest.approx(expected_Q_value, abs=5e-07)\n    assert result.p_value == pytest.approx(expected_p_value, abs=5e-08)\n    assert result.fault == 0"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_linear_skat_on_big_matrix",
+    "line": 327,
+    "body": "def test_linear_skat_on_big_matrix():\n    expected_p_value = 4.072862e-57\n    expected_Q_value = 125247\n    mt = hl.import_matrix_table(resource('skat_genotype_matrix_variants_are_rows.csv'), delimiter=',', row_fields={'row_idx': hl.tint64}, row_key=['row_idx'])\n    mt = mt.key_cols_by(col_id=hl.int64(mt.col_id))\n    ht = hl.import_table(resource('skat_phenotypes.csv'), no_header=True, types={'f0': hl.tfloat})\n    ht = ht.add_index('idx')\n    ht = ht.key_by('idx')\n    mt = mt.annotate_cols(pheno=ht[mt.col_key].f0)\n    mt = mt.annotate_globals(group=1)\n    ht = hl._linear_skat(mt.group, hl.literal(1), mt.pheno, mt.x, [1.0])\n    results = ht.collect()\n    assert len(results) == 1\n    result = results[0]\n    assert result.size == 100\n    assert result.q_stat == pytest.approx(expected_Q_value, rel=5e-07)\n    assert result.p_value == pytest.approx(expected_p_value, rel=5e-08)\n    assert result.fault == 0"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_1",
+    "line": 388,
+    "body": "@test_timeout(3 * 60)\ndef test_skat_1():\n    ds = skat_dataset()\n    hl.skat(key_expr=ds.gene, weight_expr=ds.weight, y=ds.pheno, x=ds.GT.n_alt_alleles(), covariates=[1.0], logistic=False)._force_count()"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_2",
+    "line": 396,
+    "body": "@test_timeout(3 * 60)\ndef test_skat_2():\n    ds = skat_dataset()\n    hl.skat(key_expr=ds.gene, weight_expr=ds.weight, y=ds.pheno, x=ds.GT.n_alt_alleles(), covariates=[1.0], logistic=True)._force_count()"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_3",
+    "line": 404,
+    "body": "@test_timeout(3 * 60)\ndef test_skat_3():\n    ds = skat_dataset()\n    hl.skat(key_expr=ds.gene, weight_expr=ds.weight, y=ds.pheno, x=ds.GT.n_alt_alleles(), covariates=[1.0, ds.cov.Cov1, ds.cov.Cov2], logistic=False)._force_count()"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_4",
+    "line": 417,
+    "body": "@test_timeout(3 * 60)\ndef test_skat_4():\n    ds = skat_dataset()\n    hl.skat(key_expr=ds.gene, weight_expr=ds.weight, y=ds.pheno, x=hl.pl_dosage(ds.PL), covariates=[1.0, ds.cov.Cov1, ds.cov.Cov2], logistic=True)._force_count()"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_5",
+    "line": 430,
+    "body": "@test_timeout(3 * 60)\ndef test_skat_5():\n    ds = skat_dataset()\n    hl.skat(key_expr=ds.gene, weight_expr=ds.weight, y=ds.pheno, x=hl.pl_dosage(ds.PL), covariates=[1.0, ds.cov.Cov1, ds.cov.Cov2], logistic=(25, 1e-06))._force_count()"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_linear_skat_produces_same_results_as_old_scala_method",
+    "line": 443,
+    "body": "@test_timeout(local=4 * 60)\ndef test_linear_skat_produces_same_results_as_old_scala_method():\n    mt = hl.import_vcf(resource('sample2.vcf'))\n    covariates_ht = hl.import_table(resource('skat.cov'), key='Sample', types={'Cov1': hl.tint, 'Cov2': hl.tint})\n    phenotypes_ht = hl.import_table(resource('skat.pheno'), key='Sample', types={'Pheno': hl.tfloat64}, missing='0', impute=True)\n    genes = hl.import_locus_intervals(resource('skat.interval_list'))\n    weights = hl.import_table(resource('skat.weights'), key='locus', types={'locus': hl.tlocus(), 'weight': hl.tfloat64})\n    mt = hl.split_multi_hts(mt)\n    pheno = phenotypes_ht[mt.s].Pheno\n    mt = mt.annotate_cols(cov=covariates_ht[mt.s], pheno=hl.case().when(pheno == 1.0, False).when(pheno == 2.0, True).or_missing())\n    mt = mt.annotate_rows(gene=genes[mt.locus].target, weight=weights[mt.locus].weight)\n    skat_results = hl._linear_skat(mt.gene, mt.weight, y=mt.pheno, x=mt.GT.n_alt_alleles(), covariates=[1, mt.cov.Cov1, mt.cov.Cov2]).rename({'group': 'id'}).select_globals()\n    old_scala_results = hl.import_table(resource('scala-skat-results.tsv'), types=dict(id=hl.tstr, size=hl.tint64, q_stat=hl.tfloat, p_value=hl.tfloat, fault=hl.tint), key='id')\n    assert skat_results._same(old_scala_results, tolerance=5e-05)"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_max_iteration_fails_explodes_in_37_steps",
+    "line": 476,
+    "body": "def test_skat_max_iteration_fails_explodes_in_37_steps():\n    mt = hl.utils.range_matrix_table(3, 3)\n    mt = mt.annotate_cols(y=hl.literal([1, 0, 1])[mt.col_idx])\n    mt = mt.annotate_entries(x=hl.literal([[1, 0, 0], [10, 0, 0], [10, 5, 1]])[mt.row_idx])\n    try:\n        ht = hl.skat(hl.literal(0), mt.row_idx, y=mt.y, x=mt.x[mt.col_idx], logistic=(37, 1e-10), covariates=[mt.y])\n        ht.collect()[0]\n    except FatalError as err:\n        assert 'Failed to fit logistic regression null model (MLE with covariates only): exploded at Newton iteration 37' in err.args[0]\n    except HailUserError as err:\n        assert 'hl._logistic_skat: null model did not converge: {b: null, score: null, fisher: null, mu: null, n_iterations: 37, log_lkhd: -0.6931471805599453, converged: false, exploded: true}' in err.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_max_iterations_fails_to_converge_in_fewer_than_36_steps",
+    "line": 506,
+    "body": "def test_skat_max_iterations_fails_to_converge_in_fewer_than_36_steps():\n    mt = hl.utils.range_matrix_table(3, 3)\n    mt = mt.annotate_cols(y=hl.literal([1, 0, 1])[mt.col_idx])\n    mt = mt.annotate_entries(x=hl.literal([[1, 0, 0], [10, 0, 0], [10, 5, 1]])[mt.row_idx])\n    try:\n        ht = hl.skat(hl.literal(0), mt.row_idx, y=mt.y, x=mt.x[mt.col_idx], logistic=(36, 1e-10), covariates=[mt.y])\n        ht.collect()[0]\n    except FatalError as err:\n        assert 'Failed to fit logistic regression null model (MLE with covariates only): Newton iteration failed to converge' in err.args[0]\n    except HailUserError as err:\n        assert 'hl._logistic_skat: null model did not converge: {b: null, score: null, fisher: null, mu: null, n_iterations: 36, log_lkhd: -0.6931471805599457, converged: false, exploded: false}' in err.args[0]\n    else:\n        assert False"
+  }
+]

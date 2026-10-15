@@ -1,0 +1,28 @@
+FFF                                                                      [100%]
+=================================== FAILURES ===================================
+_______________________________ test_king_small ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-vy7x538b/upstream_hail/methods/test_king.py:30: in test_king_small
+    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam')
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+_______________________________ test_king_large ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-vy7x538b/upstream_hail/methods/test_king.py:40: in test_king_large
+    mt = hl.import_plink(
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+_____________________ test_king_filtered_entries_no_error ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-vy7x538b/upstream_hail/methods/test_king.py:51: in test_king_filtered_entries_no_error
+    mt = hl.import_plink(bed=f'{plink_path}.bed', bim=f'{plink_path}.bim', fam=f'{plink_path}.fam')
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-vy7x538b/upstream_hail/methods/test_king.py:35
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-vy7x538b/upstream_hail/methods/test_king.py:35: PytestUnknownMarkWarning: Unknown pytest.mark.unchecked_allocator - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unchecked_allocator
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-vy7x538b/upstream_hail/methods/test_king.py::test_king_small
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-vy7x538b/upstream_hail/methods/test_king.py::test_king_large
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-vy7x538b/upstream_hail/methods/test_king.py::test_king_filtered_entries_no_error
+3 failed, 1 warning in 0.06s

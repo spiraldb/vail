@@ -1,0 +1,44 @@
+[
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_big_worker_has_big_memory",
+    "line": 70,
+    "body": "@pytest.mark.backend('batch')\ndef test_big_worker_has_big_memory(run_on_batch_mocks):\n    backend = hl.current_backend()\n    assert isinstance(backend, ServiceBackend)\n    backend.worker_cores = 8\n    backend.worker_memory = 'highmem'\n    hl.utils.range_table(10)._force_count()\n    config = run_on_batch_mocks.driver_config['job_config']\n    assert config['worker_cores'] == '8'\n    assert config['worker_memory'] == 'highmem'"
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_regions",
+    "line": 85,
+    "body": "@pytest.mark.backend('batch')\ndef test_regions(run_on_batch_mocks):\n    backend = hl.current_backend()\n    assert isinstance(backend, ServiceBackend)\n    old_regions = backend.regions\n    CLOUD = os.environ['HAIL_CLOUD']\n    try:\n        if CLOUD == 'gcp':\n            backend.regions = ['us-east1']\n        else:\n            assert CLOUD == 'azure'\n            backend.regions = ['eastus']\n        hl.utils.range_table(10)._force_count()\n        driver_kwargs = run_on_batch_mocks.create_jvm_job.call_args.kwargs\n        assert driver_kwargs['regions'] == backend.regions\n    finally:\n        backend.regions = old_regions"
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_driver_and_worker_job_groups",
+    "line": 107,
+    "body": "@pytest.mark.backend('batch')\ndef test_driver_and_worker_job_groups():\n    backend = hl.current_backend()\n    assert isinstance(backend, ServiceBackend)\n    n_partitions = 2\n    hl.utils.range_table(2, n_partitions=n_partitions)._force_count()\n    sync_batch = Batch(backend._batch)\n    root_job_group = sync_batch.get_job_group(0)\n    action_job_groups = list(root_job_group.job_groups())\n    assert len(action_job_groups) == 1\n    action_jg = action_job_groups[0]\n    assert action_jg.attributes()['name'] == 'execute(...)'\n    action_drivers = list(action_jg.jobs(recursive=False))\n    assert len(action_drivers) == 1\n    driver = action_drivers[0]\n    assert driver['name'] == 'execute(...)_driver'\n    worker_stages = list(action_jg.job_groups())\n    assert len(worker_stages) == 1\n    worker_stage = worker_stages[0]\n    assert worker_stage.attributes()['name'] == 'table_force_count'\n    worker_jobs = list(worker_stage.jobs())\n    assert len(worker_jobs) == n_partitions\n    for i, partition in enumerate(worker_jobs):\n        assert partition['name'] == f'execute(...)_stage0_table_force_count_partition{i}'"
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_attach_to_existing_batch",
+    "line": 139,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.uninitialized\ndef test_attach_to_existing_batch(request):\n    billing_project = configuration_of(ConfigVariable.BATCH_BILLING_PROJECT, None, None)\n    assert billing_project is not None\n    client = BatchClient(billing_project)\n    batch = client.create_batch(attributes={'name': request.node.nodeid})\n    batch.submit()\n    hl.init(backend='batch', batch_id=batch.id)\n    hl.utils.range_table(2)._force_count()\n    backend = hl.current_backend()\n    assert isinstance(backend, ServiceBackend)\n    assert backend._batch.id == batch.id\n    status = batch.status()\n    assert status['n_jobs'] > 0, repr(batch.debug_info())"
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_explicit_regions",
+    "line": 160,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.uninitialized\ndef test_explicit_regions():\n    hl.init(backend='batch', regions=['us-central1'])\n    backend = hl.current_backend()\n    assert isinstance(backend, ServiceBackend)\n    assert backend.regions == ['us-central1']"
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_any_region",
+    "line": 170,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.uninitialized\ndef test_any_region():\n    hl.init(backend='batch', regions=ANY_REGION)\n    backend = hl.current_backend()\n    assert isinstance(backend, ServiceBackend)\n    assert backend.regions == async_to_blocking(backend._batch_client.supported_regions())"
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_default_region",
+    "line": 180,
+    "body": "@pytest.mark.backend('batch')\n@pytest.mark.uninitialized\ndef test_default_region():\n    hl.init(backend='batch')\n    backend = hl.current_backend()\n    assert isinstance(backend, ServiceBackend)\n    assert backend.regions == [async_to_blocking(backend._batch_client.default_region())]"
+  }
+]

@@ -1,0 +1,2858 @@
+[
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_interrupt_propagates",
+    "line": 80,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_interrupt_closes_the_connection",
+    "line": 86,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_exceptions_do_not_close_the_connection",
+    "line": 93,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_successful_commands_pass_through",
+    "line": 100,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_patching_is_idempotent",
+    "line": 105,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_py4j_connections_are_interrupt_safe",
+    "line": 113,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_log_suppress_shutdown_exceptions_swallows_exceptions",
+    "line": 117,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_log_suppress_shutdown_exceptions_propagates_interrupts",
+    "line": 121,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_rpc_failures_cancel_the_operation_and_propagate",
+    "line": 127,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_rpc_cancel_failures_do_not_mask_the_original_failure",
+    "line": 134,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_rpc_returns_successful_responses",
+    "line": 139,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_py4j_backend.py",
+    "name": "test_rpc_java_errors_raise_fatal_errors",
+    "line": 149,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_big_worker_has_big_memory",
+    "line": 70,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_regions",
+    "line": 85,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_driver_and_worker_job_groups",
+    "line": 107,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_attach_to_existing_batch",
+    "line": 139,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_explicit_regions",
+    "line": 160,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_any_region",
+    "line": 170,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_service_backend.py",
+    "name": "test_default_region",
+    "line": 180,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_spark_backend.py",
+    "name": "test_copy_spark_log",
+    "line": 24,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_spark_backend.py",
+    "name": "test_init_without_existing_spark_context",
+    "line": 38,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_spark_backend.py",
+    "name": "test_init_with_existing_spark_context",
+    "line": 46,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_spark_backend.py",
+    "name": "TestSparkConf.test_",
+    "line": 110,
+    "async_test": false
+  },
+  {
+    "module": "backend/test_spark_backend.py",
+    "name": "test_min_block_size_pos_int",
+    "line": 119,
+    "async_test": false
+  },
+  {
+    "module": "experimental/test_local_whitening.py",
+    "name": "test_local_whitening",
+    "line": 34,
+    "async_test": false
+  },
+  {
+    "module": "experimental/test_local_whitening.py",
+    "name": "test_local_whitening_singleton_final_partition",
+    "line": 41,
+    "async_test": false
+  },
+  {
+    "module": "experimental/test_time.py",
+    "name": "test_strftime",
+    "line": 5,
+    "async_test": false
+  },
+  {
+    "module": "experimental/test_time.py",
+    "name": "test_strptime",
+    "line": 17,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_list",
+    "line": 8,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_list",
+    "line": 16,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_tuple_of_list",
+    "line": 26,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_tuple_of_list",
+    "line": 34,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_struct_of_list",
+    "line": 44,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_struct_of_list",
+    "line": 52,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_dict_value_list",
+    "line": 62,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_dict_value_list",
+    "line": 70,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_as_set_list_list_list_set_list",
+    "line": 80,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_counter_list_list_list_set_list",
+    "line": 88,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_dict_value_list",
+    "line": 98,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_dict_key_list",
+    "line": 111,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_dict_key_and_value_list",
+    "line": 119,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_set_list",
+    "line": 128,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_set_dict_list_list",
+    "line": 136,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_freezing.py",
+    "name": "test_collect_set_tuple_struct_struct_list",
+    "line": 145,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_parser_roundtrip",
+    "line": 66,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_eval_roundtrip",
+    "line": 70,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_equality",
+    "line": 74,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_type_jvm_roundtrip",
+    "line": 86,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_pretty_roundtrip",
+    "line": 93,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_coercers_can_coerce",
+    "line": 101,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_nested_type_to_spark",
+    "line": 110,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_rename_not_unique",
+    "line": 115,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_get_context",
+    "line": 121,
+    "async_test": false
+  },
+  {
+    "module": "expr/test_types.py",
+    "name": "Tests.test_tlocus_schema_from_rg_matches_scala",
+    "line": 171,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_no_settings",
+    "line": 18,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_write_no_settings",
+    "line": 26,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_write_with_project",
+    "line": 38,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_with_project",
+    "line": 60,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_no_project",
+    "line": 69,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_with_project_more_than_one_partition",
+    "line": 86,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_requester_pays_with_project_more_than_one_partition_no_project",
+    "line": 119,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_can_access_public_blobs",
+    "line": 126,
+    "async_test": false
+  },
+  {
+    "module": "fs/test_worker_driver_fs.py",
+    "name": "test_qob_can_use_sas_tokens",
+    "line": 137,
+    "async_test": true
+  },
+  {
+    "module": "genetics/test_pedigree.py",
+    "name": "Tests.test_trios",
+    "line": 10,
+    "async_test": false
+  },
+  {
+    "module": "genetics/test_pedigree.py",
+    "name": "Tests.test_pedigree",
+    "line": 35,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_geom_point_line_text_col_area",
+    "line": 28,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_manhattan_plot",
+    "line": 48,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_histogram",
+    "line": 83,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_separate_traces_per_group",
+    "line": 102,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_geom_ribbon",
+    "line": 108,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_default_scale_no_repeat_colors",
+    "line": 114,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_scale_color_manual",
+    "line": 125,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_weighted_bar",
+    "line": 139,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_faceting",
+    "line": 151,
+    "async_test": false
+  },
+  {
+    "module": "ggplot/test_ggplot.py",
+    "name": "test_matrix_tables",
+    "line": 159,
+    "async_test": false
+  },
+  {
+    "module": "matrixtable/test_file_formats.py",
+    "name": "test_write",
+    "line": 44,
+    "async_test": false
+  },
+  {
+    "module": "matrixtable/test_file_formats.py",
+    "name": "test_backward_compatability_mt",
+    "line": 94,
+    "async_test": false
+  },
+  {
+    "module": "matrixtable/test_file_formats.py",
+    "name": "test_backward_compatability_ht",
+    "line": 109,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_against_R_truth",
+    "line": 7,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_simple_example",
+    "line": 32,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_paths_1",
+    "line": 60,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_paths_2",
+    "line": 81,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_paths_3",
+    "line": 90,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_self_kinship_1",
+    "line": 99,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_self_kinship_2",
+    "line": 111,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_self_kinship_3",
+    "line": 121,
+    "async_test": false
+  },
+  {
+    "module": "methods/relatedness/test_pc_relate.py",
+    "name": "test_pc_relate_issue_5263",
+    "line": 138,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_hwe_normalized_pca",
+    "line": 14,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_pca_against_numpy",
+    "line": 29,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_blanczos_against_numpy",
+    "line": 68,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_blanczos_T",
+    "line": 134,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_blanczos_flags",
+    "line": 166,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_1",
+    "line": 268,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_2",
+    "line": 274,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_3",
+    "line": 280,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_4",
+    "line": 286,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_5",
+    "line": 292,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_1",
+    "line": 315,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_2",
+    "line": 321,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_3",
+    "line": 327,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_4",
+    "line": 333,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectral_moments_5",
+    "line": 339,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_1",
+    "line": 373,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_2",
+    "line": 378,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_3",
+    "line": 383,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_4",
+    "line": 388,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_pca.py",
+    "name": "test_spectra_and_moments_5",
+    "line": 393,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_sample_qc",
+    "line": 41,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_variant_qc",
+    "line": 83,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_variant_qc_alleles_field",
+    "line": 143,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_concordance",
+    "line": 156,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_concordance_n_discordant_1",
+    "line": 186,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_concordance_n_discordant_2",
+    "line": 192,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_concordance_no_values_doesnt_error",
+    "line": 251,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles",
+    "line": 257,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles_hts_1",
+    "line": 265,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles_hts_2",
+    "line": 275,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles_hts_3",
+    "line": 285,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_filter_alleles_hts_4",
+    "line": 295,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_sample_and_variant_qc_call_rate",
+    "line": 305,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_summarize_variants_ti_tv",
+    "line": 315,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_charr",
+    "line": 326,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch37_consequence_true",
+    "line": 338,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch38_consequence_true",
+    "line": 361,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch37_consequence_false",
+    "line": 386,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch38_consequence_false",
+    "line": 400,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch37_against_dataproc",
+    "line": 414,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch38_against_dataproc",
+    "line": 468,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_qc.py",
+    "name": "Tests.test_vep_grch38_with_large_positions",
+    "line": 522,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_negative_weights_errors",
+    "line": 10,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_logistic_skat_phenotypes_are_binary",
+    "line": 40,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_logistic_skat_no_weights_R_truth",
+    "line": 69,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_logistic_skat_R_truth",
+    "line": 124,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_logistic_skat_on_big_matrix",
+    "line": 180,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_linear_skat_no_weights_R_truth",
+    "line": 219,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_linear_skat_R_truth",
+    "line": 262,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_linear_skat_on_big_matrix",
+    "line": 327,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_1",
+    "line": 388,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_2",
+    "line": 396,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_3",
+    "line": 404,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_4",
+    "line": 417,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_5",
+    "line": 430,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_linear_skat_produces_same_results_as_old_scala_method",
+    "line": 443,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_max_iteration_fails_explodes_in_37_steps",
+    "line": 476,
+    "async_test": false
+  },
+  {
+    "module": "methods/test_skat.py",
+    "name": "test_skat_max_iterations_fails_to_converge_in_fewer_than_36_steps",
+    "line": 506,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_cdf",
+    "line": 8,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_histogram",
+    "line": 13,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_pdf",
+    "line": 19,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_smoothed_pdf",
+    "line": 24,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_cumulative_histogram",
+    "line": 29,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_histogram2d",
+    "line": 35,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_scatter",
+    "line": 40,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_joint_plot",
+    "line": 45,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_qq",
+    "line": 50,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_manhattan",
+    "line": 55,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_plots_deprecated_collect_all",
+    "line": 70,
+    "async_test": false
+  },
+  {
+    "module": "plot/test_plot.py",
+    "name": "test_visualize_missingness",
+    "line": 90,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_annotate",
+    "line": 31,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate1",
+    "line": 136,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate2",
+    "line": 162,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate_ir",
+    "line": 220,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_java_array_string_encoding",
+    "line": 240,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_to_matrix_table",
+    "line": 247,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_to_matrix_table_row_major",
+    "line": 261,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_group_by_field_lifetimes",
+    "line": 290,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_group_aggregate_by_key",
+    "line": 295,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate_by_key_partitioning",
+    "line": 303,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_group_aggregate_na",
+    "line": 315,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_filter",
+    "line": 327,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_filter_missing",
+    "line": 343,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_transmute",
+    "line": 348,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_transmute_globals",
+    "line": 372,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_transmute_key",
+    "line": 376,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_select",
+    "line": 382,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_errors",
+    "line": 418,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_scan_filter",
+    "line": 434,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_scan_tail",
+    "line": 440,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_semi_anti_join",
+    "line": 446,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indirected_joins",
+    "line": 469,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_matrix_join_combinations",
+    "line": 487,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_index_globals",
+    "line": 503,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_interval_join",
+    "line": 507,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_interval_filter_unordered",
+    "line": 520,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_interval_product_join",
+    "line": 555,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_interval_product_join_long_key",
+    "line": 572,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_with_empty",
+    "line": 594,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_with_key",
+    "line": 599,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_product_join",
+    "line": 604,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multiple_entry_joins",
+    "line": 612,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join",
+    "line": 619,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join_globals",
+    "line": 657,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join_key_downcast",
+    "line": 665,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join_key_downcast2",
+    "line": 672,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_multi_way_zip_join_highly_unbalanced_partitions__issue_14245",
+    "line": 685,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_index_maintains_count",
+    "line": 702,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_index_keyless_table",
+    "line": 717,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregation_with_no_aggregators",
+    "line": 722,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_drop",
+    "line": 726,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_weird_names",
+    "line": 744,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_sample",
+    "line": 762,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_spark_works",
+    "line": 768,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_pandas_works",
+    "line": 777,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_pandas_objects",
+    "line": 787,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_pandas_missing_and_nans",
+    "line": 809,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_from_pandas_mismatched_object_rows",
+    "line": 828,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_parallelize_infer_types",
+    "line": 835,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_parallelize_partial_infer_types",
+    "line": 890,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_parallelize_error_both_schema_partial_type_defined",
+    "line": 905,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_rename",
+    "line": 913,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_distinct",
+    "line": 940,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_group_by_key",
+    "line": 966,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_str_annotation_regression",
+    "line": 990,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_range_table",
+    "line": 995,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_range_table_zero",
+    "line": 1004,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_issue_3654",
+    "line": 1009,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_explode_key_error",
+    "line": 1014,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_explode_on_set",
+    "line": 1020,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_explode_nested",
+    "line": 1029,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_value_error",
+    "line": 1035,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_export",
+    "line": 1041,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_export_delim",
+    "line": 1049,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_export_parallel_manifest",
+    "line": 1057,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_write_stage_locally",
+    "line": 1078,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_write_no_parts",
+    "line": 1085,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_min_partitions",
+    "line": 1092,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_read_back_same_as_exported",
+    "line": 1095,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indexed_read_1",
+    "line": 1102,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indexed_read_2",
+    "line": 1117,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indexed_read_3",
+    "line": 1131,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_indexed_read_4",
+    "line": 1146,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_order_by_parsing",
+    "line": 1160,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_take_order",
+    "line": 1163,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_filter_partitions",
+    "line": 1169,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_localize_entries",
+    "line": 1181,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_localize_self_join",
+    "line": 1191,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_union",
+    "line": 1202,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_nested_union_100",
+    "line": 1226,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_nested_union_200",
+    "line": 1230,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_union_unify",
+    "line": 1233,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_table_order_by_head_rewrite",
+    "line": 1255,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_order_by_expr",
+    "line": 1262,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_null_joins",
+    "line": 1278,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_null_joins_2",
+    "line": 1334,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_joins_one_null",
+    "line": 1397,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_ht1_is_what_we_expect",
+    "line": 1461,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_ht2_is_what_we_expect",
+    "line": 1465,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_left",
+    "line": 1469,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_right",
+    "line": 1474,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_inner",
+    "line": 1479,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_types_outer",
+    "line": 1484,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_partitioning_rewrite",
+    "line": 1489,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_flatten",
+    "line": 1495,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expand_types",
+    "line": 1502,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expand_types_ordering",
+    "line": 1509,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expand_types_on_all_types",
+    "line": 1514,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_mangling",
+    "line": 1518,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_join_with_filter_intervals",
+    "line": 1525,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_key_by_aggregate_rewriting",
+    "line": 1541,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_field_method_assignment",
+    "line": 1546,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_refs_with_process_joins",
+    "line": 1553,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_aggregate_localize_false",
+    "line": 1562,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_collect_localize_false",
+    "line": 1567,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_take_localize_false",
+    "line": 1571,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expr_collect_localize_false",
+    "line": 1575,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expr_collect",
+    "line": 1579,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_expr_take_localize_false",
+    "line": 1602,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_empty_show",
+    "line": 1606,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_no_row_fields_show",
+    "line": 1609,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_equal",
+    "line": 1612,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_within_tolerance",
+    "line": 1616,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_different_type",
+    "line": 1622,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_different_global",
+    "line": 1634,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_same_different_rows",
+    "line": 1639,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_rvd_key_write",
+    "line": 1648,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_show_long_field_names",
+    "line": 1657,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_show__various_types",
+    "line": 1660,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_import_filter_replace",
+    "line": 1704,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_import_multiple_missing",
+    "line": 1717,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_unicode_ordering",
+    "line": 1722,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_physical_key_truncation",
+    "line": 1728,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_repartition_empty_key",
+    "line": 1734,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_read_with_partitions",
+    "line": 1740,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "Tests.test_path_collision_error",
+    "line": 1748,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_large_number_of_fields",
+    "line": 1758,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_import_many_fields",
+    "line": 1768,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_segfault",
+    "line": 1772,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_maybe_flexindex_table_by_expr_direct_match",
+    "line": 1782,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_maybe_flexindex_table_by_expr_prefix_match",
+    "line": 1801,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_maybe_flexindex_table_by_expr_direct_interval_match",
+    "line": 1820,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_maybe_flexindex_table_by_expr_prefix_interval_match",
+    "line": 1840,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_can_process_wide_tables",
+    "line": 1862,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_join_with_key_prefix",
+    "line": 1903,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_join_distinct_preserves_count",
+    "line": 1914,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_write_table_containing_ndarray",
+    "line": 1934,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_group_within_partitions",
+    "line": 1944,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_group_within_partitions_after_explode",
+    "line": 1979,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_group_within_partitions_after_import_vcf",
+    "line": 1987,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_range_annotate_range",
+    "line": 1995,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_read_write_all_types",
+    "line": 2003,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_map_partitions_flatmap",
+    "line": 2010,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_map_partitions_errors",
+    "line": 2016,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_map_partitions_indexed",
+    "line": 2024,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_keys_before_scans",
+    "line": 2032,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_lowered_persist",
+    "line": 2045,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_lowered_shuffle",
+    "line": 2053,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_read_partitions",
+    "line": 2059,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_read_partitions_with_missing_key",
+    "line": 2066,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_empty_tree_aggregate",
+    "line": 2073,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_interval_filter_partitions",
+    "line": 2081,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_grouped_flatmap_streams",
+    "line": 2108,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_head_and_tail",
+    "line": 2128,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas",
+    "line": 2146,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_types_type_to_type",
+    "line": 2164,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_types_column_to_type",
+    "line": 2174,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_flatten",
+    "line": 2184,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_null_ints",
+    "line": 2201,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_to_pandas_nd_array",
+    "line": 2227,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_literal_of_numpy_int64",
+    "line": 2243,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_literal_of_numpy_int32",
+    "line": 2249,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_literal_of_pandas_NA_and_numpy_int64",
+    "line": 2255,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_literal_of_pandas_NA_and_numpy_int32",
+    "line": 2263,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_write_many",
+    "line": 2272,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_indexed_read_boundaries",
+    "line": 2304,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_table",
+    "line": 2331,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_range_matrix_rows_table",
+    "line": 2337,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_join",
+    "line": 2344,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_left_join_right_distinct",
+    "line": 2354,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_interval_join",
+    "line": 2364,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_union",
+    "line": 2376,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_with_body_randomness",
+    "line": 2385,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_globals_without_body_randomness",
+    "line": 2393,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_explode",
+    "line": 2400,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by",
+    "line": 2408,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_body_randomness",
+    "line": 2415,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_with_scan_randomness",
+    "line": 2423,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_rows_without_body_randomness",
+    "line": 2430,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_map_partitions",
+    "line": 2437,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_read",
+    "line": 2445,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_entries_table",
+    "line": 2454,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_with_cond_randomness",
+    "line": 2461,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_without_cond_randomness",
+    "line": 2469,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_body_randomness",
+    "line": 2476,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_with_agg_randomness",
+    "line": 2484,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_key_by_and_aggregate_without_body_randomness",
+    "line": 2492,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_aggregate_by_key",
+    "line": 2499,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_matrix_cols_table",
+    "line": 2507,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_with_body_randomness",
+    "line": 2514,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_parallelize_without_body_randomness",
+    "line": 2521,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_head",
+    "line": 2527,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_tail",
+    "line": 2534,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_order_by",
+    "line": 2541,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_distinct",
+    "line": 2548,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_repartition",
+    "line": 2556,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_cast_matrix_to_table",
+    "line": 2565,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_rename",
+    "line": 2572,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_multi_way_zip_join",
+    "line": 2579,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_filter_intervals",
+    "line": 2591,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_block_matrix_to_table",
+    "line": 2599,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_table_randomness_table_gen",
+    "line": 2606,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_order_by_desc",
+    "line": 2617,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_errors",
+    "line": 2632,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table",
+    "line": 2684,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_randomness",
+    "line": 2688,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_compound_key",
+    "line": 2713,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_query_table_interval_key",
+    "line": 2736,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_large_number_of_partitions",
+    "line": 2741,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_range_table_biggest_int",
+    "line": 2746,
+    "async_test": false
+  },
+  {
+    "module": "table/test_table.py",
+    "name": "test_group_by_aggregate_doesnt_clobber_global_field",
+    "line": 2755,
+    "async_test": false
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_init_hail_context_twice",
+    "line": 31,
+    "async_test": false
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_top_level_functions_are_do_not_error",
+    "line": 48,
+    "async_test": false
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_tmpdir_runs",
+    "line": 54,
+    "async_test": false
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_get_flags",
+    "line": 58,
+    "async_test": false
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_flags_same_in_scala_and_python",
+    "line": 64,
+    "async_test": false
+  },
+  {
+    "module": "test_context.py",
+    "name": "test_fast_restarts_feature",
+    "line": 69,
+    "async_test": false
+  },
+  {
+    "module": "test_hail_in_notebook.py",
+    "name": "test_hail_in_notebook",
+    "line": 12,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_varargs",
+    "line": 21,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_helpers",
+    "line": 120,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_nested",
+    "line": 156,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_class_methods",
+    "line": 171,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_lazy",
+    "line": 215,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_coercion",
+    "line": 236,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_function_checker",
+    "line": 257,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_complex_signature",
+    "line": 284,
+    "async_test": false
+  },
+  {
+    "module": "typecheck/test_typecheck.py",
+    "name": "Tests.test_extra_args",
+    "line": 299,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_deduplicate.py",
+    "name": "test_deduplicate_simple",
+    "line": 4,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_deduplicate.py",
+    "name": "test_deduplicate_max_attempts",
+    "line": 18,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_deduplicate.py",
+    "name": "test_deduplicate_already_used",
+    "line": 27,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_methods_1",
+    "line": 37,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_methods_2",
+    "line": 53,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_methods_3",
+    "line": 69,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_read_overwrite",
+    "line": 90,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_exists",
+    "line": 106,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_is_file",
+    "line": 117,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_stat",
+    "line": 128,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_subdirs",
+    "line": 151,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_rmtree_empty_is_ok",
+    "line": 218,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_rmtree_empty_subdir_is_ok",
+    "line": 225,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_remove_and_rmtree",
+    "line": 233,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_placement_tree.py",
+    "name": "Tests.test_realistic",
+    "line": 8,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_methods",
+    "line": 37,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_exists",
+    "line": 81,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_mkdir_p",
+    "line": 85,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_mkdir_p_2",
+    "line": 98,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_copy_log",
+    "line": 105,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_is_file",
+    "line": 111,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_is_dir",
+    "line": 116,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_stat",
+    "line": 122,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_no_glob_in_bucket",
+    "line": 134,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_ls_simple",
+    "line": 151,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_ls",
+    "line": 161,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_ls_file_that_does_not_exist",
+    "line": 182,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_glob_heterogenous_structure",
+    "line": 192,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_ls_glob_no_slash_in_group",
+    "line": 217,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_ls_glob_1",
+    "line": 227,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_hadoop_ls_glob_2",
+    "line": 232,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_linked_list",
+    "line": 237,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_struct_ops",
+    "line": 261,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_expr_exception_results_in_hail_user_error",
+    "line": 274,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_interval_ops",
+    "line": 280,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_range_matrix_table_n_lt_partitions",
+    "line": 295,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_escape_string",
+    "line": 298,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_escape_id",
+    "line": 306,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_frozen_dict",
+    "line": 312,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "Tests.test_json_encoder",
+    "line": 326,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_folder_glob",
+    "line": 368,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_prefix_folder_glob_qmarks",
+    "line": 374,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_two_folder_globs",
+    "line": 380,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_two_folder_globs_and_two_qmarks",
+    "line": 391,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_one_folder_glob_and_qmarks_in_multiple_components",
+    "line": 402,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_groups",
+    "line": 408,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_size_one_groups",
+    "line": 414,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_component_with_only_groups",
+    "line": 420,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_hadoop_ls_negated_group",
+    "line": 432,
+    "async_test": false
+  },
+  {
+    "module": "utils/test_utils.py",
+    "name": "test_struct_rich_comparison",
+    "line": 438,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_combiner_works",
+    "line": 66,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_combiner_plan_round_trip_serialization",
+    "line": 105,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_reload_combiner_plan",
+    "line": 125,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_move_load_combiner_plan",
+    "line": 154,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_combiner_run",
+    "line": 183,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_combiner_manual_filtration",
+    "line": 226,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_ref_block_max_len_propagates_in_combiner",
+    "line": 250,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_custom_call_fields",
+    "line": 277,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_missing_ref_gt_does_not_drop_other_fields",
+    "line": 303,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_combiner.py",
+    "name": "test_save_filters_saves_filters",
+    "line": 315,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_validate",
+    "line": 43,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_multi_write",
+    "line": 68,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_sampleqc_old_new_equivalence",
+    "line": 81,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_sampleqc_gq_dp",
+    "line": 112,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_sampleqc_singleton_r_ti_tv",
+    "line": 124,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_samples_and_merge",
+    "line": 134,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_samples_array",
+    "line": 160,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_segment_intervals",
+    "line": 176,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_interval_coverage",
+    "line": 212,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_impute_sex_chr_ploidy_from_interval_coverage",
+    "line": 329,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_impute_sex_chromosome_ploidy_1",
+    "line": 493,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_impute_sex_chromosome_ploidy_2",
+    "line": 516,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_segment",
+    "line": 538,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_segment_table",
+    "line": 553,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_default",
+    "line": 568,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_default_table",
+    "line": 580,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_chromosomes",
+    "line": 593,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_to_dense_mt",
+    "line": 622,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_read_dense_mt_and_to_dense_mt_equivalence",
+    "line": 663,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_to_dense_mt_haploid",
+    "line": 675,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_merge_reference_blocks",
+    "line": 717,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_truncate_reference_blocks",
+    "line": 746,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_union_rows1",
+    "line": 766,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_union_rows2",
+    "line": 781,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_combiner_max_len",
+    "line": 802,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_split_sparse_roundtrip",
+    "line": 828,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_split_alters_ref_gt",
+    "line": 846,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_ref_block_max_len_patch",
+    "line": 875,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_filter_intervals_table",
+    "line": 895,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_ref_block_does_not_densify_to_next_contig",
+    "line": 905,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_haploid_lpl_import",
+    "line": 925,
+    "async_test": false
+  },
+  {
+    "module": "vds/test_vds.py",
+    "name": "test_basic_impex",
+    "line": 939,
+    "async_test": false
+  }
+]

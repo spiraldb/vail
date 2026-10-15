@@ -1,0 +1,74 @@
+[
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_array_slice_end",
+    "line": 4,
+    "body": "def test_array_slice_end():\n    ht = hl.utils.range_matrix_table(1, 1)\n    try:\n        ht = ht.annotate_rows(c=hl.array([1, 2, 3])[:ht.col_idx])\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_array_slice_start",
+    "line": 15,
+    "body": "def test_array_slice_start():\n    ht = hl.utils.range_matrix_table(1, 1)\n    try:\n        ht = ht.annotate_rows(c=hl.array([1, 2, 3])[ht.col_idx:])\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_array_slice_step",
+    "line": 26,
+    "body": "def test_array_slice_step():\n    ht = hl.utils.range_matrix_table(1, 1)\n    try:\n        ht = ht.annotate_rows(c=hl.array([1, 2, 3])[::ht.col_idx])\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_matmul",
+    "line": 37,
+    "body": "def test_matmul():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_cols(a=hl.nd.array([0]))\n    ht = ht.annotate_rows(b=hl.nd.array([0]))\n    try:\n        ht = ht.annotate_rows(c=ht.b @ ht.a)\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'a' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_ndarray_index",
+    "line": 50,
+    "body": "def test_ndarray_index():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_rows(b=hl.nd.array([0]))\n    try:\n        ht = ht.annotate_rows(c=ht.b[ht.col_idx])\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_ndarray_index_with_slice_1",
+    "line": 62,
+    "body": "def test_ndarray_index_with_slice_1():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_rows(b=hl.nd.array([[0]]))\n    try:\n        ht = ht.annotate_rows(c=ht.b[ht.col_idx, :])\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_ndarray_index_with_slice_2",
+    "line": 74,
+    "body": "def test_ndarray_index_with_slice_2():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_rows(b=hl.nd.array([[0]]))\n    try:\n        ht = ht.annotate_rows(c=ht.b[:, ht.col_idx])\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_ndarray_index_with_None_1",
+    "line": 86,
+    "body": "def test_ndarray_index_with_None_1():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_rows(b=hl.nd.array([[0]]))\n    try:\n        ht = ht.annotate_rows(c=ht.b[ht.col_idx, None])\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_ndarray_index_with_None_2",
+    "line": 98,
+    "body": "def test_ndarray_index_with_None_2():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_rows(b=hl.nd.array([[0]]))\n    try:\n        ht = ht.annotate_rows(c=ht.b[None, ht.col_idx])\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_ndarray_reshape_1",
+    "line": 110,
+    "body": "def test_ndarray_reshape_1():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_rows(b=hl.nd.array([[0]]))\n    try:\n        ht = ht.annotate_rows(c=ht.b.reshape((ht.col_idx, 1)))\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_ndarray_reshape_2",
+    "line": 122,
+    "body": "def test_ndarray_reshape_2():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_rows(b=hl.nd.array([[0]]))\n    try:\n        ht = ht.annotate_rows(c=ht.b.reshape((1, ht.col_idx)))\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'col_idx' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  },
+  {
+    "module": "test_indices_aggregations.py",
+    "name": "test_ndarray_reshape_tuple",
+    "line": 134,
+    "body": "def test_ndarray_reshape_tuple():\n    ht = hl.utils.range_matrix_table(1, 1)\n    ht = ht.annotate_cols(a=hl.tuple((1, 1)))\n    ht = ht.annotate_rows(b=hl.nd.array([[0]]))\n    try:\n        ht = ht.annotate_rows(c=ht.b.reshape(ht.a))\n    except hl.ExpressionException as exc:\n        assert 'scope violation' in exc.args[0]\n        assert \"'a' (indices ['column'])\" in exc.args[0]\n    else:\n        assert False"
+  }
+]

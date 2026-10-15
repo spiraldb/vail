@@ -1,0 +1,68 @@
+[
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_methods_1",
+    "line": 37,
+    "body": "@qobtest\ndef test_hadoop_methods_1(tmpdir: str):\n    data = ['foo', 'bar', 'baz']\n    data.extend(map(str, range(100)))\n    with hadoop_open(f'{tmpdir}/test_out.txt', 'w') as f:\n        for d in data:\n            f.write(d)\n            f.write('\\n')\n    with hadoop_open(f'{tmpdir}/test_out.txt') as f:\n        data2 = [line.strip() for line in f]\n    assert data == data2"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_methods_2",
+    "line": 53,
+    "body": "@qobtest\ndef test_hadoop_methods_2(tmpdir: str):\n    data = ['foo', 'bar', 'baz']\n    data.extend(map(str, range(100)))\n    with hadoop_open(f'{tmpdir}/test_out.txt.gz', 'w') as f:\n        for d in data:\n            f.write(d)\n            f.write('\\n')\n    with hadoop_open(f'{tmpdir}/test_out.txt.gz') as f:\n        data3 = [line.strip() for line in f]\n    assert data == data3"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_methods_3",
+    "line": 69,
+    "body": "@qobtest\ndef test_hadoop_methods_3(tmpdir: str):\n    data = ['foo', 'bar', 'baz']\n    data.extend(map(str, range(100)))\n    with hadoop_open(f'{tmpdir}/test_out.txt.gz', 'w') as f:\n        for d in data:\n            f.write(d)\n            f.write('\\n')\n    hadoop_copy(f'{tmpdir}/test_out.txt.gz', f'{tmpdir}/test_out.copy.txt.gz')\n    with hadoop_open(f'{tmpdir}/test_out.copy.txt.gz') as f:\n        data4 = [line.strip() for line in f]\n    assert data == data4\n    print(f'contents of my tmpdir, {tmpdir}:')\n    print(repr(hadoop_ls(tmpdir)))"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_read_overwrite",
+    "line": 90,
+    "body": "@qobtest\ndef test_read_overwrite(tmpdir):\n    with fs.open(os.path.join(tmpdir, 'randomBytes'), 'wb') as f:\n        f.write(secrets.token_bytes(2048))\n    with fs.open(os.path.join(tmpdir, 'randomBytes'), 'rb', buffer_size=100) as f:\n        with hadoop_open(f'{tmpdir}/randomBytesOut', 'wb', buffer_size=2 ** 18) as out:\n            b = f.read()\n            out.write(b)\n    with hadoop_open(f'{tmpdir}/randomBytesOut', 'rb', buffer_size=2 ** 18) as f:\n        b2 = f.read()\n    assert b == b2"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_exists",
+    "line": 106,
+    "body": "@qobtest\ndef test_hadoop_exists(tmpdir: str):\n    with hadoop_open(f'{tmpdir}/test_exists.txt', 'w') as f:\n        f.write('HELLO WORLD')\n    r_exists = f'{tmpdir}/test_exists.txt'\n    r_not_exists = f'{tmpdir}/not_exists.txt'\n    assert hl.hadoop_exists(r_exists)\n    assert not hl.hadoop_exists(r_not_exists)"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_is_file",
+    "line": 117,
+    "body": "@qobtest\ndef test_hadoop_is_file(tmpdir: str):\n    a_file = f'{tmpdir}/test_hadoop_is_file.txt'\n    with hadoop_open(a_file, 'w') as f:\n        f.write('HELLO WORLD')\n    assert hl.hadoop_is_file(a_file)\n    assert not hl.hadoop_is_file(f'{tmpdir}/')\n    assert not hl.hadoop_is_file(f'{tmpdir}/invalid-path')"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_hadoop_stat",
+    "line": 128,
+    "body": "@qobtest\ndef test_hadoop_stat(tmpdir: str):\n    data = ['foo', 'bar', 'baz']\n    data.extend(map(str, range(100)))\n    with hadoop_open(f'{tmpdir}/test_hadoop_stat.txt.gz', 'w') as f:\n        for d in data:\n            f.write(d)\n            f.write('\\n')\n    stat1 = hl.hadoop_stat(f'{tmpdir}')\n    assert stat1['is_dir'] is True\n    hadoop_copy(f'{tmpdir}/test_hadoop_stat.txt.gz', f'{tmpdir}/test_hadoop_stat.copy.txt.gz')\n    stat2 = hl.hadoop_stat(f'{tmpdir}/test_hadoop_stat.copy.txt.gz')\n    assert stat2['size_bytes'] == 175 or stat2['size_bytes'] == 202\n    assert stat2['is_dir'] is False\n    assert 'path' in stat2"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_subdirs",
+    "line": 151,
+    "body": "@qobtest\ndef test_subdirs(tmpdir: str):\n    dir = f'{tmpdir}foo/'\n    subdir1 = f'{dir}foo/'\n    subdir1subdir1 = f'{subdir1}foo/'\n    subdir1subdir2 = f'{subdir1}bar/'\n    subdir1subdir3 = f'{subdir1}baz/'\n    subdir1subdir4_empty = f'{subdir1}qux/'\n    subdir2 = f'{dir}bar/'\n    subdir3 = f'{dir}baz/'\n    subdir4_empty = f'{dir}qux/'\n    fs.mkdir(dir)\n    touch(fs, f'{dir}a')\n    touch(fs, f'{dir}b')\n    fs.mkdir(subdir1)\n    fs.mkdir(subdir1subdir1)\n    fs.mkdir(subdir1subdir2)\n    fs.mkdir(subdir1subdir3)\n    fs.mkdir(subdir1subdir4_empty)\n    fs.mkdir(subdir2)\n    fs.mkdir(subdir3)\n    fs.mkdir(subdir4_empty)\n    for subdir in [dir, subdir1, subdir2, subdir3, subdir1subdir1, subdir1subdir2, subdir1subdir3]:\n        for i in range(30):\n            touch(fs, f'{subdir}a{i:02}')\n    assert fs.is_dir(dir)\n    assert fs.is_dir(subdir1)\n    assert fs.is_dir(subdir1subdir1)\n    assert fs.is_dir(subdir1subdir2)\n    assert fs.is_dir(subdir1subdir3)\n    assert fs.is_dir(subdir2)\n    assert fs.is_dir(subdir3)\n    fs.rmtree(subdir1subdir2)\n    assert fs.is_dir(dir)\n    assert fs.is_file(f'{dir}a')\n    assert fs.is_file(f'{dir}b')\n    assert fs.is_dir(subdir1)\n    assert fs.is_file(f'{subdir1}a00')\n    assert fs.is_dir(subdir1subdir1)\n    assert fs.is_file(f'{subdir1subdir1}a00')\n    assert not fs.is_dir(subdir1subdir2)\n    assert not fs.is_file(f'{subdir1subdir2}a00')\n    assert fs.is_dir(subdir1subdir3)\n    assert fs.is_file(f'{subdir1subdir3}a00')\n    assert fs.is_dir(subdir2)\n    assert fs.is_file(f'{subdir2}a00')\n    assert fs.is_dir(subdir3)\n    assert fs.is_file(f'{subdir3}a00')\n    fs.rmtree(dir)\n    assert not fs.is_dir(dir)"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_rmtree_empty_is_ok",
+    "line": 218,
+    "body": "@qobtest\ndef test_rmtree_empty_is_ok(tmpdir: str):\n    dir = f'{tmpdir}foo/'\n    fs.mkdir(dir)\n    fs.rmtree(dir)"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_rmtree_empty_subdir_is_ok",
+    "line": 225,
+    "body": "@qobtest\ndef test_rmtree_empty_subdir_is_ok(tmpdir: str):\n    dir = f'{tmpdir}foo/'\n    fs.mkdir(f'{tmpdir}foo/')\n    fs.mkdir(f'{tmpdir}foo/bar')\n    fs.rmtree(dir)"
+  },
+  {
+    "module": "utils/test_hl_hadoop_and_hail_fs.py",
+    "name": "test_remove_and_rmtree",
+    "line": 233,
+    "body": "@qobtest\ndef test_remove_and_rmtree(tmpdir: str):\n    dir = f'{tmpdir}foo/'\n    subdir1 = f'{dir}foo/'\n    subdir1subdir1 = f'{subdir1}foo/'\n    subdir1subdir2 = f'{subdir1}bar/'\n    subdir1subdir3 = f'{subdir1}baz/'\n    fs.mkdir(dir)\n    touch(fs, f'{dir}a')\n    touch(fs, f'{dir}b')\n    fs.mkdir(subdir1)\n    touch(fs, f'{subdir1}a')\n    fs.mkdir(subdir1subdir1)\n    touch(fs, f'{subdir1subdir1}a')\n    fs.mkdir(subdir1subdir2)\n    touch(fs, f'{subdir1subdir2}a')\n    fs.mkdir(subdir1subdir3)\n    touch(fs, f'{subdir1subdir3}a')\n    try:\n        fs.remove(subdir1subdir2)\n    except (FileNotFoundError, IsADirectoryError):\n        pass\n    except FatalError as err:\n        java_nio_error_message = 'DirectoryNotEmptyException: Cannot delete a non-empty directory'\n        hadoop_error_message = f\"Directory {subdir1subdir2.rstrip('/')} is not empty\"\n        assert java_nio_error_message in err.args[0] or hadoop_error_message in err.args[0]\n    else:\n        assert False\n    fs.remove(f'{subdir1subdir2}a')\n    assert fs.exists(dir)\n    assert fs.exists(f'{dir}a')\n    assert fs.exists(f'{dir}b')\n    assert fs.exists(subdir1)\n    assert fs.exists(f'{subdir1}a')\n    assert fs.exists(subdir1subdir1)\n    assert fs.exists(f'{subdir1subdir1}a')\n    assert not fs.exists(f'{subdir1subdir2}a')\n    assert fs.exists(subdir1subdir3)\n    assert fs.exists(f'{subdir1subdir3}a')\n    fs.rmtree(subdir1subdir1)\n    assert fs.exists(dir)\n    assert fs.exists(f'{dir}a')\n    assert fs.exists(f'{dir}b')\n    assert fs.exists(subdir1)\n    assert fs.exists(f'{subdir1}a')\n    assert not fs.exists(subdir1subdir1)\n    assert not fs.exists(f'{subdir1subdir1}a')\n    assert not fs.exists(f'{subdir1subdir2}a')\n    assert fs.exists(subdir1subdir3)\n    assert fs.exists(f'{subdir1subdir3}a')\n    fs.rmtree(subdir1)\n    assert fs.exists(dir)\n    assert fs.exists(f'{dir}a')\n    assert fs.exists(f'{dir}b')\n    assert not fs.exists(subdir1)\n    assert not fs.exists(f'{subdir1}a')\n    assert not fs.exists(subdir1subdir1)\n    assert not fs.exists(f'{subdir1subdir1}a')\n    assert not fs.exists(subdir1subdir2)\n    assert not fs.exists(f'{subdir1subdir2}a')\n    assert not fs.exists(subdir1subdir3)\n    assert not fs.exists(f'{subdir1subdir3}a')"
+  }
+]

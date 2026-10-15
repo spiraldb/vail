@@ -1,0 +1,83 @@
+{
+  "provenance": {
+    "commit": "856e1dd482b2329add8de41c4f5515190e1ec042",
+    "upstream_commit": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+    "native_sha256": "b6a474e2f1529c9e6843e15e008c3e35f03955aa898a495396a32521ed28a27b",
+    "modules": 62,
+    "definitions": 1546,
+    "workers": 4,
+    "per_test_timeout": 180,
+    "module_timeout": 1800,
+    "started_at": 1792023646.890904
+  },
+  "modules_attempted": 62,
+  "pytest_cases": {
+    "setup_failed": 459,
+    "body_failed": 794,
+    "passed": 424,
+    "timeout": 3
+  },
+  "pytest_raw_cases": {
+    "setup_failed": 461,
+    "body_failed": 794,
+    "passed": 434,
+    "timeout": 3
+  },
+  "incidental_imported_cases": 12,
+  "definition_statuses": {
+    "body_nonpass_pytest_blocked": 331,
+    "pytest_nonpass": 663,
+    "pytest_passed": 407,
+    "body_passed_pytest_blocked": 145
+  },
+  "definition_categories": {
+    "hail_ir_jvm_or_backend_internals": 149,
+    "missing_expression_or_table_api": 247,
+    "missing_high_level_api": 171,
+    "format_io_and_fixture_compatibility": 124,
+    "passed": 407,
+    "missing_matrix_numerical_api": 133,
+    "harness_or_fixture_setup": 49,
+    "planning_or_execution": 18,
+    "expression_typing_scope_or_validation": 70,
+    "behavior_or_assertion_mismatch": 27,
+    "timeout_or_native_crash": 6,
+    "passed_body_only": 145
+  },
+  "failing_case_categories": {
+    "missing_expression_or_table_api": 190,
+    "missing_high_level_api": 94,
+    "missing_matrix_numerical_api": 368,
+    "format_io_and_fixture_compatibility": 110,
+    "expression_typing_scope_or_validation": 51,
+    "behavior_or_assertion_mismatch": 38,
+    "harness_or_fixture_setup": 48,
+    "planning_or_execution": 15,
+    "timeout_or_native_crash": 4,
+    "hail_ir_jvm_or_backend_internals": 338
+  },
+  "supplement_definitions": 476,
+  "supplement_statuses": {
+    "failed_or_blocked": 327,
+    "blocked": 3,
+    "passed": 145,
+    "worker_blocked": 1
+  },
+  "timeouts": [
+    {
+      "module": "extract_intervals/test_locus_position.py",
+      "nodeid": "test_locus_position.py::test_ht_lt",
+      "error": "External test timeout after 185.0s (limit 180s)"
+    },
+    {
+      "module": "methods/test_impex.py",
+      "nodeid": "test_impex.py::VCFTests::test_import_vcf",
+      "error": "External test timeout after 185.1s (limit 180s)"
+    },
+    {
+      "module": "methods/test_statgen.py",
+      "nodeid": "test_statgen.py::Tests::test_split_multi_hts",
+      "error": "External test timeout after 185.2s (limit 180s)"
+    }
+  ]
+}

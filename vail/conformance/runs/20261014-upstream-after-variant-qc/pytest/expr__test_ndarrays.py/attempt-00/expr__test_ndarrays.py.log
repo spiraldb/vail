@@ -1,0 +1,427 @@
+FFFFFFFFFFFFFFFFFFFFFFFFFFF..FFFFFFFFFFFFFFFFF.FFFFFFFFFF                [100%]
+=================================== FAILURES ===================================
+_______________________________ test_ndarray_ref _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:37: in test_ndarray_ref
+    assert_evals_to(h_scalar[()], 5.0)
+                    ^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:406: in __getitem__
+    raise NotImplementedError("ndarray indexing is not implemented")
+E   NotImplementedError: ndarray indexing is not implemented
+________________________ test_ndarray_ref_bounds_check _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:60: in test_ndarray_ref_bounds_check
+    hl.eval(hl.nd.array([1, 2, 3])[4])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:406: in __getitem__
+    raise NotImplementedError("ndarray indexing is not implemented")
+E   NotImplementedError: ndarray indexing is not implemented
+______________________________ test_ndarray_slice ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:101: in test_ndarray_slice
+    (rect_prism[:, :, :], np_rect_prism[:, :, :]),
+     ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:406: in __getitem__
+    raise NotImplementedError("ndarray indexing is not implemented")
+E   NotImplementedError: ndarray indexing is not implemented
+________________________ test_ndarray_transposed_slice _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:218: in test_ndarray_transposed_slice
+    aT = a.T
+         ^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: T
+______________________________ test_ndarray_eval _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:249: in test_ndarray_eval
+    assert np.array_equal(hl.eval(hl.nd.array(hl.range(6))), np.arange(6))
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/nd.py:14: in array
+    raise TypeError("nd.array requires int32/int64/float32/float64 data")
+E   TypeError: nd.array requires int32/int64/float32/float64 data
+______________________________ test_ndarray_shape ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:292: in test_ndarray_shape
+    missing = hl.nd.array(hl.missing(hl.tarray(hl.tint32)))
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/nd.py:14: in array
+    raise TypeError("nd.array requires int32/int64/float32/float64 data")
+E   TypeError: nd.array requires int32/int64/float32/float64 data
+_____________________________ test_ndarray_reshape _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:318: in test_ndarray_reshape
+    cube = hl.nd.array([0, 1, 2, 3, 4, 5, 6, 7]).reshape((2, 2, 2))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:311: in reshape
+    raise NotImplementedError("ndarray reshape is not implemented")
+E   NotImplementedError: ndarray reshape is not implemented
+______________________________ test_ndarray_map1 _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:385: in test_ndarray_map1
+    b = hl.map(lambda x: -x, a)
+        ^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collection_functions.py:55: in map
+    value = _collection(collections[0])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/collection_functions.py:18: in _collection
+    raise TypeError('expected an array or set expression')
+E   TypeError: expected an array or set expression
+______________________________ test_ndarray_map2 _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:426: in test_ndarray_map2
+    (na + b, np.array(a + b)),
+     ^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:262: in __add__
+    return self._binary(other, "add")
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:219: in _binary
+    result_type = _numeric_result_type(self.dtype, other.dtype, operator)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:1198: in _numeric_result_type
+    _require_numeric(left, "arithmetic")
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:1190: in _require_numeric
+    raise TypeError(f"{operation} requires a numeric expression")
+E   TypeError: arithmetic requires a numeric expression
+_______________________________ test_ndarray_sum _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:516: in test_ndarray_sum
+    (m.sum(axis=0), np_m.sum(axis=0)), (m.sum(axis=1), np_m.sum(axis=1)), (m.sum(tuple([])), np_m.sum(tuple([])))
+     ^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: sum
+____________________________ test_ndarray_transpose ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:543: in test_ndarray_transpose
+    (v.T, np_v.T),
+     ^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: T
+_____________________________ test_ndarray_matmul ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:601: in test_ndarray_matmul
+    (v @ v, np_v @ np_v),
+     ^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:304: in __matmul__
+    raise NotImplementedError("ndarray matrix multiplication is not implemented")
+E   NotImplementedError: ndarray matrix multiplication is not implemented
+__________________________ test_ndarray_matmul_dgemv ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:666: in test_ndarray_matmul_dgemv
+    (mat_3_4 @ vec_4, np_mat_3_4 @ np_vec_4),
+     ^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:304: in __matmul__
+    raise NotImplementedError("ndarray matrix multiplication is not implemented")
+E   NotImplementedError: ndarray matrix multiplication is not implemented
+_______________________________ test_ndarray_big _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:673: in test_ndarray_big
+    assert hl.eval(hl.nd.array(hl.range(100_000))).size == 100_000
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/nd.py:14: in array
+    raise TypeError("nd.array requires int32/int64/float32/float64 data")
+E   TypeError: nd.array requires int32/int64/float32/float64 data
+______________________________ test_ndarray_full _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:678: in test_ndarray_full
+    (hl.nd.zeros(4), np.zeros(4)),
+     ^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'zeros'
+_____________________________ test_ndarray_arange ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:699: in test_ndarray_arange
+    hl.eval(hl.nd.arange(5, 20, 0))
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1945: in eval
+    data = table._native.eval_global_arrow(_json.dumps(expr.to_ir()), _global_bindings([expr]))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: step can't be 0 for function range(start [, stop, step])
+______________________________ test_ndarray_mixed ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:704: in test_ndarray_mixed
+    assert hl.eval(hl.missing(hl.tndarray(hl.tint64, 2)).map(lambda x: x * x).reshape((4, 5)).T) is None
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: map
+______________________________ test_ndarray_show _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:722: in test_ndarray_show
+    hl.nd.array(3).show()
+    ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: show
+____________________________ test_ndarray_diagonal _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:729: in test_ndarray_diagonal
+    assert np.array_equal(hl.eval(hl.nd.diagonal(hl.nd.array([[1, 2], [3, 4]]))), np.array([1, 4]))
+                                  ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'diagonal'
+________________________ test_ndarray_solve_triangular _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:749: in test_ndarray_solve_triangular
+    assert np.allclose(hl.eval(hl.nd.solve_triangular(a, b)), np.array([1.0, 1.0]))
+                               ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'solve_triangular'
+______________________________ test_ndarray_solve ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:762: in test_ndarray_solve
+    assert np.allclose(hl.eval(hl.nd.solve(a, b)), np.array([-1.0, 1.0]))
+                               ^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'solve'
+_______________________________ test_ndarray_qr ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:828: in test_ndarray_qr
+    assert_same_qr(identity4, np_identity4)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:820: in assert_same_qr
+    assert_raw_equivalence(hl_ndarray, np_ndarray)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:773: in assert_raw_equivalence
+    ndarray_h, ndarray_tau = hl.eval(hl.nd.qr(hl_ndarray, mode="raw"))
+                                     ^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'qr'
+___________________________________ test_svd ___________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:925: in test_svd
+    assert_evals_to_same_svd(small_square, np_small_square)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:886: in assert_evals_to_same_svd
+    evaled = hl.eval(hl.nd.svd(nd_expr, full_matrices, compute_uv))
+                     ^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'svd'
+__________________________________ test_eigh ___________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:962: in test_eigh
+    assert_evals_to_same_eig(hA, A)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:937: in assert_evals_to_same_eig
+    evaled = hl.eval(hl.nd.eigh(nd_expr, eigvals_only))
+                     ^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'eigh'
+______________________________ test_numpy_interop ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:972: in test_numpy_interop
+    assert np.array_equal(hl.eval(np.array(v) * hl.literal(3)), np.array([6, 9]))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py:1934: in eval
+    expr = as_expr(expression)
+           ^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:96: in as_expr
+    return literal(value)
+           ^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:906: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/types.py:576: in infer_type
+    raise TypeError("ndarray elements must be int32/int64/float32/float64")
+E   TypeError: ndarray elements must be int32/int64/float32/float64
+_________________________ test_ndarray_emitter_extract _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:997: in test_ndarray_emitter_extract
+    mapped_mat = mat.map(lambda x: hl.array([3, 4, 5])[hl.int(x)])
+                 ^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:781: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: map
+_________________________ test_ndarrays_transmute_ops __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1003: in test_ndarrays_transmute_ops
+    u = u.annotate(x=hl.nd.array([u.idx]), y=hl.nd.array([u.idx]))
+                     ^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/nd.py:14: in array
+    raise TypeError("nd.array requires int32/int64/float32/float64 data")
+E   TypeError: nd.array requires int32/int64/float32/float64 data
+___________________________________ test_inv ___________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1057: in test_inv
+    dhail = hl.eval(hl.nd.inv(c))
+                    ^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'inv'
+_______________________________ test_concatenate _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1066: in test_concatenate
+    res = hl.eval(hl.nd.concatenate([x, y], axis=1))
+                  ^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'concatenate'
+______________________ test_concatenate_differing_shapes _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1098: in test_concatenate_differing_shapes
+    hl.nd.concatenate([hl.nd.array([1]), hl.nd.array([[1]])])
+    ^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'concatenate'
+______________________________ test_vstack[data0] ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1133: in test_vstack
+    assert np.array_equal(hl.eval(hl.nd.vstack(data)), np.vstack(data))
+                                  ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'vstack'
+______________________________ test_vstack[data1] ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1133: in test_vstack
+    assert np.array_equal(hl.eval(hl.nd.vstack(data)), np.vstack(data))
+                                  ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'vstack'
+______________________________ test_vstack[data2] ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1133: in test_vstack
+    assert np.array_equal(hl.eval(hl.nd.vstack(data)), np.vstack(data))
+                                  ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'vstack'
+______________________________ test_vstack[data3] ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1133: in test_vstack
+    assert np.array_equal(hl.eval(hl.nd.vstack(data)), np.vstack(data))
+                                  ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'vstack'
+_____________________________ test_vstack_2[a0-b0] _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1156: in test_vstack_2
+    ht2 = ht2.annotate(stacked=hl.nd.vstack([ht2.x, ht2.y]))
+                               ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'vstack'
+_____________________________ test_vstack_2[a1-b1] _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1156: in test_vstack_2
+    ht2 = ht2.annotate(stacked=hl.nd.vstack([ht2.x, ht2.y]))
+                               ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'vstack'
+_____________________________ test_vstack_2[a2-b2] _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1156: in test_vstack_2
+    ht2 = ht2.annotate(stacked=hl.nd.vstack([ht2.x, ht2.y]))
+                               ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'vstack'
+_____________________________ test_vstack_2[a3-b3] _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1156: in test_vstack_2
+    ht2 = ht2.annotate(stacked=hl.nd.vstack([ht2.x, ht2.y]))
+                               ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'vstack'
+______________________________ test_hstack[a0-b0] ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1183: in test_hstack
+    assert np.array_equal(hl.eval(hl.nd.hstack((a, b))), np.hstack((a, b)))
+                                  ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'hstack'
+______________________________ test_hstack[a1-b1] ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1183: in test_hstack
+    assert np.array_equal(hl.eval(hl.nd.hstack((a, b))), np.hstack((a, b)))
+                                  ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'hstack'
+______________________________ test_hstack[a2-b2] ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1183: in test_hstack
+    assert np.array_equal(hl.eval(hl.nd.hstack((a, b))), np.hstack((a, b)))
+                                  ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'hstack'
+______________________________ test_hstack[a3-b3] ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1183: in test_hstack
+    assert np.array_equal(hl.eval(hl.nd.hstack((a, b))), np.hstack((a, b)))
+                                  ^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'hstack'
+___________________________________ test_eye ___________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1190: in test_eye
+    assert_ndarrays_eq(*[(hl.nd.eye(i, y), np.eye(i, y)) for y in range(13)])
+                          ^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'eye'
+________________________________ test_identity _________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1194: in test_identity
+    assert_ndarrays_eq(*[(hl.nd.identity(i), np.identity(i)) for i in range(13)])
+                          ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'identity'
+_________________________ test_agg_ndarray_sum_0_to_10 _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1204: in test_agg_ndarray_sum_0_to_10
+    increasing_0d = increasing_0d.annotate(x=hl.nd.array(increasing_0d.idx))
+                                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/nd.py:14: in array
+    raise TypeError("nd.array requires int32/int64/float32/float64 data")
+E   TypeError: nd.array requires int32/int64/float32/float64 data
+_________________________ test_agg_ndarray_sum_ones_1d _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1209: in test_agg_ndarray_sum_ones_1d
+    just_ones_1d = hl.utils.range_table(20).annotate(x=hl.nd.ones((7,)))
+                                                       ^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'ones'
+_________________________ test_agg_ndarray_sum_ones_2d _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1214: in test_agg_ndarray_sum_ones_2d
+    just_ones_2d = hl.utils.range_table(100).annotate(x=hl.nd.ones((2, 3)))
+                                                        ^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'ones'
+_____________________ test_agg_ndarray_sum_with_transposes _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1219: in test_agg_ndarray_sum_with_transposes
+    transposes = hl.utils.range_table(4).annotate(x=hl.nd.arange(16).reshape((4, 4)))
+                                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/expressions.py:311: in reshape
+    raise NotImplementedError("ndarray reshape is not implemented")
+E   NotImplementedError: ndarray reshape is not implemented
+_____________ test_agg_ndarray_mismatched_dims_raises_fatal_error ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1229: in test_agg_ndarray_mismatched_dims_raises_fatal_error
+    mismatched = mismatched.annotate(x=hl.nd.ones((mismatched.idx,)))
+                                       ^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'ones'
+____________________________ test_maximum_minimuim _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1243: in test_maximum_minimuim
+    ndnan_elem = hl.nd.array([1.0, hl.float64(float("NaN")), 3.0, 6.0])
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/nd.py:14: in array
+    raise TypeError("nd.array requires int32/int64/float32/float64 data")
+E   TypeError: nd.array requires int32/int64/float32/float64 data
+___________________ test_ndarray_broadcasting_with_decorator ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1276: in test_ndarray_broadcasting_with_decorator
+    nd = hl.eval(hl.sqrt(nd))
+                 ^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'sqrt'
+______________________ test_ndarray_indices_aggregations _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1292: in test_ndarray_indices_aggregations
+    ht = ht.annotate_globals(g=hl.nd.ones((2, 2)))
+                               ^^^^^^^^^^
+E   AttributeError: module 'vail.nd' has no attribute 'ones'
+________________________ test_ndarray_log_broadcasting _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1306: in test_ndarray_log_broadcasting
+    actual = hl.eval(hl.log(hl.nd.array([[5, 10], [15, 20]])))
+                     ^^^^^^
+E   AttributeError: module 'vail' has no attribute 'log'
+____________________ test_ndarray_oom_from_stream_pipeline _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py:1315: in test_ndarray_oom_from_stream_pipeline
+    xs = hl.nd.array(xs)
+         ^^^^^^^^^^^^^^^
+/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/nd.py:14: in array
+    raise TypeError("nd.array requires int32/int64/float32/float64 data")
+E   TypeError: nd.array requires int32/int64/float32/float64 data
+=============================== warnings summary ===============================
+../../../../../../../Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:124
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:124: PytestRemovedIn10Warning: Passing a non-Collection iterable to parametrize is deprecated.
+  Test: test_ndarrays.py::test_vstack, argvalues type: generator
+  Please convert to a list or tuple.
+  See https://docs.pytest.org/en/stable/deprecations.html#parametrize-iterators
+    metafunc.parametrize(*marker.args, **marker.kwargs, _param_mark=marker)
+
+../../../../../../../Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:124
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:124: PytestRemovedIn10Warning: Passing a non-Collection iterable to parametrize is deprecated.
+  Test: test_ndarrays.py::test_vstack_2, argvalues type: generator
+  Please convert to a list or tuple.
+  See https://docs.pytest.org/en/stable/deprecations.html#parametrize-iterators
+    metafunc.parametrize(*marker.args, **marker.kwargs, _param_mark=marker)
+
+../../../../../../../Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:124
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:124: PytestRemovedIn10Warning: Passing a non-Collection iterable to parametrize is deprecated.
+  Test: test_ndarrays.py::test_hstack, argvalues type: generator
+  Please convert to a list or tuple.
+  See https://docs.pytest.org/en/stable/deprecations.html#parametrize-iterators
+    metafunc.parametrize(*marker.args, **marker.kwargs, _param_mark=marker)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_ref
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_ref_bounds_check
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_slice
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_transposed_slice
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_eval
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_shape
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_reshape
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_map1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_map2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_sum
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_transpose
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_matmul
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_matmul_dgemv
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_big
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_full
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_arange
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_mixed
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_show
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_diagonal
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_solve_triangular
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_solve
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_qr
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_svd
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_eigh
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_numpy_interop
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_emitter_extract
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarrays_transmute_ops
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_inv
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_concatenate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_concatenate_differing_shapes
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_vstack[data0]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_vstack[data1]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_vstack[data2]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_vstack[data3]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_vstack_2[a0-b0]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_vstack_2[a1-b1]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_vstack_2[a2-b2]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_vstack_2[a3-b3]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_hstack[a0-b0]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_hstack[a1-b1]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_hstack[a2-b2]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_hstack[a3-b3]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_eye
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_identity
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_agg_ndarray_sum_0_to_10
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_agg_ndarray_sum_ones_1d
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_agg_ndarray_sum_ones_2d
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_agg_ndarray_sum_with_transposes
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_agg_ndarray_mismatched_dims_raises_fatal_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_maximum_minimuim
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_broadcasting_with_decorator
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_indices_aggregations
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_log_broadcasting
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-llqgtbdv/upstream_hail/expr/test_ndarrays.py::test_ndarray_oom_from_stream_pipeline
+54 failed, 3 passed, 3 warnings in 4.42s

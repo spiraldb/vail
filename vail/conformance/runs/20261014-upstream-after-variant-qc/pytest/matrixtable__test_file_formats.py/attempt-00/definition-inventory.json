@@ -1,0 +1,20 @@
+[
+  {
+    "module": "matrixtable/test_file_formats.py",
+    "name": "test_write",
+    "line": 44,
+    "body": "@pytest.mark.skip(reason='comment this line to generate files for new versions')\ndef test_write():\n    create_backward_compatibility_files()"
+  },
+  {
+    "module": "matrixtable/test_file_formats.py",
+    "name": "test_backward_compatability_mt",
+    "line": 94,
+    "body": "@pytest.mark.parametrize('path', mt_paths)\ndef test_backward_compatability_mt(path, all_values_matrix_table_fixture):\n    assert len(mt_paths) == 60, str((resource_dir, mt_paths))\n    old = hl.read_matrix_table(path)\n    current = all_values_matrix_table_fixture\n    current = current.select_globals(*old.globals)\n    current = current.select_rows(*old.row_value)\n    current = current.select_cols(*old.col_value)\n    current = current.select_entries(*old.entry)\n    assert current._same(old)"
+  },
+  {
+    "module": "matrixtable/test_file_formats.py",
+    "name": "test_backward_compatability_ht",
+    "line": 109,
+    "body": "@pytest.mark.parametrize('path', ht_paths)\ndef test_backward_compatability_ht(path, all_values_table_fixture):\n    assert len(ht_paths) == 56, str((resource_dir, ht_paths))\n    old = hl.read_table(path)\n    current = all_values_table_fixture\n    current = current.select_globals(*old.globals)\n    current = current.select(*old.row_value)\n    assert current._same(old)"
+  }
+]

@@ -1,0 +1,15 @@
+
+==================================== ERRORS ====================================
+________________________ ERROR collecting test_table.py ________________________
+ImportError while importing test module '/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9ccxk1jd/upstream_hail/table/test_table.py'.
+Hint: make sure your test modules/packages have valid Python names.
+Traceback:
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9ccxk1jd/upstream_hail/table/test_table.py:6: in <module>
+    import pyspark.sql
+E   ModuleNotFoundError: No module named 'pyspark'
+=========================== short test summary info ============================
+ERROR ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-9ccxk1jd/upstream_hail/table/test_table.py
+1 error in 0.57s

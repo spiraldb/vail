@@ -1,0 +1,26 @@
+[
+  {
+    "module": "methods/relatedness/test_identity_by_descent.py",
+    "name": "test_ibd_default_arguments",
+    "line": 57,
+    "body": "@qobtest\n@unittest.skipIf('HAIL_TEST_SKIP_PLINK' in os.environ, 'Skipping tests requiring plink')\n@test_timeout(local=10 * 60, batch=10 * 60)\ndef test_ibd_default_arguments(ds):\n    plink_results = plinkify(ds)\n    hail_results = hl.identity_by_descent(ds).collect()\n    for row in hail_results:\n        key = (row.i, row.j)\n        assert plink_results[key][0][0] == pytest.approx(row.ibd.Z0, abs=5e-05)\n        assert plink_results[key][0][1] == pytest.approx(row.ibd.Z1, abs=5e-05)\n        assert plink_results[key][0][2] == pytest.approx(row.ibd.Z2, abs=5e-05)\n        assert plink_results[key][0][3] == pytest.approx(row.ibd.PI_HAT, abs=5e-05)\n        assert plink_results[key][1][0] == row.ibs0\n        assert plink_results[key][1][1] == row.ibs1\n        assert plink_results[key][1][2] == row.ibs2"
+  },
+  {
+    "module": "methods/relatedness/test_identity_by_descent.py",
+    "name": "test_ibd_0_and_1",
+    "line": 75,
+    "body": "@qobtest\n@unittest.skipIf('HAIL_TEST_SKIP_PLINK' in os.environ, 'Skipping tests requiring plink')\n@test_timeout(local=10 * 60, batch=10 * 60)\ndef test_ibd_0_and_1(ds):\n    plink_results = plinkify(ds, min=0.0, max=1.0)\n    hail_results = hl.identity_by_descent(ds).collect()\n    for row in hail_results:\n        key = (row.i, row.j)\n        assert plink_results[key][0][0] == pytest.approx(row.ibd.Z0, abs=5e-05)\n        assert plink_results[key][0][1] == pytest.approx(row.ibd.Z1, abs=5e-05)\n        assert plink_results[key][0][2] == pytest.approx(row.ibd.Z2, abs=5e-05)\n        assert plink_results[key][0][3] == pytest.approx(row.ibd.PI_HAT, abs=5e-05)\n        assert plink_results[key][1][0] == row.ibs0\n        assert plink_results[key][1][1] == row.ibs1\n        assert plink_results[key][1][2] == row.ibs2"
+  },
+  {
+    "module": "methods/relatedness/test_identity_by_descent.py",
+    "name": "test_ibd_does_not_error_with_dummy_maf_float64",
+    "line": 92,
+    "body": "@qobtest\n@test_timeout(local=10 * 60, batch=10 * 60)\ndef test_ibd_does_not_error_with_dummy_maf_float64(ds):\n    ds = ds.annotate_rows(dummy_maf=0.01)\n    hl.identity_by_descent(ds, ds['dummy_maf'], min=0.0, max=1.0)"
+  },
+  {
+    "module": "methods/relatedness/test_identity_by_descent.py",
+    "name": "test_ibd_does_not_error_with_dummy_maf_float32",
+    "line": 99,
+    "body": "@qobtest\n@test_timeout(local=10 * 60, batch=10 * 60)\ndef test_ibd_does_not_error_with_dummy_maf_float32(ds):\n    ds = ds.annotate_rows(dummy_maf=0.01)\n    hl.identity_by_descent(ds, hl.float32(ds['dummy_maf']), min=0.0, max=1.0)"
+  }
+]

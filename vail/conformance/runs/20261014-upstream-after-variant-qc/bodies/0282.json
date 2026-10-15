@@ -1,0 +1,28 @@
+{
+  "module": "table/test_table.py",
+  "name": "Tests.test_path_collision_error",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "FileExistsError",
+      "error": "table output already exists",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/table/test_table.py\", line 1754, in test_path_collision_error\n    ht.write(path)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/__init__.py\", line 494, in write\n    self._native.write(os.fspath(output), overwrite)\nFileExistsError: table output already exists\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'pyspark'",
+    "module 'vail' has no attribute 'ir'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}

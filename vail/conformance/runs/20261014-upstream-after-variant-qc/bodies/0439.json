@@ -1,0 +1,28 @@
+{
+  "module": "vds/test_combiner.py",
+  "name": "test_combiner_manual_filtration",
+  "variants": [
+    {
+      "status": "blocked",
+      "parameters": {},
+      "category": "harness_error",
+      "phase": "body",
+      "error_type": "NameError",
+      "error": "name 'new_combiner' is not defined",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/vds/test_combiner.py\", line 230, in test_combiner_manual_filtration\n    plan = new_combiner(\n           ^^^^^^^^^^^^\nNameError: name 'new_combiner' is not defined\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'",
+    "No module named 'vail.vds'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "status": "failed_or_blocked"
+}

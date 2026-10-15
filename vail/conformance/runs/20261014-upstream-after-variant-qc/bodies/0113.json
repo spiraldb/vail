@@ -1,0 +1,28 @@
+{
+  "module": "methods/test_qc.py",
+  "name": "Tests.test_concordance_no_values_doesnt_error",
+  "variants": [
+    {
+      "status": "failed",
+      "parameters": {},
+      "category": "behavior_failure",
+      "phase": "body",
+      "error_type": "FileNotFoundError",
+      "error": "[Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'",
+      "traceback": "Traceback (most recent call last):\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/full_hail_bodies.py\", line 245, in worker\n    target(**kwargs)\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/methods/test_qc.py\", line 252, in test_concordance_no_values_doesnt_error\n    dataset = get_dataset().filter_rows(False)\n              ^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/hail/hail/python/test/hail/helpers.py\", line 85, in get_dataset\n    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/conformance/upstream_paths.py\", line 24, in read_matrix_table\n    return self._read_matrix_table(str(path), *args, **kwargs)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/danielking/.codex/worktrees/1611/vail/vail/python/vail/matrixtable.py\", line 2163, in read_matrix_table\n    with open(root / \"_vail_matrix.json\") as stream:\n         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/.codex/worktrees/1611/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'\n"
+    }
+  ],
+  "setup_errors": [
+    "No module named 'vail.methods'",
+    "No module named 'vail.methods'"
+  ],
+  "backend": "vail",
+  "backend_capabilities": [
+    "local_filesystem",
+    "matrix_table",
+    "randomness",
+    "table"
+  ],
+  "class_configuration_adapter": "defer missing API references until called",
+  "status": "failed_or_blocked"
+}
