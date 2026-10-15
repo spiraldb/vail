@@ -729,20 +729,43 @@ class MatrixTable:
             base = self._mir.core
             base, prepared = self._prepare_row_lookups(base, [v for _, v in fields])
             fields = [(n, v) for (n, _), v in zip(fields, prepared)]
-            cells = self._cell_contexts(base).map(
-                lambda item: struct(
-                    **{
-                        _CID: item["1"]["1"][_CID],
-                        _PRESENT: item["1"]["1"][_PRESENT],
-                        _VALUE: struct(
-                            **{
-                                n: self._lower_cell(v, base, item["1"]["1"], item["2"][_COL], item["1"]["2"])
-                                for n, v in fields
-                            }
-                        ),
-                    }
+            uses_column = any(_uses_axis_field(v.to_ir(), "col") for _, v in fields)
+            if uses_column:
+                cells = self._cell_contexts(base).map(
+                    lambda item: struct(
+                        **{
+                            _CID: item["1"]["1"][_CID],
+                            _PRESENT: item["1"]["1"][_PRESENT],
+                            _VALUE: struct(
+                                **{
+                                    n: self._lower_cell(
+                                        v, base, item["1"]["1"],
+                                        item["2"][_COL], item["1"]["2"],
+                                    )
+                                    for n, v in fields
+                                }
+                            ),
+                        }
+                    )
                 )
-            )
+            else:
+                # Entry expressions scoped only to rows/globals/entries need
+                # no column records or positions: preserve the owning cell
+                # identity and presence directly while projecting its value.
+                cells = base[_CELLS].map(
+                    lambda cell: struct(
+                        **{
+                            _CID: cell[_CID],
+                            _PRESENT: cell[_PRESENT],
+                            _VALUE: struct(
+                                **{
+                                    n: self._lower_cell(v, base, cell, struct())
+                                    for n, v in fields
+                                }
+                            ),
+                        }
+                    )
+                )
             projected = _project(
                 base,
                 [(_ROW, base[_ROW]), (_CELLS, cells)]
@@ -938,23 +961,27 @@ class MatrixTable:
         if expr.dtype != tbool:
             raise TypeError("filter predicate must be bool")
         if axis == "entry":
-            from . import range as array_range, len as length
-
             def coalesce(value, default):
                 return if_else(is_defined(value), value, default)
 
             base = self._mir.core
             base, prepared = self._prepare_row_lookups(base, [expr])
             expr = prepared[0]
-            def filter_cell(item):
-                cell, position = item["1"]["1"], item["1"]["2"]
-                predicate = self._lower_cell(expr, base, cell, item["2"][_COL], position)
+            def filter_cell(cell, column, position=None):
+                predicate = self._lower_cell(expr, base, cell, column, position)
                 selected = predicate if keep else ~predicate
                 return struct(**{
                     _CID: cell[_CID], _VALUE: cell[_VALUE],
                     _PRESENT: cell[_PRESENT] & coalesce(selected, False),
                 })
-            cells = self._cell_contexts(base).map(filter_cell)
+            if _uses_axis_field(expr.to_ir(), "col"):
+                cells = self._cell_contexts(base).map(
+                    lambda item: filter_cell(
+                        item["1"]["1"], item["2"][_COL], item["1"]["2"]
+                    )
+                )
+            else:
+                cells = base[_CELLS].map(lambda cell: filter_cell(cell, struct()))
             return self._copy(
                 rows=_project(base, [(_ROW, base[_ROW]), (_CELLS, cells)])
             )

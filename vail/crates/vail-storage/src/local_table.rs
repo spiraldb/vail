@@ -561,11 +561,22 @@ fn collect_reference_genomes(row_type: &Value, global_type: &Value) -> Result<Va
 /// A metadata-only, snapshot-pinned read source. It contains no row batches.
 #[derive(Clone, Debug)]
 pub struct LocalRead {
-    entry: Entry,
-    table: iceberg::table::Table,
-    descriptor: SnapshotDescriptor,
+    entry: Arc<Entry>,
+    descriptor: Arc<SnapshotDescriptor>,
     pub semantics: VailSemantics,
     pub keys: Vec<String>,
+    field_ids: Arc<Vec<i32>>,
+    plan: std::sync::Arc<super::SnapshotReadPlan>,
+    partition_offsets: std::sync::Arc<Vec<u64>>,
+    nested_projection_paths: Option<Vec<Vec<String>>>,
+    typed_partition_bounds: Arc<
+        Vec<
+            Option<(
+                super::fragment_index::TypedKey,
+                super::fragment_index::TypedKey,
+            )>,
+        >,
+    >,
 }
 
 /// Stream boundaries preserve empty logical partitions without buffering their rows.
@@ -576,6 +587,19 @@ pub enum PartitionEvent {
 }
 
 impl LocalRead {
+    /// Return a reader clone configured with nested Vortex projection paths.
+    /// Paths are full field-name paths (including the top-level field name).
+    pub fn with_nested_projection_paths(&self, paths: Vec<Vec<String>>) -> Self {
+        let mut read = self.clone();
+        read.nested_projection_paths = Some(paths);
+        read
+    }
+
+    /// Iceberg field IDs in the current row-schema order.
+    pub fn field_ids(&self) -> &[i32] {
+        self.field_ids.as_slice()
+    }
+
     pub fn partition_rows(&self) -> &[usize] {
         &self.entry.partition_rows
     }
@@ -585,53 +609,17 @@ impl LocalRead {
 
     /// The validated immutable snapshot descriptor loaded when this reader was opened.
     pub fn descriptor(&self) -> &SnapshotDescriptor {
-        &self.descriptor
+        self.descriptor.as_ref()
     }
 
     /// Return the certified index binding needed to construct full-key queries.
-    /// This loads only the small index metadata file; candidate planning still
-    /// runs through the snapshot reader to validate all snapshot bindings.
+    /// The snapshot and index metadata are validated once when this reader opens.
     pub fn index_binding(&self) -> Result<IndexBinding> {
-        let path = self
-            .descriptor
-            .index_path
-            .as_deref()
-            .ok_or_else(|| StorageError::Invalid("ordered fragment index missing".into()))?;
-        let expected_hash = self
-            .descriptor
-            .index_sha256
-            .as_deref()
-            .ok_or_else(|| StorageError::Invalid("fragment index checksum missing".into()))?;
-        let bytes = fs::read(local_path(path)?)?;
-        if sha256_hex(&bytes) != expected_hash {
-            return Err(StorageError::Invalid(
-                "fragment index checksum mismatch".into(),
-            ));
-        }
-        let stored: FragmentIndex = serde_json::from_slice(&bytes)?;
-        let binding = stored.binding().clone();
-        if binding.table_uuid != self.descriptor.table_uuid
-            || binding.snapshot_id != self.descriptor.snapshot_id
-            || binding.schema_id != self.descriptor.schema_id
-            || binding.comparator_version != self.descriptor.semantics.comparator_version
-            || binding.live_files_sha256 != self.descriptor.live_files_sha256
-            || binding
-                .key_fields
-                .iter()
-                .map(|field| field.field_id)
-                .collect::<Vec<_>>()
-                != self.descriptor.semantics.key_field_ids
-        {
-            return Err(StorageError::Invalid(
-                "fragment index binding mismatch".into(),
-            ));
-        }
-        if stored.fragments().len() != self.descriptor.files.len() {
-            return Err(StorageError::Invalid(
-                "fragment index order or count mismatch".into(),
-            ));
-        }
-        Ok(binding)
+        self.plan
+            .index
+            .as_ref()
+            .map(|index| index.binding().clone())
+            .ok_or_else(|| StorageError::Invalid("ordered fragment index missing".into()))
     }
 
     /// Certified full-key bounds for each original reader partition. The
@@ -683,152 +671,25 @@ impl LocalRead {
             )>,
         >,
     > {
-        use super::fragment_index::{FragmentIndex, QueryInterval, TypedKey};
-        use std::collections::HashMap;
-
-        let binding = self.index_binding()?;
-        let path = self
-            .descriptor
-            .index_path
-            .as_deref()
-            .ok_or_else(|| StorageError::Invalid("ordered fragment index missing".into()))?;
-        let expected_hash = self
-            .descriptor
-            .index_sha256
-            .as_deref()
-            .ok_or_else(|| StorageError::Invalid("fragment index checksum missing".into()))?;
-        let bytes = fs::read(local_path(path)?)?;
-        if sha256_hex(&bytes) != expected_hash {
-            return Err(StorageError::Invalid(
-                "fragment index checksum mismatch".into(),
-            ));
-        }
-        let index: FragmentIndex = serde_json::from_slice(&bytes)?;
-        if index.binding() != &binding {
-            return Err(StorageError::Invalid(
-                "fragment index binding mismatch".into(),
-            ));
-        }
-        let fragments = index
-            .select(&binding, &QueryInterval::default())
-            .map_err(|error| StorageError::Invalid(error.to_string()))?;
-        if fragments.len() != self.descriptor.files.len() {
-            return Err(StorageError::Invalid(
-                "index and descriptor file counts differ".into(),
-            ));
-        }
-        let typed_by_path = fragments
-            .into_iter()
-            .zip(index.typed_fragment_bounds())
-            .map(|(fragment, bounds)| (fragment.identity.file_path.as_str(), (fragment, bounds)))
-            .collect::<HashMap<_, _>>();
-        let mut file_ranges = Vec::with_capacity(self.descriptor.files.len());
-        let mut offset = 0u64;
-        for file in &self.descriptor.files {
-            let end = offset
-                .checked_add(file.row_count)
-                .ok_or_else(|| StorageError::Invalid("file row offset overflow".into()))?;
-            let (fragment, (first, last)) =
-                typed_by_path.get(file.path.as_str()).ok_or_else(|| {
-                    StorageError::Invalid("descriptor file is absent from fragment index".into())
-                })?;
-            if fragment.row_count != file.row_count
-                || fragment.identity.content_sha256 != file.sha256
-            {
-                return Err(StorageError::Invalid(
-                    "fragment identity differs from descriptor".into(),
-                ));
-            }
-            file_ranges.push((offset, end, first.clone(), last.clone()));
-            offset = end;
-        }
-        let total = self
-            .entry
-            .partition_rows
-            .iter()
-            .try_fold(0u64, |sum, rows| {
-                sum.checked_add(*rows as u64)
-                    .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))
-            })?;
-        if total != offset {
-            return Err(StorageError::Invalid(
-                "partition and file row counts differ".into(),
-            ));
-        }
-        let compare = |left: &TypedKey, right: &TypedKey| {
-            super::fragment_index::compare_typed_keys(&binding, &left.components, &right.components)
-                .map_err(|error| StorageError::Invalid(error.to_string()))
-        };
-        let mut result = Vec::with_capacity(self.entry.partition_rows.len());
-        let mut start = 0u64;
-        let mut first_file = 0;
-        for &rows in &self.entry.partition_rows {
-            let end = start + rows as u64;
-            let mut bounds: Option<(TypedKey, TypedKey)> = None;
-            // Both physical row ranges are ordered. Advance once over files
-            // preceding this partition, then visit only actual intersections.
-            while first_file < file_ranges.len() && file_ranges[first_file].1 <= start {
-                first_file += 1;
-            }
-            for (file_start, file_end, first, last) in file_ranges[first_file..]
-                .iter()
-                .take_while(|(file_start, _, _, _)| *file_start < end)
-            {
-                if start < end && *file_start < end && start < *file_end {
-                    bounds = Some(match bounds {
-                        None => (first.clone(), last.clone()),
-                        Some((old_first, old_last)) => (
-                            if compare(first, &old_first)?.is_lt() {
-                                first.clone()
-                            } else {
-                                old_first
-                            },
-                            if compare(last, &old_last)?.is_gt() {
-                                last.clone()
-                            } else {
-                                old_last
-                            },
-                        ),
-                    });
-                }
-            }
-            result.push(bounds);
-            start = end;
-        }
-        Ok(result)
+        Ok(self.typed_partition_bounds.as_ref().clone())
     }
 
     /// Return source partition IDs whose physical row ranges overlap any
     /// indexed candidate file for these queries. Selection is metadata-only;
     /// row-level interval filtering remains the caller's responsibility.
     pub async fn candidate_partitions(&self, queries: &[QueryInterval]) -> Result<Vec<usize>> {
-        let snapshot_id = self
-            .table
-            .metadata()
-            .current_snapshot_id()
-            .ok_or_else(|| StorageError::Invalid("table has no snapshot".into()))?;
-        let (file_ranges, _) =
-            super::snapshot_interval_row_ranges(&self.table, snapshot_id, queries).await?;
-        let mut partition_start = 0u64;
-        let mut candidates = Vec::new();
-        let mut first_file = 0;
-        for (partition, row_count) in self.entry.partition_rows.iter().enumerate() {
-            let partition_end = partition_start
-                .checked_add(*row_count as u64)
-                .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
-            while first_file < file_ranges.len() && file_ranges[first_file].end <= partition_start {
-                first_file += 1;
-            }
-            if partition_start < partition_end
-                && file_ranges
-                    .get(first_file)
-                    .is_some_and(|file| file.start < partition_end)
-            {
-                candidates.push(partition);
-            }
-            partition_start = partition_end;
-        }
-        Ok(candidates)
+        let (_, file_ranges) = super::stream_from_plan(
+            self.plan.clone(),
+            Some(queries.to_vec()),
+            false,
+            None,
+            Some(Vec::new()),
+        )?;
+        candidate_partitions_for_ranges(
+            &self.entry.partition_rows,
+            &self.partition_offsets,
+            file_ranges,
+        )
     }
 
     /// Read one logical partition by its original row ordinal range. Only
@@ -838,19 +699,31 @@ impl LocalRead {
         &self,
         partition: usize,
     ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
-        let read = self.clone();
+        self.projected_partition_batches(partition, self.field_ids.as_slice())
+    }
+
+    /// Read a source partition with Iceberg/Vortex projection pushdown. Field
+    /// IDs are ordered exactly as they should appear in each returned batch.
+    pub fn projected_partition_batches(
+        &self,
+        partition: usize,
+        field_ids: &[i32],
+    ) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
+        let entry = self.entry.clone();
+        let plan = self.plan.clone();
+        let partition_offsets = self.partition_offsets.clone();
+        let nested_projection_paths = self.nested_projection_paths.clone();
+        let field_ids = field_ids.to_vec();
         async_stream::try_stream! {
-            let count = *read.entry.partition_rows.get(partition).ok_or_else(||
+            let count = *entry.partition_rows.get(partition).ok_or_else(||
                 StorageError::Invalid(format!("partition index {partition} is out of range")))?;
-            let start = read.entry.partition_rows[..partition].iter().try_fold(0u64, |sum, rows| {
-                sum.checked_add(*rows as u64)
-                    .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))
-            })?;
+            let start = partition_offsets[partition];
             let end = start.checked_add(count as u64)
                 .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
-            let snapshot_id = read.table.metadata().current_snapshot_id()
-                .ok_or_else(|| StorageError::Invalid("table has no snapshot".into()))?;
-            let (mut batches, _) = super::stream_snapshot_rows(&read.table, snapshot_id, start..end).await?;
+            let (mut batches, _) = super::stream_from_plan_with_nested_projection(
+                plan, None, false, Some(start..end), Some(field_ids),
+                nested_projection_paths,
+            )?;
             yield PartitionEvent::StartPartition;
             let mut emitted = 0u64;
             while let Some((offset, batch)) = batches.try_next().await? {
@@ -862,7 +735,7 @@ impl LocalRead {
                     let local_start = (overlap_start - offset) as usize;
                     let length = (overlap_end - overlap_start) as usize;
                     let batch = batch.slice(local_start, length);
-                    let batch = if read.entry.empty_row {
+                    let batch = if entry.empty_row {
                         RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![],
                             &RecordBatchOptions::new().with_row_count(Some(length)))?
                     } else { batch };
@@ -873,7 +746,8 @@ impl LocalRead {
             if emitted != count as u64 {
                 Err(StorageError::Invalid("partition row counts differ from snapshot".into()))?;
             }
-        }.boxed()
+        }
+        .boxed()
     }
 
     /// Stream candidate files for key intervals. File selection is indexed;
@@ -882,7 +756,7 @@ impl LocalRead {
         &self,
         queries: &[QueryInterval],
     ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
-        self.interval_batches_impl(queries, None)
+        self.projected_interval_batches(queries, self.field_ids.as_slice())
     }
 
     /// Prune by both key intervals and the requested execution partition's
@@ -892,54 +766,77 @@ impl LocalRead {
         queries: &[QueryInterval],
         rows: std::ops::Range<u64>,
     ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
-        self.interval_batches_impl(queries, Some(rows))
+        self.projected_interval_batches_in_rows(queries, rows, self.field_ids.as_slice())
     }
 
-    fn interval_batches_impl(
+    /// Stream unfiltered indexed candidate rows with a storage-level field
+    /// projection. The caller applies the interval predicate to these rows.
+    pub fn projected_interval_batches(
+        &self,
+        queries: &[QueryInterval],
+        field_ids: &[i32],
+    ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
+        self.projected_interval_batches_impl(queries, None, field_ids)
+    }
+
+    /// Stream indexed candidates intersecting an original snapshot row range,
+    /// with a storage-level field projection.
+    pub fn projected_interval_batches_in_rows(
+        &self,
+        queries: &[QueryInterval],
+        rows: std::ops::Range<u64>,
+        field_ids: &[i32],
+    ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
+        self.projected_interval_batches_impl(queries, Some(rows), field_ids)
+    }
+
+    fn projected_interval_batches_impl(
         &self,
         queries: &[QueryInterval],
         rows: Option<std::ops::Range<u64>>,
+        field_ids: &[i32],
     ) -> futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>> {
-        let read = self.clone();
+        let plan = self.plan.clone();
+        let nested_projection_paths = self.nested_projection_paths.clone();
         let queries = queries.to_vec();
+        let field_ids = field_ids.to_vec();
         async_stream::try_stream! {
-            let snapshot_id = read.table.metadata().current_snapshot_id()
-                .ok_or_else(|| StorageError::Invalid("table has no snapshot".into()))?;
-            let (mut batches, _) = match rows {
-                Some(rows) => super::stream_snapshot_intervals_rows(&read.table, snapshot_id, &queries, rows).await?,
-                None => super::stream_snapshot_intervals(&read.table, snapshot_id, &queries).await?,
-            };
+            let (mut batches, _) = super::stream_from_plan_with_nested_projection(
+                plan, Some(queries), false, rows, Some(field_ids),
+                nested_projection_paths,
+            )?;
             while let Some((offset, batch)) = batches.try_next().await? {
-                let batch = if read.entry.empty_row {
-                    RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![],
-                        &RecordBatchOptions::new().with_row_count(Some(batch.num_rows())))?
-                } else { batch };
                 yield (offset, batch);
             }
-        }.boxed()
+        }
+        .boxed()
     }
 
     /// Reopen data on every action. The immutable metadata location stays pinned
     /// even if another writer replaces the directory entrypoint in the meantime.
     pub fn batches(&self) -> futures::stream::BoxStream<'static, Result<PartitionEvent>> {
-        let read = self.clone();
+        let entry = self.entry.clone();
+        let plan = self.plan.clone();
+        let field_ids = self.field_ids.as_ref().clone();
+        let nested_projection_paths = self.nested_projection_paths.clone();
         async_stream::try_stream! {
-            let snapshot_id = read.table.metadata().current_snapshot_id()
-                .ok_or_else(|| StorageError::Invalid("table has no snapshot".into()))?;
-            let (mut batches, _) = super::stream_snapshot(&read.table, snapshot_id, None).await?;
+            let (mut batches, _) = super::stream_from_plan_with_nested_projection(
+                plan, None, false, None, Some(field_ids),
+                nested_projection_paths,
+            )?;
             let mut pending: Option<RecordBatch> = None;
-            for mut remaining in read.entry.partition_rows {
+            for mut remaining in entry.partition_rows.iter().copied() {
                 yield PartitionEvent::StartPartition;
                 while remaining > 0 {
                     let batch = match pending.take() {
                         Some(batch) => batch,
-                        None => batches.try_next().await?.ok_or_else(||
+                        None => batches.try_next().await?.map(|(_, batch)| batch).ok_or_else(||
                             StorageError::Invalid("partition row counts differ from snapshot".into()))?,
                     };
                     let count = remaining.min(batch.num_rows());
                     if count < batch.num_rows() { pending = Some(batch.slice(count, batch.num_rows() - count)); }
                     let batch = batch.slice(0, count);
-                    let batch = if read.entry.empty_row {
+                    let batch = if entry.empty_row {
                         RecordBatch::try_new_with_options(Arc::new(Schema::empty()), vec![],
                             &RecordBatchOptions::new().with_row_count(Some(count)))?
                     } else { batch };
@@ -954,8 +851,146 @@ impl LocalRead {
     }
 }
 
-/// Resolve only the directory entrypoint, Iceberg metadata and Vail descriptor.
-/// No manifests, fragment data, checksums of data, or row decoding are read here.
+fn candidate_partitions_for_ranges(
+    partition_rows: &[usize],
+    partition_offsets: &[u64],
+    mut file_ranges: Vec<Range<u64>>,
+) -> Result<Vec<usize>> {
+    if partition_rows.len() != partition_offsets.len() {
+        return Err(StorageError::Invalid(
+            "partition offsets and row counts differ".into(),
+        ));
+    }
+    file_ranges.sort_unstable_by_key(|range| range.start);
+    let mut merged_ranges: Vec<Range<u64>> = Vec::with_capacity(file_ranges.len());
+    for range in file_ranges {
+        if range.start >= range.end {
+            continue;
+        }
+        if let Some(previous) = merged_ranges.last_mut()
+            && range.start <= previous.end
+        {
+            previous.end = previous.end.max(range.end);
+        } else {
+            merged_ranges.push(range);
+        }
+    }
+
+    let mut candidates = Vec::new();
+    let mut next_partition = 0;
+    for range in merged_ranges {
+        let first_starting_at_or_before = partition_offsets
+            .partition_point(|offset| *offset <= range.start)
+            .saturating_sub(1);
+        let mut partition = next_partition.max(first_starting_at_or_before);
+        while partition < partition_rows.len() {
+            let start = partition_offsets[partition];
+            if start >= range.end {
+                break;
+            }
+            let end = start
+                .checked_add(partition_rows[partition] as u64)
+                .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
+            if start < end && end > range.start {
+                candidates.push(partition);
+            }
+            partition += 1;
+            next_partition = partition;
+        }
+    }
+    Ok(candidates)
+}
+
+fn partition_bounds_from_plan(
+    plan: &super::SnapshotReadPlan,
+    partition_rows: &[usize],
+) -> Result<
+    Vec<
+        Option<(
+            super::fragment_index::TypedKey,
+            super::fragment_index::TypedKey,
+        )>,
+    >,
+> {
+    use super::fragment_index::TypedKey;
+    let Some(index) = plan.index.as_ref() else {
+        return Ok(vec![None; partition_rows.len()]);
+    };
+    let typed_by_path = index
+        .fragments()
+        .iter()
+        .zip(index.typed_fragment_bounds())
+        .map(|(fragment, bounds)| (fragment.identity.file_path.as_str(), bounds))
+        .collect::<HashMap<_, _>>();
+    let mut file_ranges = Vec::with_capacity(plan.files.len());
+    for file in &plan.files {
+        let (first, last) = typed_by_path
+            .get(file.identity.path.as_str())
+            .ok_or_else(|| {
+                StorageError::Invalid("descriptor file is absent from fragment index".into())
+            })?;
+        file_ranges.push((
+            file.offset,
+            file.offset + file.identity.row_count,
+            first,
+            last,
+        ));
+    }
+    let partition_total = partition_rows.iter().try_fold(0u64, |sum, rows| {
+        sum.checked_add(*rows as u64)
+            .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))
+    })?;
+    if partition_total != plan.total_rows {
+        return Err(StorageError::Invalid(
+            "partition and file row counts differ".into(),
+        ));
+    }
+    let binding = index.binding();
+    let compare = |left: &TypedKey, right: &TypedKey| {
+        super::fragment_index::compare_typed_keys(binding, &left.components, &right.components)
+            .map_err(|error| StorageError::Invalid(error.to_string()))
+    };
+    let mut result = Vec::with_capacity(partition_rows.len());
+    let mut start = 0u64;
+    let mut first_file = 0;
+    for &rows in partition_rows {
+        let end = start
+            .checked_add(rows as u64)
+            .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
+        let mut bounds: Option<(TypedKey, TypedKey)> = None;
+        while first_file < file_ranges.len() && file_ranges[first_file].1 <= start {
+            first_file += 1;
+        }
+        for (file_start, file_end, first, last) in file_ranges[first_file..]
+            .iter()
+            .take_while(|(file_start, _, _, _)| *file_start < end)
+        {
+            if start < end && *file_start < end && start < *file_end {
+                bounds = Some(match bounds {
+                    None => ((*first).clone(), (*last).clone()),
+                    Some((old_first, old_last)) => (
+                        if compare(first, &old_first)?.is_lt() {
+                            (*first).clone()
+                        } else {
+                            old_first
+                        },
+                        if compare(last, &old_last)?.is_gt() {
+                            (*last).clone()
+                        } else {
+                            old_last
+                        },
+                    ),
+                });
+            }
+        }
+        result.push(bounds);
+        start = end;
+    }
+    Ok(result)
+}
+
+/// Resolve the immutable directory entrypoint and load one validated Iceberg
+/// snapshot read plan. Data files remain unopened until a stream is consumed.
 pub async fn open_local(path: &str) -> Result<LocalRead> {
     let root = directory(path)?;
     let entry: Entry = serde_json::from_slice(&fs::read(root.join(ENTRY))?)?;
@@ -971,13 +1006,14 @@ pub async fn open_local(path: &str) -> Result<LocalRead> {
     )
     .await?
     .into_table();
-    let descriptor = super::snapshot_descriptor(
-        &table,
-        table
-            .metadata()
-            .current_snapshot_id()
-            .ok_or_else(|| StorageError::Invalid("table has no snapshot".into()))?,
-    )?;
+    let snapshot_id = table
+        .metadata()
+        .current_snapshot_id()
+        .ok_or_else(|| StorageError::Invalid("table has no snapshot".into()))?;
+    let plan =
+        std::sync::Arc::new(super::load_snapshot_read_plan(&table, snapshot_id, true).await?);
+    let descriptor = plan.descriptor.clone();
+    let typed_partition_bounds = partition_bounds_from_plan(&plan, &entry.partition_rows)?;
     let keys = descriptor
         .semantics
         .key_field_ids
@@ -994,6 +1030,14 @@ pub async fn open_local(path: &str) -> Result<LocalRead> {
                 .ok_or_else(|| StorageError::Invalid("unknown key field ID".into()))
         })
         .collect::<Result<Vec<_>>>()?;
+    let field_ids = table
+        .metadata()
+        .current_schema()
+        .as_struct()
+        .fields()
+        .iter()
+        .map(|field| field.id)
+        .collect();
     let references = collect_reference_genomes(
         &descriptor.semantics.row_type,
         &descriptor.semantics.global_type,
@@ -1023,12 +1067,24 @@ pub async fn open_local(path: &str) -> Result<LocalRead> {
     if entry.empty_row && (descriptor.semantics.row_type != json!([]) || !keys.is_empty()) {
         return Err(StorageError::Invalid("invalid empty row encoding".into()));
     }
+    let mut partition_offsets = Vec::with_capacity(entry.partition_rows.len());
+    let mut partition_offset = 0u64;
+    for rows in &entry.partition_rows {
+        partition_offsets.push(partition_offset);
+        partition_offset = partition_offset
+            .checked_add(*rows as u64)
+            .ok_or_else(|| StorageError::Invalid("partition row offset overflow".into()))?;
+    }
     Ok(LocalRead {
-        entry,
-        table,
+        entry: Arc::new(entry),
         semantics: descriptor.semantics.clone(),
         keys,
-        descriptor,
+        descriptor: Arc::new(descriptor),
+        field_ids: Arc::new(field_ids),
+        plan,
+        partition_offsets: std::sync::Arc::new(partition_offsets),
+        nested_projection_paths: None,
+        typed_partition_bounds: Arc::new(typed_partition_bounds),
     })
 }
 
@@ -1057,6 +1113,33 @@ pub async fn read_local(path: &str) -> Result<LocalTable> {
 mod tests {
     use super::*;
     use futures::TryStreamExt;
+
+    #[test]
+    fn candidate_partition_ranges_skip_empty_partitions_and_deduplicate() {
+        let rows = [0, 0, 3, 0, 0, 2, 0, 5];
+        let offsets = [0, 0, 0, 3, 3, 3, 5, 5];
+
+        assert_eq!(
+            candidate_partitions_for_ranges(&rows, &offsets, vec![0..3]).unwrap(),
+            vec![2]
+        );
+        assert_eq!(
+            candidate_partitions_for_ranges(&rows, &offsets, vec![3..5]).unwrap(),
+            vec![5]
+        );
+        assert_eq!(
+            candidate_partitions_for_ranges(&rows, &offsets, vec![5..10]).unwrap(),
+            vec![7]
+        );
+        assert_eq!(
+            candidate_partitions_for_ranges(&rows, &offsets, vec![0..1, 2..3]).unwrap(),
+            vec![2]
+        );
+        assert_eq!(
+            candidate_partitions_for_ranges(&rows, &offsets, vec![0..10]).unwrap(),
+            vec![2, 5, 7]
+        );
+    }
 
     #[test]
     fn reference_definitions_are_collected_from_nested_rows_and_globals() {
@@ -1153,13 +1236,20 @@ mod tests {
         .unwrap();
 
         let read = open_local(root.to_str().unwrap()).await.unwrap();
-        let snapshot_id = read.table.metadata().current_snapshot_id().unwrap();
-        let descriptor = crate::snapshot_descriptor(&read.table, snapshot_id).unwrap();
+        let clone = read.clone();
+        assert!(std::sync::Arc::ptr_eq(&read.plan, &clone.plan));
+        assert_eq!(read.field_ids(), &[1, 2]);
+        let snapshot_id = read.descriptor.snapshot_id;
+        let descriptor = read.descriptor.clone();
+        assert!(descriptor.files.iter().all(|file| file.sha256.is_none()));
         assert_eq!(
             descriptor.files.len(),
             6,
             "each 4-row partition spans two files"
         );
+        let index_path = crate::local_path(descriptor.index_path.as_deref().unwrap()).unwrap();
+        fs::write(&index_path, b"changed after open").unwrap();
+        assert_eq!(read.index_binding().unwrap().snapshot_id, snapshot_id);
 
         // A later file is absent, but reading partition zero only opens files
         // whose descriptor row offsets overlap [0, 4).
@@ -1178,6 +1268,29 @@ mod tests {
             lower: Some(point.clone()),
             upper: Some(point),
         };
+        let projected = read
+            .projected_partition_batches(0, &[2])
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+        let projected_batches = projected
+            .iter()
+            .filter_map(|event| match event {
+                PartitionEvent::Batch(batch) => Some(batch),
+                PartitionEvent::StartPartition => None,
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(projected_batches.len(), 2);
+        assert_eq!(projected_batches[0].schema().field(0).name(), "v");
+        assert_eq!(projected_batches[0].num_columns(), 1);
+        let projected_interval = read
+            .projected_interval_batches_in_rows(std::slice::from_ref(&query), 0..4, &[2])
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+        assert_eq!(projected_interval.len(), 2);
+        assert_eq!(projected_interval[0].1.schema().field(0).name(), "v");
+        assert_eq!(projected_interval[0].1.num_columns(), 1);
         assert_eq!(
             read.candidate_partitions(std::slice::from_ref(&query))
                 .await

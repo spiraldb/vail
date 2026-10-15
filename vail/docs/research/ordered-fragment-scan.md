@@ -1,5 +1,23 @@
 # Snapshot-bound ordered fragment scans
 
+Current implementation update (2026-10-14): each opened reader pins one shared
+snapshot plan containing the descriptor, manifest tasks, typed bounds, and file
+and partition offsets. Single-interval lookup uses binary search; multiple
+intervals are sorted/merged and swept against the ordered fragment bounds.
+Partition-local reads binary-search file offsets rather than scanning all files.
+Data and globals files are never read in full to compute or verify hashes; the
+filesystem/object store supplies immutable contents. Small descriptor/index
+metadata checksums remain. Earlier descriptions below of per-file content
+verification and repeated manifest enumeration are historical.
+
+Column projections reach Iceberg scan tasks and the Vortex scan expression.
+Vail writes decomposed lists explicitly so element struct fields have separate
+storage segments. Nested path hints are conservative: direct row projections
+with modeled array lambdas may prune fields; whole-container or opaque uses keep
+their full inputs. Certified key fields remain intact. Join cells push full-key
+bounds into indexed readers, and integer range sources generate only the
+intersecting slice. Unsupported index domains retain residual filtering.
+
 Current update (2026-09-29): new certificates use `vail-total-order-key-v3`,
 with IEEE 754 totalOrder for both float widths and recursive total ordering
 for composite values. Keyed v2 snapshots are rejected rather than treating
@@ -38,12 +56,12 @@ For each candidate run, `first_key <= last_key` under the bound comparator. If t
 
 For overlap, use a bounded streaming k-way merge of individually ordered PR reader streams, comparing row keys with the exact same versioned comparator as the index. Open every indexed run that might precede the next emitted key: before emitting active minimum key `k`, activate unopened candidate runs whose `first_key <= k`, then recompute the minimum. Index endpoints are conservative when filters/deletes remove boundary rows, so early opening is safe. A deterministic file ordinal/row ordinal tie-breaker is needed only where observable equal-key order is part of the contract; otherwise preserve all duplicate rows without inventing uniqueness. Cap concurrently active runs and per-run batch buffers; if overlap fan-in exceeds the configured profile, reject or require a write-time compaction/repair. A disjoint run after an overlap component can resume ordered concatenation. DataFusion's `SortPreservingMergeExec` may implement the merge only when its physical key comparator is proved identical; the existing prototype's `SortExec` is a write/repair tool, not an ordinary read step.
 
-For the primary **monotone endpoint** profile (`previous.last <= next.first`), a paged search tree can select K candidate intervals in O(log F + K) metadata-index work (plus page-fetch granularity), including every equal-boundary leaf, with O(page size + output-buffer metadata) memory and no data-file I/O for pruned intervals. For the optional interior-overlap profile, the simple subtree-max augmentation costs O(pages visited + K); a stronger O(log F + K) output-sensitive claim requires a separately proved interval-tree design and adversarial tests. The **current** PR task resolver adds O(F) manifest work as above regardless of index lookup. For N rows processed in selected fragments, ordered-concatenation reads decode O(N) data in index order; overlapping reads decode O(N) and perform O(N log W) key comparisons with W active runs, plus bounded prefetch and batch memory proportional to W. A current read-side SHA-256 check also reads all B bytes of each selected whole file before decoding, so a narrow range query still pays O(B_selected) verification I/O; avoiding that later requires a trusted immutable object identity or authenticated subfile chunks. Predicates/deletes may discard rows but cannot turn a sorted stream into an unsorted one. These bounds exclude network/codec cost and cannot promise a fixed memory cap when unbounded W is allowed.
+For the primary **monotone endpoint** profile (`previous.last <= next.first`), a paged search tree can select K candidate intervals in O(log F + K) metadata-index work (plus page-fetch granularity), including every equal-boundary leaf, with O(page size + output-buffer metadata) memory and no data-file I/O for pruned intervals. For the optional interior-overlap profile, the simple subtree-max augmentation costs O(pages visited + K); a stronger O(log F + K) output-sensitive claim requires a separately proved interval-tree design and adversarial tests. The **current** PR task resolver adds O(F) manifest work as above regardless of index lookup. For N rows processed in selected fragments, ordered-concatenation reads decode O(N) data in index order; overlapping reads decode O(N) and perform O(N log W) key comparisons with W active runs, plus bounded prefetch and batch memory proportional to W. There is no whole-data-file checksum pass; selected files are read through Vortex with the requested row ranges and projections. Predicates/deletes may discard rows but cannot turn a sorted stream into an unsorted one. These bounds exclude network/codec cost and cannot promise a fixed memory cap when unbounded W is allowed.
 
 ## Adversarial gates
 
 * Two individually sorted files created in reverse name/manifest order with disjoint key intervals; delay the first file's I/O. Output must follow interval order regardless of task completion.
 * Two files with equal boundary keys; all duplicates survive, and a group-by-key sees one complete group. Then test overlapping distinct values and verify the streaming merge emits globally nondecreasing keys without a full sort.
 * A compound mixed-direction key with missing first and trailing components, inclusive/exclusive range endpoints, and one leaf starting below the query but ending inside it. Index pruning must retain exactly the possible matches; never derive the tuple range from separate column min/max.
-* Corrupt/missing index, wrong comparator version, changed file checksum or snapshot ID, missing task, extra manifest file, delete file, and an imported unsorted file all fail keyed read. Explicit repair may create a new certified snapshot, but normal read does not repair.
+* Corrupt/missing index, wrong comparator version, changed snapshot identity or snapshot ID, missing task, extra manifest file, delete file, and an imported unsorted file all fail keyed read. Explicit repair may create a new certified snapshot, but normal read does not repair.
 * Stress many disjoint leaves to measure index-page residency and manifest-planning cost separately; stress a long overlap chain to hit the configured fan-in cap. The latter must produce a bounded rejection or valid streaming result, not silently materialize and sort the table.

@@ -79,16 +79,26 @@ fn collection_tag_cast_cannot_change_element_storage() {
 }
 
 #[test]
-fn distinct_rejects_float_equivalence_mismatch() {
+fn distinct_float_values_use_datafusion() {
     let expr: Expr = serde_json::from_value(json!({
         "op":"nested_function", "function":"array_distinct", "dtype":{"set":"float64"},
-        "args":[{"op":"literal","dtype":{"array":"float64"},"value":[0.0]}]
+        "args":[{"op":"literal","dtype":{"array":"float64"},"value":[1.5, 2.5, 1.5, null, null]}]
     }))
     .unwrap();
-    assert!(
-        expr.dtype(&Schema::empty())
-            .unwrap_err()
-            .to_string()
-            .contains("key equality")
-    );
+    let physical = lower(&expr, &Schema::empty()).unwrap();
+    assert!(physical.to_string().contains("array_distinct"));
+    let source = RecordBatch::try_from_iter([(
+        "x",
+        std::sync::Arc::new(Int32Array::from(vec![0])) as arrow_array::ArrayRef,
+    )])
+    .unwrap();
+    let output = project_batch(&source, &[("s".into(), expr)]).unwrap();
+    let list = output
+        .column(0)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    let values = list.value(0);
+    assert_eq!(values.len(), 3);
+    assert_eq!(values.null_count(), 1);
 }

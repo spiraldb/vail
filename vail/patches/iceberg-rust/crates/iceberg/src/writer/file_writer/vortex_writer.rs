@@ -27,14 +27,18 @@ use bytes::Bytes;
 use futures::channel::mpsc;
 use futures::{SinkExt, StreamExt};
 use vortex::array::ArrayRef;
+use vortex::array::session::ArraySessionExt;
 use vortex::array::stats::TypedStatsSetRef;
 use vortex::array::stream::ArrayStreamAdapter;
 use vortex::arrow::ArrowSessionExt;
 use vortex::dtype::extension::Matcher;
 use vortex::dtype::{DType, PType};
+use vortex::editions::{
+    ComponentKind, Edition, EditionDeclaration, EditionId, EditionMember, EditionSessionExt,
+};
 use vortex::expr::stats::{Stat, StatsProvider, StatsProviderExt};
 use vortex::extension::datetime::{AnyTemporal, TimeUnit};
-use vortex::file::{WriteOptionsSessionExt, WriteSummary};
+use vortex::file::{WriteOptionsSessionExt, WriteStrategyBuilder, WriteSummary};
 use vortex::io::{IoBuf, VortexWrite};
 use vortex::layout::BufferedBytesTracker;
 use vortex::scalar::Scalar;
@@ -47,6 +51,16 @@ use crate::spec::{
     DataContentType, DataFileBuilder, DataFileFormat, Datum, PrimitiveLiteral, PrimitiveType,
     SchemaRef, Struct, Type,
 };
+
+// ListLayout is registered by Vortex but not yet declared in a frozen edition.
+// Keep its opt-in separate from the unchanged core format declaration.
+static STRUCTURAL_LIST_EDITION: EditionDeclaration = EditionDeclaration {
+    edition: Edition {
+        id: EditionId::new("iceberg-structural-list", 2026, 10, 0),
+        min_library_version: None,
+    },
+    added: &[EditionMember::layout(&"vortex.list")],
+};
 use crate::{Error, ErrorKind, Result};
 
 /// VortexWriterBuilder is used to build a [`VortexWriter`].
@@ -57,6 +71,7 @@ use crate::{Error, ErrorKind, Result};
 pub struct VortexWriterBuilder {
     schema: SchemaRef,
     session: VortexSession,
+    structural_lists: bool,
 }
 
 impl VortexWriterBuilder {
@@ -66,7 +81,18 @@ impl VortexWriterBuilder {
     /// the current tokio runtime handle at construction time, so it must be
     /// created from within the runtime that will drive the writes.
     pub fn new(schema: SchemaRef, session: VortexSession) -> Self {
-        Self { schema, session }
+        Self {
+            schema,
+            session,
+            structural_lists: false,
+        }
+    }
+
+    /// Opt into decomposed list layouts so element fields can be read independently.
+    /// This enables the experimental list layout through a separate write edition.
+    pub fn with_structural_lists(mut self) -> Self {
+        self.structural_lists = true;
+        self
     }
 }
 
@@ -97,6 +123,7 @@ impl FileWriterBuilder for VortexWriterBuilder {
         Ok(VortexWriter {
             schema: self.schema.clone(),
             session: self.session.clone(),
+            structural_lists: self.structural_lists,
             output_file,
             inner: None,
             current_row_num: 0,
@@ -112,6 +139,7 @@ impl FileWriterBuilder for VortexWriterBuilder {
 pub struct VortexWriter {
     schema: SchemaRef,
     session: VortexSession,
+    structural_lists: bool,
     output_file: OutputFile,
     inner: Option<StreamingWriter>,
     current_row_num: usize,
@@ -150,6 +178,14 @@ impl StreamingWriter {
 
 impl VortexWriter {
     async fn start(&self, arrow_schema: ArrowSchemaRef) -> Result<StreamingWriter> {
+        if self.structural_lists {
+            self.session
+                .register_edition(&STRUCTURAL_LIST_EDITION)
+                .map_err(to_iceberg_error)?;
+            self.session
+                .enable_edition(STRUCTURAL_LIST_EDITION.edition.id)
+                .map_err(to_iceberg_error)?;
+        }
         let dtype = self
             .session
             .arrow()
@@ -160,16 +196,32 @@ impl VortexWriter {
 
         let (batches, receiver) = mpsc::channel::<ArrayRef>(1);
         let stream = ArrayStreamAdapter::new(dtype, receiver.map(Ok));
-        // Let Vortex configure compression from the session's enabled editions.
-        // An explicit, unrestricted strategy can emit encodings the file's
-        // serialization context forbids (for example fastlanes.delta).
-        let write_options = self
+        // Decompose lists so element fields remain independently readable.
+        // Keep compression restricted to the session's enabled editions.
+        let allowed = self
             .session
-            .write_options()
-            .with_metadata_segment(
-                crate::arrow::VORTEX_SCHEMA_KEY,
-                serde_json::to_vec(self.schema.as_ref())?,
-            );
+            .enabled_component_ids(ComponentKind::Array)
+            .iter()
+            .filter_map(|id| self.session.arrays().registry().get(id))
+            .map(|plugin| plugin.id())
+            .collect();
+        let strategy = WriteStrategyBuilder::default()
+            .with_btrblocks_builder(
+                vortex::compressor::BtrBlocksCompressorBuilder::default()
+                    .retain_allowed_encodings(&allowed),
+            )
+            .with_list_layout()
+            .build();
+        let write_options = self.session.write_options();
+        let write_options = if self.structural_lists {
+            write_options.with_strategy(strategy)
+        } else {
+            write_options
+        };
+        let write_options = write_options.with_metadata_segment(
+            crate::arrow::VORTEX_SCHEMA_KEY,
+            serde_json::to_vec(self.schema.as_ref())?,
+        );
         let buffered_bytes = write_options.buffered_bytes_tracker();
 
         let mut sink = FileWriteSink {

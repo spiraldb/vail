@@ -70,8 +70,7 @@ execution scheduler and distributed sorting remain future work.
 VicebergScanExec advertises the certified key order to DataFusion. It follows the
 Iceberg manifest entries and Vail fragment interval certificate, opening files as
 needed; it never inserts a sort. A prefix action leaves later files unopened.
-File hashes are checked before decoding each requested file. Read nodes pin immutable
-snapshot metadata, so overwrites do not change an existing Table.
+Data and globals files are not hashed on read or write; Vail trusts immutable filesystem/object-store contents. Read nodes pin and share immutable snapshot metadata, so overwrites do not change an existing Table. Partition offsets and planned files are indexed once, and requested fields reach the Vortex reader.
 
 SortExec consumes its source stream directly, with no preceding Rust collection of
 the table. An ordinal column preserves arrival order among equal keys and is removed
@@ -114,9 +113,9 @@ indexing the globals is what makes the reference unindexed. Captured read global
 keep their immutable snapshot after overwrite and after the Python source is freed.
 
 Write evaluates the singleton and stores exactly one Arrow IPC batch in the immutable
-generation. Its URI and SHA-256 are bound into the snapshot descriptor, alongside
+generation. Its URI is bound into the snapshot descriptor, alongside
 its ordered logical schema. Reading a Table inspects the schema only; GlobalsScanExec
-opens, verifies, and decodes the Arrow file when the globals are evaluated. Empty
+opens and decodes the Arrow file when the globals are evaluated. Legacy checksum fields are accepted but are not used to re-read or hash data. Empty
 globals need no sidecar. This uses Arrow for globals and PR 2835's Vortex/Iceberg
 integration for row files; legacy `.ht` compatibility remains deferred.
 

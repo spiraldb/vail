@@ -175,13 +175,51 @@ pub(super) async fn read_vortex_task(
         })
         .transpose()?;
 
-    let mut projection = select(
-        projected_names
+    let mut projection = if let Some(paths) = task.nested_projection_paths() {
+        let fields = projected_names
             .iter()
-            .map(String::as_str)
-            .collect::<Vec<_>>(),
-        root(),
-    );
+            .map(|name| {
+                let child = get_item(name.as_str(), root());
+                let descendants = paths
+                    .iter()
+                    .filter(|path| path.first() == Some(name))
+                    .map(|path| {
+                        path[1..]
+                            .iter()
+                            .map(|s| s.as_str().into())
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>();
+                let child = if descendants.is_empty() || descendants.iter().any(Vec::is_empty) {
+                    child
+                } else {
+                    let dtype = vortex_file
+                        .dtype()
+                        .as_struct_fields_opt()
+                        .and_then(|fields| fields.field(name.as_str()))
+                        .ok_or_else(|| {
+                            Error::new(ErrorKind::Unexpected, "missing projected field")
+                        })?;
+                    vortex::array::scalar_fn::fns::list_project::project_paths(
+                        &descendants,
+                        child,
+                        &dtype,
+                    )
+                    .map_err(to_iceberg_error)?
+                };
+                Ok((name.as_str(), child))
+            })
+            .collect::<Result<Vec<_>>>()?;
+        vortex::expr::pack(fields, Nullability::NonNullable)
+    } else {
+        select(
+            projected_names
+                .iter()
+                .map(String::as_str)
+                .collect::<Vec<_>>(),
+            root(),
+        )
+    };
     // Keep the virtual position separate from user columns with the same name.
     let mut position_name = RESERVED_COL_NAME_POS.to_string();
     while projected_names.contains(&position_name) {

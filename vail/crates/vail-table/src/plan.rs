@@ -103,6 +103,8 @@ fn tag(
 #[derive(Debug, Clone)]
 enum Source {
     ReadPartition(Arc<LocalRead>, usize),
+    ReadPartitionProjected(Arc<LocalRead>, usize, Vec<i32>),
+    ReadPartitionNested(Arc<LocalRead>, usize, Vec<i32>, Vec<Vec<String>>),
     Read(Arc<LocalRead>),
     Range {
         n: usize,
@@ -128,7 +130,10 @@ impl DisplayAs for SourceExec {
 impl ExecutionPlan for SourceExec {
     fn name(&self) -> &'static str {
         match self.source {
-            Source::Read(_) | Source::ReadPartition(_, _) => "VicebergScanExec",
+            Source::Read(_)
+            | Source::ReadPartition(_, _)
+            | Source::ReadPartitionProjected(_, _, _)
+            | Source::ReadPartitionNested(_, _, _, _) => "VicebergScanExec",
             Source::Range { .. } => "RangeExec",
             Source::Globals(_) => "GlobalsScanExec",
             Source::Parallelize { .. } => "ParallelizeExec",
@@ -177,6 +182,25 @@ impl ExecutionPlan for SourceExec {
                         let mut input=source.partition_batches(part);
                         while let Some(event)=input.try_next().await.map_err(external)? {
                             if let PartitionEvent::Batch(batch)=event {let batch=normalize(&batch,row_schema.clone()).map_err(external)?;yield tag(batch,0,schema.clone())?;}
+                        }
+                    }
+                    Source::ReadPartitionProjected(source, part, field_ids) => {
+                        let mut input = source.projected_partition_batches(part, &field_ids);
+                        while let Some(event) = input.try_next().await.map_err(external)? {
+                            if let PartitionEvent::Batch(batch) = event {
+                                let batch = normalize(&batch, row_schema.clone()).map_err(external)?;
+                                yield tag(batch, 0, schema.clone())?;
+                            }
+                        }
+                    }
+                    Source::ReadPartitionNested(source, part, field_ids, paths) => {
+                        let source = source.with_nested_projection_paths(paths);
+                        let mut input = source.projected_partition_batches(part, &field_ids);
+                        while let Some(event) = input.try_next().await.map_err(external)? {
+                            if let PartitionEvent::Batch(batch) = event {
+                                let batch = normalize(&batch, row_schema.clone()).map_err(external)?;
+                                yield tag(batch, 0, schema.clone())?;
+                            }
                         }
                     }
                     Source::Read(source) => {
@@ -231,6 +255,15 @@ pub(crate) fn source_partition_projected(
     table: &Arc<TableIR>,
     part: usize,
     projection: Option<&Vec<usize>>,
+) -> Result<PhysicalPlan> {
+    source_partition_projected_with_nested_paths(table, part, projection, Vec::new())
+}
+
+pub(crate) fn source_partition_projected_with_nested_paths(
+    table: &Arc<TableIR>,
+    part: usize,
+    projection: Option<&Vec<usize>>,
+    nested_paths: Vec<Vec<String>>,
 ) -> Result<PhysicalPlan> {
     let row_schema = table.schema().clone();
     let name = private_name(&row_schema, table.globals().schema(), "__vail_partition");
@@ -340,6 +373,40 @@ pub(crate) fn source_partition_projected(
         }
         return Ok(Arc::new(ProjectionExec::try_new(exprs, scan)?));
     }
+    if let TableNode::Read { source } = table.node()
+        && let Some(projection) = projection
+    {
+        let tag_index = row_schema.fields().len();
+        let row_indices = projection
+            .iter()
+            .copied()
+            .filter(|&index| index != tag_index)
+            .collect::<Vec<_>>();
+        let field_ids = row_indices
+            .iter()
+            .map(|&index| {
+                source.field_ids().get(index).copied().ok_or_else(|| {
+                    TableError::Invalid(format!("read projection field {index} is out of range"))
+                })
+            })
+            .collect::<Result<Vec<_>>>()?;
+        let projected_schema = Arc::new(row_schema.project(&row_indices)?);
+        let projected_name = private_name(
+            &projected_schema,
+            table.globals().schema(),
+            "__vail_partition",
+        );
+        let projected_output_schema = with_partition(&projected_schema, &projected_name);
+        return Ok(Arc::new(SourceExec {
+            source: if nested_paths.is_empty() {
+                Source::ReadPartitionProjected(source.clone(), part, field_ids)
+            } else {
+                Source::ReadPartitionNested(source.clone(), part, field_ids, nested_paths)
+            },
+            cache: source_properties(projected_output_schema, &[])?,
+            row_schema: projected_schema,
+        }));
+    }
     let source = match table.node() {
         TableNode::Read { source } => Source::ReadPartition(source.clone(), part),
         TableNode::Range { n, n_partitions } => {
@@ -365,6 +432,35 @@ pub(crate) fn source_partition_projected(
     };
     Ok(Arc::new(SourceExec {
         source,
+        cache: source_properties(schema, table.keys())?,
+        row_schema,
+    }))
+}
+
+/// Construct the part of a range source that can contribute to an integer
+/// key interval. The bounds are applied before any Arrow rows are generated.
+pub(crate) fn range_partition_clipped(
+    table: &Arc<TableIR>,
+    part: usize,
+    lower: usize,
+    upper: usize,
+) -> Result<PhysicalPlan> {
+    let TableNode::Range { n, n_partitions } = table.node() else {
+        return Err(TableError::Invalid("not a range source".into()));
+    };
+    if *n_partitions == 0 || part >= *n_partitions {
+        return Err(TableError::Invalid("range partition out of range".into()));
+    }
+    let start = n / n_partitions * part + part.min(n % n_partitions);
+    let end = start + n / n_partitions + usize::from(part < n % n_partitions);
+    let start = start.max(lower);
+    let end = end.min(upper).max(start);
+    let row_schema = table.schema().clone();
+    let name = private_name(&row_schema, table.globals().schema(), "__vail_partition");
+    let schema = with_partition(&row_schema, &name);
+    Ok(Arc::new(RangePartitionExec {
+        start,
+        end,
         cache: source_properties(schema, table.keys())?,
         row_schema,
     }))

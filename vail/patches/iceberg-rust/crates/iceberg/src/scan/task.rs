@@ -79,6 +79,12 @@ pub struct FileScanTask {
     schema: SchemaRef,
     /// The field ids to project.
     project_field_ids: Vec<i32>,
+    /// Optional physical nested field dependencies. Paths are name segments,
+    /// with list elements traversed implicitly. Omitted top-level names retain
+    /// their complete value. Unread children are restored as null by the usual
+    /// schema transformer; callers must only omit fields proven unused.
+    #[builder(default)]
+    nested_projection_paths: Option<Vec<Vec<String>>>,
     /// The predicate to filter.
     #[builder(default)]
     predicate: Option<BoundPredicate>,
@@ -202,7 +208,12 @@ impl FileScanTask {
         self.schema.clone()
     }
 
-    /// Returns the project field id of this file scan task.
+    /// Physical nested field dependencies, when supplied by the query planner.
+    pub fn nested_projection_paths(&self) -> Option<&[Vec<String>]> {
+        self.nested_projection_paths.as_deref()
+    }
+
+    /// Field IDs requested by the scan, in output order.
     pub fn project_field_ids(&self) -> &[i32] {
         &self.project_field_ids
     }
@@ -419,6 +430,8 @@ mod _serde {
         data_file_format: DataFileFormat,
         schema: SchemaRef,
         project_field_ids: Vec<i32>,
+        #[serde(default)]
+        nested_projection_paths: Option<Vec<Vec<String>>>,
         predicate: Option<BoundPredicate>,
         deletes: Vec<FileScanTaskDeleteFile>,
         #[serde(default)]
@@ -453,6 +466,8 @@ mod _serde {
         data_file_format: DataFileFormat,
         schema: &'a SchemaRef,
         project_field_ids: &'a [i32],
+        #[serde(skip_serializing_if = "Option::is_none")]
+        nested_projection_paths: Option<&'a [Vec<String>]>,
         #[serde(skip_serializing_if = "Option::is_none")]
         predicate: Option<&'a BoundPredicate>,
         deletes: &'a [FileScanTaskDeleteFile],
@@ -509,6 +524,7 @@ mod _serde {
                 data_file_format: value.data_file_format,
                 schema: &value.schema,
                 project_field_ids: &value.project_field_ids,
+                nested_projection_paths: value.nested_projection_paths.as_deref(),
                 predicate: value.predicate.as_ref(),
                 deletes: &value.deletes,
                 partition,
@@ -564,6 +580,7 @@ mod _serde {
                 .with_data_file_format(value.data_file_format)
                 .with_schema(value.schema)
                 .with_project_field_ids(value.project_field_ids)
+                .with_nested_projection_paths(value.nested_projection_paths)
                 .with_predicate(value.predicate)
                 .with_deletes(value.deletes)
                 .with_partition(partition)

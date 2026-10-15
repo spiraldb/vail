@@ -196,7 +196,9 @@ pub struct IndexBinding {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct FragmentIdentity {
     pub file_path: String,
-    pub content_sha256: String,
+    /// Optional legacy checksum. New trusted-local snapshots omit it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub content_sha256: Option<String>,
 }
 
 /// Inclusive endpoints of an actual nonempty, whole-file run.
@@ -272,7 +274,11 @@ impl FragmentIndex {
         let mut typed_fragments = Vec::with_capacity(fragments.len());
         for fragment in fragments {
             if fragment.identity.file_path.is_empty()
-                || !is_sha256(&fragment.identity.content_sha256)
+                || fragment
+                    .identity
+                    .content_sha256
+                    .as_deref()
+                    .is_some_and(|hash| !is_sha256(hash))
                 || !paths.insert(fragment.identity.file_path.clone())
                 || fragment.row_count == 0
             {
@@ -399,6 +405,138 @@ impl FragmentIndex {
                 break;
             }
             selected.push(fragment);
+        }
+        Ok(selected)
+    }
+
+    /// Select the union of many full-key intervals with a single ordered
+    /// sweep. Query endpoints are decoded and sorted once; work is linear in
+    /// the fragment index plus the query list, regardless of how many queries
+    /// overlap a broad file range.
+    pub fn select_many<'a>(
+        &'a self,
+        expected_binding: &IndexBinding,
+        queries: &[QueryInterval],
+    ) -> Result<Vec<&'a FragmentInterval>> {
+        if &self.binding != expected_binding {
+            return Err(IndexError::BindingMismatch);
+        }
+        if let [query] = queries {
+            return self.select(expected_binding, query);
+        }
+        #[derive(Clone)]
+        struct TypedInterval {
+            lower: Option<(TypedKey, bool)>,
+            upper: Option<(TypedKey, bool)>,
+        }
+        let mut ranges = Vec::with_capacity(queries.len());
+        for query in queries {
+            let lower = query
+                .lower
+                .as_ref()
+                .map(|endpoint| {
+                    validate_key(&self.binding, &endpoint.key)?;
+                    Ok((
+                        typed_key_from_transport(&self.binding, &endpoint.key)?,
+                        endpoint.inclusive,
+                    ))
+                })
+                .transpose()?;
+            let upper = query
+                .upper
+                .as_ref()
+                .map(|endpoint| {
+                    validate_key(&self.binding, &endpoint.key)?;
+                    Ok((
+                        typed_key_from_transport(&self.binding, &endpoint.key)?,
+                        endpoint.inclusive,
+                    ))
+                })
+                .transpose()?;
+            if let (Some((lower_key, lower_inclusive)), Some((upper_key, upper_inclusive))) =
+                (&lower, &upper)
+            {
+                let order = compare_typed_keys(
+                    &self.binding,
+                    &lower_key.components,
+                    &upper_key.components,
+                )?;
+                if order == Ordering::Greater
+                    || (order == Ordering::Equal && (!lower_inclusive || !upper_inclusive))
+                {
+                    continue;
+                }
+            }
+            ranges.push(TypedInterval { lower, upper });
+        }
+        ranges.sort_by(|left, right| match (&left.lower, &right.lower) {
+            (None, None) => Ordering::Equal,
+            (None, Some(_)) => Ordering::Less,
+            (Some(_), None) => Ordering::Greater,
+            (Some((left, left_inclusive)), Some((right, right_inclusive))) => {
+                compare_typed_keys(&self.binding, &left.components, &right.components)
+                    .expect("validated interval endpoints share an index binding")
+                    .then_with(|| right_inclusive.cmp(left_inclusive))
+            }
+        });
+
+        // Union overlapping query intervals. Besides reducing duplicates,
+        // this keeps a broad fragment from being tested against every query.
+        let mut merged: Vec<TypedInterval> = Vec::with_capacity(ranges.len());
+        for next in ranges {
+            let Some(current) = merged.last_mut() else {
+                merged.push(next);
+                continue;
+            };
+            let overlaps = match (&current.upper, &next.lower) {
+                (None, _) | (_, None) => true,
+                (Some((upper, upper_inclusive)), Some((lower, lower_inclusive))) => {
+                    let order =
+                        compare_typed_keys(&self.binding, &upper.components, &lower.components)?;
+                    order == Ordering::Greater
+                        || (order == Ordering::Equal && (*upper_inclusive || *lower_inclusive))
+                }
+            };
+            if !overlaps {
+                merged.push(next);
+                continue;
+            }
+            current.upper = match (&current.upper, next.upper) {
+                (None, _) | (_, None) => None,
+                (Some((left, left_inclusive)), Some((right, right_inclusive))) => {
+                    match compare_typed_keys(&self.binding, &left.components, &right.components)? {
+                        Ordering::Less => Some((right, right_inclusive)),
+                        Ordering::Greater => Some((left.clone(), *left_inclusive)),
+                        Ordering::Equal => Some((left.clone(), *left_inclusive || right_inclusive)),
+                    }
+                }
+            };
+        }
+
+        let before = |upper: &Option<(TypedKey, bool)>, lower: &TypedKey| -> Result<bool> {
+            let Some((upper, inclusive)) = upper else {
+                return Ok(false);
+            };
+            let order = compare_typed_keys(&self.binding, &upper.components, &lower.components)?;
+            Ok(order == Ordering::Less || (order == Ordering::Equal && !inclusive))
+        };
+        let reaches = |lower: &Option<(TypedKey, bool)>, upper: &TypedKey| -> Result<bool> {
+            let Some((lower, inclusive)) = lower else {
+                return Ok(true);
+            };
+            let order = compare_typed_keys(&self.binding, &lower.components, &upper.components)?;
+            Ok(order == Ordering::Less || (order == Ordering::Equal && *inclusive))
+        };
+        let mut query_index = 0;
+        let mut selected = Vec::new();
+        for (fragment_index, fragment) in self.fragments.iter().enumerate() {
+            let (first, last) = &self.typed_bounds[fragment_index];
+            while query_index < merged.len() && before(&merged[query_index].upper, first)? {
+                query_index += 1;
+            }
+            if query_index < merged.len() && reaches(&merged[query_index].lower, last)? {
+                selected.push(fragment);
+            }
         }
         Ok(selected)
     }
@@ -646,7 +784,7 @@ mod tests {
         FragmentInterval {
             identity: FragmentIdentity {
                 file_path: format!("file:///table/{name}.vortex"),
-                content_sha256: "b".repeat(64),
+                content_sha256: Some("b".repeat(64)),
             },
             row_count: 10,
             first_key: first,
@@ -893,6 +1031,102 @@ mod tests {
         assert_eq!(
             names(&index.select(&bound, &exclusive).unwrap()),
             vec!["file:///table/middle.vortex"]
+        );
+    }
+
+    #[test]
+    fn select_many_unions_sorted_intervals_with_one_candidate_sweep() {
+        let bound = binding(vec![field(1, KeyType::Int32, false)]);
+        let index = FragmentIndex::new(
+            bound.clone(),
+            vec![
+                fragment("0", i32_key(0), i32_key(9)),
+                fragment("1", i32_key(10), i32_key(19)),
+                fragment("2", i32_key(20), i32_key(29)),
+                fragment("3", i32_key(30), i32_key(39)),
+                fragment("4", i32_key(40), i32_key(49)),
+            ],
+        )
+        .unwrap();
+        let queries = [
+            QueryInterval {
+                lower: Some(endpoint(14, true)),
+                upper: Some(endpoint(35, true)),
+            },
+            QueryInterval {
+                lower: Some(endpoint(5, true)),
+                upper: Some(endpoint(10, false)),
+            },
+            QueryInterval {
+                lower: Some(endpoint(20, true)),
+                upper: Some(endpoint(20, true)),
+            },
+        ];
+        let selected = index.select_many(&bound, &queries).unwrap();
+        assert_eq!(
+            names(&selected),
+            vec![
+                "file:///table/0.vortex",
+                "file:///table/1.vortex",
+                "file:///table/2.vortex",
+                "file:///table/3.vortex",
+            ]
+        );
+    }
+
+    #[test]
+    fn select_many_preserves_unbounded_and_exclusive_boundary_semantics() {
+        let bound = binding(vec![field(1, KeyType::Int32, false)]);
+        let index = FragmentIndex::new(
+            bound.clone(),
+            vec![
+                fragment("0", i32_key(0), i32_key(9)),
+                fragment("1", i32_key(10), i32_key(19)),
+                fragment("2", i32_key(20), i32_key(29)),
+                fragment("3", i32_key(30), i32_key(39)),
+            ],
+        )
+        .unwrap();
+
+        // An exclusive upper bound at a file's first key excludes that file;
+        // the unbounded lower endpoint still selects every earlier file.
+        let before_ten = QueryInterval {
+            lower: None,
+            upper: Some(endpoint(10, false)),
+        };
+        assert_eq!(
+            names(&index.select_many(&bound, &[before_ten]).unwrap()),
+            vec!["file:///table/0.vortex"]
+        );
+
+        // Equal exclusive endpoints leave the boundary key out, while an
+        // unbounded upper endpoint selects the remainder of the index.
+        let after_twenty = QueryInterval {
+            lower: Some(endpoint(20, false)),
+            upper: None,
+        };
+        assert_eq!(
+            names(&index.select_many(&bound, &[after_twenty]).unwrap()),
+            vec!["file:///table/2.vortex", "file:///table/3.vortex"]
+        );
+
+        let touching_but_disjoint = [
+            QueryInterval {
+                lower: Some(endpoint(0, true)),
+                upper: Some(endpoint(10, false)),
+            },
+            QueryInterval {
+                lower: Some(endpoint(10, false)),
+                upper: Some(endpoint(20, true)),
+            },
+        ];
+        assert_eq!(
+            names(&index.select_many(&bound, &touching_but_disjoint).unwrap()),
+            vec![
+                "file:///table/0.vortex",
+                "file:///table/1.vortex",
+                "file:///table/2.vortex"
+            ]
         );
     }
 

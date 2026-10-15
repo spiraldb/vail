@@ -1,0 +1,13 @@
+{
+  "variant": "hail",
+  "rows": 10000000,
+  "partitions": 16,
+  "median_wall_seconds": 0.488000042,
+  "median_core_seconds": 3.888983875,
+  "median_average_cores": 8.030809503495902,
+  "package": "/private/tmp/vail-range-means-hail/lib/python3.11/site-packages/hail/__init__.py",
+  "logical_cpus": 14,
+  "sampling_hz": 10,
+  "cpu_scope": "worker plus live descendants; warmups excluded; includes in-process monitor",
+  "semantic_note": "raw array_avg returns null for empty arrays; composed/Hail return NaN; force_count forces evaluation without inspecting m"
+}

@@ -826,7 +826,9 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                     )));
                     Ok(LogicalPlanBuilder::from(plan).project(fields)?.build()?)
                 }
-                None => Err(TableError::Invalid("missing logical grouped aggregate plan".into())),
+                None => Err(TableError::Invalid(
+                    "missing logical grouped aggregate plan".into(),
+                )),
             }
         }
         TableNode::MapRows {
@@ -834,7 +836,20 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             fields,
             bindings,
         } => {
-            let input = crate::logical_globals::bind_globals(lower(child)?, child)?;
+            let lowered_child = if matches!(child.node(), TableNode::Read { .. }) {
+                let paths = crate::nested_projection::map_rows_paths(fields);
+                if paths.is_empty() {
+                    lower(child)?
+                } else {
+                    let provider =
+                        crate::provider::provider_with_nested_projection_paths(child, paths)?;
+                    LogicalPlanBuilder::scan("vail_source", provider_as_source(provider), None)?
+                        .build()?
+                }
+            } else {
+                lower(child)?
+            };
+            let input = crate::logical_globals::bind_globals(lowered_child, child)?;
             let (input, indices) = crate::logical_globals::bind_external(input, bindings)?;
             if fields.iter().any(|(_, expr)| is_rng_uid(expr)) {
                 return lower_rng_uids(child, input, fields, &indices);

@@ -19,8 +19,111 @@ pub(crate) fn col(name: impl AsRef<str>) -> DFExpr {
     DFExpr::Column(datafusion_common::Column::new_unqualified(name.as_ref()))
 }
 
+/// Lift ordinary coordinate reductions to one mergeable DataFusion UDAF.
+/// Complex nested scopes retain the general relational implementation.
+fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
+    if let Expr::AggArray {
+        value,
+        parameter,
+        body,
+    } = expression
+    {
+        if let Expr::Aggregate {
+            function,
+            value: argument,
+            options,
+            init,
+        } = body.as_ref()
+        {
+            if init.is_empty()
+                && options
+                    .as_object()
+                    .is_none_or(|options| options.keys().all(|key| key == "__vail_result_type"))
+                && matches!(
+                    function.as_str(),
+                    "sum" | "min" | "max" | "mean" | "count" | "stddev_pop"
+                )
+            {
+                use vail_execution::expressions::{PrimitiveType, Type};
+                let mut element = argument
+                    .as_deref()
+                    .cloned()
+                    .unwrap_or(Expr::RuntimeLiteral {
+                        value: ScalarValue::Int64(Some(1)),
+                    });
+                if matches!(function.as_str(), "sum" | "mean" | "stddev_pop") {
+                    // The frontend declares the aggregate's widened result.
+                    let dtype = if function == "sum" {
+                        options
+                            .get("__vail_result_type")
+                            .cloned()
+                            .map(serde_json::from_value::<Type>)
+                            .transpose()
+                            .map_err(|error| {
+                                TableError::Invalid(format!(
+                                    "invalid coordinate result type: {error}"
+                                ))
+                            })?
+                            .unwrap_or(Type::Primitive(PrimitiveType::Int64))
+                    } else {
+                        Type::Primitive(PrimitiveType::Float64)
+                    };
+                    element = Expr::Cast {
+                        value: Box::new(element),
+                        dtype,
+                    };
+                }
+                return Ok(Expr::Aggregate {
+                    function: format!("__coordinate_{function}"),
+                    value: Some(Box::new(Expr::ArrayMap {
+                        value: value.clone(),
+                        parameter: parameter.clone(),
+                        body: Box::new(element),
+                    })),
+                    options: options.clone(),
+                    init: vec![],
+                });
+            }
+        }
+    }
+    expression.try_map_children(coordinate_reductions)
+}
+
 pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<AggregateUDF>> {
     let f = &reducer.function;
+    if let Some(function) = f.strip_prefix("__coordinate_") {
+        let Some(DataType::List(element)) = dtype else {
+            return Err(TableError::Invalid(
+                "coordinate aggregate requires list input".into(),
+            ));
+        };
+        let input = element.data_type();
+        let inner = match function {
+            "sum" => datafusion_functions_aggregate::sum::sum_udaf(),
+            "min" => datafusion_functions_aggregate::min_max::min_udaf(),
+            "max" => datafusion_functions_aggregate::min_max::max_udaf(),
+            "mean" => datafusion_functions_aggregate::average::avg_udaf(),
+            "count" => datafusion_functions_aggregate::count::count_udaf(),
+            "stddev_pop" => vail_execution::aggregates::aggregate_udf(function, Some(input))?,
+            _ => {
+                return Err(TableError::Invalid(
+                    "unsupported coordinate aggregate".into(),
+                ));
+            }
+        };
+        let empty = match function {
+            "sum" if input == &DataType::Int64 => ScalarValue::Int64(Some(0)),
+            "sum" => ScalarValue::Float64(Some(0.0)),
+            "count" => ScalarValue::Int64(Some(0)),
+            "mean" | "stddev_pop" => ScalarValue::Float64(Some(f64::NAN)),
+            _ => ScalarValue::try_from(input)?,
+        };
+        return Ok(vail_execution::array_aggregate::coordinate_udaf(
+            inner,
+            input.clone(),
+            empty,
+        )?);
+    }
     if reducer
         .options
         .get("__vail_scan")
@@ -86,9 +189,10 @@ fn needs_order(expression: &Expr) -> bool {
             ordered = true;
         }
         if let Expr::Aggregate { function, .. } = node {
-            ordered |= !matches!(
-                function.as_str(),
-                "count"
+            ordered |= !function.starts_with("__coordinate_")
+                && !matches!(
+                    function.as_str(),
+                    "count"
                     | "sum"
                     | "product"
                     | "min"
@@ -108,7 +212,7 @@ fn needs_order(expression: &Expr) -> bool {
                     | "hardy_weinberg_test"
                     | "inbreeding"
                     | "call_stats"
-            );
+                );
         }
     });
     ordered
@@ -365,6 +469,11 @@ pub(crate) fn lower_grouped_fields(
     fields: &[(String, Expr)],
     bindings: &crate::globals::GlobalBindings,
 ) -> Result<LogicalPlan> {
+    let fields = fields
+        .iter()
+        .map(|(name, expression)| Ok((name.clone(), coordinate_reductions(expression)?)))
+        .collect::<Result<Vec<_>>>()?;
+    let fields = &fields;
     if let Some(plan) =
         crate::logical_aggregate_init::lower(table, child.clone(), Some(keys), fields, bindings)?
     {
@@ -536,6 +645,8 @@ pub(crate) fn lower_logical_total(
     bindings: &crate::globals::GlobalBindings,
     child: LogicalPlan,
 ) -> Result<Option<LogicalPlan>> {
+    let expression = coordinate_reductions(expression)?;
+    let expression = &expression;
     if let Some(plan) = crate::logical_aggregate_init::lower(
         table,
         child.clone(),

@@ -42,6 +42,21 @@ def test_array_agg_within_table_groups_and_nested_dictionary():
     assert rows == [hl.Struct(k=0, xs=[6, 0], d={0: 1, 1: 1, 2: 1}), hl.Struct(k=1, xs=[9, 3], d={0: 1, 1: 1, 2: 1})]
 
 
+@pytest.mark.parametrize('partitions', [1, 3])
+def test_coordinate_reductions_merge_native_states(partitions):
+    t = hl.Table.parallelize(
+        [dict(xs=[1, None]), dict(xs=None), dict(xs=[3, None]), dict(xs=[5, 8])],
+        schema=hl.tstruct(xs=hl.tarray(hl.tint32)), n_partitions=partitions)
+    assert t.aggregate(hl.agg.array_sum(t.xs)) == [9, 8]
+    assert t.aggregate(hl.agg.array_agg(lambda x: hl.agg.mean(x), t.xs)) == [3.0, 8.0]
+    assert t.aggregate(hl.agg.array_agg(lambda x: hl.agg.min(x), t.xs)) == [1, 8]
+    assert t.aggregate(hl.agg.array_agg(lambda x: hl.agg.max(x), t.xs)) == [5, 8]
+    assert t.aggregate(hl.agg.array_agg(lambda x: hl.agg.count(), t.xs)) == [3, 3]
+    assert t.aggregate(hl.agg.array_agg(lambda x: hl.agg.sum(x * 2), t.xs)) == [18, 16]
+    empty = t.head(0)
+    assert empty.aggregate(hl.agg.array_agg(lambda x: hl.agg.mean(x), empty.xs)) is None
+
+
 def test_collection_reducers_execute():
     t = hl.Table.parallelize([dict(x=3), dict(x=None), dict(x=1), dict(x=3)], schema=hl.tstruct(x=hl.tint32), n_partitions=3)
     assert t.aggregate(hl.agg.collect_as_set(t.x)) == {None, 1, 3}

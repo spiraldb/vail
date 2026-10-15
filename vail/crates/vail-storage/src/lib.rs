@@ -12,6 +12,7 @@ use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::ops::Range;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 use arrow_array::{Array, RecordBatch};
 use fragment_index::{
@@ -21,6 +22,7 @@ use fragment_index::{
 use futures::{StreamExt, TryStreamExt};
 use iceberg::Catalog;
 use iceberg::arrow::schema_to_arrow_schema;
+use iceberg::scan::FileScanTask;
 use iceberg::spec::DataFileFormat;
 use iceberg::table::Table;
 use iceberg::transaction::{ApplyTransactionAction, Transaction};
@@ -84,7 +86,10 @@ pub struct OrderedRun {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct DataFileIdentity {
     pub path: String,
-    pub sha256: String,
+    /// Optional legacy content hash. New snapshots rely on the immutable
+    /// filesystem contract and do not read whole data files to compute it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub sha256: Option<String>,
     pub row_count: u64,
 }
 
@@ -478,6 +483,7 @@ async fn write_initial_file(
     let file_path = file_uri(&data_path)?;
     let output = table.file_io().new_output(&file_path)?;
     let mut writer = VortexWriterBuilder::new(file_schema, VortexSession::default())
+        .with_structural_lists()
         .build(output)
         .await?;
     for batch in &batches {
@@ -498,7 +504,7 @@ async fn write_initial_file(
     }
     let identity = DataFileIdentity {
         path: file_path.clone(),
-        sha256: sha256_file(&data_path)?,
+        sha256: None,
         row_count: data_file.record_count(),
     };
     let interval = endpoints
@@ -732,37 +738,66 @@ async fn stream_snapshot_internal(
     SnapshotDescriptor,
     Vec<Range<u64>>,
 )> {
+    let plan = Arc::new(load_snapshot_read_plan(table, snapshot_id, queries.is_none()).await?);
+    let (stream, selected_row_ranges) = stream_from_plan(
+        plan.clone(),
+        queries.map(<[QueryInterval]>::to_vec),
+        residual_filter,
+        row_range,
+        None,
+    )?;
+    Ok((stream, plan.descriptor.clone(), selected_row_ranges))
+}
+
+/// Immutable, snapshot-pinned metadata shared by every LocalRead clone.
+/// It contains no row batches and performs no whole-file reads.
+#[derive(Debug)]
+pub(crate) struct SnapshotReadPlan {
+    table: Table,
+    pub(crate) descriptor: SnapshotDescriptor,
+    pub(crate) index: Option<FragmentIndex>,
+    pub(crate) files: Vec<PlannedFile>,
+    file_position_by_path: HashMap<String, usize>,
+    ordered_file_positions: Vec<usize>,
+    file_key_order_rank: Vec<usize>,
+    pub(crate) schema: Arc<arrow_schema::Schema>,
+    pub(crate) field_ids: Vec<i32>,
+    pub(crate) total_rows: u64,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct PlannedFile {
+    pub(crate) identity: DataFileIdentity,
+    pub(crate) offset: u64,
+    task: FileScanTask,
+}
+
+pub(crate) async fn load_snapshot_read_plan(
+    table: &Table,
+    snapshot_id: i64,
+    allow_unindexed: bool,
+) -> Result<SnapshotReadPlan> {
     let descriptor = snapshot_descriptor(table, snapshot_id)?;
     let total_rows = descriptor.files.iter().try_fold(0u64, |total, file| {
         total
             .checked_add(file.row_count)
             .ok_or_else(|| StorageError::Invalid("snapshot row count overflow".into()))
     })?;
-    if let Some(rows) = &row_range {
-        if rows.start > rows.end {
-            return Err(StorageError::Invalid(
-                "snapshot row range start exceeds end".into(),
-            ));
-        }
-        if rows.end > total_rows {
-            return Err(StorageError::Invalid(
-                "snapshot row range exceeds row count".into(),
-            ));
-        }
-    }
-    let snapshot = table.metadata().snapshot_by_id(snapshot_id).unwrap();
-    let props = &snapshot.summary().additional_properties;
+    let snapshot = table
+        .metadata()
+        .snapshot_by_id(snapshot_id)
+        .ok_or_else(|| StorageError::Invalid(format!("snapshot {snapshot_id} not found")))?;
     let snapshot_schema = snapshot.schema(table.metadata())?;
-    let snapshot_arrow_schema = schema_to_arrow_schema(&snapshot_schema)?;
+    let schema = schema_to_arrow_schema(&snapshot_schema)?;
+    let field_ids = snapshot_schema
+        .as_struct()
+        .fields()
+        .iter()
+        .map(|f| f.id)
+        .collect::<Vec<_>>();
     let mut key_ids = HashSet::new();
     for id in &descriptor.semantics.key_field_ids {
-        if !key_ids.insert(*id)
-            || !snapshot_schema
-                .as_struct()
-                .fields()
-                .iter()
-                .any(|field| field.id == *id)
-        {
+        if !key_ids.insert(*id) || !field_ids.contains(id) {
             return Err(StorageError::Invalid(format!(
                 "duplicate or unknown key field ID {id}"
             )));
@@ -775,6 +810,7 @@ async fn stream_snapshot_internal(
     }
     let index = match (&descriptor.index_path, &descriptor.index_sha256) {
         (Some(path), Some(hash)) => {
+            let props = &snapshot.summary().additional_properties;
             if props.get(PROP_INDEX_PATH) != Some(path)
                 || props.get(PROP_INDEX_SHA256) != Some(hash)
             {
@@ -798,7 +834,7 @@ async fn stream_snapshot_internal(
                 || binding
                     .key_fields
                     .iter()
-                    .map(|field| field.field_id)
+                    .map(|f| f.field_id)
                     .collect::<Vec<_>>()
                     != descriptor.semantics.key_field_ids
             {
@@ -815,9 +851,9 @@ async fn stream_snapshot_internal(
                         .find(|field| field.id == key.field_id)
                         .map(|field| field.name.as_str())
                         .ok_or_else(|| StorageError::Invalid("unknown key field ID".into()))?;
-                    let physical_type = snapshot_arrow_schema
+                    let physical_type = schema
                         .field_with_name(name)
-                        .map(|field| field.data_type().clone())
+                        .map(|f| f.data_type().clone())
                         .map_err(|_| StorageError::Invalid("unknown key field ID".into()))?;
                     let logical_type = descriptor
                         .semantics
@@ -840,10 +876,34 @@ async fn stream_snapshot_internal(
                     "fragment index order or count mismatch".into(),
                 ));
             }
+            let by_path = descriptor
+                .files
+                .iter()
+                .map(|f| (f.path.as_str(), f))
+                .collect::<HashMap<_, _>>();
+            let indexed_paths = stored
+                .fragments()
+                .iter()
+                .map(|fragment| fragment.identity.file_path.as_str())
+                .collect::<HashSet<_>>();
+            if indexed_paths.len() != descriptor.files.len()
+                || stored.fragments().iter().any(|fragment| {
+                    by_path
+                        .get(fragment.identity.file_path.as_str())
+                        .is_none_or(|identity| {
+                            identity.row_count != fragment.row_count
+                                || identity.sha256 != fragment.identity.content_sha256
+                        })
+                })
+            {
+                return Err(StorageError::Invalid(
+                    "index and descriptor file identities differ".into(),
+                ));
+            }
             Some(stored)
         }
         (None, None)
-            if queries.is_none()
+            if allow_unindexed
                 && (descriptor.files.len() <= 1 || descriptor.file_sequence.is_some()) =>
         {
             None
@@ -864,218 +924,319 @@ async fn stream_snapshot_internal(
         .snapshot_id(snapshot_id)
         .with_data_file_concurrency_limit(1)
         .build()?;
-    let mut tasks = scan.plan_files().await?.try_collect::<Vec<_>>().await?;
+    let tasks = scan.plan_files().await?.try_collect::<Vec<_>>().await?;
     if tasks.len() != descriptor.files.len() {
         return Err(StorageError::Invalid(
             "manifest and descriptor file counts differ".into(),
         ));
     }
-    let paths: HashSet<_> = descriptor.files.iter().map(|f| f.path.as_str()).collect();
-    if paths.len() != descriptor.files.len()
-        || tasks
-            .iter()
-            .any(|task| !paths.contains(task.data_file_path()))
-    {
+    let identities = descriptor
+        .files
+        .iter()
+        .map(|f| (f.path.as_str(), f))
+        .collect::<HashMap<_, _>>();
+    if identities.len() != descriptor.files.len() {
+        return Err(StorageError::Invalid(
+            "duplicate descriptor file path".into(),
+        ));
+    }
+    let mut task_by_path = HashMap::with_capacity(tasks.len());
+    for task in tasks {
+        let identity = identities.get(task.data_file_path()).ok_or_else(|| {
+            StorageError::Invalid("manifest and descriptor file sets differ".into())
+        })?;
+        if task.data_file_format() != DataFileFormat::Vortex
+            || !task.deletes().is_empty()
+            || task.start() != 0
+            || task.length() != task.file_size_in_bytes()
+            || task.record_count() != Some(identity.row_count)
+        {
+            return Err(StorageError::Unsupported(
+                "non-Vortex, deleted, split, or mismatched data file".into(),
+            ));
+        }
+        task_by_path.insert(task.data_file_path().to_owned(), task);
+    }
+    if task_by_path.len() != descriptor.files.len() {
         return Err(StorageError::Invalid(
             "manifest and descriptor file sets differ".into(),
         ));
     }
-    let identity_by_path: HashMap<_, _> = descriptor
-        .files
-        .iter()
-        .map(|file| (file.path.as_str(), file))
-        .collect();
-    for task in &tasks {
-        let identity = identity_by_path
-            .get(task.data_file_path())
-            .ok_or_else(|| StorageError::Invalid("unexpected scan task".into()))?;
-        if task.data_file_format() != DataFileFormat::Vortex
-            || !task.deletes().is_empty()
-            || task.start() != 0
-            || task.length() != task.file_size_in_bytes()
-            || task.record_count() != Some(identity.row_count)
-        {
-            return Err(StorageError::Unsupported(
-                "non-Vortex, deleted, split, or mismatched data file".into(),
-            ));
-        }
+    // Keep ordinal offsets in descriptor/input order. Indexed stream order is
+    // tracked separately below because the fragment index is key ordered.
+    let mut files = Vec::with_capacity(descriptor.files.len());
+    let mut offset = 0u64;
+    for identity in &descriptor.files {
+        let task = task_by_path
+            .remove(&identity.path)
+            .ok_or_else(|| StorageError::Invalid("missing manifest task".into()))?;
+        files.push(PlannedFile {
+            identity: identity.clone(),
+            offset,
+            task,
+        });
+        offset = offset
+            .checked_add(identity.row_count)
+            .ok_or_else(|| StorageError::Invalid("snapshot row offset overflow".into()))?;
     }
-    let mut by_path: HashMap<String, _> = tasks
-        .drain(..)
-        .map(|task| (task.data_file_path().to_owned(), task))
+    let file_position_by_path: HashMap<String, usize> = files
+        .iter()
+        .enumerate()
+        .map(|(position, file)| (file.identity.path.clone(), position))
         .collect();
-    let mut selected = if let Some(index) = &index {
-        let leaves = if let Some(queries) = queries {
-            let mut selected_paths = HashSet::new();
-            for query in queries {
-                for leaf in index
-                    .select(index.binding(), query)
-                    .map_err(|e| StorageError::Invalid(e.to_string()))?
-                {
-                    selected_paths.insert(leaf.identity.file_path.as_str());
-                }
-            }
-            index
-                .fragments()
-                .iter()
-                .filter(|leaf| selected_paths.contains(leaf.identity.file_path.as_str()))
-                .collect::<Vec<_>>()
-        } else {
-            index
-                .select(index.binding(), &QueryInterval::default())
-                .map_err(|e| StorageError::Invalid(e.to_string()))?
-        };
-        let indexed_paths: HashSet<_> = index
+    let ordered_file_positions = match &index {
+        Some(index) => index
             .fragments()
             .iter()
-            .map(|leaf| leaf.identity.file_path.as_str())
-            .collect();
-        if indexed_paths.len() != descriptor.files.len()
-            || descriptor
-                .files
-                .iter()
-                .any(|f| !indexed_paths.contains(f.path.as_str()))
-        {
-            return Err(StorageError::Invalid(
-                "index and descriptor file sets differ".into(),
-            ));
-        }
-        leaves
-            .into_iter()
-            .map(|leaf| leaf.identity.file_path.as_str())
-            .collect::<Vec<_>>()
-    } else {
-        descriptor
-            .files
-            .iter()
-            .map(|file| file.path.as_str())
-            .collect::<Vec<_>>()
-    };
-    if let Some(rows) = &row_range {
-        let candidates: HashSet<_> = selected.iter().copied().collect();
-        let mut file_end = 0u64;
-        selected = descriptor
-            .files
-            .iter()
-            .filter_map(|file| {
-                let file_start = file_end;
-                file_end += file.row_count;
-                (rows.start < rows.end
-                    && file_start < rows.end
-                    && rows.start < file_end
-                    && candidates.contains(file.path.as_str()))
-                .then_some(file.path.as_str())
+            .map(|fragment| {
+                file_position_by_path
+                    .get(&fragment.identity.file_path)
+                    .copied()
+                    .ok_or_else(|| StorageError::Invalid("index references unknown file".into()))
             })
-            .collect();
+            .collect::<Result<Vec<_>>>()?,
+        None => (0..files.len()).collect(),
+    };
+    let mut file_key_order_rank = vec![0; files.len()];
+    for (rank, position) in ordered_file_positions.iter().copied().enumerate() {
+        file_key_order_rank[position] = rank;
     }
-    let selected_paths: HashSet<_> = selected.iter().copied().collect();
-    let mut file_end = 0u64;
-    let selected_row_ranges = descriptor
-        .files
+    Ok(SnapshotReadPlan {
+        table: table.clone(),
+        descriptor,
+        index,
+        files,
+        file_position_by_path,
+        ordered_file_positions,
+        file_key_order_rank,
+        schema: Arc::new(schema),
+        field_ids,
+        total_rows,
+    })
+}
+
+fn projected_schema(plan: &SnapshotReadPlan, ids: &[i32]) -> Result<Arc<arrow_schema::Schema>> {
+    let mut seen = HashSet::new();
+    let fields = ids
         .iter()
-        .filter_map(|file| {
-            let start = file_end;
-            file_end += file.row_count;
-            selected_paths
-                .contains(file.path.as_str())
-                .then_some(start..file_end)
+        .map(|id| {
+            if !seen.insert(*id) {
+                return Err(StorageError::Invalid(format!(
+                    "duplicate projected field ID {id}"
+                )));
+            }
+            let position = plan
+                .field_ids
+                .iter()
+                .position(|candidate| candidate == id)
+                .ok_or_else(|| StorageError::Invalid(format!("unknown projected field ID {id}")))?;
+            Ok(plan.schema.field(position).clone())
         })
-        .collect::<Vec<_>>();
-    let mut checked_tasks = Vec::with_capacity(selected.len());
-    for path in selected {
-        let identity = identity_by_path
-            .get(path)
-            .ok_or_else(|| StorageError::Invalid("index leaf has no descriptor file".into()))?;
-        let task = by_path
-            .remove(path)
-            .ok_or_else(|| StorageError::Invalid("missing scan task".into()))?;
-        if task.data_file_format() != DataFileFormat::Vortex
-            || !task.deletes().is_empty()
-            || task.start() != 0
-            || task.length() != task.file_size_in_bytes()
-            || task.record_count() != Some(identity.row_count)
-        {
-            return Err(StorageError::Unsupported(
-                "non-Vortex, deleted, split, or mismatched data file".into(),
+        .collect::<Result<Vec<_>>>()?;
+    Ok(Arc::new(arrow_schema::Schema::new_with_metadata(
+        fields,
+        plan.schema.metadata().clone(),
+    )))
+}
+
+fn task_with_projection_and_nested_paths(
+    task: &FileScanTask,
+    field_ids: &[i32],
+    nested_paths: Option<&[Vec<String>]>,
+) -> Result<FileScanTask> {
+    Ok(FileScanTask::builder()
+        .with_file_size_in_bytes(task.file_size_in_bytes())
+        .with_start(task.start())
+        .with_length(task.length())
+        .with_record_count(task.record_count())
+        .with_first_row_id(task.first_row_id())
+        .with_data_sequence_number(task.data_sequence_number())
+        .with_data_file_path(task.data_file_path().to_owned())
+        .with_data_file_format(task.data_file_format())
+        .with_schema(task.schema_ref())
+        .with_project_field_ids(field_ids.to_vec())
+        .with_nested_projection_paths(nested_paths.map(<[Vec<String>]>::to_vec))
+        .with_predicate(task.predicate().cloned())
+        .with_deletes(task.deletes().to_vec())
+        .with_partition(task.partition().cloned())
+        .with_partition_spec(task.partition_spec().cloned())
+        .with_name_mapping(task.name_mapping().cloned())
+        .with_unified_partition_type(task.unified_partition_type().cloned())
+        .with_sort_order_id(task.sort_order_id())
+        .with_sort_order(task.sort_order().cloned())
+        .with_case_sensitive(task.case_sensitive())
+        .with_key_metadata(task.key_metadata().map(Box::<[u8]>::from))
+        .build()?)
+}
+
+pub(crate) fn stream_from_plan(
+    plan: Arc<SnapshotReadPlan>,
+    queries: Option<Vec<QueryInterval>>,
+    residual_filter: bool,
+    row_range: Option<Range<u64>>,
+    projection: Option<Vec<i32>>,
+) -> Result<(
+    futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
+    Vec<Range<u64>>,
+)> {
+    stream_from_plan_with_nested_projection(
+        plan,
+        queries,
+        residual_filter,
+        row_range,
+        projection,
+        None,
+    )
+}
+
+pub(crate) fn stream_from_plan_with_nested_projection(
+    plan: Arc<SnapshotReadPlan>,
+    queries: Option<Vec<QueryInterval>>,
+    residual_filter: bool,
+    row_range: Option<Range<u64>>,
+    projection: Option<Vec<i32>>,
+    nested_paths: Option<Vec<Vec<String>>>,
+) -> Result<(
+    futures::stream::BoxStream<'static, Result<(u64, RecordBatch)>>,
+    Vec<Range<u64>>,
+)> {
+    if let Some(rows) = &row_range {
+        if rows.start > rows.end {
+            return Err(StorageError::Invalid(
+                "snapshot row range start exceeds end".into(),
             ));
         }
-        checked_tasks.push((task, (**identity).clone()));
-    }
-    // All unselected live files still need their task identity checked against
-    // the index; only their bytes are spared by a range query.
-    if let Some(index) = &index {
-        for leaf in index.fragments() {
-            let identity = identity_by_path
-                .get(leaf.identity.file_path.as_str())
-                .ok_or_else(|| StorageError::Invalid("index leaf has no descriptor file".into()))?;
-            if identity.sha256 != leaf.identity.content_sha256
-                || identity.row_count != leaf.row_count
-            {
-                return Err(StorageError::Invalid(
-                    "index leaf and descriptor identity differ".into(),
-                ));
-            }
+        if rows.end > plan.total_rows {
+            return Err(StorageError::Invalid(
+                "snapshot row range exceeds row count".into(),
+            ));
         }
     }
-    let table = table.clone();
-    let queries = queries.map(<[QueryInterval]>::to_vec);
-    let residual_filter = if residual_filter {
+    let query_candidates = match (&plan.index, &queries) {
+        (Some(index), Some(queries)) => {
+            let positions = index
+                .select_many(index.binding(), queries)
+                .map_err(|e| StorageError::Invalid(e.to_string()))?
+                .into_iter()
+                .map(|fragment| {
+                    plan.file_position_by_path
+                        .get(&fragment.identity.file_path)
+                        .copied()
+                        .ok_or_else(|| {
+                            StorageError::Invalid("index references unknown file".into())
+                        })
+                })
+                .collect::<Result<Vec<_>>>()?;
+            Some(positions)
+        }
+        (Some(_), None) => None,
+        (None, Some(_)) => {
+            return Err(StorageError::Invalid(
+                "ordered fragment index missing".into(),
+            ));
+        }
+        (None, None) => None,
+    };
+    let row_file_range = row_range.as_ref().map(|rows| {
+        if rows.start == rows.end {
+            let insertion = plan.files.partition_point(|file| file.offset < rows.start);
+            return insertion..insertion;
+        }
+        let start = plan
+            .files
+            .partition_point(|file| file.offset + file.identity.row_count <= rows.start);
+        let end = plan.files.partition_point(|file| file.offset < rows.end);
+        start..end
+    });
+    let candidate_positions = match (&query_candidates, &row_file_range) {
+        (Some(candidates), Some(window)) => candidates
+            .iter()
+            .copied()
+            .filter(|position| window.contains(position))
+            .collect(),
+        (Some(candidates), None) => candidates.clone(),
+        (None, Some(window)) => {
+            let mut positions = (window.start..window.end).collect::<Vec<_>>();
+            positions.sort_unstable_by_key(|position| plan.file_key_order_rank[*position]);
+            positions
+        }
+        (None, None) => plan.ordered_file_positions.clone(),
+    };
+    let selected = candidate_positions
+        .into_iter()
+        .map(|position| plan.files[position].clone())
+        .collect::<Vec<_>>();
+    let mut selected_row_ranges = selected
+        .iter()
+        .map(|file| file.offset..file.offset + file.identity.row_count)
+        .collect::<Vec<_>>();
+    selected_row_ranges.sort_unstable_by_key(|range| range.start);
+    let mut output_ids = projection.unwrap_or_else(|| plan.field_ids.clone());
+    // An empty Hail row intentionally maps to a zero-column RecordBatch.
+    if plan.field_ids.is_empty() {
+        output_ids.clear();
+    }
+    let output_schema = projected_schema(&plan, &output_ids)?;
+    let residual_query = if residual_filter {
         queries
             .as_ref()
-            .and_then(|queries| (queries.len() == 1).then(|| queries[0].clone()))
+            .and_then(|q| (q.len() == 1).then(|| q[0].clone()))
     } else {
         None
     };
-    let mut original_offsets = HashMap::with_capacity(descriptor.files.len());
-    let mut next_offset = 0u64;
-    for file in &descriptor.files {
-        original_offsets.insert(file.path.clone(), next_offset);
-        next_offset = next_offset
-            .checked_add(file.row_count)
-            .ok_or_else(|| StorageError::Invalid("snapshot row offset overflow".into()))?;
-    }
-    let schema = schema_to_arrow_schema(&snapshot_schema)?;
-    let field_ids = snapshot_schema
-        .as_struct()
-        .fields()
-        .iter()
-        .map(|f| f.id)
-        .collect::<Vec<_>>();
-    let stream = async_stream::try_stream! {
-        for (task, identity) in checked_tasks {
-            let file_offset = *original_offsets.get(&identity.path)
-                .ok_or_else(|| StorageError::Invalid("missing original file offset".into()))?;
-            let path = local_path(&identity.path)?;
-            if std::fs::metadata(&path)?.len() != task.file_size_in_bytes() {
-                Err(StorageError::Invalid("Vortex file size mismatch".into()))?;
-            }
-            if sha256_file(&path)? != identity.sha256 {
-                Err(StorageError::Invalid("Vortex file checksum mismatch".into()))?;
-            }
-            let tasks = futures::stream::iter(vec![Ok(task)]).boxed();
-            let mut batches = table.reader_builder().with_data_file_concurrency_limit(1)
-                .build().read(tasks)?.stream();
-            let mut decoded_rows = 0u64;
-            while let Some(batch) = batches.try_next().await? {
-                let batch_offset = file_offset
-                    .checked_add(decoded_rows)
-                    .ok_or_else(|| StorageError::Invalid("batch row offset overflow".into()))?;
-                decoded_rows += batch.num_rows() as u64;
-                if decoded_rows > identity.row_count {
-                    Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?;
+    let mut read_ids = output_ids.clone();
+    if residual_query.is_some() {
+        if let Some(index) = &plan.index {
+            for key in &index.binding().key_fields {
+                if !read_ids.contains(&key.field_id) {
+                    read_ids.push(key.field_id);
                 }
-                let batch = if let (Some(index), Some(query)) = (&index, &residual_filter) {
-                    filter_batch_range(&batch, &schema, &field_ids, index.binding(), query)?
-                } else { batch };
-                if batch.num_rows() > 0 { yield (batch_offset, batch); }
-            }
-            if decoded_rows != identity.row_count {
-                Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?;
             }
         }
     }
-    .boxed();
-    Ok((stream, descriptor, selected_row_ranges))
+    let read_schema = projected_schema(&plan, &read_ids)?;
+    let mut project_positions = Vec::with_capacity(output_ids.len());
+    for id in &output_ids {
+        project_positions.push(
+            read_ids
+                .iter()
+                .position(|candidate| candidate == id)
+                .ok_or_else(|| StorageError::Invalid("projected field was not read".into()))?,
+        );
+    }
+    let plan_for_stream = plan.clone();
+    let output_schema_for_stream = output_schema.clone();
+    let read_schema_for_stream = read_schema.clone();
+    let stream = async_stream::try_stream! {
+        for file in selected {
+            let path = local_path(&file.identity.path)?;
+            if std::fs::metadata(&path)?.len() != file.task.file_size_in_bytes() {
+                Err(StorageError::Invalid("Vortex file size mismatch".into()))?;
+            }
+            let task = task_with_projection_and_nested_paths(&file.task, &read_ids, nested_paths.as_deref())?;
+            let tasks = futures::stream::iter(vec![Ok(task)]).boxed();
+            let mut batches = plan_for_stream.table.reader_builder().with_data_file_concurrency_limit(1).build().read(tasks)?.stream();
+            let mut decoded_rows = 0u64;
+            while let Some(batch) = batches.try_next().await? {
+                let batch_offset = file.offset.checked_add(decoded_rows)
+                    .ok_or_else(|| StorageError::Invalid("batch row offset overflow".into()))?;
+                decoded_rows = decoded_rows.checked_add(batch.num_rows() as u64)
+                    .ok_or_else(|| StorageError::Invalid("decoded row count overflow".into()))?;
+                if decoded_rows > file.identity.row_count { Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?; }
+                let batch = if let (Some(index), Some(query)) = (&plan_for_stream.index, &residual_query) {
+                    filter_batch_range(&batch, &read_schema_for_stream, &read_ids, index.binding(), query)?
+                } else { batch };
+                if batch.num_rows() > 0 {
+                    let columns = project_positions.iter().map(|position| batch.column(*position).clone()).collect::<Vec<_>>();
+                    let batch = RecordBatch::try_new_with_options(output_schema_for_stream.clone(), columns,
+                        &arrow_array::RecordBatchOptions::new().with_row_count(Some(batch.num_rows())))?;
+                    yield (batch_offset, batch);
+                }
+            }
+            if decoded_rows != file.identity.row_count { Err(StorageError::Invalid("decoded Vortex row count mismatch".into()))?; }
+        }
+    }.boxed();
+    Ok((stream, selected_row_ranges))
 }
 
 pub async fn read_current(table: &Table) -> Result<(Vec<RecordBatch>, SnapshotDescriptor)> {
@@ -1355,21 +1516,6 @@ fn write_immutable(path: &Path, bytes: &[u8]) -> Result<()> {
 
 fn sha256_hex(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
-}
-
-fn sha256_file(path: &Path) -> Result<String> {
-    use std::io::Read;
-    let mut file = std::fs::File::open(path)?;
-    let mut digest = Sha256::new();
-    let mut buffer = [0_u8; 64 * 1024];
-    loop {
-        let count = file.read(&mut buffer)?;
-        if count == 0 {
-            break;
-        }
-        digest.update(&buffer[..count]);
-    }
-    Ok(format!("{:x}", digest.finalize()))
 }
 
 fn live_files_hash(files: &[DataFileIdentity]) -> Result<String> {

@@ -34,3 +34,7 @@ sha2 = "0.10"
 thiserror = "2"
 tokio = { version = "1", features = ["macros", "rt", "rt-multi-thread"] }
 uuid = { version = "1", features = ["v4", "serde"] }
+
+[patch.crates-io]
+vortex-array = { path = "patches/vortex-array" }
+vortex-layout = { path = "patches/vortex-layout" }

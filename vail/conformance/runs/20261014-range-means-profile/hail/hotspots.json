@@ -1,0 +1,991 @@
+{
+  "sampled_cpu_seconds": 0.31442,
+  "thread_cpu_microseconds": {
+    "python": 10389,
+    "Thread <88523904>": 20,
+    "Thread <88524001>": 78,
+    "Thread <88524017>": 303933
+  },
+  "leaf": [
+    {
+      "name": "__sysctl",
+      "percent": 83.76725399147637
+    },
+    {
+      "name": "__psynch_cvwait",
+      "percent": 7.294383308949811
+    },
+    {
+      "name": "_PyEval_EvalFrameDefault",
+      "percent": 3.288912919025507
+    },
+    {
+      "name": "tupledealloc",
+      "percent": 1.2203422174161949
+    },
+    {
+      "name": "_PyObject_Free",
+      "percent": 0.6504039183258062
+    },
+    {
+      "name": "_PyFunction_Vectorcall",
+      "percent": 0.629094841295083
+    },
+    {
+      "name": "list_vectorcall",
+      "percent": 0.6275046116659246
+    },
+    {
+      "name": "method_vectorcall_VARARGS_KEYWORDS",
+      "percent": 0.5635773805737548
+    },
+    {
+      "name": "Py_BuildValue",
+      "percent": 0.5244577316964569
+    },
+    {
+      "name": "__recvfrom",
+      "percent": 0.4916990013357929
+    },
+    {
+      "name": "_platform_memset",
+      "percent": 0.42490935691113796
+    },
+    {
+      "name": "member_get",
+      "percent": 0.41186947395203866
+    },
+    {
+      "name": "_PyObject_Malloc",
+      "percent": 0.027988041473188726
+    },
+    {
+      "name": "poll",
+      "percent": 0.02480758221487183
+    },
+    {
+      "name": "set_pop",
+      "percent": 0.019718847401564786
+    },
+    {
+      "name": "unicode_dealloc",
+      "percent": 0.017810571846574648
+    },
+    {
+      "name": "__semwait_signal",
+      "percent": 0.005724826664970422
+    },
+    {
+      "name": "PyArg_ParseTupleAndKeywords",
+      "percent": 0.005406780739138732
+    },
+    {
+      "name": "PyObject_GenericGetAttr",
+      "percent": 0.0015902296291584507
+    },
+    {
+      "name": "PyThread_release_lock",
+      "percent": 0.0012721837033267604
+    },
+    {
+      "name": "PyType_IsSubtype",
+      "percent": 0.0006360918516633802
+    },
+    {
+      "name": "pthread_mutex_trylock",
+      "percent": 0.0006360918516633802
+    }
+  ],
+  "inclusive": [
+    {
+      "name": "_PyEval_EvalFrameDefault",
+      "percent": 100.0
+    },
+    {
+      "name": "_PyFunction_Vectorcall",
+      "percent": 100.0
+    },
+    {
+      "name": "method_vectorcall",
+      "percent": 98.19731569238598
+    },
+    {
+      "name": "pythread_wrapper",
+      "percent": 96.69582087653457
+    },
+    {
+      "name": "thread_run",
+      "percent": 96.69582087653457
+    },
+    {
+      "name": "_pthread_start",
+      "percent": 96.69582087653457
+    },
+    {
+      "name": "cfunction_call",
+      "percent": 84.29171172317282
+    },
+    {
+      "name": "psutil_proc_kinfo_oneshot",
+      "percent": 84.17467082246677
+    },
+    {
+      "name": "sysctl",
+      "percent": 83.76725399147637
+    },
+    {
+      "name": "__sysctl",
+      "percent": 83.76725399147637
+    },
+    {
+      "name": "psutil_get_kinfo_proc",
+      "percent": 83.65021309077031
+    },
+    {
+      "name": "method_vectorcall_VARARGS_KEYWORDS",
+      "percent": 8.355702563450162
+    },
+    {
+      "name": "lock_PyThread_acquire_lock",
+      "percent": 7.300426181540614
+    },
+    {
+      "name": "acquire_timed",
+      "percent": 7.2950194008014755
+    },
+    {
+      "name": "PyThread_acquire_lock_timed",
+      "percent": 7.2950194008014755
+    },
+    {
+      "name": "_pthread_cond_wait",
+      "percent": 7.294383308949811
+    },
+    {
+      "name": "__psynch_cvwait",
+      "percent": 7.294383308949811
+    },
+    {
+      "name": "_PyRun_SimpleFileObject",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "pymain_run_file_obj",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "_PyRun_AnyFileObject",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "pymain_run_file",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "start",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "Py_RunMain",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "pyrun_file",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "_PyEval_Vector",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "Py_BytesMain",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "run_mod",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "PyEval_EvalCode",
+      "percent": 3.3041791234654285
+    },
+    {
+      "name": "PyObject_GenericGetAttr",
+      "percent": 2.119458049742383
+    },
+    {
+      "name": "type_call",
+      "percent": 1.7502067298517905
+    },
+    {
+      "name": "slot_tp_init",
+      "percent": 1.7222186883786017
+    },
+    {
+      "name": "list_vectorcall",
+      "percent": 1.2565994529610074
+    },
+    {
+      "name": "tupledealloc",
+      "percent": 1.2381527892627695
+    },
+    {
+      "name": "member_get",
+      "percent": 1.062273392277845
+    },
+    {
+      "name": "property_descr_get",
+      "percent": 1.0555944278353795
+    },
+    {
+      "name": "PyObject_CallOneArg",
+      "percent": 0.6570828827682718
+    },
+    {
+      "name": "PyErr_Format",
+      "percent": 0.6504039183258062
+    },
+    {
+      "name": "PyUnicode_FromFormatV",
+      "percent": 0.6504039183258062
+    },
+    {
+      "name": "_PyObject_Free",
+      "percent": 0.6504039183258062
+    },
+    {
+      "name": "list_extend",
+      "percent": 0.629094841295083
+    },
+    {
+      "name": "filter_next",
+      "percent": 0.629094841295083
+    },
+    {
+      "name": "dict_subscript",
+      "percent": 0.6275046116659246
+    },
+    {
+      "name": "cfunction_vectorcall_O",
+      "percent": 0.6275046116659246
+    },
+    {
+      "name": "defdict_missing",
+      "percent": 0.6275046116659246
+    },
+    {
+      "name": "_PyObject_Call_Prepend",
+      "percent": 0.5852045035303097
+    },
+    {
+      "name": "slot_tp_call",
+      "percent": 0.5852045035303097
+    },
+    {
+      "name": "Py_BuildValue",
+      "percent": 0.5244577316964569
+    },
+    {
+      "name": "method_vectorcall_FASTCALL",
+      "percent": 0.49901405762992174
+    },
+    {
+      "name": "_buffered_readline",
+      "percent": 0.4916990013357929
+    },
+    {
+      "name": "sock_call_ex",
+      "percent": 0.4916990013357929
+    }
+  ],
+  "stacks": [
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "slot_tp_call",
+        "_PyObject_Call_Prepend",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "slot_tp_call",
+        "_PyObject_Call_Prepend",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 1840
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_FASTCALL",
+        "_buffered_readline",
+        "_bufferedreader_raw_read",
+        "PyObject_VectorcallMethod",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_VARARGS_KEYWORDS",
+        "sock_recv_into",
+        "sock_recv_guts",
+        "sock_call_ex",
+        "sock_recv_impl",
+        "__recvfrom"
+      ],
+      "cpu_microseconds": 1546
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "type_call",
+        "slot_tp_init",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "type_call",
+        "slot_tp_init",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "list_vectorcall",
+        "list_extend",
+        "filter_next",
+        "PyObject_CallOneArg",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "PyObject_GenericGetAttr",
+        "property_descr_get",
+        "_PyFunction_Vectorcall"
+      ],
+      "cpu_microseconds": 1978
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "PyObject_GenericGetAttr",
+        "property_descr_get",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 1341
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 1850
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "type_call",
+        "slot_tp_init",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_VARARGS_KEYWORDS"
+      ],
+      "cpu_microseconds": 1772
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "type_call",
+        "slot_tp_init",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_NOARGS",
+        "set_pop"
+      ],
+      "cpu_microseconds": 62
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "time_sleep",
+        "pytime_from_object",
+        "PyType_IsSubtype"
+      ],
+      "cpu_microseconds": 2
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "time_sleep",
+        "nanosleep",
+        "__semwait_signal"
+      ],
+      "cpu_microseconds": 18
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_FASTCALL",
+        "select_poll_poll",
+        "poll"
+      ],
+      "cpu_microseconds": 23
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "select_poll_poll",
+        "poll"
+      ],
+      "cpu_microseconds": 55
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_proc_kinfo_oneshot",
+        "psutil_get_kinfo_proc",
+        "sysctl",
+        "__sysctl"
+      ],
+      "cpu_microseconds": 261410
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "tupledealloc"
+      ],
+      "cpu_microseconds": 1949
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_VARARGS_KEYWORDS",
+        "lock_PyThread_acquire_lock",
+        "acquire_timed",
+        "PyThread_acquire_lock_timed",
+        "_pthread_cond_wait",
+        "__psynch_cvwait"
+      ],
+      "cpu_microseconds": 22935
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_VARARGS_KEYWORDS",
+        "lock_PyThread_acquire_lock",
+        "lock_acquire_parse_args",
+        "PyArg_ParseTupleAndKeywords"
+      ],
+      "cpu_microseconds": 17
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_pids",
+        "_psutil_pids",
+        "psutil_sysctl_malloc",
+        "sysctl",
+        "__sysctl"
+      ],
+      "cpu_microseconds": 368
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 2033
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 3277
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "type_call",
+        "slot_tp_init",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_proc_kinfo_oneshot",
+        "psutil_get_kinfo_proc",
+        "sysctl",
+        "__sysctl"
+      ],
+      "cpu_microseconds": 1603
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "module_getattro",
+        "PyObject_GenericGetAttr"
+      ],
+      "cpu_microseconds": 5
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "AttributeError_dealloc",
+        "tupledealloc",
+        "unicode_dealloc"
+      ],
+      "cpu_microseconds": 56
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "PyObject_GenericGetAttr",
+        "member_get"
+      ],
+      "cpu_microseconds": 1295
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFrame_Clear",
+        "lock_dealloc",
+        "PyThread_release_lock"
+      ],
+      "cpu_microseconds": 4
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "tupledealloc"
+      ],
+      "cpu_microseconds": 1888
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_proc_kinfo_oneshot",
+        "Py_BuildValue"
+      ],
+      "cpu_microseconds": 1649
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyObject_Calloc",
+        "_platform_memset"
+      ],
+      "cpu_microseconds": 1336
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "set_attribute_error_context",
+        "_PyErr_NormalizeException",
+        "PyObject_CallOneArg",
+        "type_call",
+        "BaseException_new",
+        "PyType_GenericAlloc",
+        "_PyObject_Malloc"
+      ],
+      "cpu_microseconds": 88
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_VARARGS_KEYWORDS",
+        "lock_PyThread_acquire_lock",
+        "acquire_timed",
+        "PyThread_acquire_lock_timed",
+        "pthread_mutex_trylock"
+      ],
+      "cpu_microseconds": 2
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "PyObject_GenericGetAttr",
+        "member_get",
+        "PyErr_Format",
+        "PyUnicode_FromFormatV",
+        "_PyObject_Free"
+      ],
+      "cpu_microseconds": 2045
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "dict_subscript",
+        "cfunction_vectorcall_O",
+        "defdict_missing",
+        "list_vectorcall"
+      ],
+      "cpu_microseconds": 1973
+    }
+  ]
+}
