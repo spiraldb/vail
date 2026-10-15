@@ -1,5 +1,44 @@
 # Hail Table partition compatibility
 
+## Vail partitioning decision (2026-10-15)
+
+**Accepted design decision; implementation pending.** Vail deliberately breaks
+with Hail on partitioning. DataFusion/Vail chooses execution parallelism and
+storage layout; preserving Hail's partition counts, boundaries, or membership
+through ordinary transformations is not a compatibility goal.
+
+We preserve:
+
+1. **Pruning.** Push filters, interval filters, and other supported predicates
+   through the planning stack to Vortex. Avoid reading files and segments that
+   bounds/statistics prove cannot match. Keep exact residual filtering where
+   pruning alone cannot decide row membership. Tests must check avoided reads
+   directly, as well as returned rows, rather than asserting that a particular
+   number of Hail partitions disappears.
+2. **Partitioned table storage.** Tables continue to be written as sorted,
+   key-range-disjoint files. DataFusion/Vail must have a parallelism strategy for
+   producing that layout; the design is not to write one giant Vortex file.
+   The exact strategy, file sizes, and number of files remain implementation
+   choices, not Hail compatibility promises.
+
+We explicitly stop supporting:
+
+- `_n_partitions` on reads.
+- `_filter_partitions` (keeping or dropping rows by physical partition ID).
+- Writing a MatrixTable with explicit partition intervals (`_partitions`).
+
+This records the user's decision, not completed implementation. Do not interpret
+existing support, tests, or historical Hail observations below as requirements
+to retain these APIs or reproduce Hail's layout. No implementation changes were
+authorized as part of recording this decision. Other API details, including
+`n_partitions()`, repartition/coalesce hints, and partition-stream operations,
+require a separate decision; this entry does not silently remove or redefine them.
+
+## Historical Hail compatibility research
+
+The remainder records prior observations and implementation state. Where it
+conflicts with the accepted decision above, the decision takes precedence.
+
 Source baseline: the checked-out Hail commit `e10cc355bc8cd0de9c5f29d5182d31527898bae1`. Runtime results below were captured from that checkout with Python 3.12, Spark 4.1.2, OpenJDK 21, and `hl.init(master='local[2]')` on 2026-10-01. The active Spark backend reported `requires_lowering=False`. Hail's optimizer has a relevant special case: `Simplify.scala:1821` rewrites every `TableRepartition(TableRange(...), n, strategy)` to `TableRange(..., n)`, discarding the strategy. This explains why repartition and naive-coalesce on `TableRange` can increase partitions even though direct RVD operations and the API documentation say otherwise.
 
 ## Contracts from source and tests

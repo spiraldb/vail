@@ -6,6 +6,14 @@ Vail's original code is licensed under [MIT](LICENSE). Upstream dependencies and
 
 The target is Hail Table operation and semantic parity, with Vortex-backed Iceberg storage replacing Hail's native table format. Vortex file-format support comes from [apache/iceberg-rust PR #2835](https://github.com/apache/iceberg-rust/pull/2835), pinned to `0252fe9174aa3062da51328c444a765aa7de2dae`. Vail uses that implementation's reader and writer; it does not maintain a separate Vortex integration in Iceberg. The PR remains an upstream preview, so this does not imply compatibility with arbitrary Iceberg readers.
 
+**Deliberate partitioning compatibility break (decided; implementation pending):**
+DataFusion/Vail chooses execution parallelism and storage layout. We preserve
+filter/interval pushdown to Vortex and verify avoided file/segment reads directly.
+Writes continue to produce sorted, key-range-disjoint files rather than one giant
+Vortex file. We will stop supporting `_n_partitions` reads, `_filter_partitions`,
+and MatrixTable writes with explicit partition intervals. See the
+[partitioning decision](docs/PARTITION_COMPATIBILITY.md#vail-partitioning-decision-2026-10-15).
+
 **Deliberate string compatibility break:** Vail stores valid UTF-8 and counts
 Unicode codepoints (scalar values), rather than Hail's UTF-16 code units.
 Length, indexing, slicing, search offsets, reversal, translation, hamming
