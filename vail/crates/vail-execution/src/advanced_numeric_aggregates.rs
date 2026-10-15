@@ -922,6 +922,42 @@ impl LinregAccumulator {
             has_negative_weight: false,
         }
     }
+    fn row_observation(
+        &self,
+        row: usize,
+        ys: &Float64Array,
+        predictors: &dyn Array,
+        weights: Option<&Float64Array>,
+    ) -> Option<(f64, f64)> {
+        if ys.is_null(row) || predictors.is_null(row) {
+            return None;
+        }
+        let weight = if let Some(weights) = weights {
+            if weights.is_null(row) {
+                return None;
+            }
+            weights.value(row)
+        } else {
+            1.0
+        };
+        Some((ys.value(row), weight))
+    }
+    // Callers validate predictor width once per batch (or per variable-length
+    // list row) and omit missing values. Predictor positions retain schema order.
+    fn accumulate_observation(&mut self, x: &[f64], y: f64, weight: f64) {
+        debug_assert_eq!(x.len(), self.p);
+        if weight < 0.0 {
+            self.has_negative_weight = true;
+        }
+        for i in 0..self.p {
+            self.xty[i] += weight * x[i] * y;
+            for j in 0..self.p {
+                self.xtx[i * self.p + j] += weight * x[i] * x[j];
+            }
+        }
+        self.yty += weight * y * y;
+        self.n += 1;
+    }
     fn result(&self) -> DfResult<ScalarValue> {
         let DataType::Struct(fields) = linreg_type() else {
             unreachable!()
@@ -1048,11 +1084,18 @@ impl Accumulator for LinregAccumulator {
         let xs_columns = cols[1]
             .as_any()
             .downcast_ref::<StructArray>()
-            .map(|s| {
-                s.columns()
+            .map(|xs| {
+                if xs.columns().len() != self.p {
+                    return Err(DataFusionError::Execution(format!(
+                        "linreg predictor struct has {} fields, expected {}",
+                        xs.columns().len(),
+                        self.p
+                    )));
+                }
+                xs.columns()
                     .iter()
-                    .map(|a| {
-                        a.as_any().downcast_ref::<Float64Array>().ok_or_else(|| {
+                    .map(|column| {
+                        column.as_any().downcast_ref::<Float64Array>().ok_or_else(|| {
                             DataFusionError::Execution("linreg predictors must be float64".into())
                         })
                     })
@@ -1069,8 +1112,6 @@ impl Accumulator for LinregAccumulator {
                     })
             })
             .transpose()?;
-        // Reuse one small predictor workspace for the entire Arrow batch.
-        let mut scratch = vec![0.0; self.p];
         let weights = if self.weighted {
             Some(
                 cols[2]
@@ -1083,54 +1124,50 @@ impl Accumulator for LinregAccumulator {
         } else {
             None
         };
-        for r in 0..a.len() {
-            if ys.is_null(r) || cols[1].is_null(r) {
-                continue;
-            }
-            let x: &[f64] = if let Some(xs) = &xs_columns {
+        if let Some(xs) = &xs_columns {
+            // Struct predictors are columnar: select this representation once for
+            // the batch, then gather each row into one reusable predictor buffer.
+            let mut scratch = vec![0.0; self.p];
+            for r in 0..a.len() {
+                let Some((y, weight)) = self.row_observation(r, ys, cols[1].as_ref(), weights)
+                else {
+                    continue;
+                };
                 if xs.iter().any(|a| a.is_null(r)) {
                     continue;
                 }
                 for (value, column) in scratch.iter_mut().zip(xs) {
                     *value = column.value(r);
                 }
-                &scratch
-            } else if let (Some(l), Some(f)) = (xs_list, xs_values) {
+                self.accumulate_observation(&scratch, y, weight);
+            }
+        } else if let (Some(l), Some(f)) = (xs_list, xs_values) {
+            for r in 0..a.len() {
+                let Some((y, weight)) = self.row_observation(r, ys, cols[1].as_ref(), weights)
+                else {
+                    continue;
+                };
                 let offsets = l.value_offsets();
                 let start = offsets[r] as usize;
                 let end = offsets[r + 1] as usize;
                 if end - start != self.p || (start..end).any(|i| f.is_null(i)) {
                     continue;
                 }
-                &f.values()[start..end]
-            } else if let Some(f) = xs_scalar {
-                std::slice::from_ref(&f.values()[r])
-            } else {
-                continue;
-            };
-            if x.len() != self.p {
-                continue;
+                self.accumulate_observation(&f.values()[start..end], y, weight);
             }
-            let w = if let Some(w) = weights {
-                if w.is_null(r) {
+        } else if let Some(f) = xs_scalar {
+            if self.p != 1 {
+                return Err(DataFusionError::Execution(
+                    "linreg scalar predictor requires exactly one predictor".into(),
+                ));
+            }
+            for r in 0..a.len() {
+                let Some((y, weight)) = self.row_observation(r, ys, cols[1].as_ref(), weights)
+                else {
                     continue;
-                }
-                w.value(r)
-            } else {
-                1.
-            };
-            let y = ys.value(r);
-            if w < 0. {
-                self.has_negative_weight = true;
+                };
+                self.accumulate_observation(std::slice::from_ref(&f.values()[r]), y, weight);
             }
-            for i in 0..self.p {
-                self.xty[i] += w * x[i] * y;
-                for j in 0..self.p {
-                    self.xtx[i * self.p + j] += w * x[i] * x[j];
-                }
-            }
-            self.yty += w * y * y;
-            self.n += 1;
         }
         Ok(())
     }

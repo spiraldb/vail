@@ -121,9 +121,12 @@ def _project_context_fields(value, paths):
         return value
     if () in paths:
         return value
+    by_field = {}
+    for path in paths:
+        if path:
+            by_field.setdefault(path[0], set()).add(path[1:])
     children = {}
-    for name in sorted({path[0] for path in paths if path}):
-        tails = {path[1:] for path in paths if path and path[0] == name}
+    for name, tails in sorted(by_field.items()):
         child = value[name]
         children[name] = (
             child

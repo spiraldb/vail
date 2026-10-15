@@ -219,7 +219,13 @@ impl ExtensionPlanner for InitializerPlanner {
                 };
                 let logical = build()
                     .map_err(|e| datafusion_common::DataFusionError::External(Box::new(e)))?;
-                crate::logical::physical_plan(logical, crate::logical::max_partitions(&node.table))
+                let target_partitions = match (node.keys.as_ref(), node.fields.first()) {
+                    (None, Some((_, expression))) => {
+                        crate::logical::total_aggregate_target(&node.table, expression)
+                    }
+                    _ => crate::logical::max_partitions(&node.table),
+                };
+                crate::logical::physical_plan(logical, target_partitions)
                     .await
                     .map_err(|e| datafusion_common::DataFusionError::External(Box::new(e)))
             }

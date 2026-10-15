@@ -463,6 +463,98 @@ impl ExecutionPlan for ProtectedRangeRepartitionExec {
         self.inner.execute(partition, context)
     }
 }
+
+/// Preserve a requested round-robin partition count across DataFusion's
+/// physical optimizer. The child remains visible to tree rewrites; execution
+/// delegates to the ordinary DataFusion repartition operator.
+#[derive(Debug)]
+pub(crate) struct ProtectedRoundRobinRepartitionExec {
+    input: PhysicalPlan,
+    partitions: usize,
+    inner: PhysicalPlan,
+    cache: Arc<PlanProperties>,
+}
+impl ProtectedRoundRobinRepartitionExec {
+    pub(crate) fn new(
+        input: PhysicalPlan,
+        partitions: usize,
+    ) -> datafusion_common::Result<Self> {
+        let partitions = partitions.max(1);
+        let inner: PhysicalPlan = Arc::new(RepartitionExec::try_new(
+            input.clone(),
+            Partitioning::RoundRobinBatch(partitions),
+        )?);
+        let cache = inner.properties().clone();
+        Ok(Self {
+            input,
+            partitions,
+            inner,
+            cache,
+        })
+    }
+}
+impl DisplayAs for ProtectedRoundRobinRepartitionExec {
+    fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "VailProtectedRoundRobinRepartitionExec: {}", self.partitions)
+    }
+}
+impl ExecutionPlan for ProtectedRoundRobinRepartitionExec {
+    fn name(&self) -> &'static str {
+        "VailProtectedRoundRobinRepartitionExec"
+    }
+    fn properties(&self) -> &Arc<PlanProperties> {
+        &self.cache
+    }
+    fn children(&self) -> Vec<&PhysicalPlan> {
+        vec![&self.input]
+    }
+    fn required_input_distribution(&self) -> Vec<datafusion_physical_plan::Distribution> {
+        vec![datafusion_physical_plan::Distribution::UnspecifiedDistribution]
+    }
+    fn required_input_ordering(&self) -> Vec<Option<OrderingRequirements>> {
+        vec![None]
+    }
+    fn maintains_input_order(&self) -> Vec<bool> {
+        vec![false]
+    }
+    fn benefits_from_input_partitioning(&self) -> Vec<bool> {
+        vec![false]
+    }
+    fn apply_expressions(
+        &self,
+        _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
+    ) -> datafusion_common::Result<TreeNodeRecursion> {
+        Ok(TreeNodeRecursion::Continue)
+    }
+    fn with_new_children(
+        self: Arc<Self>,
+        children: Vec<PhysicalPlan>,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        if children.len() != 1 {
+            return Err(DataFusionError::Plan(
+                "round-robin repartition needs one child".into(),
+            ));
+        }
+        Ok(Arc::new(Self::new(
+            children[0].clone(),
+            self.partitions,
+        )?))
+    }
+    fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
+        Ok(Arc::new(Self::new(
+            self.input.clone(),
+            self.partitions,
+        )?))
+    }
+    fn execute(
+        &self,
+        partition: usize,
+        context: Arc<TaskContext>,
+    ) -> datafusion_common::Result<SendableRecordBatchStream> {
+        self.inner.execute(partition, context)
+    }
+}
+
 impl ProtectedExec {
     pub(crate) fn new(input: PhysicalPlan, label: &'static str) -> Self {
         let requirement = required_ordering(&input);

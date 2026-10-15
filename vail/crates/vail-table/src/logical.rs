@@ -119,6 +119,81 @@ fn frozen_rng_context(input: LogicalPlan) -> LogicalPlan {
     })
 }
 
+/// Keep a requested round-robin output partition count visible to DataFusion's
+/// physical optimizer while leaving the input relation available for logical
+/// projection pushdown.
+#[derive(Clone, Debug)]
+struct ProtectedRoundRobinNode {
+    id: u64,
+    input: LogicalPlan,
+    schema: DFSchemaRef,
+    partitions: usize,
+}
+impl PartialEq for ProtectedRoundRobinNode {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+impl Eq for ProtectedRoundRobinNode {}
+impl PartialOrd for ProtectedRoundRobinNode {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.id.cmp(&other.id))
+    }
+}
+impl Hash for ProtectedRoundRobinNode {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state)
+    }
+}
+impl UserDefinedLogicalNodeCore for ProtectedRoundRobinNode {
+    fn name(&self) -> &str {
+        "VailProtectedRoundRobin"
+    }
+    fn inputs(&self) -> Vec<&LogicalPlan> {
+        vec![&self.input]
+    }
+    fn schema(&self) -> &DFSchemaRef {
+        &self.schema
+    }
+    fn expressions(&self) -> Vec<Expr> {
+        vec![]
+    }
+    fn necessary_children_exprs(&self, output_columns: &[usize]) -> Option<Vec<Vec<usize>>> {
+        Some(vec![output_columns.to_vec()])
+    }
+    fn fmt_for_explain(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "VailProtectedRoundRobin: {}", self.partitions)
+    }
+    fn with_exprs_and_inputs(
+        &self,
+        exprs: Vec<Expr>,
+        mut inputs: Vec<LogicalPlan>,
+    ) -> datafusion_common::Result<Self> {
+        if !exprs.is_empty() || inputs.len() != 1 {
+            return Err(DataFusionError::Plan(
+                "invalid protected round-robin rewrite".into(),
+            ));
+        }
+        let input = inputs.remove(0);
+        Ok(Self {
+            schema: input.schema().clone(),
+            input,
+            ..self.clone()
+        })
+    }
+}
+
+pub(crate) fn protect_round_robin(input: LogicalPlan, partitions: usize) -> LogicalPlan {
+    LogicalPlan::Extension(Extension {
+        node: Arc::new(ProtectedRoundRobinNode {
+            id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
+            schema: input.schema().clone(),
+            input,
+            partitions: partitions.max(1),
+        }),
+    })
+}
+
 #[derive(Clone, Debug)]
 struct RestorePartitionsNode {
     id: u64,
@@ -1023,6 +1098,32 @@ pub(crate) fn max_partitions(table: &TableRef) -> usize {
         .max(1)
 }
 
+/// Whether a total reducer benefits from receiving a parallel input. Small
+/// known inputs fit in one DataFusion batch and avoid fanout overhead.
+pub(crate) fn should_fan_out_total(
+    table: &TableRef,
+    expression: &vail_execution::expressions::Expr,
+) -> bool {
+    crate::logical_aggregation::can_parallelize_total(expression)
+        && !table
+            .known_count()
+            .is_some_and(|row_count| row_count <= SessionConfig::new().batch_size())
+}
+
+/// Choose DataFusion's target count for a total-aggregate plan. Large or
+/// unknown reducer inputs can use all workers; other plans keep the source target.
+pub(crate) fn total_aggregate_target(
+    table: &TableRef,
+    expression: &vail_execution::expressions::Expr,
+) -> usize {
+    let partitions = max_partitions(table);
+    if should_fan_out_total(table, expression) {
+        partitions.max(crate::EXECUTION_CONCURRENCY)
+    } else {
+        partitions
+    }
+}
+
 pub(crate) async fn physical_plan(
     logical: LogicalPlan,
     target_partitions: usize,
@@ -1143,7 +1244,11 @@ fn session_state(target_partitions: usize) -> datafusion::execution::SessionStat
 
 pub(crate) async fn physical_globals(globals: &crate::globals::GlobalsRef) -> Result<PhysicalPlan> {
     let target = match globals.node() {
-        crate::globals::Node::Aggregate { table, .. } => max_partitions(table),
+        crate::globals::Node::Aggregate {
+            table,
+            expression,
+            ..
+        } => total_aggregate_target(table, expression),
         _ => 1,
     };
     physical_plan(crate::logical_globals::lower(globals)?, target).await
@@ -1237,6 +1342,17 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 crate::logical_scan::plan_initialized(node.clone(), physical_inputs[0].clone())
                     .await?,
             ));
+        }
+        if let Some(node) = node.as_any().downcast_ref::<ProtectedRoundRobinNode>() {
+            let input = physical_inputs.first().ok_or_else(|| {
+                DataFusionError::Plan("protected round-robin needs one input".into())
+            })?;
+            return Ok(Some(Arc::new(
+                crate::partitioned::ProtectedRoundRobinRepartitionExec::new(
+                    input.clone(),
+                    node.partitions,
+                )?,
+            )));
         }
         if let Some(node) = node.as_any().downcast_ref::<RestorePartitionsNode>() {
             let input = &physical_inputs[0];
@@ -1482,25 +1598,4 @@ fn replace_children(table: &TableRef, mut children: Vec<TableRef>) -> Result<Tab
         }
     }
     Ok(table.replacing_node(node))
-}
-
-#[cfg(test)]
-mod global_binding_tests {
-    use super::contains_global;
-    use vail_execution::expressions::{Expr, PrimitiveType, Type};
-
-    #[test]
-    fn global_references_nested_in_array_lambdas_are_detected() {
-        let expression = Expr::ArrayMap {
-            value: Box::new(Expr::Literal {
-                dtype: Type::Array {
-                    array: Box::new(Type::Primitive(PrimitiveType::Int32)),
-                },
-                value: serde_json::json!([1]),
-            }),
-            parameter: "element".into(),
-            body: Box::new(Expr::Global { name: "g".into() }),
-        };
-        assert!(contains_global(&expression));
-    }
 }

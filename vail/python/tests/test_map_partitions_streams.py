@@ -61,6 +61,37 @@ def test_map_partitions_handles_empty_partitions_and_preserves_globals():
     assert result.aggregate(result.tag) == "empty"
 
 
+def test_total_aggregate_fanout_runs_after_map_partitions():
+    from vail.streams import StreamExpression
+
+    table = hl.range_table(37, n_partitions=4)
+
+    def annotate_partition_size(rows):
+        values = rows.to_array()
+        return StreamExpression(
+            hl.range(hl.len(values)).map(
+                lambda i: hl.struct(
+                    idx=values[i].idx,
+                    partition_size=hl.len(values),
+                )
+            )
+        )
+
+    mapped = table._map_partitions(annotate_partition_size)
+    assert mapped.n_partitions() == table.n_partitions() == 4
+    partition_rows = [
+        mapped._filter_partitions([partition]).collect() for partition in range(4)
+    ]
+    sizes = [len(rows) for rows in partition_rows]
+    assert all(
+        row.partition_size == len(rows)
+        for rows in partition_rows
+        for row in rows
+    )
+    assert mapped.aggregate(hl.agg.sum(mapped.partition_size)) == sum(size * size for size in sizes)
+    assert mapped.n_partitions() == 4
+
+
 def test_map_partitions_requires_stream_of_structs_and_preserved_keys():
     table = _table()
     with pytest.raises(TypeError, match="stream expression"):

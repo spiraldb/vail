@@ -408,6 +408,28 @@ def test_previous_nonnull_optimization_does_not_change_nonmissing_fold_initial_s
     assert result.collect() == [-7, -7, 1, 1]
 
 
+def test_scan_fold_preserves_missing_initializer_across_partition_boundaries():
+    table = hl.Table.parallelize(
+        [{"x": value} for value in [None, 2, None, 5]],
+        schema=hl.tstruct(x=hl.tint64),
+        n_partitions=6,
+    )
+    result = hl.scan.fold(
+        hl.missing(hl.tint64),
+        lambda state: hl.if_else(hl.is_defined(table.x), table.x, state),
+        lambda left, right: hl.if_else(hl.is_defined(right), right, left),
+    )
+    assert result.collect() == [None, None, 2, 2]
+
+    empty = hl.Table.parallelize([], schema=hl.tstruct(x=hl.tint64), n_partitions=3)
+    empty_result = hl.scan.fold(
+        hl.missing(hl.tint64),
+        lambda state: hl.if_else(hl.is_defined(empty.x), empty.x, state),
+        lambda left, right: hl.if_else(hl.is_defined(right), right, left),
+    )
+    assert empty_result.collect() == []
+
+
 def test_scan_prev_nonnull_and_dense_arrays():
     table = hl.range_table(17, n_partitions=8)
     table = table.annotate(x=hl.range(0, table.idx % 25))

@@ -180,7 +180,7 @@ pub(crate) fn unique(used: &mut HashSet<String>, base: &str) -> String {
     result
 }
 
-fn needs_order(expression: &Expr) -> bool {
+pub(crate) fn needs_order(expression: &Expr) -> bool {
     let mut ordered = false;
     expression.visit(&mut |node| {
         // A fold's initial state is applied once, including for empty input.
@@ -216,6 +216,16 @@ fn needs_order(expression: &Expr) -> bool {
         }
     });
     ordered
+}
+
+/// Whether a total expression contains an aggregate and only uses reducers
+/// whose results can be combined without preserving row order.
+pub(crate) fn can_parallelize_total(expression: &Expr) -> bool {
+    let mut contains_aggregate = false;
+    expression.visit(&mut |node| {
+        contains_aggregate |= matches!(node, Expr::Aggregate { .. } | Expr::AggregateFold { .. });
+    });
+    contains_aggregate && !needs_order(expression)
 }
 
 pub(crate) fn scope_plan(
@@ -707,13 +717,26 @@ pub(crate) fn lower_logical_total(
     let output = extract(expression, &[], &mut groups, &mut used)?;
     let mut result = LogicalPlanBuilder::empty(true).build()?;
     if !groups.is_empty() {
-        let child = if needs_order(expression) {
+        let order_sensitive = needs_order(expression);
+        let child = if order_sensitive {
             crate::logical::ordered(child)
         } else {
             child
         };
         let child = crate::logical_globals::bind_globals(child, table)?;
-        let (child, indices) = crate::logical_globals::bind_external(child, bindings)?;
+        let (mut child, indices) = crate::logical_globals::bind_external(child, bindings)?;
+        // A global aggregate over a single source partition otherwise runs as
+        // one DataFusion accumulator. Fan out only this aggregate's input, not
+        // the table itself, so ordinary table partition observability is
+        // unchanged. Order-sensitive reducers and inputs already split across
+        // all workers retain the input established above.
+        if crate::logical::should_fan_out_total(table, expression)
+            && !table
+                .known_n_partitions()
+                .is_some_and(|partitions| partitions >= crate::EXECUTION_CONCURRENCY)
+        {
+            child = crate::logical::protect_round_robin(child, crate::EXECUTION_CONCURRENCY);
+        }
         for group in groups {
             let (right, _, _) = scope_plan(
                 child.clone(),

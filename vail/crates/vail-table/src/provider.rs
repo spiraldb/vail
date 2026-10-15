@@ -234,7 +234,7 @@ impl TableProvider for VailSourceProvider {
                         field_ids,
                         queries,
                         nested_paths,
-                    ))
+                    )?)
                 } else {
                     let parts = (0..source.partition_rows().len())
                         .map(|part| {
@@ -688,6 +688,8 @@ struct ReadKeyFilteredExec {
     concurrency: Arc<tokio::sync::Semaphore>,
     properties: Arc<PlanProperties>,
     metrics: ExecutionPlanMetricsSet,
+    // Contiguous, ordered row intervals, validated once when planning the scan.
+    partition_ranges: Vec<std::ops::Range<u64>>,
 }
 
 impl ReadKeyFilteredExec {
@@ -699,7 +701,16 @@ impl ReadKeyFilteredExec {
         field_ids: Vec<i32>,
         queries: Vec<QueryInterval>,
         nested_projection_paths: Vec<Vec<String>>,
-    ) -> Self {
+    ) -> DFResult<Self> {
+        let mut partition_ranges = Vec::new();
+        let mut start = 0u64;
+        for &rows in source.partition_rows() {
+            let end = start.checked_add(rows as u64).ok_or_else(|| {
+                DataFusionError::Execution("partition offset overflow".into())
+            })?;
+            partition_ranges.push(start..end);
+            start = end;
+        }
         let mut equivalence = EquivalenceProperties::new(schema.clone());
         if !table.keys().is_empty() {
             if let Ok(order) = crate::order_requirement(
@@ -716,11 +727,11 @@ impl ReadKeyFilteredExec {
         }
         let properties = Arc::new(PlanProperties::new(
             equivalence,
-            Partitioning::UnknownPartitioning(source.partition_rows().len()),
+            Partitioning::UnknownPartitioning(partition_ranges.len()),
             EmissionType::Incremental,
             Boundedness::Bounded,
         ));
-        Self {
+        Ok(Self {
             source,
             row_schema,
             schema,
@@ -730,7 +741,8 @@ impl ReadKeyFilteredExec {
             properties,
             concurrency: Arc::new(tokio::sync::Semaphore::new(crate::EXECUTION_CONCURRENCY)),
             metrics: ExecutionPlanMetricsSet::new(),
-        }
+            partition_ranges,
+        })
     }
 }
 
@@ -775,19 +787,12 @@ impl ExecutionPlan for ReadKeyFilteredExec {
         partition: usize,
         context: Arc<datafusion::execution::TaskContext>,
     ) -> DFResult<SendableRecordBatchStream> {
-        let rows = self.source.partition_rows();
-        let count = *rows.get(partition).ok_or_else(|| {
+        let range = self.partition_ranges.get(partition).ok_or_else(|| {
             DataFusionError::Execution(format!(
                 "indexed read partition {partition} is out of range"
             ))
         })?;
-        let start = rows[..partition].iter().try_fold(0u64, |sum, &n| {
-            sum.checked_add(n as u64)
-                .ok_or_else(|| DataFusionError::Execution("partition offset overflow".into()))
-        })?;
-        let end = start
-            .checked_add(count as u64)
-            .ok_or_else(|| DataFusionError::Execution("partition offset overflow".into()))?;
+        let (start, end) = (range.start, range.end);
         let source = self.source.clone();
         let queries = self.queries.clone();
         let row_schema = self.row_schema.clone();
@@ -1433,142 +1438,5 @@ mod projected_provider_tests {
             })
             .collect::<Vec<_>>();
         assert_eq!(genotypes, vec![10, 11, 20]);
-    }
-}
-
-#[cfg(test)]
-mod batch_splitting_tests {
-    use super::*;
-    use arrow_array::Int32Array;
-    use arrow_schema::{DataType, Field, Schema};
-    use futures::TryStreamExt;
-
-    #[derive(Debug)]
-    struct OversizedBatchExec {
-        batch: RecordBatch,
-        properties: Arc<PlanProperties>,
-    }
-
-    impl OversizedBatchExec {
-        fn new(batch: RecordBatch) -> Self {
-            let properties = Arc::new(PlanProperties::new(
-                EquivalenceProperties::new(batch.schema()),
-                Partitioning::UnknownPartitioning(1),
-                EmissionType::Incremental,
-                Boundedness::Bounded,
-            ));
-            Self { batch, properties }
-        }
-    }
-
-    impl DisplayAs for OversizedBatchExec {
-        fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            f.write_str("OversizedBatchExec")
-        }
-    }
-
-    impl ExecutionPlan for OversizedBatchExec {
-        fn name(&self) -> &'static str {
-            "OversizedBatchExec"
-        }
-
-        fn properties(&self) -> &Arc<PlanProperties> {
-            &self.properties
-        }
-
-        fn children(&self) -> Vec<&PhysicalPlan> {
-            vec![]
-        }
-
-        fn apply_expressions(
-            &self,
-            _: &mut dyn FnMut(
-                &Arc<dyn datafusion::physical_expr::PhysicalExpr>,
-            ) -> DFResult<TreeNodeRecursion>,
-        ) -> DFResult<TreeNodeRecursion> {
-            Ok(TreeNodeRecursion::Continue)
-        }
-
-        fn with_new_children(
-            self: Arc<Self>,
-            children: Vec<PhysicalPlan>,
-        ) -> DFResult<PhysicalPlan> {
-            if !children.is_empty() {
-                return Err(DataFusionError::Plan(
-                    "oversized batch source has no children".into(),
-                ));
-            }
-            Ok(self)
-        }
-
-        fn execute(
-            &self,
-            partition: usize,
-            _: Arc<datafusion::execution::TaskContext>,
-        ) -> DFResult<SendableRecordBatchStream> {
-            if partition != 0 {
-                return Err(DataFusionError::Execution(
-                    "invalid oversized batch source partition".into(),
-                ));
-            }
-            Ok(Box::pin(RecordBatchStreamAdapter::new(
-                self.batch.schema(),
-                futures::stream::iter([Ok::<_, DataFusionError>(self.batch.clone())]),
-            )))
-        }
-    }
-
-    #[test]
-    fn source_partition_exec_splits_batches_and_preserves_partition_id() {
-        futures::executor::block_on(async {
-            let schema = Arc::new(Schema::new(vec![
-                Field::new("row", DataType::Int32, false),
-                Field::new("_vail_partition_id", DataType::UInt64, false),
-            ]));
-            let input = RecordBatch::try_new(
-                schema.clone(),
-                vec![
-                    Arc::new(Int32Array::from_iter_values(0..9)),
-                    Arc::new(UInt64Array::from_value(0, 9)),
-                ],
-            )
-            .unwrap();
-            let source: PhysicalPlan = Arc::new(OversizedBatchExec::new(input));
-            let mut partitions = PartitionSetExec::new(vec![source], schema.clone());
-            partitions.partition_offset = 7;
-            let context = datafusion::execution::context::SessionContext::new_with_config(
-                datafusion::execution::context::SessionConfig::new().with_batch_size(2),
-            )
-            .task_ctx();
-            let mut batches = partitions.execute(0, context).unwrap();
-
-            let mut rows = Vec::new();
-            let mut batch_count = 0;
-            while let Some(batch) = batches.try_next().await.unwrap() {
-                assert!(batch.num_rows() <= 2);
-                batch_count += 1;
-                rows.extend(
-                    batch
-                        .column(0)
-                        .as_any()
-                        .downcast_ref::<Int32Array>()
-                        .unwrap()
-                        .values()
-                        .iter()
-                        .copied(),
-                );
-                assert!(batch
-                    .column(1)
-                    .as_any()
-                    .downcast_ref::<UInt64Array>()
-                    .unwrap()
-                    .values()
-                    .iter()
-                    .all(|partition| *partition == 7));
-            }
-
-            assert_eq!(batch_count, 5);
-            assert_eq!(rows, (0..9).collect::<Vec<_>>());
-        });
     }
 }

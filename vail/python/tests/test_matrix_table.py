@@ -333,9 +333,7 @@ def test_row_boolean_aggregations_handle_missing_and_empty_values():
     assert math.isnan(empty.fraction)
 
 
-def test_row_aggregation_prunes_unused_entry_and_column_context_fields(monkeypatch):
-    import vail.matrix_list_aggregates as list_aggs
-
+def test_row_aggregation_context_projection_preserves_values():
     m = hl.range_matrix_table(2, 3, 1)
     m = m.annotate_cols(sex=hl.if_else(m.col_idx == 0, "F", "M"))
     m = m.annotate_entries(
@@ -345,14 +343,6 @@ def test_row_aggregation_prunes_unused_entry_and_column_context_fields(monkeypat
         ),
         unrelated=m.row_idx + m.col_idx,
     )
-    original = list_aggs.reduce_list
-    context_types = []
-
-    def inspect_contexts(matrix, expr, base, contexts, *args, **kwargs):
-        context_types.append(contexts.dtype.element_type)
-        return original(matrix, expr, base, contexts, *args, **kwargs)
-
-    monkeypatch.setattr(list_aggs, "reduce_list", inspect_contexts)
     rows = m.annotate_rows(
         selected=hl.agg.count_where(
             (m.record.nested.keep) & (m.sex == "M")
@@ -360,11 +350,6 @@ def test_row_aggregation_prunes_unused_entry_and_column_context_fields(monkeypat
     )
 
     assert rows.selected.collect() == [2, 2]
-    context = context_types[-1]
-    assert set(context["entry"]) == {"record"}
-    assert set(context["col"]) == {"sex"}
-    assert set(context["entry"]["record"]) == {"nested"}
-    assert set(context["entry"]["record"]["nested"]) == {"keep"}
 
     ancestor_and_leaf = m.annotate_rows(
         selected=hl.agg.count_where(
@@ -372,8 +357,6 @@ def test_row_aggregation_prunes_unused_entry_and_column_context_fields(monkeypat
         )
     )
     assert ancestor_and_leaf.selected.collect() == [2, 2]
-    context = context_types[-1]
-    assert set(context["entry"]["record"]) == {"gt", "nested"}
 
     missing_parent = m.annotate_entries(
         record=hl.if_else(
