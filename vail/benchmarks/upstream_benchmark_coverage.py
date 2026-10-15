@@ -246,19 +246,37 @@ def _make_exact_fixtures(hl, engine: str, names: list[str], data_dir: Path,
             build().write(str(path), overwrite=True)
         paths[name] = path
 
+    def readable_text(path):
+        # Read benchmarks use native table fixtures. Decompress identical input
+        # during fixture preparation only; compressed import benchmarks retain
+        # the original path and therefore still report unsupported compression.
+        if engine != "vail" or not any(name.endswith("_ht") for name in names):
+            return path
+        import gzip
+        output = path.with_suffix("")
+        if not output.exists():
+            temporary = output.with_name(output.name + ".decompressing")
+            try:
+                with gzip.open(path, "rb") as source, temporary.open("wb") as target:
+                    shutil.copyfileobj(source, target, length=1024*1024)
+                temporary.replace(output)
+            finally:
+                temporary.unlink(missing_ok=True)
+        return output
+
     if any(name in names for name in ("many_ints_tsv", "many_ints_ht")):
         ints_tsv = _download_fixture(data_dir, "many_ints_table/many_ints_table.tsv.bgz")
         paths["many_ints_tsv"] = ints_tsv
         if "many_ints_ht" in names:
             table_fixture("many_ints_ht", lambda: hl.import_table(
-                str(ints_tsv), types={"idx": "int", **{f"i{i}": "int" for i in range(5)},
+                str(readable_text(ints_tsv)), types={"idx": "int", **{f"i{i}": "int" for i in range(5)},
                                       **{f"array{i}": "array<int>" for i in range(2)}}))
 
     if any(name in names for name in ("many_strings_tsv", "many_strings_ht")):
         strings_tsv = _download_fixture(data_dir, "many_strings_table/many_strings_table.tsv.bgz")
         paths["many_strings_tsv"] = strings_tsv
         if "many_strings_ht" in names:
-            table_fixture("many_strings_ht", lambda: hl.import_table(str(strings_tsv)))
+            table_fixture("many_strings_ht", lambda: hl.import_table(str(readable_text(strings_tsv))))
 
     for name in ("many_partitions_ht", "many_partitions_ht1", "many_partitions_ht2"):
         if name in names:
@@ -300,7 +318,7 @@ def _make_exact_fixtures(hl, engine: str, names: list[str], data_dir: Path,
     return {name: str(paths[name]) for name in names}
 
 
-def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
+def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue, start_event=None) -> None:
     # Hail starts a JVM (and potentially other child processes). Put the whole
     # worker tree in its own process group so a timed-out case cannot leave
     # Spark behind and contaminate later measurements.
@@ -308,14 +326,20 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
     fixture_temp = None
     benchmark_started = None
     benchmark_seconds = None
+    telemetry = None
+    measurement = None
+    fixture_measurement = None
     try:
         import importlib
         if engine == "vail":
             import vail
         if engine == "hail":
             hl = importlib.import_module("hail")
-            hl.init(quiet=True, local="local[32]",
-                    spark_conf={"spark.driver.memory": "64g", "spark.executor.memory": "64g"})
+            cores = int(os.environ.get("HAIL_BENCHMARK_CORES", os.cpu_count() or 1))
+            memory = os.environ.get("HAIL_BENCHMARK_MEMORY", "16g")
+            hl.init(quiet=True, master=f"local[{cores}]",
+                    spark_conf={"spark.driver.memory": memory, "spark.executor.memory": memory,
+                                "spark.ui.enabled": "false"})
         else:
             hl = vail
         source = (UPSTREAM / case["module"]).read_text()
@@ -350,32 +374,59 @@ def _worker(case: dict, engine: str, smoke: bool, data_dir: str, queue) -> None:
         exec(compile(module, case["module"], "exec"), namespace)
         fn = namespace[case["name"]]
         fixture_temp = tempfile.TemporaryDirectory(prefix="vail-upstream-fixtures-")
+        telemetry_root = os.environ.get("VAIL_BENCHMARK_TELEMETRY_DIR")
+        if telemetry_root:
+            from benchmark_telemetry import Measurement
+            label = case["id"].replace("::", "--").replace("/", "_")
+            fixture_measurement = Measurement(
+                Path(telemetry_root) / engine / label / "fixture"
+            ).start()
         if smoke:
             fixture_values = _make_smoke_fixtures(hl, case["fixtures"], Path(fixture_temp.name), case["fixture_parameters"])
         else:
             fixture_values = _make_exact_fixtures(hl, engine, case["fixtures"], Path(data_dir), case["fixture_parameters"])
+        if fixture_measurement is not None:
+            fixture_measurement.stop()
+            fixture_measurement = None
         kwargs = dict(case["arguments"])
         kwargs.update(fixture_values)
         with tempfile.TemporaryDirectory(prefix="vail-upstream-bench-") as temp:
             if "tmp_path" in case["args"]:
                 kwargs["tmp_path"] = Path(temp)
             queue.put({"status": "ready"})
+            if start_event is not None:
+                start_event.wait()
+            telemetry_root = os.environ.get("VAIL_BENCHMARK_TELEMETRY_DIR")
+            if telemetry_root:
+                from benchmark_telemetry import Measurement
+                label = case["id"].replace("::", "--").replace("/", "_")
+                measurement = Measurement(Path(telemetry_root) / engine / label).start()
             benchmark_started = time.perf_counter()
             try:
                 fn(**kwargs)
             except BaseException:
                 benchmark_seconds = time.perf_counter() - benchmark_started
+                if measurement is not None:
+                    telemetry = measurement.stop()
+                    measurement = None
                 raise
             benchmark_seconds = time.perf_counter() - benchmark_started
-        queue.put({"status": "passed", "benchmark_seconds": benchmark_seconds})
+            if measurement is not None:
+                telemetry = measurement.stop()
+                measurement = None
+        queue.put({"status": "passed", "benchmark_seconds": benchmark_seconds, "telemetry": telemetry})
     except UnsupportedBenchmarkInput as exc:
         queue.put({"status": "unsupported", "reason": str(exc)})
     except BaseException as exc:
         result = {"status": "failed", "error": f"{type(exc).__name__}: {exc}", "traceback": traceback.format_exc()}
         if benchmark_seconds is not None:
             result["benchmark_seconds"] = benchmark_seconds
+        if telemetry is not None:
+            result["telemetry"] = telemetry
         queue.put(result)
     finally:
+        if fixture_measurement is not None:
+            fixture_measurement.stop()
         if fixture_temp is not None:
             fixture_temp.cleanup()
         if engine == "hail":
@@ -426,13 +477,27 @@ def _worker_message(queue, process, timeout):
                 raise WorkerExitedError(f"worker exited with code {process.exitcode} before reporting a result")
 
 
+def _signal_fixture_prefetch(signum):
+    raw = os.environ.get("VAIL_BENCHMARK_PREFETCH_PID")
+    if not raw:
+        return
+    import psutil
+    try:
+        process = psutil.Process(int(raw))
+        if process.create_time() == float(os.environ["VAIL_BENCHMARK_PREFETCH_CREATED"]):
+            process.send_signal(signum)
+    except psutil.Error:
+        pass
+
+
 def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
             smoke: bool, data_dir: str) -> dict:
     upstream_skip = next((mark for mark in case["upstream_marks"] if mark["name"] == "skip"), None)
     if upstream_skip:
         return {"status": "upstream_skipped", "reason": upstream_skip["reason"]}
     queue = mp.get_context("spawn").Queue()
-    process = mp.get_context("spawn").Process(target=_worker, args=(case, engine, smoke, data_dir, queue))
+    start_event = mp.get_context("spawn").Event()
+    process = mp.get_context("spawn").Process(target=_worker, args=(case, engine, smoke, data_dir, queue, start_event))
     started = time.monotonic()
     process.start()
     try:
@@ -452,9 +517,14 @@ def run_one(case: dict, engine: str, timeout: float, fixture_timeout: float,
         queue.close()
         first["elapsed_seconds"] = round(time.monotonic() - started, 3)
         return first
+    _signal_fixture_prefetch(signal.SIGSTOP)
+    start_event.set()
     benchmark_started = time.monotonic()
     try:
-        result = _worker_message(queue, process, timeout)
+        try:
+            result = _worker_message(queue, process, timeout)
+        finally:
+            _signal_fixture_prefetch(signal.SIGCONT)
     except Exception as exc:
         _stop_worker_tree(process)
         queue.close()
