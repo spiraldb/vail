@@ -38,9 +38,21 @@ if case == '--memory-guard':
     lib = ctypes.CDLL('/usr/lib/libproc.dylib', use_errno=True)
     lib.proc_pid_rusage.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.POINTER(Rusage)]
     lib.proc_pid_rusage.restype = ctypes.c_int
+    class Timebase(ctypes.Structure):
+        _fields_ = [("numer", ctypes.c_uint32), ("denom", ctypes.c_uint32)]
+    timebase = Timebase()
+    system = ctypes.CDLL('/usr/lib/libSystem.B.dylib')
+    if system.mach_timebase_info(ctypes.byref(timebase)) != 0:
+        raise RuntimeError("cannot read Mach timebase for CPU tick conversion")
+    (out / 'counter-units.json').write_text(json.dumps({
+        'cpu_tick_nanoseconds_numerator': timebase.numer,
+        'cpu_tick_nanoseconds_denominator': timebase.denom,
+        'instructions': 'retired instructions', 'cycles': 'CPU cycles',
+        'disk_io': 'process bytes, not physical device traffic',
+    }, indent=2) + '\n')
     guard_started = time.perf_counter()
     with (out / 'rss.csv').open('w') as stream:
-        stream.write('elapsed_seconds,rss_bytes,physical_footprint_bytes,max_footprint_bytes,user_time_ns,system_time_ns,instructions,cycles,disk_read_bytes,disk_write_bytes\n')
+        stream.write('elapsed_seconds,rss_bytes,physical_footprint_bytes,max_footprint_bytes,user_time_ticks,system_time_ticks,instructions,cycles,disk_read_bytes,disk_write_bytes\n')
         stream.flush()
         while True:
             value = Rusage()
