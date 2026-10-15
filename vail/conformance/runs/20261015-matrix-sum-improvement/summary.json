@@ -1,0 +1,23 @@
+{
+  "benchmark": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+  "baseline_commit": "90e5447",
+  "fixed_commit": "ac956e2",
+  "baseline_seconds": [
+    28.897121333051473,
+    28.86896195821464,
+    28.806120665976778
+  ],
+  "fixed_seconds": [
+    24.86126133403741,
+    24.55079120909795,
+    24.627478667069227
+  ],
+  "baseline_median_seconds": 28.86896195821464,
+  "fixed_median_seconds": 24.627478667069227,
+  "wall_time_reduction_percent": 14.692191902447338,
+  "baseline_median_core_seconds": 103.52641066666666,
+  "fixed_median_core_seconds": 84.46663308333333,
+  "hail_seconds": 34.76995129091665,
+  "hail_over_fixed_vail": 1.4118356069234765,
+  "hail_rerun": false
+}

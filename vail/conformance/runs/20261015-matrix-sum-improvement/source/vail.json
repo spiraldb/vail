@@ -1,0 +1,58 @@
+{
+  "runner_sha256": "b128a36e9f10e7367c5c4e0b7e7523d753b2b83ec58ddbf5418d59635594ea5d",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 250.0,
+  "fixture_timeout_seconds": 900.0,
+  "data_dir": "/private/tmp/vail-affected-benchmark-data-20261014",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_matrix_table.py",
+      "name": "test_large_range_matrix_table_sum",
+      "id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [
+        {
+          "name": "xtimeout",
+          "reason": null,
+          "args": [
+            250
+          ]
+        }
+      ],
+      "status": "passed",
+      "benchmark_seconds": 24.86126133403741,
+      "telemetry": {
+        "cpu_seconds": 86.98507375,
+        "average_cores": 3.498813604014084,
+        "peak_rss_gib": 15.337722778320312,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1280643637,
+          "system_time": 806998133,
+          "instructions": 640816114086,
+          "cycles": 295852035067,
+          "diskio_bytesread": 16384,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261015-matrix-sum-improvement/source/telemetry/vail/benchmark_matrix_table--test_large_range_matrix_table_sum"
+      },
+      "fixture_seconds": 0.074,
+      "elapsed_seconds": 25.033
+    }
+  ],
+  "totals": {
+    "passed": 1
+  }
+}

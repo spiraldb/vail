@@ -1,0 +1,114 @@
+{
+  "summary": {
+    "selected": 1,
+    "completed": {
+      "vail": 1,
+      "hail": 1
+    },
+    "common_passes": 1,
+    "vail_wins": 1,
+    "hail_wins": 0,
+    "common_totals_seconds": {
+      "vail": 24.627478667069227,
+      "hail": 34.76995129091665
+    },
+    "status_counts": {
+      "vail": {
+        "passed": 1
+      },
+      "hail": {
+        "passed": 1
+      }
+    }
+  },
+  "cases": [
+    {
+      "id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+      "vail": {
+        "module": "benchmark_matrix_table.py",
+        "name": "test_large_range_matrix_table_sum",
+        "id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+        "args": [],
+        "fixtures": [],
+        "parameters": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "upstream_marks": [
+          {
+            "name": "xtimeout",
+            "reason": null,
+            "args": [
+              250
+            ]
+          }
+        ],
+        "status": "passed",
+        "benchmark_seconds": 24.627478667069227,
+        "telemetry": {
+          "cpu_seconds": 84.46663308333333,
+          "average_cores": 3.429765432814491,
+          "peak_rss_gib": 14.347015380859375,
+          "sampling_hz": 10,
+          "counter_deltas": {
+            "user_time": 1310020703,
+            "system_time": 717178491,
+            "instructions": 638956418006,
+            "cycles": 287394762660,
+            "diskio_bytesread": 0,
+            "diskio_byteswritten": 0
+          },
+          "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+          "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261015-matrix-sum-improvement/after-3/telemetry/vail/benchmark_matrix_table--test_large_range_matrix_table_sum"
+        },
+        "fixture_seconds": 0.072,
+        "elapsed_seconds": 24.79,
+        "source_commit": "ac956e2",
+        "telemetry_path": "/Users/danielking/projects/vail/vail/conformance/runs/20261015-matrix-sum-improvement/after-3/telemetry/vail/benchmark_matrix_table--test_large_range_matrix_table_sum"
+      },
+      "hail": {
+        "module": "benchmark_matrix_table.py",
+        "name": "test_large_range_matrix_table_sum",
+        "id": "benchmark_matrix_table::test_large_range_matrix_table_sum",
+        "args": [],
+        "fixtures": [],
+        "parameters": [],
+        "arguments": {},
+        "fixture_parameters": {},
+        "upstream_marks": [
+          {
+            "name": "xtimeout",
+            "reason": null,
+            "args": [
+              250
+            ]
+          }
+        ],
+        "status": "passed",
+        "benchmark_seconds": 34.76995129091665,
+        "telemetry": {
+          "cpu_seconds": 313.0438290833333,
+          "average_cores": 9.003267644607362,
+          "peak_rss_gib": 4.49365234375,
+          "sampling_hz": 10,
+          "counter_deltas": {
+            "user_time": 6851731319,
+            "system_time": 661320579,
+            "instructions": 1992740180585,
+            "cycles": 557478548424,
+            "diskio_bytesread": 1200128,
+            "diskio_byteswritten": 678473728
+          },
+          "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+          "directory": "/Users/danielking/projects/vail/vail/conformance/runs/20261014-affected-throughput/combined-main/telemetry/hail/benchmark_matrix_table--test_large_range_matrix_table_sum"
+        },
+        "worker_cleanup_forced": true,
+        "fixture_seconds": 3.177,
+        "elapsed_seconds": 42.994,
+        "comparable": true,
+        "baseline_hardware": "local 14 cores / 96 GiB",
+        "telemetry_path": "/Users/danielking/projects/vail/vail/conformance/runs/20261014-affected-throughput/combined-main/telemetry/hail/benchmark_matrix_table--test_large_range_matrix_table_sum"
+      },
+      "hail_over_vail": 1.4118356069234765
+    }
+  ]
+}

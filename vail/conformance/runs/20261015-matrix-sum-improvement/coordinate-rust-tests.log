@@ -1,0 +1,13 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running unittests src/lib.rs (/private/tmp/vail-native-types-target/debug/deps/vail_execution-530ded3814373fa4)
+
+running 6 tests
+test array_aggregate::tests::count_ignores_missing_coordinate_values_but_counts_defined_values ... ok
+test array_aggregate::tests::float_sum_keeps_fractional_values_across_partial_state ... ok
+test array_aggregate::tests::missing_empty_sliced_and_inconsistent_arrays ... ok
+test array_aggregate::tests::native_groups_preserve_missing_elements_and_partial_merge ... ok
+test array_aggregate::tests::native_groups_handle_growing_and_shrinking_batches_concurrently ... ok
+test array_aggregate::tests::stddev_fallback_state_is_repeatable_and_merges_partial_widths ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 83 filtered out; finished in 0.00s
+
