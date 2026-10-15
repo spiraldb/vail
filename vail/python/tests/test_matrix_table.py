@@ -760,6 +760,48 @@ def test_column_sum_preserves_positions_missing_entries_and_empty_rows():
     assert empty.annotate_cols(total=hl.agg.sum(empty.x)).total.collect() == [0, 0, 0]
 
 
+def test_row_aggregations_skip_unreferenced_column_context(monkeypatch):
+    m = hl.range_matrix_table(3, 4, 2)
+    m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
+    def unexpected(*args, **kwargs):
+        raise AssertionError("entry-only row reduction requested column contexts")
+    monkeypatch.setattr(hl.MatrixTable, "_cell_contexts", unexpected)
+    result = m.annotate_rows(total=hl.agg.sum(m.x), n=hl.agg.count())
+    assert result.total.collect() == [6, 46, 86]
+    assert result.n.collect() == [4, 4, 4]
+
+
+def test_localization_preserves_indexed_row_order_without_resorting(tmp_path):
+    m = hl.range_matrix_table(20, 4, 4)
+    m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
+    path = str(tmp_path / "localized.mt")
+    m.write(path)
+    restored = hl.read_matrix_table(path)
+    assert restored._mir.row_index_keys
+    localized = restored.localize_entries("entries", "columns")
+    assert "SortExec:" not in localized._native.physical_plan()
+    rows = localized.head(3).collect()
+    assert [row.row_idx for row in rows] == [0, 1, 2]
+    assert [[entry.x for entry in row.entries] for row in rows] == [
+        [0, 1, 2, 3], [10, 11, 12, 13], [20, 21, 22, 23],
+    ]
+
+
+def test_entry_aggregations_skip_unreferenced_column_context(monkeypatch):
+    import vail.matrixtable as module
+
+    m = hl.range_matrix_table(3, 4, 2)
+    m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
+    m = m.filter_entries(m.col_idx % 2 == 0)
+    def unexpected(*args, **kwargs):
+        raise AssertionError("entry-only aggregation requested column contexts")
+    monkeypatch.setattr(module, "_zip_arrays", unexpected)
+    result = m.aggregate_entries(hl.struct(stats=hl.agg.stats(m.x), n=hl.agg.count()))
+    assert result.n == 6
+    assert result.stats.sum == 66
+    assert result.stats.mean == 11
+
+
 def test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback():
     import vail.matrixtable as module
 

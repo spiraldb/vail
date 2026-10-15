@@ -547,13 +547,21 @@ class MatrixTable:
         check_initializers(expr.to_ir())
         return expr
 
-    def _context(self, axis):
+    def _context(self, axis, *, with_columns=True):
         if axis in ("row", "global"):
             return self._mir.core
         if axis == "col":
             return self._mir.cols
         base = self._mir.core
         name = "__vail_matrix_context"
+        if not with_columns:
+            source = base.annotate(**{name: base[_CELLS]}).explode(name)
+            source = source.filter(source[name][_PRESENT])
+            cell = source[name]
+            return _project(source, [
+                (_ROW, source[_ROW]), (_CID, cell[_CID]),
+                (_ENTRY, cell[_VALUE] if len(self.entry.dtype) else struct()),
+            ])
         source = base.annotate(**{name: _zip_arrays(base[_CELLS], self._mir.column_records)}).explode(name)
         cell = source[name]["1"]
         source = source.filter(cell[_PRESENT])
@@ -679,7 +687,9 @@ class MatrixTable:
         if axis == "row":
             from .matrix_list_aggregates import reduce_list
 
-            return reduce_list(self, expr, base, self._row_contexts(base))
+            return reduce_list(self, expr, base, self._row_contexts(
+                base, with_position=_uses_axis_field(expr.to_ir(), "col"),
+            ))
         node = expr.to_ir()
         if (axis == "col" and node.get("op") == "aggregate"
                 and node.get("function") == "sum"
@@ -1094,12 +1104,17 @@ class MatrixTable:
             axis == "row"
             and key
             and bool(self._mir.row_index_keys)
-            and self._mir.row_index_keys == self._mir.row_key
         )
         if preserve_index:
             index_keys = self._mir.row_key
+            aliases = dict(zip(index_keys, self._mir.row_index_keys))
+            if self._mir.row_index_keys != index_keys:
+                # Renaming certified key aliases changes metadata only. Drop
+                # the old key names before projecting their public names.
+                table = table.key_by()
+                value = table[_ROW]
             projected = table._project(
-                [(n, table[n] if n in index_keys else value[n]) for n in names],
+                [(n, table[aliases[n]] if n in aliases else value[n]) for n in names],
                 keys=index_keys,
             )._with_keys(*index_keys)
             output = projected
@@ -1181,7 +1196,7 @@ class MatrixTable:
                     self, expr, core, None, direct_entry_sum=True
                 )
             return core.aggregate(aggregate_sum(row_total), _localize=localize)
-        table = self._context(axis)
+        table = self._context(axis, with_columns=_uses_axis_field(node, "col"))
         if axis == "col" and self._mir.col_key:
             table = table.order_by(
                 *(table[_COL][n] for n in self._mir.col_key)
@@ -1209,7 +1224,8 @@ class MatrixTable:
             if axes == {"col"}
             else "global"
         )
-        table = self._context(axis) if axis != "global" else self.globals_table()
+        table = (self._context(axis, with_columns=_uses_axis_field(expr.to_ir(), "col"))
+                 if axis != "global" else self.globals_table())
         lowered = self._lower(expr, table)
         output = _project(table, [("value", lowered)])
         if n is not None:
@@ -1437,7 +1453,11 @@ class MatrixTable:
         )
         output = _project(
             base, [(n, base[_ROW][n]) for n in self.row.dtype] + [(en, entries)]
-        ).key_by(*self._mir.row_key)
+        )
+        if self._mir.row_index_keys:
+            output = output._with_keys(*self._mir.row_key)
+        else:
+            output = output.key_by(*self._mir.row_key)
         columns = self._public_axis("col", key=False)
         output = self._with_globals(output).annotate_globals(
             **{cn: columns.aggregate(agg.collect(columns.row), _localize=False)}
