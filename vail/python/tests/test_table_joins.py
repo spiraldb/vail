@@ -97,6 +97,14 @@ def test_inner_range_join_prunes_cells_outside_the_overlap():
     assert joined.n_partitions() < left.n_partitions()
 
 
+def test_large_range_join_has_bounded_streaming_cells():
+    table = hl.range_table(50_000_000, n_partitions=1)
+    joined = table.join(table)
+    plan = joined._native.physical_plan()
+    assert "SortExec:" not in plan
+    assert joined.n_partitions() > 3
+
+
 def test_join_mangles_right_row_and_global_names_and_keeps_left_key():
     left = keyed(
         [{"k": 1, "same": "L"}], schema=hl.tstruct(k=hl.tint32, same=hl.tstr),

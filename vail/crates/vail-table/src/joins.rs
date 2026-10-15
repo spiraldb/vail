@@ -349,6 +349,16 @@ pub(crate) fn lower(
     kind: TableJoinKind,
     join_key: usize,
 ) -> Result<TablePlan> {
+    fn unique_range_key(table: &TableRef) -> bool {
+        match table.node() {
+            TableNode::Range { .. } => table.keys() == ["idx"],
+            TableNode::Prepared { .. } => table.partition_metadata.as_ref()
+                .is_some_and(unique_range_key),
+            _ => false,
+        }
+    }
+    let unique_inner = kind == TableJoinKind::Inner && join_key == 1
+        && unique_range_key(left) && unique_range_key(right);
     let left_plan = plan::ordinal(crate::partitioned::deferred_ordered(left.clone())?.rows);
     let right_plan = plan::ordinal(crate::partitioned::deferred_ordered(right.clone())?.rows);
     let left_width = left_plan.schema().fields().len();
@@ -482,11 +492,17 @@ pub(crate) fn lower(
             options,
         ));
     }
-    let sorted: PhysicalPlan = Arc::new(datafusion_physical_plan::sorts::sort::SortExec::new(
+    // SortMergeJoin already emits keys in order. With unique input keys there
+    // are no ties to reorder by side ordinals, so retain its streaming output.
+    let sorted: PhysicalPlan = if unique_inner {
+        projected
+    } else {
+        Arc::new(datafusion_physical_plan::sorts::sort::SortExec::new(
         datafusion_physical_expr::LexOrdering::new(ordering)
             .expect("join ordinal ordering is nonempty"),
         projected,
-    ));
+        ))
+    };
     let mut fields = output
         .schema()
         .fields()

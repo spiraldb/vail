@@ -38,6 +38,38 @@ enum Cell {
     Between(Vec<ArrayRef>, Vec<ArrayRef>),
 }
 
+// Bound the working set of each independently executable range join and expose
+// parallel work even when a generated source has just one original partition.
+const MAX_RANGE_JOIN_ROWS: usize = 8 * 1024 * 1024;
+
+fn full_range_source(table: &TableRef) -> Option<&TableRef> {
+    match table.node() {
+        TableNode::Range { .. } => Some(table),
+        TableNode::Prepared { count: Some(count), .. } => {
+            let source = table.partition_metadata.as_ref()?;
+            // Clipped action-local inputs deliberately have no count. Only
+            // bypass a prepared plan certified to represent the full source.
+            (source.known_count() == Some(*count))
+                .then(|| full_range_source(source)).flatten()
+        }
+        _ => None,
+    }
+}
+
+fn add_range_split_points(table: &TableRef, join_key: usize, bounds: &mut Vec<Option<Bound>>) {
+    if join_key != 1 || table.keys() != ["idx"] {
+        return;
+    }
+    if let Some(source) = full_range_source(table)
+        && let TableNode::Range { n, .. } = source.node()
+    {
+        for split in (MAX_RANGE_JOIN_ROWS..*n).step_by(MAX_RANGE_JOIN_ROWS) {
+            let key = vec![Arc::new(Int32Array::from(vec![split as i32])) as ArrayRef];
+            bounds.push(Some(Bound { first: key.clone(), last: key }));
+        }
+    }
+}
+
 /// Prepare a normal join as disjoint key cells. Every cell executes a DataFusion
 /// join over all original partitions whose certified/observed bounds overlap it.
 pub(crate) async fn prepare(
@@ -51,7 +83,10 @@ pub(crate) async fn prepare(
     let right_input = crate::partitioned::prepare_legacy(right.clone()).await?;
     let left_bounds = bounds(left, &left_input, join_key).await?;
     let right_bounds = bounds(right, &right_input, join_key).await?;
-    let cells = cells(&left_bounds, &right_bounds)?;
+    let mut boundaries = left_bounds.clone();
+    add_range_split_points(left, join_key, &mut boundaries);
+    add_range_split_points(right, join_key, &mut boundaries);
+    let cells = cells(&boundaries, &right_bounds)?;
     let left_candidates = candidates_by_cell(&left_bounds, &cells)?;
     let right_candidates = candidates_by_cell(&right_bounds, &cells)?;
     let mut parts = Vec::with_capacity(cells.len());
@@ -283,12 +318,12 @@ fn clipped_parts(
             selected.push(Arc::new(FilterExec::try_new(predicate, rows_plan)?) as PhysicalPlan);
             continue;
         }
-        if matches!(table.node(), TableNode::Range { .. })
+        if let Some(range) = full_range_source(table)
             && join_key == 1
             && table.keys().first().is_some_and(|key| key == "idx")
             && let Some((lower, upper)) = integer_range_cell(cell)?
         {
-            selected.push(plan::range_partition_clipped(table, index, lower, upper)?);
+            selected.push(plan::range_partition_clipped(range, index, lower, upper)?);
             continue;
         }
         let key = key_expressions(part, &table.keys()[..join_key])?;
@@ -1280,5 +1315,24 @@ mod tests {
         let debug = format!("{clipped:?}");
         assert!(debug.contains("start: 5"), "{debug}");
         assert!(debug.contains("end: 6"), "{debug}");
+    }
+
+    #[test]
+    fn prepared_full_ranges_get_bounded_cells_but_clipped_inputs_are_not_bypassed() {
+        let n = MAX_RANGE_JOIN_ROWS * 2 + 7;
+        let table = TableIR::range(n, 1).unwrap();
+        let full = TableIR::prepared(
+            &table, plan::source_partition(&table, 0).unwrap(), Some(n), 1,
+        );
+        let mut bounds = inherited_bounds(&full, 1).unwrap().unwrap();
+        add_range_split_points(&full, 1, &mut bounds);
+        for cell in cells(&bounds, &[]).unwrap() {
+            let (start, end) = integer_range_cell(&cell).unwrap().unwrap();
+            assert!(end - start <= MAX_RANGE_JOIN_ROWS);
+        }
+        let clipped = TableIR::prepared(
+            &table, plan::range_partition_clipped(&table, 0, 5, 9).unwrap(), None, 1,
+        );
+        assert!(full_range_source(&clipped).is_none());
     }
 }
