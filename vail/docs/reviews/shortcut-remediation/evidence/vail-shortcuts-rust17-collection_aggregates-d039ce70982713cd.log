@@ -1,0 +1,11 @@
+
+running 6 tests
+test ordered_take_factory_rejects_noncanonical_field_order ... ok
+test ordered_take_rejects_hidden_children_under_null_packed_parent ... ok
+test unordered_take_preserves_first_values_across_large_later_batches ... ok
+test ordered_take_preserves_key_order_across_slices_batches_and_missing_values ... ok
+test collect_preserves_nullable_struct_values_and_input_order ... ok
+test set_retains_one_null_across_repeated_batch_values ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

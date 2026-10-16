@@ -1,9 +1,15 @@
 {
   "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
-  "candidate": "76cbbeb0cada9efc955254d9ce5eea0c3339f082",
-  "manifest_sha256": "79b445352023fcc23e91d6a7dea7756f08cf0f51ff0571bac5a17a0531ba93d1",
-  "decision": "request_changes",
+  "candidate_code": "658f789a3f7b0a2118e8687dd82a95ffba0db3fc",
+  "main_parent": "dc51582fcb2413be6f14372ea8887a4cabc85f88",
+  "decision": "pending_final_review",
   "final_runtime_acceptance": false,
+  "main_updated": false,
+  "prior_review": {
+    "candidate": "76cbbeb0cada9efc955254d9ce5eea0c3339f082",
+    "decision": "request_changes",
+    "disposition": "Source follow-up cleared scalar capture, scoped RNG, predicate-once fixes and R2/R3/R4/R6/R8. R7 public-behavior replacements required. Subsequent main reconciliation is outside this review."
+  },
   "findings": [
     {
       "id": "R1",
@@ -53,7 +59,7 @@
       "priority": 2,
       "issue": "New tests rely on private counters/identities/mocks instead of public behavior",
       "owner": "all",
-      "status": "request_changes_at_76cbbeb0; public replacements written in unvalidated integration"
+      "status": "private RNG tests replaced with public independent/interleaved/cancelled-action outcomes; native17 passes; awaiting exact final source review"
     },
     {
       "id": "R8",
@@ -63,7 +69,65 @@
       "status": "source_review_addressed_at_76cbbeb0"
     }
   ],
-  "latest_integration": {
+  "coherent_validation": {
+    "native_build": 17,
+    "native_sha256": "8853c655d212de27bfc8f1894395a1860563a956243c49a248fb8fbf3a827416",
+    "code_revision": "d3b6b4df",
+    "binaries": 41,
+    "passed": 260,
+    "nonzero_exits": [],
+    "python": {
+      "passed": 1742,
+      "failed": 2,
+      "skipped": 1,
+      "subtests_passed": 19,
+      "seconds": 245.74,
+      "known_baseline_failures": [
+        "empty-list Vortex writing",
+        "present all-missing-child struct validity round trip"
+      ]
+    },
+    "candidate_code": "658f789a",
+    "python_package": 18,
+    "package_provenance": "Exact native17 wheel with only merged call_expressions.py and expressions.py overlaid from658f789a; Rust unchanged; full Python source hashes included."
+  },
+  "evidence": "evidence/",
+  "full_upstream": {
+    "evidence": "evidence/upstream18/summary.json",
+    "modules": 56,
+    "definitions": {
+      "failed": 617,
+      "passed": 453,
+      "collection_blocked": 398
+    },
+    "parameter_cases": {
+      "failed": 1212,
+      "passed": 480
+    },
+    "timeout_modules": [],
+    "specific_randomness": {
+      "definitions": {
+        "passed": 58,
+        "failed": 2,
+        "collection_blocked": 38
+      },
+      "parameter_cases": {
+        "passed": 58,
+        "failed": 2
+      }
+    },
+    "dedicated_randomness": {
+      "passed": 6
+    },
+    "structural_ir_omissions": 97
+  },
+  "limits": [
+    "Two pre-existing storage failures remain",
+    "Runtime DAG CSE, per-batch scalar specialization, segment pushdown and tiny matrix latency remain queued",
+    "Separate sex-QC and byte-aware batching work excluded",
+    "Vendor source read scope limited to documented patch/integration boundaries"
+  ],
+  "historical_validation": {
     "native_build": 10,
     "native_sha256": "4a7eee5356b152ef64d9ff439ef5f6aca7d74aa123cb39faf7294b1f65139269",
     "source_hashes": "evidence/vail-shortcuts-build10-source-hashes.json",
@@ -100,33 +164,10 @@
     "main_advanced_independently_to": "6bce5077d98f61e49f0b7ec9241f855f493b54d3",
     "future_main_merge": "Reconcile latest main and revalidate on development branch before required final review and merge."
   },
-  "followup_source_candidate": {
-    "path": "/private/tmp/vail-shortcuts-review-candidate7",
-    "manifest_sha256": "a0a34cd562e11acd6a969e8cafb0d71128eb9768d58b8c7ea390adede103bc28",
-    "requested": "source_only_not_final_acceptance",
-    "decision": "request_changes",
-    "remaining_findings": [
-      "Scalar capture ownership/cardinality in logical native kernel adapter",
-      "Scoped DAG rewriting for randomness bind_context/bind_rows",
-      "Nested scan predicate binding once and selected-only body evaluation",
-      "Replace remaining private strategy/identity tests with public behavior"
-    ]
-  },
-  "candidate9_review_handoff": {
-    "path": "/private/tmp/vail-shortcuts-review-candidate9",
-    "manifest_sha256": "ea63a73bd1bc62a52f7a3ce5a1f256acf0b6f45091b7fd1b2a780ab361e147d4",
-    "status": "tool_rejected_before_delivery",
-    "tool": "mcp__codex_app__send_message_to_thread",
-    "reason": "MCP tool call requires approval, but approval policy is never",
-    "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
-    "main_gate": "not_approved"
-  },
-  "reviewed_revision": "76cbbeb0cada9efc955254d9ce5eea0c3339f082",
-  "review_delivery": "delivered_after_explicit_user_authorization",
-  "review_disposition": "Source follow-up cleared scalar capture, scoped RNG, predicate-once fixes and R2/R3/R4/R6/R8. R7 public-behavior replacements required. Subsequent main reconciliation is outside this review.",
-  "pending_integration": {
-    "main_parent": "6bce5077d98f61e49f0b7ec9241f855f493b54d3",
-    "status": "reconciliation_in_progress_not_validated_not_reviewed",
-    "main_updated": false
+  "call_predicate_reconciliation": {
+    "main_revision": "dc51582fcb2413be6f14372ea8887a4cabc85f88",
+    "development_merge": "658f789a",
+    "scope": "Three Python files; separately reviewed Call predicates, clean merge; native17 Rust sources unchanged",
+    "validation": "Full local18:1742pass/2unchanged baseline failures; full upstream18 completed all56modules."
   }
 }

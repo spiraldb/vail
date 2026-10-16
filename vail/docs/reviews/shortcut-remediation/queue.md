@@ -1,6 +1,6 @@
 # Architectural remediation queue
 
-Base: `2c02020`. This queue separates confirmed costs/correctness defects from
+Original audit base: `2c02020`; final integration includes main `dc51582f`. This queue separates confirmed costs/correctness defects from
 unproven design concerns. A passing compatibility suite is not an acceptance
 criterion by itself. Each fix needs a stated invariant, general implementation,
 focused correctness/complexity or boundedness evidence, and integration review.
@@ -11,11 +11,11 @@ been audited in this pass. Individual agents record findings with file/line evid
 
 | ID | Issue | Status / owner | Required architecture |
 | --- | --- | --- | --- |
-| S001 | Stream aggregate-scan recomputes every prefix | Implemented; native shared scan state and candidate10 integration pass; follow-up review pending | Shared accumulator state; no prefix rescans for bounded-state reducers; preserve RNG and nested scopes. |
+| S001 | Stream aggregate-scan recomputes every prefix | Implemented; native shared scan state and build17 integration pass; follow-up review pending | Shared accumulator state; no prefix rescans for bounded-state reducers; preserve RNG and nested scopes. |
 | S002 | VCF export collects the whole matrix into Python | Implemented; public file tests and isolated bounded-memory evidence pass; follow-up review pending | Native bounded batch sink with backpressure and error propagation; only header/sample metadata may be eager. |
-| S003 | Matrix/list reducers duplicate table algorithms | Shared factory and candidate10 integration pass; follow-up review pending | One configured reducer factory/state contract adapted to row-owned lists and scans; remove per-allele repeated call scans and duplicated numerical semantics. |
-| S004 | General legacy physical compiler and deferred planning bridges | Implemented and candidate10 validated; required follow-up review pending | One optimized logical tree; semantic extensions consume already-planned children; preserve ordering and RNG without exposing Hail partition identity as a required contract. |
-| S005 | Pure kernels get fresh identities and blanket Volatile flags | Implemented and candidate10 validated; required follow-up review pending | Stable native identities, accurate effects, and explicit metadata/RNG boundaries; prove folding/reuse is legal. |
+| S003 | Matrix/list reducers duplicate table algorithms | Shared factory and build17 integration pass; follow-up review pending | One configured reducer factory/state contract adapted to row-owned lists and scans; remove per-allele repeated call scans and duplicated numerical semantics. |
+| S004 | General legacy physical compiler and deferred planning bridges | Implemented and build17 validated; required follow-up review pending | One optimized logical tree; semantic extensions consume already-planned children; preserve ordering and RNG without exposing Hail partition identity as a required contract. |
+| S005 | Pure kernels get fresh identities and blanket Volatile flags | Implemented and build17 validated; required follow-up review pending | Stable native identities, accurate effects, and explicit metadata/RNG boundaries; prove folding/reuse is legal. |
 
 ## Prior review findings requiring current-code audit
 
@@ -98,3 +98,11 @@ input's randomness independently. The fallback preserved an accidental Vail
 rebinding bug. It is removed in the integration in favor of native n-ary zip,
 index-values, and one shared correlation state. See
 `merge-semantic-decisions.json` for source provenance and corrected expectations.
+
+## Concurrent follow-up outside this candidate
+
+Sex-QC profiling identified per-cell packed-call temporary allocations and a
+GetField parent-null Vec<bool> mask even for a non-null parent. The tables agent
+is replacing them with existing stack-backed decoding and Arrow validity/child
+borrowing on its separate development branch. These costs are not fixed or
+claimed accepted by the architectural integration candidate.

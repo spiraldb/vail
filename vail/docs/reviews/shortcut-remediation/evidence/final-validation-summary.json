@@ -1,0 +1,22 @@
+{
+  "native_build": 17,
+  "native_sha256": "8853c655d212de27bfc8f1894395a1860563a956243c49a248fb8fbf3a827416",
+  "code_revision": "d3b6b4df",
+  "binaries": 41,
+  "passed": 260,
+  "nonzero_exits": [],
+  "python": {
+    "passed": 1742,
+    "failed": 2,
+    "skipped": 1,
+    "subtests_passed": 19,
+    "seconds": 245.74,
+    "known_baseline_failures": [
+      "empty-list Vortex writing",
+      "present all-missing-child struct validity round trip"
+    ]
+  },
+  "candidate_code": "658f789a",
+  "python_package": 18,
+  "package_provenance": "Exact native17 wheel with only merged call_expressions.py and expressions.py overlaid from658f789a; Rust unchanged; full Python source hashes included."
+}

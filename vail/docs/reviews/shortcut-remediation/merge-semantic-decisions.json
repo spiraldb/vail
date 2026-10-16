@@ -108,10 +108,39 @@
       "host_load": "concurrent suites/builds"
     }
   },
-  "integration_fixes_pending_final_validation": [
+  "final_coherent_validation": {
+    "native_build": 17,
+    "native_sha256": "8853c655d212de27bfc8f1894395a1860563a956243c49a248fb8fbf3a827416",
+    "code_revision": "d3b6b4df",
+    "binaries": 41,
+    "passed": 260,
+    "nonzero_exits": [],
+    "python": {
+      "passed": 1742,
+      "failed": 2,
+      "skipped": 1,
+      "subtests_passed": 19,
+      "seconds": 245.74,
+      "known_baseline_failures": [
+        "empty-list Vortex writing",
+        "present all-missing-child struct validity round trip"
+      ]
+    },
+    "candidate_code": "658f789a",
+    "python_package": 18,
+    "package_provenance": "Exact native17 wheel with only merged call_expressions.py and expressions.py overlaid from658f789a; Rust unchanged; full Python source hashes included."
+  },
+  "historical_integration_fixes": [
     "Native closed-scalar eligibility at singleton projection/conditional admission, preserving lexical binder ownership; frontend explicit eligibility instead of exception fallback",
     "Query-local explicit row/global LoweringContext memo to avoid repeated DAG lowering",
     "Maintained DataFusion common empty-struct scalar-compaction cardinality/validity patch",
     "Structural Hail IR helper statements removed before argument evaluation with exact per-run manifest; all behavioral statements retained"
-  ]
+  ],
+  "final_status": "Code658f789a includes clean reviewed Python Call predicates; native17 Rust unchanged,260native tests pass; full combinedPython18:1742pass2knownstoragefail1skip19subtests. Fullupstream18completed56modules; accompanying report is authoritative.",
+  "call_predicate_reconciliation": {
+    "main_revision": "dc51582fcb2413be6f14372ea8887a4cabc85f88",
+    "development_merge": "658f789a",
+    "scope": "Three Python files; separately reviewed Call predicates, clean merge; native17 Rust sources unchanged",
+    "validation": "Final combined local1742pass2knownfail; fullupstream18completed56modules"
+  }
 }

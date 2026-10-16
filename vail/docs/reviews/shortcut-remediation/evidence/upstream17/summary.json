@@ -1,0 +1,235 @@
+{
+  "native_library_sha256": "8853c655d212de27bfc8f1894395a1860563a956243c49a248fb8fbf3a827416",
+  "failed_case_phases": {
+    "setup": 461,
+    "call": 751
+  },
+  "definition_categories": {
+    "missing_or_unsupported_api": 404,
+    "format_io_api": 66,
+    "passed": 453,
+    "collection_blocked": 398,
+    "execution_or_other_error": 12,
+    "expression_types_or_validation": 53,
+    "assertion_mismatch": 13,
+    "harness_or_fixture_setup_blocker": 2,
+    "intentional_partition_layout_difference": 13,
+    "genetics_or_other_high_level_api": 14,
+    "fixture_or_storage_format_blocker": 24,
+    "hail_backend_or_ir_dependency": 16
+  },
+  "areas": {
+    "experimental": {
+      "failed": 20,
+      "passed": 2,
+      "collection_blocked": 4
+    },
+    "expr": {
+      "passed": 148,
+      "failed": 181,
+      "collection_blocked": 26
+    },
+    "extract_intervals": {
+      "passed": 12,
+      "failed": 13
+    },
+    "genetics": {
+      "failed": 15,
+      "passed": 2,
+      "collection_blocked": 2
+    },
+    "ggplot": {
+      "collection_blocked": 10
+    },
+    "linalg": {
+      "failed": 79
+    },
+    "matrixtable": {
+      "collection_blocked": 3,
+      "failed": 37,
+      "passed": 198
+    },
+    "methods": {
+      "failed": 231,
+      "collection_blocked": 67,
+      "passed": 49
+    },
+    "plot": {
+      "collection_blocked": 12
+    },
+    "table": {
+      "passed": 3,
+      "collection_blocked": 211
+    },
+    "root API": {
+      "failed": 25,
+      "collection_blocked": 7,
+      "passed": 21
+    },
+    "utils": {
+      "collection_blocked": 14,
+      "failed": 10,
+      "passed": 18
+    },
+    "vds": {
+      "collection_blocked": 42,
+      "failed": 6
+    }
+  },
+  "completed_modules": 56,
+  "eligible_modules": 56,
+  "definitions": 1468,
+  "definition_statuses": {
+    "failed": 617,
+    "passed": 453,
+    "collection_blocked": 398
+  },
+  "parameter_cases": {
+    "failed": 1212,
+    "passed": 480
+  },
+  "failure_categories": {
+    "missing_or_unsupported_api": 890,
+    "format_io_api": 66,
+    "expression_types_or_validation": 55,
+    "assertion_mismatch": 13,
+    "execution_or_other_error": 12,
+    "harness_or_fixture_setup_blocker": 2,
+    "intentional_partition_layout_difference": 25,
+    "genetics_or_other_high_level_api": 20,
+    "fixture_or_storage_format_blocker": 24,
+    "hail_backend_or_ir_dependency": 105
+  },
+  "timeout_modules": [],
+  "randomness": {
+    "specifically_randomness": {
+      "definitions": {
+        "passed": 58,
+        "failed": 2,
+        "collection_blocked": 38
+      },
+      "parameter_cases": {
+        "passed": 58,
+        "failed": 2
+      }
+    },
+    "random_data_for_other_functionality": {
+      "definitions": {
+        "passed": 22,
+        "failed": 59,
+        "collection_blocked": 18
+      },
+      "parameter_cases": {
+        "failed": 61,
+        "passed": 22
+      }
+    }
+  },
+  "source_revision": "d3b6b4df13331796511ad76b32d5df370f1461ef",
+  "disposition": "historical-before-python-call-predicates-overlay",
+  "analysis_notes": [
+    "Definitions and parameter cases are counted separately. Setup/call/teardown are deduplicated per node; any phase failure makes the case nonpassing.",
+    "Definition status combines parameter variants conservatively; an unexecuted variant prevents a complete definition pass.",
+    "Randomness roles reuse conformance/summarize_full_hail.py source-name/body classification; this is a heuristic, not a transitive fixture dependency analysis.",
+    "Categories describe the first observed blocker, not all defects. Terminal error diagnostics avoid incidental traceback function names being classified as randomness dependencies.",
+    "Explicit offending n_partitions assertions are recorded as intentional layout differences. Their later value assertions are not certified.",
+    "97 documented structural-IR assertion statements are omitted before argument evaluation. Behavioral assertions remain. Calls in collection-blocked modules are not executed.",
+    "Full raw logs remain at recorded local paths with hashes; compact records below preserve observed outcomes and first error diagnostics.",
+    "No historical broad regression delta is asserted across differing adapters, timeout reachability, or source revisions."
+  ],
+  "dedicated_randomness_module_definitions": {
+    "passed": 6
+  },
+  "slowest_completed_call_cases": [
+    {
+      "module": "methods/test_impex.py",
+      "nodeid": "test_impex.py::VCFTests::test_import_vcf",
+      "status": "passed",
+      "duration_seconds": 36.61627033300465
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_filter_partitions",
+      "status": "passed",
+      "duration_seconds": 22.21098783299385
+    },
+    {
+      "module": "test_ir.py",
+      "nodeid": "test_ir.py::test_very_large_ir_deserializes",
+      "status": "passed",
+      "duration_seconds": 11.46944479100057
+    },
+    {
+      "module": "methods/test_impex.py",
+      "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__sample_GRCh37",
+      "status": "passed",
+      "duration_seconds": 8.139687917006086
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::test_matrix_randomness_map_cols_with_agg_randomness",
+      "status": "passed",
+      "duration_seconds": 6.64508695800032
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_joins_with_key_structs",
+      "status": "passed",
+      "duration_seconds": 5.89049945899751
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::test_matrix_randomness_aggregate_rows_by_key_then_aggregate_entries_with_agg_randomness",
+      "status": "passed",
+      "duration_seconds": 5.191237958992133
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::test_matrix_randomness_union_cols",
+      "status": "passed",
+      "duration_seconds": 4.81327837498975
+    },
+    {
+      "module": "methods/test_misc.py",
+      "nodeid": "test_misc.py::Tests::test_filter_intervals_compound_key",
+      "status": "passed",
+      "duration_seconds": 4.718121915997472
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_aggregate_entries",
+      "status": "passed",
+      "duration_seconds": 4.689371041997219
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_index",
+      "status": "passed",
+      "duration_seconds": 4.371892957991804
+    },
+    {
+      "module": "methods/test_impex.py",
+      "nodeid": "test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference",
+      "status": "failed",
+      "duration_seconds": 4.18041133400402
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_to_table_on_rows_method",
+      "status": "passed",
+      "duration_seconds": 3.910314417007612
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::test_matrix_randomness_aggregate_cols_by_key_with_body_randomness",
+      "status": "passed",
+      "duration_seconds": 3.85452120800619
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_union_cols_outer",
+      "status": "passed",
+      "duration_seconds": 3.534228707998409
+    }
+  ]
+}

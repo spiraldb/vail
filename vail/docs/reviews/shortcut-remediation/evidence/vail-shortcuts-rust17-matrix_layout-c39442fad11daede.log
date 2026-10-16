@@ -1,0 +1,12 @@
+
+running 7 tests
+test empty_batch_does_not_validate_unused_missing_scalar_gather_owner ... ok
+test alignment_rejects_missing_entry_records_and_presence ... ok
+test dense_scatter_rejects_duplicate_and_out_of_range_positions ... ok
+test alignment_compares_exact_positional_ids_against_shared_columns ... ok
+test grouped_gather_preserves_empty_groups_and_scalar_positions ... ok
+test gather_preserves_scalar_owners_slices_repetition_and_empty_lists ... ok
+test transpose_preserves_context_nullable_values_and_skips_missing_arrays ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

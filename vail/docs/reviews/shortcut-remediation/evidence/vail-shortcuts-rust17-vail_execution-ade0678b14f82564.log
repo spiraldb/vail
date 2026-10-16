@@ -1,0 +1,50 @@
+
+running 45 tests
+test expressions::tests::ndarray_string_rejects_invalid_shape_without_indexing_past_data ... ok
+test expressions::tests::locus_coordinates_classification_boundaries_and_global_positions ... ok
+test expressions::tests::arrow_array_sum_keeps_wrapping_identity_and_missing_semantics ... ok
+test expressions::tests::prepared_reference_cache_does_not_change_physical_expression_identity ... ok
+test expressions::tests::float_nan_wire_preserves_bits_and_rejects_malformed_tags ... ok
+test expressions::tests::interval_types_literals_construction_and_field_projection ... ok
+test expressions::tests::hail_string_formats_nested_json_missing_and_float_scalars ... ok
+test expressions::tests::locus_literal_uses_frontend_physical_value_and_checks_ordinal ... ok
+test expressions::tests::source_validation_and_float_special_values ... ok
+test expressions::tests::json_lowering_chained_numeric_and_kleene ... ok
+test expressions::tests::public_physical_metadata_queries_follow_actual_input_schema ... ok
+test expressions::tests::array_ir_rejects_bad_types_and_handles_zero_rows ... ok
+test expressions::tests::lazy_if_else_and_missing_condition ... ok
+test expressions::tests::array_grouped_emits_short_final_group ... ok
+test expressions::tests::flatten_skips_hidden_values_under_null_inner_lists ... ok
+test expressions::tests::set_literals_use_typed_arrow_equality_without_order_encoding ... ok
+test expressions::tests::public_grouped_arrays_keep_independent_generated_expressions ... ok
+test expressions::tests::struct_parent_nulls_array_literals_and_zero_fields ... ok
+test logical_expr::tests::array_map_fallback_is_named_for_the_semantic_operation ... ok
+test logical_expr::tests::equality_remains_a_native_binary_expression ... ok
+test expressions::tests::memo_keeps_the_same_native_node_distinct_under_different_lexical_bindings ... ok
+test logical_expr::tests::integer_negation_wraps_identically_for_scalar_array_and_null ... ok
+test logical_expr::tests::independent_annotations_execute_with_distinct_values ... ok
+test expressions::tests::public_lambda_projection_rebinds_heterogeneous_source_columns ... ok
+test logical_expr::tests::integer_division_and_wrapping_keep_vail_semantics ... ok
+test logical_expr::tests::ordinary_binary_expression_stays_visible_to_optimizer ... ok
+test logical_expr::tests::set_equality_reports_missing_logical_collection_support ... ok
+test logical_expr::tests::missing_if_condition_produces_missing_and_dead_die_branch_is_not_evaluated ... ok
+test expressions::tests::stream_range_uses_exclusive_stop_and_reports_zero_step ... ok
+test logical_expr::tests::if_else_keeps_null_condition_branch_explicit ... ok
+test matrix_transpose::tests::rejects_ragged_arrays_with_existing_error_shape ... ok
+test matrix_transpose::tests::skips_missing_arrays_and_supports_empty_context_structs ... ok
+test matrix_transpose::tests::transposed_schema_retains_context_and_item_field_metadata ... ok
+test matrix_transpose::tests::transposes_values_and_contexts_once_per_position_with_sliced_offsets ... ok
+test expressions::tests::interval_contains_and_overlaps_respect_bounds_and_missingness ... ok
+test expressions::tests::public_compilation_accepts_deep_shared_native_graphs ... ok
+test logical_expr::tests::invalid_locus_coordinate_is_deferred_until_selected ... ok
+test logical_expr::tests::type_restoration_constant_folds_without_erasing_nested_metadata ... ok
+test expressions::tests::parse_csv_line_runs_as_a_physical_dataframe_expression ... ok
+test tests::invalid_inputs_fail_before_execution ... ok
+test tests::empty_and_duplicate_keys_are_handled ... ok
+test tests::interleaved_partitions_merge_in_global_order ... ok
+test tests::descending_nulls_last_and_limit_apply_after_merge ... ok
+test tests::compound_mixed_directions_ignore_input_partition_layout ... ok
+test tests::caller_memory_limit_spills_local_sort ... ok
+
+test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
