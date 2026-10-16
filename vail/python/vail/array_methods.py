@@ -46,11 +46,15 @@ def array_scan(f, zero, a):
     return _fold(f, zero, a, True)
 
 
-def _numeric_array(collection):
+def _numeric_array(collection, *, ordered=True):
     from .collections import to_array
     collection = as_expr(collection)
     if isinstance(collection.dtype, tset):
-        collection = to_array(collection)
+        if ordered:
+            collection = to_array(collection)
+        else:
+            from .collections import _cast
+            collection = _cast(collection,tarray(collection.dtype.element_type))
     if not isinstance(collection.dtype, tarray) or collection.dtype.element_type not in (tint32, tint64, tfloat32, tfloat64):
         raise TypeError("expected a numeric array or set")
     return collection
@@ -61,20 +65,23 @@ def mean(collection, filter_missing=True):
     if type(filter_missing) is not bool:
         raise TypeError("filter_missing must be bool")
     collection = _numeric_array(collection)
-    defined = collection.filter(lambda x: ~is_missing(x))
-    total = defined.map(lambda x: cast(x, tfloat64))._reduce('sum')
-    result = total / cast(defined.length(), tfloat64)
-    if not filter_missing:
-        result = if_else(collection.any(is_missing), missing(tfloat64), result)
-    return result
+    from .expressions import bind
+    def present(values):
+        defined = values.filter(lambda x: ~is_missing(x))
+        result = bind(lambda defined:
+                      defined.map(lambda x: cast(x,tfloat64))._reduce('sum') / cast(defined.length(),tfloat64),defined)
+        return result if filter_missing else if_else(values.any(is_missing),missing(tfloat64),result)
+    return bind(present,collection)
 
 
 def median(collection):
     """Lower middle numeric value after removing missing elements."""
     from .collections import sorted_
-    collection = _numeric_array(collection)
+    collection = _numeric_array(collection,ordered=False)
     ordered = sorted_(collection.filter(lambda x: ~is_missing(x)))
-    return if_else(ordered.length() > 0, ordered[(ordered.length() - 1) // 2], missing(collection.dtype.element_type))
+    from .expressions import bind
+    return bind(lambda ordered: if_else(ordered.length()>0,ordered[(ordered.length()-1)//2],
+                                       missing(collection.dtype.element_type)),ordered)
 
 
 def group_by(f, collection):

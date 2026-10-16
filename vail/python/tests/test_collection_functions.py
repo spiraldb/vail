@@ -58,3 +58,25 @@ def test_sources_and_existing_table_builtin_calls():
     other = hl.range_table(3)
     with pytest.raises(hl.ExpressionException): hl.zip(hl.array([t.idx]), hl.array([other.idx]))
     assert t.count() == 3
+
+
+def test_random_array_inputs_retain_seeded_composition_goldens():
+    def input(): return hl.range(3).map(lambda x:hl.rand_unif(seed=13))
+    expected = [.2578718497119425,.9064616491146612,.5291855418022392]
+    assert hl.eval(hl.zip(input(),[1.,2.,3.])) == list(zip(expected,[1.,2.,3.]))
+    assert hl.eval(hl.enumerate(input())) == list(enumerate(expected))
+    assert hl.eval(input()+[1.,2.,3.]) == [1.2578718497119425,2.9064616491146613,3.529185541802239]
+    assert hl.eval(hl.corr(input(),[1.,2.,3.])) == .1591118698427001
+
+
+def test_zip_missing_input_does_not_evaluate_unused_other_array():
+    invalid = hl.array([hl.array([1])[10]])
+    assert hl.eval(hl.zip(hl.missing(hl.tarray(hl.tint32)),invalid)) is None
+
+
+def test_variadic_zip_truncation_padding_and_missing_parents():
+    values = ([1,None,3],['a'],[True,False])
+    assert hl.eval(hl.zip(*values)) == [(1,'a',True)]
+    assert hl.eval(hl.zip(*values,fill_missing=True)) == [(1,'a',True),(None,None,False),(3,None,None)]
+    assert hl.eval(hl.zip(hl.empty_array(hl.tint32),['a'],[True])) == []
+    assert hl.eval(hl.zip([1],hl.missing(hl.tarray(hl.tstr)),[True],fill_missing=True)) is None

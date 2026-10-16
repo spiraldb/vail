@@ -1360,7 +1360,9 @@ impl Expr {
                         | "__vail_matrix_columns"
                         | "__vail_matrix_aligned"
                 );
-                let expected = if function == "array_sort" {
+                let expected = if function == "arrays_zip" {
+                    args.len()
+                } else if function == "array_sort" {
                     3
                 } else if function == "array_element"
                     || function == "arrays_zip"
@@ -1383,6 +1385,9 @@ impl Expr {
                 };
                 if args.len() != expected || !matches!(args.first(), Some(DataType::List(_))) {
                     return Err(ExprError::Invalid(format!("invalid {function} arguments")));
+                }
+                if function == "arrays_zip" && args.iter().any(|arg| !matches!(arg,DataType::List(_))) {
+                    return Err(ExprError::Invalid("arrays_zip requires array arguments".into()));
                 }
                 if function == "array_sort"
                     && (args[1] != DataType::Utf8 || args[2] != DataType::Utf8)
@@ -4776,7 +4781,14 @@ fn lower_scoped(
                 unreachable!()
             };
             let accumulator_type = zero.dtype_scoped(schema, globals.schema(), scope)?;
-            let mut fields = schema.fields().to_vec();
+            // Public logical types have canonical callback storage. Normalize
+            // supported captures once before iteration; preserve opaque unused
+            // private columns whose Arrow type is outside the expression API.
+            let mut fields = schema.fields().iter().map(|field| {
+                let dtype = Type::from_arrow(field.data_type()).and_then(|ty| ty.to_arrow())
+                    .unwrap_or_else(|_| field.data_type().clone());
+                Arc::new(field.as_ref().clone().with_data_type(dtype))
+            }).collect::<Vec<_>>();
             fields.push(Arc::new(Field::new(
                 accumulator,
                 accumulator_type.to_arrow()?,

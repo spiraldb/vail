@@ -95,3 +95,46 @@ def test_fold_ignores_large_unreferenced_nested_columns():
     ).collect()
     assert [row.total for row in result] == [sum(range(256))] * 4
     assert [row.nested for row in result] == [8 * sum(range(256))] * 4
+
+
+@pytest.mark.parametrize('storage', ['large_string', 'string_view'])
+def test_fold_and_scan_normalize_imported_string_storage_once(storage):
+    import pyarrow as pa
+    string_type = getattr(pa,storage)()
+    arrays = pa.array([['prefix'], ['a', None, 'b'], [], None, ['c']], type=pa.list_(string_type)).slice(1,4)
+    zero = pa.array(['z0','z1','z2','z3'],type=string_type)
+    table = hl.Table.parallelize(pa.table({'a':arrays,'zero':zero}))
+    update = lambda acc,item: hl.if_else(hl.is_missing(item),acc,item)
+    result = table.annotate(folded=table.a.fold(update,table.zero),
+                            scanned=table.a.scan(update,table.zero)).collect()
+    assert [row.folded for row in result] == ['b','z1',None,'c']
+    assert [row.scanned for row in result] == [['z0','a','a','b'],['z1'],None,['z3','c']]
+
+
+def test_fold_nested_alternate_storage_preserves_missing_parents():
+    import pyarrow as pa
+    element = pa.struct([('s',pa.large_string()),('values',pa.list_(pa.large_string()))])
+    arrays = pa.array([[{'s':'é','values':['x',None]},None],[],None],type=pa.list_(element))
+    table = hl.Table.parallelize(pa.table({'a':arrays}))
+    zero = hl.struct(s='zero',values=hl.empty_array(hl.tstr))
+    update = lambda acc,item: hl.if_else(hl.is_missing(item),acc,item)
+    expected = hl.Struct(s='é',values=['x',None])
+    assert table.a.fold(update,zero).collect() == [expected,hl.Struct(s='zero',values=[]),None]
+    assert table.a.scan(update,zero).collect() == [
+        [hl.Struct(s='zero',values=[]),expected,expected], [hl.Struct(s='zero',values=[])],None]
+
+
+def test_fold_capture_cache_handles_ragged_owner_changes():
+    rows = [{'a':values,'capture':[i+10]*512} for i,values in enumerate([[1,2,3,4],[],None,[5],[6,7,8]])]
+    table = hl.Table.parallelize(rows,schema=hl.tstruct(a=hl.tarray(hl.tint32),capture=hl.tarray(hl.tint32)))
+    assert table.a.fold(lambda acc,item:acc+item+table.capture[0],0).collect() == [50,0,None,18,63]
+    literal = hl.literal(list(range(128)))
+    source = hl.range_table(32,3)
+    assert source.annotate(total=literal.fold(lambda acc,item:acc+item+source.idx,0)).total.collect() == [
+        sum(range(128))+128*i for i in range(32)]
+
+
+def test_fold_retains_wide_unchanged_state_across_steps():
+    rows = [{'a':list(range(128)),'state':[i]*4096} for i in range(4)]
+    table = hl.Table.parallelize(rows,schema=hl.tstruct(a=hl.tarray(hl.tint32),state=hl.tarray(hl.tint32)))
+    assert table.a.fold(lambda state,item:state,table.state).collect() == [[i]*4096 for i in range(4)]

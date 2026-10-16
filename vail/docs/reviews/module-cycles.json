@@ -455,7 +455,35 @@
       ],
       "excluded_tests": [
         "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: excluded patched Vortex empty nested-list writer"
-      ]
+      ],
+      "merged_commit": "b8f9e42c"
+    },
+    {
+      "module": "Vail array methods, collection numerical helpers and native fold/scan callbacks",
+      "reviewed_base": "b8f9e42c",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "normalize alternate Arrow callback storage once at the public native boundary",
+        "cache captured columns across unchanged active lanes and select identity/contiguous spans without gathers",
+        "preserve scalar array children across fold rows and borrow survivor accumulator state",
+        "bind pure zip/enumerate/array arithmetic and numerical reductions once; retain established RNG context for random-dependent arrays",
+        "replace callback spies/private plans and IR assertions with public values, errors, laziness and Arrow cases"
+      ],
+      "validation": [
+        "92 public Python tests passed;1 known dependency-only Vortex storage case deselected",
+        "76 Rust execution tests passed (68 library +7 type contracts +1 public alternate-storage fold/scan integration)"
+      ],
+      "reports": [
+        "vail/docs/reviews/array-method-cost.json"
+      ],
+      "limitations": [
+        "RNG-dependent array helpers retain indexed capture for seeded compatibility",
+        "Sparse survivor changes gather; normalization may convert alternate Arrow storage",
+        "Python storage case passed baseline and final; direct Rust native-boundary coverage is separate"
+      ],
+      "native_sha256": "b2e1ae668c7c992c87bdf2bfbb5cbee53bbcf070445db689f89944d298ad845f",
+      "baseline_native_sha256": "530a6998afbfe4a4660b94c723e0b46c2b5585c00428317673ea12b9aa634b09",
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests."
     }
   ],
   "source_inventory": [

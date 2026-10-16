@@ -1277,6 +1277,14 @@ def _array_arithmetic(left, right, operator):
     element_type = _numeric_result_type(left_type, right_type, operator)
 
     if left_array and right_array:
+        from .randomness import contains
+        if not contains(left.to_ir()) and not contains(right.to_ir()):
+            from .collection_functions import zip as zip_
+            result_type = tarray(element_type)
+            error = Expression(result_type,None,{"op":"die", "message":literal("array arithmetic requires arrays of equal length").to_ir(), "dtype":type_to_wire(result_type)})
+            def paired(left,right):
+                return zip_(left,right).map(lambda pair: pair[0]._binary(pair[1],operator,element_type))
+            return if_else(left.length()==right.length(),bind(paired,left,right),error)
         from . import range as array_range
         indices = array_range(left._array_length())
         pairs = indices.map(lambda i: left[i]._binary(right[i], operator, element_type))
