@@ -706,6 +706,10 @@ class Expression:
                 return self.alleles.length()
             if name == "phased":
                 return call_field("__vail_call_phased", tbool)
+            if name in {"is_haploid", "is_diploid", "is_hom_ref", "is_non_ref",
+                        "is_het", "is_het_ref", "is_het_non_ref", "is_hom_var"}:
+                from .call_expressions import call_property
+                return lambda: call_property(call_field("__vail_call_word", tint32), name)
             if name == "n_alt_alleles":
                 return lambda: int32(array_sum(call_field(
                     "__vail_call_alleles", tarray(tint32)
