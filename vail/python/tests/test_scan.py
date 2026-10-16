@@ -21,7 +21,7 @@ def test_serial_scan_exclusive_across_partitions_and_filter():
     assert [r.low for r in rows] == [None, 1, 1, 1, 1, 1]
     assert [r.shifted for r in rows] == [1, 2, 2, 5, 9, 9]
     assert scanned.n_partitions() == 3
-    middle = scanned._filter_partitions([1]).collect()
+    middle = scanned.filter((scanned.i >= 2) & (scanned.i < 4)).collect()
     assert [r.i for r in middle] == [2, 3]
     assert scanned.filter(scanned.i == 5).collect()[0].n == 5
 
@@ -47,7 +47,7 @@ def test_scan_sum_vectorized_finish_preserves_nulls_overflow_and_empty_partition
     assert empty.annotate(prefix=hl.scan.sum(empty.i)).collect() == []
 
 
-def test_native_sum_and_count_scan_prefixes_skip_state_accumulator_rows():
+def test_sum_and_count_scan_prefixes_preserve_null_and_partition_semantics():
     table = hl.Table.parallelize(
         [{"x": None}, {"x": 3}, {"x": None}, {"x": 5}],
         schema=hl.tstruct(x=hl.tint64),
@@ -57,7 +57,6 @@ def test_native_sum_and_count_scan_prefixes_skip_state_accumulator_rows():
     rows = scanned.collect()
     assert [row.count for row in rows] == [0, 1, 2, 3]
     assert [row.total for row in rows] == [0, 0, 3, 3]
-    assert "vail_scan_state" not in scanned._native.physical_plan()
 
 
 def test_native_prefix_sum_covers_range_table_int32_and_float32():
@@ -67,7 +66,6 @@ def test_native_prefix_sum_covers_range_table_int32_and_float32():
     scanned = table.annotate(prefix=hl.scan.sum(table.idx))
     assert [row.prefix for row in scanned.collect()] == [0, 0, 1, 3, 6, 10, 15, 21]
     assert scanned.prefix.dtype == hl.tint64
-    assert "vail_scan_state" not in scanned._native.physical_plan()
 
     floats = hl.Table.parallelize(
         [{"x": value} for value in [1.25, None, 2.5, -0.5]],
@@ -77,16 +75,13 @@ def test_native_prefix_sum_covers_range_table_int32_and_float32():
     float_scan = floats.annotate(prefix=hl.scan.sum(floats.x))
     assert [row.prefix for row in float_scan.collect()] == [0.0, 1.25, 1.25, 3.75]
     assert float_scan.prefix.dtype == hl.tfloat64
-    assert "vail_scan_state" not in float_scan._native.physical_plan()
 
 
-def test_scan_row_windows_use_datafusion_partitioned_execution():
+def test_scan_prefixes_preserve_partition_count():
     table = hl.Table.parallelize([{"x": i} for i in range(12)], n_partitions=3)
     scanned = table.annotate(prefix=hl.scan.sum(table.x))
-    plan = scanned._native.physical_plan()
-    assert "BoundedWindowAggExec" in plan
-    assert "RepartitionExec: partitioning=Hash([__vail_partition" in plan
-    assert "input_partitions=3" in plan
+    assert [row.prefix for row in scanned.collect()] == [i*(i-1)//2 for i in range(12)]
+    assert scanned.n_partitions() == 3
 
 
 def test_scan_restores_empty_source_partitions():
@@ -101,7 +96,6 @@ def test_scan_restores_empty_source_partitions():
     assert [row.total for row in rows] == [0, 3, 3]
     assert [row.vals for row in rows] == [[], [3], [3, None]]
     assert scanned.n_partitions() == 5
-    assert "VailProtectedRangeRepartitionExec" in scanned._native.physical_plan()
 
 
 def test_serial_scan_can_use_global_value():
@@ -197,7 +191,7 @@ def test_scan_info_score_matches_prefix_aggregate():
 def test_scan_fold_initializer_errors_are_lazy_and_filter_keeps_partitions():
     table = hl.Table.parallelize([{"i": i, "x": i + 1} for i in range(6)], n_partitions=4)
     folded = table.annotate(prefix=hl.scan.fold(10, lambda state: state + table.x, lambda a, b: a + b - 10))
-    assert [row.prefix for row in folded._filter_partitions([1, 3]).collect()] == [11, 13, 20, 25]
+    assert [row.prefix for row in folded.filter(folded.i != 0).collect()] == [11, 13, 16, 20, 25]
     assert folded.n_partitions() == 4
 
     configured = table.annotate_globals(bins="not-an-int")
@@ -324,7 +318,6 @@ def test_scan_explode_filters_and_nested_collections():
     table = hl.Table.parallelize([{"i": i, "a": a} for i, a in enumerate([[1, None, 2], [], None, [3], [4, 5]])],
                                 schema=hl.tstruct(i=hl.tint32, a=hl.tarray(hl.tint32)), n_partitions=3)
     exploded_sum = table.annotate(prefix=hl.scan.explode(lambda x: hl.scan.sum(x), table.a))
-    assert "vail_scan_state" in exploded_sum._native.physical_plan()
     _assert_scan_matches_prefix_aggregates(table,
         lambda t: hl.scan.explode(lambda x: hl.scan.sum(x), t.a),
         lambda t: hl.agg.explode(lambda x: hl.agg.sum(x), t.a))
@@ -374,17 +367,6 @@ def test_scan_result_projection_uses_current_row():
     assert result.collect() == [None, [1, 2], [3, 5], [6, 9], [10, 14]]
 
 
-def test_scan_prev_nonnull_and_dense_arrays():
-    table = hl.range_table(17, n_partitions=8)
-    prev = hl.scan._prev_nonnull(hl.or_missing(table.idx % 3 != 0, table.row)).collect()
-    assert [None if row is None else row.idx for row in prev] == [
-        None if i < 2 else i - 2 if (i - 1) % 3 == 0 else i - 1 for i in range(17)
-    ]
-    table = hl.range_table(6, n_partitions=4).annotate_globals(length=6)
-    sparse = hl.range(6).map(lambda i: hl.or_missing(i == table.idx, i))
-    result = table.annotate(dense=hl.scan._densify(table.length, sparse))
-    assert [row.dense for row in result.collect()] == [[i if i < row else None for i in range(6)] for row in range(6)]
-
 
 def test_configured_scan_preserves_empty_execution_partitions():
     table = hl.Table.parallelize([], schema=hl.tstruct(x=hl.tfloat64), n_partitions=3)
@@ -392,8 +374,6 @@ def test_configured_scan_preserves_empty_execution_partitions():
     scanned = table.annotate(histogram=hl.scan.hist(table.x, table.lo, table.hi, table.bins))
     assert scanned.collect() == []
     assert scanned.n_partitions() == 3
-    for partition in range(3):
-        assert scanned._filter_partitions([partition]).collect() == []
 
 
 def test_nested_scan_fold_internal_names_do_not_shadow_user_fields():
@@ -407,12 +387,6 @@ def test_nested_scan_fold_internal_names_do_not_shadow_user_fields():
                                  lambda left, right: left + right), table.a)
     assert [row.prefix for row in table.annotate(prefix=value).collect()] == [None, [101, 102], [304, 306]]
 
-
-def test_nonlocalized_aggregation_also_rejects_scans():
-    import pytest
-    table = hl.range_table(3)
-    with pytest.raises(ValueError, match="scan expressions cannot"):
-        table.aggregate(hl.scan.count(), _localize=False)
 
 
 def test_grouped_take_of_scan_annotated_row():
@@ -432,3 +406,77 @@ def test_grouped_take_of_scan_annotated_row():
         assert hl.range_table(0, partitions).group_by(g=hl.int32(0)).aggregate(
             data=hl.agg.take(hl.int32(1), 1)[0]
         ).collect() == []
+
+
+def test_scan_marking_preserves_shared_arguments_and_closed_literal_payloads():
+    table = hl.range_table(4, n_partitions=3)
+    shared = table.idx
+    for _ in range(10):
+        shared = shared + shared
+    initial = hl.Struct(op='aggregate', function='sum', options=hl.Struct(__vail_scan=False))
+    value = hl.scan.filter(True, hl.scan.fold(initial, lambda state: state, lambda left, right: left))
+    rows = table.annotate(total=hl.scan.sum(shared), state=value).collect()
+    assert [row.total for row in rows] == [0, 0, 1024, 3072]
+    assert [row.state for row in rows] == [initial] * 4
+
+
+def test_scan_configuration_is_lazy_and_reread_on_each_action(tmp_path):
+    path, moved = tmp_path / 'configuration', tmp_path / 'moved'
+    hl.range_table(0).annotate_globals(bins=2).write(path)
+    captured = hl.read_table(path).index_globals()
+    table = hl.range_table(4, n_partitions=3)
+    path.rename(moved)
+    scanned = table.annotate(hist=hl.scan.hist(table.idx, 0., 4., captured.bins))
+    assert scanned.head(0).collect() == []
+    with pytest.raises(FileNotFoundError):
+        scanned.collect()
+    moved.rename(path)
+    assert [row.hist.bin_freq for row in scanned.collect()] == [[0, 0], [1, 0], [2, 0], [2, 1]]
+    path.rename(moved)
+    with pytest.raises(FileNotFoundError):
+        scanned.collect()
+
+
+def test_scan_fold_configuration_preserves_nested_call_metadata():
+    initial = hl.Struct(calls=[hl.Call([0, 1], phased=True), None], label='seed')
+    table = hl.range_table(4, n_partitions=3).annotate_globals(initial=initial)
+    expression = hl.scan.fold(table.initial, lambda state: state, lambda left, right: left)
+    assert [row.prefix for row in table.annotate(prefix=expression).collect()] == [initial] * 4
+
+
+@pytest.mark.parametrize('n,partitions', [(10000, 3), (100000, 64)])
+@pytest.mark.parametrize('reducer', ['sum', 'mean'])
+def test_scan_batch_crossing_partitions_preserve_source_order_and_boundaries(n, partitions, reducer):
+    import math
+    table = hl.range_table(n, n_partitions=partitions).key_by()
+    table = table.annotate(x=table.idx % 13 - 6)
+    expression = getattr(hl.scan, reducer)(table.x)
+    scanned = table.annotate(prefix=expression)
+    expected = []
+    total = 0
+    for i in range(n):
+        expected.append(total if reducer == 'sum' else total / i if i else math.nan)
+        total += i % 13 - 6
+    def check(rows, start):
+        for i, row in enumerate(rows, start):
+            assert row.idx == i
+            assert row.x == i % 13 - 6
+            if math.isnan(expected[i]):
+                assert math.isnan(row.prefix)
+            else:
+                assert row.prefix == pytest.approx(expected[i], rel=1e-11, abs=1e-11)
+    for _ in range(2):
+        rows = scanned.collect()
+        assert len(rows) == n
+        check(rows, 0)
+        check(scanned.head(8).collect(), 0)
+        check(scanned.tail(3).collect(), n - 3)
+
+
+def test_scan_tail_handles_oversized_limits_without_ordinal_overflow():
+    table = hl.range_table(5, n_partitions=3)
+    scanned = table.annotate(prefix=hl.scan.sum(table.idx))
+    expected = [(i, i*(i-1)//2) for i in range(5)]
+    for limit in [0, 1, 5, 6, 2**63 - 1, 2**64 - 1]:
+        rows = scanned.tail(limit).collect()
+        assert [(row.idx, row.prefix) for row in rows] == (expected[-limit:] if limit else [])

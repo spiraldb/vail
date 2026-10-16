@@ -411,7 +411,7 @@ fn table_has_scan(table: &TableRef) -> bool {
 }
 
 fn lower_scan_tail(table: &TableRef, child: &TableRef, n: usize) -> Result<LogicalPlan> {
-    use datafusion_expr::{Operator, WindowFunctionDefinition, expr::WindowFunction};
+    use datafusion_expr::{WindowFunctionDefinition, expr::WindowFunction};
 
     let input = ordered(lower_inner(child)?);
     let used = input
@@ -432,13 +432,6 @@ fn lower_scan_tail(table: &TableRef, child: &TableRef, n: usize) -> Result<Logic
         return Ok(LogicalPlanBuilder::from(input).limit(0, Some(0))?.build()?);
     }
 
-    let mut ordinal = WindowFunction::new(
-        WindowFunctionDefinition::WindowUDF(
-            datafusion_functions_window::row_number::row_number_udwf(),
-        ),
-        vec![],
-    );
-    ordinal.params.window_frame = WindowFrame::new(Some(true));
     let mut total = WindowFunction::new(
         WindowFunctionDefinition::AggregateUDF(datafusion_functions_aggregate::count::count_udaf()),
         vec![datafusion_expr::lit(1u64)],
@@ -446,19 +439,17 @@ fn lower_scan_tail(table: &TableRef, child: &TableRef, n: usize) -> Result<Logic
     let mut full_rows = WindowFrame::new(Some(true));
     full_rows.end_bound = WindowFrameBound::Following(ScalarValue::UInt64(None));
     total.params.window_frame = full_rows;
-    let numbered = LogicalPlanBuilder::from(input)
-        .window(vec![
-            Expr::WindowFunction(Box::new(ordinal)).alias(&ordinal_name),
-            Expr::WindowFunction(Box::new(total)).alias(&total_name),
-        ])?
+    let numbered = crate::scan_ordinal::numbered(input, &ordinal_name)?;
+    let numbered = LogicalPlanBuilder::from(numbered)
+        .window(vec![Expr::WindowFunction(Box::new(total)).alias(&total_name)])?
         .build()?;
-    // ordinal + n > total includes every row when n exceeds the table size
-    // and otherwise selects precisely the final n rows.
-    let keep = Expr::BinaryExpr(datafusion_expr::expr::BinaryExpr::new(
-        Box::new(datafusion_expr::col(&ordinal_name) + datafusion_expr::lit(n as u64)),
-        Operator::Gt,
-        Box::new(datafusion_expr::col(&total_name)),
-    ));
+    // Avoid ordinal+n overflow for oversized tails. CASE only evaluates
+    // total-n when n is smaller than the defined, nonnegative row count.
+    let total = Expr::Cast(datafusion_expr::expr::Cast::new(
+        Box::new(datafusion_expr::col(&total_name)), arrow_schema::DataType::UInt64));
+    let limit = datafusion_expr::lit(n as u64);
+    let keep = datafusion_expr::when(total.clone().lt_eq(limit.clone()),datafusion_expr::lit(true))
+        .otherwise(datafusion_expr::col(&ordinal_name).gt_eq(total-limit))?;
     let filtered = LogicalPlanBuilder::from(numbered)
         .filter(keep)?
         .sort(vec![datafusion_expr::col(&ordinal_name).sort(true, true)])?
@@ -1192,18 +1183,19 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 crate::partitioned::ProtectedRangeRepartitionExec::new(input.clone(), ranges)?,
             )));
         }
+        if let Some(node) = node.as_any().downcast_ref::<crate::scan_ordinal::SourceOrdinal>() {
+            return Ok(Some(node.physical(physical_inputs[0].clone())?));
+        }
         if let Some(node) = node.as_any().downcast_ref::<OrderedNode>() {
-            let input = &physical_inputs[0];
-            if node.freeze {
-                let input = DefaultPhysicalPlanner::default().optimize_physical_plan(
-                    input.clone(),
-                    session,
-                    |_, _| {},
-                )?;
-                return Ok(Some(Arc::new(crate::rng_context::RngContextExec::new(
-                    input,
-                ))));
-            }
+            // Optimize the producer once, then keep the shared DAG opaque to
+            // tree rewrites of its partition views. Otherwise P views can each
+            // receive a full rewritten producer (including its P source lanes).
+            // The context preserves parallel execution and owns replay state.
+            let input = DefaultPhysicalPlanner::default().optimize_physical_plan(
+                physical_inputs[0].clone(), session, |_, _| {},
+            )?;
+            let input: PhysicalPlan = Arc::new(crate::rng_context::RngContextExec::new(input));
+            if node.freeze { return Ok(Some(input)); }
             let parts = (0..input.properties().output_partitioning().partition_count())
                 .map(|p| {
                     Arc::new(crate::partitioned::PartitionViewExec::new(input.clone(), p))

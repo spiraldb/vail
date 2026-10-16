@@ -946,6 +946,10 @@ impl NativeExpr {
         let uid=uid.into_iter().map(|v|v.inner.clone()).collect::<Vec<_>>();
         Ok(Self{inner:Arc::new(crate::random_binding::context(&self.inner,&uid)?)})
     }
+    fn mark_scan(&self) -> PyResult<Self> {
+        crate::scan_mark::mark(&self.inner).map(Self::from_expr)
+            .ok_or_else(|| value_error("scan requires at least one built-in aggregate"))
+    }
     fn validate_initializer(&self, function: &str) -> PyResult<()> {
         let mut seen=std::collections::HashSet::new();
         fn invalid(node: &Expr, seen: &mut std::collections::HashSet<*const Expr>) -> bool {

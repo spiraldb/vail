@@ -132,6 +132,11 @@ fn required_ordering(input: &PhysicalPlan) -> Option<OrderingRequirements> {
         .map(OrderingRequirements::from)
 }
 impl PreparedTable {
+    /// Start one execution action with fresh operator caches. Share this plan
+    /// across that action's partitions; call again before replaying the source.
+    pub fn start_action(&self) -> Result<PhysicalPlan> {
+        Ok(reset_plan_states(self.physical_plan())?)
+    }
     pub fn physical_plan(&self) -> PhysicalPlan {
         Arc::new(PartitionSetExec::new(
             self.parts.clone(),

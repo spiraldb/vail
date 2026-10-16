@@ -642,7 +642,35 @@
         "vail/docs/reviews/core-aggregate-cost.json"
       ],
       "native_sha256": "c81e59f12905e820bc570f7df3a39d9ad09c9e67902f76feecf9aac6550b6211",
-      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests."
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "0af8237e"
+    },
+    {
+      "module": "Vail scan APIs, state/scope adapters, initialization and ordered table callers",
+      "reviewed_base": "0af8237e",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "memoized typed scan marking over borrowed original DAG nodes with literal payload and owner metadata preservation",
+        "validate unary normalized aggregate signature and exact composition/transform/indexed/state schemas at construction and runtime boundaries",
+        "reject missing packed parent structs and retain nullable child semantics",
+        "retain scalar carry snapshots without broadcasting, borrow all-defined contiguous exploded spans, and remove name/layout-based generic sum shortcut",
+        "memoize scan discovery/replacement with exact borrowed node and filter-context identities; bind nested filter predicate once",
+        "define fresh prepared action ownership and reset hidden initialized scan cache; metadata-preserving initializer scalar extraction",
+        "replace private accumulator/state/plan/partition/helper/atomic-builder tests with public factory/results/errors/laziness/prepared replay; remove unused private scan helpers",
+        "freeze source row ordinals before window sorting/hash repartition to preserve batch-crossing logical row order for native/generic prefix scans and tail",
+        "avoid ordinal+n overflow for oversized scan tail limits via guarded subtraction",
+        "optimize shared ordered producer once and retain opaque action-local ownership across partition views, eliminating partition-quadratic optimizer expansion without serializing producer execution"
+      ],
+      "validation": [
+        "346 public Python tests passed including aggregates/scans/RNG/queries/table+interval joins;2 external Hail inventory checks deselected because checkout absent",
+        "172 Rust tests passed:complete cargo test -p vail-execution -p vail-table, including7publicArrow scope/signature/state tests and1preparedaction replay integration",
+        "46freshsubprocess resource cases:allcurrent action results verified;originalbaseline ordering failures retained;independent pre-sharing/current row/partition/wide scaling demonstrates producer-sharing fix"
+      ],
+      "reports": [
+        "vail/docs/reviews/scan-cost.json"
+      ],
+      "native_sha256": "ac69b07b19f7af4cbe08e471f7ce47dd1ff7e2f0e332f6ca510536b8f5a55e9f",
+      "review": "Reviewer final source/test/report acceptance including resource follow-up; reviewer ran no builds/tests."
     }
   ],
   "source_inventory": [
@@ -678,6 +706,7 @@
     "vail/crates/vail-execution/src/string_kernels.rs",
     "vail/crates/vail-execution/src/variant_kernels.rs",
     "vail/crates/vail-execution/tests/core_aggregates.rs",
+    "vail/crates/vail-execution/tests/scan_scopes.rs",
     "vail/crates/vail-ordering/src/call.rs",
     "vail/crates/vail-ordering/src/lib.rs",
     "vail/crates/vail-python/src/arrow_memory.rs",
@@ -687,6 +716,7 @@
     "vail/crates/vail-python/src/lib.rs",
     "vail/crates/vail-python/src/native_ir.rs",
     "vail/crates/vail-python/src/random_binding.rs",
+    "vail/crates/vail-python/src/scan_mark.rs",
     "vail/crates/vail-storage/src/fragment_index.rs",
     "vail/crates/vail-storage/src/globals.rs",
     "vail/crates/vail-storage/src/lib.rs",
@@ -722,11 +752,13 @@
     "vail/crates/vail-table/src/provider.rs",
     "vail/crates/vail-table/src/range_lookup.rs",
     "vail/crates/vail-table/src/rng_context.rs",
+    "vail/crates/vail-table/src/scan_ordinal.rs",
     "vail/crates/vail-table/src/text_export.rs",
     "vail/crates/vail-table/src/text_schema.rs",
     "vail/crates/vail-table/src/vcf_export.rs",
     "vail/crates/vail-table/src/vcf_source.rs",
     "vail/crates/vail-table/src/zip_join.rs",
+    "vail/crates/vail-table/tests/scan_replay.rs",
     "vail/crates/vail-vcf/src/lib.rs",
     "vail/python/tests/test_core_aggregate_kernels.py",
     "vail/python/vail/__init__.py",

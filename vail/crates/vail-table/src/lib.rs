@@ -4,6 +4,7 @@ pub mod aggregation;
 pub mod arrow_batches;
 use arrow_batches::ArrowBatches;
 pub mod comparison;
+mod scan_ordinal;
 mod conditional_globals;
 mod deferred_logical;
 pub mod globals;

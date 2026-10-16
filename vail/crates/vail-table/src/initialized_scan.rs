@@ -85,6 +85,15 @@ impl ExecutionPlan for InitializedScanExec {
             self.build.clone(),
         ))
     }
+    // Physical plans are shared only within one action. Prepared execution
+    // resets this node before replay, so configuration is read anew per action.
+    fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
+        Ok(initialized_scan(
+            self.initializers.clone(),
+            self.template.clone(),
+            self.build.clone(),
+        ))
+    }
     fn execute(
         &self,
         partition: usize,
@@ -115,138 +124,5 @@ impl ExecutionPlan for InitializedScanExec {
                 while let Some(batch) = stream.try_next().await? { yield batch; }
             },
         )))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_array::{Int32Array, RecordBatch};
-    use arrow_schema::{DataType, Field, Schema};
-    use datafusion_datasource::memory::MemorySourceConfig;
-    use std::sync::atomic::{AtomicUsize, Ordering};
-
-    fn schema(name: &str) -> Arc<Schema> {
-        Arc::new(Schema::new(vec![Field::new(name, DataType::Int32, false)]))
-    }
-
-    fn batch(schema: Arc<Schema>, values: &[i32]) -> RecordBatch {
-        RecordBatch::try_new(schema, vec![Arc::new(Int32Array::from(values.to_vec()))]).unwrap()
-    }
-
-    fn source(partitions: Vec<Vec<RecordBatch>>, schema: Arc<Schema>) -> PhysicalPlan {
-        MemorySourceConfig::try_new_exec(&partitions, schema, None).unwrap()
-    }
-
-    fn builder(calls: Arc<AtomicUsize>, output: PhysicalPlan) -> Build {
-        Arc::new(move |_| {
-            calls.fetch_add(1, Ordering::SeqCst);
-            let output = output.clone();
-            Box::pin(async move { Ok(output) })
-        })
-    }
-
-    #[tokio::test]
-    async fn initializes_lazily_and_only_once_for_concurrent_partitions() {
-        use futures::TryStreamExt;
-
-        let init_schema = schema("init");
-        let output_schema = schema("value");
-        let initializers = source(vec![vec![batch(init_schema.clone(), &[7])]], init_schema);
-        let template = source(vec![vec![], vec![]], output_schema.clone());
-        let output = source(
-            vec![
-                vec![batch(output_schema.clone(), &[1])],
-                vec![batch(output_schema.clone(), &[2])],
-            ],
-            output_schema,
-        );
-        let calls = Arc::new(AtomicUsize::new(0));
-        let plan = initialized_scan(initializers, template, builder(calls.clone(), output));
-        let context = Arc::new(TaskContext::default());
-
-        let left = plan.execute(0, context.clone()).unwrap();
-        let right = plan.execute(1, context).unwrap();
-        assert_eq!(
-            calls.load(Ordering::SeqCst),
-            0,
-            "execute must not initialize the scan"
-        );
-        let (left, right) =
-            tokio::join!(left.try_collect::<Vec<_>>(), right.try_collect::<Vec<_>>());
-        assert_eq!(
-            left.unwrap()[0]
-                .column(0)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap()
-                .value(0),
-            1
-        );
-        assert_eq!(
-            right.unwrap()[0]
-                .column(0)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap()
-                .value(0),
-            2
-        );
-        assert_eq!(calls.load(Ordering::SeqCst), 1);
-    }
-
-    #[tokio::test]
-    async fn rejects_non_singleton_initializer() {
-        use futures::TryStreamExt;
-
-        let init_schema = schema("init");
-        let output_schema = schema("value");
-        let initializers = source(vec![vec![batch(init_schema.clone(), &[1, 2])]], init_schema);
-        let template = source(vec![vec![]], output_schema.clone());
-        let output = source(vec![vec![]], output_schema);
-        let plan = initialized_scan(
-            initializers,
-            template,
-            builder(Arc::new(AtomicUsize::new(0)), output),
-        );
-        assert!(
-            plan.execute(0, Arc::new(TaskContext::default()))
-                .unwrap()
-                .try_collect::<Vec<_>>()
-                .await
-                .unwrap_err()
-                .to_string()
-                .contains("exactly one row")
-        );
-    }
-
-    #[tokio::test]
-    async fn rejects_initialized_schema_or_partition_count_mismatch() {
-        use futures::TryStreamExt;
-
-        for (output_schema, partitions, expected) in [
-            (schema("wrong"), 2, "schema or partition count"),
-            (schema("value"), 1, "schema or partition count"),
-        ] {
-            let init_schema = schema("init");
-            let template_schema = schema("value");
-            let initializers = source(vec![vec![batch(init_schema.clone(), &[1])]], init_schema);
-            let template = source(vec![vec![], vec![]], template_schema);
-            let output = source((0..partitions).map(|_| vec![]).collect(), output_schema);
-            let plan = initialized_scan(
-                initializers,
-                template,
-                builder(Arc::new(AtomicUsize::new(0)), output),
-            );
-            assert!(
-                plan.execute(0, Arc::new(TaskContext::default()))
-                    .unwrap()
-                    .try_collect::<Vec<_>>()
-                    .await
-                    .unwrap_err()
-                    .to_string()
-                    .contains(expected)
-            );
-        }
     }
 }

@@ -8,12 +8,14 @@ use datafusion_expr::{
     Expr, ExprSchemable, JoinType, LogicalPlan, LogicalPlanBuilder, WindowFrame, WindowFrameBound,
     WindowFrameUnits, WindowFunctionDefinition, expr::WindowFunction, expr_fn::ExprFunctionExt,
 };
-use std::{collections::HashSet, sync::Arc};
+use std::{
+    collections::{HashMap, HashSet},
+    sync::Arc,
+};
 use vail_execution::expressions::Expr as VExpr;
 
 #[derive(Clone)]
 struct Leaf {
-    expr: VExpr,
     filter: Option<VExpr>,
     local: String,
     total: String,
@@ -26,25 +28,43 @@ struct Leaf {
 }
 
 fn complex_scope(expr: &VExpr) -> bool {
-    let mut found = false;
-    expr.visit(&mut |node| {
-        found |= matches!(node, VExpr::AggGroupBy { .. } | VExpr::AggArray { .. })
-    });
-    found
-}
-
-fn normalize_explodes(expr: &VExpr) -> Result<VExpr> {
-    if let VExpr::AggExplode {
-        value,
-        parameter,
-        body,
-    } = expr
-    {
-        let body = normalize_explodes(body)?;
-        return explode_leaves(&body, value, parameter, None);
+    fn visit(node: &VExpr, seen: &mut HashSet<usize>) -> bool {
+        if !seen.insert(node as *const VExpr as usize) {
+            return false;
+        }
+        if matches!(node, VExpr::AggGroupBy { .. } | VExpr::AggArray { .. }) {
+            return true;
+        }
+        let mut found = false;
+        node.visit_children(&mut |child| {
+            if !found {
+                found = visit(child, seen);
+            }
+        });
+        found
     }
-    expr.try_map_children(&mut |child: &VExpr| normalize_explodes(child))
-        .map_err(Into::into)
+    visit(expr, &mut HashSet::new())
+}
+fn normalize_explodes(expr: &VExpr) -> Result<VExpr> {
+    fn visit(node: &VExpr, memo: &mut HashMap<usize, VExpr>) -> Result<VExpr> {
+        let id = node as *const VExpr as usize;
+        if let Some(value) = memo.get(&id) {
+            return Ok(value.clone());
+        }
+        let result = if let VExpr::AggExplode {
+            value,
+            parameter,
+            body,
+        } = node
+        {
+            explode_leaves(&visit(body, memo)?, value, parameter, None)?
+        } else {
+            node.try_map_original_children(|child| visit(child, memo))?
+        };
+        memo.insert(id, result.clone());
+        Ok(result)
+    }
+    visit(expr, &mut HashMap::new())
 }
 
 fn explode_leaves(
@@ -125,56 +145,105 @@ fn marked_scan(expr: &VExpr) -> bool {
         if options.get("__vail_scan").and_then(serde_json::Value::as_bool) == Some(true))
 }
 
-fn collect_scans(
-    expr: &VExpr,
-    filter: Option<VExpr>,
-    leaves: &mut Vec<(VExpr, Option<VExpr>)>,
-) -> std::result::Result<(), vail_execution::expressions::ExprError> {
-    if complex_scope(expr)
-        && expr.contains_scan()
-        && matches!(
-            expr,
-            VExpr::AggGroupBy { .. }
-                | VExpr::AggArray { .. }
-                | VExpr::AggExplode { .. }
-                | VExpr::AggFilter { .. }
-        )
-    {
-        let leaf = (expr.clone(), filter);
-        if !leaves.contains(&leaf) {
-            leaves.push(leaf);
+// Identities refer to original borrowed nodes in `normalized`, which outlives
+// collection and replacement. Pointer equality proves identity; no hash digest
+// is treated as structural equality. Different nodes may have separate states.
+#[derive(Default)]
+struct ScanNodes {
+    summaries: HashMap<usize, (bool, bool)>,
+    visited: HashSet<(usize, usize)>,
+    filters: Vec<Option<VExpr>>,
+    filter_ids: HashMap<(usize, usize), usize>,
+    leaf_ids: HashMap<(usize, usize), usize>,
+    leaves: Vec<(VExpr, Option<VExpr>)>,
+}
+impl ScanNodes {
+    fn summary(&mut self, node: &VExpr) -> (bool, bool) {
+        let id = node as *const VExpr as usize;
+        if let Some(value) = self.summaries.get(&id) {
+            return *value;
         }
-        return Ok(());
+        let mut result = (
+            matches!(node, VExpr::AggGroupBy { .. } | VExpr::AggArray { .. }),
+            marked_scan(node),
+        );
+        node.visit_children(&mut |child| {
+            let value = self.summary(child);
+            result.0 |= value.0;
+            result.1 |= value.1;
+        });
+        self.summaries.insert(id, result);
+        result
     }
-    if let VExpr::AggFilter { predicate, body } = expr {
-        let combined = match filter {
+    fn filter_id(&mut self, parent: usize, predicate: &VExpr) -> usize {
+        let key = (parent, predicate as *const VExpr as usize);
+        if let Some(value) = self.filter_ids.get(&key) {
+            return *value;
+        }
+        let combined = match &self.filters[parent] {
             Some(previous) => VExpr::Binary {
                 operator: vail_execution::expressions::BinaryOperator::And,
-                left: Arc::new(previous),
-                right: predicate.clone(),
+                left: Arc::new(previous.clone()),
+                right: Arc::new(predicate.clone()),
             },
-            None => (**predicate).clone(),
+            None => predicate.clone(),
         };
-        return collect_scans(body, Some(combined), leaves);
+        let id = self.filters.len();
+        self.filters.push(Some(combined));
+        self.filter_ids.insert(key, id);
+        id
     }
-    if marked_scan(expr) {
-        let leaf = (expr.clone(), filter);
-        if !leaves.contains(&leaf) {
-            leaves.push(leaf);
+    fn collect(&mut self, node: &VExpr, filter: usize) {
+        let key = (node as *const VExpr as usize, filter);
+        if !self.visited.insert(key) {
+            return;
         }
-        return Ok(());
-    }
-    let mut nested_error = None;
-    expr.try_map_children(|child| {
-        if let Err(error) = collect_scans(child, filter.clone(), leaves) {
-            nested_error = Some(error);
+        let (complex, scan) = self.summary(node);
+        if marked_scan(node)
+            || (complex
+                && scan
+                && matches!(
+                    node,
+                    VExpr::AggGroupBy { .. }
+                        | VExpr::AggArray { .. }
+                        | VExpr::AggExplode { .. }
+                        | VExpr::AggFilter { .. }
+                ))
+        {
+            self.leaf_ids.insert(key, self.leaves.len());
+            self.leaves
+                .push((node.clone(), self.filters[filter].clone()));
+            return;
         }
-        Ok::<_, vail_execution::expressions::ExprError>(child.clone())
-    })?;
-    if let Some(error) = nested_error {
-        return Err(error);
+        if let VExpr::AggFilter { predicate, body } = node {
+            let filter = self.filter_id(filter, predicate);
+            self.collect(body, filter);
+            return;
+        }
+        node.visit_children(&mut |child| self.collect(child, filter));
     }
-    Ok(())
+    fn replace(
+        &mut self,
+        node: &VExpr,
+        filter: usize,
+        leaves: &[Leaf],
+        memo: &mut HashMap<(usize, usize), VExpr>,
+    ) -> Result<VExpr> {
+        let key = (node as *const VExpr as usize, filter);
+        if let Some(value) = memo.get(&key) {
+            return Ok(value.clone());
+        }
+        let value = if let Some(index) = self.leaf_ids.get(&key) {
+            leaves[*index].finish.clone()
+        } else if let VExpr::AggFilter { predicate, body } = node {
+            let filter = self.filter_id(filter, predicate);
+            self.replace(body, filter, leaves, memo)?
+        } else {
+            node.try_map_original_children(|child| self.replace(child, filter, leaves, memo))?
+        };
+        memo.insert(key, value.clone());
+        Ok(value)
+    }
 }
 
 fn unique(used: &mut HashSet<String>, base: &str) -> String {
@@ -295,19 +364,7 @@ fn lower_native_prefix(
     let part = column(&input, part_index);
     let part_name = input.schema().field(part_index).name().clone();
     let ordinal_name = unique(&mut used, "__scan_native_ordinal");
-    let mut local_ordinal = WindowFunction::new(
-        WindowFunctionDefinition::WindowUDF(
-            datafusion_functions_window::row_number::row_number_udwf(),
-        ),
-        vec![],
-    );
-    local_ordinal.params.partition_by = vec![part.clone()];
-    local_ordinal.params.window_frame = WindowFrame::new(Some(true));
-    let mut local = LogicalPlanBuilder::from(input.clone())
-        .window(vec![
-            Expr::WindowFunction(Box::new(local_ordinal)).alias(&ordinal_name),
-        ])?
-        .build()?;
+    let mut local = crate::scan_ordinal::numbered(input.clone(), &ordinal_name)?;
 
     let mut local_windows = Vec::with_capacity(nodes.len());
     let mut local_names = Vec::with_capacity(nodes.len());
@@ -520,10 +577,12 @@ pub(crate) fn lower(
         })
         .collect::<Result<Vec<_>>>()?;
     let fields = normalized.as_slice();
-    let mut nodes = Vec::<(VExpr, Option<VExpr>)>::new();
+    let mut scans = ScanNodes::default();
+    scans.filters.push(None);
     for (_, expr) in fields {
-        collect_scans(expr, None, &mut nodes)?;
+        scans.collect(expr, 0);
     }
+    let nodes = std::mem::take(&mut scans.leaves);
     if nodes.is_empty() {
         return Ok(None);
     }
@@ -571,7 +630,6 @@ pub(crate) fn lower(
         node.visit(&mut |expr| array_scope |= matches!(expr, VExpr::AggArray { .. }));
         let validation = array_scope.then(|| unique(&mut used, &format!("__scan_validated_{i}")));
         leaves.push(Leaf {
-            expr: node,
             filter,
             local: unique(&mut used, &format!("__scan_local_{i}")),
             total: unique(&mut used, &format!("__scan_total_{i}")),
@@ -584,20 +642,8 @@ pub(crate) fn lower(
         });
     }
 
-    let mut local_ordinal = WindowFunction::new(
-        WindowFunctionDefinition::WindowUDF(
-            datafusion_functions_window::row_number::row_number_udwf(),
-        ),
-        vec![],
-    );
-    local_ordinal.params.partition_by = vec![part.clone()];
-    local_ordinal.params.window_frame = WindowFrame::new(Some(true));
     let ordinal_name = unique(&mut used, "__scan_local_ordinal");
-    let mut local = LogicalPlanBuilder::from(input.clone())
-        .window(vec![
-            Expr::WindowFunction(Box::new(local_ordinal)).alias(&ordinal_name),
-        ])?
-        .build()?;
+    let mut local = crate::scan_ordinal::numbered(input.clone(), &ordinal_name)?;
     let mut local_windows = Vec::with_capacity(leaves.len());
     for leaf in &leaves {
         let arg = vail_execution::logical_expr::lower_logical_with_bindings(
@@ -756,9 +802,15 @@ pub(crate) fn lower(
         part_name,
         table.known_n_partitions().unwrap_or(1).max(1),
     );
+    let mut replacement_memo = HashMap::new();
     let rewritten = fields
         .iter()
-        .map(|(name, expr)| Ok((name.clone(), replace_scans(expr, &leaves, None)?)))
+        .map(|(name, expr)| {
+            Ok((
+                name.clone(),
+                scans.replace(expr, 0, &leaves, &mut replacement_memo)?,
+            ))
+        })
         .collect::<Result<Vec<_>>>()?;
     let mut output = Vec::with_capacity(fields.len() + 1);
     for (name, expr) in &rewritten {
@@ -777,48 +829,6 @@ pub(crate) fn lower(
         .project(output)?
         .build()?;
     Ok(Some(output))
-}
-
-fn replace_scans(expr: &VExpr, leaves: &[Leaf], filter: Option<VExpr>) -> Result<VExpr> {
-    if let Some(leaf) = leaves
-        .iter()
-        .find(|leaf| leaf.expr == *expr && leaf.filter == filter)
-    {
-        return Ok(leaf.finish.clone());
-    }
-
-    if let VExpr::AggFilter { predicate, body } = expr {
-        let combined = match filter {
-            Some(previous) => VExpr::Binary {
-                operator: vail_execution::expressions::BinaryOperator::And,
-                left: Arc::new(previous),
-                right: predicate.clone(),
-            },
-            None => (**predicate).clone(),
-        };
-        return replace_scans(body, leaves, Some(combined));
-    }
-    if marked_scan(expr) {
-        let leaf = leaves
-            .iter()
-            .find(|leaf| leaf.expr == *expr && leaf.filter == filter)
-            .ok_or_else(|| TableError::Invalid("missing scan accumulator state".into()))?;
-        return Ok(leaf.finish.clone());
-    }
-    if matches!(
-        expr,
-        VExpr::AggFilter { .. }
-            | VExpr::AggExplode { .. }
-            | VExpr::AggGroupBy { .. }
-            | VExpr::AggArray { .. }
-            | VExpr::AggregateFold { .. }
-    ) {
-        return Err(TableError::Invalid(
-            "scan.filter, scan.explode, and nested scan combinators are unsupported".into(),
-        ));
-    }
-    expr.try_map_children(&mut |child: &VExpr| replace_scans(child, leaves, filter.clone()))
-        .map_err(Into::into)
 }
 
 #[derive(Debug, Clone)]
@@ -988,7 +998,8 @@ pub(crate) fn plan_initialized(
                         .iter()
                         .map(|(name, expr)| {
                             let expr = bind_configuration(expr, &mut |_, _| {
-                                let value = ScalarValue::try_from_array(batch.column(index), 0)?;
+                                let value =
+                                    vail_execution::expressions::scalar_at(batch.column(index), 0)?;
                                 index += 1;
                                 Ok(value)
                             })?;

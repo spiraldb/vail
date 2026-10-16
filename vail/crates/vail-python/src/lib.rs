@@ -1,3 +1,4 @@
+mod scan_mark;
 mod random_binding;
 mod collection_aggregate;
 mod input_binding;

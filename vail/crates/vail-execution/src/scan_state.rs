@@ -1,6 +1,6 @@
 //! Parallel scans expose and combine existing DataFusion accumulator states.
 //! These adapters do not implement aggregate algorithms.
-use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Int64Array, StructArray};
+use arrow_array::{Array, ArrayRef, StructArray};
 use arrow_schema::{DataType, Field, FieldRef, Fields, Schema};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::function::{AccumulatorArgs, StateFieldsArgs};
@@ -25,12 +25,30 @@ pub struct ScanState {
 }
 impl ScanState {
     pub fn new(aggregate: Arc<AggregateUDF>, inputs: Vec<DataType>) -> Result<Self> {
+        if inputs.len() != 1 {
+            return Err(DataFusionError::Plan(
+                "scan states require exactly one packed input".into(),
+            ));
+        }
         let output = aggregate.return_type(&inputs)?;
         let input_fields: Vec<FieldRef> = inputs
             .iter()
             .enumerate()
             .map(|(i, t)| Arc::new(Field::new(format!("input{i}"), t.clone(), true)))
             .collect();
+        let coerced = datafusion_expr::type_coercion::functions::fields_with_udf(
+            &input_fields,
+            aggregate.as_ref(),
+        )?;
+        if coerced
+            .iter()
+            .map(|field| field.data_type())
+            .ne(inputs.iter())
+        {
+            return Err(DataFusionError::Plan(
+                "scan input must already match the normalized aggregate signature".into(),
+            ));
+        }
         let fields = aggregate.state_fields(StateFieldsArgs {
             name: "scan",
             input_fields: &input_fields,
@@ -65,6 +83,11 @@ impl ScanState {
         }))
     }
     pub fn finish_states(&self, states: &StructArray) -> Result<ArrayRef> {
+        if states.fields() != &self.fields {
+            return Err(DataFusionError::Execution(
+                "scan state schema mismatch".into(),
+            ));
+        }
         let mut values = Vec::with_capacity(states.len());
         for row in 0..states.len() {
             let mut accumulator = self.accumulator()?;
@@ -160,12 +183,6 @@ impl ScanState {
     }
     fn finisher(&self, validation: bool) -> Arc<ScalarUDF> {
         let descriptor = self.clone();
-        // Sum state has the compact `(non_null_count, sum)` layout used by
-        // HailAccumulator. Combining the sum columns is associative with the
-        // accumulator merge order, and lets Arrow process an entire batch.
-        // Other reducers keep the generic accumulator-based path below.
-        let sum_fast_path =
-            !validation && self.aggregate.name() == "sum" && is_hail_sum_state(self);
         let name = format!(
             "vail_scan_finish_{}_{}_{}",
             self.aggregate.name(),
@@ -178,25 +195,26 @@ impl ScanState {
             self.output.clone(),
             Volatility::Immutable,
             Arc::new(move |args| {
-                let arrays = ColumnarValue::values_to_arrays(args)?;
-                let [carry, local] = &arrays[..2] else {
+                if args.len() != if validation { 3 } else { 2 } {
                     return Err(DataFusionError::Execution(
-                        "scan finalize requires carry and local states".into(),
+                        "scan finalize argument count mismatch".into(),
                     ));
-                };
-                let carry = as_struct(carry)?;
-                let local = as_struct(local)?;
-                if sum_fast_path {
-                    return Ok(ColumnarValue::Array(finish_sum_states(
-                        carry,
-                        local,
-                        &descriptor.output,
-                    )?));
                 }
+                let rows = args
+                    .iter()
+                    .filter_map(|value| match value {
+                        ColumnarValue::Array(array) => Some(array.len()),
+                        _ => None,
+                    })
+                    .next()
+                    .unwrap_or(1);
+                let carry = StateRows::new(&args[0], rows, &descriptor.fields)?;
+                let local = StateRows::new(&args[1], rows, &descriptor.fields)?;
                 Ok(ColumnarValue::Array(finish_generic_states(
                     &descriptor,
-                    carry,
-                    local,
+                    &carry,
+                    &local,
+                    rows,
                 )?))
             }),
         ))
@@ -209,84 +227,60 @@ fn as_struct(array: &ArrayRef) -> Result<&StructArray> {
         .ok_or_else(|| DataFusionError::Execution("scan state must be an Arrow struct".into()))
 }
 
-fn is_hail_sum_state(scan: &ScanState) -> bool {
-    matches!(
-        scan.inputs.as_slice(),
-        [DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64]
-    ) && scan.fields.len() == 2
-        && scan.fields[0].data_type() == &DataType::Int64
-        && scan.fields[1].data_type() == &scan.output
-        && matches!(scan.output, DataType::Int64 | DataType::Float64)
+// Scalar carry snapshots remain one row; each output borrows that same snapshot.
+struct StateRows {
+    array: Arc<StructArray>,
+    broadcast: bool,
 }
-
-fn finish_sum_states(
-    carry: &StructArray,
-    local: &StructArray,
-    output: &DataType,
-) -> Result<ArrayRef> {
-    let carry_sum = sum_state_values(carry, output)?;
-    let local_sum = sum_state_values(local, output)?;
-    Ok(match output {
-        // Hail's integer sum explicitly wraps at int64 boundaries.
-        DataType::Int64 => arrow_arith::numeric::add_wrapping(&carry_sum, &local_sum)?,
-        DataType::Float64 => arrow_arith::numeric::add(&carry_sum, &local_sum)?,
-        other => {
-            return Err(DataFusionError::Execution(format!(
-                "unsupported sum scan output type {other:?}"
-            )));
+impl StateRows {
+    fn new(value: &ColumnarValue, rows: usize, fields: &Fields) -> Result<Self> {
+        let (array, broadcast) = match value {
+            ColumnarValue::Scalar(ScalarValue::Struct(array)) => (array.clone(), true),
+            ColumnarValue::Scalar(value) => {
+                let array = value.to_array_of_size(1)?;
+                (Arc::new(as_struct(&array)?.clone()), true)
+            }
+            ColumnarValue::Array(array) => (Arc::new(as_struct(array)?.clone()), false),
+        };
+        if array.fields() != fields || array.len() != if broadcast { 1 } else { rows } {
+            return Err(DataFusionError::Execution(
+                "scan state schema or row count mismatch".into(),
+            ));
         }
-    })
+        Ok(Self { array, broadcast })
+    }
+    fn merge_row(&self, accumulator: &mut dyn Accumulator, row: usize) -> Result<()> {
+        let row = if self.broadcast { 0 } else { row };
+        if self.array.is_valid(row) {
+            let columns = self
+                .array
+                .columns()
+                .iter()
+                .map(|column| column.slice(row, 1))
+                .collect::<Vec<_>>();
+            accumulator.merge_batch(&columns)?;
+        }
+        Ok(())
+    }
 }
-
 fn finish_generic_states(
     descriptor: &ScanState,
-    carry: &StructArray,
-    local: &StructArray,
+    carry: &StateRows,
+    local: &StateRows,
+    rows: usize,
 ) -> Result<ArrayRef> {
-    let mut values = Vec::with_capacity(carry.len());
-    for row in 0..carry.len() {
+    let mut values = Vec::with_capacity(rows);
+    for row in 0..rows {
         let mut accumulator = descriptor.accumulator()?;
-        for state in [carry, local] {
-            if state.is_valid(row) {
-                accumulator.merge_batch(
-                    &state
-                        .columns()
-                        .iter()
-                        .map(|column| column.slice(row, 1))
-                        .collect::<Vec<_>>(),
-                )?;
-            }
-        }
+        carry.merge_row(accumulator.as_mut(), row)?;
+        local.merge_row(accumulator.as_mut(), row)?;
         values.push(accumulator.evaluate()?);
     }
     if values.is_empty() {
         Ok(arrow_array::new_empty_array(&descriptor.output))
     } else {
-        Ok(ScalarValue::iter_to_array(values)?)
+        ScalarValue::iter_to_array(values)
     }
-}
-
-fn sum_state_values(state: &StructArray, output: &DataType) -> Result<ArrayRef> {
-    let values = state
-        .columns()
-        .get(1)
-        .ok_or_else(|| DataFusionError::Execution("sum scan state has no value column".into()))?;
-    if state.null_count() == 0 {
-        return Ok(values.clone());
-    }
-
-    let len = state.len();
-    let zeros: ArrayRef = match output {
-        DataType::Int64 => Arc::new(Int64Array::from(vec![Some(0); len])),
-        DataType::Float64 => Arc::new(Float64Array::from(vec![Some(0.0); len])),
-        other => {
-            return Err(DataFusionError::Execution(format!(
-                "unsupported sum scan output type {other:?}"
-            )));
-        }
-    };
-    let valid = BooleanArray::from((0..len).map(|row| state.is_valid(row)).collect::<Vec<_>>());
-    Ok(arrow_select::zip::zip(&valid, values, &zeros)?)
 }
 #[derive(Debug)]
 struct StateAccumulator {
@@ -348,151 +342,5 @@ impl Accumulator for StateAccumulator {
     }
     fn size(&self) -> usize {
         std::mem::size_of::<Self>() + self.inner.size()
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_array::{Float64Array, Int64Array};
-    use arrow_buffer::NullBuffer;
-
-    fn sum_state_array(
-        descriptor: &ScanState,
-        count: Vec<i64>,
-        values: ArrayRef,
-        valid: Option<Vec<bool>>,
-    ) -> Result<StructArray> {
-        let nulls = valid.map(NullBuffer::from);
-        Ok(StructArray::try_new(
-            descriptor.fields(),
-            vec![Arc::new(Int64Array::from(count)), values],
-            nulls,
-        )?)
-    }
-
-    #[test]
-    fn vectorized_sum_finish_matches_generic_for_int64_empty_and_null_states() -> Result<()> {
-        let descriptor = ScanState::new(
-            crate::aggregates::aggregate_udf("sum", Some(&DataType::Int64)).unwrap(),
-            vec![DataType::Int64],
-        )?;
-        // Includes an empty leading frame, signed overflow, all-null partition
-        // summaries (count/value both zero), and a null outer state.
-        let carry = sum_state_array(
-            &descriptor,
-            vec![0, 1, 0, 0],
-            Arc::new(Int64Array::from(vec![0, i64::MAX, 0, 0])),
-            Some(vec![true, true, true, false]),
-        )?;
-        let local = sum_state_array(
-            &descriptor,
-            vec![0, 1, 0, 0],
-            Arc::new(Int64Array::from(vec![0, 1, 0, 0])),
-            None,
-        )?;
-        let fast = finish_sum_states(&carry, &local, &descriptor.output)?;
-        let generic = finish_generic_states(&descriptor, &carry, &local)?;
-        assert_eq!(
-            fast.as_any().downcast_ref::<Int64Array>().unwrap().values(),
-            generic
-                .as_any()
-                .downcast_ref::<Int64Array>()
-                .unwrap()
-                .values()
-        );
-
-        let empty = sum_state_array(
-            &descriptor,
-            vec![],
-            Arc::new(Int64Array::from(Vec::<i64>::new())),
-            None,
-        )?;
-        assert_eq!(
-            finish_sum_states(&empty, &empty, &descriptor.output)?.len(),
-            finish_generic_states(&descriptor, &empty, &empty)?.len()
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn vectorized_sum_finish_matches_generic_for_float64() -> Result<()> {
-        let descriptor = ScanState::new(
-            crate::aggregates::aggregate_udf("sum", Some(&DataType::Float64)).unwrap(),
-            vec![DataType::Float64],
-        )?;
-        let carry = sum_state_array(
-            &descriptor,
-            vec![0, 1, 0],
-            Arc::new(Float64Array::from(vec![0.0, 1.5, 0.0])),
-            Some(vec![true, true, false]),
-        )?;
-        let local = sum_state_array(
-            &descriptor,
-            vec![0, 1, 0],
-            Arc::new(Float64Array::from(vec![0.0, -0.25, 0.0])),
-            None,
-        )?;
-        let fast = finish_sum_states(&carry, &local, &descriptor.output)?;
-        let generic = finish_generic_states(&descriptor, &carry, &local)?;
-        assert_eq!(
-            fast.as_any()
-                .downcast_ref::<Float64Array>()
-                .unwrap()
-                .values(),
-            generic
-                .as_any()
-                .downcast_ref::<Float64Array>()
-                .unwrap()
-                .values()
-        );
-        Ok(())
-    }
-
-    fn state(descriptor: &ScanState, values: Vec<Option<i64>>) -> Result<Vec<ScalarValue>> {
-        let mut accumulator = descriptor.accumulator()?;
-        accumulator.update_batch(&[Arc::new(Int64Array::from(values))])?;
-        accumulator.state()
-    }
-    #[test]
-    fn combines_unequal_missing_partitions_using_original_mean_state() -> Result<()> {
-        let descriptor = ScanState::new(
-            crate::aggregates::aggregate_udf("mean", Some(&DataType::Int64)).unwrap(),
-            vec![DataType::Int64],
-        )?;
-        let mut accumulator = descriptor.accumulator()?;
-        for partition in [vec![Some(2), None, Some(4)], vec![Some(12)]] {
-            let arrays = state(&descriptor, partition)?
-                .into_iter()
-                .map(|v| v.to_array_of_size(1))
-                .collect::<Result<Vec<_>>>()?;
-            accumulator.merge_batch(&arrays)?;
-        }
-        assert_eq!(accumulator.evaluate()?, ScalarValue::Float64(Some(6.0)));
-        Ok(())
-    }
-    #[test]
-    fn collect_state_preserves_partition_order_and_missing_elements() -> Result<()> {
-        let descriptor = ScanState::new(
-            crate::collect_aggregate::collect_udf(&DataType::Int64),
-            vec![DataType::Int64],
-        )?;
-        let mut accumulator = descriptor.accumulator()?;
-        for partition in [vec![Some(5), None], vec![], vec![Some(2)]] {
-            let arrays = state(&descriptor, partition)?
-                .into_iter()
-                .map(|v| v.to_array_of_size(1))
-                .collect::<Result<Vec<_>>>()?;
-            accumulator.merge_batch(&arrays)?;
-        }
-        let result = accumulator.evaluate()?;
-        let ScalarValue::List(list) = result else {
-            panic!("collect must return list");
-        };
-        assert_eq!(
-            list.value(0).as_ref(),
-            &Int64Array::from(vec![Some(5), None, Some(2)])
-        );
-        Ok(())
     }
 }

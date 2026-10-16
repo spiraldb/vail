@@ -213,8 +213,13 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     &BTreeMap::new(),
                 )?;
                 let packed_type = packed.data_type(&schema)?;
-                let DataType::Struct(packed_fields) = &packed_type else { return Err(TableError::Invalid("fold input must be a struct".into())); };
-                let selected = packed_fields.iter().map(|field|field.name()).collect::<std::collections::HashSet<_>>();
+                let DataType::Struct(packed_fields) = &packed_type else {
+                    return Err(TableError::Invalid("fold input must be a struct".into()));
+                };
+                let selected = packed_fields
+                    .iter()
+                    .map(|field| field.name())
+                    .collect::<std::collections::HashSet<_>>();
                 let mut fields = Vec::new();
                 for (i, field) in schema.fields().iter().enumerate() {
                     if !selected.contains(field.name()) {
@@ -231,11 +236,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     };
                     fields.push((field.name().clone(), value));
                 }
-                return Ok(Built::identity(
-                    udf,
-                    Expr::Struct { fields },
-                    packed_type,
-                ));
+                return Ok(Built::identity(udf, Expr::Struct { fields }, packed_type));
             }
             let argument = value.as_deref().cloned().unwrap_or(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
@@ -277,7 +278,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     child,
                     input.clone(),
                     vail_execution::scan_scopes::Transform::Explode,
-                );
+                )?;
                 Ok(Built::identity(udf, argument, input))
             } else {
                 Ok(Built::identity(udf, argument, input))
@@ -285,26 +286,34 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
         }
         Expr::AggFilter { predicate, body } => {
             let child = compose(body, context)?;
+            let parameter = symbol();
+            let selected = Expr::LambdaVariable {
+                name: parameter.clone(),
+            };
             let guarded = Expr::IfElse {
-                condition: predicate.clone(),
+                condition: Arc::new(selected.clone()),
                 consequent: Arc::new(child.argument.clone()),
                 alternate: Arc::new(Expr::Literal {
                     dtype: Type::from_arrow(&child.input)?,
                     value: serde_json::Value::Null,
                 }),
             };
-            let argument = Expr::Struct {
-                fields: vec![
-                    ("predicate".into(), (**predicate).clone()),
-                    ("value".into(), guarded),
-                ],
+            let packed = Arc::new(Expr::Struct {
+                fields: vec![("predicate".into(), selected), ("value".into(), guarded)],
+            });
+            let argument = Expr::Switch {
+                value: predicate.clone(),
+                parameter,
+                cases: Vec::new(),
+                default: packed.clone(),
+                missing: Some(packed),
             };
             let input = context.dtype(&argument)?.to_arrow()?;
             let udf = vail_execution::scan_scopes::transformed(
                 descriptor(&child)?,
                 input.clone(),
                 vail_execution::scan_scopes::Transform::Filter,
-            );
+            )?;
             let mut result = Built::identity(udf, argument, input);
             result.finish = child.finish(Expr::LambdaVariable {
                 name: result.parameter.clone(),
@@ -360,7 +369,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     descriptor(&child)?,
                     input.clone(),
                     vail_execution::scan_scopes::Transform::Explode,
-                )
+                )?
             };
             let mut result = Built::identity(udf, argument, input);
             let slot = Expr::LambdaVariable {
