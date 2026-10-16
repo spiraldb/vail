@@ -1,11 +1,10 @@
 //! Immutable, typed TableIR. Construction checks types and shares child nodes;
 //! actions lower expression IR and pull Arrow batches through the graph.
+mod action_parameters;
+mod diagnostics;
 pub mod aggregation;
 pub mod comparison;
-mod deferred_logical;
 pub mod globals;
-mod initialized_aggregate;
-mod initialized_scan;
 mod interval_read;
 mod join_interval;
 mod joins;
@@ -27,6 +26,7 @@ mod partitioning;
 pub mod plan;
 mod provider;
 mod text_export;
+pub mod vcf_export;
 pub mod text_schema;
 mod vcf_source;
 mod zip_join;
@@ -752,7 +752,7 @@ impl TableIR {
             return Err(TableError::Invalid("n_partitions must be positive".into()));
         }
         let mut invalid = None;
-        expression.visit(&mut |node| match node {
+        expression.visit_unique(&mut |node| match node {
             ScalarIR::Column { .. } => {
                 invalid = Some("expression parallelize cannot reference row columns")
             }
@@ -1671,27 +1671,7 @@ impl TableIR {
                 }
             }
             TableNode::Head { child, n } | TableNode::Tail { child, n } => {
-                if *n == 0 {
-                    return Some(vec![]);
-                }
-                let mut lengths = child.partition_rows()?;
-                let tail = matches!(self.node, TableNode::Tail { .. });
-                if tail {
-                    lengths.reverse();
-                }
-                let mut remaining = *n;
-                let mut kept = Vec::new();
-                for len in lengths {
-                    let len = len.min(remaining);
-                    if len > 0 {
-                        kept.push(len);
-                        remaining -= len;
-                    }
-                }
-                if tail {
-                    kept.reverse();
-                }
-                Some(kept)
+                Some(vec![if *n == 0 { 0 } else { child.known_count()?.min(*n) }])
             }
         }
     }
@@ -1812,8 +1792,10 @@ impl TableIR {
                     Some(1)
                 }
             }
-            TableNode::KeyBy { child, .. } => child.known_n_partitions(),
-            _ => Some(self.partition_rows()?.len()),
+            TableNode::KeyBy { child, keys } => {
+                if keys.is_empty() { child.known_n_partitions() } else { Some(1) }
+            }
+            TableNode::Head { .. } | TableNode::Tail { .. } => Some(1),
         }
     }
 
@@ -1828,7 +1810,7 @@ impl TableIR {
                 .enable_all()
                 .build()
                 .map_err(|e| TableError::Execution(e.to_string()))?;
-            let plan = runtime.block_on(logical::physical(&table))?;
+            let plan = runtime.block_on(logical::diagnostic(logical::lower(&table)?, logical::max_partitions(&table)))?;
             Ok(datafusion_physical_plan::displayable(plan.as_ref())
                 .indent(true)
                 .to_string())

@@ -15,8 +15,8 @@ fn find<'a>(plan: &'a dyn ExecutionPlan, name: &str) -> Option<&'a dyn Execution
         .find_map(|child| find(child.as_ref(), name))
 }
 
-#[test]
-fn explode_lowers_to_datafusion_unnest() {
+#[tokio::test]
+async fn explode_lowers_to_datafusion_unnest() {
     let source = TableIR::range(3, 2).unwrap();
     let table = source
         .map_rows(vec![
@@ -33,8 +33,8 @@ fn explode_lowers_to_datafusion_unnest() {
         ])
         .unwrap();
     let exploded = table.explode(vec!["items".into()]).unwrap();
-    let physical = plan::lower(&exploded).unwrap().rows;
-    assert_eq!(physical.name(), "UnnestExec");
+    let physical = plan::physical(&exploded).await.unwrap();
+    assert!(find(physical.as_ref(), "UnnestExec").is_some());
     assert!(find(physical.as_ref(), "ProjectionExec").is_some());
     assert!(find(physical.as_ref(), "RangeExec").is_some());
 }
@@ -57,15 +57,27 @@ async fn singleton_globals_and_rows_are_both_datafusion_plans() {
             ("x".into(), ScalarIR::Global { name: "g".into() }),
         ])
         .unwrap();
-    let physical = plan::lower(&mapped).unwrap().rows;
-    assert_eq!(physical.name(), "ProjectionExec");
+    let physical = plan::physical(&mapped).await.unwrap();
+    assert!(find(physical.as_ref(), "ProjectionExec").is_some());
     let join = find(physical.as_ref(), "CrossJoinExec").unwrap();
     let singleton = collect(join.children()[0].clone(), Arc::new(TaskContext::default()))
         .await
         .unwrap();
     assert_eq!(singleton.iter().map(|b| b.num_rows()).sum::<usize>(), 1);
     assert!(find(physical.as_ref(), "RangeExec").is_some());
-    assert_eq!(plan::count_plan(&mapped).unwrap().name(), "AggregateExec");
+    let count = vail_table::globals::GlobalsIR::aggregate(
+        mapped.clone(),
+        ScalarIR::Aggregate {
+            function: "count".into(),
+            value: None,
+            options: json!({}),
+            result_type: None,
+            init: vec![],
+        },
+        Default::default(),
+    )
+    .unwrap();
+    assert!(count.physical_plan().unwrap().contains("AggregateExec"));
     assert_eq!(mapped.count().await.unwrap(), 8);
     let dropped = table.map_globals(vec![]).unwrap();
     assert_eq!(dropped.globals().evaluate().await.unwrap().num_rows(), 1);
@@ -87,8 +99,8 @@ async fn viceberg_plan_advertises_certified_order_without_sorting() {
         .unwrap();
     table.write(path.to_str().unwrap(), false).await.unwrap();
     let read = TableIR::read(path.to_str().unwrap()).await.unwrap();
-    let plan = plan::lower(&read).unwrap().rows;
-    assert_eq!(plan.name(), "VicebergScanExec");
+    let plan = plan::physical(&read).await.unwrap();
+    assert!(find(plan.as_ref(), "VicebergScanExec").is_some());
     assert!(plan.output_ordering().is_some());
     assert!(find(plan.as_ref(), "SortExec").is_none());
     let globals = read.globals().lower().unwrap();
@@ -100,8 +112,6 @@ async fn viceberg_plan_advertises_certified_order_without_sorting() {
 async fn sort_spills_directly_from_a_generated_tableir_source() {
     let source = TableIR::range(1_000_000, 4).unwrap();
     let sorted = source.order_by(vec![("idx".into(), true)]).unwrap();
-    let plan = plan::lower(&sorted).unwrap().rows;
-    assert!(find(plan.as_ref(), "RangeExec").is_some());
     let config = SessionConfig::new();
     let reserve = config.options().execution.sort_spill_reservation_bytes;
     let runtime = RuntimeEnvBuilder::new()
@@ -113,6 +123,10 @@ async fn sort_spills_directly_from_a_generated_tableir_source() {
             .with_session_config(config)
             .with_runtime(runtime.clone()),
     );
+    let plan = plan::physical_with_context(&sorted, context.clone())
+        .await
+        .unwrap();
+    assert!(find(plan.as_ref(), "RangeExec").is_some());
     let batches = collect(plan.clone(), context).await.unwrap();
     assert_eq!(
         batches.iter().map(|b| b.num_rows()).sum::<usize>(),
@@ -193,7 +207,7 @@ async fn captured_globals_share_ir_without_retaining_table_rows() {
         panic!("expected MapRows")
     };
     assert!(Arc::ptr_eq(&bindings["other"], &captured));
-    let plan = plan::lower(&table).unwrap().rows;
+    let plan = plan::physical(&table).await.unwrap();
     assert!(find(plan.as_ref(), "CrossJoinExec").is_some());
     assert!(find(plan.as_ref(), "ParallelizeExec").is_none());
     let output = table.collect_partitions().await.unwrap();
@@ -211,4 +225,134 @@ async fn captured_globals_share_ir_without_retaining_table_rows() {
         })
         .collect::<Vec<_>>();
     assert_eq!(results, vec![7, 7, 7]);
+}
+
+#[tokio::test]
+async fn sort_unkey_and_bounded_rows_report_their_actual_execution_layout() {
+    let source = TableIR::range(24, 3).unwrap();
+    let unkeyed = source.key_by(vec![]).unwrap();
+    let sorted = unkeyed.key_by(vec!["idx".into()]).unwrap();
+    let descending = source.order_by(vec![("idx".into(), true)]).unwrap();
+    for table in [
+        unkeyed,
+        sorted,
+        descending,
+        source.head(5),
+        source.tail(5),
+        source.head(0),
+        source.tail(0),
+    ] {
+        let physical = plan::physical(&table).await.unwrap();
+        let declared = table.n_partitions().await.unwrap();
+        assert_eq!(declared, physical.output_partitioning().partition_count());
+        assert_eq!(table.collect_partitions().await.unwrap().len(), declared);
+        let batches = collect(physical, Arc::new(TaskContext::default()))
+            .await
+            .unwrap();
+        let rows = batches.iter().map(|batch| batch.num_rows()).sum::<usize>();
+        assert_eq!(rows, table.count().await.unwrap());
+    }
+    assert_eq!(
+        source.key_by(vec![]).unwrap().n_partitions().await.unwrap(),
+        source.n_partitions().await.unwrap()
+    );
+    let tail = collect(
+        plan::physical(&source.tail(5)).await.unwrap(),
+        Arc::new(TaskContext::default()),
+    )
+    .await
+    .unwrap();
+    assert_eq!(
+        tail.iter()
+            .flat_map(|batch| batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .to_vec())
+            .collect::<Vec<_>>(),
+        vec![19, 20, 21, 22, 23]
+    );
+}
+
+#[tokio::test]
+async fn configured_histogram_repeated_actions_and_empty_validation_use_real_sources() {
+    use arrow_array::{Array, Int64Array, ListArray, StructArray};
+    let source = TableIR::range(24, 3).unwrap();
+    let expression = ScalarIR::Aggregate {
+        function: "hist".into(),
+        value: Some(Arc::new(ScalarIR::Column { name: "idx".into() })),
+        options: json!({}),
+        result_type: None,
+        init: vec![
+            (
+                "start".into(),
+                ScalarIR::RuntimeLiteral {
+                    value: datafusion_common::ScalarValue::Float64(Some(0.0)),
+                },
+            ),
+            (
+                "end".into(),
+                ScalarIR::RuntimeLiteral {
+                    value: datafusion_common::ScalarValue::Float64(Some(24.0)),
+                },
+            ),
+            (
+                "bins".into(),
+                ScalarIR::RuntimeLiteral {
+                    value: datafusion_common::ScalarValue::Int32(Some(3)),
+                },
+            ),
+        ],
+    };
+    let total = vail_table::globals::GlobalsIR::aggregate(
+        source.clone(),
+        expression.clone(),
+        Default::default(),
+    )
+    .unwrap();
+    for _ in 0..2 {
+        let batch = total.evaluate().await.unwrap();
+        let result = batch
+            .column(0)
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .unwrap();
+        let frequencies = result
+            .column_by_name("bin_freq")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap()
+            .value(0);
+        assert_eq!(
+            frequencies
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .unwrap()
+                .values(),
+            &[8, 8, 8]
+        );
+        assert!(!result.is_null(0));
+    }
+    let mut invalid = expression;
+    if let ScalarIR::Aggregate { init, .. } = &mut invalid {
+        init[1].1 = ScalarIR::RuntimeLiteral {
+            value: datafusion_common::ScalarValue::Float64(Some(0.0)),
+        };
+    }
+    let total =
+        vail_table::globals::GlobalsIR::aggregate(source.head(0), invalid, Default::default())
+            .unwrap();
+    // Public native diagnostics must not evaluate invalid singleton parameters.
+    assert!(!total.physical_plan().unwrap().is_empty());
+    assert!(
+        total
+            .evaluate()
+            .await
+            .unwrap_err()
+            .to_string()
+            .contains("finite start < end")
+    );
 }

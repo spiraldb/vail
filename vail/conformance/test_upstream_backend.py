@@ -53,3 +53,5 @@ def test_failures_are_distinct_from_unsupported_and_harness_errors(adapter):
     assert classify('body', AssertionError('wrong result')) == 'behavior_failure'
     assert classify('body', NotImplementedError('missing API')) == 'unsupported'
     assert classify('fixture', RuntimeError('fixture failed')) == 'harness_error'
+    assert classify('body', KeyError('missing result field')) == 'behavior_failure'
+    assert classify('body', NameError('undefined implementation variable')) == 'behavior_failure'

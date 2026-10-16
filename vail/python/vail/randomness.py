@@ -3,13 +3,11 @@
 Each call captures a static UID; consumers bind dynamic row and element UIDs.
 """
 
-from .expressions import _native_expression, _native_expressions, _native_projection
+from .expressions import _native_projection
 
-from .expressions import IR_NODE_TYPES
+from .expressions import IR_NODE_TYPES, NativeExpr
 
 import itertools
-import json
-from uuid import uuid4
 from .expressions import Expression, _IR, as_expr, cast, literal, _merge_sources
 from .types import tint32, tint64, tfloat64, tbool, tarray, tndarray, type_to_wire
 
@@ -211,6 +209,8 @@ def _is_random(node):
 
 
 def contains(node):
+    if isinstance(node, NativeExpr):
+        return node.contains_random()
     if isinstance(node, IR_NODE_TYPES):
         return _is_random(node) or (
             node.get("op") != "literal" and any(contains(v) for v in node.values())
@@ -218,93 +218,17 @@ def contains(node):
     return isinstance(node, list) and any(contains(v) for v in node)
 
 
-def bind_context(node, uid):
-    """Prepend an enclosing lexical context to an expression callback."""
-    if isinstance(node, list):
-        return [bind_context(v, uid) for v in node]
-    if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-        return node
-    result = {k: bind_context(v, uid) for k, v in node.items()}
-    if _is_random(node):
-        result["args"][2]["elements"] = uid + result["args"][2]["elements"]
-    return result
+def bind_context(node, uid, *, parameter=None, replacement=None):
+    """Bind lexical stream words on the native graph, preserving shared nodes."""
+    return NativeExpr(node).bind_random_context(
+        [NativeExpr(word) for word in uid], parameter,
+        None if replacement is None else NativeExpr(replacement),
+    )
 
 
-def bind_rows(node, row_uid, mode, inside=None, result_parameters=frozenset()):
-    """Distinguish reducer inputs from scalar results in aggregate scopes."""
-    if inside is None:
-        inside = mode == "row"
-    if isinstance(node, list):
-        return [bind_rows(v, row_uid, mode, inside, result_parameters) for v in node]
-    if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-        return node
-    op = node.get("op")
-    scopes = {}
-    if op == "aggregate":
-        scopes = {"value": True, "init": False}
-    elif op == "aggregate_fold":
-        scopes = {"initial": False, "seq": True, "combine": False}
-    elif op == "agg_filter":
-        scopes = {"predicate": True, "body": False}
-    elif op in ("agg_explode", "agg_array"):
-        scopes = {"value": True, "body": False}
-    elif op == "agg_group_by":
-        scopes = {"key": True, "body": False}
-    result = {
-        k: bind_rows(
-            v,
-            row_uid,
-            mode,
-            scopes.get(k, inside),
-            result_parameters | {node["parameter"]}
-            if k == "body" and op == "agg_array"
-            else result_parameters,
-        )
-        for k, v in node.items()
-    }
-    if _is_random(node):
-        uid = (
-            [row_uid]
-            if inside
-            else (
-                [
-                    {
-                        "op": "aggregate",
-                        "function": "min",
-                        "value": row_uid,
-                        "options": {"__vail_result_type": "int64"},
-                    }
-                ]
-                if mode == "group"
-                else []
-            )
-        )
-        words = result["args"][2]["elements"]
-
-        def depends(value):
-            if isinstance(value, list):
-                return any(depends(v) for v in value)
-            if not isinstance(value, IR_NODE_TYPES) or value.get("op") == "literal":
-                return False
-            return (
-                value.get("op") == "lambda_variable"
-                and value["name"] in result_parameters
-            ) or any(depends(v) for v in value.values())
-
-        if not inside and mode == "group":
-            words = [
-                {
-                    "op": "aggregate",
-                    "function": "min",
-                    "value": word,
-                    "options": {"__vail_result_type": "int64"},
-                }
-                if depends(word)
-                else word
-                for word in words
-            ]
-        result["args"][2]["elements"] = uid + words
-    return result
+def bind_rows(node, row_uid, mode):
+    """Bind row/reducer stream identities with native lexical scope memoization."""
+    return NativeExpr(node).bind_random_rows(NativeExpr(row_uid), mode)
 
 
 def resolve(native, expressions, mode="row"):
@@ -333,40 +257,27 @@ def resolve(native, expressions, mode="row"):
     native = native.project(_native_projection(fields))
     uid = {"op": "column", "name": name}
     modes = [mode] * len(expressions) if isinstance(mode, str) else mode
-    return native, [
-        Expression(
-            e.dtype,
-            e.source,
-            _IR(bind_rows(e.to_ir(), uid, scope), e._global_refs, e._lookup_refs),
-            selection_name=e._selection_name,
-            top_level_name=e._top_level_name,
-        )
-        for e, scope in zip(expressions, modes)
-    ]
+    output = []
+    for expression, scope in zip(expressions, modes):
+        rewritten = bind_rows(expression.to_ir(), uid, scope)
+        output.append(Expression(
+            expression.dtype, expression.source,
+            _IR(rewritten, expression._global_refs, expression._lookup_refs,
+                row_indexed=rewritten.is_row_indexed()),
+            selection_name=expression._selection_name,
+            top_level_name=expression._top_level_name,
+        ))
+    return native, output
 
 
 def index_callback(collection, parameter, body):
     """Use positions, including for repeated equal elements, as dynamic UIDs."""
     if not contains(body.to_ir()):
         return collection, body
-    from .expressions import tuple_
     from .streams import stream_range
 
-    position_name = uuid4().hex
-    position = Expression(
-        tint32, collection.source, {"op": "lambda_variable", "name": position_name}
-    )
-    pair = tuple_([position, collection[position]])
-    indexed = Expression(
-        tarray(pair.dtype),
-        collection.source,
-        {
-            "op": "array_map",
-            "value": stream_range(collection.length()).to_array().to_ir(),
-            "parameter": position_name,
-            "body": pair.to_ir(),
-        },
-    )
+    from .collection_functions import zip
+    indexed = zip(stream_range(collection.length()).to_array(), collection)
     variable = {"op": "lambda_variable", "name": parameter}
     index = {
         "op": "cast",
@@ -375,18 +286,10 @@ def index_callback(collection, parameter, body):
     }
     value = {"op": "get_field", "value": variable, "name": "__vail_tuple_1"}
 
-    def replace(node):
-        if isinstance(node, list):
-            return [replace(v) for v in node]
-        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-            return node
-        if node.get("op") == "lambda_variable" and node.get("name") == parameter:
-            return value
-        return {k: replace(v) for k, v in node.items()}
-
     ir = body.to_ir()
     return indexed, Expression(
         body.dtype,
         body.source,
-        _IR(bind_context(replace(ir), [index]), ir.references, ir.lookups),
+        _IR(bind_context(ir, [index], parameter=parameter, replacement=value),
+            ir.references, ir.lookups, row_indexed=ir.row_indexed),
     )

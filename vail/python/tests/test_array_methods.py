@@ -95,3 +95,21 @@ def test_fold_ignores_large_unreferenced_nested_columns():
     ).collect()
     assert [row.total for row in result] == [sum(range(256))] * 4
     assert [row.nested for row in result] == [8 * sum(range(256))] * 4
+
+
+def test_array_index_reads_zipped_values_and_preserves_predicate_randomness():
+    values = hl.range(20000)
+    assert hl.eval(values.index(19999)) == 19999
+    assert hl.eval(values.index(lambda x: x == 19999)) == 19999
+    nullable = hl.literal([None, 2], hl.tarray(hl.tint32))
+    assert hl.eval(nullable.index(hl.is_missing)) == 0
+    assert hl.eval(hl.missing(nullable.dtype).index(lambda x: x > 0)) is None
+    draws = hl.eval(hl.range(100).map(lambda _: hl.rand_bool(0.3, seed=201)))
+    expected = next((i for i, selected in enumerate(draws) if selected), None)
+    assert hl.eval(hl.range(100).index(lambda _: hl.rand_bool(0.3, seed=201))) == expected
+
+
+def test_array_index_does_not_rebind_random_input_values():
+    values = hl.range(20).map(lambda _: hl.rand_int32(10000, seed=202))
+    expected = hl.eval(values)
+    assert hl.eval(values.index(expected[-1])) == expected.index(expected[-1])

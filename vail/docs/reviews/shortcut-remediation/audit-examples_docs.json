@@ -1,0 +1,76 @@
+{
+  "owner": "stream_scan",
+  "modules": [
+    {
+      "path": "crates/vail-execution/examples/ordered_table.rs",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "limitations": [
+        "Examples do not establish end-to-end application performance or broad conformance."
+      ]
+    },
+    {
+      "path": "crates/vail-table/examples/datafusion_order_audit.rs",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "limitations": [
+        "Examples do not establish end-to-end application performance or broad conformance.",
+        "Deliberately audits raw DataFusion representations, including old call/ndarray encodings; it does not exercise current Vail canonical-key planning. Keep results explicitly labeled raw upstream behavior."
+      ]
+    },
+    {
+      "path": "crates/vail-vcf/examples/delimiter_bench.rs",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "limitations": [
+        "Examples do not establish end-to-end application performance or broad conformance.",
+        "Synthetic fixed FORMAT strings validate equal offsets only for generated fixtures; SIMD safety uses full 16-byte blocks and scalar tail, but example is not fuzz coverage."
+      ]
+    },
+    {
+      "path": "crates/vail-vcf/examples/format_bench.rs",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "limitations": [
+        "Examples do not establish end-to-end application performance or broad conformance.",
+        "Fixed FORMAT pattern benchmark excludes missing/variable FORMAT schemas; comparisons are delimiter discovery only, not full parser throughput."
+      ]
+    },
+    {
+      "path": "crates/vail-vcf/examples/parse_bench.rs",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "limitations": [
+        "Examples do not establish end-to-end application performance or broad conformance.",
+        "Timer excludes header parsing and reports uncompressed decoded bytes, not physical compressed I/O or planner overhead; results must retain those qualifications."
+      ]
+    },
+    {
+      "path": "../README.md",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": []
+    },
+    {
+      "path": "README.md",
+      "depth": "full",
+      "status": "reviewed; documentation drift queued",
+      "findings": [
+        "Claims single ordered physical stream and preserved Hail logical partitions, and future optimizer integration, despite current logical planner and deliberate partition divergence.",
+        "Persistence section promises logical/empty partition boundaries and file rollover at partition boundaries; actual keyed writer coalesces sorted input streams and rolls by byte/row budgets.",
+        "Claims primitive ASCII-only certified keys and several private read options unavailable; current native type/key and interval paths exceed those stated limits."
+      ],
+      "acceptance": "Rewrite current architecture/support statements from current code and intentional divergence contract; keep historical experiment statements explicitly dated, and avoid claiming complete conformance from primitive fixtures."
+    }
+  ],
+  "inventory_notes": [
+    "All six Rust example files accounted for: five reviewed here, local_roundtrip reviewed in audit-storage_ordering.json.",
+    "module-audit pending status is stale for storage/ordering entries; full reports already exist. Parent owns ledger reconciliation to avoid concurrent JSON rewrites.",
+    "Core execution pending entries assigned kernel agent; conformance/tooling assigned root. Documentation inventory includes historical conformance reports; not all historical Markdown reread or claimed full coverage."
+  ]
+}

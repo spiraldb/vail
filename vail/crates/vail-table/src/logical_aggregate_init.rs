@@ -1,18 +1,11 @@
-//! Runtime aggregate configuration with logical planning on both sides of the
-//! initialization boundary. Placeholder plans validate schemas without reading
-//! rows; the same logical lowering runs again with evaluated scalar options.
+//! Singleton aggregate configuration is resolved before data physical planning.
+//! Placeholder logical plans validate schemas and expose dependencies to EXPLAIN.
+//! Action binding replaces them before optimizing the complete data relation.
 use crate::globals::GlobalBindings;
-use crate::plan::PhysicalPlan;
 use crate::{Result, TableError, TableRef};
 use arrow_schema::Schema;
-use datafusion::physical_planner::{ExtensionPlanner, PhysicalPlanner};
 use datafusion_common::DFSchemaRef;
-use datafusion_expr::physical_planning_context::PhysicalPlanningContext;
-use datafusion_expr::{
-    Extension, LogicalPlan, LogicalPlanBuilder, UserDefinedLogicalNode, UserDefinedLogicalNodeCore,
-};
-use datafusion_session::Session;
-use futures::FutureExt;
+use datafusion_expr::{Extension, LogicalPlan, LogicalPlanBuilder, UserDefinedLogicalNodeCore};
 use std::{
     collections::HashSet,
     fmt,
@@ -28,13 +21,13 @@ use vail_execution::logical_expr::lower_logical_with_bindings;
 static NEXT: AtomicU64 = AtomicU64::new(1);
 
 #[derive(Clone, Debug)]
-struct InitNode {
-    id: u64,
+pub(crate) struct InitNode {
+    pub(crate) id: u64,
     table: TableRef,
     fields: Vec<(String, Expr)>,
     keys: Option<Vec<(String, Expr)>>,
     bindings: GlobalBindings,
-    inputs: Vec<LogicalPlan>,
+    pub(crate) inputs: Vec<LogicalPlan>,
     schema: DFSchemaRef,
 }
 impl PartialEq for InitNode {
@@ -170,67 +163,36 @@ pub(crate) fn lower(
     })))
 }
 
-pub(crate) struct InitializerPlanner;
-#[async_trait::async_trait]
-impl ExtensionPlanner for InitializerPlanner {
-    async fn plan_extension(
-        &self,
-        _planner: &dyn PhysicalPlanner,
-        node: &dyn UserDefinedLogicalNode,
-        _logical_inputs: &[&LogicalPlan],
-        physical_inputs: &[PhysicalPlan],
-        _session: &dyn Session,
-        _context: &PhysicalPlanningContext,
-    ) -> datafusion_common::Result<Option<PhysicalPlan>> {
-        let Some(node) = node.as_any().downcast_ref::<InitNode>() else {
-            return Ok(None);
-        };
-        if physical_inputs.len() != 3 {
-            return Err(datafusion_common::DataFusionError::Plan(
-                "aggregate initialization requires three inputs".into(),
-            ));
-        }
-        let node = node.clone();
-        let build = Arc::new(move |batch: arrow_array::RecordBatch| {
-            let node = node.clone();
-            async move {
-                let build = || -> Result<LogicalPlan> {
-                    let mut index = 0;
-                    let fields = node
-                        .fields
-                        .iter()
-                        .map(|(name, expr)| {
-                            let expr = crate::aggregation::bind_initializers(expr, &mut |_, _| {
-                                let value =
-                                    vail_execution::expressions::scalar_at(batch.column(index), 0)?;
-                                index += 1;
-                                Ok(value)
-                            })?;
-                            Ok((name.clone(), expr))
-                        })
-                        .collect::<Result<Vec<_>>>()?;
-                    plan(
-                        &node.table,
-                        node.inputs[0].clone(),
-                        node.keys.as_deref(),
-                        &fields,
-                        &node.bindings,
-                    )
-                };
-                let logical = build()
-                    .map_err(|e| datafusion_common::DataFusionError::External(Box::new(e)))?;
-                crate::logical::physical_plan(logical, crate::logical::max_partitions(&node.table))
-                    .await
-                    .map_err(|e| datafusion_common::DataFusionError::External(Box::new(e)))
-            }
-            .boxed()
-        });
-        Ok(Some(
-            crate::initialized_aggregate::initialized_aggregate_async(
-                physical_inputs[1].clone(),
-                physical_inputs[2].clone(),
-                build,
-            ),
-        ))
+/// Bind the scalar configuration before physical planning. Neither the
+/// placeholder template nor any input data physical plan has been compiled yet.
+pub(crate) fn bind(
+    node: &InitNode,
+    batch: &arrow_array::RecordBatch,
+    child: LogicalPlan,
+) -> Result<LogicalPlan> {
+    let mut index = 0;
+    let fields = node
+        .fields
+        .iter()
+        .map(|(name, expr)| {
+            let expr = crate::aggregation::bind_initializers(expr, &mut |_, _| {
+                let value = vail_execution::expressions::scalar_at(batch.column(index), 0)?;
+                index += 1;
+                Ok(value)
+            })?;
+            Ok((name.clone(), expr))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    if index != batch.num_columns() {
+        return Err(TableError::Invalid(
+            "aggregate initializer arity mismatch".into(),
+        ));
     }
+    plan(
+        &node.table,
+        child,
+        node.keys.as_deref(),
+        &fields,
+        &node.bindings,
+    )
 }

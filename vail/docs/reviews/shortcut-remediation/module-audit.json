@@ -1,0 +1,2662 @@
+{
+  "base_commit": "2c02020",
+  "scope": "All Vail-owned production Python/Rust, conformance and developer tooling; vendored/upstream dependency internals excluded, their integration boundaries included. Inline tests are supporting evidence. Pending means not reviewed in this remediation pass.",
+  "modules": [
+    {
+      "path": "vail/python/vail/__init__.py",
+      "lines": 2008,
+      "sha256": "046bfcc275eb85f1531f2e040af4ec1af195db8a65d8a3511a4dabdf5019c015",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "FRONTEND_EAGER_PRUNING",
+        "FRONTEND_INTERVAL_ALGEBRA_DUPLICATION",
+        "PYTHON_DAG_WALK_EXPANSION",
+        "GENERATE_MATERIALIZATION_REVIEW"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/agg.py",
+      "lines": 219,
+      "sha256": "d2e5d113013c981672dc3449cc21bee648a01312ea53e1c1bcfd612cb0727e3e",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/agg_collections.py",
+      "lines": 64,
+      "sha256": "3276be0b6a664462ee28f578bc53b6652f4d2aab42fc2f2ed408dd3681468c06",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/agg_fold.py",
+      "lines": 52,
+      "sha256": "03fbdd3ae1aa8b5bce1b406da9487ed8fa985535c6cf2de2e24d8b62747a0a1c",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/agg_genomics.py",
+      "lines": 75,
+      "sha256": "dd4f52a5a8442a57e9931beee1568a909d207412f722308dceba769ef3674ec5",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "HWE_DOUBLE_REDUCTION"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/agg_numeric.py",
+      "lines": 121,
+      "sha256": "bf8ece015ea40d8ce594e7ebf1c90d1eaddaafb64a963934267f4030dbe09530",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/allele_functions.py",
+      "lines": 115,
+      "sha256": "56e5f9652957cc7fcdeb209cf064603e5e60d6986775153d2531c5e9e571b457",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "_mismatches and _transition index captured full allele strings inside per-character array callbacks. This copies/scans repeated strings and can be quadratic in allele length; prefer native linear character comparison (hamming already exists) and a one-pass transition kernel."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/array_aggregate.py",
+      "lines": 92,
+      "sha256": "66104ddd50f82cb37244a95bfbaaacc4cb4aba07cc0427ddb6d9799670c2b868",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "S003",
+        "LIST_AGGREGATE_SCOPE_GAPS",
+        "Mapped aggregate input expressions formerly used aggregate result type as their declared dtype. Native infer_type now traverses original input IR with source/global/lexical native Type context and supplies accurate metadata; no dummy literals or invented values."
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/array_methods.py",
+      "lines": 102,
+      "sha256": "76bfd95b3625306572a43c5eb0107432077d5dda975a116a8899a13afd204fd1",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "evidence": [
+        "fold/scan callbacks lower to native ArrayFold; mean uses a constant number of linear passes; median sorts once; group_by delegates grouping to native collection grouping."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/arrow.py",
+      "lines": 183,
+      "sha256": "0fa07c99be316c16791b0ed83b01135205416e4bc8587f03074f882f92937414",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "_physical(tndarray) calls arr.ravel().tolist() and reconstructs Python scalar lists before creating Arrow buffers. _logical(tndarray) similarly boxes to a Python list before NumPy allocation. Shared Arrow/NumPy buffer interoperability should avoid these full scalar round trips.",
+        "Locus conversion repeatedly calls dtype.reference_genome and contigs.index; the type accessor rebuilds the complete reference mapping, so N locus literals can perform O(N * number_of_contigs) metadata work."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/backend.py",
+      "lines": 37,
+      "sha256": "2b6e6fec6c50f5b515000528353f5f3114b896db9209413535432c2d93ddab61",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/builders.py",
+      "lines": 61,
+      "sha256": "7834ad674fef28cd9e3f651e26cca2564c8a732ed768d8693bf2fbb32de1e2b8",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "SwitchBuilder._finish repeats the base expression in each case rather than binding it once. Cost depends on optimizer reuse; this is a confirmed repeated-IR construction, not a demonstrated post-optimization quadratic benchmark."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/collection_functions.py",
+      "lines": 153,
+      "sha256": "d0cf3d6716be446a807758e12b430919a3f84c7d2c22661dbd2cd91f6f50fa94",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "zip formerly built range(size).map(i => arrays[i]); enumerate likewise indexed a captured full array. Native pairwise arrays_zip plus current-element projections remove full-list capture and repeated random-context binding.",
+        "corr formerly embedded whole-array means in each per-element covariance callback. Confirmed quadratic evaluation/memory:2000elements0.735s443MBmaxRSS;4000elements2.84s1.91GBmaxRSS. Replaced composition with shared native corr accumulator, preserving public empty/all-missing distinctions."
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/collections.py",
+      "lines": 456,
+      "sha256": "5cfeca4579aeadd0a85dc1f13292ad39bd7e556db4fbe6afb1eaf8d4ff1dc524",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "_direct_literal_array/_dict_from_entries choose last-key-wins for syntactically literal arrays and first-key-wins for computed arrays. Reproduced identical values yielding {1:3} versus {1:2}. This deliberately reproduces an upstream constant-folding artifact; a coherent duplicate-key policy needs an explicit compatibility decision."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/context.py",
+      "lines": 6,
+      "sha256": "10eeb7c3365cc03511ec67dc4d7d0654a746dc527f045ba368b63a9d5c2fcf82",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/display.py",
+      "lines": 151,
+      "sha256": "9878a013fdfd4997a28ce337c0d7d5bbd0dfc22b40f86796f364c374a1908e7a",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/expr/__init__.py",
+      "lines": 28,
+      "sha256": "eada032e4a01a40d8aee2f471c868b6893bfdb7db3d6d6671ad972685b027185",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/expr/expressions/__init__.py",
+      "lines": 4,
+      "sha256": "04c3fcfac72a2a5bc29f200f6c57ce13f07713ae4d038ed8db78c086901ca7ec",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/expr/expressions/base_expression.py",
+      "lines": 4,
+      "sha256": "fb19085e2f7ad02588a24a993b1fc67ce4c99844616a913a32c1423779b682dc",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/expr/expressions/typed_expressions.py",
+      "lines": 1,
+      "sha256": "a9912c772322b889306284db29290c9eac3679c875e88c5f3053adc1abd76535",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/expr/functions.py",
+      "lines": 29,
+      "sha256": "1f7fa3b88f9f69722063bc35ae0bd010817d4c5097432f9ba1107e8f7c0ab5fe",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/expressions.py",
+      "lines": 1415,
+      "sha256": "4a00f2b6c554977d4989e4ef972179126ca0c1641aceffee7bbc1d0eed71c599",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "FRONTEND_CAPTURE_COPY",
+        "DIAGNOSTIC_RELATION_DAG_EXPANSION"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/genetics/__init__.py",
+      "lines": 5,
+      "sha256": "942a41885950a02732e612414eaab20196e895707e34d12b9b9377be7bc27806",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/inputs.py",
+      "lines": 115,
+      "sha256": "c8ad68898b33b0daba53f44dbb9bf5160e183dc843d005ef47fea9119ed03344",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/ir/__init__.py",
+      "lines": 10,
+      "sha256": "9309485b0ccc47a5e43c027e125f285a1a4dbbf5dfbc0fe1193aaa11764b72c6",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/ir/renderer.py",
+      "lines": 6,
+      "sha256": "f0f7ce02c0eedc0b7776937817b17d059d9de584ca49b7e02682c0d77dec4250",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/linalg/__init__.py",
+      "lines": 22,
+      "sha256": "bbe472498cff24a7b3bfe065ef73502da8198df320b215415deab1ab047e7e76",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "BlockMatrix is only a constant-fill entry-table interoperability wrapper. fill accepts block_size without using or rejecting it; actual block storage/algebra is absent. Clarify/reject unsupported sizing rather than imply it controls execution."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/lookups.py",
+      "lines": 97,
+      "sha256": "76739bb181350f224b9a81b321eeb94eb0a14f348f71a300c43b6b7461c40955",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/matrix_list_aggregates.py",
+      "lines": 482,
+      "sha256": "6fb5cba87a195b357d00686c30b1b229f42a33fe7707d18789345dc266dc1b0c",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "S003",
+        "LIST_AGGREGATE_SCOPE_GAPS",
+        "DIRECT_ENTRY_SUM_PROOF"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/matrixtable.py",
+      "lines": 2669,
+      "sha256": "3ad84ad270afed9025639e5e3621e957f135c65a99c0fa6d4fdc1ed9951740a7",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "MATRIX_COLUMN_AGG_FANOUT",
+        "MATRIX_EAGER_VALIDATION",
+        "MATRIX_SHOW_ALIGNMENT",
+        "MATRIX_EXPLODE_CAPTURE",
+        "MATRIX_COORDINATE_LAST_COLLECT",
+        "MATRIX_INDEX_KEY_LOSS"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/nd.py",
+      "lines": 35,
+      "sha256": "6a49019a10adb7309b0d0631bd52cb317fa14045fd3c14ee3faf9a3b85045df8",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "nd.array delegates through arrow_literal, whose ndarray conversion boxes NumPy buffers into Python scalar lists; see arrow.py."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/qc.py",
+      "lines": 160,
+      "sha256": "f8fa38c3e36416a4d9d4b99ddd4149a76696f41bff484f27bf09022725ab43ca",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/queries.py",
+      "lines": 121,
+      "sha256": "c3b6bc2c4e2d5d814112d5683bf43e338edad84da78964951f18d26d9d4bb37f",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "_query_rows eagerly evals any non-row-indexed query key, including global-dependent expressions, while constructing the query expression. This creates an action boundary and materializes keys before normal action planning; dynamic native bounds should be bound at the owning action instead."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/randomness.py",
+      "lines": 392,
+      "sha256": "be05649eda37e0f87bef5aa9c3335a75efe25bb0cdb42ea372fbed524f853648",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "index_callback formerly built range(length).map(i => (i, collection[i])) and captured the full collection. Replaced by native zip with positional identities."
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/reference_genome.py",
+      "lines": 291,
+      "sha256": "a4afbf3998df15cbf256c73ec3acbd17bad7b0d1b7389ccb3c4d15c2053f3096",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "ReferenceGenome.__eq__ builds full mapping/list definitions for comparison; Locus validation reads the copying lengths property repeatedly and contig ordinals use tuple.index. Together with tlocus.reference_genome reconstruction this causes metadata work proportional to reference size per scalar locus. Prefer shared native immutable reference handles and cached ordinal lookup."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/scan.py",
+      "lines": 195,
+      "sha256": "de0f8509e7727f3f7418095fcdaa17280a4d93e1201900fba58e6de4be78b783",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "approx_cdf is explicitly unsupported in agg_numeric.py. Its scan wrapper delegates without _mark; that is dormant inconsistency while the underlying API raises, not a current silently wrong scan."
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/simulation.py",
+      "lines": 325,
+      "sha256": "7e1221f6fffd575201e92b8ca59c0dd167aa4bd1cb8eb3470ed5763d8787043e",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/streams.py",
+      "lines": 190,
+      "sha256": "fe515550f5480a27798c0d46fca88e62575d6c4f64461cff1acd3de81ca175b3",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "_aggregate_scan formerly sliced and re-aggregated each prefix. Replaced by exclusive native accumulator scans, with zipped scalar output callbacks to avoid captured-list replication."
+      ],
+      "evidence": [
+        "135 RNG/collection/local scan tests passed against nativebuild1; additional outer-bind/type-annotation tests pending next native build.",
+        "20k,40k,80k native sum scans evaluated in0.064s,0.124s,0.244s afterwarmup; corresponding zip20k,40k,80k in0.223s,0.429s,0.855s. Raw /private/tmp/vail-stream-scan-scaling.jsonl.",
+        "Output callback consumes zipped scalar snapshots, rather than indexing captured scan arrays.",
+        "Native LambdaVariable/MatrixField/TableLookup type hints retain original IR for type inquiry; lexical annotations are checked against execution binders. No fake data values are used for type inference."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/strings.py",
+      "lines": 246,
+      "sha256": "99e826b67c9f71ff81017150ff194d652e5dc6254debd247f040ba54b302c8fe",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "_slice_bound(step) and _translate_dynamic build a position array and call substring/index on a captured whole string per element. This repeats full string capture/copy and Unicode traversal rather than scanning once. Dynamic translation also captures the complete dictionary per character. A typed native scalar kernel should consume string/codepoints and dictionary once.",
+        "translate evaluates a native literal dictionary through hl.eval during expression construction to recover a Python mapping. This is pure literal data, but introduces an unnecessary action/latency boundary."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/text.py",
+      "lines": 256,
+      "sha256": "4279b882970102b7218abce35a228bed2263818c62b2502b685bf853c3085dd3",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [
+        "TEXT-DIRECT-PUBLICATION"
+      ],
+      "evidence": "Normal row reads and all exports use native scan/sink. Header discovery requests one row only. Unsupported imputation, multiline Hail import, compressed IO and nested Hail text export are explicit capability limits.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/types.py",
+      "lines": 736,
+      "sha256": "beb73039bd0e2245b0f583555b74edc99c0880ddd62a7b6a13b018850cd3ca88",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "TYPE_QUOTED_UNICODE",
+        "GLOBAL_PRETTY_PRINTER_PATCH"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/utils/__init__.py",
+      "lines": 71,
+      "sha256": "2b68df9ee97e53d26651512e2a8147c9f22ed35cad87a82984278b4812782ad5",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/utils/java.py",
+      "lines": 21,
+      "sha256": "46f13828ee47411f5a3108af77fbabd00f270c3cae55498a57963427dbcabdf1",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/utils/misc.py",
+      "lines": 5,
+      "sha256": "0927b75cb01d4532d0642d89bf8c254b47041cb70bdd900b6e6bd12ce3a45247",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/variant.py",
+      "lines": 103,
+      "sha256": "4677a478276d2b795f69a3598b0a436b1062f29adddbec5cd545411069b117ed",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "_min_rep scans allele strings via captured per-character substring/index callbacks, repeating the same string-capture cost as strings.py/allele_functions.py.",
+        "split_multi_hts builds and rescans the original O(A^2) genotype PL coordinates for each of A split alleles, yielding O(A^3) work relative to O(A^2) input. Native shared downcoding can compute incident minima and the few excluded-allele minima once per original variant."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-frontend_small.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/vcf.py",
+      "lines": 92,
+      "sha256": "8a2a0263af34c30e89538b9bb4be421b055314842a73add743d017890ca31469",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [
+        "VCF-SOURCE-PROJECTION",
+        "VCF-SOURCE-SORT"
+      ],
+      "evidence": "Metadata and sample IDs are eager; records stay in native scan. Options are validated and unsupported cloud paths fail explicitly. import_vcf always sorts row keys through logical ordering.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/python/vail/vcf_export.py",
+      "lines": 60,
+      "sha256": "7580f611c498fe6b621b40108de85732d7e824daaa749a176e406de5bf76fd0d",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [
+        "VCF-SINK-FIXED"
+      ],
+      "evidence": "Replaced localized rows.collect and per-row Python formatting with one native sink call. Only column metadata/sample IDs are collected. Explicit compression, parallel/tabix/appended-header limitations remain.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/examples/ordered_table.rs",
+      "lines": 53,
+      "sha256": "0977e0cd953dbbdc7b0607000198ebfb1095d8508094d176e0499ef3a397792a",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-examples_docs.json",
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_collection_aggregates.rs",
+      "lines": 411,
+      "sha256": "0b6d1d371088b9141cc68ea46d64f2d144fa3e3e48e0f5032c819794f8e94fdd",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "TAKE_DOUBLE_SORT"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_genomic_aggregates.rs",
+      "lines": 977,
+      "sha256": "208f987b0a766442357d484698774c1f255fd34e0e8b874f86fae4de772d5fb3",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_numeric_aggregates.rs",
+      "lines": 1154,
+      "sha256": "fee66b94f7bd42ed84e6705fd6d52ffec48f3530ae2bd353afbbb19fd5af6f84",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/aggregate_identity.rs",
+      "lines": 19,
+      "sha256": "094bd28dab5b7028158bf0601ec23067529893ff293368576ca81c72880174a0",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "evidence": "Read complete name helper. Native hashing replaces Debug and formatted JSON encoding; optimizer equality does not depend on the digest.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/aggregates.rs",
+      "lines": 977,
+      "sha256": "5d97854dcae8cafbd1c3a590a9aed70983e7e75700e6dd4d19626b5e1ca148a8",
+      "status": "reviewed",
+      "review_depth": "full production code; targeted inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "REDUCER_BOXING"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_aggregate.rs",
+      "lines": 622,
+      "sha256": "06be08df6fd9ef6fe1beeb2946f93593a6a9c99057fb770460d84a443b6df53a",
+      "status": "reviewed",
+      "review_depth": "full production code; targeted inline tests",
+      "owner": "shared_reducers",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_fold.rs",
+      "lines": 309,
+      "sha256": "4fc7d368c02b087e37d0da4a0de1fbac7a0f3950549262785015f587e25a0b32",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "evidence": [
+        "Maintains active lanes and accumulator state; one callback step per input element. Copies only referenced outer columns. Explicit offset capacity checks."
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_length_aggregate.rs",
+      "lines": 67,
+      "sha256": "956fb9250734e3d6281b9e7ab806d7d22928dec7004c5a2ba40709d8422c846e",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/calls.rs",
+      "lines": 202,
+      "sha256": "a87b5e40d8d1e77eb80851566401c8812bc2936f1a84e902b7b783cba0a8277a",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collect_aggregate.rs",
+      "lines": 268,
+      "sha256": "0b6b26cd60869e43a83638fa18d89b501e53c5226653d24d1c330d51ce1cc279",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collection_groups.rs",
+      "lines": 335,
+      "sha256": "729b104085518bb51f850805934e04b49bdd0fbf30ba8330e9e93908ecad9fee",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collection_lookup.rs",
+      "lines": 166,
+      "sha256": "d1d8ea6c14dcb2fa60a0aeb423fe30a4de1f2112e3fa450989dae461155d8cf6",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/csv_line.rs",
+      "lines": 289,
+      "sha256": "1173aebca4e31521fcf1381a25185ad13f01caa3e5a4adb4be518b2597efbd72",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/expressions.rs",
+      "lines": 6206,
+      "sha256": "38caea89d87f0f0182643988191ce9c201fcc7017c0eb13b01a0397b3f685dbb",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/fold_aggregate.rs",
+      "lines": 160,
+      "sha256": "0275e7d579064f16c80f617bb8879ef29b8367c065c0b39895d1783548d34dc2",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "evidence": "Read complete fold update and merge/state semantics, including initializer adoption. Remaining proposed fixes for closure identity and nested scalar metadata are tracked explicitly.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/hwe_counts.rs",
+      "lines": 60,
+      "sha256": "192e484f52522ccb009fed941b5ba3625169c8c76c571e605e182f74770cd273",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/lib.rs",
+      "lines": 557,
+      "sha256": "6dc65697b90a66c4c79254ef2cdb23f2afb774ba8cc92456832f0d9784b300be",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/logical_expr.rs",
+      "lines": 1127,
+      "sha256": "1003f02085a2190049b7f4386b91bedd70f9fed341ad4895c13b2d2ec6392736",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "evidence": "Read complete scalar lowering, semantic kernel reference binding/evaluation, Arrow type restoration and tests. Reviewed optimizer exposure, error movement, deterministic RNG context and metadata.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/matrix_arrays.rs",
+      "lines": 639,
+      "sha256": "abc47aece17b4b2041177143f172e8529d242271e60913e1153b53abfd5547ae",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/matrix_transpose.rs",
+      "lines": 420,
+      "sha256": "b5765ab9f34d1996eb50f1d104905fcb18a7aa69c9d8bd7ebd212042b2c91376",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/randomness.rs",
+      "lines": 636,
+      "sha256": "a84112508f96f0cdba30ea9f231c668791f29ff56e486f9054ce5937db636063",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/reducer.rs",
+      "lines": 34,
+      "sha256": "06f5a7ba2f0fcbe146cae24ad42cbd2f34b2b2beeec95efaa206fcf39a7c87f7",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "S003"
+      ],
+      "evidence": "Read entire shared registry and full-contract identity wrapper. Forwarded accumulator/state/return-field/groups/sliding/order/reverse/coercion/statistics/null-policy hooks.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/reference.rs",
+      "lines": 312,
+      "sha256": "73d043c7e17da27ab443b4e103f48d26f85aea0afb21ce7861a54eb3176dd355",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/scan_scopes.rs",
+      "lines": 626,
+      "sha256": "fe7b34f74341dafbd7483c672838d35eab24249660c1d256909a7141c39a4e58",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Per-instance AtomicU64 names for immutable scope adapters weaken optimizer identity.",
+        "Grouped snapshots emit then restore DataFusion groups state because DF55's group adapter evaluation is destructive. Cost scales with emitted group-state size, including repeated snapshots."
+      ],
+      "evidence": "Read composition, filtering/explode, grouped/array accumulator snapshots and tests. Replaced fresh IDs with native child/projection/configuration identities. Snapshot restore is required because DF grouped adapter emission is destructive.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/scan_state.rs",
+      "lines": 498,
+      "sha256": "395a1a212401f1234c0bd251d1e42370cb3d8587aba2b3100a4b61f82ad7f95f",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Per-instance AtomicU64 function identities for state, merge and finish UDFs impede equivalent expression identity. The sum finisher also depends on an internal state layout, currently guarded by function name and state types."
+      ],
+      "evidence": "Read state construction/update/merge/finishing and tests. Stable native reducer identity; compact numeric sum fast path; generic collection-output cost can be output-size bound.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/string_kernels.rs",
+      "lines": 155,
+      "sha256": "f3e70579815bc5c8d04c1d493c7f9fe92abb340dd53499a691bea3784836fd7a",
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "evidence": "Read complete regex, hamming and entropy implementations. Regex has value-domain errors; entropy/hamming are total for validated string inputs. Changed closure-only identity to native name/signature key.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-ordering/src/call.rs",
+      "lines": 99,
+      "sha256": "2af3d5bfa0609d46824737a7c7ef5f17ab4e61857aba6c80f6b6ca2cad7086dc",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-ordering/src/lib.rs",
+      "lines": 187,
+      "sha256": "03d97d6f3bb495a95f640b807cdf60d2900339ff36f83712446224b027b74682",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-python/src/arrow_memory.rs",
+      "lines": 60,
+      "sha256": "6bf2491af4e4dc3029f839e1decd4b4518c3c562f74c337f5ba5a62b7af75a0b",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "evidence": "Read entire C Stream transfer/import/export and materialization helper. Ownership transfer and Arc retention are sound under the Arrow C protocol; separate generic parallelize concatenation issue is tracked.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-python/src/ir_view.rs",
+      "lines": 255,
+      "sha256": "85ac403334d85620e0785c09f7e024797ed51d1c02597204d3b7ccc541d66adf",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "FRONTEND_CAPTURE_COPY",
+        "DIAGNOSTIC_RELATION_DAG_EXPANSION"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-python/src/lib.rs",
+      "lines": 876,
+      "sha256": "418fc8636c02735efd958873fa9f24a5312a5b449026e1b66fbe39051249f79b",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        {
+          "issue": "Arrow import concatenates all batches",
+          "evidence": "parallelize_arrow reader.collect then concat_batches creates one large batch; scalar_arrow does the same before validating exactly one row. Native buffer transport avoids serialization but not this avoidable copy.",
+          "acceptance": "Retain imported native batches as a bounded source; scalar import validate cumulative cardinality while consuming and retain the sole row without concatenating arbitrary input."
+        },
+        {
+          "issue": "VCF runtime configuration uses generic JSON values",
+          "evidence": "read_vcf creates serde_json::json! header/options and passes TableIR::read_text; read_text and exports convert Python option containers to serde_json Value. No textual JSON crosses PyO3 here, but typed native configuration is replaced by untyped runtime representation.",
+          "acceptance": "Use typed native scan/export options and a typed VCF source config; reserve codecs for persistence or external formats."
+        },
+        {
+          "issue": "Interval bridge decomposes native arrays into scalar literals",
+          "evidence": "filter_intervals_arrow loops every row, ScalarValue::try_from_array, allocates Expr::RuntimeLiteral per interval. This is native memory, not string serialization, but loses shared array representation.",
+          "acceptance": "Accept retained Arrow interval arrays directly in typed interval planning and avoid per-row IR nodes for literal interval sets."
+        },
+        {
+          "issue": "Metadata inquiries repeatedly reconstruct recursive native types",
+          "evidence": "native_schema converts each Arrow field through Type::from_arrow and NativeType::new_type for every schema/global_schema call.",
+          "acceptance": "Retain immutable typed schemas/native type handles with table metadata or cache conversion; preserve field/reference semantics and ownership."
+        }
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+        "vail/docs/reviews/shortcut-remediation/audit-python_bridge.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-python/src/native_ir.rs",
+      "lines": 2072,
+      "sha256": "4624a305a9abfe51cb2557474faa4ab6682025d1fde2d35f5f6379b07ee42dd1",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "kernel_effects",
+      "findings": [],
+      "evidence": "Read native options/type constructors, complete expression constructor dispatch, native type inference, literal binding, every expression view variant and projection helper. Arc-backed children/buffers remain native; transient views are shallow.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-storage/examples/local_roundtrip.rs",
+      "lines": 79,
+      "sha256": "ad60be36535758d5d9118ff38c738031eed8e1f9f5234c6fb903046d768a9d33",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-storage/src/fragment_index.rs",
+      "lines": 1418,
+      "sha256": "219e52a9da8c7455a727a1d150710dad51ca4bafb8fffa255b1ae03f0d630185",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Runtime Endpoint/QueryInterval keys retain ArrowIpc(Vec<u8>) transport payloads rather than typed Arrow owners. select/select_many decode them again; comparisons themselves are native Arrow. Persistence needs a codec, in-memory bounds do not.",
+        "Each persisted scalar endpoint is a complete Arrow IPC stream serialized as a JSON byte array, repeating per-scalar schema/type metadata. Deserialize additionally clones serialized fragments and sorts them again before verifying stored order. Index size/loading can be dominated by repeated metadata instead of key values.",
+        "select_many performs a complete fragment sweep for every query list except exactly one interval. Sparse two-interval queries over a large index therefore require O(F) metadata work; merged interval windows could use binary searches and ordered union for output-sensitive selection.",
+        "Index certification allows equality at adjacent file endpoints, including arbitrarily many duplicate-point files. This is correct for current inclusive pruning but is not a strict public-key-range-disjoint file guarantee; duplicate-run policy needs an explicit decision."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-storage/src/globals.rs",
+      "lines": 89,
+      "sha256": "2cb0f98ad0f2bd4781d3299afb0e8166f6137449a76b906f579f15ae25f8365f",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-storage/src/lib.rs",
+      "lines": 1731,
+      "sha256": "0da50091c540760923fec6f25cafa683fb02dcc8dc41125f3f506b665b01d9f8",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "stream_from_plan_with_nested_projection selects candidate files but passes the existing unfiltered FileScanTask predicate through unchanged. Requested key intervals are residual slices after decoding, so this path does not push them down into Vortex segment reads.",
+        "write_initial_file_stream allows 32 simultaneous complete file buffers independent of query memory reservations. Upstream producer buffers/channels add retained memory outside that count.",
+        "VailSemantics uses untyped JSON metadata and writer validation only rejects null/missing values; structural equivalence of row/global logical types and actual Arrow/Iceberg schemas remains deferred (also admitted in README).",
+        "load_snapshot_read_plan accepts a keyed single-file snapshot without an index. This is not by itself proof of an ordering bug, but callers must not advertise sortedness solely from semantic key names."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-storage/src/local_table.rs",
+      "lines": 1429,
+      "sha256": "f6b3b6dfb8672c3f41e0c9b2334830459afbb976c5812b51e9f090b6937296f0",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Fixed 32 producer permits, per-producer 64MiB staging buffers, full-buffer channels and up to 32 physical writers are not coordinated with the DataFusion memory budget.",
+        "Writer lock is an empty create_new marker. Process death leaves a stale .write.lock that blocks future writes. Ordinary errors clean generations, but dropped write futures do not execute post-await cleanup; unpublished generations can remain.",
+        "LocalRead execution streams follow persisted original partition row counts and read files serially. Many physical files can therefore remain tied to a single old logical partition; provider integration must choose real runtime parallelism from work/resource budgets instead.",
+        "partition_key_bounds re-encodes already cached typed Arrow key bounds as IPC payloads; prefer partition_typed_key_bounds and remove internal transport callers.",
+        "Old immutable generations are deliberately retained and no GC exists. This is documented lifecycle debt, not a recommendation to delete generations while readers remain pinned."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/examples/datafusion_order_audit.rs",
+      "lines": 393,
+      "sha256": "8e006c2d80941628feb7d4af4ffb7806fd527f45550a87636e72713b2e69d971",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-examples_docs.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/aggregation.rs",
+      "lines": 427,
+      "sha256": "a315c7acd3fa0670b2b0dd78636657b2dd38cefbbb95cb2fa1926b3e7a7819c1",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/comparison.rs",
+      "lines": 576,
+      "sha256": "03578bf7b3748c34d93eb8b0587f9281c34321693d88b838270a9999f60f9757",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/deferred_logical.rs",
+      "lines": 96,
+      "sha256": "03a1a756d49edfca722c8db32128b63f73799414547677c1b382cdbb9a190dc9",
+      "status": "removed",
+      "review_depth": null,
+      "owner": null,
+      "findings": [],
+      "reports": []
+    },
+    {
+      "path": "vail/crates/vail-table/src/globals.rs",
+      "lines": 281,
+      "sha256": "44a6d325aba2d21ed68a03e3cb958123c0f75af5637364b7fdf21194d646ce5b",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/initialized_aggregate.rs",
+      "lines": 302,
+      "sha256": "bd4a2632302abe5fd16869ad09a0e8105bad505d5bad66b00c94e19ff78e6043",
+      "status": "removed",
+      "review_depth": null,
+      "owner": null,
+      "findings": [],
+      "reports": []
+    },
+    {
+      "path": "vail/crates/vail-table/src/initialized_scan.rs",
+      "lines": 252,
+      "sha256": "5bf997b95981b7e85323a413728ac5151bbc0ec831f8e598ca2fc59254eb06a2",
+      "status": "removed",
+      "review_depth": null,
+      "owner": null,
+      "findings": [],
+      "reports": []
+    },
+    {
+      "path": "vail/crates/vail-table/src/interval_read.rs",
+      "lines": 1516,
+      "sha256": "8d04526581e15bc4b05c1ee162733fedbe4ae367ee072550e3d8314ed144e869",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/join_interval.rs",
+      "lines": 1272,
+      "sha256": "6700645e62e94f333eba9375b61c82bb0a4baf4da51ed46fc7f6f8ec18d50f5c",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004",
+        "A003",
+        "A007"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/joins.rs",
+      "lines": 509,
+      "sha256": "286973899238f1e34066f3260e10cd330a2244187d6cee9934f07c90ad986d56",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/lib.rs",
+      "lines": 1964,
+      "sha256": "a00ca682698f9b43a26354ec7c19b2a79bba887fabb3cb5ad1c5d67e3a64f555",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/line_source.rs",
+      "lines": 337,
+      "sha256": "db575dc1b7afdbec081c89d1ad2d676b22a36d782ab9133fdbbc23987546477c",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [],
+      "evidence": "Framed async object stream, one bounded record batch, universal newline decoder tracks incremental search offset. Cancellation drops upstream reader; memory scales with batch plus largest physical line, no complete-file collection.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical.rs",
+      "lines": 1397,
+      "sha256": "cdac34ed94aad4db28f63e5357de301c626f8ffef90867cae7e9679c7db02f3d",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004",
+        "A001"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_aggregate_init.rs",
+      "lines": 236,
+      "sha256": "7367575177aad3d95e2fdba23aa6cf0e1874927d2bc46e808e71b12e9bef535c",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_aggregation.rs",
+      "lines": 795,
+      "sha256": "8eacdfc2d9586dff9d39bb17a4878a85193766e54b0c19ed285a910515d24d81",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_globals.rs",
+      "lines": 248,
+      "sha256": "242d00c25836e79cc4b750dd6f11a42798396884820ae05f781804bb31178457",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_nested_aggregation.rs",
+      "lines": 262,
+      "sha256": "6ecbaacb1aacb82e5c9fb4921bc2a26654c93c52a4325eb1ba56629575928a39",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_same.rs",
+      "lines": 149,
+      "sha256": "f89b26264295479b28f6e1436a151312c6361979b5ed7fa14bb010e60a007baa",
+      "status": "reviewed",
+      "review_depth": "Full production source read and relevant tests/physical child contracts inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_scan.rs",
+      "lines": 1020,
+      "sha256": "62c0dcbc7114ecd63eecd818709672633cba509ad05207e267f5836faf2187db",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004",
+        "A001"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/lookup.rs",
+      "lines": 889,
+      "sha256": "62a53dad84f27f005817a8844f7ebee4f6f643e3afd41c3848d8e058fc8a35e5",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004",
+        "A007"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/nested_projection.rs",
+      "lines": 359,
+      "sha256": "344f37f3c36a212e68b6cee2986c0bfc10a5a959cc7160a8a7d7a6d38266f819",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/nested_scan.rs",
+      "lines": 471,
+      "sha256": "ad1b2f1ad1d3ecedb02c24aa1f3c0ee925b84ae78d93fa81aabd3674edbfa3dd",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/partition_grouping.rs",
+      "lines": 312,
+      "sha256": "9af3bb580c9cca25944b783b40372c2093694395bca178469b95f87eeb56cc5d",
+      "status": "reviewed",
+      "review_depth": "Full production source read and relevant tests/physical child contracts inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/partition_map.rs",
+      "lines": 316,
+      "sha256": "fdaa90073a2b33978a1a338aca2c1ea10a61d8e20d8b282d74f0c6c9a1da64fa",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/partitioned.rs",
+      "lines": 1818,
+      "sha256": "6a0ffbc6c79fe6d68d8eb81ce67946b982a38812c560f38561ddf61ba481c296",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004",
+        "A003"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/partitioning.rs",
+      "lines": 233,
+      "sha256": "ab0a92f178f9ad8368e0ae377bddbca74d0851c440df340db0a4b28f5acfca8e",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "owner": "logical_planning",
+      "findings": [],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/plan.rs",
+      "lines": 1394,
+      "sha256": "3ec4283396209f19808a575e6fc408ff583666ce3c9beb262eaa8da90f0483f3",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/provider.rs",
+      "lines": 1300,
+      "sha256": "1d2bf0ea5e69d823cc4e1494dbaccecc4eec11c63d8127f1fd3d016f5c779211",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/rng_context.rs",
+      "lines": 165,
+      "sha256": "5e196643f8ff76da43c80397ff396fd58dbaee5c960300747f75ef6a70dcfb5b",
+      "status": "reviewed",
+      "review_depth": "Full production source read and relevant tests/physical child contracts inspected.",
+      "owner": "logical_planning",
+      "findings": [
+        "A004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/text_export.rs",
+      "lines": 162,
+      "sha256": "b4ff8b55872f65e39d84b4dbf856715643f7cea182fc452cf703ed49d2a78504",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [
+        "TEXT-DIRECT-PUBLICATION"
+      ],
+      "evidence": "Native DataSinkExec consumes stream with DataFusion CSV/JSON sinks and bounded operator buffering. Destination is configured directly with InsertOp::Overwrite, without staging/atomic publication.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/text_schema.rs",
+      "lines": 241,
+      "sha256": "332b8b5ca53aabcfc5bb9c5cd26280a779c76e53b9ad2bba0b4b069eb500e9f8",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [],
+      "evidence": "Samples at most configured record limit per file (default 1000), merges only schemas, rejects unbounded JSON array mode; validates CSV column names/order across files.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/vcf_export.rs",
+      "lines": 123,
+      "sha256": "55457c045c86d442fc4e507d3b2ab5713cf12297a36b8029a65c00f7f42ee019",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [
+        "VCF-SINK-FIXED"
+      ],
+      "evidence": "New sink pulls one Arrow batch, formats one row, writes before requesting subsequent batches. Keeps at most current batch plus current rendered row. Temporary sibling is persisted only after complete successful stream and flush. Source/writer failures and cancellation release the input. Ordinary synchronous file writes execute on the detached native caller thread.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/vcf_source.rs",
+      "lines": 205,
+      "sha256": "283a40605fd4573f8766299b3c8ff0b40d6218b096b5c89361187e4013b7868b",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [
+        "VCF-SOURCE-PROJECTION"
+      ],
+      "evidence": "Blocking worker, two-batch bounded channel, batch rows capped using sample count. Checks closed receiver per line and on send; errors travel through same channel. Except empty projection, parses whole record then projects finished batch.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/zip_join.rs",
+      "lines": 392,
+      "sha256": "971d1f2dd859d3e4bd8498a14b06667e9a009be80428da84d57950ab599ef0e7",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "evidence": "",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-vcf/examples/delimiter_bench.rs",
+      "lines": 123,
+      "sha256": "92750aa3154df91e0629414527b922cfd66c8d6b172573adfa873a11f71372d3",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-examples_docs.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-vcf/examples/format_bench.rs",
+      "lines": 78,
+      "sha256": "834d99fdcb512b734e6742ea93be0b9a16dcef08db80b26715cf4b61050b0a71",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-examples_docs.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-vcf/examples/parse_bench.rs",
+      "lines": 46,
+      "sha256": "460ccf80f71da6659a7bba0c94365c47daa2b444e97f5a84a03f811de7b272ea",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-examples_docs.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-vcf/src/lib.rs",
+      "lines": 1121,
+      "sha256": "23673a270ce14ee32bcdece0cca61a45cbba305fdbe0e2d714592342c5c7565c",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "audit-vcf_sink",
+      "findings": [
+        "VCF-FORMAT-CACHE"
+      ],
+      "evidence": "Native Arrow builders dispatch per FORMAT stripe, reuse token offsets, share delimiter discovery, and cache FORMAT plans. No Python row objects or whole-file buffering. Cache has no bound or eviction.",
+      "report": "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-vcf_sink.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/__init__.py",
+      "lines": 1,
+      "sha256": "83b1db5357de7e436843d900a2a74d002d75371b28358565c8514dd6023431a0",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/all_upstream_table_cases.py",
+      "lines": 192,
+      "sha256": "ca5020fa3a3b439a44caee1a1e3157ccca0da5a0d33262887f1286dfec9536e8",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/codec.py",
+      "lines": 61,
+      "sha256": "cee34ffbb6a24dcbb912a8df1ad7a67a6c796f85c3bfacd160e9bb2e0f4b144e",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/compare.py",
+      "lines": 87,
+      "sha256": "4b6e4f4811a30ed380ba308b43bcdacb2c18929d58149c9963b3f65fd9b38e27",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/full_hail_bodies.py",
+      "lines": 311,
+      "sha256": "bdc82054e30ca8742519d9295b4f7d54f0b41c3d1989aa78cbb683fbbeaa4aa1",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/full_hail_pytest.py",
+      "lines": 247,
+      "sha256": "323494770725c656b4ae9f84a298cdee1a9d39292689dab44c76dfc16955d871",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/oracle_worker.py",
+      "lines": 180,
+      "sha256": "4311d560fea6624ca8e3777c21b8f3b036e03f14404f049abb4321deab3ce10d",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/protocol.py",
+      "lines": 175,
+      "sha256": "8b901103ec79ec28045c7599cc8e81010d381519cfc7b50ec9c97045fb14f3c4",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/report_filtered_suite.py",
+      "lines": 218,
+      "sha256": "6bfbe3c76dd2c8f0fd68e217b3667d6f86229c55677e8c1b413c3540afc5074a",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/run.py",
+      "lines": 137,
+      "sha256": "f9709e6bce45e6804604fa0ee99081df36af30b383d556e9ed441ad8c550b73c",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/suite_selection.py",
+      "lines": 68,
+      "sha256": "acc33dc34f6d80dfccc3128f458d5e85bf56371c26c3db2f6141349ba0ec3afb",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/summarize_full_hail.py",
+      "lines": 205,
+      "sha256": "1c4e34ccd654793afe1fcbd2a2c5b14450bbf9d603fa8cf1f02099b6eac8d49d",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/supplement_filtered_suite.py",
+      "lines": 67,
+      "sha256": "61980a77600301085c5d25bb963c1529591b0d9297dd2a9e56e6404d1f968a41",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/upstream_backend.py",
+      "lines": 121,
+      "sha256": "763c9b6dd4711e577f23b1bea7ad74a2b48a4a59eeb3c9bb86c320a35993fd8c",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/upstream_matrix_cases.py",
+      "lines": 472,
+      "sha256": "304fa56ff093d365cc3eb685d618a65964153b453f7af119ead1c800a826cc20",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "HARNESS_ADAPTER_DUPLICATION"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/upstream_paths.py",
+      "lines": 78,
+      "sha256": "b7a4f51c9fd3ac074e8d90acf5fc3f6d325d082b46af3b6ec476240de8f4efac",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/upstream_scope.py",
+      "lines": 11,
+      "sha256": "cb958ef0c0f13e381b3b584318a580c4e6c9ae2b5d8d817293c8662f5e0ad6a1",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "A008",
+        "A009"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-root.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/upstream_table_cases.py",
+      "lines": 161,
+      "sha256": "987f2d75949e10448348fb504ace33cdb084ef2a6f8e3a034f1f011650d802a5",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "HARNESS_ADAPTER_DUPLICATION"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/upstream_vcf_cases.py",
+      "lines": 80,
+      "sha256": "22540fef9f99f3605c6d3b877d18a26ee73074f1777c8f9680540ac1570df431",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "HARNESS_ADAPTER_DUPLICATION"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/conformance/vcf_golden.py",
+      "lines": 87,
+      "sha256": "e43ab4e8a44dfc8f8b2d70f523fafa2ac1289ca173b07ed5bf80ece480a084df",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "HARNESS_ADAPTER_DUPLICATION"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/check_hail_interval_bounds.py",
+      "lines": 105,
+      "sha256": "d4b903e547555b5498d824ae798557289c828c38fd10284de4e27c75359fd3cb",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/check_hail_partitions.py",
+      "lines": 150,
+      "sha256": "12399e31f6c15855d5431a4af0401ef94b55259e9930129b5ce95c33fc529326",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/check_hail_string_operations.py",
+      "lines": 28,
+      "sha256": "c365a2de5c670dc2761ddcee115d3beb4c4ae1143cd4afd775030963fb5ea371",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/check_hail_text_operations.py",
+      "lines": 41,
+      "sha256": "cce7aa15f0c854d976b0d6f95ffcb824000a362055da5b173f69ed59f1840b5c",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/hail_inventory_report.py",
+      "lines": 191,
+      "sha256": "387a1b360a2793fe163d2164b5fa303f6eeee9441eab16fe1e73bbb44bac8127",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "INVENTORY_STALE_IMPLEMENTATION_CLAIMS"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/inventory_hail_api.py",
+      "lines": 211,
+      "sha256": "6a3daead4fd299477a2c727f5e98665dc270ea07c324df719b87f2991aacdade",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/inventory_hail_tests.py",
+      "lines": 649,
+      "sha256": "668ad5e1157ceac5d3dce7cb3ae00acb3d242909bf25eaf83b69dd1732abd4ed",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "INVENTORY_STALE_IMPLEMENTATION_CLAIMS"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/native_conformance_worker.py",
+      "lines": 110,
+      "sha256": "19314aa44a77651050f89b0ba759e34fc95fc30575ebd4947c1761052deecde2",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/prepare_reference_manifest.py",
+      "lines": 265,
+      "sha256": "61c41c3a493e2f04510edd22d97c52b7d790c9fcd99410bfeeb606faae85f9e9",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/report_table_test_run.py",
+      "lines": 39,
+      "sha256": "2ff6e8798449670f455dcc1a51758b53f51b0b323324dbfab6e4a8f634f77a43",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "HARNESS_REPORT_PROVENANCE"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/scripts/run_all_tests.py",
+      "lines": 395,
+      "sha256": "20bf4c368bfba4b09ef15524d8c63efddd6603fb7aaa78b07540d1a4fa0bcbb4",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/compare_hail.py",
+      "lines": 222,
+      "sha256": "e38102dde3c03ea269aacd7b72c9e3e5742e5f0e8458223266afac4553bc3d10",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Failed cases are recorded but script exits successfully; calling harness cannot equate subprocess zero status with all cases passed. Acceptance: aggregate exit status reflects failures while preserving report.",
+        "Several named workloads only assert force-count output, not projected field/scan/lookup values. Whether operators are actually forced depends on _force_count implementation/optimizer; ensure value-consuming checksum or verified physical plan for performance claims. This is benchmark validation gap, not a demonstrated production defect.",
+        "Input validation omits positive iterations/scale/cores and legal VCF position range; zero iterations produces caught failure instead of early configuration error."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/profile_annotate.py",
+      "lines": 193,
+      "sha256": "2ff556a30fa1104d04acadc45c2ac770da040613cb42f222eea590870a6d99aa",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "BENCHMARK_WORKER_DEADLINES"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/profile_cloud.py",
+      "lines": 206,
+      "sha256": "3312b9208ab6cf2c2a75d4074231433ab2b630aafc0be95607acf0f1bc07a98b",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "BENCHMARK_WORKER_DEADLINES"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/profile_range_means.py",
+      "lines": 132,
+      "sha256": "937df2e5777c5d5ce04f4ab55bb4b828a74efdfa7fb1bdff620b4f1bd0105550",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "BENCHMARK_WORKER_DEADLINES"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/profile_samples.py",
+      "lines": 236,
+      "sha256": "50a9e05906269749cad95f0f77b7356b2217be6c1dbf07eff688c7607d012db9",
+      "status": "reviewed",
+      "review_depth": "full_source",
+      "owner": "root",
+      "findings": [
+        "BENCHMARK_WORKER_DEADLINES"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-root.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/render_annotate_profile.py",
+      "lines": 208,
+      "sha256": "94319be3654c7d3b6765e4617bf14432f40064b69dc04e16599ab2709712c8de",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Stack cache recursively builds Python tuples along every prefix; unusually deep stacks can hit recursion limit, and missing/empty samples or zero measured CPU fail via trace[-1], division or max. Acceptance: iterative stack traversal and explicit no-valid-samples report.",
+        "CPU samples are included by endpoint timestamp rather than requiring full CPU-delta interval inside measured phase; boundary samples can include warmup CPU. Acceptance: clip intervals or require previous/current timestamps inside phase and report excluded duration.",
+        "Workload scales and 500 Hz/10 Hz labels hardcoded rather than derived from capture metadata."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/render_cloud_benchmarks.py",
+      "lines": 220,
+      "sha256": "1d28c39a26e6f520bc8c4c1d71cf4cd02304ff24713fbada2bc0271c8a37713b",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Missing perf event values use total(event) default zero; absent cache-misses and genuine zero are conflated. Acceptance: preserve unavailable counter status and multiplex/scaling validity.",
+        "Host model, cores, heap, toolchain, warmup duration narratives hardcoded; script accepts arbitrary compatible result directories without validating these claims."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/render_cloud_html.py",
+      "lines": 257,
+      "sha256": "af055f93f8a6cd13908b37a31a50320cfc4df6bed8f931e0e1f67701de205f98",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Incomplete curated engine pairs are silently skipped even while header counts all configurations and upstream missing statuses are explicitly visible. Duplicate (config,case,engine) rows overwrite silently. Acceptance: validate unique complete pairs or render missing/duplicate statuses and exclude them transparently from totals."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/render_dimension_scaling.py",
+      "lines": 151,
+      "sha256": "279ebe16ea6d22b8969d5e24a31045a4203938ca943b48b87a4678d4cf1a2e85",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Uses imported CONFIGS and fixed host/runtime/heap/warmup narratives instead of provenance/worker metadata; renderer can mislabel captures after runtime/config changes."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/render_matrix_layout.py",
+      "lines": 147,
+      "sha256": "20742f796f90f6360e364eaec55cb11bfd128e6777ff5cc1ed17c441b77da271",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Uses fixed CONFIGS and source-partition label; does not verify worker parameters agree. Instructions/query estimated with median latency times mean rate, unlike measured-throughput estimate elsewhere; label remains estimated but cross-report comparisons need same definition."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/render_range_means.py",
+      "lines": 37,
+      "sha256": "a25e32dddc02a88f423767d19eef951d4ae15ca8838b3cbd1e18ca0071fdf5d5",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Assumes nonempty metrics/events and hardcodes 10 Hz label; missing capture data crashes without explicit incomplete status."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/render_sample_telemetry.py",
+      "lines": 86,
+      "sha256": "f56b6b2aeb7a688ff554ec8a68c786179725c0c9aa6f709b51ad0d92dbab6ecd",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Hardcodes 20 samples, 100k/50k rows, local14 and heap48GiB in generated report regardless of worker metadata. Acceptance: derive configuration/provenance or enforce expected capture fingerprint."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/run_cloud_benchmarks.py",
+      "lines": 90,
+      "sha256": "5070c31207f22c71b7039e34e7c1367f7c2e23c3258f3f994262df1771a6fb22",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Resume verifies claimed commit, seconds and configs but retains old captures after script hashes change; records script_hashes_on_resume without invalidating prior results. --commit is caller-supplied and not checked against actual installed native wheel/source. Acceptance: each capture retains immutable source/binary/runner hashes and mixed-provenance resumes reject or explicitly separate series.",
+        "Capture/provenance subprocesses have no timeout; a hung collector blocks the suite indefinitely. Acceptance: bounded process-tree lifecycle and explicit failed capture record."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/run_dimension_scaling.py",
+      "lines": 96,
+      "sha256": "167587dc2b9a15822e50997ad0cbcddee4f3e4944a7294a3a214bb097e6021c6",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Allows existing output directory and overwrites provenance with fresh runs list; partial prior artifacts can become mixed with new run. Acceptance: fresh-run directory or configuration/hash-validated resume, atomic report replacement.",
+        "Compilers checked before captures and reported afterward, but runtime contention is not rejected during capture. Process-name heuristic is only a partial idle-host guarantee."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/benchmarks/upstream_benchmark_coverage.py",
+      "lines": 552,
+      "sha256": "8d1c711c2e1f9734146d2ba8acf7a46ff4637d1bd6fbd0b8406b5aee0519b914",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [
+        "Resume retains previous case results while replacing runner/upstream hash fields with current hashes, checking only engine/smoke/data directory. Native fixture cache completeness is marker-only, without fixture builder/source/binary identity. Acceptance: pin capture and fixture fingerprints and reject/migrate stale cache explicitly.",
+        "Worker cleanup kills process group only while primary worker is alive (normal completed path simply joins); primary can exit while JVM/helpers remain. SIGTERM cleanup escalates only if primary remains alive, so surviving descendants can contaminate later cases. Acceptance: verify/reap owned process group after primary termination too.",
+        "AST adapter removes pytest decorators and manually reconstructs fixture/parameter behavior; upstream source changes can silently diverge (for example parametrization argnames list unsupported by inventory branch using split). Acceptance: fail closed on unsupported decorators/signatures and cross-check collected case IDs/arguments with pytest collection.",
+        "Published fixture downloads lack expected content checksum/version, so exact dimensions alone do not establish stable exact fixture content. Acceptance: record/verify input digests."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-benchmark_reports.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/kernel_identity.rs",
+      "lines": 120,
+      "sha256": null,
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/expression_identity.rs",
+      "lines": 172,
+      "sha256": null,
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/expression_effects.rs",
+      "lines": 108,
+      "sha256": null,
+      "status": "reviewed",
+      "review_depth": "full_source_and_tests",
+      "owner": "kernel_effects",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_aggregate_scan.rs",
+      "lines": null,
+      "sha256": null,
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "stream_scan",
+      "findings": [],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json",
+        "vail/docs/reviews/shortcut-remediation/audit-stream_scan.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/action_parameters.rs",
+      "lines": 98,
+      "sha256": "36fcb63faa2058e9b839b0132bd93d3de00349161c7dba2a63f3b103b7a8649e",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "owner": "logical_planning",
+      "findings": [
+        "S004"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/list_aggregate.rs",
+      "lines": 229,
+      "sha256": "4d21e4d5783e4cae72c83a6cfdf1c9395b2305dba511992af5c92c26dd6303eb",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "S003"
+      ],
+      "report": "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-shared_reducers.json"
+      ]
+    },
+    {
+      "path": "vail/../README.md",
+      "lines": null,
+      "sha256": null,
+      "status": "reviewed",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-examples_docs.json"
+      ],
+      "review_depth": "full",
+      "owner": "stream_scan"
+    },
+    {
+      "path": "vail/README.md",
+      "lines": null,
+      "sha256": null,
+      "status": "reviewed",
+      "findings": [
+        "Claims single ordered physical stream and preserved Hail logical partitions, and future optimizer integration, despite current logical planner and deliberate partition divergence.",
+        "Persistence section promises logical/empty partition boundaries and file rollover at partition boundaries; actual keyed writer coalesces sorted input streams and rolls by byte/row budgets.",
+        "Claims primitive ASCII-only certified keys and several private read options unavailable; current native type/key and interval paths exceed those stated limits."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-examples_docs.json"
+      ],
+      "review_depth": "full",
+      "owner": "stream_scan"
+    },
+    {
+      "path": "vail/crates/vail-table/src/diagnostics.rs",
+      "lines": 62,
+      "sha256": "699e3e8691a7a95d868dae6b93ea5f0c78869f25e7f8a8c9623a97080503290b",
+      "status": "reviewed",
+      "findings": [
+        "S004"
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-logical_planning.json"
+      ],
+      "review_depth": "Full production source and inline regression read. Lazy diagnostic nodes explicitly cannot execute.",
+      "owner": "logical_planning"
+    },
+    {
+      "path": "vail/crates/vail-storage/tests/streaming_write.rs",
+      "lines": null,
+      "sha256": "4ffe9428b22c53f256374d7271f0a86bad023eec8915b6a785733bbe32d60168",
+      "status": "reviewed",
+      "findings": [
+        "row_and_byte_limits_flush_before_requesting_more_input now checks written.len() <= consumed batches. That does not prove bounded prefetch/retained memory; its name and older sequential guarantee are stronger than its assertion."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ],
+      "review_depth": "full",
+      "owner": "stream_scan"
+    },
+    {
+      "path": "vail/crates/vail-storage/tests/roundtrip.rs",
+      "lines": null,
+      "sha256": "b8e2fb5a5a7e1cbed6d14105b96e8418040ccf93287db4235961edf3610e1fec",
+      "status": "reviewed",
+      "findings": [],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ],
+      "review_depth": "full",
+      "owner": "stream_scan"
+    },
+    {
+      "path": "vail/crates/vail-storage/tests/vortex_comparison_audit.rs",
+      "lines": null,
+      "sha256": "1a12c9a8f2aa27cbdddb0705046d875453e6d069cfbb0c46af83d6dee627ec72",
+      "status": "reviewed",
+      "findings": [
+        "iceberg_metrics_pruning_drops_nan_rows_that_vortex_matches intentionally proves an existing upstream mismatch: Iceberg metrics can prune positive NaN for x > +infinity although native Arrow/Vortex total-order comparisons return true. Pushdown must account for this before enabling generic Iceberg predicates."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ],
+      "review_depth": "full",
+      "owner": "stream_scan"
+    },
+    {
+      "path": "vail/crates/vail-storage/README.md",
+      "lines": null,
+      "sha256": "063a9cc57cbfde6e9d345e95e7d751c04e9b8abf657d0fa6bcc5c66accbe7059",
+      "status": "reviewed",
+      "findings": [
+        "Documentation still claims per-file/global SHA256 checks and waiting for each file to close before polling input. Current code intentionally omits content hashes and supports 32 concurrent file writes. These claims are stale."
+      ],
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-storage_ordering.json"
+      ],
+      "review_depth": "full",
+      "owner": "stream_scan"
+    },
+    {
+      "path": "vail/crates/vail-execution/src/randomness_binding.rs",
+      "lines": 199,
+      "sha256": "cd1b6dbfe86e891f8b672dc08b9806b897cbd7ac1dd8c2629f8e371d51f83c62",
+      "status": "reviewed",
+      "review_depth": "full",
+      "owner": "kernel_effects",
+      "reports": [
+        "vail/docs/reviews/shortcut-remediation/audit-kernel_effects.json"
+      ],
+      "findings": []
+    }
+  ],
+  "candidate_validation_manifest": "evidence/vail-shortcuts-build10-source-hashes.json",
+  "coverage_interpretation": "Full module reads and subsequent targeted source reviews are recorded per report. Per-module initial hashes identify the audit snapshot; final candidate source hashes are separate. Reviewed does not mean all queued concerns are fixed."
+}

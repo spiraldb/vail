@@ -52,20 +52,15 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
                     .unwrap_or(Expr::RuntimeLiteral {
                         value: ScalarValue::Int64(Some(1)),
                     });
-                if matches!(function.as_str(), "sum" | "mean" | "stddev_pop") {
-                    // The frontend declares the aggregate's widened result.
-                    let dtype = if function == "sum" {
-                        result_type
-                            .clone()
-                            .unwrap_or(Type::Primitive(PrimitiveType::Int64))
-                    } else {
-                        Type::Primitive(PrimitiveType::Float64)
-                    };
+                if matches!(function.as_str(), "mean" | "stddev_pop") {
                     element = Expr::Cast {
                         value: Arc::new(element),
-                        dtype,
+                        dtype: Type::Primitive(PrimitiveType::Float64),
                     };
                 }
+                // Sum infers its widened output from the mapped argument's
+                // native Arrow type in factory(). Optional frontend result
+                // annotations must not select integer versus floating math.
                 return Ok(Expr::Aggregate {
                     function: format!("__coordinate_{function}"),
                     value: Some(Arc::new(Expr::ArrayMap {
@@ -93,7 +88,9 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
         };
         let input = element.data_type();
         let inner = match function {
-            "sum" => datafusion_functions_aggregate::sum::sum_udaf(),
+            "sum" => {
+                vail_execution::reducer::configured_udaf("sum", Some(input), &reducer.options)?
+            }
             "min" => datafusion_functions_aggregate::min_max::min_udaf(),
             "max" => datafusion_functions_aggregate::min_max::max_udaf(),
             "mean" => datafusion_functions_aggregate::average::avg_udaf(),
@@ -106,7 +103,9 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
             }
         };
         let empty = match function {
-            "sum" if input == &DataType::Int64 => ScalarValue::Int64(Some(0)),
+            "sum" if matches!(input, DataType::Int32 | DataType::Int64) => {
+                ScalarValue::Int64(Some(0))
+            }
             "sum" => ScalarValue::Float64(Some(0.0)),
             "count" => ScalarValue::Int64(Some(0)),
             "mean" | "stddev_pop" => ScalarValue::Float64(Some(f64::NAN)),
@@ -133,29 +132,11 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
             "aggregate argument count mismatch".into(),
         ));
     }
-    if f == "collect" {
-        return Ok(vail_execution::collect_aggregate::collect_udf(
-            dtype.ok_or_else(|| TableError::Invalid("collect requires input".into()))?,
-        ));
-    }
-    if let Some(dtype) = dtype {
-        if let Some(udf) =
-            vail_execution::advanced_collection_aggregates::make_udaf(f, dtype, &reducer.options)?
-        {
-            return Ok(udf);
-        }
-        if let Some(udf) =
-            vail_execution::advanced_numeric_aggregates::make_udaf(f, dtype, &reducer.options)?
-        {
-            return Ok(udf);
-        }
-        if let Some(udf) =
-            vail_execution::advanced_genomic_aggregates::make_udaf(f, dtype, &reducer.options)?
-        {
-            return Ok(udf);
-        }
-    }
-    Ok(vail_execution::aggregates::aggregate_udf(f, dtype)?)
+    Ok(vail_execution::reducer::configured_udaf(
+        f,
+        dtype,
+        &reducer.options,
+    )?)
 }
 
 pub(crate) fn columns(plan: &LogicalPlan) -> Vec<DFExpr> {
@@ -176,7 +157,7 @@ pub(crate) fn unique(used: &mut HashSet<String>, base: &str) -> String {
 
 fn needs_order(expression: &Expr) -> bool {
     let mut ordered = false;
-    expression.visit(&mut |node| {
+    expression.visit_unique(&mut |node| {
         // A fold's initial state is applied once, including for empty input.
         // The native accumulator also preserves sequence order.
         if matches!(node, Expr::AggregateFold { .. }) {
@@ -223,6 +204,9 @@ pub(crate) fn scope_plan(
     outer_scope: &BTreeMap<String, String>,
     external: &crate::globals::GlobalBindings,
 ) -> Result<(LogicalPlan, BTreeMap<String, ScalarValue>, String)> {
+    // Each aggregate scope is an independent consumer of the same relation.
+    // Its logical boundary prevents sibling scopes competing for exchange output.
+    input = crate::logical::independent_consumer(input);
     let key_types = key_names
         .iter()
         .map(|name| {

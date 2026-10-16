@@ -5,7 +5,7 @@
 //! overflow, floor division, modulo, and missing-condition semantics are kept
 //! explicit at this boundary.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 use std::sync::{Arc, OnceLock};
 
@@ -385,13 +385,15 @@ pub enum ArrayReduction {
     Max,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "op", rename_all = "snake_case")]
 pub enum Expr {
     /// Frontend scopes are native nodes and must be resolved before lowering.
     MatrixField {
         axis: String,
         name: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        dtype: Option<Type>,
     },
     MatrixScope {
         axis: String,
@@ -404,6 +406,8 @@ pub enum Expr {
         keys: Vec<Expr>,
         all_matches: bool,
         query_interval: bool,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        dtype: Option<Type>,
     },
     /// Native Arrow scalar retained directly; never deserialized as an expression.
     #[serde(skip)]
@@ -448,6 +452,10 @@ pub enum Expr {
     },
     LambdaVariable {
         name: String,
+        /// Construction-time typing may use this annotation; execution still
+        /// requires a real lexical binder with the same type.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        dtype: Option<Type>,
     },
     /// Built-in DataFusion collection function; no Vail evaluation kernel.
     NestedFunction {
@@ -478,6 +486,14 @@ pub enum Expr {
         value: Arc<Expr>,
         parameter: String,
         body: Arc<Expr>,
+    },
+    /// Exclusive scans backed by the ordinary aggregate accumulator.
+    ArrayAggregateScan {
+        function: String,
+        value: Arc<Expr>,
+        predicate: Arc<Expr>,
+        options: Value,
+        dtype: Type,
     },
     ArrayFold {
         value: Arc<Expr>,
@@ -678,15 +694,70 @@ fn field_type(fields: &[(String, Type)], name: &str) -> Result<Type, ExprError> 
         .map(|(_, t)| t.clone())
         .ok_or_else(|| ExprError::Invalid(format!("struct field {name:?} is absent")))
 }
+/// A compilation request owns all temporary lowering IR and memo tables. Native
+/// addresses are safe keys while the caller's root and this arena remain alive.
+/// Binding contexts include actual Arrow metadata and lexical field positions;
+/// neither node identity alone nor a process-global cache can describe typing.
+#[derive(Default)]
+struct CompilationMemo {
+    contexts: HashMap<CompilationBindings, usize>,
+    types: HashMap<(usize, usize), Type>,
+    physical: HashMap<(usize, usize), Arc<dyn PhysicalExpr>>,
+    physical_schemas: HashMap<usize, Arc<Schema>>,
+    generated: Vec<Arc<Expr>>,
+}
+#[derive(Clone, PartialEq, Eq, Hash)]
+struct CompilationBindings {
+    schema: Schema,
+    globals: Schema,
+    scope: Vec<(String, Type, usize)>,
+}
+impl CompilationMemo {
+    fn context(
+        &mut self,
+        schema: &Schema,
+        globals: &Schema,
+        scope: &[(String, Type, usize)],
+    ) -> usize {
+        let descriptor = CompilationBindings {
+            schema: schema.clone(),
+            globals: globals.clone(),
+            scope: scope.to_vec(),
+        };
+        let next = self.contexts.len();
+        *self.contexts.entry(descriptor).or_insert(next)
+    }
+}
+
 impl Expr {
-    /// Visit typed expression nodes, never literal payloads or type metadata.
+    /// Visit typed expression occurrences, never literal payloads or types.
     pub fn visit(&self, f: &mut impl FnMut(&Expr)) {
         f(self);
+        self.for_each_child(&mut |child| child.visit(f));
+    }
+    /// Visit each shared native node once. This traversal follows a DAG rather
+    /// than expanding shared edges into an exponentially larger expression tree.
+    pub fn visit_unique(&self, f: &mut impl FnMut(&Expr)) {
+        fn walk(
+            expr: &Expr,
+            seen: &mut std::collections::HashSet<usize>,
+            f: &mut impl FnMut(&Expr),
+        ) {
+            if !seen.insert(expr as *const Expr as usize) {
+                return;
+            }
+            f(expr);
+            expr.for_each_child(&mut |child| walk(child, seen, f));
+        }
+        walk(self, &mut std::collections::HashSet::new(), f);
+    }
+    /// Borrow immediate typed children in their semantic order.
+    pub fn for_each_child<'a>(&'a self, f: &mut impl FnMut(&'a Expr)) {
         match self {
-            Self::MatrixScope { value, .. } => value.visit(f),
+            Self::MatrixScope { value, .. } => f(value),
             Self::TableLookup { keys, .. } => {
                 for key in keys {
-                    key.visit(f);
+                    f(key);
                 }
             }
             Self::MatrixField { .. }
@@ -694,10 +765,10 @@ impl Expr {
             | Self::MatrixColumnPosition { .. } => {}
             Self::Aggregate { value, init, .. } => {
                 if let Some(value) = value {
-                    value.visit(f);
+                    f(value);
                 }
                 for (_, expr) in init {
-                    expr.visit(f);
+                    f(expr);
                 }
             }
             Self::AggregateFold {
@@ -706,25 +777,25 @@ impl Expr {
                 combine,
                 ..
             } => {
-                initial.visit(f);
-                seq.visit(f);
-                combine.visit(f);
+                f(initial);
+                f(seq);
+                f(combine);
             }
             Self::AggGroupBy { key, body } => {
-                key.visit(f);
-                body.visit(f);
+                f(key);
+                f(body);
             }
             Self::AggArray { value, body, .. } => {
-                value.visit(f);
-                body.visit(f);
+                f(value);
+                f(body);
             }
             Self::AggFilter { predicate, body } => {
-                predicate.visit(f);
-                body.visit(f);
+                f(predicate);
+                f(body);
             }
             Self::AggExplode { value, body, .. } => {
-                value.visit(f);
-                body.visit(f);
+                f(value);
+                f(body);
             }
             Self::LambdaVariable { .. }
             | Self::ExternalGlobal { .. }
@@ -736,19 +807,25 @@ impl Expr {
             | Self::StringFunction { args, .. }
             | Self::NestedFunction { args, .. } => {
                 for arg in args {
-                    arg.visit(f);
+                    f(arg);
                 }
             }
             Self::ArrayMap { value, body, .. } => {
-                value.visit(f);
-                body.visit(f);
+                f(value);
+                f(body);
             }
             Self::ArrayFold {
                 value, zero, body, ..
             } => {
-                value.visit(f);
-                zero.visit(f);
-                body.visit(f);
+                f(value);
+                f(zero);
+                f(body);
+            }
+            Self::ArrayAggregateScan {
+                value, predicate, ..
+            } => {
+                f(value);
+                f(predicate);
             }
             Self::ArrayPredicate {
                 value, predicate, ..
@@ -756,21 +833,21 @@ impl Expr {
             | Self::ArrayFilter {
                 value, predicate, ..
             } => {
-                value.visit(f);
-                predicate.visit(f);
+                f(value);
+                f(predicate);
             }
             Self::StreamRange { start, stop, step } => {
-                start.visit(f);
-                stop.visit(f);
-                step.visit(f);
+                f(start);
+                f(stop);
+                f(step);
             }
             Self::ArrayGrouped { value, size } => {
-                value.visit(f);
-                size.visit(f);
+                f(value);
+                f(size);
             }
             Self::IntegerBinary { left, right, .. } | Self::Binary { left, right, .. } => {
-                left.visit(f);
-                right.visit(f);
+                f(left);
+                f(right);
             }
             Self::Die { message: value, .. }
             | Self::Unary { value, .. }
@@ -781,29 +858,29 @@ impl Expr {
             | Self::IsMissing { value }
             | Self::ArrayFlatten { value }
             | Self::ArrayLength { value }
-            | Self::ArrayReduce { value, .. } => value.visit(f),
+            | Self::ArrayReduce { value, .. } => f(value),
             Self::Interval {
                 start,
                 end,
                 includes_start,
                 includes_end,
             } => {
-                start.visit(f);
-                end.visit(f);
-                includes_start.visit(f);
-                includes_end.visit(f);
+                f(start);
+                f(end);
+                f(includes_start);
+                f(includes_end);
             }
             Self::IntervalContains { interval, point } => {
-                interval.visit(f);
-                point.visit(f);
+                f(interval);
+                f(point);
             }
             Self::IntervalOverlaps { left, right } => {
-                left.visit(f);
-                right.visit(f);
+                f(left);
+                f(right);
             }
             Self::Struct { fields } => {
                 for (_, expr) in fields {
-                    expr.visit(f);
+                    f(expr);
                 }
             }
             Self::IfElse {
@@ -811,44 +888,44 @@ impl Expr {
                 consequent,
                 alternate,
             } => {
-                condition.visit(f);
-                consequent.visit(f);
-                alternate.visit(f);
+                f(condition);
+                f(consequent);
+                f(alternate);
             }
             Self::Array { elements, .. } => {
                 for expr in elements {
-                    expr.visit(f);
+                    f(expr);
                 }
             }
             Self::ArrayIndex { value, index } => {
-                value.visit(f);
-                index.visit(f);
+                f(value);
+                f(index);
             }
             Self::Locus {
                 contig, position, ..
             } => {
-                contig.visit(f);
-                position.visit(f);
+                f(contig);
+                f(position);
             }
             Self::LocusOp { value, .. }
             | Self::ParseLocus { value, .. }
-            | Self::ParseCsvLine { value, .. } => value.visit(f),
+            | Self::ParseCsvLine { value, .. } => f(value),
             Self::LocusValid {
                 contig, position, ..
             } => {
-                contig.visit(f);
-                position.visit(f);
+                f(contig);
+                f(position);
             }
-            Self::LocusFromGlobalPosition { position, .. } => position.visit(f),
+            Self::LocusFromGlobalPosition { position, .. } => f(position),
             Self::ArraySlice {
                 value,
                 start,
                 stop,
                 step,
             } => {
-                value.visit(f);
+                f(value);
                 for expr in [start, stop, step].into_iter().flatten() {
-                    expr.visit(f);
+                    f(expr);
                 }
             }
         }
@@ -917,6 +994,12 @@ impl Expr {
                 *value = Arc::new(f(value)?);
                 *zero = Arc::new(f(zero)?);
                 *body = Arc::new(f(body)?);
+            }
+            Self::ArrayAggregateScan {
+                value, predicate, ..
+            } => {
+                *value = Arc::new(f(value)?);
+                *predicate = Arc::new(f(predicate)?);
             }
             Self::ArrayPredicate {
                 value, predicate, ..
@@ -1031,7 +1114,7 @@ impl Expr {
 
     pub fn contains_scan(&self) -> bool {
         let mut found = false;
-        self.visit(&mut |node| {
+        self.visit_unique(&mut |node| {
             found |= matches!(node, Self::Aggregate { options, .. }
             if options.get("__vail_scan").and_then(Value::as_bool) == Some(true));
         });
@@ -1048,7 +1131,7 @@ impl Expr {
             .iter()
             .map(|(name, ty)| (name.clone(), ty.clone(), 0))
             .collect::<Vec<_>>();
-        self.dtype_scoped(schema, globals, &scope)
+        self.dtype_in_scope(schema, globals, &scope, &mut CompilationMemo::default())
     }
 
     pub fn dtype(&self, schema: &Schema) -> Result<Type, ExprError> {
@@ -1056,23 +1139,54 @@ impl Expr {
     }
 
     pub fn dtype_with_globals(&self, schema: &Schema, globals: &Schema) -> Result<Type, ExprError> {
-        self.dtype_scoped(schema, globals, &[])
+        self.dtype_in_scope(schema, globals, &[], &mut CompilationMemo::default())
     }
 
+    fn dtype_in_scope(
+        &self,
+        schema: &Schema,
+        globals: &Schema,
+        scope: &[(String, Type, usize)],
+        memo: &mut CompilationMemo,
+    ) -> Result<Type, ExprError> {
+        let context = memo.context(schema, globals, scope);
+        self.dtype_scoped(schema, globals, scope, memo, context)
+    }
     fn dtype_scoped(
         &self,
         schema: &Schema,
         globals: &Schema,
         scope: &[(String, Type, usize)],
+        memo: &mut CompilationMemo,
+        context: usize,
+    ) -> Result<Type, ExprError> {
+        let key = (context, self as *const Expr as usize);
+        if let Some(dtype) = memo.types.get(&key) {
+            return Ok(dtype.clone());
+        }
+        let dtype = self.dtype_uncached(schema, globals, scope, memo, context)?;
+        memo.types.insert(key, dtype.clone());
+        Ok(dtype)
+    }
+
+    fn dtype_uncached(
+        &self,
+        schema: &Schema,
+        globals: &Schema,
+        scope: &[(String, Type, usize)],
+        memo: &mut CompilationMemo,
+        context: usize,
     ) -> Result<Type, ExprError> {
         match self {
-            Self::MatrixScope { .. }
-            | Self::TableLookup { .. }
-            | Self::MatrixField { .. }
-            | Self::MatrixNumCols { .. }
-            | Self::MatrixColumnPosition { .. } => Err(ExprError::Invalid(
-                "unresolved frontend expression scope".into(),
-            )),
+            Self::MatrixScope { value, .. } => {
+                value.dtype_scoped(schema, globals, scope, memo, context)
+            }
+            Self::MatrixNumCols {} | Self::MatrixColumnPosition {} => {
+                Ok(Type::Primitive(PrimitiveType::Int32))
+            }
+            Self::MatrixField { dtype, .. } | Self::TableLookup { dtype, .. } => dtype
+                .clone()
+                .ok_or_else(|| ExprError::Invalid("unresolved frontend expression type".into())),
             Self::Aggregate {
                 function,
                 value,
@@ -1083,7 +1197,7 @@ impl Expr {
                 if function == "__scan_fold" {
                     if let Some(value) = value {
                         if let Self::AggregateFold { initial, .. } = value.as_ref() {
-                            return initial.dtype_scoped(schema, globals, scope);
+                            return initial.dtype_scoped(schema, globals, scope, memo, context);
                         }
                     }
                     return Err(ExprError::Invalid("scan fold requires fold IR".into()));
@@ -1093,7 +1207,7 @@ impl Expr {
                 }
                 let value_type = value
                     .as_ref()
-                    .map(|v| v.dtype_scoped(schema, globals, scope))
+                    .map(|v| v.dtype_scoped(schema, globals, scope, memo, context))
                     .transpose()?;
                 let i64_type = Type::Primitive(PrimitiveType::Int64);
                 let f64_type = Type::Primitive(PrimitiveType::Float64);
@@ -1147,7 +1261,7 @@ impl Expr {
                 parameter,
                 body,
             } if body.contains_scan() => {
-                let element = match value.dtype_scoped(schema, globals, scope)? {
+                let element = match value.dtype_scoped(schema, globals, scope, memo, context)? {
                     Type::Array { array } | Type::Set { set: array } => *array,
                     _ => {
                         return Err(ExprError::Invalid(
@@ -1157,7 +1271,7 @@ impl Expr {
                 };
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), element, 0));
-                let result = body.dtype_scoped(schema, globals, &nested)?;
+                let result = body.dtype_in_scope(schema, globals, &nested, memo)?;
                 if matches!(self, Self::AggArray { .. }) {
                     Ok(Type::Array {
                         array: Box::new(result),
@@ -1168,8 +1282,8 @@ impl Expr {
             }
             Self::AggGroupBy { key, body } if body.contains_scan() => Ok(Type::Dict {
                 dict: Box::new((
-                    key.dtype_scoped(schema, globals, scope)?,
-                    body.dtype_scoped(schema, globals, scope)?,
+                    key.dtype_scoped(schema, globals, scope, memo, context)?,
+                    body.dtype_scoped(schema, globals, scope, memo, context)?,
                 )),
             }),
             Self::Aggregate { .. }
@@ -1181,19 +1295,19 @@ impl Expr {
             )),
             Self::AggFilter { predicate, body } => {
                 let mut scan_filter = false;
-                body.visit(&mut |node| {
+                body.visit_unique(&mut |node| {
                     scan_filter |= matches!(node, Self::Aggregate { options, .. }
                         if options.get("__vail_scan").and_then(Value::as_bool) == Some(true));
                 });
                 if scan_filter {
-                    if predicate.dtype_scoped(schema, globals, scope)?
+                    if predicate.dtype_scoped(schema, globals, scope, memo, context)?
                         != Type::Primitive(PrimitiveType::Bool)
                     {
                         return Err(ExprError::Invalid(
                             "scan.filter predicate must be Boolean".into(),
                         ));
                     }
-                    body.dtype_scoped(schema, globals, scope)
+                    body.dtype_scoped(schema, globals, scope, memo, context)
                 } else {
                     Err(ExprError::Invalid(
                         "aggregation expressions require Table.aggregate and cannot be nested"
@@ -1201,20 +1315,31 @@ impl Expr {
                     ))
                 }
             }
-            Self::LambdaVariable { name } => scope
-                .iter()
-                .rev()
-                .find(|(n, _, _)| n == name)
-                .map(|(_, ty, _)| ty.clone())
-                .ok_or_else(|| ExprError::Invalid(format!("unbound lambda variable {name:?}"))),
+            Self::LambdaVariable { name, dtype } => {
+                let bound = scope
+                    .iter()
+                    .rev()
+                    .find(|(n, _, _)| n == name)
+                    .map(|(_, ty, _)| ty);
+                match (bound, dtype) {
+                    (Some(bound), Some(declared)) if bound != declared => Err(ExprError::Invalid(
+                        format!("lambda variable {name:?} type disagrees with binder"),
+                    )),
+                    (Some(bound), _) => Ok(bound.clone()),
+                    (None, Some(declared)) => Ok(declared.clone()),
+                    (None, None) => Err(ExprError::Invalid(format!(
+                        "unbound lambda variable {name:?}"
+                    ))),
+                }
+            }
             Self::IntegerBinary {
                 operator,
                 left,
                 right,
             } => {
                 let int64 = Type::Primitive(PrimitiveType::Int64);
-                if left.dtype_scoped(schema, globals, scope)? != int64
-                    || right.dtype_scoped(schema, globals, scope)? != int64
+                if left.dtype_scoped(schema, globals, scope, memo, context)? != int64
+                    || right.dtype_scoped(schema, globals, scope, memo, context)? != int64
                 {
                     return Err(ExprError::Invalid(
                         "integer binary requires int64 arguments".into(),
@@ -1238,7 +1363,7 @@ impl Expr {
                     )));
                 }
                 for (arg, expected) in args.iter().zip(expected) {
-                    if arg.dtype_scoped(schema, globals, scope)? != expected {
+                    if arg.dtype_scoped(schema, globals, scope, memo, context)? != expected {
                         return Err(ExprError::Invalid(format!(
                             "{function} argument type mismatch"
                         )));
@@ -1249,9 +1374,42 @@ impl Expr {
             Self::Tuple { elements } => Ok(Type::Tuple {
                 tuple: elements
                     .iter()
-                    .map(|element| element.dtype_scoped(schema, globals, scope))
+                    .map(|element| element.dtype_scoped(schema, globals, scope, memo, context))
                     .collect::<Result<Vec<_>, ExprError>>()?,
             }),
+            Self::ArrayAggregateScan {
+                function,
+                value,
+                predicate,
+                options,
+                dtype,
+            } => {
+                let input = value
+                    .dtype_scoped(schema, globals, scope, memo, context)?
+                    .to_arrow()?;
+                if predicate.dtype_scoped(schema, globals, scope, memo, context)?
+                    != (Type::Array {
+                        array: Box::new(Type::Primitive(PrimitiveType::Bool)),
+                    })
+                {
+                    return Err(ExprError::Invalid(
+                        "aggregate scan predicate requires array<bool>".into(),
+                    ));
+                }
+                let udf = crate::array_aggregate_scan::make_udf(function, &input, options)?;
+                let actual = udf.return_type(&[
+                    input,
+                    predicate
+                        .dtype_scoped(schema, globals, scope, memo, context)?
+                        .to_arrow()?,
+                ])?;
+                if actual != dtype.to_arrow()? {
+                    return Err(ExprError::Invalid(
+                        "aggregate scan result type mismatch".into(),
+                    ));
+                }
+                Ok(dtype.clone())
+            }
             Self::NestedFunction {
                 function,
                 args,
@@ -1260,7 +1418,7 @@ impl Expr {
                 if let Some(function) = function.strip_prefix("random_") {
                     let types = args
                         .iter()
-                        .map(|arg| arg.dtype_scoped(schema, globals, scope))
+                        .map(|arg| arg.dtype_scoped(schema, globals, scope, memo, context))
                         .collect::<Result<Vec<_>, _>>()?;
                     crate::randomness::validate(function, &types, dtype)?;
                     return Ok(dtype.clone());
@@ -1269,8 +1427,22 @@ impl Expr {
                 let udf = nested_function(function)?;
                 let args = args
                     .iter()
-                    .map(|arg| arg.dtype_scoped(schema, globals, scope)?.to_arrow())
+                    .map(|arg| {
+                        arg.dtype_scoped(schema, globals, scope, memo, context)?
+                            .to_arrow()
+                    })
                     .collect::<Result<Vec<_>, ExprError>>()?;
+                // Reducer adapters validate their own argument/init contracts;
+                // they are not unary collection-to-collection functions.
+                if function.starts_with("__vail_list_reduce_") {
+                    let result = udf.return_type(&args)?;
+                    if !same_collection_storage(&result, &dtype.to_arrow()?) {
+                        return Err(ExprError::Invalid(format!(
+                            "{function} result type mismatch"
+                        )));
+                    }
+                    return Ok(dtype.clone());
+                }
                 let matrix_function = matches!(
                     function.as_str(),
                     "__vail_dict_lookup"
@@ -1353,7 +1525,9 @@ impl Expr {
                 Ok(dtype.clone())
             }
             Self::CollectionCast { value, dtype } => {
-                let input = value.dtype_scoped(schema, globals, scope)?.to_arrow()?;
+                let input = value
+                    .dtype_scoped(schema, globals, scope, memo, context)?
+                    .to_arrow()?;
                 let output = dtype.to_arrow()?;
                 if !matches!(input, DataType::List(_))
                     || !matches!(output, DataType::List(_))
@@ -1373,10 +1547,12 @@ impl Expr {
                 body,
                 scan,
             } => {
-                let Type::Array { array } = value.dtype_scoped(schema, globals, scope)? else {
+                let Type::Array { array } =
+                    value.dtype_scoped(schema, globals, scope, memo, context)?
+                else {
                     return Err(ExprError::Invalid("fold requires an array".into()));
                 };
-                let output = zero.dtype_scoped(schema, globals, scope)?;
+                let output = zero.dtype_scoped(schema, globals, scope, memo, context)?;
                 if accumulator == parameter
                     || scope
                         .iter()
@@ -1389,7 +1565,7 @@ impl Expr {
                 let mut nested = scope.to_vec();
                 nested.push((accumulator.clone(), output.clone(), schema.fields().len()));
                 nested.push((parameter.clone(), *array, schema.fields().len() + 1));
-                if body.dtype_scoped(schema, globals, &nested)? != output {
+                if body.dtype_in_scope(schema, globals, &nested, memo)? != output {
                     return Err(ExprError::Invalid(
                         "fold callback type must equal initial value type".into(),
                     ));
@@ -1407,7 +1583,7 @@ impl Expr {
                 parameter,
                 body,
             } => {
-                let input_type = value.dtype_scoped(schema, globals, scope)?;
+                let input_type = value.dtype_scoped(schema, globals, scope, memo, context)?;
                 let array = match input_type {
                     Type::Array { array } | Type::Set { set: array } => *array,
                     Type::Dict { dict } => Type::Struct {
@@ -1427,7 +1603,7 @@ impl Expr {
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), array, schema.fields().len()));
                 Ok(Type::Array {
-                    array: Box::new(body.dtype_scoped(schema, globals, &nested)?),
+                    array: Box::new(body.dtype_in_scope(schema, globals, &nested, memo)?),
                 })
             }
             Self::ArrayPredicate {
@@ -1436,7 +1612,7 @@ impl Expr {
                 predicate,
                 first,
             } => {
-                let element = match value.dtype_scoped(schema, globals, scope)? {
+                let element = match value.dtype_scoped(schema, globals, scope, memo, context)? {
                     Type::Array { array } | Type::Set { set: array } => *array,
                     _ => {
                         return Err(ExprError::Invalid(
@@ -1451,7 +1627,7 @@ impl Expr {
                 }
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), element.clone(), schema.fields().len()));
-                if predicate.dtype_scoped(schema, globals, &nested)?
+                if predicate.dtype_in_scope(schema, globals, &nested, memo)?
                     != Type::Primitive(PrimitiveType::Bool)
                 {
                     return Err(ExprError::Invalid(
@@ -1469,7 +1645,7 @@ impl Expr {
                 parameter,
                 predicate,
             } => {
-                let array = match value.dtype_scoped(schema, globals, scope)? {
+                let array = match value.dtype_scoped(schema, globals, scope, memo, context)? {
                     Type::Array { array } | Type::Set { set: array } => array,
                     Type::Dict { dict } => Box::new(Type::Struct {
                         r#struct: vec![("key".into(), dict.0), ("value".into(), dict.1)],
@@ -1483,18 +1659,18 @@ impl Expr {
                 }
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), *array, schema.fields().len()));
-                let predicate_type = predicate.dtype_scoped(schema, globals, &nested)?;
+                let predicate_type = predicate.dtype_in_scope(schema, globals, &nested, memo)?;
                 if predicate_type != Type::Primitive(PrimitiveType::Bool) {
                     return Err(ExprError::Invalid(format!(
                         "array filter predicate requires bool, got {predicate_type:?}"
                     )));
                 }
-                Ok(value.dtype_scoped(schema, globals, scope)?)
+                Ok(value.dtype_scoped(schema, globals, scope, memo, context)?)
             }
             Self::StreamRange { start, stop, step } => {
                 let int32 = Type::Primitive(PrimitiveType::Int32);
                 for (label, argument) in [("start", start), ("stop", stop), ("step", step)] {
-                    let actual = argument.dtype_scoped(schema, globals, scope)?;
+                    let actual = argument.dtype_scoped(schema, globals, scope, memo, context)?;
                     if actual != int32 {
                         return Err(ExprError::Invalid(format!(
                             "stream_range {label} requires int32, got {actual:?}"
@@ -1506,10 +1682,12 @@ impl Expr {
                 })
             }
             Self::ArrayGrouped { value, size } => {
-                let Type::Array { array } = value.dtype_scoped(schema, globals, scope)? else {
+                let Type::Array { array } =
+                    value.dtype_scoped(schema, globals, scope, memo, context)?
+                else {
                     return Err(ExprError::Invalid("array_grouped requires array".into()));
                 };
-                let size_type = size.dtype_scoped(schema, globals, scope)?;
+                let size_type = size.dtype_scoped(schema, globals, scope, memo, context)?;
                 if size_type != Type::Primitive(PrimitiveType::Int32) {
                     return Err(ExprError::Invalid(format!(
                         "array_grouped size requires int32, got {size_type:?}"
@@ -1539,7 +1717,7 @@ impl Expr {
                 Ok(dtype.clone())
             }
             Self::ToString { value } => {
-                value.dtype_scoped(schema, globals, scope)?;
+                value.dtype_scoped(schema, globals, scope, memo, context)?;
                 Ok(Type::Primitive(PrimitiveType::Str))
             }
             Self::Locus {
@@ -1548,9 +1726,9 @@ impl Expr {
                 position,
             } => {
                 reference.validate().map_err(ExprError::Invalid)?;
-                if contig.dtype_scoped(schema, globals, scope)?
+                if contig.dtype_scoped(schema, globals, scope, memo, context)?
                     != Type::Primitive(PrimitiveType::Str)
-                    || position.dtype_scoped(schema, globals, scope)?
+                    || position.dtype_scoped(schema, globals, scope, memo, context)?
                         != Type::Primitive(PrimitiveType::Int32)
                 {
                     return Err(ExprError::Invalid(
@@ -1567,9 +1745,9 @@ impl Expr {
                 position,
             } => {
                 reference.validate().map_err(ExprError::Invalid)?;
-                if contig.dtype_scoped(schema, globals, scope)?
+                if contig.dtype_scoped(schema, globals, scope, memo, context)?
                     != Type::Primitive(PrimitiveType::Str)
-                    || position.dtype_scoped(schema, globals, scope)?
+                    || position.dtype_scoped(schema, globals, scope, memo, context)?
                         != Type::Primitive(PrimitiveType::Int32)
                 {
                     return Err(ExprError::Invalid(
@@ -1583,7 +1761,7 @@ impl Expr {
                 position,
             } => {
                 reference.validate().map_err(ExprError::Invalid)?;
-                if position.dtype_scoped(schema, globals, scope)?
+                if position.dtype_scoped(schema, globals, scope, memo, context)?
                     != Type::Primitive(PrimitiveType::Int64)
                 {
                     return Err(ExprError::Invalid("global position requires int64".into()));
@@ -1594,7 +1772,7 @@ impl Expr {
             }
             Self::ParseLocus { reference, value } => {
                 reference.validate().map_err(ExprError::Invalid)?;
-                if value.dtype_scoped(schema, globals, scope)?
+                if value.dtype_scoped(schema, globals, scope, memo, context)?
                     != Type::Primitive(PrimitiveType::Str)
                 {
                     return Err(ExprError::Invalid("parse_locus requires string".into()));
@@ -1609,7 +1787,7 @@ impl Expr {
                 quote,
                 ..
             } => {
-                if value.dtype_scoped(schema, globals, scope)?
+                if value.dtype_scoped(schema, globals, scope, memo, context)?
                     != Type::Primitive(PrimitiveType::Str)
                 {
                     return Err(ExprError::Invalid(
@@ -1643,7 +1821,9 @@ impl Expr {
                 })
             }
             Self::LocusOp { operation, value } => {
-                let Type::Locus { .. } = value.dtype_scoped(schema, globals, scope)? else {
+                let Type::Locus { .. } =
+                    value.dtype_scoped(schema, globals, scope, memo, context)?
+                else {
                     return Err(ExprError::Invalid(
                         "locus operation requires a locus".into(),
                     ));
@@ -1678,15 +1858,15 @@ impl Expr {
                 includes_start,
                 includes_end,
             } => {
-                let point = start.dtype_scoped(schema, globals, scope)?;
-                if point != end.dtype_scoped(schema, globals, scope)? {
+                let point = start.dtype_scoped(schema, globals, scope, memo, context)?;
+                if point != end.dtype_scoped(schema, globals, scope, memo, context)? {
                     return Err(ExprError::Invalid(
                         "interval endpoints must have the same type".into(),
                     ));
                 }
-                if includes_start.dtype_scoped(schema, globals, scope)?
+                if includes_start.dtype_scoped(schema, globals, scope, memo, context)?
                     != Type::Primitive(PrimitiveType::Bool)
-                    || includes_end.dtype_scoped(schema, globals, scope)?
+                    || includes_end.dtype_scoped(schema, globals, scope, memo, context)?
                         != Type::Primitive(PrimitiveType::Bool)
                 {
                     return Err(ExprError::Invalid(
@@ -1700,13 +1880,13 @@ impl Expr {
             Self::IntervalContains { interval, point } => {
                 let Type::Interval {
                     interval: point_type,
-                } = interval.dtype_scoped(schema, globals, scope)?
+                } = interval.dtype_scoped(schema, globals, scope, memo, context)?
                 else {
                     return Err(ExprError::Invalid(
                         "interval_contains requires an interval".into(),
                     ));
                 };
-                if *point_type != point.dtype_scoped(schema, globals, scope)? {
+                if *point_type != point.dtype_scoped(schema, globals, scope, memo, context)? {
                     return Err(ExprError::Invalid(
                         "interval_contains point type mismatch".into(),
                     ));
@@ -1714,9 +1894,9 @@ impl Expr {
                 Ok(Type::Primitive(PrimitiveType::Bool))
             }
             Self::IntervalOverlaps { left, right } => {
-                let left_type = left.dtype_scoped(schema, globals, scope)?;
+                let left_type = left.dtype_scoped(schema, globals, scope, memo, context)?;
                 if !matches!(left_type, Type::Interval { .. })
-                    || left_type != right.dtype_scoped(schema, globals, scope)?
+                    || left_type != right.dtype_scoped(schema, globals, scope, memo, context)?
                 {
                     return Err(ExprError::Invalid(
                         "interval_overlaps requires matching interval types".into(),
@@ -1730,7 +1910,7 @@ impl Expr {
             } => {
                 element_type.to_arrow()?;
                 for element in elements {
-                    let actual = element.dtype_scoped(schema, globals, scope)?;
+                    let actual = element.dtype_scoped(schema, globals, scope, memo, context)?;
                     if actual != *element_type {
                         return Err(ExprError::Invalid(format!(
                             "array element has type {actual:?}, expected {element_type:?}"
@@ -1741,15 +1921,17 @@ impl Expr {
                     array: Box::new(element_type.clone()),
                 })
             }
-            Self::ArrayFlatten { value } => match value.dtype_scoped(schema, globals, scope)? {
-                Type::Array { array } if matches!(*array, Type::Array { .. }) => Ok(*array),
-                _ => Err(ExprError::Invalid(
-                    "array flatten requires an array of arrays".into(),
-                )),
-            },
+            Self::ArrayFlatten { value } => {
+                match value.dtype_scoped(schema, globals, scope, memo, context)? {
+                    Type::Array { array } if matches!(*array, Type::Array { .. }) => Ok(*array),
+                    _ => Err(ExprError::Invalid(
+                        "array flatten requires an array of arrays".into(),
+                    )),
+                }
+            }
             Self::ArrayLength { value } => {
                 if !matches!(
-                    value.dtype_scoped(schema, globals, scope)?,
+                    value.dtype_scoped(schema, globals, scope, memo, context)?,
                     Type::Array { .. } | Type::Set { .. } | Type::Dict { .. }
                 ) {
                     return Err(ExprError::Invalid("length requires a collection".into()));
@@ -1757,7 +1939,7 @@ impl Expr {
                 Ok(Type::Primitive(PrimitiveType::Int32))
             }
             Self::ArrayIndex { value, index } => {
-                let element = match value.dtype_scoped(schema, globals, scope)? {
+                let element = match value.dtype_scoped(schema, globals, scope, memo, context)? {
                     Type::Array { array } => *array,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -1765,7 +1947,7 @@ impl Expr {
                         )));
                     }
                 };
-                if index.dtype_scoped(schema, globals, scope)?
+                if index.dtype_scoped(schema, globals, scope, memo, context)?
                     != Type::Primitive(PrimitiveType::Int32)
                 {
                     return Err(ExprError::Invalid("array index requires int32".into()));
@@ -1778,7 +1960,7 @@ impl Expr {
                 stop,
                 step,
             } => {
-                let array = match value.dtype_scoped(schema, globals, scope)? {
+                let array = match value.dtype_scoped(schema, globals, scope, memo, context)? {
                     t @ Type::Array { .. } => t,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -1787,7 +1969,7 @@ impl Expr {
                     }
                 };
                 for endpoint in [start, stop, step].into_iter().flatten() {
-                    if endpoint.dtype_scoped(schema, globals, scope)?
+                    if endpoint.dtype_scoped(schema, globals, scope, memo, context)?
                         != Type::Primitive(PrimitiveType::Int32)
                     {
                         return Err(ExprError::Invalid(
@@ -1798,7 +1980,7 @@ impl Expr {
                 Ok(array)
             }
             Self::ArrayReduce { value, .. } => {
-                let element = match value.dtype_scoped(schema, globals, scope)? {
+                let element = match value.dtype_scoped(schema, globals, scope, memo, context)? {
                     Type::Array { array } => *array,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -1814,11 +1996,13 @@ impl Expr {
                 Ok(element)
             }
             Self::Cast { dtype, value } => {
-                value.dtype_scoped(schema, globals, scope)?;
+                value.dtype_scoped(schema, globals, scope, memo, context)?;
                 dtype.to_arrow()?;
                 Ok(dtype.clone())
             }
-            Self::GetField { value, name } => match value.dtype_scoped(schema, globals, scope)? {
+            Self::GetField { value, name } => match value
+                .dtype_scoped(schema, globals, scope, memo, context)?
+            {
                 Type::Struct { r#struct: fields } => field_type(&fields, name),
                 Type::Tuple { tuple } => name
                     .strip_prefix("__vail_tuple_")
@@ -1866,12 +2050,15 @@ impl Expr {
                             "duplicate struct field {name:?}"
                         )));
                     }
-                    typed.push((name.clone(), expr.dtype_scoped(schema, globals, scope)?));
+                    typed.push((
+                        name.clone(),
+                        expr.dtype_scoped(schema, globals, scope, memo, context)?,
+                    ));
                 }
                 Ok(Type::Struct { r#struct: typed })
             }
             Self::Die { message, dtype } => {
-                if message.dtype_scoped(schema, globals, scope)?
+                if message.dtype_scoped(schema, globals, scope, memo, context)?
                     != Type::Primitive(PrimitiveType::Str)
                 {
                     return Err(ExprError::Invalid(
@@ -1882,11 +2069,11 @@ impl Expr {
                 Ok(dtype.clone())
             }
             Self::IsMissing { value } => {
-                value.dtype_scoped(schema, globals, scope)?;
+                value.dtype_scoped(schema, globals, scope, memo, context)?;
                 Ok(Type::Primitive(PrimitiveType::Bool))
             }
             Self::Unary { operator, value } => {
-                let t = value.dtype_scoped(schema, globals, scope)?;
+                let t = value.dtype_scoped(schema, globals, scope, memo, context)?;
                 match operator {
                     UnaryOperator::Not => ensure_bool(&t, "not")?,
                     _ if !numeric(&t) => {
@@ -1903,8 +2090,8 @@ impl Expr {
                 left,
                 right,
             } => {
-                let a = left.dtype_scoped(schema, globals, scope)?;
-                let b = right.dtype_scoped(schema, globals, scope)?;
+                let a = left.dtype_scoped(schema, globals, scope, memo, context)?;
+                let b = right.dtype_scoped(schema, globals, scope, memo, context)?;
                 if matches!(
                     operator,
                     BinaryOperator::Lt
@@ -1978,11 +2165,11 @@ impl Expr {
                 alternate,
             } => {
                 ensure_bool(
-                    &condition.dtype_scoped(schema, globals, scope)?,
+                    &condition.dtype_scoped(schema, globals, scope, memo, context)?,
                     "if_else condition",
                 )?;
-                let a = consequent.dtype_scoped(schema, globals, scope)?;
-                let b = alternate.dtype_scoped(schema, globals, scope)?;
+                let a = consequent.dtype_scoped(schema, globals, scope, memo, context)?;
+                let b = alternate.dtype_scoped(schema, globals, scope, memo, context)?;
                 if a == b { Ok(a) } else { promote(&a, &b) }
             }
         }
@@ -2617,18 +2804,27 @@ fn array_index(
     indices: &ArrayRef,
     dtype: &DataType,
 ) -> Result<ArrayRef, ExprError> {
-    let lists = list_array(array)?;
+    array_index_rows(list_array(array)?, indices, dtype, false)
+}
+
+fn array_index_rows(
+    lists: &ListArray,
+    indices: &ArrayRef,
+    dtype: &DataType,
+    scalar_source: bool,
+) -> Result<ArrayRef, ExprError> {
     let ix = indices
         .as_any()
         .downcast_ref::<Int32Array>()
         .ok_or_else(|| ExprError::Invalid("array index requires int32".into()))?;
-    let mut take_indices = Vec::with_capacity(lists.len());
-    for row in 0..lists.len() {
-        if lists.is_null(row) || ix.is_null(row) {
+    let mut take_indices = Vec::with_capacity(ix.len());
+    for row in 0..ix.len() {
+        let source_row = if scalar_source { 0 } else { row };
+        if lists.is_null(source_row) || ix.is_null(row) {
             take_indices.push(None);
             continue;
         }
-        let len = lists.value_length(row) as i64;
+        let len = lists.value_length(source_row) as i64;
         let requested = i64::from(ix.value(row));
         let normalized = if requested < 0 {
             len + requested
@@ -2642,7 +2838,7 @@ fn array_index(
             )));
         }
         take_indices.push(Some(
-            (lists.value_offsets()[row] as i64 + normalized) as u32,
+            (lists.value_offsets()[source_row] as i64 + normalized) as u32,
         ));
     }
     let index_array = UInt32Array::from(take_indices);
@@ -2957,7 +3153,7 @@ enum HailKind {
     RestoreArrowType,
     Die,
     Numeric(BinaryOperator),
-    ToString(String),
+    ToString(Type),
     GetField(String),
     Struct(Vec<String>),
     Interval,
@@ -2972,7 +3168,7 @@ enum HailKind {
     ArrayReduce(ArrayReduction, bool),
     Locus {
         operation: String,
-        reference_json: String,
+        reference: Arc<ReferenceDefinition>,
     },
 }
 
@@ -2981,17 +3177,15 @@ struct HailPhysicalExpr {
     kind: HailKind,
     args: Vec<Arc<dyn PhysicalExpr>>,
     dtype: DataType,
-    prepared_reference:
-        Arc<OnceLock<Result<Arc<(ReferenceDefinition, PreparedReference)>, String>>>,
+    prepared_reference: Arc<OnceLock<Result<Arc<PreparedReference>, String>>>,
 }
 
 fn locus_eval(
     op: &str,
     reference: &ReferenceDefinition,
-    reference_json: &str,
     prepared: &PreparedReference,
     args: &[ArrayRef],
-    _dtype: &DataType,
+    dtype: &DataType,
     len: usize,
 ) -> Result<ArrayRef, ExprError> {
     let is_missing = |i: usize| args.iter().any(|a| a.is_null(i));
@@ -3046,19 +3240,14 @@ fn locus_eval(
             contigs.push(Some(contig));
             positions.push(Some(position));
         }
-        let metadata = [("vail.reference".to_string(), reference_json.to_string())]
-            .into_iter()
-            .collect();
+        let DataType::Struct(fields) = dtype else {
+            return Err(ExprError::Invalid(
+                "locus construction requires its declared Arrow type".into(),
+            ));
+        };
         let valid = ordinals.iter().map(Option::is_some).collect::<Vec<_>>();
         return Ok(Arc::new(StructArray::try_new(
-            vec![
-                Arc::new(Field::new("__vail_locus_ordinal", DataType::Int32, true)),
-                Arc::new(
-                    Field::new("__vail_locus_contig", DataType::Utf8, true).with_metadata(metadata),
-                ),
-                Arc::new(Field::new("__vail_locus_position", DataType::Int32, true)),
-            ]
-            .into(),
+            fields.clone(),
             vec![
                 Arc::new(Int32Array::from(ordinals)),
                 Arc::new(StringArray::from(contigs)),
@@ -3849,10 +4038,39 @@ impl PhysicalExpr for HailPhysicalExpr {
     }
     fn evaluate(&self, batch: &RecordBatch) -> datafusion_common::Result<ColumnarValue> {
         let len = batch.num_rows();
-        let args = self
+        if len == 0 {
+            return Ok(ColumnarValue::Array(arrow_array::new_empty_array(
+                &self.dtype,
+            )));
+        }
+        let evaluated = self
             .args
             .iter()
-            .map(|x| x.evaluate(batch)?.into_array(len))
+            .map(|argument| argument.evaluate(batch))
+            .collect::<datafusion_common::Result<Vec<_>>>()?;
+        // A captured scalar collection must not be expanded once per source
+        // row merely to select individual elements. Arrow take copies only
+        // selected children, preserving ownership of the original scalar.
+        if matches!(self.kind, HailKind::ArrayIndex)
+            && let Some(ColumnarValue::Scalar(ScalarValue::List(source))) = evaluated.first()
+        {
+            let scalar = matches!(evaluated[1], ColumnarValue::Scalar(_));
+            let indices = evaluated[1]
+                .clone()
+                .into_array(if scalar { 1 } else { len })?;
+            let output = array_index_rows(source, &indices, &self.dtype, true)
+                .map_err(|error| DataFusionError::Execution(error.to_string()))?;
+            return if scalar {
+                Ok(ColumnarValue::Scalar(scalar_at(&output, 0).map_err(
+                    |error| DataFusionError::Execution(error.to_string()),
+                )?))
+            } else {
+                Ok(ColumnarValue::Array(output))
+            };
+        }
+        let args = evaluated
+            .into_iter()
+            .map(|value| value.into_array(len))
             .collect::<datafusion_common::Result<Vec<_>>>()?;
         let result = (|| -> Result<ArrayRef, ExprError> {
             match &self.kind {
@@ -3884,11 +4102,7 @@ impl PhysicalExpr for HailPhysicalExpr {
                     let t = Type::from_arrow(&self.dtype)?;
                     columnar_numeric(*op, &args[0], &args[1], &t)
                 }
-                HailKind::ToString(input_type) => {
-                    let input_type: Type = serde_json::from_str(input_type)
-                        .map_err(|e| ExprError::Invalid(e.to_string()))?;
-                    hail_to_string(&args[0], &input_type)
-                }
+                HailKind::ToString(input_type) => hail_to_string(&args[0], input_type),
                 HailKind::GetField(name) => {
                     let parent = &args[0];
                     let st = parent
@@ -3966,26 +4180,15 @@ impl PhysicalExpr for HailPhysicalExpr {
                 }
                 HailKind::Locus {
                     operation,
-                    reference_json,
+                    reference,
                 } => {
-                    let prepared = self.prepared_reference.get_or_init(|| {
-                        let reference: ReferenceDefinition =
-                            serde_json::from_str(reference_json).map_err(|e| e.to_string())?;
-                        let prepared = reference.prepare()?;
-                        Ok(Arc::new((reference, prepared)))
-                    });
+                    let prepared = self
+                        .prepared_reference
+                        .get_or_init(|| reference.prepare().map(Arc::new));
                     let prepared = prepared
                         .as_ref()
                         .map_err(|error| ExprError::Invalid(error.clone()))?;
-                    locus_eval(
-                        operation,
-                        &prepared.0,
-                        reference_json,
-                        &prepared.1,
-                        &args,
-                        &self.dtype,
-                        len,
-                    )
+                    locus_eval(operation, reference, prepared, &args, &self.dtype, len)
                 }
                 HailKind::CompactInnerNullLists => {
                     let outer = args[0]
@@ -4124,7 +4327,7 @@ fn lower_bound(
     schema: &Schema,
     globals: GlobalBinding<'_>,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
-    lower_scoped(expr, schema, globals, &[])
+    lower_scoped(expr, schema, globals, &[], &mut CompilationMemo::default())
 }
 
 pub(crate) fn string_function(
@@ -4242,6 +4445,9 @@ fn same_collection_storage(left: &DataType, right: &DataType) -> bool {
 
 pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarUDF>, ExprError> {
     use datafusion_functions_nested as nested;
+    if let Some(function) = crate::list_aggregate::udf(name) {
+        return Ok(function);
+    }
     if let Some(function) = crate::matrix_transpose::udf(name) {
         return Ok(function);
     }
@@ -4277,6 +4483,299 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
     })
 }
 
+fn lower_scoped(
+    expr: &Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+    memo: &mut CompilationMemo,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let context = memo.context(schema, globals.schema(), scope);
+    lower_cached(expr, schema, globals, scope, memo, context)
+}
+// Bind physical metadata once at each native compilation node. DataFusion
+// recursively asks children for metadata; on a DAG that otherwise revisits
+// shared subgraphs once per incoming path.
+struct CompiledPhysical {
+    inner: Arc<dyn PhysicalExpr>,
+    primary: OnceLock<(Arc<Schema>, Arc<Field>)>,
+    fields: std::sync::RwLock<HashMap<Arc<Schema>, Arc<Field>>>,
+    label: String,
+    fingerprint: u64,
+}
+impl CompiledPhysical {
+    fn with_fields(
+        inner: Arc<dyn PhysicalExpr>,
+        initial: Option<(Arc<Schema>, Arc<Field>)>,
+    ) -> Arc<dyn PhysicalExpr> {
+        if inner.children().is_empty() {
+            return inner;
+        }
+        let label = if let Some(function) = inner.downcast_ref::<ScalarFunctionExpr>() {
+            function.name().to_owned()
+        } else if let Some(binary) =
+            inner.downcast_ref::<datafusion_physical_expr::expressions::BinaryExpr>()
+        {
+            format!("Binary({})", binary.op())
+        } else if let Some(hail) = inner.downcast_ref::<HailPhysicalExpr>() {
+            match &hail.kind {
+                HailKind::Random(name) => format!("random_{name}"),
+                HailKind::RestoreArrowType => "RestoreArrowType".into(),
+                HailKind::Locus { operation, .. } => format!("locus_{operation}"),
+                _ => "Hail".into(),
+            }
+        } else {
+            "physical".into()
+        };
+        let mut hash = std::collections::hash_map::DefaultHasher::new();
+        inner.hash(&mut hash);
+        let primary = OnceLock::new();
+        if let Some(initial) = initial {
+            let _ = primary.set(initial);
+        }
+        Arc::new(Self {
+            inner,
+            primary,
+            fields: Default::default(),
+            label,
+            fingerprint: std::hash::Hasher::finish(&hash),
+        })
+    }
+    fn unbound(inner: Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
+        Self::with_fields(inner, None)
+    }
+    fn bind(
+        inner: Arc<dyn PhysicalExpr>,
+        schema: Arc<Schema>,
+    ) -> datafusion_common::Result<Arc<dyn PhysicalExpr>> {
+        let field = inner.return_field(schema.as_ref())?;
+        // Compilation already interns this schema by lexical context. Keep
+        // that shared Arc rather than cloning a wide field vector per node.
+        Ok(Self::with_fields(inner, Some((schema, field))))
+    }
+    fn field(&self, schema: &Schema) -> datafusion_common::Result<Arc<Field>> {
+        // Fields are Arc-backed inside Schema, so a clone of the original
+        // descriptor compares without hashing/walking its wide field vector.
+        if let Some((original, field)) = self.primary.get() {
+            if std::ptr::eq(schema, original.as_ref()) || schema == original.as_ref() {
+                return Ok(field.clone());
+            }
+        }
+        let poisoned = || DataFusionError::Internal("physical metadata cache poisoned".into());
+        if let Some(field) = self
+            .fields
+            .read()
+            .map_err(|_| poisoned())?
+            .get(schema)
+            .cloned()
+        {
+            return Ok(field);
+        }
+        // No lock spans recursive child metadata queries. DF can remap lambda
+        // indices before passing a projected schema; derive only against the
+        // actual schema supplied by the caller, never a rewrite's old schema.
+        let field = self.inner.return_field(schema)?;
+        let descriptor = Arc::new(schema.clone());
+        if self
+            .primary
+            .set((descriptor.clone(), field.clone()))
+            .is_ok()
+        {
+            return Ok(field);
+        }
+        self.fields
+            .write()
+            .map_err(|_| poisoned())?
+            .insert(descriptor, field.clone());
+        Ok(field)
+    }
+}
+impl std::fmt::Debug for CompiledPhysical {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CompiledPhysical")
+            .field("fingerprint", &self.fingerprint)
+            .finish()
+    }
+}
+impl std::fmt::Display for CompiledPhysical {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}_{:016x}", self.label, self.fingerprint)
+    }
+}
+std::thread_local! {
+    // Dynamic DF equality calls back through child wrappers. Scope memoization
+    // to this synchronous comparison only; retain neither nodes nor results
+    // between comparisons, including when a child comparison unwinds.
+    static PHYSICAL_EQUALITY: std::cell::RefCell<Option<HashMap<(usize, usize), bool>>> = const { std::cell::RefCell::new(None) };
+}
+struct PhysicalEqualityScope(bool);
+impl Drop for PhysicalEqualityScope {
+    fn drop(&mut self) {
+        if self.0 {
+            PHYSICAL_EQUALITY.with(|memo| *memo.borrow_mut() = None);
+        }
+    }
+}
+impl PartialEq for CompiledPhysical {
+    fn eq(&self, other: &Self) -> bool {
+        if self.fingerprint != other.fingerprint {
+            return false;
+        }
+        if Arc::ptr_eq(&self.inner, &other.inner) {
+            return true;
+        }
+        let key = (
+            Arc::as_ptr(&self.inner) as *const () as usize,
+            Arc::as_ptr(&other.inner) as *const () as usize,
+        );
+        let root = PHYSICAL_EQUALITY.with(|memo| {
+            let mut memo = memo.borrow_mut();
+            let root = memo.is_none();
+            if root {
+                *memo = Some(HashMap::new());
+            }
+            root
+        });
+        let _scope = PhysicalEqualityScope(root);
+        if let Some(result) =
+            PHYSICAL_EQUALITY.with(|memo| memo.borrow().as_ref().unwrap().get(&key).copied())
+        {
+            return result;
+        }
+        let equal = self.inner.eq(&other.inner);
+        PHYSICAL_EQUALITY.with(|memo| {
+            memo.borrow_mut().as_mut().unwrap().insert(key, equal);
+        });
+        equal
+    }
+}
+impl Eq for CompiledPhysical {}
+impl std::hash::Hash for CompiledPhysical {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.fingerprint.hash(state);
+    }
+}
+impl PhysicalExpr for CompiledPhysical {
+    fn data_type(&self, schema: &Schema) -> datafusion_common::Result<DataType> {
+        Ok(self.field(schema)?.data_type().clone())
+    }
+    fn nullable(&self, schema: &Schema) -> datafusion_common::Result<bool> {
+        Ok(self.field(schema)?.is_nullable())
+    }
+    fn return_field(&self, schema: &Schema) -> datafusion_common::Result<Arc<Field>> {
+        self.field(schema)
+    }
+    fn evaluate(&self, batch: &RecordBatch) -> datafusion_common::Result<ColumnarValue> {
+        self.inner.evaluate(batch)
+    }
+    fn evaluate_selection(
+        &self,
+        batch: &RecordBatch,
+        selection: &BooleanArray,
+    ) -> datafusion_common::Result<ColumnarValue> {
+        self.inner.evaluate_selection(batch, selection)
+    }
+    fn children(&self) -> Vec<&Arc<dyn PhysicalExpr>> {
+        self.inner.children()
+    }
+    fn with_new_children(
+        self: Arc<Self>,
+        children: Vec<Arc<dyn PhysicalExpr>>,
+    ) -> datafusion_common::Result<Arc<dyn PhysicalExpr>> {
+        Ok(Self::unbound(
+            self.inner.clone().with_new_children(children)?,
+        ))
+    }
+    fn fmt_sql(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self}")
+    }
+    fn evaluate_bounds(
+        &self,
+        children: &[&datafusion_expr::interval_arithmetic::Interval],
+    ) -> datafusion_common::Result<datafusion_expr::interval_arithmetic::Interval> {
+        self.inner.evaluate_bounds(children)
+    }
+    fn propagate_constraints(
+        &self,
+        interval: &datafusion_expr::interval_arithmetic::Interval,
+        children: &[&datafusion_expr::interval_arithmetic::Interval],
+    ) -> datafusion_common::Result<Option<Vec<datafusion_expr::interval_arithmetic::Interval>>>
+    {
+        self.inner.propagate_constraints(interval, children)
+    }
+    fn get_properties(
+        &self,
+        children: &[datafusion_expr::sort_properties::ExprProperties],
+    ) -> datafusion_common::Result<datafusion_expr::sort_properties::ExprProperties> {
+        self.inner.get_properties(children)
+    }
+    fn snapshot(&self) -> datafusion_common::Result<Option<Arc<dyn PhysicalExpr>>> {
+        Ok(self.inner.snapshot()?.map(Self::unbound))
+    }
+    fn snapshot_generation(&self) -> u64 {
+        self.inner.snapshot_generation()
+    }
+    fn is_volatile_node(&self) -> bool {
+        self.inner.is_volatile_node()
+    }
+    fn placement(&self) -> datafusion_expr::ExpressionPlacement {
+        self.inner.placement()
+    }
+    fn expression_id(&self) -> Option<u64> {
+        self.inner.expression_id()
+    }
+    #[allow(deprecated)]
+    fn evaluate_statistics(
+        &self,
+        children: &[&datafusion_expr::statistics::Distribution],
+    ) -> datafusion_common::Result<datafusion_expr::statistics::Distribution> {
+        self.inner.evaluate_statistics(children)
+    }
+    #[allow(deprecated)]
+    fn propagate_statistics(
+        &self,
+        parent: &datafusion_expr::statistics::Distribution,
+        children: &[&datafusion_expr::statistics::Distribution],
+    ) -> datafusion_common::Result<Option<Vec<datafusion_expr::statistics::Distribution>>> {
+        self.inner.propagate_statistics(parent, children)
+    }
+}
+
+fn lower_cached(
+    expr: &Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+    memo: &mut CompilationMemo,
+    context: usize,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let key = (context, expr as *const Expr as usize);
+    if let Some(value) = memo.physical.get(&key) {
+        return Ok(value.clone());
+    }
+    let value = lower_uncached(expr, schema, globals, scope, memo, context)?;
+    let bound_schema = memo
+        .physical_schemas
+        .entry(context)
+        .or_insert_with(|| Arc::new(schema.clone()))
+        .clone();
+    let value = CompiledPhysical::bind(value, bound_schema)?;
+    memo.physical.insert(key, value.clone());
+    Ok(value)
+}
+fn lower_synthetic(
+    expr: Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+    memo: &mut CompilationMemo,
+    context: usize,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let expr = Arc::new(expr);
+    memo.generated.push(expr.clone());
+    lower_cached(&expr, schema, globals, scope, memo, context)
+}
+
 fn lower_array_lambda(
     value: &Expr,
     parameter: &str,
@@ -4285,9 +4784,11 @@ fn lower_array_lambda(
     schema: &Schema,
     globals: GlobalBinding<'_>,
     scope: &[(String, Type, usize)],
+    memo: &mut CompilationMemo,
+    context: usize,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
-    let input = lower_scoped(value, schema, globals, scope)?;
-    let array = match value.dtype_scoped(schema, globals.schema(), scope)? {
+    let input = lower_cached(value, schema, globals, scope, memo, context)?;
+    let array = match value.dtype_scoped(schema, globals.schema(), scope, memo, context)? {
         Type::Array { array } | Type::Set { set: array } => *array,
         Type::Dict { dict } => Type::Struct {
             r#struct: vec![("key".into(), dict.0), ("value".into(), dict.1)],
@@ -4309,7 +4810,7 @@ fn lower_array_lambda(
     let nested_schema = Schema::new(fields);
     let mut nested = scope.to_vec();
     nested.push((parameter.to_owned(), array, schema.fields().len()));
-    let callback = lower_scoped(callback, &nested_schema, globals, &nested)?;
+    let callback = lower_scoped(callback, &nested_schema, globals, &nested, memo)?;
     let lambda = Arc::new(datafusion_physical_expr::expressions::LambdaExpr::try_new(
         vec![parameter.to_owned()],
         callback,
@@ -4354,14 +4855,16 @@ fn interval_boundary_sequence(
     )?))
 }
 
-fn lower_scoped(
+fn lower_uncached(
     expr: &Expr,
     schema: &Schema,
     globals: GlobalBinding<'_>,
     scope: &[(String, Type, usize)],
+    memo: &mut CompilationMemo,
+    context: usize,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
     let dtype = expr
-        .dtype_scoped(schema, globals.schema(), scope)?
+        .dtype_scoped(schema, globals.schema(), scope, memo, context)?
         .to_arrow()?;
     let output_type = dtype.clone();
     let result: Arc<dyn PhysicalExpr> = match expr {
@@ -4384,7 +4887,7 @@ fn lower_scoped(
                 "aggregation expressions require Table.aggregate".into(),
             ));
         }
-        Expr::LambdaVariable { name } => {
+        Expr::LambdaVariable { name, .. } => {
             let (_, ty, index) = scope
                 .iter()
                 .rev()
@@ -4399,9 +4902,9 @@ fn lower_scoped(
             let args = args
                 .iter()
                 .map(|arg| {
-                    let value = lower_scoped(arg, schema, globals, scope)?;
+                    let value = lower_cached(arg, schema, globals, scope, memo, context)?;
                     let ty = arg
-                        .dtype_scoped(schema, globals.schema(), scope)?
+                        .dtype_scoped(schema, globals.schema(), scope, memo, context)?
                         .to_arrow()?;
                     Ok(cast(
                         value,
@@ -4427,7 +4930,7 @@ fn lower_scoped(
             cast(function, schema, dtype.clone())?
         }
         Expr::CollectionCast { value, .. } => cast(
-            lower_scoped(value, schema, globals, scope)?,
+            lower_cached(value, schema, globals, scope, memo, context)?,
             schema,
             dtype.clone(),
         )?,
@@ -4445,9 +4948,9 @@ fn lower_scoped(
                 _ => unreachable!("typing validates integer operators"),
             };
             binary(
-                lower_scoped(left, schema, globals, scope)?,
+                lower_cached(left, schema, globals, scope, memo, context)?,
                 operator,
-                lower_scoped(right, schema, globals, scope)?,
+                lower_cached(right, schema, globals, scope, memo, context)?,
                 schema,
             )?
         }
@@ -4455,7 +4958,7 @@ fn lower_scoped(
             let (udf, _, _) = string_function(function)?;
             let args = args
                 .iter()
-                .map(|arg| lower_scoped(arg, schema, globals, scope))
+                .map(|arg| lower_cached(arg, schema, globals, scope, memo, context))
                 .collect::<Result<Vec<_>, ExprError>>()?;
             let function = Arc::new(ScalarFunctionExpr::try_new(
                 udf,
@@ -4478,7 +4981,9 @@ fn lower_scoped(
                     args.push(Arc::new(Literal::new(ScalarValue::Utf8(Some(format!(
                         "__vail_tuple_{index}"
                     ))))));
-                    args.push(lower_scoped(element, schema, globals, scope)?);
+                    args.push(lower_cached(
+                        element, schema, globals, scope, memo, context,
+                    )?);
                 }
             }
             let tuple = Arc::new(ScalarFunctionExpr::try_new(
@@ -4491,17 +4996,37 @@ fn lower_scoped(
         }
         Expr::GetField { value, name }
             if matches!(
-                value.dtype_scoped(schema, globals.schema(), scope)?,
+                value.dtype_scoped(schema, globals.schema(), scope, memo, context)?,
                 Type::Tuple { .. }
             ) =>
         {
             let args: Vec<Arc<dyn PhysicalExpr>> = vec![
-                lower_scoped(value, schema, globals, scope)?,
+                lower_cached(value, schema, globals, scope, memo, context)?,
                 Arc::new(Literal::new(ScalarValue::Utf8(Some(name.clone())))),
             ];
             Arc::new(ScalarFunctionExpr::try_new(
                 datafusion_functions::core::get_field(),
                 args,
+                schema,
+                Arc::new(ConfigOptions::default()),
+            )?)
+        }
+        Expr::ArrayAggregateScan {
+            function,
+            value,
+            predicate,
+            options,
+            ..
+        } => {
+            let input = value
+                .dtype_scoped(schema, globals.schema(), scope, memo, context)?
+                .to_arrow()?;
+            Arc::new(ScalarFunctionExpr::try_new(
+                crate::array_aggregate_scan::make_udf(function, &input, options)?,
+                vec![
+                    lower_cached(value, schema, globals, scope, memo, context)?,
+                    lower_cached(predicate, schema, globals, scope, memo, context)?,
+                ],
                 schema,
                 Arc::new(ConfigOptions::default()),
             )?)
@@ -4514,10 +5039,13 @@ fn lower_scoped(
             body,
             scan,
         } => {
-            let Type::Array { array } = value.dtype_scoped(schema, globals.schema(), scope)? else {
+            let Type::Array { array } =
+                value.dtype_scoped(schema, globals.schema(), scope, memo, context)?
+            else {
                 unreachable!()
             };
-            let accumulator_type = zero.dtype_scoped(schema, globals.schema(), scope)?;
+            let accumulator_type =
+                zero.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
             let mut fields = schema.fields().to_vec();
             fields.push(Arc::new(Field::new(
                 accumulator,
@@ -4530,9 +5058,9 @@ fn lower_scoped(
             nested.push((accumulator.clone(), accumulator_type, schema.fields().len()));
             nested.push((parameter.clone(), *array, schema.fields().len() + 1));
             Arc::new(crate::array_fold::ArrayFoldExpr::new(
-                lower_scoped(value, schema, globals, scope)?,
-                lower_scoped(zero, schema, globals, scope)?,
-                lower_scoped(body, &nested_schema, globals, &nested)?,
+                lower_cached(value, schema, globals, scope, memo, context)?,
+                lower_cached(zero, schema, globals, scope, memo, context)?,
+                lower_scoped(body, &nested_schema, globals, &nested, memo)?,
                 nested_schema,
                 dtype.clone(),
                 *scan,
@@ -4542,7 +5070,9 @@ fn lower_scoped(
             value,
             parameter,
             body,
-        } => lower_array_lambda(value, parameter, body, "map", schema, globals, scope)?,
+        } => lower_array_lambda(
+            value, parameter, body, "map", schema, globals, scope, memo, context,
+        )?,
         Expr::ArrayPredicate {
             value,
             parameter,
@@ -4556,20 +5086,22 @@ fn lower_scoped(
             schema,
             globals,
             scope,
+            memo,
+            context,
         )?,
         Expr::ArrayFilter {
             value,
             parameter,
             predicate,
         } => lower_array_lambda(
-            value, parameter, predicate, "filter", schema, globals, scope,
+            value, parameter, predicate, "filter", schema, globals, scope, memo, context,
         )?,
         Expr::StreamRange { start, stop, step } => {
             let int64 = DataType::Int64;
             let args = [start, stop, step]
                 .iter()
                 .map(|arg| {
-                    let value = lower_scoped(arg, schema, globals, scope)?;
+                    let value = lower_cached(arg, schema, globals, scope, memo, context)?;
                     Ok(cast(value, schema, int64.clone())?)
                 })
                 .collect::<Result<Vec<_>, ExprError>>()?;
@@ -4582,7 +5114,7 @@ fn lower_scoped(
             cast(range, schema, dtype)?
         }
         Expr::ArrayGrouped { value, size } => {
-            let input_type = value.dtype_scoped(schema, globals.schema(), scope)?;
+            let input_type = value.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
             let Type::Array { .. } = input_type else {
                 unreachable!("typing validates array_grouped")
             };
@@ -4592,6 +5124,7 @@ fn lower_scoped(
             }
             let variable = Expr::LambdaVariable {
                 name: parameter.clone(),
+                dtype: None,
             };
             let length = Expr::ArrayLength {
                 value: value.clone(),
@@ -4633,7 +5166,7 @@ fn lower_scoped(
                     step: None,
                 }),
             };
-            lower_scoped(&grouped, schema, globals, scope)?
+            lower_synthetic(grouped, schema, globals, scope, memo, context)?
         }
 
         Expr::ExternalGlobal { reference, dtype } => {
@@ -4678,29 +5211,38 @@ fn lower_scoped(
         Expr::Cast {
             dtype: Type::Primitive(PrimitiveType::Call),
             value,
-        } if matches!(value.dtype_scoped(schema,globals.schema(),scope)?, Type::Struct { r#struct: fields } if fields.iter().any(|(name,_)| name=="__vail_call_alleles")) => {
-            lower_scoped(&crate::calls::construct(value), schema, globals, scope)?
-        }
-        Expr::GetField { value, name }
-            if value.dtype_scoped(schema, globals.schema(), scope)?
-                == Type::Primitive(PrimitiveType::Call)
-                && crate::calls::getter(value, name).is_some() =>
-        {
-            lower_scoped(
-                &crate::calls::getter(value, name).unwrap(),
+        } if matches!(value.dtype_scoped(schema, globals.schema(), scope, memo, context)?, Type::Struct { r#struct: fields } if fields.iter().any(|(name,_)| name=="__vail_call_alleles")) => {
+            lower_synthetic(
+                crate::calls::construct(value),
                 schema,
                 globals,
                 scope,
+                memo,
+                context,
+            )?
+        }
+        Expr::GetField { value, name }
+            if value.dtype_scoped(schema, globals.schema(), scope, memo, context)?
+                == Type::Primitive(PrimitiveType::Call)
+                && crate::calls::getter(value, name).is_some() =>
+        {
+            lower_synthetic(
+                crate::calls::getter(value, name).unwrap(),
+                schema,
+                globals,
+                scope,
+                memo,
+                context,
             )?
         }
         Expr::Cast { dtype, value } => lower_cast(
-            lower_scoped(value, schema, globals, scope)?,
+            lower_cached(value, schema, globals, scope, memo, context)?,
             schema,
             &dtype.to_arrow()?,
         )?,
         Expr::ToString { value } => {
-            let input_type = value.dtype_scoped(schema, globals.schema(), scope)?;
-            let child = lower_scoped(value, schema, globals, scope)?;
+            let input_type = value.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
+            let child = lower_cached(value, schema, globals, scope, memo, context)?;
             if matches!(input_type, Type::Primitive(PrimitiveType::Str)) {
                 child
             } else {
@@ -4712,19 +5254,12 @@ fn lower_scoped(
                 ) {
                     lower_cast(child, schema, &DataType::Utf8)?
                 } else {
-                    custom(
-                        HailKind::ToString(
-                            serde_json::to_string(&input_type)
-                                .map_err(|e| ExprError::Invalid(e.to_string()))?,
-                        ),
-                        vec![child],
-                        DataType::Utf8,
-                    )
+                    custom(HailKind::ToString(input_type), vec![child], DataType::Utf8)
                 }
             }
         }
-        Expr::IsMissing { value } => Arc::new(IsNullExpr::new(lower_scoped(
-            value, schema, globals, scope,
+        Expr::IsMissing { value } => Arc::new(IsNullExpr::new(lower_cached(
+            value, schema, globals, scope, memo, context,
         )?)),
         Expr::Array {
             element_type,
@@ -4740,9 +5275,9 @@ fn lower_scoped(
                 let children = elements
                     .iter()
                     .map(|e| {
-                        let value = lower_scoped(e, schema, globals, scope)?;
+                        let value = lower_cached(e, schema, globals, scope, memo, context)?;
                         let ty = e
-                            .dtype_scoped(schema, globals.schema(), scope)?
+                            .dtype_scoped(schema, globals.schema(), scope, memo, context)?
                             .to_arrow()?;
                         Ok(cast(
                             value,
@@ -4760,7 +5295,7 @@ fn lower_scoped(
             }
         }
         Expr::ArrayFlatten { value } => {
-            let child = lower_scoped(value, schema, globals, scope)?;
+            let child = lower_cached(value, schema, globals, scope, memo, context)?;
             let input_type = child.data_type(schema)?;
             let normalized = custom(HailKind::CompactInnerNullLists, vec![child], input_type);
             Arc::new(ScalarFunctionExpr::try_new(
@@ -4771,7 +5306,7 @@ fn lower_scoped(
             )?)
         }
         Expr::ArrayLength { value } => {
-            let child = lower_scoped(value, schema, globals, scope)?;
+            let child = lower_cached(value, schema, globals, scope, memo, context)?;
             let udf = Arc::new(ScalarFunctionExpr::try_new(
                 datafusion_functions_nested::length::array_length_udf(),
                 vec![child],
@@ -4783,8 +5318,8 @@ fn lower_scoped(
         Expr::ArrayIndex { value, index } => custom(
             HailKind::ArrayIndex,
             vec![
-                lower_scoped(value, schema, globals, scope)?,
-                lower_scoped(index, schema, globals, scope)?,
+                lower_cached(value, schema, globals, scope, memo, context)?,
+                lower_cached(index, schema, globals, scope, memo, context)?,
             ],
             dtype,
         ),
@@ -4794,9 +5329,9 @@ fn lower_scoped(
             stop,
             step,
         } => {
-            let mut args = vec![lower_scoped(value, schema, globals, scope)?];
+            let mut args = vec![lower_cached(value, schema, globals, scope, memo, context)?];
             for e in [start, stop, step].into_iter().flatten() {
-                args.push(lower_scoped(e, schema, globals, scope)?);
+                args.push(lower_cached(e, schema, globals, scope, memo, context)?);
             }
             custom(
                 HailKind::ArraySlice {
@@ -4814,27 +5349,29 @@ fn lower_scoped(
             value,
         } => custom(
             HailKind::ArrayReduce(*operation, *filter_missing),
-            vec![lower_scoped(value, schema, globals, scope)?],
+            vec![lower_cached(value, schema, globals, scope, memo, context)?],
             dtype,
         ),
         Expr::GetField { value, name } => {
             let invert = name == "includes_start"
                 && matches!(
-                    value.dtype_scoped(schema, globals.schema(), scope)?,
+                    value.dtype_scoped(schema, globals.schema(), scope, memo, context)?,
                     Type::Interval { .. }
                 );
             let field = custom(
-                HailKind::GetField(match value.dtype_scoped(schema, globals.schema(), scope)? {
-                    Type::Interval { .. } => match name.as_str() {
-                        "start" => "__vail_interval_start".into(),
-                        "end" => "__vail_interval_end".into(),
-                        "includes_start" => "__vail_interval_start_exclusive".into(),
-                        "includes_end" => "__vail_interval_end_inclusive".into(),
+                HailKind::GetField(
+                    match value.dtype_scoped(schema, globals.schema(), scope, memo, context)? {
+                        Type::Interval { .. } => match name.as_str() {
+                            "start" => "__vail_interval_start".into(),
+                            "end" => "__vail_interval_end".into(),
+                            "includes_start" => "__vail_interval_start_exclusive".into(),
+                            "includes_end" => "__vail_interval_end_inclusive".into(),
+                            _ => name.clone(),
+                        },
                         _ => name.clone(),
                     },
-                    _ => name.clone(),
-                }),
-                vec![lower_scoped(value, schema, globals, scope)?],
+                ),
+                vec![lower_cached(value, schema, globals, scope, memo, context)?],
                 dtype,
             );
             if invert {
@@ -4851,10 +5388,10 @@ fn lower_scoped(
         } => custom(
             HailKind::Interval,
             vec![
-                lower_scoped(start, schema, globals, scope)?,
-                lower_scoped(end, schema, globals, scope)?,
-                lower_scoped(includes_start, schema, globals, scope)?,
-                lower_scoped(includes_end, schema, globals, scope)?,
+                lower_cached(start, schema, globals, scope, memo, context)?,
+                lower_cached(end, schema, globals, scope, memo, context)?,
+                lower_cached(includes_start, schema, globals, scope, memo, context)?,
+                lower_cached(includes_end, schema, globals, scope, memo, context)?,
             ],
             dtype,
         ),
@@ -4865,12 +5402,11 @@ fn lower_scoped(
         } => custom(
             HailKind::Locus {
                 operation: "create".into(),
-                reference_json: serde_json::to_string(reference)
-                    .map_err(|e| ExprError::Invalid(e.to_string()))?,
+                reference: Arc::new(reference.clone()),
             },
             vec![
-                lower_scoped(contig, schema, globals, scope)?,
-                lower_scoped(position, schema, globals, scope)?,
+                lower_cached(contig, schema, globals, scope, memo, context)?,
+                lower_cached(position, schema, globals, scope, memo, context)?,
             ],
             dtype,
         ),
@@ -4881,12 +5417,11 @@ fn lower_scoped(
         } => custom(
             HailKind::Locus {
                 operation: "valid".into(),
-                reference_json: serde_json::to_string(reference)
-                    .map_err(|e| ExprError::Invalid(e.to_string()))?,
+                reference: Arc::new(reference.clone()),
             },
             vec![
-                lower_scoped(contig, schema, globals, scope)?,
-                lower_scoped(position, schema, globals, scope)?,
+                lower_cached(contig, schema, globals, scope, memo, context)?,
+                lower_cached(position, schema, globals, scope, memo, context)?,
             ],
             dtype,
         ),
@@ -4896,19 +5431,19 @@ fn lower_scoped(
         } => custom(
             HailKind::Locus {
                 operation: "from_global".into(),
-                reference_json: serde_json::to_string(reference)
-                    .map_err(|e| ExprError::Invalid(e.to_string()))?,
+                reference: Arc::new(reference.clone()),
             },
-            vec![lower_scoped(position, schema, globals, scope)?],
+            vec![lower_cached(
+                position, schema, globals, scope, memo, context,
+            )?],
             dtype,
         ),
         Expr::ParseLocus { reference, value } => custom(
             HailKind::Locus {
                 operation: "parse".into(),
-                reference_json: serde_json::to_string(reference)
-                    .map_err(|e| ExprError::Invalid(e.to_string()))?,
+                reference: Arc::new(reference.clone()),
             },
-            vec![lower_scoped(value, schema, globals, scope)?],
+            vec![lower_cached(value, schema, globals, scope, memo, context)?],
             dtype,
         ),
         Expr::ParseCsvLine {
@@ -4924,7 +5459,7 @@ fn lower_scoped(
                 missing.clone(),
                 *expected_fields,
             )?);
-            let child = lower_scoped(value, schema, globals, scope)?;
+            let child = lower_cached(value, schema, globals, scope, memo, context)?;
             let function = Arc::new(ScalarFunctionExpr::try_new(
                 udf,
                 vec![child],
@@ -4934,23 +5469,24 @@ fn lower_scoped(
             cast(function, schema, dtype.clone())?
         }
         Expr::LocusOp { operation, value } => {
-            let Type::Locus { locus } = value.dtype_scoped(schema, globals.schema(), scope)? else {
+            let Type::Locus { locus } =
+                value.dtype_scoped(schema, globals.schema(), scope, memo, context)?
+            else {
                 unreachable!()
             };
             custom(
                 HailKind::Locus {
                     operation: operation.clone(),
-                    reference_json: serde_json::to_string(&locus)
-                        .map_err(|e| ExprError::Invalid(e.to_string()))?,
+                    reference: Arc::new(locus),
                 },
-                vec![lower_scoped(value, schema, globals, scope)?],
+                vec![lower_cached(value, schema, globals, scope, memo, context)?],
                 dtype,
             )
         }
         Expr::IntervalContains { interval, point } => {
             let Type::Interval {
                 interval: point_type,
-            } = interval.dtype_scoped(schema, globals.schema(), scope)?
+            } = interval.dtype_scoped(schema, globals.schema(), scope, memo, context)?
             else {
                 unreachable!("validated interval")
             };
@@ -4964,11 +5500,13 @@ fn lower_scoped(
                 value: interval.clone(),
                 name: name.into(),
             };
-            let start = lower_scoped(&get("start"), schema, globals, scope)?;
-            let end = lower_scoped(&get("end"), schema, globals, scope)?;
-            let point = lower_scoped(point, schema, globals, scope)?;
-            let includes_start = lower_scoped(&get("includes_start"), schema, globals, scope)?;
-            let includes_end = lower_scoped(&get("includes_end"), schema, globals, scope)?;
+            let start = lower_synthetic(get("start"), schema, globals, scope, memo, context)?;
+            let end = lower_synthetic(get("end"), schema, globals, scope, memo, context)?;
+            let point = lower_cached(point, schema, globals, scope, memo, context)?;
+            let includes_start =
+                lower_synthetic(get("includes_start"), schema, globals, scope, memo, context)?;
+            let includes_end =
+                lower_synthetic(get("includes_end"), schema, globals, scope, memo, context)?;
             let start_gt = binary(point.clone(), Operator::Gt, start.clone(), schema)?;
             let start_eq = binary(point.clone(), Operator::Eq, start, schema)?;
             let above_start = binary(
@@ -4990,7 +5528,7 @@ fn lower_scoped(
         Expr::IntervalOverlaps { left, right } => {
             let Type::Interval {
                 interval: point_type,
-            } = left.dtype_scoped(schema, globals.schema(), scope)?
+            } = left.dtype_scoped(schema, globals.schema(), scope, memo, context)?
             else {
                 unreachable!("validated interval")
             };
@@ -5004,14 +5542,44 @@ fn lower_scoped(
                 value: Arc::new(value.clone()),
                 name: name.into(),
             };
-            let l_start = lower_scoped(&get(left, "start"), schema, globals, scope)?;
-            let l_end = lower_scoped(&get(left, "end"), schema, globals, scope)?;
-            let r_start = lower_scoped(&get(right, "start"), schema, globals, scope)?;
-            let r_end = lower_scoped(&get(right, "end"), schema, globals, scope)?;
-            let l_inc_start = lower_scoped(&get(left, "includes_start"), schema, globals, scope)?;
-            let l_inc_end = lower_scoped(&get(left, "includes_end"), schema, globals, scope)?;
-            let r_inc_start = lower_scoped(&get(right, "includes_start"), schema, globals, scope)?;
-            let r_inc_end = lower_scoped(&get(right, "includes_end"), schema, globals, scope)?;
+            let l_start =
+                lower_synthetic(get(left, "start"), schema, globals, scope, memo, context)?;
+            let l_end = lower_synthetic(get(left, "end"), schema, globals, scope, memo, context)?;
+            let r_start =
+                lower_synthetic(get(right, "start"), schema, globals, scope, memo, context)?;
+            let r_end = lower_synthetic(get(right, "end"), schema, globals, scope, memo, context)?;
+            let l_inc_start = lower_synthetic(
+                get(left, "includes_start"),
+                schema,
+                globals,
+                scope,
+                memo,
+                context,
+            )?;
+            let l_inc_end = lower_synthetic(
+                get(left, "includes_end"),
+                schema,
+                globals,
+                scope,
+                memo,
+                context,
+            )?;
+            let r_inc_start = lower_synthetic(
+                get(right, "includes_start"),
+                schema,
+                globals,
+                scope,
+                memo,
+                context,
+            )?;
+            let r_inc_end = lower_synthetic(
+                get(right, "includes_end"),
+                schema,
+                globals,
+                scope,
+                memo,
+                context,
+            )?;
             let first_lt = binary(l_start.clone(), Operator::Lt, r_end.clone(), schema)?;
             let first_eq = binary(l_start, Operator::Eq, r_end, schema)?;
             let first_touch = binary(
@@ -5036,15 +5604,29 @@ fn lower_scoped(
             HailKind::Struct(fields.iter().map(|(n, _)| n.clone()).collect()),
             fields
                 .iter()
-                .map(|(_, e)| lower_scoped(e, schema, globals, scope))
+                .map(|(_, e)| lower_cached(e, schema, globals, scope, memo, context))
                 .collect::<Result<Vec<_>, _>>()?,
             dtype,
         ),
         Expr::Unary { operator, value } => {
-            let child = lower_scoped(value, schema, globals, scope)?;
+            let child = lower_cached(value, schema, globals, scope, memo, context)?;
             match operator {
                 UnaryOperator::Pos => child,
-                UnaryOperator::Neg => Arc::new(NegativeExpr::new(child)),
+                UnaryOperator::Neg => match &dtype {
+                    DataType::Int32 => binary(
+                        Arc::new(Literal::new(ScalarValue::Int32(Some(0)))),
+                        Operator::Minus,
+                        child,
+                        schema,
+                    )?,
+                    DataType::Int64 => binary(
+                        Arc::new(Literal::new(ScalarValue::Int64(Some(0)))),
+                        Operator::Minus,
+                        child,
+                        schema,
+                    )?,
+                    _ => Arc::new(NegativeExpr::new(child)),
+                },
                 UnaryOperator::Not => Arc::new(NotExpr::new(child)),
             }
         }
@@ -5053,10 +5635,10 @@ fn lower_scoped(
             left,
             right,
         } => {
-            let lt = left.dtype_scoped(schema, globals.schema(), scope)?;
-            let rt = right.dtype_scoped(schema, globals.schema(), scope)?;
-            let mut l = lower_scoped(left, schema, globals, scope)?;
-            let mut r = lower_scoped(right, schema, globals, scope)?;
+            let lt = left.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
+            let rt = right.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
+            let mut l = lower_cached(left, schema, globals, scope, memo, context)?;
+            let mut r = lower_cached(right, schema, globals, scope, memo, context)?;
             match operator {
                 BinaryOperator::And | BinaryOperator::Or => binary(
                     l,
@@ -5155,7 +5737,9 @@ fn lower_scoped(
         }
         Expr::Die { message, .. } => custom(
             HailKind::Die,
-            vec![lower_scoped(message, schema, globals, scope)?],
+            vec![lower_cached(
+                message, schema, globals, scope, memo, context,
+            )?],
             dtype.clone(),
         ),
         Expr::IfElse {
@@ -5163,24 +5747,27 @@ fn lower_scoped(
             consequent,
             alternate,
         } => {
-            let cond = lower_scoped(condition, schema, globals, scope)?;
+            let cond = lower_cached(condition, schema, globals, scope, memo, context)?;
             let yes = lower_cast(
-                lower_scoped(consequent, schema, globals, scope)?,
+                lower_cached(consequent, schema, globals, scope, memo, context)?,
                 schema,
                 &dtype,
             )?;
             let no = lower_cast(
-                lower_scoped(alternate, schema, globals, scope)?,
+                lower_cached(alternate, schema, globals, scope, memo, context)?,
                 schema,
                 &dtype,
             )?;
             let missing: Arc<dyn PhysicalExpr> =
                 Arc::new(Literal::new(ScalarValue::try_from(&dtype)?));
-            let is_null: Arc<dyn PhysicalExpr> = Arc::new(IsNullExpr::new(cond.clone()));
+            let true_value: Arc<dyn PhysicalExpr> =
+                Arc::new(Literal::new(ScalarValue::Boolean(Some(true))));
+            let false_value: Arc<dyn PhysicalExpr> =
+                Arc::new(Literal::new(ScalarValue::Boolean(Some(false))));
             Arc::new(CaseExpr::try_new(
-                None,
-                vec![(is_null, missing), (cond, yes)],
-                Some(no),
+                Some(cond),
+                vec![(true_value, yes), (false_value, no)],
+                Some(missing),
             )?)
         }
     };
@@ -5286,6 +5873,274 @@ mod tests {
     }
     fn expr(v: Value) -> Expr {
         serde_json::from_value(v).unwrap()
+    }
+
+    #[test]
+    fn public_compilation_accepts_deep_shared_native_graphs() {
+        let graph = |depth| {
+            let mut expression = Arc::new(Expr::Column {
+                name: "value".into(),
+            });
+            for _ in 0..depth {
+                expression = Arc::new(Expr::Binary {
+                    operator: BinaryOperator::Add,
+                    left: expression.clone(),
+                    right: expression,
+                });
+            }
+            expression
+        };
+        let schema = Schema::new(vec![Field::new("value", DataType::Int64, false)]);
+        // Keep the real 64-level graph. Run this public API test under an
+        // external resource/time bound; never evaluate its exponential result.
+        let expression = graph(64);
+        assert_eq!(
+            expression.dtype(&schema).unwrap(),
+            Type::Primitive(PrimitiveType::Int64)
+        );
+        let compiled = lower(&expression, &schema).unwrap();
+        assert_eq!(compiled.data_type(&schema).unwrap(), DataType::Int64);
+        assert!(!compiled.nullable(&schema).unwrap());
+        let logical_schema = datafusion_common::DFSchema::try_from(schema.clone()).unwrap();
+        let logical = crate::logical_expr::lower_logical(&expression, &logical_schema).unwrap();
+        use datafusion_expr::ExprSchemable;
+        assert_eq!(logical.get_type(&logical_schema).unwrap(), DataType::Int64);
+        let planned = datafusion_physical_expr::planner::create_physical_expr(
+            &logical,
+            &logical_schema,
+            &datafusion_physical_expr::execution_props::ExecutionProps::new(),
+            &datafusion_expr::physical_planning_context::PhysicalPlanningContext::default(),
+        )
+        .unwrap();
+        assert_eq!(planned.data_type(&schema).unwrap(), DataType::Int64);
+        // Actual execution remains covered at a modest size independently of
+        // the large compilation/resource contract.
+        let batch = RecordBatch::try_new(
+            Arc::new(schema.clone()),
+            vec![Arc::new(Int64Array::from(vec![2, 3]))],
+        )
+        .unwrap();
+        let result = lower(&graph(8), &schema)
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(2)
+            .unwrap();
+        assert_eq!(result.as_ref(), &Int64Array::from(vec![512, 768]));
+        let logical = crate::logical_expr::lower_logical(&graph(8), &logical_schema).unwrap();
+        let planned = datafusion_physical_expr::planner::create_physical_expr(
+            &logical,
+            &logical_schema,
+            &datafusion_physical_expr::execution_props::ExecutionProps::new(),
+            &datafusion_expr::physical_planning_context::PhysicalPlanningContext::default(),
+        )
+        .unwrap();
+        let logical_result = planned.evaluate(&batch).unwrap().into_array(2).unwrap();
+        assert_eq!(logical_result.as_ref(), result.as_ref());
+    }
+
+    #[test]
+    fn public_physical_metadata_queries_follow_actual_input_schema() {
+        let value = Arc::new(Expr::Column {
+            name: "value".into(),
+        });
+        let expression = Expr::Binary {
+            operator: BinaryOperator::Add,
+            left: value.clone(),
+            right: value,
+        };
+        let integer = Schema::new(vec![Field::new("value", DataType::Int64, false)]);
+        let float = Schema::new(vec![Field::new("value", DataType::Float64, true)]);
+        let compiled = lower(&expression, &integer).unwrap();
+        assert_eq!(compiled.data_type(&float).unwrap(), DataType::Float64);
+        assert!(compiled.nullable(&float).unwrap());
+        assert_eq!(compiled.data_type(&integer).unwrap(), DataType::Int64);
+        assert!(!compiled.nullable(&integer).unwrap());
+        let batch = RecordBatch::try_new(
+            Arc::new(float),
+            vec![Arc::new(Float64Array::from(vec![Some(2.5), None]))],
+        )
+        .unwrap();
+        let result = compiled.evaluate(&batch).unwrap().into_array(2).unwrap();
+        assert_eq!(result.as_ref(), &Float64Array::from(vec![Some(5.0), None]));
+    }
+
+    #[test]
+    fn public_lambda_projection_rebinds_heterogeneous_source_columns() {
+        let batch = RecordBatch::try_new(
+            Arc::new(Schema::new(vec![
+                Field::new(
+                    "unused",
+                    DataType::List(Arc::new(Field::new("item", DataType::Int32, true))),
+                    true,
+                ),
+                Field::new("target", DataType::Int32, false),
+            ])),
+            vec![
+                Arc::new(ListArray::from_iter_primitive::<Int32Type, _, _>(vec![
+                    Some(vec![Some(9), Some(8)]),
+                    Some(vec![]),
+                ])),
+                Arc::new(Int32Array::from(vec![1, 2])),
+            ],
+        )
+        .unwrap();
+        let expression = Expr::ArrayMap {
+            value: Arc::new(Expr::Literal {
+                dtype: Type::Array {
+                    array: Box::new(Type::Primitive(PrimitiveType::Int32)),
+                },
+                value: json!([0, 1, 2]),
+            }),
+            parameter: "item".into(),
+            body: Arc::new(Expr::Binary {
+                operator: BinaryOperator::Eq,
+                left: Arc::new(Expr::LambdaVariable {
+                    name: "item".into(),
+                    dtype: None,
+                }),
+                right: Arc::new(Expr::Column {
+                    name: "target".into(),
+                }),
+            }),
+        };
+        let result = lower(&expression, batch.schema_ref())
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(2)
+            .unwrap();
+        let expected = literal_array(
+            &json!([false, true, false]),
+            &Type::Array {
+                array: Box::new(Type::Primitive(PrimitiveType::Bool)),
+            },
+            1,
+        )
+        .unwrap();
+        let second = literal_array(
+            &json!([false, false, true]),
+            &Type::Array {
+                array: Box::new(Type::Primitive(PrimitiveType::Bool)),
+            },
+            1,
+        )
+        .unwrap();
+        let expected = arrow_select::concat::concat(&[expected.as_ref(), second.as_ref()]).unwrap();
+        assert_eq!(result.as_ref(), expected.as_ref());
+    }
+
+    #[test]
+    fn memo_keeps_the_same_native_node_distinct_under_different_lexical_bindings() {
+        let variable = Arc::new(Expr::LambdaVariable {
+            name: "item".into(),
+            dtype: None,
+        });
+        let map = |dtype: Type, values: Value| Expr::ArrayMap {
+            value: Arc::new(Expr::Literal {
+                dtype: Type::Array {
+                    array: Box::new(dtype),
+                },
+                value: values,
+            }),
+            parameter: "item".into(),
+            body: variable.clone(),
+        };
+        let expr = Expr::Struct {
+            fields: vec![
+                (
+                    "numbers".into(),
+                    map(Type::Primitive(PrimitiveType::Int32), json!([1, 2])),
+                ),
+                (
+                    "strings".into(),
+                    map(Type::Primitive(PrimitiveType::Str), json!(["a", "b"])),
+                ),
+            ],
+        };
+        let schema = Schema::empty();
+        let expected = Type::Struct {
+            r#struct: vec![
+                (
+                    "numbers".into(),
+                    Type::Array {
+                        array: Box::new(Type::Primitive(PrimitiveType::Int32)),
+                    },
+                ),
+                (
+                    "strings".into(),
+                    Type::Array {
+                        array: Box::new(Type::Primitive(PrimitiveType::Str)),
+                    },
+                ),
+            ],
+        };
+        assert_eq!(expr.dtype(&schema).unwrap(), expected);
+        let batch = RecordBatch::try_new_with_options(
+            Arc::new(schema.clone()),
+            vec![],
+            &RecordBatchOptions::new().with_row_count(Some(1)),
+        )
+        .unwrap();
+        let compiled = lower(&expr, &schema).unwrap();
+        let values = compiled.evaluate(&batch).unwrap().into_array(1).unwrap();
+        assert_eq!(values.data_type(), &expected.to_arrow().unwrap());
+        let fields = values.as_any().downcast_ref::<StructArray>().unwrap();
+        let numbers = fields
+            .column(0)
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap()
+            .value(0);
+        let strings = fields
+            .column(1)
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap()
+            .value(0);
+        assert_eq!(numbers.as_ref(), &Int32Array::from(vec![1, 2]));
+        assert_eq!(strings.as_ref(), &StringArray::from(vec!["a", "b"]));
+    }
+
+    #[test]
+    fn public_grouped_arrays_keep_independent_generated_expressions() {
+        let grouped = |values: Value, n| Expr::ArrayGrouped {
+            value: Arc::new(Expr::Literal {
+                dtype: Type::Array {
+                    array: Box::new(Type::Primitive(PrimitiveType::Int32)),
+                },
+                value: values,
+            }),
+            size: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Int32(Some(n)),
+            }),
+        };
+        let expression = Expr::Struct {
+            fields: vec![
+                ("first".into(), grouped(json!([1, 2, 3]), 2)),
+                ("second".into(), grouped(json!([8, 9]), 1)),
+            ],
+        };
+        let schema = Schema::empty();
+        let batch = RecordBatch::try_new_with_options(
+            Arc::new(schema.clone()),
+            vec![],
+            &RecordBatchOptions::new().with_row_count(Some(1)),
+        )
+        .unwrap();
+        let actual = lower(&expression, &schema)
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(1)
+            .unwrap();
+        let expected = literal_array(
+            &json!({"first":[[1,2],[3]],"second":[[8],[9]]}),
+            &expression.dtype(&schema).unwrap(),
+            1,
+        )
+        .unwrap();
+        assert_eq!(actual.as_ref(), expected.as_ref());
     }
 
     #[test]
@@ -5481,11 +6336,14 @@ mod tests {
     fn locus_coordinates_classification_boundaries_and_global_positions() {
         let reference = test_reference();
         let prepared = reference.prepare().unwrap();
-        let reference_json = serde_json::to_string(&reference).unwrap();
+        let dtype = Type::Locus {
+            locus: reference.clone(),
+        }
+        .to_arrow()
+        .unwrap();
         let loci = locus_eval(
             "create",
             &reference,
-            &reference_json,
             &prepared,
             &[
                 Arc::new(StringArray::from(vec![
@@ -5501,14 +6359,13 @@ mod tests {
                     Some(41),
                 ])),
             ],
-            &DataType::Null,
+            &dtype,
             4,
         )
         .unwrap();
         let in_par = locus_eval(
             "in_y_par",
             &reference,
-            &reference_json,
             &prepared,
             &[loci.clone()],
             &DataType::Boolean,
@@ -5524,10 +6381,9 @@ mod tests {
         let global = locus_eval(
             "from_global",
             &reference,
-            &reference_json,
             &prepared,
             &[Arc::new(Int64Array::from(vec![Some(199), Some(200), None]))],
-            &DataType::Null,
+            &dtype,
             3,
         )
         .unwrap();
@@ -5565,13 +6421,12 @@ mod tests {
             locus_eval(
                 "create",
                 &reference,
-                &reference_json,
                 &prepared,
                 &[
                     Arc::new(StringArray::from(vec![Some("chrA")])) as ArrayRef,
                     Arc::new(Int32Array::from(vec![Some(200)]))
                 ],
-                &DataType::Null,
+                &dtype,
                 1
             )
             .is_err()
@@ -5580,10 +6435,9 @@ mod tests {
             locus_eval(
                 "from_global",
                 &reference,
-                &reference_json,
                 &prepared,
                 &[Arc::new(Int64Array::from(vec![Some(1000)]))],
-                &DataType::Null,
+                &dtype,
                 1
             )
             .is_err()
@@ -5593,20 +6447,16 @@ mod tests {
     #[test]
     fn prepared_reference_cache_does_not_change_physical_expression_identity() {
         let reference = test_reference();
-        let reference_json = serde_json::to_string(&reference).unwrap();
         let kind = HailKind::Locus {
             operation: "from_global".into(),
-            reference_json,
+            reference: Arc::new(reference.clone()),
         };
         let args: Vec<Arc<dyn PhysicalExpr>> = vec![];
         let dtype = DataType::Int64;
         let left_cache = Arc::new(OnceLock::new());
         let right_cache = Arc::new(OnceLock::new());
         left_cache
-            .set(Ok(Arc::new((
-                reference.clone(),
-                reference.prepare().unwrap(),
-            ))))
+            .set(Ok(Arc::new(reference.prepare().unwrap())))
             .unwrap();
         let left = HailPhysicalExpr {
             kind: kind.clone(),

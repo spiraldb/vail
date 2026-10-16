@@ -58,3 +58,26 @@ def test_sources_and_existing_table_builtin_calls():
     other = hl.range_table(3)
     with pytest.raises(hl.ExpressionException): hl.zip(hl.array([t.idx]), hl.array([other.idx]))
     assert t.count() == 3
+
+
+def test_zip_three_arrays_and_offset_enumeration_use_scalar_callbacks():
+    values = hl.eval(hl.zip([1, 2], ['a'], [True, False, True], fill_missing=True))
+    assert values == [(1, 'a', True), (2, None, False), (None, None, True)]
+    assert hl.eval(hl.zip([1, 2], ['a'], [True, False])) == [(1, 'a', True)]
+    assert hl.eval(hl.enumerate([7, 8], start=-3)) == [(-3, 7), (-2, 8)]
+    assert hl.eval(hl.enumerate([7, 8], start=-3, index_first=False)) == [(7, -3), (8, -2)]
+    assert hl.eval(hl.enumerate(hl.missing('array<int32>'))) is None
+
+
+def test_zip_random_arrays_are_evaluated_before_tuple_projection():
+    values = hl.range(12).map(lambda _: hl.rand_int64(seed=94))
+    expected = hl.eval(values)
+    assert hl.eval(hl.zip(values, hl.range(12))) == list(zip(expected, range(12)))
+    assert hl.eval(hl.enumerate(values, start=3)) == list(zip(range(3, 15), expected))
+
+
+def test_corr_long_arrays_use_shared_constant_size_reducer_state():
+    # The old expression embedded whole-array means in per-element callbacks,
+    # exceeding a gigabyte at only 4000 elements.
+    assert hl.eval(hl.corr(hl.range(20000), hl.range(20000))) == pytest.approx(1.0)
+    assert hl.eval(hl.corr([1e12, 1e12 + 1, 1e12 + 2], [3, 2, 1])) == pytest.approx(-1.0)

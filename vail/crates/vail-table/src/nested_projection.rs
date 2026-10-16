@@ -4,7 +4,7 @@
 //! source column whose element is accessed through `GetField` paths. Any
 //! opaque or whole-container use marks the source column as fully required.
 
-use std::collections::{BTreeMap, BTreeSet, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use vail_execution::expressions::Expr;
 
 #[derive(Clone)]
@@ -22,8 +22,17 @@ struct Dependencies {
 /// A path includes its row field, for example `[_CELLS, value, GT]`.
 pub(crate) fn map_rows_paths(fields: &[(String, Expr)]) -> Vec<Vec<String>> {
     let mut deps = Dependencies::default();
+    let mut seen = HashSet::new();
+    let mut next_context = 1;
     for (_, expression) in fields {
-        walk(expression, &HashMap::new(), &mut deps);
+        walk(
+            expression,
+            &HashMap::new(),
+            &mut deps,
+            0,
+            &mut seen,
+            &mut next_context,
+        );
     }
     deps.paths
         .into_iter()
@@ -38,7 +47,7 @@ fn path_root<'a>(
 ) -> Option<(String, Vec<String>)> {
     match expression {
         Expr::Column { name } => Some((name.clone(), Vec::new())),
-        Expr::LambdaVariable { name } => arrays
+        Expr::LambdaVariable { name, .. } => arrays
             .get(name)
             .map(|root| (root.source.clone(), Vec::new())),
         Expr::GetField { value, name } => {
@@ -50,7 +59,17 @@ fn path_root<'a>(
     }
 }
 
-fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Dependencies) {
+fn walk(
+    expression: &Expr,
+    arrays: &HashMap<String, ArrayRoot>,
+    deps: &mut Dependencies,
+    context: usize,
+    seen: &mut HashSet<(usize, usize)>,
+    next_context: &mut usize,
+) {
+    if !seen.insert((expression as *const Expr as usize, context)) {
+        return;
+    }
     // A GetField chain rooted in an input column or ArrayMap parameter is a
     // narrow dependency. Treat the chain as one node and do not visit its
     // children as whole-column uses.
@@ -77,7 +96,7 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
         Expr::Column { name } => {
             deps.full.insert(name.clone());
         }
-        Expr::LambdaVariable { name } => {
+        Expr::LambdaVariable { name, .. } => {
             if let Some(root) = arrays.get(name) {
                 deps.full.insert(root.source.clone());
             }
@@ -95,7 +114,9 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
                         source: name.clone(),
                     },
                 );
-                walk(body, &nested, deps);
+                let nested_context = *next_context;
+                *next_context += 1;
+                walk(body, &nested, deps, nested_context, seen, next_context);
             } else {
                 // Nested/list-derived arrays need a richer path model. Mark
                 // every referenced source field full to avoid unsafe pruning.
@@ -104,7 +125,7 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
         }
         Expr::Struct { fields } => {
             for (_, value) in fields {
-                walk(value, arrays, deps);
+                walk(value, arrays, deps, context, seen, next_context);
             }
         }
         Expr::Tuple { elements }
@@ -112,21 +133,21 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
         | Expr::NestedFunction { args: elements, .. }
         | Expr::Array { elements, .. } => {
             for value in elements {
-                walk(value, arrays, deps);
+                walk(value, arrays, deps, context, seen, next_context);
             }
         }
         Expr::Binary { left, right, .. } | Expr::IntegerBinary { left, right, .. } => {
-            walk(left, arrays, deps);
-            walk(right, arrays, deps);
+            walk(left, arrays, deps, context, seen, next_context);
+            walk(right, arrays, deps, context, seen, next_context);
         }
         Expr::IfElse {
             condition,
             consequent,
             alternate,
         } => {
-            walk(condition, arrays, deps);
-            walk(consequent, arrays, deps);
-            walk(alternate, arrays, deps);
+            walk(condition, arrays, deps, context, seen, next_context);
+            walk(consequent, arrays, deps, context, seen, next_context);
+            walk(alternate, arrays, deps, context, seen, next_context);
         }
         Expr::Unary { value, .. }
         | Expr::Cast { value, .. }
@@ -139,7 +160,9 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
         | Expr::ArrayReduce { value, .. }
         | Expr::LocusOp { value, .. }
         | Expr::ParseLocus { value, .. }
-        | Expr::ParseCsvLine { value, .. } => walk(value, arrays, deps),
+        | Expr::ParseCsvLine { value, .. } => {
+            walk(value, arrays, deps, context, seen, next_context)
+        }
         Expr::Interval {
             start,
             end,
@@ -147,20 +170,20 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
             includes_end,
         } => {
             for value in [start, end, includes_start, includes_end] {
-                walk(value, arrays, deps);
+                walk(value, arrays, deps, context, seen, next_context);
             }
         }
         Expr::IntervalContains { interval, point } => {
-            walk(interval, arrays, deps);
-            walk(point, arrays, deps);
+            walk(interval, arrays, deps, context, seen, next_context);
+            walk(point, arrays, deps, context, seen, next_context);
         }
         Expr::IntervalOverlaps { left, right } => {
-            walk(left, arrays, deps);
-            walk(right, arrays, deps);
+            walk(left, arrays, deps, context, seen, next_context);
+            walk(right, arrays, deps, context, seen, next_context);
         }
         Expr::ArrayIndex { value, index } => {
-            walk(value, arrays, deps);
-            walk(index, arrays, deps);
+            walk(value, arrays, deps, context, seen, next_context);
+            walk(index, arrays, deps, context, seen, next_context);
         }
         Expr::Locus {
             contig, position, ..
@@ -168,19 +191,21 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
         | Expr::LocusValid {
             contig, position, ..
         } => {
-            walk(contig, arrays, deps);
-            walk(position, arrays, deps);
+            walk(contig, arrays, deps, context, seen, next_context);
+            walk(position, arrays, deps, context, seen, next_context);
         }
-        Expr::LocusFromGlobalPosition { position, .. } => walk(position, arrays, deps),
+        Expr::LocusFromGlobalPosition { position, .. } => {
+            walk(position, arrays, deps, context, seen, next_context)
+        }
         Expr::ArraySlice {
             value,
             start,
             stop,
             step,
         } => {
-            walk(value, arrays, deps);
+            walk(value, arrays, deps, context, seen, next_context);
             for value in [start, stop, step].into_iter().flatten() {
-                walk(value, arrays, deps);
+                walk(value, arrays, deps, context, seen, next_context);
             }
         }
         // These binders and collection operators are not yet modeled with
@@ -191,6 +216,7 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
         | Expr::AggArray { .. }
         | Expr::AggFilter { .. }
         | Expr::AggExplode { .. }
+        | Expr::ArrayAggregateScan { .. }
         | Expr::ArrayFold { .. }
         | Expr::ArrayPredicate { .. }
         | Expr::ArrayFilter { .. }
@@ -200,7 +226,7 @@ fn walk(expression: &Expr, arrays: &HashMap<String, ArrayRoot>, deps: &mut Depen
         | Expr::Global { .. }
         | Expr::Literal { .. }
         | Expr::RuntimeLiteral { .. } => {}
-        Expr::GetField { value, .. } => walk(value, arrays, deps),
+        Expr::GetField { value, .. } => walk(value, arrays, deps, context, seen, next_context),
     }
 }
 
@@ -213,11 +239,11 @@ fn walk_all_columns(
     for root in arrays.values() {
         deps.full.insert(root.source.clone());
     }
-    expression.visit(&mut |node| {
+    expression.visit_unique(&mut |node| {
         if let Expr::Column { name } = node {
             deps.full.insert(name.clone());
         }
-        if let Expr::LambdaVariable { name } = node
+        if let Expr::LambdaVariable { name, .. } = node
             && let Some(root) = arrays.get(name)
         {
             deps.full.insert(root.source.clone());
@@ -235,7 +261,10 @@ mod tests {
     }
 
     fn lambda(name: &str) -> Expr {
-        Expr::LambdaVariable { name: name.into() }
+        Expr::LambdaVariable {
+            name: name.into(),
+            dtype: None,
+        }
     }
 
     fn field(value: Expr, name: &str) -> Expr {

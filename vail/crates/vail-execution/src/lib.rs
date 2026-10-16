@@ -24,8 +24,12 @@ use datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeE
 use thiserror::Error;
 
 mod aggregate_identity;
+mod kernel_identity;
+mod expression_effects;
+mod expression_identity;
 pub mod aggregates;
 mod array_fold;
+pub mod array_aggregate_scan;
 pub mod calls;
 pub mod collect_aggregate;
 pub mod csv_line;
@@ -540,6 +544,8 @@ pub mod advanced_genomic_aggregates;
 pub mod advanced_numeric_aggregates;
 pub mod array_length_aggregate;
 pub mod array_aggregate;
+pub mod reducer;
+mod list_aggregate;
 
 pub mod fold_aggregate;
 
@@ -550,5 +556,11 @@ mod collection_lookup;
 mod matrix_transpose;
 
 mod randomness;
+pub mod randomness_binding;
 
 mod hwe_counts;
+
+/// Whether the native list adapter exposes this shared reducer.
+pub fn supports_list_reducer(function: &str) -> bool {
+    list_aggregate::arity(function).is_some()
+}

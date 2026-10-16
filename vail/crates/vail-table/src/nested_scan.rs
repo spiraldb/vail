@@ -24,8 +24,31 @@ fn symbol() -> String {
         NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
     )
 }
+/// Lexically bind one Boolean Arrow value without introducing an RNG context.
+pub(crate) fn bind_predicate(value: Expr, body: impl FnOnce(Expr) -> Expr) -> Expr {
+    let parameter = symbol();
+    let variable = Expr::LambdaVariable {
+        name: parameter.clone(),
+        dtype: None,
+    };
+    Expr::ArrayIndex {
+        value: Arc::new(Expr::ArrayMap {
+            value: Arc::new(Expr::Array {
+                element_type: Type::Primitive(PrimitiveType::Bool),
+                elements: vec![value],
+            }),
+            parameter,
+            body: Arc::new(body(variable)),
+        }),
+        index: Arc::new(Expr::Literal {
+            dtype: Type::Primitive(PrimitiveType::Int32),
+            value: serde_json::json!(0),
+        }),
+    }
+}
+
 fn substitute(expr: &Expr, name: &str, value: &Expr) -> Result<Expr> {
-    if matches!(expr, Expr::LambdaVariable { name: parameter } if parameter == name) {
+    if matches!(expr, Expr::LambdaVariable { name: parameter, .. } if parameter == name) {
         return Ok(value.clone());
     }
     expr.try_map_children(&mut |child: &Expr| substitute(child, name, value))
@@ -36,6 +59,7 @@ impl Built {
         let parameter = symbol();
         let finish = Expr::LambdaVariable {
             name: parameter.clone(),
+            dtype: None,
         };
         Self {
             udf,
@@ -164,6 +188,7 @@ fn compose(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                 return Ok(Expr::GetField {
                     value: Arc::new(Expr::LambdaVariable {
                         name: parameter.into(),
+                        dtype: None,
                     }),
                     name: name.clone(),
                 });
@@ -218,7 +243,10 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                         continue;
                     }
                     let value = match aliases.iter().find(|(_, column)| *column == field.name()) {
-                        Some((name, _)) => Expr::LambdaVariable { name: name.clone() },
+                        Some((name, _)) => Expr::LambdaVariable {
+                            name: name.clone(),
+                            dtype: None,
+                        },
                         None if i < context.globals.fields().len() => Expr::Global {
                             name: field.name().clone(),
                         },
@@ -282,20 +310,24 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
         }
         Expr::AggFilter { predicate, body } => {
             let child = compose(body, context)?;
-            let guarded = Expr::IfElse {
-                condition: predicate.clone(),
-                consequent: Arc::new(child.argument.clone()),
-                alternate: Arc::new(Expr::Literal {
-                    dtype: Type::from_arrow(&child.input)?,
-                    value: serde_json::Value::Null,
-                }),
-            };
-            let argument = Expr::Struct {
-                fields: vec![
-                    ("predicate".into(), (**predicate).clone()),
-                    ("value".into(), guarded),
-                ],
-            };
+            // Both the packed flag and selected-only guard read one bound value.
+            let child_type = Type::from_arrow(&child.input)?;
+            let argument = bind_predicate((**predicate).clone(), |predicate_value| {
+                let guarded = Expr::IfElse {
+                    condition: Arc::new(predicate_value.clone()),
+                    consequent: Arc::new(child.argument.clone()),
+                    alternate: Arc::new(Expr::Literal {
+                        dtype: child_type,
+                        value: serde_json::Value::Null,
+                    }),
+                };
+                Expr::Struct {
+                    fields: vec![
+                        ("predicate".into(), predicate_value),
+                        ("value".into(), guarded),
+                    ],
+                }
+            });
             let input = context.dtype(&argument)?.to_arrow()?;
             let udf = vail_execution::scan_scopes::transformed(
                 descriptor(&child)?,
@@ -305,6 +337,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
             let mut result = Built::identity(udf, argument, input);
             result.finish = child.finish(Expr::LambdaVariable {
                 name: result.parameter.clone(),
+                dtype: None,
             })?;
             Ok(result)
         }
@@ -362,11 +395,13 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
             let mut result = Built::identity(udf, argument, input);
             let slot = Expr::LambdaVariable {
                 name: result.parameter.clone(),
+                dtype: None,
             };
             result.finish = if matches!(expr, Expr::AggArray { .. }) {
                 let index_name = symbol();
                 let index = Expr::LambdaVariable {
                     name: index_name.clone(),
+                    dtype: None,
                 };
                 let entry = Expr::ArrayIndex {
                     value: Arc::new(slot.clone()),
@@ -435,6 +470,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
             let entry_name = symbol();
             let entry = Expr::LambdaVariable {
                 name: entry_name.clone(),
+                dtype: None,
             };
             let body = Expr::Struct {
                 fields: vec![
@@ -458,6 +494,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                 value: Arc::new(Expr::ArrayMap {
                     value: Arc::new(Expr::LambdaVariable {
                         name: result.parameter.clone(),
+                        dtype: None,
                     }),
                     parameter: entry_name,
                     body: Arc::new(body),

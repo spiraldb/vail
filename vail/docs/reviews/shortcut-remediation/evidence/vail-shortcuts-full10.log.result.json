@@ -1,0 +1,17 @@
+{
+  "command": [
+    "env",
+    "PYTHONPATH=/private/tmp/vail-shortcuts-package10:/Users/danielking/.codex/worktrees/1611/vail/vail",
+    "vail/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-o",
+    "faulthandler_timeout=60",
+    "vail/python/tests"
+  ],
+  "status": "completed",
+  "exit_code": 1,
+  "elapsed_seconds": 96.69431325000187,
+  "log": "/private/tmp/vail-shortcuts-full10.log"
+}

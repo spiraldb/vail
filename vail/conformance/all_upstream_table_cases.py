@@ -132,7 +132,7 @@ def worker(test_id, output):
                 phase = 'body'
                 fn(**kwargs)
             except BaseException as error:
-                row.update(status='failed' if phase == 'body' and not isinstance(error, NameError) else 'blocked', phase=phase,
+                row.update(status='failed' if phase == 'body' else 'blocked', phase=phase,
                            error_type=type(error).__name__, error=str(error),
                            traceback=traceback.format_exc())
             outcomes.append(row)
@@ -158,6 +158,7 @@ def main():
     tests = list(definitions(ast.parse(SOURCE.read_text())))
     for index, (test_id, node) in enumerate(tests, 1):
         case_path = args.output / f'{test_id}.json'
+        case_path.unlink(missing_ok=True)
         command = [sys.executable, str(Path(__file__).resolve()), '--worker', test_id,
                    '--output', str(case_path), '--source', str(SOURCE)]
         with (args.output / f'{test_id}.log').open('w') as log:
@@ -167,12 +168,9 @@ def main():
             except subprocess.TimeoutExpired:
                 problem = f'worker exceeded {args.timeout}s'
         cases = json.loads(case_path.read_text()) if case_path.exists() else []
-        for case in cases:
-            if case.get('error_type') == 'NameError':
-                case['status'] = 'blocked'
         if problem:
             cases.append(dict(status='blocked', phase='worker', error=problem))
-        status = ('blocked' if any(c['status'] == 'blocked' for c in cases)
+        status = ('blocked' if not cases or any(c['status'] == 'blocked' for c in cases)
                   else 'failed' if any(c['status'] == 'failed' for c in cases)
                   else 'passed')
         results.append(dict(test_id=test_id, source_line=node.lineno, status=status, cases=cases))

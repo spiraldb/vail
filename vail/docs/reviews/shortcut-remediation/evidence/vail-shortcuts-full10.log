@@ -1,0 +1,95 @@
+........................................................................ [  5%]
+........................................................................ [ 10%]
+..F..................................................................... [ 16%]
+.......................F....................................... [ 20%]
+........................................................................ [ 26%]
+........................................................................ [ 31%]
+........................................................................ [ 36%]
+........................................................................ [ 42%]
+........................................................................ [ 47%]
+........................................................................ [ 52%]
+........................................................................ [ 58%]
+........................................................................ [ 63%]
+........................................................................ [ 68%]
+........................................................................ [ 74%]
+........................................................................ [ 79%]
+........................................................................ [ 84%]
+........................................................................ [ 90%]
+.............................................................. [ 94%]
+....................................................................     [100%]
+=================================== FAILURES ===================================
+____ test_tagged_types_survive_execution_export_and_storage[dtype4-value4] _____
+
+dtype = tdict(ttuple(int32), tarray(ttuple(int32))), value = {(1,): [(2,)]}
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-192/test_tagged_types_survive_exec4')
+
+    @pytest.mark.parametrize('dtype,value', [
+        (hl.ttuple(), ()),
+        (hl.ttuple(hl.tint32, hl.tstr), (2, 'a')),
+        (hl.tarray(hl.ttuple(hl.tint32)), [(1,), None, (2,)]),
+        (hl.tset(hl.ttuple(hl.tint32)), {(1,), (2,)}),
+        (hl.tdict(hl.ttuple(hl.tint32), hl.tarray(hl.ttuple(hl.tint32))), {(1,): [(2,)]}),
+        (hl.tcall, hl.Call((1, 2), True)),
+        (hl.tndarray(hl.tint32, 2), {'__vail_ndarray_data': [1, 2, 3, 4], '__vail_ndarray_shape': [2, 2]}),
+        (hl.tinterval(hl.tint32), hl.Interval(1, 3)),
+        (hl.tlocus('GRCh37'), hl.Locus('1', 2, hl.get_reference('GRCh37'))),
+    ])
+    def test_tagged_types_survive_execution_export_and_storage(dtype, value, tmp_path):
+        table = hl.Table.parallelize([{'x': value}, {'x': None}], schema=hl.tstruct(x=dtype), n_partitions=2)
+        table = table.select(x=table.x)
+        schema, exported = read_arrow(table._native.collect_arrow())
+        assert dtype_from_arrow(schema.field('x').type) == dtype
+        imported = hl.Table.parallelize(exported)
+        assert imported.x.dtype == dtype
+        assert imported._same(table)
+        path = tmp_path / 'tagged'
+>       table.write(path)
+
+vail/python/tests/test_arrow_type_metadata.py:68:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <vail.Table object at 0x115d6af90>
+output = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-192/test_tagged_types_survive_exec4/tagged')
+overwrite = False, stage_locally = False, _codec_spec = None
+
+    def write(self, output, overwrite=False, stage_locally=False, _codec_spec=None):
+        """Atomically publish a local Viceberg snapshot; retain old generations on overwrite."""
+        if not isinstance(overwrite, builtins.bool) or not isinstance(stage_locally, builtins.bool):
+            raise TypeError("overwrite and stage_locally must be bool")
+        if stage_locally or _codec_spec is not None:
+            raise NotImplementedError("staging and custom codecs are not supported")
+>       self._native.write(os.fspath(output), overwrite)
+E       RuntimeError: Unexpected => Vortex error, source: Other error: ListLayoutStrategy needs at least one chunk
+
+/private/tmp/vail-shortcuts-package10/vail/__init__.py:496: RuntimeError
+___________ test_mixed_and_nested_keys_and_missing_values_round_trip ___________
+
+tmp_path = PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-192/test_mixed_and_nested_keys_and0')
+
+    def test_mixed_and_nested_keys_and_missing_values_round_trip(tmp_path):
+        table = hl.Table.parallelize(
+            [{"id": 0, "s": hl.Struct(x=2)}, {"id": 1, "s": hl.Struct(x=None)},
+             {"id": 2, "s": hl.Struct(x=1)}],
+            schema=hl.tstruct(id=hl.tint32, s=hl.tstruct(x=hl.tint32)),
+            n_partitions=2,
+        )
+        nested = table.key_by(table.s.x)
+        assert list(nested.key) == ["x"]
+        assert [row.id for row in nested.collect()] == [2, 0, 1]
+        keyed = table.key_by("id", bounds=hl.interval(table.id, table.id + 1))
+        path = tmp_path / "computed.viceberg"
+        keyed.write(path)
+>       assert keyed._same(hl.read_table(path))
+E       AssertionError: assert False
+E        +  where False = _same(<vail.Table object at 0x115d761e0>)
+E        +    where _same = <vail.Table object at 0x115d757f0>._same
+E        +    and   <vail.Table object at 0x115d761e0> = <function read_table at 0x104abfd80>(PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-192/test_mixed_and_nested_keys_and0/computed.viceberg'))
+E        +      where <function read_table at 0x104abfd80> = hl.read_table
+
+vail/python/tests/test_computed_keys_order.py:31: AssertionError
+----------------------------- Captured stdout call -----------------------------
+Table._same: row values, keys, or row counts differ
+=========================== short test summary info ============================
+FAILED vail/python/tests/test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]
+FAILED vail/python/tests/test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip
+2 failed, 1343 passed, 1 skipped, 19 subtests passed in 96.45s (0:01:36)

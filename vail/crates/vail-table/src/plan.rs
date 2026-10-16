@@ -1,10 +1,9 @@
-//! TableIR lowering to DataFusion physical plans. Logical partition identity is
-//! carried in a private Arrow column, never exposed to expressions or storage.
-//! The embedded scan is one ordered physical stream; logical partitions remain
-//! independently observable without allowing a parallel coalescer to reorder them.
+//! Leaf sources and physical implementations of semantic logical extensions.
+//! Child relations must already be planned by DataFusion; this module does not
+//! recursively compile TableIR. Internal row identity uses a private Arrow column.
 use crate::globals::GlobalBindings;
-use crate::{PartitionEvent, Result, TableError, TableIR, TableNode, order_requirement};
-use arrow_array::{Array, Int32Array, RecordBatch, UInt64Array};
+use crate::{PartitionEvent, Result, TableError, TableIR, TableNode, TableRef, order_requirement};
+use arrow_array::{Int32Array, RecordBatch, UInt64Array};
 use arrow_schema::{DataType, Field, Schema, SchemaRef, SortOptions};
 use datafusion_common::{
     DataFusionError, NullHandling, ScalarValue, UnnestOptions, config::ConfigOptions,
@@ -341,7 +340,9 @@ pub(crate) fn source_partition_projected_with_nested_paths(
             builder = builder.with_projection(file_projection.clone());
         }
         let config = builder.build();
-        let scan: PhysicalPlan = DataSourceExec::from_data_source(config);
+        let scan: PhysicalPlan = Arc::new(crate::rng_context::SourceLineageExec::new(
+            DataSourceExec::from_data_source(config),
+        ));
         let mut exprs = Vec::new();
         if format == "lines" {
             exprs.push((
@@ -398,13 +399,23 @@ pub(crate) fn source_partition_projected_with_nested_paths(
             "__vail_partition",
         );
         let projected_output_schema = with_partition(&projected_schema, &projected_name);
+        // A source's certified full key ordering survives projection only if
+        // every key root remains intact. Provider nested pruning excludes keys.
+        let ordering_keys = if table.keys().iter().all(|key| {
+            projected_schema.index_of(key).is_ok()
+                && !nested_paths.iter().any(|path| path.first() == Some(key))
+        }) {
+            table.keys()
+        } else {
+            &[]
+        };
         return Ok(Arc::new(SourceExec {
             source: if nested_paths.is_empty() {
                 Source::ReadPartitionProjected(source.clone(), part, field_ids)
             } else {
                 Source::ReadPartitionNested(source.clone(), part, field_ids, nested_paths)
             },
-            cache: source_properties(projected_output_schema, &[])?,
+            cache: source_properties(projected_output_schema, ordering_keys)?,
             row_schema: projected_schema,
         }));
     }
@@ -705,25 +716,31 @@ pub(crate) fn expression_array(
         input,
     )?))
 }
-pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
+/// Obtain a physical child without recursively lowering TableIR.
+fn prepared(table: &TableRef) -> Result<TablePlan> {
+    let TableNode::Prepared {
+        rows, n_partitions, ..
+    } = table.node()
+    else {
+        return Err(TableError::Invalid(
+            "physical operation received an unplanned child".into(),
+        ));
+    };
+    Ok(TablePlan {
+        rows: rows.clone(),
+        layout: PartitionLayout::Fixed(*n_partitions),
+    })
+}
+
+pub(crate) fn lower_operation(table: &Arc<TableIR>) -> Result<TablePlan> {
     let row_schema = table.schema().clone();
     let partition_name = private_name(&row_schema, table.globals().schema(), "__vail_partition");
     let schema = with_partition(&row_schema, &partition_name);
-    let fixed = |n| PartitionLayout::Fixed(n);
     let result = match table.node() {
-        TableNode::Prepared {
-            rows, n_partitions, ..
-        } => TablePlan {
-            rows: rows.clone(),
-            layout: fixed(*n_partitions),
-        },
-        TableNode::IntervalRead { .. } => crate::partitioned::deferred_ordered(table.clone())?,
-        TableNode::Repartition { .. } | TableNode::FilterPartitions { .. } => {
-            crate::partitioned::deferred_ordered(table.clone())?
-        }
+        TableNode::Prepared { .. } => prepared(table)?,
         TableNode::GroupWithinPartitions { child, name, n } => {
             crate::partition_grouping::lower_group_within(
-                lower(child)?,
+                prepared(child)?,
                 child.schema().clone(),
                 child.keys(),
                 name,
@@ -735,52 +752,14 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             rows_name,
             body,
             bindings,
-        } => {
-            if matches!(child.node(), TableNode::Prepared { .. }) {
-                crate::partition_map::lower(lower(child)?, child, rows_name, body, bindings)?
-            } else {
-                crate::partitioned::deferred_ordered(table.clone())?
-            }
-        }
-        TableNode::Read { source } => TablePlan {
-            rows: Arc::new(SourceExec {
-                source: Source::Read(source.clone()),
-                cache: source_properties(schema, &source.keys)?,
-                row_schema,
-            }),
-            layout: fixed(source.partition_rows().len()),
-        },
-        TableNode::TextRead { .. } => crate::partitioned::deferred_ordered(table.clone())?,
-        TableNode::Range { n, n_partitions } => TablePlan {
-            rows: Arc::new(SourceExec {
-                source: Source::Range {
-                    n: *n,
-                    partitions: *n_partitions,
-                },
-                cache: source_properties(schema, &["idx".into()])?,
-                row_schema,
-            }),
-            layout: fixed(*n_partitions),
-        },
-        TableNode::Parallelize { rows, n_partitions } => TablePlan {
-            rows: Arc::new(SourceExec {
-                source: Source::Parallelize {
-                    rows: rows.clone(),
-                    partitions: *n_partitions,
-                },
-                cache: properties(schema, EmissionType::Incremental),
-                row_schema,
-            }),
-            layout: fixed(*n_partitions),
-        },
-        TableNode::Expression { .. } => crate::partitioned::deferred_ordered(table.clone())?,
-        TableNode::MapGlobals { child } => lower(child)?,
+        } => crate::partition_map::lower(prepared(child)?, child, rows_name, body, bindings)?,
+        TableNode::MapGlobals { child } => prepared(child)?,
         TableNode::MapRows {
             child,
             fields,
             bindings,
         } => {
-            let input = lower(child)?;
+            let input = prepared(child)?;
             let (bound, indices) = bind_external(bind_globals(input.rows, child)?, bindings)?;
             let physical_schema = bound.schema();
             let mut expressions = fields
@@ -812,7 +791,7 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             keep,
             bindings,
         } => {
-            let input = lower(child)?;
+            let input = prepared(child)?;
             let (bound, indices) = bind_external(bind_globals(input.rows, child)?, bindings)?;
             let mut predicate = lower_with_bindings(
                 predicate,
@@ -839,7 +818,7 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             }
         }
         TableNode::Explode { child, path } => {
-            let input = lower(child)?;
+            let input = prepared(child)?;
             let mut rows = input.rows;
             let (index, name) = if path.len() == 1 {
                 (rows.schema().index_of(&path[0])?, path[0].clone())
@@ -969,14 +948,14 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             layout: PartitionLayout::Observed,
         },
         TableNode::Head { child, n } => {
-            let input = lower(child)?;
+            let input = prepared(child)?;
             TablePlan {
                 rows: Arc::new(GlobalLimitExec::new(input.rows, 0, Some(*n))),
                 layout: PartitionLayout::Observed,
             }
         }
         TableNode::Tail { child, n } => {
-            let input = lower(child)?;
+            let input = prepared(child)?;
             TablePlan {
                 rows: UnaryExec::create(input.rows, Unary::Tail(*n)),
                 layout: PartitionLayout::Observed,
@@ -995,7 +974,7 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             let partition_name =
                 private_name(&row_schema, table.globals().schema(), "__vail_partition");
             for (branch, child) in children.iter().enumerate() {
-                let lowered = lower(child)?;
+                let lowered = prepared(child)?;
                 let child_parts = child.known_n_partitions().unwrap_or(1);
                 let mut aligned = Vec::new();
                 for field in row_schema.fields() {
@@ -1107,7 +1086,7 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             }
         }
         TableNode::Distinct { child } => {
-            let input = lower(child)?.rows;
+            let input = prepared(child)?.rows;
             let input_schema = input.schema();
             let group_names = if child.keys().is_empty() {
                 child
@@ -1220,10 +1199,9 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             }
         }
         TableNode::KeyBy { child, keys } => sort(
-            lower(child)?,
+            prepared(child)?,
             &keys.iter().map(|k| (k.clone(), false)).collect::<Vec<_>>(),
         )?,
-        TableNode::Lookup { .. } => crate::partitioned::deferred_ordered(table.clone())?,
         TableNode::Join {
             left,
             right,
@@ -1234,14 +1212,12 @@ pub fn lower(table: &Arc<TableIR>) -> Result<TablePlan> {
             tables,
             data_field_name,
         } => crate::zip_join::lower(tables, table, data_field_name)?,
-        TableNode::OrderBy { child, keys } => sort(lower(child)?, keys)?,
-        TableNode::Aggregate { .. } => TablePlan {
-            rows: crate::deferred_logical::lower(
-                crate::logical::lower(table)?,
-                crate::logical::max_partitions(table),
-            )?,
-            layout: PartitionLayout::Fixed(1),
-        },
+        TableNode::OrderBy { child, keys } => sort(prepared(child)?, keys)?,
+        _ => {
+            return Err(TableError::Invalid(
+                "operation is not a physical semantic extension".into(),
+            ));
+        }
     };
     Ok(result)
 }
@@ -1253,7 +1229,7 @@ pub(crate) fn bind_external(
 ) -> Result<(PhysicalPlan, std::collections::BTreeMap<String, usize>)> {
     let mut indices = std::collections::BTreeMap::<String, usize>::new();
     for (reference, globals) in bindings {
-        let plan = globals.lower()?;
+        let plan = crate::partitioned::reset_plan_states(globals.lower()?)?;
         let value = Expr::Struct {
             fields: globals
                 .schema()
@@ -1314,7 +1290,10 @@ pub(crate) fn bind_globals(rows: PhysicalPlan, table: &Arc<TableIR>) -> Result<P
         return Ok(rows);
     }
     // CrossJoin builds its left input: exactly one row, including for empty tables.
-    Ok(cross_join(table.globals().lower()?, rows)?)
+    Ok(cross_join(
+        crate::partitioned::reset_plan_states(table.globals().lower()?)?,
+        rows,
+    )?)
 }
 pub(crate) fn sort(input: TablePlan, keys: &[(String, bool)]) -> Result<TablePlan> {
     if keys.is_empty() {
@@ -1352,43 +1331,17 @@ pub fn execute(table: &Arc<TableIR>) -> crate::BatchStream {
     crate::partitioned::execute(table)
 }
 
-/// Cardinality is a DataFusion aggregate, including forced counts of empty inputs.
-pub fn count_plan(table: &Arc<TableIR>) -> Result<PhysicalPlan> {
-    use datafusion_physical_expr::aggregate::AggregateExprBuilder;
-    use datafusion_physical_plan::aggregates::{AggregateExec, AggregateMode, PhysicalGroupBy};
-    let input = lower(table)?.rows;
-    let schema = input.schema();
-    let aggregate = AggregateExprBuilder::new(
-        datafusion_functions_aggregate::count::count_udaf(),
-        vec![Arc::new(Literal::new(ScalarValue::Int32(Some(1))))],
-    )
-    .schema(schema.clone())
-    .alias("count")
-    .build()?;
-    Ok(Arc::new(AggregateExec::try_new(
-        AggregateMode::Single,
-        PhysicalGroupBy::new_single(vec![]),
-        vec![Arc::new(aggregate)],
-        vec![None],
-        input,
-        schema,
-    )?))
+/// Compile the complete logical query using the caller's action resources.
+/// Supply memory/spill limits here, before singleton parameters are resolved,
+/// so initializers and the final data relation share one runtime environment.
+pub async fn physical_with_context(
+    table: &TableRef,
+    context: Arc<TaskContext>,
+) -> Result<PhysicalPlan> {
+    crate::logical::physical_with_context(table, context).await
 }
-pub async fn count(table: &Arc<TableIR>) -> Result<usize> {
-    let batches = datafusion_physical_plan::execution_plan::collect(
-        count_plan(table)?,
-        Arc::new(TaskContext::default()),
-    )
-    .await?;
-    if batches.len() != 1 || batches[0].num_rows() != 1 {
-        return Err(TableError::Invalid(
-            "count aggregate must produce one row".into(),
-        ));
-    }
-    let array = batches[0]
-        .column(0)
-        .as_any()
-        .downcast_ref::<arrow_array::Int64Array>()
-        .ok_or_else(|| TableError::Invalid("count aggregate must return int64".into()))?;
-    usize::try_from(array.value(0)).map_err(|_| TableError::Invalid("count exceeds usize".into()))
+
+/// Compile a complete table action with Vail's default action resources.
+pub async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
+    crate::logical::physical(table).await
 }

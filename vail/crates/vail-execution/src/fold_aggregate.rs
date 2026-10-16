@@ -5,7 +5,7 @@ use std::sync::Arc;
 use arrow_array::{Array, ArrayRef, RecordBatch, StructArray};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use datafusion_expr::{Accumulator, AggregateUDF};
 use datafusion_physical_expr::PhysicalExpr;
 
 #[derive(Debug)]
@@ -22,12 +22,13 @@ struct FoldAccumulator {
 impl FoldAccumulator {
     fn evaluate_one(expr: &Arc<dyn PhysicalExpr>, batch: &RecordBatch) -> DfResult<ScalarValue> {
         let value = expr.evaluate(batch)?.into_array(1)?;
-        ScalarValue::try_from_array(&value, 0)
+        crate::expressions::scalar_at(&value, 0)
+            .map_err(|error| DataFusionError::Execution(error.to_string()))
     }
 
     fn sequence(&mut self, row_columns: &[ArrayRef]) -> DfResult<()> {
         let mut columns = Vec::with_capacity(row_columns.len() + 1);
-        columns.push(ScalarValue::iter_to_array(vec![self.state.clone()])?);
+        columns.push(self.state.to_array_of_size(1)?);
         columns.extend(row_columns.iter().map(|column| column.slice(0, 1)));
         let batch = RecordBatch::try_new(Arc::clone(&self.seq_schema), columns)?;
         self.state = Self::evaluate_one(&self.seq, &batch)?;
@@ -36,10 +37,7 @@ impl FoldAccumulator {
     }
 
     fn combine_states(&self, left: ScalarValue, right: ScalarValue) -> DfResult<ScalarValue> {
-        let columns = vec![
-            ScalarValue::iter_to_array(vec![left])?,
-            ScalarValue::iter_to_array(vec![right])?,
-        ];
+        let columns = vec![left.to_array_of_size(1)?, right.to_array_of_size(1)?];
         let batch = RecordBatch::try_new(Arc::clone(&self.combine_schema), columns)?;
         Self::evaluate_one(&self.combine, &batch)
     }
@@ -99,7 +97,8 @@ impl Accumulator for FoldAccumulator {
             ));
         };
         for row in 0..states.len() {
-            let partial = ScalarValue::try_from_array(states, row)?;
+            let partial = crate::expressions::scalar_at(states, row)
+                .map_err(|error| DataFusionError::Execution(error.to_string()))?;
             // A final accumulator starts with the same initializer as a
             // partial one. Adopt the first partial rather than adding that
             // initializer a second time (it need not be a combine identity).
@@ -114,6 +113,44 @@ impl Accumulator for FoldAccumulator {
     }
 }
 
+/// A compiled fold body retains its typed source and binding context for native
+/// semantic identity. Compiled closure addresses never identify the program.
+#[derive(Clone)]
+pub struct FoldProgram {
+    identity: ProgramIdentity,
+    physical: Arc<dyn PhysicalExpr>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct ProgramIdentity {
+    expression: crate::expression_identity::Identity,
+    schema: SchemaRef,
+    globals: SchemaRef,
+    bindings: std::collections::BTreeMap<String, usize>,
+}
+impl FoldProgram {
+    pub fn lower(
+        expression: &crate::expressions::Expr,
+        schema: &Schema,
+        globals: &Schema,
+        bindings: &std::collections::BTreeMap<String, usize>,
+    ) -> Result<Self, crate::expressions::ExprError> {
+        Ok(Self {
+            identity: ProgramIdentity {
+                expression: crate::expression_identity::Identity::new(expression.clone()),
+                schema: Arc::new(schema.clone()),
+                globals: Arc::new(globals.clone()),
+                bindings: bindings.clone(),
+            },
+            physical: crate::expressions::lower_with_bindings(
+                expression, schema, globals, bindings,
+            )?,
+        })
+    }
+    pub fn output_type(&self) -> DfResult<DataType> {
+        self.physical.data_type(&self.identity.schema)
+    }
+}
+
 /// Construct a fold UDAF. `input_schema` describes the fields of the packed
 /// input struct. `seq_expr` reads state at field 0 followed by those inputs;
 /// `comb_expr` reads left state at field 0 and right state at field 1.
@@ -121,8 +158,8 @@ pub fn fold_udaf(
     input_schema: SchemaRef,
     initial: ScalarValue,
     state_type: DataType,
-    seq_expr: Arc<dyn PhysicalExpr>,
-    comb_expr: Arc<dyn PhysicalExpr>,
+    sequence: FoldProgram,
+    combine: FoldProgram,
 ) -> AggregateUDF {
     let mut seq_fields = vec![Arc::new(Field::new("state", state_type.clone(), true))];
     seq_fields.extend(input_schema.fields().iter().cloned());
@@ -136,8 +173,9 @@ pub fn fold_udaf(
     let factory_input_schema = Arc::clone(&input_schema);
     let factory_seq_schema = Arc::clone(&seq_schema);
     let factory_combine_schema = Arc::clone(&combine_schema);
-    let factory_seq = Arc::clone(&seq_expr);
-    let factory_combine = Arc::clone(&comb_expr);
+    let identity = (initial, input_schema, sequence.identity, combine.identity);
+    let factory_seq = sequence.physical;
+    let factory_combine = combine.physical;
     let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
         Ok(Box::new(FoldAccumulator {
             state: factory_initial.clone(),
@@ -149,12 +187,12 @@ pub fn fold_udaf(
             combine: Arc::clone(&factory_combine),
         }))
     });
-    create_udaf(
+    Arc::unwrap_or_clone(crate::kernel_identity::aggregate_named(
         "fold",
+        identity,
         vec![packed_type],
-        Arc::new(state_type.clone()),
-        Volatility::Immutable,
+        state_type.clone(),
+        vec![state_type],
         factory,
-        Arc::new(vec![state_type]),
-    )
+    ))
 }

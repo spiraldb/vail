@@ -27,8 +27,11 @@ struct Leaf {
 
 fn complex_scope(expr: &VExpr) -> bool {
     let mut found = false;
-    expr.visit(&mut |node| {
-        found |= matches!(node, VExpr::AggGroupBy { .. } | VExpr::AggArray { .. })
+    expr.visit_unique(&mut |node| {
+        found |= matches!(
+            node,
+            VExpr::AggGroupBy { .. } | VExpr::AggArray { .. } | VExpr::AggFilter { .. }
+        )
     });
     found
 }
@@ -40,6 +43,11 @@ fn normalize_explodes(expr: &VExpr) -> Result<VExpr> {
         body,
     } = expr
     {
+        // Keep selected-only nested filter scopes intact. Boolean flattening
+        // changes missing-filter short circuit and repeats predicate work.
+        if complex_scope(body) {
+            return Ok(expr.clone());
+        }
         let body = normalize_explodes(body)?;
         return explode_leaves(&body, value, parameter, None);
     }
@@ -568,7 +576,7 @@ pub(crate) fn lower(
             vec![built.input],
         )?);
         let mut array_scope = false;
-        node.visit(&mut |expr| array_scope |= matches!(expr, VExpr::AggArray { .. }));
+        node.visit_unique(&mut |expr| array_scope |= matches!(expr, VExpr::AggArray { .. }));
         let validation = array_scope.then(|| unique(&mut used, &format!("__scan_validated_{i}")));
         leaves.push(Leaf {
             expr: node,
@@ -821,10 +829,10 @@ fn replace_scans(expr: &VExpr, leaves: &[Leaf], filter: Option<VExpr>) -> Result
 
 #[derive(Debug, Clone)]
 pub(crate) struct ScanInitializationNode {
-    id: u64,
-    initializer: LogicalPlan,
+    pub(crate) id: u64,
+    pub(crate) initializer: LogicalPlan,
     template: LogicalPlan,
-    input: LogicalPlan,
+    pub(crate) input: LogicalPlan,
     table: TableRef,
     child: TableRef,
     fields: Vec<(String, VExpr)>,
@@ -851,7 +859,7 @@ impl datafusion_expr::UserDefinedLogicalNodeCore for ScanInitializationNode {
         "VailInitializeScan"
     }
     fn inputs(&self) -> Vec<&LogicalPlan> {
-        vec![&self.initializer]
+        vec![&self.initializer, &self.template]
     }
     fn schema(&self) -> &datafusion_common::DFSchemaRef {
         self.template.schema()
@@ -867,13 +875,14 @@ impl datafusion_expr::UserDefinedLogicalNodeCore for ScanInitializationNode {
         exprs: Vec<Expr>,
         inputs: Vec<LogicalPlan>,
     ) -> datafusion_common::Result<Self> {
-        if !exprs.is_empty() || inputs.len() != 1 {
+        if !exprs.is_empty() || inputs.len() != 2 {
             return Err(datafusion_common::DataFusionError::Plan(
-                "scan initialization requires one input".into(),
+                "scan initialization requires initializer and data inputs".into(),
             ));
         }
         let mut result = self.clone();
         result.initializer = inputs[0].clone();
+        result.template = inputs[1].clone();
         Ok(result)
     }
 }
@@ -966,55 +975,31 @@ pub(crate) fn initialize(
     })))
 }
 
-pub(crate) fn plan_initialized(
-    node: ScanInitializationNode,
-    initializer: crate::plan::PhysicalPlan,
-) -> futures::future::BoxFuture<'static, datafusion_common::Result<crate::plan::PhysicalPlan>> {
-    use futures::FutureExt;
-    async move {
-        let partitions = node.table.known_n_partitions().unwrap_or(1).max(1);
-        let template = crate::logical::physical_plan(node.template.clone(), partitions)
-            .await
-            .map_err(|e| datafusion_common::DataFusionError::External(Box::new(e)))?;
-        let build = Arc::new(move |batch: arrow_array::RecordBatch| {
-            let node = node.clone();
-            async move {
-                let build = || -> Result<LogicalPlan> {
-                    let mut index = 0;
-                    let fields = node
-                        .fields
-                        .iter()
-                        .map(|(name, expr)| {
-                            let expr = bind_configuration(expr, &mut |_, _| {
-                                let value = ScalarValue::try_from_array(batch.column(index), 0)?;
-                                index += 1;
-                                Ok(value)
-                            })?;
-                            Ok((name.clone(), expr))
-                        })
-                        .collect::<Result<Vec<_>>>()?;
-                    lower(
-                        &node.table,
-                        &node.child,
-                        node.input.clone(),
-                        &fields,
-                        &node.bindings,
-                    )?
-                    .ok_or_else(|| TableError::Invalid("initialized scan has no reducer".into()))
-                };
-                let logical = build()
-                    .map_err(|e| datafusion_common::DataFusionError::External(Box::new(e)))?;
-                crate::logical::physical_plan(logical, partitions)
-                    .await
-                    .map_err(|e| datafusion_common::DataFusionError::External(Box::new(e)))
-            }
-            .boxed()
-        });
-        Ok(crate::initialized_scan::initialized_scan(
-            initializer,
-            template,
-            build,
-        ))
+/// Resolve singleton scan configuration in the action's scalar binding phase.
+/// The resulting ordinary logical scan is optimized and compiled once.
+pub(crate) fn bind_initialized(
+    node: &ScanInitializationNode,
+    batch: &arrow_array::RecordBatch,
+    input: LogicalPlan,
+) -> Result<LogicalPlan> {
+    let mut index = 0;
+    let fields = node
+        .fields
+        .iter()
+        .map(|(name, expr)| {
+            let expr = bind_configuration(expr, &mut |_, _| {
+                let value = vail_execution::expressions::scalar_at(batch.column(index), 0)?;
+                index += 1;
+                Ok(value)
+            })?;
+            Ok((name.clone(), expr))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    if index != batch.num_columns() {
+        return Err(TableError::Invalid(
+            "scan initializer arity mismatch".into(),
+        ));
     }
-    .boxed()
+    lower(&node.table, &node.child, input, &fields, &node.bindings)?
+        .ok_or_else(|| TableError::Invalid("initialized scan has no reducer".into()))
 }

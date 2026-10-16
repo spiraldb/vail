@@ -1,0 +1,195 @@
+{
+  "owner": "stream_scan",
+  "modules": [
+    {
+      "path": "crates/vail-storage/src/fragment_index.rs",
+      "depth": "full",
+      "sha256": "219e52a9da8c7455a727a1d150710dad51ca4bafb8fffa255b1ae03f0d630185",
+      "status": "findings queued",
+      "findings": [
+        "Runtime Endpoint/QueryInterval keys retain ArrowIpc(Vec<u8>) transport payloads rather than typed Arrow owners. select/select_many decode them again; comparisons themselves are native Arrow. Persistence needs a codec, in-memory bounds do not.",
+        "Each persisted scalar endpoint is a complete Arrow IPC stream serialized as a JSON byte array, repeating per-scalar schema/type metadata. Deserialize additionally clones serialized fragments and sorts them again before verifying stored order. Index size/loading can be dominated by repeated metadata instead of key values.",
+        "select_many performs a complete fragment sweep for every query list except exactly one interval. Sparse two-interval queries over a large index therefore require O(F) metadata work; merged interval windows could use binary searches and ordered union for output-sensitive selection.",
+        "Index certification allows equality at adjacent file endpoints, including arbitrarily many duplicate-point files. This is correct for current inclusive pruning but is not a strict public-key-range-disjoint file guarantee; duplicate-run policy needs an explicit decision."
+      ],
+      "evidence": [
+        "Full production and inline tests read. Tests cover malformed typed IPC, mixed ascending/descending fields, null placement, duplicate boundaries, interval unions, retired comparator rejection and exact physical Arrow type validation."
+      ],
+      "acceptance_criteria": [
+        "Runtime interval construction/comparison performs zero IPC/JSON encode/decode calls; persisted index loading decodes once into typed Arrow key columns.",
+        "Persist key schema/type metadata once per index, with endpoint rows in columnar arrays; validate shape/type/binding before accepting it. Load already-certified sorted metadata in linear work without full fragment cloning.",
+        "Instrument key comparison counts for sparse Q=2 over increasing F; target O(Q log F + selected candidates), while overlapping broad queries remain O(Q log Q + F) or better.",
+        "Test duplicate keys spanning file-size boundaries and explicitly specify whether groups stay together, extended internal keys define disjointness, or public bounds may touch. Do not restore Hail partition identity."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "crates/vail-storage/src/lib.rs",
+      "depth": "full",
+      "sha256": "0da50091c540760923fec6f25cafa683fb02dcc8dc41125f3f506b665b01d9f8",
+      "status": "findings queued",
+      "findings": [
+        "stream_from_plan_with_nested_projection selects candidate files but passes the existing unfiltered FileScanTask predicate through unchanged. Requested key intervals are residual slices after decoding, so this path does not push them down into Vortex segment reads.",
+        "write_initial_file_stream allows 32 simultaneous complete file buffers independent of query memory reservations. Upstream producer buffers/channels add retained memory outside that count.",
+        "VailSemantics uses untyped JSON metadata and writer validation only rejects null/missing values; structural equivalence of row/global logical types and actual Arrow/Iceberg schemas remains deferred (also admitted in README).",
+        "load_snapshot_read_plan accepts a keyed single-file snapshot without an index. This is not by itself proof of an ordering bug, but callers must not advertise sortedness solely from semantic key names."
+      ],
+      "evidence": [
+        "Full production and inline tests read. Data files remain unopened during descriptor/index/manifest validation; selected files are opened lazily. Reader validates size and decoded row count, not content SHA256.",
+        "certify_file checks actual per-file row ordering and batch boundaries with native Arrow comparators; range residuals use binary-search slices.",
+        "read_snapshot/read_current are explicitly eager convenience APIs; stream_snapshot is the lazy primitive."
+      ],
+      "acceptance_criteria": [
+        "Instrument Vortex segment/range reads: impossible segments in a selected file must remain unread, beyond current file-level pruning proofs.",
+        "Preserve comparator semantics during pushdown: positive/negative NaN payloads, signed zero, nested null ordering, mixed directions and interval inclusivity must never cause false-negative pruning.",
+        "Share an action-owned byte reservation across producer, channel and writer buffers; bounded-memory tests should stall sinks and measure retained bytes under a small budget.",
+        "Reject mismatched logical/physical row/global schemas before opening data outputs. Native runtime structures should carry Type objects; serialize only descriptor persistence.",
+        "Confirm provider ordering properties require a real validated certificate for keyed reads, including one-file snapshots."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "crates/vail-storage/src/local_table.rs",
+      "depth": "full",
+      "sha256": "f6b3b6dfb8672c3f41e0c9b2334830459afbb976c5812b51e9f090b6937296f0",
+      "status": "findings queued",
+      "findings": [
+        "Fixed 32 producer permits, per-producer 64MiB staging buffers, full-buffer channels and up to 32 physical writers are not coordinated with the DataFusion memory budget.",
+        "Writer lock is an empty create_new marker. Process death leaves a stale .write.lock that blocks future writes. Ordinary errors clean generations, but dropped write futures do not execute post-await cleanup; unpublished generations can remain.",
+        "LocalRead execution streams follow persisted original partition row counts and read files serially. Many physical files can therefore remain tied to a single old logical partition; provider integration must choose real runtime parallelism from work/resource budgets instead.",
+        "partition_key_bounds re-encodes already cached typed Arrow key bounds as IPC payloads; prefer partition_typed_key_bounds and remove internal transport callers.",
+        "Old immutable generations are deliberately retained and no GC exists. This is documented lifecycle debt, not a recommendation to delete generations while readers remain pinned."
+      ],
+      "evidence": [
+        "Full production and inline tests read. Publication atomically replaces only the entry pointer; previous generations preserve already-open reader plans. Normal input/worker failures preserve the previous snapshot and clear staged output.",
+        "Tests remove unselected data files and demonstrate successful reads of other ranges; these prove avoided file access, not merely partition counts.",
+        "Original row offsets are metadata-only and used for source slicing. User-requested partition divergence remains unchanged."
+      ],
+      "acceptance_criteria": [
+        "Use action-owned byte reservations/backpressure, with parallelism chosen by available memory and file/segment work.",
+        "A killed writer must release ownership on restart (e.g. OS-backed locking); cancellation must stop workers, preserve the published pointer and reclaim or register unpublished generations.",
+        "A large table with many sorted files must expose parallel scan work even when its writer had one merged output stream; correctness must not depend on restoring historical execution partitions.",
+        "No runtime bounds API should create IPC streams solely to hand values between native modules.",
+        "Define explicit retention/GC policy that protects pinned snapshots and removes only safely unreferenced generations."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "crates/vail-storage/src/globals.rs",
+      "depth": "full",
+      "sha256": "2cb0f98ad0f2bd4781d3299afb0e8166f6137449a76b906f579f15ae25f8365f",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete module and inline test read. Globals use actual immutable Arrow IPC files (a legitimate persistence codec), created once and read lazily as exactly one row/one batch.",
+        "Content checksums are intentionally absent and legacy sha256 fields ignored; this differs from older documentation/tests and must be stated accurately."
+      ],
+      "acceptance_criteria": [
+        "Keep snapshot-pinned lazy ownership and exact singleton validation. Document immutable-file assumptions and actual integrity checks; do not claim SHA256 validation that is not performed."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "crates/vail-ordering/src/lib.rs",
+      "depth": "full",
+      "sha256": "03d97d6f3bb495a95f640b807cdf60d2900339ff36f83712446224b027b74682",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete metadata helper module and tests read. This crate no longer implements a competing key comparator; ordering/equality are delegated to native Arrow/DataFusion operators.",
+        "Logical metadata codecs are Arrow schema/persisted-descriptor representation, not Python/Rust expression transport. Helpers explicitly strip/restore type tags and validate metadata version/completeness."
+      ],
+      "acceptance_criteria": [],
+      "limitations": [
+        "LargeList/FixedSizeList support differs among type/layout helpers; current Vail canonical types use List. Broader foreign Arrow layouts should be tested/rejected consistently at their input boundary."
+      ]
+    },
+    {
+      "path": "crates/vail-ordering/src/call.rs",
+      "depth": "full",
+      "sha256": "2af3d5bfa0609d46824737a7c7ef5f17ab4e61857aba6c80f6b6ca2cad7086dc",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete packed Call codec and exhaustive small-grid/edge tests read. Uses i128 for extreme input arithmetic, validates representable 29-bit payload and at-most-diploid nonnegative alleles, and round-trips packed words exactly."
+      ],
+      "acceptance_criteria": [],
+      "limitations": [
+        "Python types.py also implements packed Call conversion; parent full type review should consider one native canonical codec to prevent drift."
+      ]
+    },
+    {
+      "path": "crates/vail-storage/tests/streaming_write.rs",
+      "depth": "full",
+      "sha256": "4ffe9428b22c53f256374d7271f0a86bad023eec8915b6a785733bbe32d60168",
+      "status": "findings queued",
+      "findings": [
+        "row_and_byte_limits_flush_before_requesting_more_input now checks written.len() <= consumed batches. That does not prove bounded prefetch/retained memory; its name and older sequential guarantee are stronger than its assertion."
+      ],
+      "evidence": [
+        "Complete test module read. It covers row-limit splitting, late input errors, early validation without polling, worker overlap, >32 worker waves, worker panics and publication preservation."
+      ],
+      "acceptance_criteria": [
+        "Add deterministic blocked-sink tests that measure maximum live buffers/bytes and upstream polls, including >32 partitions, cancellation and failed workers. File counts alone are insufficient."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "crates/vail-storage/tests/roundtrip.rs",
+      "depth": "full",
+      "sha256": "b8e2fb5a5a7e1cbed6d14105b96e8418040ccf93287db4235961edf3610e1fec",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete integration tests read. Fresh Iceberg reopen, typed float/interval bounds, duplicate key boundaries, direct Vortex multisplit reads, stale initial writers and corrupted descriptors are covered.",
+        "The unselected-file corruption test demonstrates actual file avoidance for interval selection. Some low-level fixtures intentionally use arbitrary semantic JSON; they do not prove logical/physical schema equivalence."
+      ],
+      "acceptance_criteria": [
+        "Retain avoided-file tests; add segment I/O counters and explicit logical-schema rejection tests rather than treating fixture roundtrips as a full semantic certificate."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "crates/vail-storage/tests/vortex_comparison_audit.rs",
+      "depth": "full",
+      "sha256": "1a12c9a8f2aa27cbdddb0705046d875453e6d069cfbb0c46af83d6dee627ec72",
+      "status": "findings queued",
+      "findings": [
+        "iceberg_metrics_pruning_drops_nan_rows_that_vortex_matches intentionally proves an existing upstream mismatch: Iceberg metrics can prune positive NaN for x > +infinity although native Arrow/Vortex total-order comparisons return true. Pushdown must account for this before enabling generic Iceberg predicates."
+      ],
+      "evidence": [
+        "Complete module read. All six float operators, NaN payload signs, signed zeros, nulls, strings, nested values, metadata-tagged physical order, compression and constant folding are compared with native semantics."
+      ],
+      "acceptance_criteria": [
+        "A pushdown safety test must prove conservative file/segment retention for every enabled type/operator; a residual filter cannot recover rows already discarded by incorrect metrics pruning."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "crates/vail-storage/examples/local_roundtrip.rs",
+      "depth": "full",
+      "sha256": "ad60be36535758d5d9118ff38c738031eed8e1f9f5234c6fb903046d768a9d33",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete separate-process example read. It exercises low-level persisted Iceberg metadata/semantics, not Python transport or proof of schema equivalence."
+      ],
+      "acceptance_criteria": [],
+      "limitations": []
+    },
+    {
+      "path": "crates/vail-storage/README.md",
+      "depth": "full",
+      "sha256": "063a9cc57cbfde6e9d345e95e7d751c04e9b8abf657d0fa6bcc5c66accbe7059",
+      "status": "findings queued",
+      "findings": [
+        "Documentation still claims per-file/global SHA256 checks and waiting for each file to close before polling input. Current code intentionally omits content hashes and supports 32 concurrent file writes. These claims are stale."
+      ],
+      "evidence": [],
+      "acceptance_criteria": [
+        "Describe actual checks, immutable-file assumptions, concurrency and memory bounds. Keep explicit limitations about appends, GC, stale-lock recovery and nonlocal storage."
+      ],
+      "limitations": []
+    }
+  ]
+}

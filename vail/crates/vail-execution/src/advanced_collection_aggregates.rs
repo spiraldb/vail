@@ -173,12 +173,21 @@ impl TakeAccumulator {
         if self.n == 0 || incoming.is_empty() {
             return Ok(());
         }
-        let combined = if let Some(current) = &self.items {
-            concat(&[current.as_ref(), incoming.as_ref()])?
+        let incoming = if !self.ordered {
+            let retained = self.items.as_ref().map_or(0, |values| values.len());
+            if retained >= self.n {
+                return Ok(());
+            }
+            incoming.slice(0, incoming.len().min(self.n - retained))
         } else {
             incoming.clone()
         };
-        let result = if self.ordered {
+        let combined = if let Some(current) = &self.items {
+            concat(&[current.as_ref(), incoming.as_ref()])?
+        } else {
+            incoming
+        };
+        self.items = Some(if self.ordered {
             let rows = combined
                 .as_any()
                 .downcast_ref::<StructArray>()
@@ -190,26 +199,6 @@ impl TakeAccumulator {
                     "ordered take expects value and ordering fields".into(),
                 ));
             }
-            let order = SortColumn {
-                values: Arc::clone(rows.column(1)),
-                options: Some(SortOptions {
-                    descending: false,
-                    nulls_first: false,
-                }),
-            };
-            let indices = lexsort_to_indices(&[order], Some(self.n))?;
-            take(rows.column(0).as_ref(), &indices, None)?
-        } else {
-            let count = combined.len().min(self.n);
-            take(
-                combined.as_ref(),
-                &UInt32Array::from((0..count).map(|i| i as u32).collect::<Vec<_>>()),
-                None,
-            )?
-        };
-        self.items = Some(if self.ordered {
-            // Keep original value/order pairs so distributed states can be merged consistently.
-            let rows = combined.as_any().downcast_ref::<StructArray>().unwrap();
             let indices = lexsort_to_indices(
                 &[SortColumn {
                     values: Arc::clone(rows.column(1)),
@@ -220,9 +209,18 @@ impl TakeAccumulator {
                 }],
                 Some(self.n),
             )?;
+            // Keep value/order pairs so partial states merge with the same
+            // selection rule; projecting values is deferred to finalization.
             take(combined.as_ref(), &indices, None)?
         } else {
-            result
+            // Compact just the retained values so a tiny result does not pin
+            // the whole input batch through an Arrow slice.
+            let count = combined.len().min(self.n);
+            take(
+                combined.as_ref(),
+                &UInt32Array::from_iter_values((0..count).map(|i| i as u32)),
+                None,
+            )?
         });
         Ok(())
     }
@@ -364,6 +362,25 @@ mod tests {
             .filter_map(|i| values.is_valid(i).then(|| values.value(i)))
             .collect::<std::collections::HashSet<_>>();
         assert_eq!(observed, [2, 3].into_iter().collect());
+    }
+
+    #[test]
+    fn unordered_take_compacts_small_state_and_ignores_later_batches() {
+        let input: ArrayRef = Arc::new(Int64Array::from_iter_values(0..65536));
+        let mut accumulator = TakeAccumulator {
+            input_type: DataType::Int64,
+            n: 3,
+            ordered: false,
+            items: None,
+        };
+        accumulator.update_batch(&[input.clone()]).unwrap();
+        let state = accumulator.items.as_ref().unwrap();
+        assert_eq!(state.len(), 3);
+        assert!(state.get_array_memory_size() < input.get_array_memory_size() / 100);
+        let first = state.to_data().buffers()[0].as_ptr();
+        accumulator.update_batch(&[input]).unwrap();
+        let state = accumulator.items.as_ref().unwrap();
+        assert_eq!(first, state.to_data().buffers()[0].as_ptr());
     }
 
     #[test]

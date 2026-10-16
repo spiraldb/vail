@@ -25,6 +25,7 @@ PLUGIN = '''
 import json, os, signal, pytest
 from pathlib import Path
 from upstream_backend import VailTestBackend
+from upstream_scope import exclusion_reason
 def pytest_configure(config):
     config.addinivalue_line('markers', 'backend(name): backend used by the upstream test adapter')
     config.addinivalue_line('markers', 'timeout(seconds): upstream timeout preset; externally enforced by the runner')
@@ -41,6 +42,21 @@ def pytest_runtest_makereport(item, call):
         phase = 'body' if call.when == 'call' else call.when
         report.vail_category = VailTestBackend.classify_failure(phase, call.excinfo.value)
 def pytest_collection_modifyitems(config, items):
+    kept, excluded = [], []
+    for item in items:
+        module = str(Path(item.path).relative_to(os.environ['VAIL_UPSTREAM_ROOT']))
+        parts = item.nodeid.split('::')[1:]
+        parts[-1] = parts[-1].split('[')[0]
+        name = '.'.join(parts)
+        reason = exclusion_reason(module, name)
+        if reason:
+            emit(dict(kind='scope_excluded', module=module, name=name, reason=reason))
+            excluded.append(item)
+        else:
+            kept.append(item)
+    items[:] = kept
+    if excluded:
+        config.hook.pytest_deselected(items=excluded)
     selection = os.environ.get('VAIL_TEST_SELECTION')
     if selection:
         manifest = json.loads(Path(selection).read_text())
@@ -176,11 +192,17 @@ def main():
             for member in members:
                 if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)) and member.name.startswith('test_'):
                     name = (node.name + '.' if isinstance(node, ast.ClassDef) else '') + member.name
+                    reason = exclusion_reason(file.relative_to(source), name)
+                    if reason:
+                        exclusions.append(dict(module=str(file.relative_to(source)), name=name,
+                                               line=member.lineno, reason=reason))
+                        continue
                     if allowed is not None and (str(file.relative_to(source)), name) not in allowed:
                         continue
                     inventory.append(dict(module=str(file.relative_to(source)), name=name,
                                           line=member.lineno, body=ast.unparse(member)))
     (output / 'definition-inventory.json').write_text(json.dumps(inventory, indent=2))
+    (output / 'scope-exclusions.json').write_text(json.dumps(exclusions, indent=2) + '\n')
     results = []
     with tempfile.TemporaryDirectory(prefix='vail-full-hail-') as folder:
         root = Path(folder)
@@ -201,6 +223,7 @@ def main():
         (target / 'conftest.py').write_text(CONFTEST)
         shutil.copyfile(Path(__file__).with_name('upstream_paths.py'), root / 'upstream_paths.py')
         shutil.copyfile(Path(__file__).with_name('upstream_backend.py'), root / 'upstream_backend.py')
+        shutil.copyfile(Path(__file__).with_name('upstream_scope.py'), root / 'upstream_scope.py')
         # Hail test modules import shared fixtures as ``test.hail.*``.  The
         # runner copies only the Hail test package, so provide that package
         # name inside the isolated root and point it at the adapted copy.
@@ -220,13 +243,16 @@ def main():
         env['HAIL_DOCTEST_DATA_DIR'] = doctest_data_dir(source)
         env['PYTEST_DISABLE_PLUGIN_AUTOLOAD'] = '1'
         env['VAIL_PER_TEST_TIMEOUT'] = str(args.per_test_timeout)
+        env['VAIL_UPSTREAM_ROOT'] = str(target)
         if args.selection:
             env['VAIL_TEST_SELECTION'] = str(args.selection.resolve())
-            env['VAIL_UPSTREAM_ROOT'] = str(target)
         for index, file in enumerate(files):
             relative = file.relative_to(source)
             label = str(relative).replace('/', '__')
             events = output / (label + '.jsonl')
+            # A rerun replaces evidence for this attempt; appending old passes
+            # can mask a new collection failure or confuse timeout tracking.
+            events.write_text('')
             env['VAIL_PYTEST_EVENTS'] = str(events)
             command = [sys.executable, '-m', 'pytest', str(target / relative),
                        '-p', 'vail_pytest_reporter', '-p', 'test.hail.conftest',

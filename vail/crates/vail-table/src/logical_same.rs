@@ -28,6 +28,14 @@ pub(crate) async fn plan(
     options: SameOptions,
     pairs: &[(usize, usize)],
 ) -> Result<PhysicalPlan> {
+    crate::logical::physical_plan(logical(left, right, options, pairs)?, 1).await
+}
+
+pub(crate) async fn diagnostic(left: &TableRef, right: &TableRef, options: SameOptions, pairs: &[(usize, usize)]) -> Result<PhysicalPlan> {
+    crate::logical::diagnostic(logical(left, right, options, pairs)?, 1).await
+}
+
+fn logical(left: &TableRef, right: &TableRef, options: SameOptions, pairs: &[(usize, usize)]) -> Result<LogicalPlan> {
     let schema = Schema::new(vec![Field::new("different", DataType::Boolean, false)]);
     let node = SameNode {
         id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
@@ -41,14 +49,9 @@ pub(crate) async fn plan(
         ],
         schema: Arc::new(DFSchema::try_from(schema)?),
     };
-    crate::logical::physical_plan(
-        LogicalPlan::Extension(Extension {
-            node: Arc::new(node),
-        }),
-        1,
-    )
-    .await
+    Ok(LogicalPlan::Extension(Extension { node: Arc::new(node) }))
 }
+
 #[derive(Debug, Clone)]
 struct SameNode {
     id: u64,

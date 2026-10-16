@@ -232,7 +232,9 @@ impl TableIR {
                 .enable_all()
                 .build()
                 .map_err(|e| TableError::Execution(e.to_string()))?;
-            runtime.block_on(left.same_row_plan(&right, options, &pairs))
+            runtime.block_on(crate::logical_same::diagnostic(
+                &left, &right, options, &pairs,
+            ))
         })
         .join()
         .map_err(|_| TableError::Execution("same plan diagnostic panicked".into()))??;
@@ -391,18 +393,6 @@ impl PhysicalExpr for DifferentExpr {
             .iter()
             .map(|arg| arg.evaluate(batch)?.into_array(batch.num_rows()))
             .collect::<datafusion_common::Result<Vec<_>>>()?;
-        let start = if self.presence { 2 } else { 0 };
-        let comparators = arrays[start..]
-            .chunks_exact(2)
-            .take(self.exact_pairs)
-            .map(|pair| {
-                arrow_ord::ord::make_comparator(
-                    pair[0].as_ref(),
-                    pair[1].as_ref(),
-                    arrow_schema::SortOptions::default(),
-                )
-            })
-            .collect::<std::result::Result<Vec<_>, _>>()?;
         let mut result = Vec::with_capacity(batch.num_rows());
         for row in 0..batch.num_rows() {
             let mut different = self.presence && (arrays[0].is_null(row) || arrays[1].is_null(row));
@@ -411,7 +401,14 @@ impl PhysicalExpr for DifferentExpr {
                 for (i, pair) in arrays[start..].chunks_exact(2).enumerate() {
                     let exact = i < self.exact_pairs;
                     let same = if exact {
-                        comparators[i](row, row) == std::cmp::Ordering::Equal
+                        // Key grouping uses total-order equivalence, including
+                        // equal NaNs and distinct signed zero representations.
+                        let compare = arrow_ord::ord::make_comparator(
+                            pair[0].as_ref(),
+                            pair[1].as_ref(),
+                            Default::default(),
+                        )?;
+                        compare(row, row).is_eq()
                     } else {
                         values_similar(
                             pair[0].as_ref(),

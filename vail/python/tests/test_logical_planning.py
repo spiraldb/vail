@@ -66,3 +66,57 @@ def test_checked_cast_respects_preceding_filter():
     invalid = table.annotate(number=hl.int32(table.value))
     with pytest.raises(RuntimeError, match='[Cc]ast|pars'):
         invalid.collect()
+
+
+def test_stable_sort_head_and_tail_preserve_key_order():
+    table = hl.range_table(18, n_partitions=3)
+    table = table.annotate(group=table.idx % 3).key_by('group')
+    first = table.head(4)
+    assert [(row.group, row.idx) for row in first.collect()] == [(0, 0), (0, 3), (0, 6), (0, 9)]
+    assert [(row.group, row.idx) for row in table.tail(4).collect()] == [(2, 8), (2, 11), (2, 14), (2, 17)]
+
+
+def test_partition_stream_filter_and_map_preserve_values():
+    table = hl.range_table(12, n_partitions=3).key_by()
+    mapped = table._map_partitions(lambda rows: rows.filter(lambda row: row.idx > 4).map(lambda row: hl.struct(value=row.idx * 2)))
+    assert [row.value for row in mapped.collect()] == list(range(10, 24, 2))
+
+
+def test_coordinate_sum_preserves_float_results_and_type():
+    table = hl.range_table(3, n_partitions=2).annotate(xs=[0.25, 0.75])
+    expression = hl.agg.array_agg(lambda value: hl.agg.sum(value), table.xs)
+    assert expression.dtype == hl.tarray(hl.tfloat64)
+    assert table.aggregate(expression) == [0.75, 2.25]
+
+
+def test_random_source_repartition_prepasses_and_repeated_actions():
+    table = hl.range_table(40, n_partitions=3)
+    table = table.annotate(random=hl.rand_unif(seed=41))
+    table = table.filter(table.idx % 2 == 0).repartition(4)
+    first = table.collect()
+    assert [row.idx for row in first] == list(range(0, 40, 2))
+    assert table.collect() == first
+
+
+def test_native_sort_order_survives_later_globals_binding():
+    table = hl.Table.parallelize([{'id': 0, 'x': 2}, {'id': 1, 'x': 1}],
+                                key='id', n_partitions=2).annotate_globals(offset=10)
+    ordered = table.order_by(table.x + table.offset)
+    assert [row.id for row in ordered.collect()] == [1, 0]
+    assert [row.id for row in ordered.annotate(g=ordered.offset).collect()] == [1, 0]
+
+
+def test_coordinate_sum_widens_native_int32_without_frontend_cast():
+    table = hl.range_table(3, n_partitions=2).annotate(xs=[1, 2])
+    assert table.aggregate(hl.agg.array_agg(lambda value: hl.agg.sum(value), table.xs)) == [3, 6]
+
+
+def test_independent_aggregate_fork_preserves_random_producer_fanout_after_action():
+    table = hl.range_table(12, n_partitions=3).annotate(x=hl.rand_int64(seed=717))
+    assert table._force_count() == 12
+    table = table.annotate(r=hl.rand_int64(seed=718))
+    expression = hl.struct(values=hl.agg.collect_as_set(table.r), count=hl.agg.count())
+    first = table.aggregate(expression)
+    assert first.count == 12
+    assert len(first["values"]) == first.count
+    assert table.aggregate(expression) == first

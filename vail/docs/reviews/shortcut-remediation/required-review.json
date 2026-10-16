@@ -1,0 +1,124 @@
+{
+  "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+  "candidate": "/private/tmp/vail-shortcuts-review-candidate5",
+  "manifest_sha256": "79b445352023fcc23e91d6a7dea7756f08cf0f51ff0571bac5a17a0531ba93d1",
+  "decision": "request_changes",
+  "final_runtime_acceptance": false,
+  "findings": [
+    {
+      "id": "R1",
+      "priority": 1,
+      "issue": "Ordinary logical lowering expands shared native expression DAGs",
+      "owner": "kernel_effects",
+      "status": "depth64_actual_table_planning_passed_build7_runtime_CSE_separately_queued",
+      "runtime_evidence": "Actual depth64 table planning exceeded external30s deadline on build6; isolated Python randomness.contains and native globals referenced_bindings occurrence traversal."
+    },
+    {
+      "id": "R2",
+      "priority": 1,
+      "issue": "Sort/unkey metadata disagrees with physical partition layout",
+      "owner": "logical_planning",
+      "status": "fix_implemented_runtime_pending"
+    },
+    {
+      "id": "R3",
+      "priority": 2,
+      "issue": "Head/tail metadata disagrees with execution layout",
+      "owner": "logical_planning",
+      "status": "fix_implemented_runtime_pending"
+    },
+    {
+      "id": "R4",
+      "priority": 2,
+      "issue": "Consumer canonicalization enumerates physical DAG paths",
+      "owner": "logical_planning",
+      "status": "fix_implemented_runtime_pending"
+    },
+    {
+      "id": "R5",
+      "priority": 2,
+      "issue": "Nested scan filters evaluate excluded predicates and compute selection twice",
+      "owner": "stream_scan",
+      "status": "17_public_tests_passed_external_scaling_recorded"
+    },
+    {
+      "id": "R6",
+      "priority": 2,
+      "issue": "VCF sink repeatedly scans field names in sample loops",
+      "owner": "root",
+      "status": "batch_bindings_implemented_4_public_roundtrip_and_error_tests_passed_build6"
+    },
+    {
+      "id": "R7",
+      "priority": 2,
+      "issue": "New tests rely on private counters/identities/mocks instead of public behavior",
+      "owner": "all",
+      "status": "replacement_in_progress"
+    },
+    {
+      "id": "R8",
+      "priority": 2,
+      "issue": "LocusOp Pure effect needs valid-coordinate ingestion proof",
+      "owner": "kernel_effects",
+      "status": "MayError_restored_native_and_public_optimizer_tests_passed"
+    }
+  ],
+  "latest_integration": {
+    "native_build": 10,
+    "native_sha256": "4a7eee5356b152ef64d9ff439ef5f6aca7d74aa123cb39faf7294b1f65139269",
+    "source_hashes": "evidence/vail-shortcuts-build10-source-hashes.json",
+    "native_tests": {
+      "passed": 239,
+      "failed": 0,
+      "binaries": 20
+    },
+    "planner_matrix_scan_randomness_focus": {
+      "passed": 227,
+      "failed": 0
+    },
+    "full_python": {
+      "passed": 1343,
+      "failed": 2,
+      "skipped": 1,
+      "subtests_passed": 19,
+      "elapsed_seconds": 96.45
+    },
+    "known_baseline_storage_failures": [
+      "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: Vortex ListLayoutStrategy needs at least one chunk",
+      "test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip: present struct with all missing children reads back as missing struct"
+    ],
+    "new_remediation_failures": 0,
+    "main_review": "not_approved; followup handoff rejected by app approval policy",
+    "post_validation_nonsemantic_changes": {
+      "change": "Removed extra final blank lines only",
+      "paths": [
+        "vail/crates/vail-execution/src/array_aggregate_scan.rs",
+        "vail/crates/vail-table/src/vcf_export.rs"
+      ]
+    },
+    "integration_base": "2c02020",
+    "main_advanced_independently_to": "6bce5077d98f61e49f0b7ec9241f855f493b54d3",
+    "future_main_merge": "Reconcile latest main and revalidate on development branch before required final review and merge."
+  },
+  "followup_source_candidate": {
+    "path": "/private/tmp/vail-shortcuts-review-candidate7",
+    "manifest_sha256": "a0a34cd562e11acd6a969e8cafb0d71128eb9768d58b8c7ea390adede103bc28",
+    "requested": "source_only_not_final_acceptance",
+    "decision": "request_changes",
+    "remaining_findings": [
+      "Scalar capture ownership/cardinality in logical native kernel adapter",
+      "Scoped DAG rewriting for randomness bind_context/bind_rows",
+      "Nested scan predicate binding once and selected-only body evaluation",
+      "Replace remaining private strategy/identity tests with public behavior"
+    ]
+  },
+  "candidate9_review_handoff": {
+    "path": "/private/tmp/vail-shortcuts-review-candidate9",
+    "manifest_sha256": "ea63a73bd1bc62a52f7a3ce5a1f256acf0b6f45091b7fd1b2a780ab361e147d4",
+    "status": "tool_rejected_before_delivery",
+    "tool": "mcp__codex_app__send_message_to_thread",
+    "reason": "MCP tool call requires approval, but approval policy is never",
+    "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+    "main_gate": "not_approved"
+  }
+}

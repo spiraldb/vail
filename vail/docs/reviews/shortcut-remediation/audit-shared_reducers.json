@@ -1,0 +1,250 @@
+{
+  "owner": "shared_reducers",
+  "modules": [
+    {
+      "path": "vail/python/vail/agg.py",
+      "lines": 219,
+      "sha256": "d2e5d113013c981672dc3449cc21bee648a01312ea53e1c1bcfd612cb0727e3e",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": []
+    },
+    {
+      "path": "vail/python/vail/agg_collections.py",
+      "lines": 64,
+      "sha256": "3276be0b6a664462ee28f578bc53b6652f4d2aab42fc2f2ed408dd3681468c06",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": []
+    },
+    {
+      "path": "vail/python/vail/agg_fold.py",
+      "lines": 52,
+      "sha256": "03fbdd3ae1aa8b5bce1b406da9487ed8fa985535c6cf2de2e24d8b62747a0a1c",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": []
+    },
+    {
+      "path": "vail/python/vail/agg_genomics.py",
+      "lines": 75,
+      "sha256": "dd4f52a5a8442a57e9931beee1568a909d207412f722308dceba769ef3674ec5",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "HWE_DOUBLE_REDUCTION"
+      ]
+    },
+    {
+      "path": "vail/python/vail/agg_numeric.py",
+      "lines": 121,
+      "sha256": "bf8ece015ea40d8ce594e7ebf1c90d1eaddaafb64a963934267f4030dbe09530",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": []
+    },
+    {
+      "path": "vail/python/vail/array_aggregate.py",
+      "lines": 91,
+      "sha256": "afd061cd45b627d406e9618385e9b4c9b9df587ea370c3e24291e290f54f75fc",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "S003",
+        "LIST_AGGREGATE_SCOPE_GAPS"
+      ]
+    },
+    {
+      "path": "vail/python/vail/matrix_list_aggregates.py",
+      "lines": 367,
+      "sha256": "a94fed7ddff5cdab2534c32f29e1931b76368cc0df4965ddd1cf0d71bd030dd2",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "S003",
+        "LIST_AGGREGATE_SCOPE_GAPS",
+        "DIRECT_ENTRY_SUM_PROOF"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/reducer.rs",
+      "lines": 38,
+      "sha256": "bcc9fab69b0c4ff249ea2bc7815c18bd789ef99b21acc6e4cfc43c956998bb53",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "S003"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/list_aggregate.rs",
+      "lines": 229,
+      "sha256": "4d21e4d5783e4cae72c83a6cfdf1c9395b2305dba511992af5c92c26dd6303eb",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "S003"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_genomic_aggregates.rs",
+      "lines": 977,
+      "sha256": "208f987b0a766442357d484698774c1f255fd34e0e8b874f86fae4de772d5fb3",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": []
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_collection_aggregates.rs",
+      "lines": 428,
+      "sha256": "847d63decbb6d67cdbda32aea74b3efc97ac9e6f6cc242f73abfda5d6d4ca85a",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "TAKE_DOUBLE_SORT"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collect_aggregate.rs",
+      "lines": 268,
+      "sha256": "0b6b26cd60869e43a83638fa18d89b501e53c5226653d24d1c330d51ce1cc279",
+      "status": "reviewed",
+      "review_depth": "full production code and relevant inline tests",
+      "owner": "shared_reducers",
+      "findings": []
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_aggregate.rs",
+      "lines": 622,
+      "sha256": "06be08df6fd9ef6fe1beeb2946f93593a6a9c99057fb770460d84a443b6df53a",
+      "status": "reviewed",
+      "review_depth": "full production code; targeted inline tests",
+      "owner": "shared_reducers",
+      "findings": []
+    },
+    {
+      "path": "vail/crates/vail-execution/src/aggregates.rs",
+      "lines": 977,
+      "sha256": "5d97854dcae8cafbd1c3a590a9aed70983e7e75700e6dd4d19626b5e1ca148a8",
+      "status": "reviewed",
+      "review_depth": "full production code; targeted inline tests",
+      "owner": "shared_reducers",
+      "findings": [
+        "REDUCER_BOXING"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_aggregation.rs",
+      "lines": 795,
+      "sha256": "8eacdfc2d9586dff9d39bb17a4878a85193766e54b0c19ed285a910515d24d81",
+      "status": "reviewed",
+      "review_depth": "targeted: aggregate factory and coordinate reduction rewrite",
+      "owner": "shared_reducers",
+      "findings": []
+    }
+  ],
+  "findings": [
+    {
+      "id": "S003",
+      "status": "implemented_pending_validation",
+      "paths": [
+        "vail/python/vail/matrix_list_aggregates.py",
+        "vail/python/vail/array_aggregate.py",
+        "vail/crates/vail-execution/src/reducer.rs",
+        "vail/crates/vail-execution/src/list_aggregate.rs"
+      ],
+      "evidence": "Removed per-allele repeated scans and separately implemented mean/stddev/boolean reducers. Native list adapters invoke the same configured UDAFs as tables. Per-row initializer applies before even an empty list. One borrowed Arrow list slice and one accumulator update per row. Native adapter owns argument arity/type validation; generic collection validation delegates to that contract. Ordered/unordered take now share native table reducer too.",
+      "acceptance": "Parity across table/list/matrix including large ints, missing calls, haploid/phased calls, empty inputs and row-varying allele count. Complexity O(called alleles + output allele count), independent of allele-count times call-count."
+    },
+    {
+      "id": "REDUCER_BOXING",
+      "status": "queued_confirmed",
+      "paths": [
+        "vail/crates/vail-execution/src/aggregates.rs"
+      ],
+      "evidence": "HailAccumulator::update_batch uses ScalarValue::try_from_array inside the input-element loop for float sum, mean, product and Boolean any/all/fraction; only integer sum, min/max and count_where have native batch paths.",
+      "acceptance": "Typed Arrow batch kernels or typed loops with no per-element ScalarValue allocation; preserve ordering/numeric overflow, null and nonfinite semantics. Quantify input values processed vs boxed conversions."
+    },
+    {
+      "id": "TAKE_DOUBLE_SORT",
+      "status": "implemented_pending_validation",
+      "paths": [
+        "vail/crates/vail-execution/src/advanced_collection_aggregates.rs"
+      ],
+      "evidence": "TakeAccumulator::append computes lexsort_to_indices twice in the ordered branch; its first value-only result is discarded when retaining ordered value/key state.",
+      "acceptance": "One top-k selection per update and retain original value/key pairs; no redundant sorting. Unordered take need not copy whole incoming arrays once n retained.",
+      "resolution": "One ordered top-k selection retains full value/key state. Unordered take slices incoming values to remaining capacity, compacts the retained output, and ignores later input once full. Lists/matrices now invoke this same native take reducer (including ordered take) with native Int64 n."
+    },
+    {
+      "id": "LIST_AGGREGATE_SCOPE_GAPS",
+      "status": "queued_capability_gap",
+      "paths": [
+        "vail/python/vail/array_aggregate.py",
+        "vail/python/vail/matrix_list_aggregates.py"
+      ],
+      "evidence": "Collection aggregation explicitly rejects nested agg.explode; matrix list aggregation explicitly rejects agg.fold. These are explicit unsupported cases rather than silently inaccurate answers. Ordered take gap was resolved using shared native kernel.",
+      "acceptance": "Native layout adapters reuse existing aggregate scope/fold semantics, not separate per-domain kernels. Add nested collection/matrix scope coverage."
+    },
+    {
+      "id": "HWE_DOUBLE_REDUCTION",
+      "status": "queued_design_review",
+      "paths": [
+        "vail/python/vail/agg_genomics.py"
+      ],
+      "evidence": "Expression-valued one_sided builds if_else over two separate hardy_weinberg_test aggregate expressions. Both aggregate states may count the same calls when mode cannot be selected before planning.",
+      "acceptance": "Assess actual optimized execution; if both states execute, share genotype count state and apply mode at finalization, with lazy/global/aggregate mode semantics retained."
+    },
+    {
+      "id": "DIRECT_ENTRY_SUM_PROOF",
+      "status": "tests_added_pending_validation",
+      "paths": [
+        "vail/python/vail/matrix_list_aggregates.py"
+      ],
+      "evidence": "Direct entry sum retains its existing Arrow list-sum kernel, mapping absent cells to missing and casting to declared widened result first. This is an efficient layout specialization but remains distinct from HailAccumulator API.",
+      "acceptance": "Explicit parity for widened int64, float64, empty/all-missing, sparse cells, overflow and nonfinite input; move shared semantics down if any mismatch."
+    },
+    {
+      "id": "FRONTEND_TYPE_PROBES",
+      "status": "queued_design_review",
+      "paths": [
+        "vail/python/vail/array_aggregate.py",
+        "vail/python/vail/matrix_list_aggregates.py"
+      ],
+      "evidence": "Collection visitor wraps a mapped IR subtree using declared aggregate result type as a transient frontend placeholder, while native dtype_scoped infers actual mapped input type. Matrix visitor typed() creates a schema-only table projection probe to recover native inferred type. No runtime wrong cast is performed, but frontend type placeholders/probes complicate native-handle architecture.",
+      "acceptance": "Expose direct scoped native expression type inference with lambda bindings, remove temporary incorrect frontend type wrappers and table projection probes. Check captured globals and lambda context without any execution."
+    }
+  ],
+  "upstream_identity_evidence": [
+    {
+      "path": "hail/hail/python/hail/expr/aggregators/aggregators.py",
+      "line": 995,
+      "claim": "mean=sum/count_defined; empty input is 0.0/0.0 => NaN"
+    },
+    {
+      "path": "hail/hail/python/hail/expr/aggregators/aggregators.py",
+      "line": 1039,
+      "claim": "stats stdev empty n_def=0 produces NaN"
+    },
+    {
+      "path": "hail/hail/hail/src/is/hail/expr/ir/agg/CallStatsAggregator.scala",
+      "line": 263,
+      "claim": "AN=0 marks entire AF field missing"
+    }
+  ],
+  "validation": {
+    "compile": "cargo check execution succeeded twice including native list/take adapter; table check2 blocked only by concurrent logical-plan edits (plan.rs TableRef import/n_partitions), sent owner. Python py_compile passed.",
+    "focused_python": "Root first native integration run: 52 passed, 4 failed (1 independent VCF; 3 in new list tests). Fixed test phased construction and actual adapter arity validation; pending root second native build. New shared_list_reducers.py has 13 parametrized test cases plus ordered/unordered take parity.",
+    "focused_rust": "advanced_collection_aggregates::tests::unordered_take_compacts_small_state_and_ignores_later_batches validates bounded state and no recopy of later batches."
+  }
+}

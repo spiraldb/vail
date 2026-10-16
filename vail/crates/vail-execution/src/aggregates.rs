@@ -7,8 +7,7 @@ use arrow_array::{
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{
-    Accumulator, AggregateUDF, Volatility,
-    expr_fn::create_udaf,
+    Accumulator, AggregateUDF,
     function::{AccumulatorArgs, StateFieldsArgs},
 };
 
@@ -111,19 +110,18 @@ fn stable_stddev(input: Option<&DataType>) -> Result<Arc<AggregateUDF>, ExprErro
         .map(|field| field.data_type().clone())
         .collect();
     state.push(DataType::Float64);
-    Ok(Arc::new(create_udaf(
-        "stddev_pop",
+    Ok(crate::kernel_identity::aggregate_named(
+        "stddev_pop", ("stddev_pop", input.clone()),
         vec![input.clone()],
-        Arc::new(DataType::Float64),
-        Volatility::Immutable,
+        DataType::Float64,
+        state,
         Arc::new(move |args: AccumulatorArgs| {
             Ok(Box::new(StableStddev {
                 inner: udf.accumulator(args)?,
                 origin: None,
             }))
         }),
-        Arc::new(state),
-    )))
+    ))
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -729,14 +727,9 @@ pub fn aggregate_udf(
     let inputs = vec![ty.clone()];
     let factory: datafusion_expr::AccumulatorFactoryFunction =
         Arc::new(move |_| Ok(Box::new(HailAccumulator::new(kind, ty.clone()))));
-    Ok(Arc::new(create_udaf(
-        function,
-        inputs,
-        Arc::new(ret),
-        Volatility::Immutable,
-        factory,
-        Arc::new(state),
-    )))
+    Ok(crate::kernel_identity::aggregate_named(
+        function, (function.to_owned(), inputs.clone()), inputs, ret, state, factory,
+    ))
 }
 
 #[cfg(test)]

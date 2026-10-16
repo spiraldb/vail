@@ -1,0 +1,41 @@
+{
+  "owner": "stream_scan",
+  "modules": [
+    {
+      "path": "crates/vail-python/src/lib.rs",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        {
+          "issue": "Arrow import concatenates all batches",
+          "evidence": "parallelize_arrow reader.collect then concat_batches creates one large batch; scalar_arrow does the same before validating exactly one row. Native buffer transport avoids serialization but not this avoidable copy.",
+          "acceptance": "Retain imported native batches as a bounded source; scalar import validate cumulative cardinality while consuming and retain the sole row without concatenating arbitrary input."
+        },
+        {
+          "issue": "VCF runtime configuration uses generic JSON values",
+          "evidence": "read_vcf creates serde_json::json! header/options and passes TableIR::read_text; read_text and exports convert Python option containers to serde_json Value. No textual JSON crosses PyO3 here, but typed native configuration is replaced by untyped runtime representation.",
+          "acceptance": "Use typed native scan/export options and a typed VCF source config; reserve codecs for persistence or external formats."
+        },
+        {
+          "issue": "Interval bridge decomposes native arrays into scalar literals",
+          "evidence": "filter_intervals_arrow loops every row, ScalarValue::try_from_array, allocates Expr::RuntimeLiteral per interval. This is native memory, not string serialization, but loses shared array representation.",
+          "acceptance": "Accept retained Arrow interval arrays directly in typed interval planning and avoid per-row IR nodes for literal interval sets."
+        },
+        {
+          "issue": "Metadata inquiries repeatedly reconstruct recursive native types",
+          "evidence": "native_schema converts each Arrow field through Type::from_arrow and NativeType::new_type for every schema/global_schema call.",
+          "acceptance": "Retain immutable typed schemas/native type handles with table metadata or cache conversion; preserve field/reference semantics and ownership."
+        }
+      ],
+      "evidence": [
+        "Data buffers cross via Arrow C Stream import/export; expression children and table/global references stay native with Arc ownership.",
+        "Blocking I/O/actions release GIL through py.detach; ordinary plan constructors remain synchronous.",
+        "collect_arrow intentionally materializes public collect results, while sample_arrow delegates bounded sample. No hidden row collection found in schema/IR metadata queries."
+      ],
+      "limitations": [
+        "native_ir.rs owned by kernel agent; arrow_memory.rs and ir_view.rs owned by root, not re-read or claimed here.",
+        "GIL duration during plan construction and count known_count shortcuts require planner/performance integration review, not proven new defects here."
+      ]
+    }
+  ]
+}

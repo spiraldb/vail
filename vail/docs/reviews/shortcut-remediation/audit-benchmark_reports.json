@@ -1,0 +1,108 @@
+{
+  "owner": "stream_scan",
+  "scope": "Benchmark fixtures, orchestration and report tooling only; findings here are not production execution defects.",
+  "modules": [
+    {
+      "path": "benchmarks/render_annotate_profile.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Stack cache recursively builds Python tuples along every prefix; unusually deep stacks can hit recursion limit, and missing/empty samples or zero measured CPU fail via trace[-1], division or max. Acceptance: iterative stack traversal and explicit no-valid-samples report.",
+        "CPU samples are included by endpoint timestamp rather than requiring full CPU-delta interval inside measured phase; boundary samples can include warmup CPU. Acceptance: clip intervals or require previous/current timestamps inside phase and report excluded duration.",
+        "Workload scales and 500 Hz/10 Hz labels hardcoded rather than derived from capture metadata."
+      ]
+    },
+    {
+      "path": "benchmarks/render_cloud_html.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Incomplete curated engine pairs are silently skipped even while header counts all configurations and upstream missing statuses are explicitly visible. Duplicate (config,case,engine) rows overwrite silently. Acceptance: validate unique complete pairs or render missing/duplicate statuses and exclude them transparently from totals."
+      ]
+    },
+    {
+      "path": "benchmarks/render_dimension_scaling.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Uses imported CONFIGS and fixed host/runtime/heap/warmup narratives instead of provenance/worker metadata; renderer can mislabel captures after runtime/config changes."
+      ]
+    },
+    {
+      "path": "benchmarks/render_cloud_benchmarks.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Missing perf event values use total(event) default zero; absent cache-misses and genuine zero are conflated. Acceptance: preserve unavailable counter status and multiplex/scaling validity.",
+        "Host model, cores, heap, toolchain, warmup duration narratives hardcoded; script accepts arbitrary compatible result directories without validating these claims."
+      ]
+    },
+    {
+      "path": "benchmarks/render_range_means.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Assumes nonempty metrics/events and hardcodes 10 Hz label; missing capture data crashes without explicit incomplete status."
+      ]
+    },
+    {
+      "path": "benchmarks/render_matrix_layout.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Uses fixed CONFIGS and source-partition label; does not verify worker parameters agree. Instructions/query estimated with median latency times mean rate, unlike measured-throughput estimate elsewhere; label remains estimated but cross-report comparisons need same definition."
+      ]
+    },
+    {
+      "path": "benchmarks/render_sample_telemetry.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Hardcodes 20 samples, 100k/50k rows, local14 and heap48GiB in generated report regardless of worker metadata. Acceptance: derive configuration/provenance or enforce expected capture fingerprint."
+      ]
+    },
+    {
+      "path": "benchmarks/run_cloud_benchmarks.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Resume verifies claimed commit, seconds and configs but retains old captures after script hashes change; records script_hashes_on_resume without invalidating prior results. --commit is caller-supplied and not checked against actual installed native wheel/source. Acceptance: each capture retains immutable source/binary/runner hashes and mixed-provenance resumes reject or explicitly separate series.",
+        "Capture/provenance subprocesses have no timeout; a hung collector blocks the suite indefinitely. Acceptance: bounded process-tree lifecycle and explicit failed capture record."
+      ]
+    },
+    {
+      "path": "benchmarks/run_dimension_scaling.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Allows existing output directory and overwrites provenance with fresh runs list; partial prior artifacts can become mixed with new run. Acceptance: fresh-run directory or configuration/hash-validated resume, atomic report replacement.",
+        "Compilers checked before captures and reported afterward, but runtime contention is not rejected during capture. Process-name heuristic is only a partial idle-host guarantee."
+      ]
+    },
+    {
+      "path": "benchmarks/upstream_benchmark_coverage.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Resume retains previous case results while replacing runner/upstream hash fields with current hashes, checking only engine/smoke/data directory. Native fixture cache completeness is marker-only, without fixture builder/source/binary identity. Acceptance: pin capture and fixture fingerprints and reject/migrate stale cache explicitly.",
+        "Worker cleanup kills process group only while primary worker is alive (normal completed path simply joins); primary can exit while JVM/helpers remain. SIGTERM cleanup escalates only if primary remains alive, so surviving descendants can contaminate later cases. Acceptance: verify/reap owned process group after primary termination too.",
+        "AST adapter removes pytest decorators and manually reconstructs fixture/parameter behavior; upstream source changes can silently diverge (for example parametrization argnames list unsupported by inventory branch using split). Acceptance: fail closed on unsupported decorators/signatures and cross-check collected case IDs/arguments with pytest collection.",
+        "Published fixture downloads lack expected content checksum/version, so exact dimensions alone do not establish stable exact fixture content. Acceptance: record/verify input digests."
+      ]
+    },
+    {
+      "path": "benchmarks/compare_hail.py",
+      "depth": "full",
+      "status": "reviewed; findings queued",
+      "findings": [
+        "Failed cases are recorded but script exits successfully; calling harness cannot equate subprocess zero status with all cases passed. Acceptance: aggregate exit status reflects failures while preserving report.",
+        "Several named workloads only assert force-count output, not projected field/scan/lookup values. Whether operators are actually forced depends on _force_count implementation/optimizer; ensure value-consuming checksum or verified physical plan for performance claims. This is benchmark validation gap, not a demonstrated production defect.",
+        "Input validation omits positive iterations/scale/cores and legal VCF position range; zero iterations produces caught failure instead of early configuration error."
+      ]
+    }
+  ],
+  "limitations": [
+    "Read-only audit; no benchmark captures launched, no production edits, no report claims established by executing these historical workloads.",
+    "Collector profile_* modules belong to root audit; interpretation of underlying raw counters requires those modules."
+  ]
+}

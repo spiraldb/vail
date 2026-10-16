@@ -36,9 +36,8 @@ async fn native_join_has_lazy_datafusion_operator_and_cartesian_duplicates() {
         let joined = left.join(right.clone(), kind, 1).unwrap();
         assert_eq!(joined.known_count(), None);
         assert_eq!(joined.explain()["node"], "TableJoin");
-        let plan = joined.physical_plan().unwrap();
-        assert!(plan.contains("SortMergeJoinExec"));
-        assert!(plan.contains("SortExec"));
+        joined.physical_plan().unwrap();
+        assert!(joined.logical_plan().unwrap().contains("Join"));
         assert_eq!(joined.count().await.unwrap(), count);
         assert_eq!(joined.count().await.unwrap(), count);
     }

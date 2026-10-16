@@ -61,3 +61,10 @@ def test_nested_array_element_types_are_rejected():
     nested = hl.literal([[1], [2]], hl.tarray(hl.tarray(hl.tint32)))
     with pytest.raises(TypeError, match='numeric'):
         _ = nested + nested
+
+
+def test_long_array_arithmetic_and_random_inputs_are_zipped_once():
+    assert hl.eval(hl.range(20000) + hl.range(20000)) == list(range(0, 40000, 2))
+    values = hl.range(20).map(lambda _: hl.rand_int32(1000, seed=203))
+    expected = hl.eval(values)
+    assert hl.eval(values + hl.range(20)) == [value + index for index, value in enumerate(expected)]

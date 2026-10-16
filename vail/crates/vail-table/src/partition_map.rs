@@ -24,11 +24,6 @@ pub(crate) fn lower(
     body: &ScalarIR,
     bindings: &GlobalBindings,
 ) -> Result<TablePlan> {
-    if let Some(streaming) = lower_stream(child, input.rows.clone(), rows_name, body, bindings)? {
-        let mut plan = crate::plan::lower(&streaming)?;
-        plan.layout = input.layout;
-        return Ok(plan);
-    }
     let numbered = ordinal(input.rows);
     let schema = numbered.schema();
     let mut args = Vec::<Arc<dyn PhysicalExpr>>::new();
@@ -171,9 +166,8 @@ pub(crate) fn lower(
 
 /// Map/filter/flatmap over partition rows are ordinary relational operators.
 /// Packing an entire partition is needed only for operations such as to_array.
-fn lower_stream(
+pub(crate) fn lower_stream(
     child: &TableRef,
-    input: PhysicalPlan,
     rows_name: &str,
     body: &ScalarIR,
     bindings: &GlobalBindings,
@@ -183,7 +177,7 @@ fn lower_stream(
         parameter: &str,
         row: &ScalarIR,
     ) -> std::result::Result<ScalarIR, vail_execution::expressions::ExprError> {
-        if matches!(expr,ScalarIR::LambdaVariable {name} if name==parameter) {
+        if matches!(expr,ScalarIR::LambdaVariable {name, .. } if name==parameter) {
             return Ok(row.clone());
         }
         expr.try_map_children(|child| rewrite(child, parameter, row))
@@ -311,6 +305,5 @@ fn lower_stream(
             _ => Ok(None),
         }
     }
-    let source = crate::TableIR::prepared(child, input, None, 1);
-    lower(&source, body, rows_name, bindings)
+    lower(child, body, rows_name, bindings)
 }

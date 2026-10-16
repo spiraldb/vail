@@ -351,6 +351,7 @@ impl NativeExpr {
             Expr::Tuple { .. } => "tuple",
             Expr::ArrayMap { .. } => "array_map",
             Expr::ArrayFold { .. } => "array_fold",
+            Expr::ArrayAggregateScan { .. } => "array_aggregate_scan",
             Expr::ArrayPredicate { .. } => "array_predicate",
             Expr::ArrayFilter { .. } => "array_filter",
             Expr::StreamRange { .. } => "stream_range",
@@ -428,6 +429,7 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         "matrix_field" => Expr::MatrixField {
             axis: get(d, "axis")?.extract::<String>()?,
             name: get(d, "name")?.extract::<String>()?,
+            dtype: d.get_item("dtype").ok().map(|ty| native_type(&ty)).transpose()?,
         },
         "matrix_scope" => Expr::MatrixScope {
             axis: get(d, "axis")?.extract::<String>()?,
@@ -437,6 +439,7 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         "matrix_column_position" => Expr::MatrixColumnPosition {},
         "table_lookup" => Expr::TableLookup {
             reference: get(d, "reference")?.extract::<String>()?,
+            dtype: d.get_item("dtype").ok().map(|ty| native_type(&ty)).transpose()?,
             keys: expressions(&get(d, "keys")?)?,
             all_matches: if d.get_item("all_matches").is_ok() {
                 get(d, "all_matches")?.extract::<bool>()?
@@ -506,6 +509,7 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         },
         "lambda_variable" => Expr::LambdaVariable {
             name: get(d, "name")?.extract::<String>()?,
+            dtype: d.get_item("dtype").ok().map(|ty| native_type(&ty)).transpose()?,
         },
         "nested_function" => Expr::NestedFunction {
             function: get(d, "function")?.extract::<String>()?,
@@ -549,6 +553,13 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
             value: expression_ref(&get(d, "value")?)?,
             parameter: get(d, "parameter")?.extract::<String>()?,
             body: expression_ref(&get(d, "body")?)?,
+        },
+        "array_aggregate_scan" => Expr::ArrayAggregateScan {
+            function: get(d, "function")?.extract()?,
+            value: expression_ref(&get(d, "value")?)?,
+            predicate: expression_ref(&get(d, "predicate")?)?,
+            options: option_value(&get(d, "options")?)?,
+            dtype: native_type(&get(d, "dtype")?)?,
         },
         "array_fold" => Expr::ArrayFold {
             value: expression_ref(&get(d, "value")?)?,
@@ -754,6 +765,44 @@ impl NativeExpr {
             inner: expression_ref(value)?,
         })
     }
+    fn infer_type(&self, columns: Vec<(String, PyRef<'_, NativeType>)>, globals: Vec<(String, PyRef<'_, NativeType>)>, variables: Vec<(String, PyRef<'_, NativeType>)>) -> PyResult<NativeType> {
+        let schema = |fields: Vec<(String, PyRef<'_, NativeType>)>| -> PyResult<arrow_schema::Schema> {
+            Ok(arrow_schema::Schema::new(fields.into_iter().map(|(name, ty)| Ok(arrow_schema::Field::new(name, ty.inner.to_arrow().map_err(value_error)?, true))).collect::<PyResult<Vec<_>>>()?))
+        };
+        let variables = variables.into_iter().map(|(name, ty)| (name, (*ty.inner).clone())).collect::<Vec<_>>();
+        Ok(NativeType::new_type(self.inner.dtype_with_lexical(&schema(columns)?, &schema(globals)?, &variables).map_err(value_error)?))
+    }
+    #[pyo3(signature=(uid, parameter=None, replacement=None))]
+    fn bind_random_context(&self, uid: Vec<PyRef<'_, NativeExpr>>, parameter: Option<&str>, replacement: Option<PyRef<'_, NativeExpr>>) -> PyResult<Self> {
+        let uid = uid.iter().map(|value| value.inner.clone()).collect::<Vec<_>>();
+        let replacement = replacement.as_ref().map(|value| value.inner.clone());
+        let replace = match (parameter, replacement.as_ref()) {
+            (None, None) => None,
+            (Some(name), Some(value)) => Some((name, value)),
+            _ => return Err(value_error("random callback substitution requires a parameter and value")),
+        };
+        Ok(Self { inner: vail_execution::randomness_binding::bind_context(&self.inner, &uid, replace).map_err(value_error)? })
+    }
+    fn bind_random_rows(&self, row_uid: &NativeExpr, mode: &str) -> PyResult<Self> {
+        Ok(Self { inner: vail_execution::randomness_binding::bind_rows(&self.inner, row_uid.inner.clone(), mode).map_err(value_error)? })
+    }
+    fn is_row_indexed(&self) -> bool {
+        let mut indexed = false;
+        self.inner.visit_unique(&mut |node| {
+            indexed |= matches!(node, Expr::Column { .. })
+                || matches!(node, Expr::MatrixField { axis, .. } | Expr::MatrixScope { axis, .. } if axis != "global");
+        });
+        indexed
+    }
+    fn contains_random(&self) -> bool {
+        let mut found = false;
+        self.inner.visit_unique(&mut |node| {
+            if matches!(node, Expr::NestedFunction { function, .. } if function.starts_with("random_")) {
+                found = true;
+            }
+        });
+        found
+    }
     #[staticmethod]
     fn literal(dtype: &NativeType, value: &Bound<'_, PyAny>) -> PyResult<Self> {
         use datafusion_common::ScalarValue;
@@ -854,7 +903,7 @@ impl NativeExpr {
         expression(other).is_ok_and(|v| *self.inner == v)
     }
     fn __repr__(&self) -> String {
-        format!("NativeExpr({:?})", self.inner)
+        format!("NativeExpr(op={})", self.operation())
     }
     fn same_node_as(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.inner, &other.inner)
@@ -862,8 +911,9 @@ impl NativeExpr {
     fn view<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
         let d = PyDict::new(py);
         match self.inner.as_ref() {
-            Expr::MatrixField { axis, name } => {
+            Expr::MatrixField { axis, name, dtype } => {
                 d.set_item("op", "matrix_field")?;
+                if let Some(dtype) = dtype { d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?; }
                 d.set_item("axis", axis.into_pyobject(py)?.into_any())?;
                 d.set_item("name", name.into_pyobject(py)?.into_any())?;
             }
@@ -890,11 +940,13 @@ impl NativeExpr {
             }
             Expr::TableLookup {
                 reference,
+                dtype,
                 keys,
                 all_matches,
                 query_interval,
             } => {
                 d.set_item("op", "table_lookup")?;
+                if let Some(dtype) = dtype { d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?; }
                 d.set_item("reference", reference.into_pyobject(py)?.into_any())?;
                 d.set_item(
                     "keys",
@@ -1098,8 +1150,11 @@ impl NativeExpr {
                     .into_any(),
                 )?;
             }
-            Expr::LambdaVariable { name } => {
+            Expr::LambdaVariable { name, dtype } => {
                 d.set_item("op", "lambda_variable")?;
+                if let Some(dtype) = dtype {
+                    d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?;
+                }
                 d.set_item("name", name.into_pyobject(py)?.into_any())?;
             }
             Expr::NestedFunction {
@@ -1239,6 +1294,14 @@ impl NativeExpr {
                     .into_bound(py)
                     .into_any(),
                 )?;
+            }
+            Expr::ArrayAggregateScan { function, value, predicate, options, dtype } => {
+                d.set_item("op", "array_aggregate_scan")?;
+                d.set_item("function", function)?;
+                d.set_item("value", Py::new(py, NativeExpr { inner: value.clone() })?)?;
+                d.set_item("predicate", Py::new(py, NativeExpr { inner: predicate.clone() })?)?;
+                d.set_item("options", option_object(py, options)?)?;
+                d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?;
             }
             Expr::ArrayFold {
                 value,

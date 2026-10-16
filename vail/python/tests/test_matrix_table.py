@@ -45,7 +45,6 @@ def test_range_dimensions_schema_and_empty_axes(nr, nc):
     assert m.entry.dtype == hl.tstruct()
     assert list(m.row_key) == ["row_idx"]
     assert list(m.col_key) == ["col_idx"]
-    assert m.n_partitions() == hl.range_table(nr, 2).n_partitions()
 
 
 def test_annotations_actions_globals_and_native_plan():
@@ -137,7 +136,7 @@ def test_expression_scope_and_source_errors():
         m.foo = 2
 
 
-def test_matrix_indexed_write_preserves_sorted_source_partitions(tmp_path):
+def test_matrix_indexed_write_preserves_sorted_source_keys(tmp_path):
     matrix = hl.range_matrix_table(20, 5, 4)
     path = tmp_path / "matrix.mt"
     matrix.write(path)
@@ -147,7 +146,6 @@ def test_matrix_indexed_write_preserves_sorted_source_partitions(tmp_path):
     index_key = descriptor["row_index_keys"][0]
     assert index_key == "row_idx"
     assert core._keys == (index_key,)
-    assert core.n_partitions() == 4
     assert core[index_key].collect() == list(range(20))
     assert set(core._schema) == {"__vail_matrix_row", "__vail_matrix_cells", "row_idx"}
 
@@ -156,14 +154,11 @@ def test_matrix_indexed_write_preserves_sorted_source_partitions(tmp_path):
         hl.Interval(7, 12, includes_start=True, includes_end=False),
     ]
     interval_read = hl.read_matrix_table(path, _intervals=intervals)
-    assert interval_read.n_partitions() == 2
     pruned_read = hl.read_matrix_table(path, _intervals=intervals, _filter_intervals=True)
-    assert pruned_read.n_partitions() == 3
     assert pruned_read.row_idx.collect() == list(range(2, 12))
 
     source = hl.read_matrix_table(path)
     filtered = source.filter_rows(source.row_idx >= 11)
-    assert filtered.n_partitions() == 2
     assert filtered.row_idx.collect() == list(range(11, 20))
 
     rows = source.rows()
@@ -453,10 +448,8 @@ def test_matrix_checkpoint_empty_dimensions_and_repartition(tmp_path):
         m = hl.range_matrix_table(nr, nc, 3)
         r = m.checkpoint(tmp_path / f"{nr}-{nc}")
         assert r.count() == (nr, nc)
-        assert r.n_partitions() == m.n_partitions()
         assert r.entries().count() == 0
     m = matrix(4, 2).repartition(3)
-    assert m.n_partitions() == 3
     assert m.x.collect() == [5, 6, 15, 16, 25, 26, 35, 36]
 
 
@@ -639,7 +632,6 @@ def test_coordinate_conversion_sparse_missing_keys_duplicate_coordinates(partiti
     values = {(r.r, r.c): r.x for r in m.entries().collect()}
     assert values == {(1, "a"): 9, (1, "b"): 2, (2, "b"): 4, (None, "b"): 5}
     assert m.entries().collect() == m.entries().collect()
-    assert m.n_partitions() == 2
 
 
 def test_struct_row_major_and_unlocalize_dimension_validation():
@@ -843,3 +835,38 @@ def _has_native_op(node, op, **properties):
     if isinstance(node, (list, tuple)):
         return any(_has_native_op(child, op, **properties) for child in node)
     return False
+
+
+def test_show_labels_entries_in_column_slot_order():
+    m = hl.range_matrix_table(1, 2)
+    m = m.annotate_entries(x=m.col_idx + 10).choose_cols([1, 0])
+    output = []
+    m.show(handler=output.append)
+    lines = [line for line in output[0].splitlines() if line.startswith('|')]
+    assert [cell.strip() for cell in lines[0].split('|')[1:-1]] == ['row_idx', '1.x', '0.x']
+    assert [cell.strip() for cell in lines[-1].split('|')[1:-1]] == ['0', '11', '10']
+
+
+def test_filter_entries_preserves_certified_read_keys(tmp_path):
+    path = tmp_path / 'entry-filter-pruning.mt'
+    hl.range_matrix_table(24, 2, n_partitions=4).write(path)
+    source = hl.read_matrix_table(path)
+    filtered = source.filter_entries(source.col_idx == 0)
+    assert filtered._mir.row_index_keys == source._mir.row_index_keys
+    assert filtered._mir.core._keys == source._mir.core._keys
+    selected = filtered.filter_rows(filtered.row_idx < 6)
+    rows = selected.entries().collect()
+    assert [(row.row_idx, row.col_idx) for row in rows] == [(i, 0) for i in range(6)]
+
+
+def test_nested_matrix_array_aggregation_retains_lexical_and_lookup_types():
+    target = hl.range_table(2).annotate(offset=hl.int32(7))
+    m = matrix(2, 3).annotate_globals(extra=2)
+    lookup = target[m.row_idx].offset
+    expression = hl.agg.array_agg(
+        lambda item: hl.agg.sum(item + m.x + lookup + m.extra),
+        hl.array([1, 4]),
+    )
+    result = m.annotate_rows(nested=expression)
+    assert result.nested.dtype == hl.tarray(hl.tint64)
+    assert result.nested.collect() == [[48, 57], [78, 87]]

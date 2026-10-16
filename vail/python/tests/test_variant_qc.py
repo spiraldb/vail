@@ -92,7 +92,8 @@ def test_variant_qc_empty_axes_and_optional_fields():
     mt = mt.annotate_entries(GT=hl.missing(hl.tcall), GQ=hl.missing(hl.tint32))
     qc = hl.variant_qc(mt, 'qc').rows().collect()[0].qc
     assert qc.AC == [0, 0]
-    assert qc.AF == [None, None]
+    # CallStatsAggregator marks the whole AF field missing when AN is zero.
+    assert qc.AF is None
     assert qc.n_filtered == 0
     assert math.isnan(qc.call_rate)
     assert math.isnan(qc.het_freq_hwe)

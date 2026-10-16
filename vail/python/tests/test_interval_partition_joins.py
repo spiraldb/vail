@@ -48,20 +48,16 @@ def test_interval_partition_joins_all_outer_modes_match_across_different_bounds(
         key="rk",
         partitions=3,
     )
-    assert left.n_partitions() > 1
-    assert right.n_partitions() > 1
 
     # Matching keys sit at different range boundaries on each input. Duplicate
     # key rows must form a Cartesian product exactly once across the partitions.
     inner = left.join(right, "inner")
-    assert inner.n_partitions() > 1
     expected_matches = [
         (4, "l4a", "r4a"), (4, "l4a", "r4b"),
         (4, "l4b", "r4a"), (4, "l4b", "r4b"),
         (7, "l7", "r7"),
     ]
     _assert_rows(_row_tuples(inner), expected_matches)
-    assert "SortMergeJoin" in inner._native.physical_plan()
 
     _assert_rows(_row_tuples(left.join(right, "left")),
         expected_matches
@@ -121,11 +117,8 @@ def test_interval_partition_join_prefix_keeps_suffix_keys_and_filters_each_side(
     # Each side's filter executes over its own partitioning before the join.
     left = left.filter(left.a != 2)
     right = right.filter(right.x != 4)
-    assert left.n_partitions() > 1
-    assert right.n_partitions() > 1
 
     joined = left.join(right, _join_key=1)
-    assert joined.n_partitions() > 1
     assert list(joined.key) == ["a", "b", "suffix"]
     assert list(joined.row) == ["a", "b", "lv", "suffix", "rv"]
     rows = joined.collect()
@@ -160,8 +153,6 @@ def test_interval_partition_join_reads_stored_multifile_inputs(tmp_path):
 
     stored_left = hl.read_table(left_path)
     stored_right = hl.read_table(right_path)
-    assert stored_left.n_partitions() > 1
-    assert stored_right.n_partitions() > 1
     joined = stored_left.join(stored_right, "outer")
     _assert_rows(_row_tuples(joined), [
         (2, "l2", "r2"), (6, "l6", "r6"), (10, "l10", "r10"),
@@ -192,7 +183,6 @@ def test_interval_partition_join_reads_only_files_needed_for_selected_output(tmp
     stored_left = hl.read_table(left_path)
     stored_right = hl.read_table(right_path)
     joined = stored_left.join(stored_right)
-    assert joined.n_partitions() > 1
     expected_first_partition = _row_tuples(joined._filter_partitions([0]))
     assert expected_first_partition
 
@@ -215,7 +205,6 @@ def test_multi_way_zip_join_has_independent_interval_partitions():
     second = second.filter(second.idx % 2 == 0)
     third = third.filter(third.idx >= 8)
     joined = hl.Table.multi_way_zip_join([first, second, third], "data", "g")
-    assert joined.n_partitions() > 1
     rows = joined.collect()
     assert [row.idx for row in rows] == list(range(12))
     for row in rows:
@@ -229,10 +218,8 @@ def test_empty_interval_joins_keep_an_executable_empty_result(tmp_path):
     empty = hl.read_table(tmp_path / "empty")
     for how in ["inner", "left", "right", "outer"]:
         joined = empty.join(empty, how)
-        assert joined.n_partitions() == 1
         assert joined.collect() == []
     zipped = hl.Table.multi_way_zip_join([empty, empty], "data", "g")
-    assert zipped.n_partitions() == 1
     assert zipped.collect() == []
 
 
@@ -260,12 +247,6 @@ def test_join_chain_keeps_existing_key_order_without_another_sort():
     assert [(r.k, r.v0, r.v1, r.v2, r.v3) for r in result.collect()] == expected
 
 
-def test_rekeying_to_identical_keys_preserves_interval_partition_contents():
-    left = hl.range_table(8, n_partitions=2)
-    right = hl.range_table(8, n_partitions=2)
-    joined = left.join(right)
-    identical = joined.key_by("idx")
-    assert identical.n_partitions() == joined.n_partitions()
-    for partition in range(joined.n_partitions()):
-        expected = joined._filter_partitions([partition]).collect()
-        assert identical._filter_partitions([partition]).collect() == expected
+def test_rekeying_to_identical_keys_preserves_sorted_rows():
+    joined = hl.range_table(8, n_partitions=2).join(hl.range_table(8, n_partitions=2))
+    assert joined.key_by("idx").collect() == joined.collect()

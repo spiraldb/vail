@@ -1,0 +1,588 @@
+{
+  "owner": "logical_planning",
+  "modules": [
+    {
+      "path": "vail/crates/vail-table/src/action_parameters.rs",
+      "lines": 259,
+      "sha256": "0a54c8b84961513d908c3b4b02e5cefe144b1f5e5bea5b4aa632a66cb9d41958",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical.rs",
+      "lines": 1487,
+      "sha256": "b9da79bee08ad57cc0fe1c322e00f2454e43e55867b138e997dd947dfe53fee5",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004",
+        "A001"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_aggregate_init.rs",
+      "lines": 198,
+      "sha256": "4fcbd10481f6cff1ef6a79ebce462bb23ed0455cba07e33e64ded34e60bbfe38",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/partition_map.rs",
+      "lines": 309,
+      "sha256": "8ceddeb209811037af0e336a2a997d271242ddfd54422950a6a55221a9529aea",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/globals.rs",
+      "lines": 278,
+      "sha256": "f7296dc66e598d5988bab28af572add127d21b9a11b3628f3d51c2e7ab3a3c61",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_globals.rs",
+      "lines": 248,
+      "sha256": "242d00c25836e79cc4b750dd6f11a42798396884820ae05f781804bb31178457",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/joins.rs",
+      "lines": 509,
+      "sha256": "5831fcafaf61c5d97df630a691dbb68d665755feb3ab3f194acf8fbe49efffa5",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/zip_join.rs",
+      "lines": 392,
+      "sha256": "aa439624c5e5526543b7665a3fdce3d23004eb97e23ca20906d0885c572d6edb",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/plan.rs",
+      "lines": 1307,
+      "sha256": "8a93e4e5b426c527e005d28387f4a8c3809d465b93424ff6b26566b76001b3b3",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/partitioned.rs",
+      "lines": 1696,
+      "sha256": "033f3a1f409f7b1be596564fb2483e1b1558bf298ef866e7facbffa834c4718c",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004",
+        "A003"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/join_interval.rs",
+      "lines": 1272,
+      "sha256": "156039d68e71a1637c9e10137ce17b985f0c83c2efa88d321373d6fc3c5c9320",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004",
+        "A003",
+        "A007"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/lookup.rs",
+      "lines": 891,
+      "sha256": "ea4d07d23d7ac72fa01d29ce535fb4683264234dc6e114aa11cface3ed9edd54",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004",
+        "A007"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_scan.rs",
+      "lines": 985,
+      "sha256": "bc9e6ffee254ee5090c34805c4879a7b05bd31349933497e2b194e50accf7a10",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004",
+        "A001"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/provider.rs",
+      "lines": 1299,
+      "sha256": "bd0b04dc71b462c0dc5f2af7ee2366a7526a3a5f98f447830db3a13332908aa9",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/interval_read.rs",
+      "lines": 1516,
+      "sha256": "8d04526581e15bc4b05c1ee162733fedbe4ae367ee072550e3d8314ed144e869",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; relevant inline/integration tests inspected for semantic and execution invariants.",
+      "findings": [
+        "S004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/rng_context.rs",
+      "lines": 483,
+      "sha256": "3ec8b73a632bc22d9ed56c36547f5b60dad41978baede5386f9f0b6bcedf736b",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read and relevant tests/physical child contracts inspected.",
+      "findings": [
+        "A004"
+      ]
+    },
+    {
+      "path": "vail/crates/vail-table/src/partition_grouping.rs",
+      "lines": 312,
+      "sha256": "9af3bb580c9cca25944b783b40372c2093694395bca178469b95f87eeb56cc5d",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read and relevant tests/physical child contracts inspected.",
+      "findings": []
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_same.rs",
+      "lines": 149,
+      "sha256": "f89b26264295479b28f6e1436a151312c6361979b5ed7fa14bb010e60a007baa",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read and relevant tests/physical child contracts inspected.",
+      "findings": []
+    },
+    {
+      "path": "vail/crates/vail-table/src/lib.rs",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "findings": [],
+      "lines": 1945,
+      "sha256": "66fd3ad7f52143e4118d9b27eb7692841cd8d82365c98bfc61f817b90229ceb6"
+    },
+    {
+      "path": "vail/crates/vail-table/src/aggregation.rs",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "findings": [],
+      "lines": 424,
+      "sha256": "66bb385f8e7d4190621f8247687bb1a6bf7d040413b126bbb089a2d5e6ac5274"
+    },
+    {
+      "path": "vail/crates/vail-table/src/comparison.rs",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "findings": [],
+      "lines": 568,
+      "sha256": "d99d920f5a5758a81550cb4808fda1db756325d2feb95c8002f85ecfe1aa68ce"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_aggregation.rs",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "findings": [],
+      "lines": 790,
+      "sha256": "073fee8d3829803e210ceee6ffe721ec9658234b2c054353cb3c6dee864b414c"
+    },
+    {
+      "path": "vail/crates/vail-table/src/logical_nested_aggregation.rs",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "findings": [],
+      "lines": 262,
+      "sha256": "6ecbaacb1aacb82e5c9fb4921bc2a26654c93c52a4325eb1ba56629575928a39"
+    },
+    {
+      "path": "vail/crates/vail-table/src/nested_scan.rs",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "findings": [],
+      "lines": 464,
+      "sha256": "7ad68eb11feae86b5a69ceb7c6cca815936d2f8f0559826472b239d41a97066d"
+    },
+    {
+      "path": "vail/crates/vail-table/src/nested_projection.rs",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "findings": [],
+      "lines": 388,
+      "sha256": "0dc49834f1ce46ab18babe40a6b33c96c49e70098d7b019625c63ead79a10f5d"
+    },
+    {
+      "path": "vail/crates/vail-table/src/partitioning.rs",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source read; targeted relevant inline/integration tests inspected.",
+      "findings": [],
+      "lines": 233,
+      "sha256": "ab0a92f178f9ad8368e0ae377bddbca74d0851c440df340db0a4b28f5acfca8e"
+    },
+    {
+      "path": "vail/crates/vail-table/src/diagnostics.rs",
+      "lines": 62,
+      "sha256": "699e3e8691a7a95d868dae6b93ea5f0c78869f25e7f8a8c9623a97080503290b",
+      "owner": "logical_planning",
+      "status": "reviewed",
+      "review_depth": "Full production source and inline regression read. Lazy diagnostic nodes explicitly cannot execute.",
+      "findings": [
+        "S004"
+      ]
+    }
+  ],
+  "removed_runtime_modules": [
+    "vail/crates/vail-table/src/deferred_logical.rs",
+    "vail/crates/vail-table/src/initialized_aggregate.rs",
+    "vail/crates/vail-table/src/initialized_scan.rs"
+  ],
+  "findings": [
+    {
+      "id": "S004",
+      "status": "implemented_pending_validation",
+      "paths": [
+        "vail/crates/vail-table/src/action_parameters.rs",
+        "vail/crates/vail-table/src/logical.rs",
+        "vail/crates/vail-table/src/logical_aggregate_init.rs",
+        "vail/crates/vail-table/src/partition_map.rs",
+        "vail/crates/vail-table/src/globals.rs",
+        "vail/crates/vail-table/src/logical_globals.rs",
+        "vail/crates/vail-table/src/joins.rs",
+        "vail/crates/vail-table/src/zip_join.rs",
+        "vail/crates/vail-table/src/plan.rs",
+        "vail/crates/vail-table/src/partitioned.rs",
+        "vail/crates/vail-table/src/join_interval.rs",
+        "vail/crates/vail-table/src/lookup.rs",
+        "vail/crates/vail-table/src/logical_scan.rs",
+        "vail/crates/vail-table/src/diagnostics.rs"
+      ],
+      "evidence": "Deleted DeferredOrderedExec and deferred_logical.rs; physical semantic helper requires Prepared children and cannot recurse on TableIR; joins/lookup/zip use visible planned children; stream relational rewrites happen before logical planning. Removed both runtime initializer execution nodes and all execute-time compile callbacks. ActionParameters resolves explicit singleton parameter relations, caches native Arrow rows once per logical initializer per action, then compiles the resolved data tree once using one SessionState/RuntimeEnv/TaskContext. Native stable sorts and head are normal logical operators; tail retains bounded suffix memory as a semantic extension.",
+      "acceptance": "Fullcompile; instrumented provider proves lazy EXPLAIN/resolution do not construct data plans and final physical data source constructed once; aggregate/scan globals/fold/nested/empty/replay correctness; optimizer pushdown and randomness tests.",
+      "limitations": "General joins/lookups/complex sorts remain explicit semantic extensions (children visible, scalar semantics opaque); partition remapping/count/sampling preparation remains separate costs under A003/A007. Intentional partition divergence is not claimed implemented by this patch. Scalar-binding and data-dependent semantic physical diagnostics now return explicit nonexecuting UnboundActionExec nodes with visible dependencies instead of executing initialization/bounds/count relations. Full runtime integration validation remains pending."
+    },
+    {
+      "id": "JOIN_PREPARATION_RESCANS",
+      "status": "queued_confirmed",
+      "paths": [
+        "vail/crates/vail-table/src/join_interval.rs",
+        "vail/crates/vail-table/src/partitioned.rs"
+      ],
+      "evidence": "join_interval::bounds calls scan_bounds if no inherited certified bounds; scan_bounds executes every row in each partition before final join executes. partitioned::shuffle uses partition_counts and key_ranges, then replays physical child plans. This is physical execution during plan preparation rather than invisible TableIR compilation, but can add full data passes and latency.",
+      "acceptance": "Certified source bounds prune without reads; otherwise use engine joins/repartition strategy avoiding a mandatory full prepass. Instrument actual source batches/read counts, not Arc identities; ensure bounded output buffers and cancellation."
+    },
+    {
+      "id": "A007",
+      "status": "queued_confirmed",
+      "paths": [
+        "vail/crates/vail-table/src/lookup.rs",
+        "vail/crates/vail-table/src/join_interval.rs"
+      ],
+      "evidence": "lookup::prepare constructs right_reduced once but installs Arc clones under one join per left partition; Arc sharing does not memoize build-side execution. Interval join cells likewise can reopen overlapping source readers across cells.",
+      "acceptance": "Count executions and bytes read of shared right side for many left partitions; use shared action-local build/exchange or native optimizer join strategy; do not collect whole table into Python."
+    },
+    {
+      "id": "A001",
+      "status": "queued_confirmed",
+      "paths": [
+        "vail/crates/vail-table/src/logical.rs",
+        "vail/crates/vail-table/src/logical_scan.rs"
+      ],
+      "evidence": "lower_rng_uids restores partitions using child.known_n_partitions().unwrap_or(1); unknown metadata is treated as physical singleton. Existing logical scan restoration similarly uses metadata count. This should be redesigned around semantic row/RNG identity and engine partition properties, not unsupported Hail partition identities.",
+      "acceptance": "Randomness/scan results must remain correct and repeatable over unknown-cardinality filters, unions, sorts, joins and empty inputs with real parallel physical execution."
+    },
+    {
+      "id": "NATIVE_LITERAL_DIAGNOSTIC_PANIC",
+      "status": "queued_confirmed_static",
+      "paths": [
+        "vail/crates/vail-table/src/globals.rs",
+        "vail/crates/vail-table/src/lib.rs",
+        "vail/crates/vail-execution/src/expressions.rs"
+      ],
+      "evidence": "Rust TableIR::explain and GlobalsIR::explain still put Expr into serde_json::json!, while Expr::RuntimeLiteral is #[serde(skip)] and serialization is unsupported. Python Native IR view avoids this; direct Rust diagnostics with native literals can panic.",
+      "acceptance": "Native structured/explain formatting covers native literals without serializing execution data or panicking; diagnostic path tested with arrays, nonfinite values and empty structs."
+    },
+    {
+      "id": "A004",
+      "status": "implemented_pending_runtime_validation",
+      "paths": [
+        "vail/crates/vail-table/src/rng_context.rs"
+      ],
+      "evidence": "Replaced hidden RngContextExec and unbounded active runs with visible ConsumerScopeExec. Explicit consumer/action forks allocate fresh identity; optimizer copies reunify only with shared private lineage, matching ordered physical leaf identities, schema, distribution and ordering. Runtime execute claims each consumer partition once and delegates the exposed producer; no compiler, reset/replay construction, or request-driven choice. Unit regressions compile under check8; runtime and integration pending.",
+      "acceptance": "Expose actual data dependency, identify action/consumer/replay explicitly, release state at completion/cancellation, preserve interleaved/repeated determinism and shared exchange execution. Count graph/run lifetimes and retained memory; do not replace the heuristic with another partition-order assumption."
+    },
+    {
+      "id": "INTERVAL_LOOKUP_CARTESIAN",
+      "status": "queued_confirmed",
+      "paths": [
+        "vail/crates/vail-table/src/lookup.rs"
+      ],
+      "evidence": "join_partition chooses NestedLoopJoinExec with IntervalContains filter in both interval_mode and query_interval_mode over each complete left partition and the whole right relation; candidate comparisons are O(L*R), independent of small match output.",
+      "acceptance": "Native output-sensitive interval containment join/index/sweep with deterministic first-match and all-matches ordering, missing/open endpoints, overlap, composite/locus keys; count candidate comparisons at increasing input sizes."
+    },
+    {
+      "id": "COLLECTION_AGGREGATE_METADATA",
+      "status": "queued_confirmed_static",
+      "paths": [
+        "vail/crates/vail-table/src/lookup.rs",
+        "vail/crates/vail-table/src/partition_grouping.rs",
+        "vail/crates/vail-table/src/logical_nested_aggregation.rs"
+      ],
+      "evidence": "lookup::collect_right equality all_matches and partition_grouping::lower_group_within still call stock array_agg_udaf. Other paths in this codebase explicitly replace it because stock ScalarValue compaction drops tagged metadata and panics on nested zero-field structs. Grouping also uses first_value per key, another known scalar compaction path. logical_nested_aggregation::collect intentionally chooses stock ordered array_agg because plain collect cannot merge independently ordered partial states; the fix must preserve ordering/merge state, not blindly substitute the unordered UDAF.",
+      "acceptance": "Use the common Arrow-native collect/take reducer contract, prove nested empty structs, tagged call/locus/set/tuple/ndarray payloads preserve types; ensure contiguous grouping emits with bounded state rather than retaining all groups."
+    },
+    {
+      "id": "IN_MEMORY_INDEX_ENDPOINT_CODEC",
+      "status": "queued_confirmed",
+      "paths": [
+        "vail/crates/vail-table/src/provider.rs",
+        "vail/crates/vail-table/src/interval_read.rs",
+        "vail/crates/vail-table/src/join_interval.rs"
+      ],
+      "evidence": "Native filter/interval scalar endpoints are encoded as one-element Arrow IPC KeyValue::ArrowIpc for in-memory QueryInterval. interval_read::endpoint immediately decodes the just-created bytes, and compare_key decodes both sides and constructs comparators inside sort comparisons. Persisted index transport is being reused as live native endpoint representation.",
+      "acceptance": "Decode persisted bounds once into typed native Arrow endpoints; compare/sort/index native typed arrays directly. Keep byte encoding only at external storage boundaries and preserve prefix/open/null comparator semantics. Measure codec/comparator constructions for many intervals."
+    },
+    {
+      "id": "FILTER_PRUNING_COVERAGE",
+      "status": "queued_capability_gap",
+      "paths": [
+        "vail/crates/vail-table/src/provider.rs"
+      ],
+      "evidence": "intervals_for_filter returns None unless exactly one table/index key field and a direct column-vs-literal Eq/Lt/Le/Gt/Ge Boolean expression. Composite key-prefix equality/ranges, IN, and other provably indexable predicate shapes fall back to full reads. Explicit interval_read supports richer prefix pruning, but ordinary filters do not share that algebra.",
+      "acceptance": "Share typed predicate-bound extraction with interval pruning; prove impossible files/segments are not opened with counters or deleted-file tests, including composite prefixes, conjunctions with unsupported residuals, nulls, casts and overlapping unions. Preserve residual predicate correctness."
+    },
+    {
+      "id": "COMPARISON_KEY_EQUALITY",
+      "status": "retracted_incorrect_semantic_assumption",
+      "paths": [
+        "vail/crates/vail-table/src/comparison.rs"
+      ],
+      "evidence": "Existing public test_storage.py explicitly requires equal NaN keys and distinct signed zeros. Key total-order equivalence is different from approximate payload numeric similarity; replacing it with payload equality was incorrect.",
+      "acceptance": "Preserve total-order key grouping equivalence and approximate payload tolerance independently.",
+      "resolution": "Restored Arrow total-order comparison for exact key pairs. Added scalar/nested NaN and signed-zero regression coverage without relaxing established storage test."
+    },
+    {
+      "id": "AGGREGATE_SCOPE_FANOUT",
+      "status": "queued_confirmed_static",
+      "paths": [
+        "vail/crates/vail-table/src/aggregation.rs",
+        "vail/crates/vail-table/src/logical_aggregation.rs"
+      ],
+      "evidence": "extract groups each distinct agg.filter step vector into a separate scope. lower total/grouped/body clones the complete row input into each scope and joins independently aggregated outputs. Distinct nonkey conditional reducers can execute/read the same source once per scope rather than one row pass with per-aggregate FILTER.",
+      "acceptance": "Instrument actual source executions/batches/bytes for many conditional reducers; fuse compatible filter-only leaves in a shared Aggregate with individual filters. Preserve exploded/nested scope domains, missing/empty defaults, RNG and validation order; use explicit exchanges when true multi-scope fanout is necessary."
+    },
+    {
+      "id": "COORDINATE_SUM_FALLBACK_TYPE",
+      "status": "implemented_pending_runtime_validation",
+      "paths": [
+        "vail/crates/vail-table/src/logical_aggregation.rs"
+      ],
+      "evidence": "coordinate_reductions uses Aggregate.result_type.unwrap_or(Int64) as cast target for coordinate sum, even though result_type is optional/defaulted in native Expr. A directly constructed native float sum with None annotation is rewritten to integer cast; Python usually supplies annotation so compatibility tests do not cover the native default case. Installed-native reproduction: range_table(2).annotate(xs=[0.25,0.75]) aggregate array_agg(sum) returns [0.5,1.5]. Rebuilding only the inner native Aggregate without optional __vail_result_type metadata produces external globals type mismatch when used with the same inferred frontend array<float64> type, proving semantic type changes based on the annotation.",
+      "acceptance": "Infer coordinate mapped argument/reducer output type in Rust from lexical element type. The annotation may validate inferred type, never choose different numerical semantics. Cover native IR without annotations for Int32/Int64/Float32/Float64 and nested lambda expressions.",
+      "resolution": "Coordinate sum uses shared configured_udaf(sum,native Arrow input) rather than stock sum requiring precoerced types or annotation-driven casts. Int32/Int64 sum widens native output and empty identity to Int64; floating sum widens to Float64. Int32 and no-hint Float64 regressions added. Initial cast-removal-only attempt exposed Int32 stock-UDAF rejection, corrected before final build."
+    },
+    {
+      "id": "SCHEMA_INFERENCE_REBUILDS_PLANS",
+      "status": "queued_confirmed_static_cost_needs_measurement",
+      "paths": [
+        "vail/crates/vail-table/src/globals.rs",
+        "vail/crates/vail-table/src/lib.rs",
+        "vail/crates/vail-table/src/nested_scan.rs"
+      ],
+      "evidence": "GlobalsIR::aggregate and TableIR::grouped_aggregate_bound infer output schema by lowering the complete existing relational input plus aggregate logical plan at construction, which is rebuilt again for actions. Nested scan fold constructs dummy empty physical MemorySource solely to feed schema into lower_fold. These duplicate planner/probe work instead of using a direct native scoped typing contract.",
+      "acceptance": "Instrument logical node constructions and frontend latency for deep chains/branching nested aggregate construction. Use direct native scoped type/reducer return contracts, retaining eager type validation without building executable placeholder relations."
+    },
+    {
+      "id": "ACTION_GLOBALS_REEVALUATION",
+      "status": "queued_confirmed_static",
+      "paths": [
+        "vail/crates/vail-table/src/lib.rs",
+        "vail/crates/vail-table/src/comparison.rs"
+      ],
+      "evidence": "write_with_options first prepares rows, then independently executes globals.evaluate before writer pulls the rows; globals used inside row plans are separate physical producers. same() independently compiles left and right global actions and then row comparison. The new action binding context fixes initializer+data ownership but these outer multi-root actions remain separate resource/execution scopes.",
+      "acceptance": "Represent all roots of a write/comparison under one action context and share required singleton producers once per action; preserve pinned snapshot/RNG identity, bounded writer backpressure and cancellation. Count global-aggregate source executions as well as RuntimeEnv ownership."
+    },
+    {
+      "id": "GENERATE_SINGLETON_MATERIALIZATION",
+      "status": "queued_confirmed_static",
+      "paths": [
+        "vail/crates/vail-table/src/partitioned.rs",
+        "vail/python/vail/methods/misc.py"
+      ],
+      "evidence": "Root traced _generate contexts.flatmap(rowfn) through parallelize_expression to ExpressionSourceExec OnceCell: evaluate singleton full output array, collect, then slice generated rows. _generate/BaldingNichols throughput and peak memory therefore scale with total output before yielding.",
+      "acceptance": "Lower generator context partitions into a native streaming source evaluating rowfn per context/partition with bounded batches, avoiding one total-output Arrow array. Test peak memory, first-batch latency and actual concurrent context work; generic parallelize(existing array) may still materialize its already-localized array."
+    },
+    {
+      "id": "ORDER_OBSERVATION_PUSHDOWN",
+      "status": "queued_confirmed_static",
+      "paths": [
+        "vail/crates/vail-table/src/logical.rs"
+      ],
+      "evidence": "OrderedNode inherits default logical predicate barrier for all columns, for ordinary concatenation/sort observation as well as RNG freeze. Native stable sort also materializes row_number as tie ordinal, preventing generic filter movement despite relative duplicate order being filter-invariant. Filters following a rekey/sort can therefore miss source pruning opportunities. Already-keyed read key_by no-op avoids this path.",
+      "acceptance": "Distinguish ordinary order observation from RNG/evaluation barriers; permit semantically safe predicate movement with a stable tie-identity strategy. Verify avoided Vortex segment/file reads after sort/rekey plus selective filter, duplicate-order determinism and error/RNG ordering."
+    },
+    {
+      "id": "CONSUMER_PROVENANCE_TRAVERSAL",
+      "status": "implemented_pending_runtime_validation",
+      "paths": [
+        "vail/crates/vail-table/src/rng_context.rs"
+      ],
+      "evidence": "bind_consumers validates each duplicate consumer using recursive source_origins leaf enumeration. New scopes at complete producer fanouts prevent inner exchanges being replayed, but provenance validation can revisit deep shared physical subgraphs.",
+      "acceptance": "Instrument unique physical nodes and provenance visits; memoize traversal/provenance within one action without replacing exact source identity validation with digest-only equality. Preserve ordered source lineage and incompatible-rewrite rejection.",
+      "resolution": "Memoized structural provenance interning and memoized physical reconstruction replace leaf-path enumeration. Contract mismatch diagnostics separated by source/output/lineage category to investigate legitimate DF rewrites without weakening checks blindly."
+    },
+    {
+      "id": "DEAD_PHYSICAL_SOURCE_BRANCHES",
+      "status": "queued_confirmed_dead",
+      "paths": [
+        "vail/crates/vail-table/src/plan.rs",
+        "vail/crates/vail-table/src/partitioned.rs"
+      ],
+      "evidence": "Source::Read and Source::Range have no constructors; their SourceExec name/execute arms are dead. RangePartitionExec and partition-specific read sources are live replacements. prepare_operation has unreachable leaf cases Read/TextRead/Range/Parallelize/Expression/Prepared despite sole logical extension planner caller routing those leaves through provider/separate Expression path.",
+      "acceptance": "Remove dead descriptors/match arms and dead helper source branches without removing live source operators, then compile and real-source scan/read/range/expression tests. No general recursive physical compiler remains, but dead alternatives should not imply ongoing migration fallback."
+    },
+    {
+      "id": "READ_ONLY_NATIVE_VISITOR_EXPANSION",
+      "status": "implemented_coherent_check_passed_runtime_pending",
+      "paths": [
+        "vail/crates/vail-table/src/globals.rs",
+        "vail/crates/vail-table/src/lib.rs",
+        "vail/crates/vail-table/src/logical.rs",
+        "vail/crates/vail-table/src/logical_scan.rs",
+        "vail/crates/vail-table/src/logical_aggregation.rs",
+        "vail/crates/vail-table/src/aggregation.rs",
+        "vail/crates/vail-table/src/nested_projection.rs"
+      ],
+      "evidence": "Kernel actual native64depth Table projection/physical planning probe remained guarded; read-only referenced global collection, aggregator existence, scan existence, ordering need and dependency scans used occurrence traversal of shared native IR. Custom nested dependency walk also recursively repeated Binary branches.",
+      "resolution": "Use visit_unique only for semantic existence/set/ref collection; preserve occurrence traversal where occurrence matters (interval expression count test). Nested projection dependency analysis now memoizes(node, lexical contextID); ArrayMap binder establishes distinct context while ordinary shared edges reuse context, with no per-node schema/map cloning.",
+      "acceptance": "Rebuilt native actual public64depth table planning under external deadline, ordinary output evaluation at bounded depth, persisted read-source nested projection/pruning semantics. Coherent cdylib-inclusive check passed; runtime pending build7."
+    }
+  ],
+  "validation": {
+    "compile": "check17 passed all three crates --tests. Review fixes and explicit UnknownPartitioning consumer-boundary count comparison included; runtime pending build7.",
+    "rust": "Real-source native tests cover repeated configured histogram actions and validation on empty input, actual sort/unkey/head/tail execution layout/cardinality, multipartition exchange outputs/interleaving/error/lifetime, and existing caller-budget spill/pool-release. Removed added fake provider planning counts, private resolver counters and Arc-identity assertions per review. Runtime pending.",
+    "python": "Added stable sorting/head/tail semantics and preoptimization stream relational rewrite tests in test_logical_planning.py; root to run focused suites after rebuild. Added physical diagnostic regression with all globals.arrow and Vortex payload files removed, proving diagnostics cannot execute initializers/data.",
+    "audited_reproductions": "Installed native comparison: signed-zero keyed _same false (defect); reordered set payloads compare true (suspected issue rejected); omitted optional coordinate reducer result annotation raises external globals type mismatch (defect)."
+  },
+  "coverage_note": "All production modules in table crate except text/VCF modules assigned to vcf_sink received full source reads. Relevant tests inspected selectively. New algorithm/resource/lifetime findings are queued, not silently claimed fixed. Audited fingerprints will need refreshing after root formatting/material fixes.",
+  "action_contract": {
+    "configuration": "Resolve explicit aggregate/scan singleton parameters once per initializer logical identity per action; native Arrow rows cross this phase. No whole-row collection for parameter binding.",
+    "planning": "Placeholder plans validate lazy schemas and expose dependencies for logical EXPLAIN. Scalar binding completes before the data tree is optimized and physically compiled once.",
+    "resources": "ActionParameters receives a SessionState and TaskContext sharing one RuntimeEnv. Public plan::physical_with_context accepts configured caller resources before parameter binding and retains exact context through execution.",
+    "semantic_extensions": "Physical implementations require already-planned children; no execute-time TableIR/logical/physical compiler fallback. Tail uses bounded suffix state rather than full input count windows.",
+    "pending_replay_boundary": "ConsumerScopeExec now exposes the producer graph, explicit reset/action forks allocate fresh identities, and final optimizer-copy binding validates lineage, physical leaf origins and output contracts. No execute-time graph reset or partition-driven replay selection. Compilation/integration validation pending.",
+    "explicit_replay_edges": "Planning-time fork_input after unknown-count and key-sampling passes, plus independent right consumer per lookup join. No generic getter reset and no execute-time replay construction. Interval cells already declare their independent consumers explicitly; algorithm rescans remain queued.",
+    "producer_fanout": "partition_views declares one ConsumerScope over the complete producer before splitting outputs. This includes ordinary ordered boundaries, Prepared/expression sources and shuffle exchanges, not just RNG expressions. Final optimizer-copy canonicalization shares whole exchange graphs; inner scoped RNG inputs alone are insufficient. Provenance is now an interned structural DAG with unary nodes elided and ordered/multiplicity-preserving child IDs; native reconstruction memoized by original node. No expanded source leaf path vectors.",
+    "resource_scope_limits": "write_with_options passes a new default context to partition views, but their prepared child is ActionContextExec, which ignores incoming context and forwards the stored scalar-binding/data context. Therefore writer row execution does not create a second engine pool. Separate globals.evaluate() remains another action; semantic metadata count/key-range/bounds prepasses still construct default contexts during physical preparation. Coherent context claim covers explicit singleton binding and final row tree only, not all multi-root write work/prepasses."
+  },
+  "direct_scoped_typing_design": {
+    "problem": "GlobalsIR.aggregate and grouped_aggregate_bound lower the full relational DAG merely to infer aggregate schema; evaluation lowers it again. Profile reported 16s in five aggregate_globals calls and 15s in four eval_global_arrow calls on a tiny matrix.",
+    "contract": "Extend the existing native Expr scoped inference memo with an explicit aggregate context. Aggregate return types derive from shared configured reducer contracts and native value/initializer types. Optional frontend annotations validate rather than choose semantics.",
+    "binders": "Explode/array bind element type in lexical scope; group_by returns Dict(native key,native body); filter validates Boolean; fold validates initial/seq/combine state type with native lexical bindings; external GlobalsRef references resolve declared native singleton schemas.",
+    "construction": "GlobalsIR.aggregate produces value Field directly; grouped_aggregate_bound produces key and result Fields directly. No placeholder logical/physical relations or DataFusion optimizer for typing.",
+    "measurements": "Count expression unique nodes/type visits and TableIR/GlobalsIR lowering invocations per native frontend operation; time native schema inference, logical lowering, singleton bind, optimizer and physical construction independently. Record both unique DAG nodes and expanded logical tree visits to identify duplication.",
+    "separate_larger_work": "Per-action relational DAG/template cache requires explicit ownership and consumer-edge proof; cloning a LogicalPlan does not guarantee one optimization pass or execution. Keep this separate from direct type inference.",
+    "status": "Approved by parent; implementation waits for build3 source freeze to lift."
+  },
+  "resolver_followup": {
+    "status": "implemented_check12_passed_runtime_pending",
+    "evidence": "Root full2 sample reports 1345/1453 main-thread samples inside action_parameters::resolve with >60 recursive frames, LogicalPlan/Expr clone and unconditional with_new_exprs even when no initializers exist. This is a new regression in the action binding implementation.",
+    "resolution": "Borrow stable root and memo by node address, returning optional changed Arc plan. Untouched native subtrees retain inputs without expressions/rebuild. Private-counter/Arc assertion tests removed per review; real matrix regression and native public action output/resource tests validate behavior.",
+    "acceptance": "Deep shared no-initializer DAG traversed once per unique node with zero expressions/rebuild callbacks; real initialized paths rebuild only required ancestors; full matrix transformation test latency verified after native rebuild."
+  },
+  "consumer_runtime_diagnosis": {
+    "evidence": "Build6 actual public range(12,3) scan random and range parallelize key_by both failed output distribution UnknownPartitioning(n) versus identical UnknownPartitioning(n). DF PartialEq deliberately returns false for Unknown, even itself.",
+    "fix": "Consumer identity contract explicitly compares counts for UnknownPartitioning under proven common lineage/provenance; known Hash/Range/RoundRobin retain native distribution equality. No other contract checks relaxed. Real three-source Unknown output fanout regression added.",
+    "status": "implemented_check17_passed_runtime_pending"
+  },
+  "runtime_validation_build7": {
+    "focused": "168 passed, 6 failed in 12.63s; kernel densify, storage all-null struct, source provenance/replay and shuffle order failures diagnosed; not final correctness evidence",
+    "tag_corruption": "PartitionSetExec and OrderedConcatExec treated last column as hidden partition tag even for numbered shuffle/generic exchange streams. Explicit preserving vs indexed tagging contracts applied; real output fixtures retained unchanged. Pending next installed build.",
+    "provenance": "Known empty and singleton relations use exact schema/cardinality contracts; provider-created file sources carry stable native source lineage through physical optimizer reconstruction. Real source identity and consumer schema/distribution/ordering validation retained. Pending next installed build.",
+    "operand_consumers": "Each semantic operation operand forks physical execution state at planning time. Independent logical operands must not compete for exchange output merely because DF shares upstream DAGs. No runtime reset/replanning. Pending actual matrix lookup/grouping/nested cases.",
+    "throughput_limit": "Planning-time reset is DAG-memoized per operand but nested operation boundaries can revisit shared upstream graphs; no final latency claim.",
+    "certified_ordering": "Projected read source discarded certified key ordering unconditionally. Restored it only if all key roots survive projection untouched, including a native check that nested pruning excludes them. Existing certified-ordering assertion retained; pending build8 runtime.",
+    "check": "All execution/table/python Rust test targets compile under check23 (1.59s); source formatted and frozen for build8. Compilation is not a replacement for runtime validation."
+  },
+  "runtime_validation_build8": {
+    "focused": "256 passed, 8 failed, 58.91s across randomness/scan/computedkeys/logicalplanning/matrix/storage. Provenance failures resolved; remaining 6 replay, nondeterministic shuffle order, present-all-null struct storage baseline.",
+    "native": "Parent Rust8 results all completed exit0 including three unchanged real exchange output fixtures, certified read ordering, actual multifile pruning and joins.",
+    "new_fixes_pending_build9": [
+      "Explicit global-binding singleton join edges fork execution state, while ordinary logical aggregate scope branches get explicit independent-consumer boundaries.",
+      "Shuffle observes stable ordinal order through a protected order boundary before dropping ordinal.",
+      "Nested scan predicate is bound to one Arrow Boolean using native singleton-map lexical binding; packed selected flag and selected-only argument guard reuse bound value.",
+      "Filtered scan scopes preserve nesting instead of flattening missing outer filters into eager three-valued And. Explode normalization preserves filtered scopes."
+    ],
+    "public_regressions": "Seeded random nested-scan prefix/repeated actions passed build8. Missing outer predicate skips an erroring inner cast: new public regression reproduces build8 bad-cast failure and awaits9. Existing actual output assertions retained.",
+    "check": "check26 all three crate test targets compile; production frozen for build9. Runtime correctness and throughput remain pending, no final claim."
+  },
+  "runtime_validation_build9": {
+    "focused": "177 passed, 49 failed, 29.97s. Candidate9 regressed many multipartition aggregates/randomness paths with duplicate-consumer errors. Not accepted.",
+    "passed": "24 repeated random shuffle actions and both new seeded/missing-filter-error predicate regressions passed.",
+    "root_cause": "Planning reset memoized by physical Arc pointer but optimized partition views can contain several Arc copies of one declared consumer ID. Reset assigned each copy independent fresh identity, breaking complete exchange producer sharing.",
+    "candidate10_fix": "Validate and canonicalize same declared-consumer copies with existing bind_consumers before planning-time DAG reset. Then one fresh identity per canonical producer per independent operand; distinct operand calls retain independent maps/identities. Kernel agent independently reviewed invariant. No guard relaxed.",
+    "regressions": "New native optimizer-copied fanout then two independent fork outputs; existing three exchange fixtures unchanged. Public 3partition random source/prior force_count/second random projection/aggregate set+count/repeatedaction test reproduces9 failure.",
+    "check": "check27 all3crate test targets compile; production frozen for10. Runtime validation pending."
+  },
+  "runtime_validation_build10": {
+    "native_sha": "4a7eee5356b152ef64d9ff439ef5f6aca7d74aa123cb39faf7294b1f65139269",
+    "central_regressions": "2 passed: prior action/multipartition random source/second random projection/aggregate set+count/repeatedaggregate; deterministic random shuffle. Eight previous matrix/randomness replay cases passed4.86s.",
+    "focused": "Complete matrix/logicalplanning/scan/randomness suite:227 passed60.65s, zero failures.",
+    "native": "Parent complete native vail_table suite50/50 passed, including new optimizer-copied fanout followed by independent reset forks and original three exchange output assertions. Other parent Rust10 results completed exit0.",
+    "full_python": "Parent1343 passed,2 failed,1 skipped,19 subtests96.45s. Remaining tagged metadata and present-all-null struct storage validity failures are tracked separately; no planner failure observed.",
+    "scope": "Evidence supports supported-node functional behavior, determinism and explicit producer ownership. Audit queue still records preparation prepasses/resource islands, typed inference planning cost, lookup algorithms and other throughput/capability findings. No claim of final codebase-wide correctness or optimal throughput."
+  }
+}

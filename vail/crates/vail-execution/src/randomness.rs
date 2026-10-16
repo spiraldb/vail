@@ -590,22 +590,30 @@ pub(crate) fn evaluate(
                     let j = rng.bounded_long((i + 1) as u64) as usize;
                     indices.swap(i, j);
                 }
-                let values = indices
-                    .into_iter()
-                    .map(|i| ScalarValue::try_from_array(&values, i))
-                    .collect::<Result<Vec<_>, _>>()?;
-                ScalarValue::List(ScalarValue::new_list(
-                    &values,
-                    values
-                        .first()
-                        .map(|v| v.data_type())
-                        .as_ref()
-                        .unwrap_or_else(|| match dtype {
-                            DataType::List(f) => f.data_type(),
-                            _ => unreachable!(),
-                        }),
-                    true,
-                ))
+                let indices = arrow_array::UInt32Array::from(
+                    indices
+                        .into_iter()
+                        .map(|index| {
+                            u32::try_from(index)
+                                .map_err(|_| error("shuffle exceeds Arrow take index capacity"))
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                );
+                let selected = arrow_select::take::take(values.as_ref(), &indices, None)?;
+                let DataType::List(field) = dtype else {
+                    return Err(error("shuffle requires list output type"));
+                };
+                // Arrow take reconstructs nested list fields and may discard
+                // logical Set/Dict metadata. Restore the declared descriptor
+                // without copying the selected buffers before list validation.
+                let selected =
+                    crate::logical_expr::restore_arrow_array_type(&selected, field.data_type())?;
+                ScalarValue::List(Arc::new(ListArray::try_new(
+                    field.clone(),
+                    arrow_buffer::OffsetBuffer::from_lengths([selected.len()]),
+                    selected,
+                    None,
+                )?))
             }
             _ => return Err(error("unknown distribution")),
         };

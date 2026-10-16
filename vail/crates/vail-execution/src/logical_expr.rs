@@ -5,9 +5,8 @@
 //! expression boundary used by Vail logical plans; physical-only kernels stay
 //! behind explicit errors until they have a logical UDF contract.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
-use std::sync::atomic::{AtomicU64, Ordering};
 
 use arrow_schema::Schema;
 use datafusion_common::{DFSchema, ScalarValue};
@@ -26,7 +25,26 @@ pub fn lower_logical_with_bindings(
     globals: &Schema,
     bindings: &BTreeMap<String, usize>,
 ) -> Result<LogicalExpr, ExprError> {
-    lower(expr, schema, globals, bindings, &[])
+    let mut seen = HashSet::new();
+    let mut shared = HashSet::new();
+    expr.visit_unique(&mut |node| {
+        node.for_each_child(&mut |child| {
+            if !seen.insert(child as *const Expr as usize)
+                && !matches!(
+                    child,
+                    Expr::Column { .. }
+                        | Expr::Global { .. }
+                        | Expr::ExternalGlobal { .. }
+                        | Expr::Literal { .. }
+                        | Expr::RuntimeLiteral { .. }
+                        | Expr::LambdaVariable { .. }
+                )
+            {
+                shared.insert(child as *const Expr as usize);
+            }
+        });
+    });
+    lower(expr, schema, globals, bindings, &[], &shared)
 }
 
 /// Convenience form for expressions without globals.
@@ -74,39 +92,38 @@ pub fn restore_arrow_array_type(
 }
 
 /// Restore an IR-declared type after a library operator constructs new Arrow
-/// fields. Volatile prevents constant folding from stripping list metadata.
+/// fields. The scalar result retains the original nested Arrow fields, so
+/// constant folding preserves logical collection tags and reference metadata.
 pub fn restore_type(value: LogicalExpr, dtype: arrow_schema::DataType) -> LogicalExpr {
     let output = dtype.clone();
-    let udf = datafusion_expr::ScalarUDF::from(
-        datafusion_expr::expr_fn::SimpleScalarUDF::new_with_signature(
-            "vail_restore_arrow_type",
-            Signature::any(1, Volatility::Volatile),
-            dtype,
-            Arc::new(move |args| {
-                let scalar = matches!(&args[0], datafusion_expr::ColumnarValue::Scalar(_));
-                let array = args[0].clone().into_array(match &args[0] {
-                    datafusion_expr::ColumnarValue::Array(a) => a.len(),
-                    _ => 1,
-                })?;
-                let array = restore_arrow_array_type(&array, &output)?;
-                if scalar {
-                    Ok(datafusion_expr::ColumnarValue::Scalar(
-                        if let Some(list) = array.as_any().downcast_ref::<arrow_array::ListArray>()
-                        {
-                            ScalarValue::List(Arc::new(list.slice(0, 1)))
-                        } else if let Some(record) =
-                            array.as_any().downcast_ref::<arrow_array::StructArray>()
-                        {
-                            ScalarValue::Struct(Arc::new(record.slice(0, 1)))
-                        } else {
-                            ScalarValue::try_from_array(&array, 0)?
-                        },
-                    ))
-                } else {
-                    Ok(datafusion_expr::ColumnarValue::Array(array))
-                }
-            }),
-        ),
+    let udf = crate::kernel_identity::scalar(
+        "vail_restore_arrow_type",
+        dtype.clone(),
+        Signature::any(1, Volatility::Immutable),
+        dtype,
+        Arc::new(move |args| {
+            let scalar = matches!(&args[0], datafusion_expr::ColumnarValue::Scalar(_));
+            let array = args[0].clone().into_array(match &args[0] {
+                datafusion_expr::ColumnarValue::Array(a) => a.len(),
+                _ => 1,
+            })?;
+            let array = restore_arrow_array_type(&array, &output)?;
+            if scalar {
+                Ok(datafusion_expr::ColumnarValue::Scalar(
+                    if let Some(list) = array.as_any().downcast_ref::<arrow_array::ListArray>() {
+                        ScalarValue::List(Arc::new(list.slice(0, 1)))
+                    } else if let Some(record) =
+                        array.as_any().downcast_ref::<arrow_array::StructArray>()
+                    {
+                        ScalarValue::Struct(Arc::new(record.slice(0, 1)))
+                    } else {
+                        ScalarValue::try_from_array(&array, 0)?
+                    },
+                ))
+            } else {
+                Ok(datafusion_expr::ColumnarValue::Array(array))
+            }
+        }),
     );
     udf.call(vec![value])
 }
@@ -132,8 +149,16 @@ fn lower(
     globals: &Schema,
     bindings: &BTreeMap<String, usize>,
     scope: &[String],
+    shared: &HashSet<usize>,
 ) -> Result<LogicalExpr, ExprError> {
-    let recurse = |e: &Expr| lower(e, schema, globals, bindings, scope);
+    // DF logical expressions are owned trees. Keep multiply referenced native
+    // subgraphs behind a native semantic kernel rather than cloning their
+    // expanded logical tree. Operators outside the shared subgraph remain
+    // visible to pushdown and normal logical optimization.
+    if shared.contains(&(expr as *const Expr as usize)) {
+        return logical_kernel(expr, schema, globals, bindings, scope);
+    }
+    let recurse = |e: &Expr| lower(e, schema, globals, bindings, scope, shared);
     Ok(match expr {
         Expr::MatrixScope { .. }
         | Expr::TableLookup { .. }
@@ -213,7 +238,7 @@ fn lower(
                 field.name().clone(),
             ))
         }
-        Expr::LambdaVariable { name } => {
+        Expr::LambdaVariable { name, .. } => {
             if !scope.iter().any(|bound| bound == name) {
                 return Err(ExprError::Invalid(format!(
                     "unbound lambda variable {name:?}"
@@ -324,7 +349,15 @@ fn lower(
         Expr::Unary { operator, value } => {
             let value = recurse(value)?;
             match operator {
-                UnaryOperator::Neg => LogicalExpr::Negative(Box::new(value)),
+                UnaryOperator::Neg => match value.get_type(schema)? {
+                    arrow_schema::DataType::Int32 => {
+                        datafusion_expr::expr_fn::binary_expr(lit(0_i32), Operator::Minus, value)
+                    }
+                    arrow_schema::DataType::Int64 => {
+                        datafusion_expr::expr_fn::binary_expr(lit(0_i64), Operator::Minus, value)
+                    }
+                    _ => LogicalExpr::Negative(Box::new(value)),
+                },
                 UnaryOperator::Pos => value,
                 UnaryOperator::Not => LogicalExpr::Not(Box::new(value)),
             }
@@ -367,9 +400,10 @@ fn lower(
             let consequent = coerce_type(recurse(consequent)?, dtype.clone(), schema)?;
             let alternate = coerce_type(recurse(alternate)?, dtype.clone(), schema)?;
             let null_result = lit(ScalarValue::try_from(&dtype)?);
-            datafusion_expr::expr_fn::when(condition.clone().is_null(), null_result)
-                .when(condition, consequent)
-                .otherwise(alternate)?
+            datafusion_expr::expr_fn::case(condition)
+                .when(lit(true), consequent)
+                .when(lit(false), alternate)
+                .otherwise(null_result)?
         }
         Expr::Struct { fields } => {
             if fields.is_empty() {
@@ -378,7 +412,7 @@ fn lower(
             let mut args = Vec::with_capacity(fields.len() * 2);
             for (name, value) in fields {
                 args.push(lit(ScalarValue::Utf8(Some(name.clone()))));
-                args.push(lower(value, schema, globals, bindings, scope)?);
+                args.push(lower(value, schema, globals, bindings, scope, shared)?);
             }
             datafusion_functions::core::named_struct().call(args)
         }
@@ -404,8 +438,22 @@ fn lower(
             )?
         }
         Expr::GetField { .. } => return logical_kernel(expr, schema, globals, bindings, scope),
+        Expr::ArrayAggregateScan {
+            function,
+            value,
+            predicate,
+            options,
+            ..
+        } => {
+            let input = value
+                .dtype_with_globals(schema.as_arrow(), globals)?
+                .to_arrow()?;
+            crate::array_aggregate_scan::make_udf(function, &input, options)?
+                .call(vec![recurse(value)?, recurse(predicate)?])
+        }
         Expr::NestedFunction { function, args, .. } => {
-            if function.starts_with("random_") {
+            if crate::expression_effects::effects(expr) != crate::expression_effects::Effects::Pure
+            {
                 return logical_kernel(expr, schema, globals, bindings, scope);
             }
             let udf = crate::expressions::nested_function(function)?;
@@ -428,6 +476,10 @@ fn lower(
             restore_type(udf.call(arguments), dtype)
         }
         Expr::StringFunction { function, args } => {
+            if crate::expression_effects::effects(expr) != crate::expression_effects::Effects::Pure
+            {
+                return logical_kernel(expr, schema, globals, bindings, scope);
+            }
             let (udf, _, _) = crate::expressions::string_function(function)?;
             udf.call(args.iter().map(recurse).collect::<Result<Vec<_>, _>>()?)
         }
@@ -478,19 +530,10 @@ fn lower(
         Expr::ArrayFlatten { value } => {
             datafusion_functions_nested::flatten::flatten_udf().call(vec![recurse(value)?])
         }
-        Expr::StreamRange { start, stop, step } => {
-            let int64 = arrow_schema::DataType::Int64;
-            let start = recurse(start)?.cast_to(&int64, schema)?;
-            let stop = recurse(stop)?.cast_to(&int64, schema)?;
-            let step = recurse(step)?.cast_to(&int64, schema)?;
-            datafusion_functions_nested::range::range_udf()
-                .call(vec![start, stop, step])
-                .cast_to(
-                    &expr
-                        .dtype_with_globals(&schema.as_arrow(), globals)?
-                        .to_arrow()?,
-                    schema,
-                )?
+        Expr::StreamRange { .. } => {
+            // A zero step is a value-domain error. Keep validation after row
+            // filters and inside the selected conditional branch.
+            return logical_kernel(expr, schema, globals, bindings, scope);
         }
         Expr::Aggregate { .. }
         | Expr::AggregateFold { .. }
@@ -528,6 +571,35 @@ fn lower(
 /// Keep uncommon Hail semantics in an explicit scalar UDF while binding every
 /// source value as a UDF argument. Ordinary parent operators therefore remain
 /// optimizer-visible, and column dependencies remain visible beneath the call.
+fn bind_scalar_captures(
+    expression: &Expr,
+    scalars: &std::collections::HashMap<String, ScalarValue>,
+    memo: &mut std::collections::HashMap<usize, Expr>,
+) -> Result<Expr, ExprError> {
+    let address = expression as *const Expr as usize;
+    if let Some(value) = memo.get(&address) {
+        return Ok(value.clone());
+    }
+    // Capture slots are free Column references in their own namespace;
+    // lexical LambdaVariables cannot shadow or capture them accidentally.
+    let result = if let Expr::Column { name } = expression
+        && let Some(value) = scalars.get(name)
+    {
+        Expr::RuntimeLiteral {
+            value: value.clone(),
+        }
+    } else {
+        let mut children = vec![];
+        expression.for_each_child(&mut |child| children.push(child));
+        let mut children = children.into_iter();
+        expression.try_map_children(|_| {
+            bind_scalar_captures(children.next().expect("native child order"), scalars, memo)
+        })?
+    };
+    memo.insert(address, result.clone());
+    Ok(result)
+}
+
 fn logical_kernel(
     expr: &Expr,
     schema: &DFSchema,
@@ -538,7 +610,7 @@ fn logical_kernel(
     use std::collections::BTreeMap as Map;
     let arrow_schema = schema.as_arrow();
     let mut refs: Map<String, (Expr, Type, arrow_schema::DataType)> = Map::new();
-    expr.visit(&mut |node| {
+    expr.visit_unique(&mut |node| {
         let item = match node {
             Expr::Column { name } => {
                 let start = globals.fields().len();
@@ -606,7 +678,14 @@ fn logical_kernel(
         let slot = format!("__vail_arg_{i}");
         slots.insert(key.clone(), slot.clone());
         fields.push(arrow_schema::Field::new(&slot, actual_type.clone(), true));
-        logical_args.push(lower(reference, schema, globals, bindings, scope)?);
+        logical_args.push(lower(
+            reference,
+            schema,
+            globals,
+            bindings,
+            scope,
+            &HashSet::new(),
+        )?);
     }
     fn replace_refs(
         expr: &Expr,
@@ -614,6 +693,23 @@ fn logical_kernel(
         schema: &DFSchema,
         globals: &Schema,
         bindings: &BTreeMap<String, usize>,
+        memo: &mut std::collections::HashMap<usize, Expr>,
+    ) -> Result<Expr, ExprError> {
+        let address = expr as *const Expr as usize;
+        if let Some(cached) = memo.get(&address) {
+            return Ok(cached.clone());
+        }
+        let result = replace_node(expr, slots, schema, globals, bindings, memo)?;
+        memo.insert(address, result.clone());
+        Ok(result)
+    }
+    fn replace_node(
+        expr: &Expr,
+        slots: &Map<String, String>,
+        schema: &DFSchema,
+        globals: &Schema,
+        bindings: &BTreeMap<String, usize>,
+        memo: &mut std::collections::HashMap<usize, Expr>,
     ) -> Result<Expr, ExprError> {
         let key = match expr {
             Expr::Column { name } => {
@@ -658,8 +754,20 @@ fn logical_kernel(
                 format!("external:{reference}")
             }
             _ => {
-                return expr.try_map_children(|child| {
-                    replace_refs(child, slots, schema, globals, bindings)
+                // Borrow original nodes for memo addresses. try_map_children
+                // clones inline Vec children before invoking its callback.
+                let mut children = Vec::new();
+                expr.for_each_child(&mut |child| children.push(child));
+                let mut children = children.into_iter();
+                return expr.try_map_children(|_| {
+                    replace_refs(
+                        children.next().expect("child visitor order"),
+                        slots,
+                        schema,
+                        globals,
+                        bindings,
+                        memo,
+                    )
                 });
             }
         };
@@ -669,64 +777,120 @@ fn logical_kernel(
         Ok(Expr::Column { name: slot.clone() })
     }
 
-    let rewritten = replace_refs(expr, &slots, schema, globals, bindings)?;
+    let rewritten = replace_refs(
+        expr,
+        &slots,
+        schema,
+        globals,
+        bindings,
+        &mut std::collections::HashMap::new(),
+    )?;
     let kernel_schema = Schema::new(fields);
     let kernel = crate::expressions::lower(&rewritten, &kernel_schema)?;
+    let captured_expression = Arc::new(rewritten.clone());
     let output_type = expr
         .dtype_with_globals(&arrow_schema, globals)?
         .to_arrow()?;
     let kernel_schema = Arc::new(kernel_schema);
-    static NEXT_KERNEL_ID: AtomicU64 = AtomicU64::new(0);
-    let udf_name = format!(
-        "vail_semantic_kernel_{}_{}",
-        kernel_label(expr),
-        NEXT_KERNEL_ID.fetch_add(1, Ordering::Relaxed)
+    let identity = (
+        crate::expression_identity::Identity::new(rewritten),
+        kernel_schema.clone(),
     );
+    let volatility = crate::expression_effects::effects(expr).volatility();
+    let udf_name = format!("vail_semantic_kernel_{}", kernel_label(expr));
     let expected_output_type = output_type.clone();
     let signature = if refs.is_empty() {
-        Signature::nullary(Volatility::Volatile)
+        Signature::nullary(volatility)
     } else {
-        Signature::any(refs.len(), Volatility::Volatile)
+        Signature::any(refs.len(), volatility)
     };
-    let udf = datafusion_expr::ScalarUDF::from(
-        datafusion_expr::expr_fn::SimpleScalarUDF::new_with_signature(
-            &udf_name,
-            signature,
-            output_type,
-            Arc::new(move |args| {
-                let row_count = args
-                    .iter()
-                    .find_map(|value| match value {
-                        datafusion_expr::ColumnarValue::Array(array) => Some(array.len()),
-                        datafusion_expr::ColumnarValue::Scalar(_) => None,
-                    })
-                    .unwrap_or(1);
-                let arrays = args
-                    .iter()
-                    .zip(kernel_schema.fields())
-                    .map(|(value, field)| {
-                        let array = value.clone().into_array(row_count)?;
-                        Ok(arrow_cast::cast(&array, field.data_type())?)
-                    })
-                    .collect::<datafusion_common::Result<Vec<_>>>()?;
-                let batch = arrow_array::RecordBatch::try_new_with_options(
-                    Arc::clone(&kernel_schema),
-                    arrays,
-                    &arrow_array::RecordBatchOptions::new().with_row_count(Some(row_count)),
-                )?;
-                let output = kernel.evaluate(&batch)?.into_array(row_count)?;
-                let output = arrow_cast::cast(output.as_ref(), &expected_output_type)?;
-                if args.is_empty() && row_count > 0 {
-                    Ok(datafusion_expr::ColumnarValue::Scalar(
-                        crate::expressions::scalar_at(&output, 0).map_err(|e| {
-                            datafusion_common::DataFusionError::Execution(e.to_string())
-                        })?,
-                    ))
-                } else {
-                    Ok(datafusion_expr::ColumnarValue::Array(Arc::new(output)))
+    let udf = crate::kernel_identity::scalar_with_args(
+        &udf_name,
+        identity,
+        signature,
+        output_type,
+        Arc::new(move |invocation| {
+            // Excluded/empty selections must not evaluate value-domain errors.
+            if invocation.number_rows == 0 {
+                return Ok(datafusion_expr::ColumnarValue::Array(
+                    arrow_array::new_empty_array(&expected_output_type),
+                ));
+            }
+            let args = &invocation.args;
+            let all_scalar = args
+                .iter()
+                .all(|value| matches!(value, datafusion_expr::ColumnarValue::Scalar(_)));
+            let row_count = if all_scalar {
+                1
+            } else {
+                invocation.number_rows
+            };
+            let mut arrays = vec![];
+            let mut fields = vec![];
+            let mut scalars = std::collections::HashMap::new();
+            for (value, field) in args.iter().zip(kernel_schema.fields()) {
+                match value {
+                    datafusion_expr::ColumnarValue::Scalar(value) => {
+                        let scalar = restore_arrow_array_type(
+                            &value.to_array_of_size(1)?,
+                            field.data_type(),
+                        )?;
+                        scalars.insert(
+                            field.name().clone(),
+                            crate::expressions::scalar_at(&scalar, 0).map_err(|error| {
+                                datafusion_common::DataFusionError::Execution(error.to_string())
+                            })?,
+                        );
+                    }
+                    datafusion_expr::ColumnarValue::Array(array) => {
+                        if array.len() != row_count {
+                            return Err(datafusion_common::DataFusionError::Execution(
+                                "native kernel capture row counts differ".into(),
+                            ));
+                        }
+                        arrays.push(restore_arrow_array_type(array, field.data_type())?);
+                        fields.push(field.clone());
+                    }
                 }
-            }),
-        ),
+            }
+            // Scalars retain owned native Arrow buffers as literals. This
+            // request-local specialization costs O(native IR) for mixed scalar
+            // batches; it avoids broadcasting large captured collections and
+            // introduces no value cache or mutable evaluation frame.
+            let (program, schema) = if scalars.is_empty() {
+                (kernel.clone(), kernel_schema.clone())
+            } else {
+                let rewritten =
+                    bind_scalar_captures(&captured_expression, &scalars, &mut Default::default())
+                        .map_err(|error| {
+                        datafusion_common::DataFusionError::Execution(error.to_string())
+                    })?;
+                let schema = Arc::new(Schema::new(fields));
+                let program = crate::expressions::lower(&rewritten, &schema).map_err(|error| {
+                    datafusion_common::DataFusionError::Execution(error.to_string())
+                })?;
+                (program, schema)
+            };
+            let batch = arrow_array::RecordBatch::try_new_with_options(
+                schema,
+                arrays,
+                &arrow_array::RecordBatchOptions::new().with_row_count(Some(row_count)),
+            )?;
+            let evaluated = program.evaluate(&batch)?;
+            let scalar_output =
+                all_scalar || matches!(evaluated, datafusion_expr::ColumnarValue::Scalar(_));
+            let output = evaluated.into_array(if scalar_output { 1 } else { row_count })?;
+            let output = restore_arrow_array_type(&output, &expected_output_type)?;
+            if scalar_output {
+                Ok(datafusion_expr::ColumnarValue::Scalar(
+                    crate::expressions::scalar_at(&output, 0).map_err(|error| {
+                        datafusion_common::DataFusionError::Execution(error.to_string())
+                    })?,
+                ))
+            } else {
+                Ok(datafusion_expr::ColumnarValue::Array(output))
+            }
+        }),
     );
     Ok(udf.call(logical_args))
 }
@@ -904,23 +1068,37 @@ mod tests {
     }
 
     #[test]
-    fn distinct_physical_kernels_have_distinct_optimizer_identities() {
-        let schema = DFSchema::empty();
-        let make_die = |message| Expr::Die {
-            message: Arc::new(Expr::Literal {
-                dtype: Type::Primitive(PrimitiveType::Str),
-                value: json!(message),
-            }),
-            dtype: Type::Primitive(PrimitiveType::Int64),
+    fn type_restoration_constant_folds_without_erasing_nested_metadata() {
+        use datafusion_expr::simplify::SimplifyContext;
+        use datafusion_optimizer::simplify_expressions::ExprSimplifier;
+        let element = Type::Primitive(PrimitiveType::Int32);
+        let plain = Type::Array {
+            array: Box::new(element.clone()),
         };
-        let first = lower_logical(&make_die("first"), &schema).unwrap();
-        let second = lower_logical(&make_die("second"), &schema).unwrap();
-        let (LogicalExpr::ScalarFunction(first), LogicalExpr::ScalarFunction(second)) =
-            (first, second)
-        else {
-            panic!("expected explicit semantic-kernel UDFs")
+        let tagged = Type::Set {
+            set: Box::new(element),
+        }
+        .to_arrow()
+        .unwrap();
+        let input = crate::expressions::literal_array(&json!([1, 2]), &plain, 1).unwrap();
+        let value = crate::expressions::scalar_at(&input, 0).unwrap();
+        let restored = restore_type(lit(value), tagged.clone());
+        let schema = Arc::new(DFSchema::empty());
+        let context = SimplifyContext::builder()
+            .with_schema(schema.clone())
+            .build();
+        let simplified = ExprSimplifier::new(context).simplify(restored).unwrap();
+        let LogicalExpr::Literal(value, _) = simplified else {
+            panic!("pure restoration should constant fold")
         };
-        assert_ne!(first.func.name(), second.func.name());
+        assert_eq!(value.data_type(), tagged);
+        assert_eq!(
+            Type::from_arrow(&value.data_type()).unwrap(),
+            Type::Set {
+                set: Box::new(Type::Primitive(PrimitiveType::Int32))
+            }
+        );
+        assert_eq!(value.to_array_of_size(3).unwrap().len(), 3);
     }
 
     #[test]
@@ -936,7 +1114,10 @@ mod tests {
             parameter: "x".into(),
             body: Arc::new(Expr::Binary {
                 operator: BinaryOperator::Add,
-                left: Arc::new(Expr::LambdaVariable { name: "x".into() }),
+                left: Arc::new(Expr::LambdaVariable {
+                    name: "x".into(),
+                    dtype: None,
+                }),
                 right: Arc::new(Expr::Literal {
                     dtype: Type::Primitive(PrimitiveType::Int64),
                     value: json!(1),
@@ -951,6 +1132,54 @@ mod tests {
                 .name()
                 .starts_with("vail_semantic_kernel_array_transform_")
         );
+    }
+
+    #[test]
+    fn integer_negation_wraps_identically_for_scalar_array_and_null() {
+        let dtype = DataType::Int64;
+        let schema =
+            DFSchema::try_from(Schema::new(vec![Field::new("x", dtype.clone(), true)])).unwrap();
+        let input = Arc::new(Int64Array::from(vec![Some(i64::MIN), Some(9), None]));
+        let batch =
+            RecordBatch::try_from_iter(vec![("x", input as arrow_array::ArrayRef)]).unwrap();
+        let column = Expr::Unary {
+            operator: UnaryOperator::Neg,
+            value: Arc::new(Expr::Column { name: "x".into() }),
+        };
+        let result = evaluate_logical(lower_logical(&column, &schema).unwrap(), &schema, &batch);
+        let values = result.as_any().downcast_ref::<Int64Array>().unwrap();
+        assert_eq!(values.value(0), i64::MIN);
+        assert_eq!(values.value(1), -9);
+        assert!(values.is_null(2));
+        let scalar = Expr::Unary {
+            operator: UnaryOperator::Neg,
+            value: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Int64(Some(i64::MIN)),
+            }),
+        };
+        let empty = DFSchema::empty();
+        let one = RecordBatch::try_new_with_options(
+            Arc::new(Schema::empty()),
+            vec![],
+            &arrow_array::RecordBatchOptions::new().with_row_count(Some(1)),
+        )
+        .unwrap();
+        let logical = evaluate_logical(lower_logical(&scalar, &empty).unwrap(), &empty, &one);
+        let native = crate::expressions::lower(&scalar, &Schema::empty())
+            .unwrap()
+            .evaluate(&one)
+            .unwrap()
+            .into_array(1)
+            .unwrap();
+        assert_eq!(
+            logical
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .unwrap()
+                .value(0),
+            i64::MIN
+        );
+        assert_eq!(logical.to_data(), native.to_data());
     }
 
     #[test]
@@ -999,6 +1228,76 @@ mod tests {
             .unwrap()
             .into_array(batch.num_rows())
             .unwrap()
+    }
+
+    #[test]
+    fn invalid_locus_coordinate_is_deferred_until_selected() {
+        use crate::reference::ReferenceDefinition;
+        use datafusion_expr::simplify::SimplifyContext;
+        use datafusion_optimizer::simplify_expressions::ExprSimplifier;
+        let reference = ReferenceDefinition {
+            name: "small".into(),
+            contigs: vec!["1".into()],
+            lengths: BTreeMap::from([("1".into(), 10)]),
+            x_contigs: vec![],
+            y_contigs: vec![],
+            mt_contigs: vec![],
+            par: vec![],
+        };
+        let DataType::Struct(fields) = (Type::Locus { locus: reference }).to_arrow().unwrap()
+        else {
+            unreachable!()
+        };
+        // Valid Arrow layout carrying an invalid coordinate, as may arrive from
+        // imported storage. The accessor must retain runtime validation.
+        let locus = arrow_array::StructArray::try_new(
+            fields,
+            vec![
+                Arc::new(arrow_array::Int32Array::from(vec![0])),
+                Arc::new(arrow_array::StringArray::from(vec!["1"])),
+                Arc::new(arrow_array::Int32Array::from(vec![99])),
+            ],
+            None,
+        )
+        .unwrap();
+        let accessor = Expr::LocusOp {
+            value: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Struct(Arc::new(locus)),
+            }),
+            operation: "position".into(),
+        };
+        let schema = DFSchema::empty();
+        let batch = RecordBatch::try_new_with_options(
+            Arc::new(Schema::empty()),
+            vec![],
+            &arrow_array::RecordBatchOptions::new().with_row_count(Some(1)),
+        )
+        .unwrap();
+        let conditional = Expr::IfElse {
+            condition: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Boolean(Some(false)),
+            }),
+            consequent: Arc::new(accessor.clone()),
+            alternate: Arc::new(Expr::RuntimeLiteral {
+                value: ScalarValue::Int32(Some(9)),
+            }),
+        };
+        let context = SimplifyContext::builder()
+            .with_schema(Arc::new(schema.clone()))
+            .build();
+        let simplified = ExprSimplifier::new(context)
+            .simplify(lower_logical(&conditional, &schema).unwrap())
+            .unwrap();
+        let result = evaluate_logical(simplified, &schema, &batch);
+        assert_eq!(result.as_ref(), &arrow_array::Int32Array::from(vec![9]));
+        let physical = datafusion_physical_expr::planner::create_physical_expr(
+            &lower_logical(&accessor, &schema).unwrap(),
+            &schema,
+            &datafusion_physical_expr::execution_props::ExecutionProps::new(),
+            &datafusion_expr::physical_planning_context::PhysicalPlanningContext::default(),
+        )
+        .unwrap();
+        assert!(physical.evaluate(&batch).is_err());
     }
 
     #[test]

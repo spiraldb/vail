@@ -38,6 +38,7 @@ object_store = "0.13.2"
 bytes = "1"
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 memchr = "2"
+tempfile = "3"
 serde_json.workspace = true
 thiserror.workspace = true
 vail-execution = { path = "../vail-execution" }
@@ -47,5 +48,4 @@ vail-vcf = { path = "../vail-vcf" }
 
 [dev-dependencies]
 tokio.workspace = true
-tempfile = "3"
 uuid.workspace = true

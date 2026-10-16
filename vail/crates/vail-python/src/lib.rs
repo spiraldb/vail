@@ -570,6 +570,9 @@ impl NativeTable {
         py.detach(|| self.runtime.block_on(self.ir.write(&path, overwrite)))
             .map_err(table_error)
     }
+    fn export_vcf(&self, py: Python<'_>, path: String, header: Vec<String>, entries_name: String, entry_names: Vec<String>, sample_count: usize) -> PyResult<()> {
+        py.detach(|| self.runtime.block_on(vail_table::vcf_export::export(self.ir.clone(), &path, &header, &entries_name, &entry_names, sample_count))).map_err(table_error)
+    }
     fn export_text(
         &self,
         py: Python<'_>,
@@ -844,8 +847,14 @@ impl NativeTable {
     }
 }
 
+#[pyfunction]
+fn supports_list_reducer(function: &str) -> bool {
+    vail_execution::supports_list_reducer(function)
+}
+
 #[pymodule]
 fn _native(module: &Bound<'_, PyModule>) -> PyResult<()> {
+    module.add_function(wrap_pyfunction!(supports_list_reducer, module)?)?;
     module.add_class::<NativeSession>()?;
     module.add_class::<NativeArrow>()?;
     module.add_class::<NativeExpr>()?;

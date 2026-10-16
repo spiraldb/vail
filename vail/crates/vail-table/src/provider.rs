@@ -1266,8 +1266,7 @@ mod projected_provider_tests {
                         body: Arc::new(crate::ScalarIR::GetField {
                             value: Arc::new(crate::ScalarIR::GetField {
                                 value: Arc::new(crate::ScalarIR::LambdaVariable {
-                                    name: "cell".into(),
-                                }),
+                                    name: "cell".into(), dtype: None }),
                                 name: "value".into(),
                             }),
                             name: "GT".into(),

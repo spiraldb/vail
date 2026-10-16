@@ -10,7 +10,7 @@ use arrow_array::{Array, ArrayRef, ListArray, StructArray, UInt32Array};
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field};
 use arrow_select::take::take;
-use datafusion_common::{Result, ScalarValue, exec_err, plan_err};
+use datafusion_common::{Result, exec_err, plan_err};
 use datafusion_expr::{
     ColumnarValue, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature, Volatility,
 };
@@ -64,8 +64,20 @@ fn output_type(input: &DataType) -> Result<DataType> {
     };
     let transposed_item = DataType::Struct(
         vec![
-            Arc::new(Field::new(CONTEXT, context.data_type().clone(), true)),
-            Arc::new(Field::new(VALUE, item_field.data_type().clone(), true)),
+            Arc::new(
+                context
+                    .as_ref()
+                    .clone()
+                    .with_name(CONTEXT)
+                    .with_nullable(true),
+            ),
+            Arc::new(
+                item_field
+                    .as_ref()
+                    .clone()
+                    .with_name(VALUE)
+                    .with_nullable(true),
+            ),
         ]
         .into(),
     );
@@ -179,8 +191,20 @@ fn transpose(input: &ListArray) -> Result<ArrayRef> {
     )?;
     let item_values = Arc::new(StructArray::try_new(
         vec![
-            Arc::new(Field::new(CONTEXT, context_field.data_type().clone(), true)),
-            Arc::new(Field::new(VALUE, item_field.data_type().clone(), true)),
+            Arc::new(
+                context_field
+                    .as_ref()
+                    .clone()
+                    .with_name(CONTEXT)
+                    .with_nullable(true),
+            ),
+            Arc::new(
+                item_field
+                    .as_ref()
+                    .clone()
+                    .with_name(VALUE)
+                    .with_nullable(true),
+            ),
         ]
         .into(),
         vec![contexts, values],
@@ -228,9 +252,11 @@ impl ScalarUDFImpl for MatrixTranspose {
         let input = args.args[0].clone().into_array(count)?;
         let result = transpose(list(&input)?)?;
         if scalar {
-            Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
-                &result, 0,
-            )?))
+            Ok(ColumnarValue::Scalar(
+                crate::expressions::scalar_at(&result, 0).map_err(|error| {
+                    datafusion_common::DataFusionError::Execution(error.to_string())
+                })?,
+            ))
         } else {
             Ok(ColumnarValue::Array(result))
         }
@@ -263,7 +289,13 @@ mod tests {
         let records = Arc::new(
             StructArray::try_new(
                 vec![
-                    Arc::new(Field::new(CONTEXT, context_field.data_type().clone(), true)),
+                    Arc::new(
+                        context_field
+                            .as_ref()
+                            .clone()
+                            .with_name(CONTEXT)
+                            .with_nullable(true),
+                    ),
                     Arc::new(Field::new(VALUE, values.data_type().clone(), true)),
                 ]
                 .into(),
@@ -279,6 +311,36 @@ mod tests {
             row_nulls,
         )
         .unwrap()
+    }
+
+    #[test]
+    fn transposed_schema_retains_context_and_item_field_metadata() {
+        let metadata = std::collections::HashMap::from([("logical".to_owned(), "set".to_owned())]);
+        let context = Field::new(CONTEXT, DataType::Struct(Vec::<Field>::new().into()), true)
+            .with_metadata(metadata.clone());
+        let item = Field::new("item", DataType::Int32, true).with_metadata(metadata.clone());
+        let input = DataType::List(Arc::new(Field::new(
+            "item",
+            DataType::Struct(
+                vec![
+                    Arc::new(context),
+                    Arc::new(Field::new(VALUE, DataType::List(Arc::new(item)), true)),
+                ]
+                .into(),
+            ),
+            true,
+        )));
+        let DataType::List(positions) = output_type(&input).unwrap() else {
+            unreachable!()
+        };
+        let DataType::List(records) = positions.data_type() else {
+            unreachable!()
+        };
+        let DataType::Struct(fields) = records.data_type() else {
+            unreachable!()
+        };
+        assert_eq!(fields[0].metadata(), &metadata);
+        assert_eq!(fields[1].metadata(), &metadata);
     }
 
     #[test]

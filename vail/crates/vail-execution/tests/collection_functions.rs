@@ -1,21 +1,15 @@
-use arrow_array::{Array, Int32Array, ListArray, RecordBatch};
+use arrow_array::{Array, Float64Array, Int32Array, ListArray, RecordBatch};
 use arrow_schema::Schema;
 use serde_json::json;
-use vail_execution::expressions::{Expr, lower, project_batch};
+use vail_execution::expressions::{Expr, project_batch};
 
 #[test]
-fn set_constructor_executes_datafusion_distinct() {
+fn set_constructor_deduplicates_values_and_missingness() {
     let expr: Expr = serde_json::from_value(json!({
         "op": "nested_function", "function": "array_distinct", "dtype": {"set": "int32"},
         "args": [{"op": "literal", "dtype": {"array": "int32"}, "value": [2, 1, 2, null, null]}]
     }))
     .unwrap();
-    assert!(
-        lower(&expr, &Schema::empty())
-            .unwrap()
-            .to_string()
-            .contains("array_distinct")
-    );
     let source = RecordBatch::try_from_iter([(
         "x",
         std::sync::Arc::new(Int32Array::from(vec![0])) as arrow_array::ArrayRef,
@@ -30,6 +24,15 @@ fn set_constructor_executes_datafusion_distinct() {
     let values = list.value(0);
     assert_eq!(values.len(), 3);
     assert_eq!(values.null_count(), 1);
+    let mut actual = values
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap()
+        .iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    actual.sort();
+    assert_eq!(actual, vec![1, 2]);
 }
 
 #[test]
@@ -79,14 +82,12 @@ fn collection_tag_cast_cannot_change_element_storage() {
 }
 
 #[test]
-fn distinct_float_values_use_datafusion() {
+fn distinct_float_values_preserve_values_and_missingness() {
     let expr: Expr = serde_json::from_value(json!({
         "op":"nested_function", "function":"array_distinct", "dtype":{"set":"float64"},
         "args":[{"op":"literal","dtype":{"array":"float64"},"value":[1.5, 2.5, 1.5, null, null]}]
     }))
     .unwrap();
-    let physical = lower(&expr, &Schema::empty()).unwrap();
-    assert!(physical.to_string().contains("array_distinct"));
     let source = RecordBatch::try_from_iter([(
         "x",
         std::sync::Arc::new(Int32Array::from(vec![0])) as arrow_array::ArrayRef,
@@ -101,4 +102,13 @@ fn distinct_float_values_use_datafusion() {
     let values = list.value(0);
     assert_eq!(values.len(), 3);
     assert_eq!(values.null_count(), 1);
+    let mut actual = values
+        .as_any()
+        .downcast_ref::<Float64Array>()
+        .unwrap()
+        .iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    actual.sort_by(f64::total_cmp);
+    assert_eq!(actual, vec![1.5, 2.5]);
 }

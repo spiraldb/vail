@@ -1,21 +1,11 @@
 use arrow_array::{Array, ArrayRef, Int32Array, RecordBatch};
 use arrow_schema::Schema;
-use datafusion_physical_expr::{PhysicalExpr, ScalarFunctionExpr};
 use serde_json::json;
 use std::sync::Arc;
-use vail_execution::expressions::{Expr, Type, lower, project_batch};
-
-fn contains_function(expr: &Arc<dyn PhysicalExpr>, name: &str) -> bool {
-    expr.downcast_ref::<ScalarFunctionExpr>()
-        .is_some_and(|f| f.name() == name)
-        || expr
-            .children()
-            .iter()
-            .any(|child| contains_function(child, name))
-}
+use vail_execution::expressions::{Expr, Type, project_batch};
 
 #[test]
-fn tuple_construction_and_projection_use_datafusion_functions() {
+fn tuple_construction_and_projection_preserve_values_and_missingness() {
     let tuple: Expr = serde_json::from_value(json!({
         "op":"tuple", "elements":[
             {"op":"column","name":"x"},
@@ -28,14 +18,10 @@ fn tuple_construction_and_projection_use_datafusion_functions() {
         Arc::new(Int32Array::from(vec![Some(1), None])) as ArrayRef,
     )])
     .unwrap();
-    let plan = lower(&tuple, &source.schema()).unwrap();
-    assert!(contains_function(&plan, "named_struct"));
     let element: Expr = serde_json::from_value(json!({
         "op":"get_field","value":tuple,"name":"__vail_tuple_0"
     }))
     .unwrap();
-    let plan = lower(&element, &source.schema()).unwrap();
-    assert!(contains_function(&plan, "get_field"));
     let result = project_batch(&source, &[("element".into(), element)]).unwrap();
     let values = result
         .column(0)
@@ -47,7 +33,7 @@ fn tuple_construction_and_projection_use_datafusion_functions() {
 }
 
 #[test]
-fn empty_tuple_has_a_distinct_arrow_type_and_builtin_constructor() {
+fn empty_tuple_has_a_distinct_arrow_type_and_executes_for_each_row() {
     let tuple: Expr = serde_json::from_value(json!({"op":"tuple","elements":[]})).unwrap();
     let schema = Schema::empty();
     let dtype = tuple.dtype(&schema).unwrap();
@@ -57,8 +43,14 @@ fn empty_tuple_has_a_distinct_arrow_type_and_builtin_constructor() {
         dtype.to_arrow().unwrap(),
         Type::Struct { r#struct: vec![] }.to_arrow().unwrap()
     );
-    assert!(contains_function(
-        &lower(&tuple, &schema).unwrap(),
-        "named_struct"
-    ));
+    let source =
+        RecordBatch::try_from_iter([("x", Arc::new(Int32Array::from(vec![1, 2])) as ArrayRef)])
+            .unwrap();
+    let result = project_batch(&source, &[("tuple".into(), tuple)]).unwrap();
+    assert_eq!(result.num_rows(), 2);
+    assert_eq!(result.column(0).null_count(), 0);
+    assert_eq!(
+        Type::from_arrow(result.column(0).data_type()).unwrap(),
+        dtype
+    );
 }

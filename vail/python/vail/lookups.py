@@ -88,6 +88,9 @@ def resolve(native, expressions, *, random_scope="row"):
                 occupied.add(name)
                 native = native.lookup(targets[reference], _native_expressions(keys), name, node.get("all_matches", False), bindings, node.get("query_interval", False))
                 resolved[reference] = name
+            declared_type = node.get("dtype")
+            if declared_type is not None and declared_type != dict(native.schema())[resolved[reference]]:
+                raise ExpressionException("lookup type disagrees with target schema")
             return {"op": "column", "name": resolved[reference]}
         return {name: rewrite(child) for name, child in node.items()}
 

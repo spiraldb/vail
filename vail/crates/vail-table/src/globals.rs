@@ -21,14 +21,14 @@ pub type GlobalsRef = Arc<GlobalsIR>;
 pub type GlobalBindings = BTreeMap<String, GlobalsRef>;
 
 /// Validate external expression types against their native IR targets and retain
-/// only referenced bindings. A malformed wire expression cannot forge a type.
+/// only referenced bindings.
 pub fn referenced_bindings<'a>(
     expressions: impl IntoIterator<Item = &'a Expr>,
     bindings: GlobalBindings,
 ) -> Result<GlobalBindings> {
     let mut references = Vec::new();
     for expr in expressions {
-        expr.visit(&mut |node| {
+        expr.visit_unique(&mut |node| {
             if let Expr::ExternalGlobal { reference, dtype } = node {
                 references.push((reference.clone(), dtype.clone()));
             }
@@ -88,8 +88,7 @@ pub fn schema_from_wire(value: &Value) -> Result<SchemaRef> {
 }
 
 impl GlobalsIR {
-    /// Retain one Arrow row as a literal globals value. Arrow IPC is the wire
-    /// boundary; the native IR never serializes the contained values as JSON.
+    /// Retain one Arrow row as a literal globals value, sharing its buffers.
     pub fn arrow_literal(batch: RecordBatch) -> Result<GlobalsRef> {
         if batch.num_rows() != 1 {
             return Err(TableError::Invalid(
@@ -107,9 +106,8 @@ impl GlobalsIR {
         bindings: GlobalBindings,
     ) -> Result<GlobalsRef> {
         let bindings = referenced_bindings([&expression], bindings)?;
-        // Keep schema derivation on the same logical tree used by execution.
-        // The legacy physical aggregate planner cannot consume a MapRows child
-        // whose expressions include scan windows.
+        // Keep schema derivation on the same logical tree used by execution,
+        // including MapRows children containing scan windows.
         let logical_schema = crate::logical::lower(&table)?;
         let schema = match crate::logical_aggregation::lower_logical_total(
             &table,
@@ -141,7 +139,7 @@ impl GlobalsIR {
                 .enable_all()
                 .build()
                 .map_err(|e| TableError::Execution(e.to_string()))?;
-            let plan = runtime.block_on(crate::logical::physical_globals(&globals))?;
+            let plan = runtime.block_on(crate::logical::diagnostic(crate::logical_globals::lower(&globals)?, 1))?;
             Ok(datafusion_physical_plan::displayable(plan.as_ref())
                 .indent(true)
                 .to_string())
@@ -229,10 +227,9 @@ impl GlobalsIR {
 
     pub fn lower(self: &Arc<Self>) -> Result<crate::plan::PhysicalPlan> {
         Ok(match &self.node {
-            Node::Aggregate { table, .. } => crate::deferred_logical::lower(
-                crate::logical_globals::lower(self)?,
-                crate::logical::max_partitions(table),
-            )?,
+            Node::Aggregate { .. } => return Err(TableError::Invalid(
+                "aggregate globals must be planned through the logical planner".into(),
+            )),
             Node::Prepared(plan) => plan.clone(),
             Node::Empty => {
                 let batch = vail_storage::globals::empty()?;

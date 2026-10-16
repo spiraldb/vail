@@ -197,6 +197,14 @@ class Expression:
         object.__setattr__(self, "_row_indexed", _row_indexed(ir) if row_indexed is None else row_indexed)
         object.__setattr__(self, "dtype", dtype)
         object.__setattr__(self, "source", source)
+        if isinstance(ir, IR_NODE_TYPES) and ir.get("op") in ("lambda_variable", "matrix_field", "table_lookup"):
+            declared_type = ir.get("dtype")
+            if declared_type is None:
+                # A shallow constructor pack preserves native children and the
+                # dependency owners captured above; no expression is encoded.
+                ir = dict(ir.items(), dtype=dtype._native_type)
+            elif ir.get("op") != "lambda_variable" and declared_type != dtype._native_type:
+                raise ExpressionException("frontend expression type disagrees with declared native type")
         object.__setattr__(self, "_native_expr", NativeExpr(ir))
         object.__setattr__(self, "_selection_name", selection_name)
         object.__setattr__(self, "_top_level_name", top_level_name)
@@ -772,8 +780,10 @@ class Expression:
             if name == "index":
                 def index(value):
                     from .streams import stream_range
-                    indices = stream_range(self._array_length()).to_array()
-                    return ops.predicate(indices, lambda i: value(self[i]) if callable(value) else self[i] == value, first=True)
+                    from .collection_functions import zip
+                    pairs = zip(self, stream_range(self._array_length()).to_array())
+                    found = ops.predicate(pairs, lambda pair: value(pair[0]) if callable(value) else pair[0] == value, first=True)
+                    return found[1]
                 return index
             if isinstance(dtype.element_type, tstruct):
                 if name in dtype.element_type:
@@ -1236,10 +1246,7 @@ def _array_arithmetic(left, right, operator):
     element_type = _numeric_result_type(left_type, right_type, operator)
 
     if left_array and right_array:
-        from . import range as array_range
-        indices = array_range(left._array_length())
-        pairs = indices.map(lambda i: left[i]._binary(right[i], operator, element_type))
-        matches = left._array_length() == right._array_length()
+        from .collection_functions import zip
         result_type = tarray(element_type)
         error = Expression(
             result_type,
@@ -1248,7 +1255,12 @@ def _array_arithmetic(left, right, operator):
              "message": literal("array arithmetic requires arrays of equal length").to_ir(),
              "dtype": type_to_wire(result_type)},
         )
-        return if_else(matches, pairs, error)
+
+        def elementwise(left, right):
+            pairs = zip(left, right).map(lambda pair: pair[0]._binary(pair[1], operator, element_type))
+            return if_else(left._array_length() == right._array_length(), pairs, error)
+
+        return bind(elementwise, left, right)
 
     array_expr = left if left_array else right
     scalar_expr = right if left_array else left

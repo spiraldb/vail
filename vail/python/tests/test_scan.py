@@ -422,3 +422,28 @@ def test_grouped_take_of_scan_annotated_row():
         assert hl.range_table(0, partitions).group_by(g=hl.int32(0)).aggregate(
             data=hl.agg.take(hl.int32(1), 1)[0]
         ).collect() == []
+
+
+def test_nested_scan_random_predicate_matches_selected_prefix_and_replays():
+    table = hl.range_table(73, n_partitions=4)
+    selected = hl.rand_bool(0.45, seed=902)
+    result = table.annotate(
+        selected=selected,
+        prefix=hl.scan.filter(selected, hl.scan.filter(True, hl.scan.sum(table.idx + 1))),
+    )
+    first = result.collect()
+    total = 0
+    for row in first:
+        assert row.prefix == total
+        if row.selected:
+            total += row.idx + 1
+    assert result.collect() == first
+
+
+def test_nested_scan_missing_outer_predicate_skips_erroring_inner_predicate():
+    table = hl.range_table(5, n_partitions=3)
+    table = table.annotate(text=hl.if_else(table.idx == 1, "bad", "1"))
+    outer = hl.or_missing(table.idx != 1, table.idx % 2 == 0)
+    inner = hl.int32(table.text) > 0
+    result = table.annotate(prefix=hl.scan.filter(outer, hl.scan.filter(inner, hl.scan.sum(table.idx + 1))))
+    assert [row.prefix for row in result.collect()] == [0, 1, 1, 4, 4]

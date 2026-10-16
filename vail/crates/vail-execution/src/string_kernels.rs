@@ -3,7 +3,7 @@ use arrow_array::builder::{ListBuilder, StringBuilder};
 use arrow_array::{Array, ArrayRef, Float64Array, Int32Array, StringArray};
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
-use datafusion_expr::{ColumnarValue, ScalarUDF, Volatility, expr_fn::create_udf};
+use datafusion_expr::{ColumnarValue, ScalarUDF, Signature, Volatility};
 use std::{collections::HashMap, sync::Arc};
 
 pub(crate) fn udf(name: &str) -> Arc<ScalarUDF> {
@@ -18,11 +18,15 @@ pub(crate) fn udf(name: &str) -> Arc<ScalarUDF> {
     };
     let name = name.to_owned();
     let kernel = name.clone();
-    Arc::new(create_udf(
+    let volatility = match name.as_str() {
+        "hamming" | "entropy" => Volatility::Immutable,
+        _ => Volatility::Volatile, // invalid patterns are value-domain errors
+    };
+    Arc::new(crate::kernel_identity::scalar(
         &format!("vail_{name}"),
-        args,
+        name.clone(),
+        Signature::exact(args, volatility),
         output,
-        Volatility::Immutable,
         Arc::new(move |values| evaluate(&kernel, values)),
     ))
 }

@@ -5,7 +5,7 @@ use arrow_buffer::OffsetBuffer;
 use arrow_ord::sort::{SortColumn, lexsort_to_indices};
 use arrow_schema::{DataType, Field, Schema, SortOptions};
 use arrow_select::take::take;
-use datafusion_common::{Result, ScalarValue, exec_err, plan_err};
+use datafusion_common::{Result, exec_err, plan_err};
 use datafusion_expr::{
     ColumnarValue, EmitTo, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature, Volatility,
 };
@@ -94,9 +94,11 @@ impl ScalarUDFImpl for CollectionGroups {
         let output_type = self.return_type(&[input.data_type().clone()])?;
         let result = grouped(entries, &self.operation, &output_type)?;
         if scalar {
-            Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
-                &result, 0,
-            )?))
+            Ok(ColumnarValue::Scalar(
+                crate::expressions::scalar_at(&result, 0).map_err(|error| {
+                    datafusion_common::DataFusionError::Execution(error.to_string())
+                })?,
+            ))
         } else {
             Ok(ColumnarValue::Array(result))
         }

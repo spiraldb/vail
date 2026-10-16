@@ -11,7 +11,7 @@ use arrow_array::{
 use arrow_buffer::OffsetBuffer;
 use arrow_schema::DataType;
 use arrow_select::take::take;
-use datafusion_common::{Result, ScalarValue, exec_err, plan_err};
+use datafusion_common::{Result, exec_err, plan_err};
 use datafusion_expr::{
     ColumnarValue, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature, Volatility,
 };
@@ -197,7 +197,7 @@ fn gather_groups(values: &ListArray, groups: &ListArray) -> Result<ArrayRef> {
     )?))
 }
 
-fn dense_type(value_type: &DataType) -> DataType {
+fn dense_type(value_field: &arrow_schema::Field) -> DataType {
     use arrow_schema::Field;
     DataType::List(Arc::new(Field::new(
         "item",
@@ -205,7 +205,7 @@ fn dense_type(value_type: &DataType) -> DataType {
             vec![
                 Arc::new(Field::new(CID, DataType::Int64, true)),
                 Arc::new(Field::new("present", DataType::Boolean, true)),
-                Arc::new(Field::new("value", value_type.clone(), true)),
+                Arc::new(value_field.clone().with_name("value").with_nullable(true)),
             ]
             .into(),
         ),
@@ -265,7 +265,13 @@ fn dense_cells(entries: &ListArray, widths: &Int32Array) -> Result<ArrayRef> {
     }
     let presence = indices.iter().map(Option::is_some).collect::<Vec<_>>();
     let selected = take(values.as_ref(), &UInt32Array::from(indices), None)?;
-    let DataType::List(field) = dense_type(values.data_type()) else {
+    let DataType::List(field) = dense_type(
+        records
+            .fields()
+            .iter()
+            .find(|field| field.name() == "value")
+            .unwrap(),
+    ) else {
         unreachable!()
     };
     let DataType::Struct(fields) = field.data_type() else {
@@ -396,7 +402,7 @@ impl ScalarUDFImpl for MatrixArray {
                 let value = fields.iter().find(|f| f.name() == "value").ok_or_else(|| {
                     datafusion_common::plan_datafusion_err!("sparse entries require a value field")
                 })?;
-                Ok(dense_type(value.data_type()))
+                Ok(dense_type(value))
             }
             Operation::Columns => Ok(args[0].clone()),
             Operation::Aligned => {
@@ -438,9 +444,11 @@ impl ScalarUDFImpl for MatrixArray {
             Operation::Aligned => aligned(first, list(&arrays[1])?)?,
         };
         if scalar {
-            Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
-                &result, 0,
-            )?))
+            Ok(ColumnarValue::Scalar(
+                crate::expressions::scalar_at(&result, 0).map_err(|error| {
+                    datafusion_common::DataFusionError::Execution(error.to_string())
+                })?,
+            ))
         } else {
             Ok(ColumnarValue::Array(result))
         }

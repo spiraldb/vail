@@ -590,6 +590,9 @@ class MatrixTable:
                 return rewrite(node["value"])
             if node.get("op") == "matrix_field":
                 axis, name = node["axis"], node["name"]
+                declared_type = node.get("dtype")
+                if declared_type is not None and declared_type != self._axis_type(axis)[name]._native_type:
+                    raise ExpressionException("matrix field type disagrees with source schema")
                 if axis == "global":
                     return glob[name].to_ir()
                 return {
@@ -995,9 +998,14 @@ class MatrixTable:
                 )
             else:
                 cells = base[_CELLS].map(lambda cell: filter_cell(cell, struct()))
-            return self._copy(
-                rows=_project(base, [(_ROW, base[_ROW]), (_CELLS, cells)])
+            projected = _project(
+                base,
+                [(_ROW, base[_ROW]), (_CELLS, cells)]
+                + [(name, base[name]) for name in self._mir.row_index_keys],
             )
+            if self._mir.row_index_keys:
+                projected = projected._with_keys(*self._mir.row_index_keys)
+            return self._copy(rows=projected)
         base = self._context(axis)
         if _has_aggregate(expr.to_ir()):
             expr = self._axis_aggregates(expr, axis, base)
@@ -1706,7 +1714,7 @@ class MatrixTable:
         return self._copy(rows=t)
 
     def _explode(self, axis, field_expr):
-        from . import agg, len as length, range as array_range, case
+        from . import agg, len as length, enumerate as array_enumerate, case
         from .types import tset
 
         field = self[field_expr] if isinstance(field_expr, str) else field_expr
@@ -1753,8 +1761,8 @@ class MatrixTable:
             values = values.to_array()
         maximum = base.aggregate(agg.max(length(values)), _localize=False)
         width = if_else(is_defined(maximum) & (maximum > 0), int64(maximum), int64(1))
-        children = array_range(length(values)).map(
-            lambda j: struct(index=j, value=values[j])
+        children = array_enumerate(values).map(
+            lambda item: struct(index=item[0], value=item[1])
         )
         expanded = base.annotate(__items=children).explode("__items")
 
@@ -2019,8 +2027,10 @@ class MatrixTable:
         return self._with_globals(result)
 
     def show(self, n_rows=10, n_cols=10, *, handler=print, **options):
+        from . import eval as evaluate
+
         matrix = self.head(n_rows, n_cols)
-        columns = matrix.cols().collect()
+        columns = evaluate(matrix._mir.column_records.map(lambda record: record[_COL]))
         localized = matrix.localize_entries("__show_entries", "__show_cols")
         rows = localized.collect()
         headers = list(matrix.row.dtype)

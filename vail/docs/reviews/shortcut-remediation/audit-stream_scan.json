@@ -1,0 +1,146 @@
+{
+  "owner": "stream_scan",
+  "modules": [
+    {
+      "path": "python/vail/streams.py",
+      "depth": "full",
+      "status": "implemented; focused tests passed",
+      "findings": [
+        "_aggregate_scan formerly sliced and re-aggregated each prefix. Replaced by exclusive native accumulator scans, with zipped scalar output callbacks to avoid captured-list replication."
+      ],
+      "limitations": [
+        "Explode, grouped, coordinate-array, fold scopes and reducer initializers remain unsupported in local aggregate scans; the prior collection-aggregate lowering did not implement these scopes either. These missing local aggregation scopes are queued rather than silently lowered by prefix rescanning."
+      ],
+      "evidence": [
+        "Final v2 frontend focus: 162 passed, 7 failed. All new local stream, type inquiry, zip/corr/index/arithmetic cases passed; six upstream randomness failures are action-consumer replay errors and one is partition-identity incompatibility. Log /private/tmp/vail-stream-frontend-final-tests.log.",
+        "20k,40k,80k native sum scans evaluated in0.064s,0.124s,0.244s afterwarmup; corresponding zip20k,40k,80k in0.223s,0.429s,0.855s. Raw /private/tmp/vail-stream-scan-scaling.jsonl.",
+        "Output callback consumes zipped scalar snapshots, rather than indexing captured scan arrays.",
+        "Native LambdaVariable/MatrixField/TableLookup type hints retain original IR for type inquiry; lexical annotations are checked against execution binders. No fake data values are used for type inference."
+      ]
+    },
+    {
+      "path": "python/vail/scan.py",
+      "depth": "full",
+      "status": "reviewed; missing API",
+      "findings": [
+        "approx_cdf is explicitly unsupported in agg_numeric.py. Its scan wrapper delegates without _mark; that is dormant inconsistency while the underlying API raises, not a current silently wrong scan."
+      ],
+      "limitations": [
+        "Table planner and quantile reducer implementation are outside this module review."
+      ]
+    },
+    {
+      "path": "crates/vail-execution/src/array_fold.rs",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Maintains active lanes and accumulator state; one callback step per input element. Copies only referenced outer columns. Explicit offset capacity checks."
+      ],
+      "limitations": [
+        "Growing accumulator values necessarily copy their materialized output; generic callbacks may themselves contain expensive algorithms."
+      ]
+    },
+    {
+      "path": "crates/vail-execution/src/scan_state.rs",
+      "depth": "full",
+      "status": "finding queued",
+      "findings": [
+        "Per-instance AtomicU64 function identities for state, merge and finish UDFs impede equivalent expression identity. The sum finisher also depends on an internal state layout, currently guarded by function name and state types."
+      ],
+      "evidence": [
+        "State adapters delegate update, merge and finalization to original DataFusion accumulators; generic finish merges carry/local states without replaying input rows."
+      ],
+      "limitations": [
+        "Parallel window frame construction and partition carry generation live in table planner modules and require separate review."
+      ]
+    },
+    {
+      "path": "crates/vail-execution/src/scan_scopes.rs",
+      "depth": "full",
+      "status": "finding queued",
+      "findings": [
+        "Per-instance AtomicU64 names for immutable scope adapters weaken optimizer identity.",
+        "Grouped snapshots emit then restore DataFusion groups state because DF55's group adapter evaluation is destructive. Cost scales with emitted group-state size, including repeated snapshots."
+      ],
+      "evidence": [
+        "Filter/explode adapters transform Arrow inputs and reuse child accumulators; grouped/coordinate adapters preserve original merge states. Repeated snapshot/merge and unequal-array-shape tests present."
+      ],
+      "limitations": [
+        "No throughput claim for high-cardinality grouped scans; repeated group snapshots warrant measurement against required output size."
+      ]
+    },
+    {
+      "path": "crates/vail-execution/src/array_aggregate_scan.rs",
+      "depth": "full",
+      "status": "implemented; Rust counted-visits test pending",
+      "findings": [],
+      "evidence": [
+        "Uses shared reducer::configured_udaf and ScanState::accumulator. One update_batch per selected element; filtered count distinguishes excluded elements from null data. Stable configured function identity."
+      ],
+      "limitations": [
+        "Each output uses evaluate() on the existing accumulator, so complex reducers may have expensive snapshot evaluation even without replaying input. Collection-valued prefixes inherently have quadratic output size."
+      ]
+    },
+    {
+      "path": "python/vail/collection_functions.py",
+      "depth": "full",
+      "status": "zip/enumerate/corr implemented; focused tests passed",
+      "findings": [
+        "zip formerly built range(size).map(i => arrays[i]); enumerate likewise indexed a captured full array. Native pairwise arrays_zip plus current-element projections remove full-list capture and repeated random-context binding.",
+        "corr formerly embedded whole-array means in each per-element covariance callback. Confirmed quadratic evaluation/memory:2000elements0.735s443MBmaxRSS;4000elements2.84s1.91GBmaxRSS. Replaced composition with shared native corr accumulator, preserving public empty/all-missing distinctions."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/randomness.py",
+      "depth": "full",
+      "status": "implemented; existing RNG tests passed",
+      "findings": [
+        "index_callback formerly built range(length).map(i => (i, collection[i])) and captured the full collection. Replaced by native zip with positional identities."
+      ],
+      "limitations": [
+        "Native RNG distribution algorithms and table UID layout planning are separate modules and require their own reviews."
+      ]
+    },
+    {
+      "path": "python/vail/array_methods.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "fold/scan callbacks lower to native ArrayFold; mean uses a constant number of linear passes; median sorts once; group_by delegates grouping to native collection grouping."
+      ],
+      "limitations": [
+        "Native collection grouping implementation is a separate module."
+      ]
+    },
+    {
+      "path": "python/vail/array_aggregate.py",
+      "depth": "full",
+      "status": "input type inference fixed; focused tests passed",
+      "findings": [
+        "Mapped aggregate input expressions formerly used aggregate result type as their declared dtype. Native infer_type now traverses original input IR with source/global/lexical native Type context and supplies accurate metadata; no dummy literals or invented values."
+      ],
+      "limitations": [
+        "Explode and other nested local scopes remain explicitly unsupported."
+      ],
+      "evidence": [
+        "Primitive sum/collect/set/mean/stats and outer lexical capture regression cases passed in final v2 focus."
+      ]
+    }
+  ],
+  "validation": {
+    "frontend_focus": {
+      "passed": 162,
+      "failed": 7,
+      "elapsed_seconds": 131.68,
+      "log": "/private/tmp/vail-stream-frontend-final-tests.log",
+      "remaining_failure_categories": {
+        "consumer_scope_replay": 6,
+        "unsupported_partition_identity_assumption": 1
+      }
+    },
+    "native_counted_visits_test": "Present; execution confirmation belongs to parent central Rust run."
+  }
+}

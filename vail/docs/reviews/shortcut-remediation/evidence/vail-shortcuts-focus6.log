@@ -1,0 +1,29 @@
+F..............................                                          [100%]
+=================================== FAILURES ===================================
+_________________ test_context_replay_across_scans_and_actions _________________
+
+    def test_context_replay_across_scans_and_actions():
+        table = hl.range_table(30, 5).annotate(r=hl.rand_int64(seed=10))
+        table = table.annotate(prefix=hl.scan.sum(table.r))
+>       rows = table.collect()
+               ^^^^^^^^^^^^^^^
+
+vail/python/tests/test_randomness.py:292:
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <vail.Table object at 0x10753db80>, _localize = True
+
+    def collect(self, _localize=True):
+        if type(_localize) is not builtins.bool:
+            raise TypeError("_localize must be a bool")
+        if not _localize:
+            return self.aggregate(agg.collect(self.row), _localize=False)
+        from .arrow import decode_rows
+>       return decode_rows(self._native.collect_arrow(), self._schema)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       RuntimeError: Error during planning: optimizer copies of consumer 3 have incompatible source/output contracts: output distribution differs: UnknownPartitioning(5) versus UnknownPartitioning(5)
+
+vail/python/vail/__init__.py:1074: RuntimeError
+=========================== short test summary info ============================
+FAILED vail/python/tests/test_randomness.py::test_context_replay_across_scans_and_actions
+1 failed, 30 passed in 5.60s

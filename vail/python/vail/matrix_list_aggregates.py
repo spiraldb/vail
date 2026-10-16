@@ -7,20 +7,13 @@ execution. Unsupported shared list kernels are explicit capability boundaries.
 from .expressions import IR_NODE_TYPES
 
 from .expressions import Expression, _IR, cast
-from .types import tarray, tbool, tint32, tint64, tfloat64, type_from_wire
+from .types import tarray, tbool, tint32, tint64, type_from_wire
 
 
 def reduce_list(
     matrix, expr, base, contexts, outside=None, bound=None, *, direct_entry_sum=False
 ):
     from . import struct, literal, missing, if_else, is_defined, len as length
-    from . import (
-        sum as array_sum,
-        product as array_product,
-        min as array_min,
-        max as array_max,
-    )
-    from . import set as make_set, dict as make_dict, tuple as make_tuple, case
 
     bound = dict(bound or {})
     globals = matrix.index_globals()
@@ -34,44 +27,34 @@ def reduce_list(
         return Expression(dtype, base, _IR(node, refs, lookups))
 
     def typed(value):
-        # Schema inference only; this does not evaluate or collect the list.
-        node = value.to_ir()
+        # Query the original native graph with its real schema and lexical
+        # types. No fake values or executable probe plans are constructed.
         free = set()
 
-        def variables(node, lexical=frozenset()):
+        def lexical_inputs(node, lexical=frozenset()):
             if isinstance(node, list):
-                for v in node:
-                    variables(v, lexical)
+                for child in node:
+                    lexical_inputs(child, lexical)
             elif isinstance(node, IR_NODE_TYPES) and node.get("op") != "literal":
                 if node.get("op") == "lambda_variable":
                     if node["name"] not in lexical:
                         free.add(node["name"])
                 elif node.get("op") in ("array_map", "array_filter"):
-                    variables(node["value"], lexical)
-                    variables(
-                        node["body"]
-                        if node["op"] == "array_map"
-                        else node["predicate"],
-                        lexical | {node["parameter"]},
-                    )
+                    lexical_inputs(node["value"], lexical)
+                    body = node["body"] if node["op"] == "array_map" else node["predicate"]
+                    lexical_inputs(body, lexical | {node["parameter"]})
                 else:
-                    for v in node.values():
-                        variables(v, lexical)
+                    for child in node.values():
+                        lexical_inputs(child, lexical)
 
-        variables(node)
-        bindings = {name: bound[name] for name in free if name in bound}
-        for name, dtype in bindings.items():
-            node = {
-                "op": "array_map",
-                "value": literal([None], tarray(dtype)).to_ir(),
-                "parameter": name,
-                "body": node,
-            }
-        probe = base.key_by()._project([("__matrix_type_probe", raw(node))], keys=())
-        dtype = probe._schema["__matrix_type_probe"]
-        for _ in bindings:
-            dtype = dtype.element_type
-        return Expression(dtype, base, value.to_ir())
+        lexical_inputs(value.to_ir())
+        dtype = type_from_wire(value.to_ir().infer_type(
+            [(name, dtype._native_type) for name, dtype in base._schema.items()],
+            [(name, dtype._native_type) for name, dtype in base._global_schema.items()],
+            [(name, dtype._native_type) for name, dtype in bound.items() if name in free],
+        ))
+        return Expression(dtype, base, _IR(
+            value.to_ir(), value._global_refs, value._lookup_refs))
 
     def bind(node, context):
         if isinstance(node, list):
@@ -343,127 +326,19 @@ def reduce_list(
                         )
                     )
                 )
-            if function == "collect":
-                result = values
-            elif function == "collect_as_set":
-                result = make_set(values)
-            elif function == "take":
-                if options.get("ordered"):
-                    raise NotImplementedError(
-                        "ordered matrix list take requires native list sorting by an expression"
-                    )
-                result = values[: options["n"]]
-            elif function == "call_stats":
-                from . import range as array_range
+            from .collections import _function
 
-                calls = values.map(lambda v: v["__vail_genomic_call"]).filter(
-                    is_defined
-                )
-                alleles = calls.map(
-                    lambda call: raw(
-                        {
-                            "op": "get_field",
-                            "value": call.to_ir(),
-                            "name": "__vail_call_alleles",
-                        },
-                        tarray(tint32),
-                    )
-                )
+            arguments = [values]
+            if function == "call_stats":
                 initial = dict(node.get("init", []))["n_alleles"]
-                n = raw(bind(initial, fixed), tint32)
-                n = (
-                    case()
-                    .when(is_defined(n) & (n >= 0), n)
-                    .or_error("call_stats requires a defined nonnegative allele count")
-                )
-                flattened = alleles.flatmap(lambda a: a)
-                valid = length(flattened.filter(lambda a: (a < 0) | (a >= n))) == 0
-                n = (
-                    case()
-                    .when(valid, n)
-                    .or_error("call_stats allele index outside allele count")
-                )
-                an = cast(array_sum(alleles.map(length)), tint32)
-                ac = array_range(n).map(
-                    lambda a: cast(
-                        array_sum(flattened.map(lambda v: if_else(v == a, 1, 0))),
-                        tint32,
-                    )
-                )
-                hom = array_range(n).map(
-                    lambda a: cast(
-                        array_sum(
-                            alleles.map(
-                                lambda call: if_else(
-                                    (length(call) == 2)
-                                    & (length(call.filter(lambda v: v != a)) == 0),
-                                    1,
-                                    0,
-                                )
-                            )
-                        ),
-                        tint32,
-                    )
-                )
-                af = ac.map(
-                    lambda count: if_else(an > 0, count / an, missing(tfloat64))
-                )
-                result = struct(AC=ac, AF=af, AN=an, homozygote_count=hom)
-            elif function in ("sum", "product", "min", "max", "mean", "stddev_pop"):
-                numbers = values.map(
-                    lambda v: cast(
-                        v, dtype if function not in ("mean", "stddev_pop") else tfloat64
-                    )
-                )
-                defined = numbers.filter(is_defined)
-                n = length(defined)
-                if function in ("sum", "product", "min", "max"):
-                    result = {
-                        "sum": array_sum,
-                        "product": array_product,
-                        "min": array_min,
-                        "max": array_max,
-                    }[function](numbers)
-                else:
-                    mean = array_sum(defined) / n
-                    if function == "mean":
-                        result = if_else(n > 0, mean, missing(tfloat64))
-                    else:
-                        variance = array_sum(defined.map(lambda v: (v - mean) ** 2)) / n
-                        result = if_else(n > 0, variance**0.5, missing(tfloat64))
-            elif function in ("count_where", "fraction", "any", "all"):
-                yes = array_sum(
-                    values.map(
-                        lambda v: if_else(
-                            is_defined(v) & v, literal(1, tint64), literal(0, tint64)
-                        )
-                    )
-                )
-                if function == "count_where":
-                    result = yes
-                elif function == "any":
-                    result = yes > 0
-                elif function == "all":
-                    no = array_sum(
-                        values.map(
-                            lambda v: if_else(
-                                is_defined(v) & ~v,
-                                literal(1, tint64),
-                                literal(0, tint64),
-                            )
-                        )
-                    )
-                    result = no == 0
-                else:
-                    result = if_else(
-                        length(items) > 0,
-                        yes / length(items),
-                        literal(float("nan"), tfloat64),
-                    )
-            else:
-                raise NotImplementedError(
-                    f"matrix list aggregation requires a native per-list {function} reducer"
-                )
+                arguments.append(raw(bind(initial, fixed), tint32))
+            if function == "take":
+                arguments.append(literal(options["n"], tint64))
+                if options.get("ordered"):
+                    function = "take_ordered"
+            result = _function(
+                "__vail_list_reduce_" + function, arguments, dtype
+            )
             return (
                 cast(result, dtype).to_ir() if result.dtype != dtype else result.to_ir()
             )

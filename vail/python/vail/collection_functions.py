@@ -24,9 +24,29 @@ def _callable(f):
         raise TypeError('expected a callable')
 
 
+def _zip_native(arrays):
+    """Native pairwise zips; callbacks only read their current scalar fields."""
+    from .types import tstruct
+    packed = arrays[0]
+    for value in arrays[1:]:
+        packed = ops._function("arrays_zip", [packed, value], tarray(tstruct(**{
+            "1": packed.dtype.element_type, "2": value.dtype.element_type,
+        })))
+
+    def unpack(value):
+        fields = []
+        for _ in arrays[1:]:
+            fields.append(value["2"])
+            value = value["1"]
+        fields.append(value)
+        return tuple_(reversed(fields))
+
+    return packed.map(unpack)
+
+
 def zip(*arrays, fill_missing=False):
-    """Zip arrays, truncating to the shortest or padding to the longest."""
-    from . import range
+    """Zip arrays with linear work in the number of emitted elements."""
+    from .expressions import bind
     if type(fill_missing) is not bool:
         raise TypeError('fill_missing must be bool')
     if not arrays:
@@ -34,16 +54,19 @@ def zip(*arrays, fill_missing=False):
     arrays = [as_expr(a) for a in arrays]
     if not builtins.all(isinstance(a.dtype, tarray) for a in arrays):
         raise TypeError('zip requires arrays')
-    lengths = [ops.length(a) for a in arrays]
-    size = (array_max if fill_missing else array_min)(array(lengths), filter_missing=False)
-    result = range(size)._array_map(lambda i: tuple_(
-        if_else(i < n, a[i], missing(a.dtype.element_type)) if fill_missing else a[i]
-        for a, n in builtins.zip(arrays, lengths)))
-    # A missing input array makes the whole zip missing, even with fill_missing.
-    absent = literal(False)
-    for a in arrays:
-        absent = absent | is_missing(a)
-    return if_else(absent, missing(result.dtype), result)
+
+    def run(*values):
+        absent = literal(False)
+        for value in values:
+            absent = absent | is_missing(value)
+        if not fill_missing:
+            size = array_min(array([ops.length(value) for value in values]), filter_missing=False)
+            values = [value[:size] for value in values]
+        result = _zip_native(values)
+        # DataFusion pads a missing input; Hail/Vail propagate a missing array.
+        return if_else(absent, missing(result.dtype), result)
+
+    return bind(run, *arrays)
 
 
 def map(f, *collections):
@@ -122,7 +145,9 @@ def enumerate(a, start=0, *, index_first=True):
         raise TypeError('enumerate requires an array and int32 start')
     if type(index_first) is not bool:
         raise TypeError('index_first must be bool')
-    return range(ops.length(a))._array_map(lambda i: tuple_((i + start, a[i]) if index_first else (a[i], i + start)))
+    return zip(a, range(ops.length(a))).map(
+        lambda pair: tuple_((pair[1] + start, pair[0]) if index_first
+                            else (pair[0], pair[1] + start)))
 
 
 def zip_with_index(a, index_first=True):
@@ -135,16 +160,19 @@ def corr(x, y):
     numeric = ('int32', 'int64', 'float32', 'float64')
     if not builtins.all(isinstance(a.dtype, tarray) and str(a.dtype.element_type) in numeric for a in (x, y)):
         raise TypeError('corr requires numeric arrays')
-    pairs = zip(x, y)._array_filter(lambda p: ~is_missing(p[0]) & ~is_missing(p[1]))
-    n = float64(ops.length(pairs))
-    mx = array_sum(pairs._array_map(lambda p: float64(p[0]))) / n
-    my = array_sum(pairs._array_map(lambda p: float64(p[1]))) / n
-    numerator = array_sum(pairs._array_map(lambda p: (float64(p[0]) - mx) * (float64(p[1]) - my)))
-    sx = array_sum(pairs._array_map(lambda p: (float64(p[0]) - mx) ** 2))
-    sy = array_sum(pairs._array_map(lambda p: (float64(p[1]) - my) ** 2))
-    result = if_else(ops.length(x) == 0, missing(tfloat64), numerator / (sx * sy) ** 0.5)
-    error = Expression(tfloat64, None, {'op': 'die', 'message': literal('corr requires arrays of equal length').to_ir(), 'dtype': type_to_wire(tfloat64)})
-    return if_else(ops.length(x) == ops.length(y), result, error)
+    from .expressions import bind, coalesce, struct
+
+    def run(x, y):
+        pairs = zip(x, y).map(lambda pair: struct(x=pair[0], y=pair[1]))
+        result = ops._function("__vail_list_reduce_corr", [pairs], tfloat64)
+        # Public array correlation returns NaN for a nonempty all-missing
+        # collection; the table reducer's empty-state result is missing.
+        result = if_else(ops.length(x) == 0, missing(tfloat64),
+                         coalesce(result, literal(float("nan"))))
+        error = Expression(tfloat64, None, {"op": "die", "message": literal("corr requires arrays of equal length").to_ir(), "dtype": type_to_wire(tfloat64)})
+        return if_else(ops.length(x) == ops.length(y), result, error)
+
+    return bind(run, x, y)
 
 
 def or_else(a, b):

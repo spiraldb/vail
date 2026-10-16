@@ -1,0 +1,19 @@
+{
+  "command": [
+    "env",
+    "PYTHONPATH=/Users/danielking/.codex/worktrees/1611/vail/vail/python:/Users/danielking/.codex/worktrees/1611/vail/vail",
+    "vail/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "vail/python/tests/test_randomness.py::test_context_replay_across_scans_and_actions",
+    "vail/python/tests/test_simulation.py::test_seeded_table_sample_matches_upstream",
+    "vail/python/tests/test_vcf_export_native.py",
+    "vail/python/tests/test_stream_aggregate_scan.py",
+    "vail/python/tests/test_collection_aggregate_typing.py"
+  ],
+  "status": "completed",
+  "exit_code": 1,
+  "elapsed_seconds": 6.85666754200065,
+  "log": "/private/tmp/vail-shortcuts-focus6.log"
+}

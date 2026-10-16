@@ -1,0 +1,135 @@
+{
+  "agent": "vcf_sink",
+  "scope": "VCF and text input/output",
+  "modules": [
+    {
+      "path": "vail/python/vail/vcf.py",
+      "read_depth": "full",
+      "findings": [
+        "VCF-SOURCE-PROJECTION",
+        "VCF-SOURCE-SORT"
+      ],
+      "evidence": "Metadata and sample IDs are eager; records stay in native scan. Options are validated and unsupported cloud paths fail explicitly. import_vcf always sorts row keys through logical ordering."
+    },
+    {
+      "path": "vail/python/vail/vcf_export.py",
+      "read_depth": "full",
+      "findings": [
+        "VCF-SINK-FIXED"
+      ],
+      "evidence": "Replaced localized rows.collect and per-row Python formatting with one native sink call. Only column metadata/sample IDs are collected. Explicit compression, parallel/tabix/appended-header limitations remain."
+    },
+    {
+      "path": "vail/python/vail/text.py",
+      "read_depth": "full",
+      "findings": [
+        "TEXT-DIRECT-PUBLICATION"
+      ],
+      "evidence": "Normal row reads and all exports use native scan/sink. Header discovery requests one row only. Unsupported imputation, multiline Hail import, compressed IO and nested Hail text export are explicit capability limits."
+    },
+    {
+      "path": "vail/crates/vail-table/src/line_source.rs",
+      "read_depth": "full",
+      "findings": [],
+      "evidence": "Framed async object stream, one bounded record batch, universal newline decoder tracks incremental search offset. Cancellation drops upstream reader; memory scales with batch plus largest physical line, no complete-file collection."
+    },
+    {
+      "path": "vail/crates/vail-table/src/text_schema.rs",
+      "read_depth": "full",
+      "findings": [],
+      "evidence": "Samples at most configured record limit per file (default 1000), merges only schemas, rejects unbounded JSON array mode; validates CSV column names/order across files."
+    },
+    {
+      "path": "vail/crates/vail-table/src/text_export.rs",
+      "read_depth": "full",
+      "findings": [
+        "TEXT-DIRECT-PUBLICATION"
+      ],
+      "evidence": "Native DataSinkExec consumes stream with DataFusion CSV/JSON sinks and bounded operator buffering. Destination is configured directly with InsertOp::Overwrite, without staging/atomic publication."
+    },
+    {
+      "path": "vail/crates/vail-table/src/vcf_source.rs",
+      "read_depth": "full",
+      "findings": [
+        "VCF-SOURCE-PROJECTION"
+      ],
+      "evidence": "Blocking worker, two-batch bounded channel, batch rows capped using sample count. Checks closed receiver per line and on send; errors travel through same channel. Except empty projection, parses whole record then projects finished batch."
+    },
+    {
+      "path": "vail/crates/vail-vcf/src/lib.rs",
+      "read_depth": "full",
+      "findings": [
+        "VCF-FORMAT-CACHE"
+      ],
+      "evidence": "Native Arrow builders dispatch per FORMAT stripe, reuse token offsets, share delimiter discovery, and cache FORMAT plans. No Python row objects or whole-file buffering. Cache has no bound or eviction."
+    },
+    {
+      "path": "vail/crates/vail-table/src/vcf_export.rs",
+      "read_depth": "full",
+      "findings": [
+        "VCF-SINK-FIXED"
+      ],
+      "evidence": "New sink pulls one Arrow batch, formats one row, writes before requesting subsequent batches. Keeps at most current batch plus current rendered row. Temporary sibling is persisted only after complete successful stream and flush. Source/writer failures and cancellation release the input. Ordinary synchronous file writes execute on the detached native caller thread."
+    }
+  ],
+  "findings": [
+    {
+      "id": "VCF-SINK-FIXED",
+      "status": "implemented_pending_central_validation",
+      "severity": "high",
+      "problem": "Whole localized matrix collected into Python before export.",
+      "resolution": "Native Arrow batch stream sink, buffered file writer, atomic temporary-file publication.",
+      "tests": [
+        "python/tests/test_vcf_export_native.py",
+        "crates/vail-table/src/vcf_export.rs::tests"
+      ]
+    },
+    {
+      "id": "VCF-SOURCE-PROJECTION",
+      "status": "queued",
+      "severity": "medium",
+      "problem": "Selecting a narrow nonempty VCF projection still decodes all INFO and FORMAT fields and constructs all cells before projecting.",
+      "evidence": [
+        "crates/vail-table/src/vcf_source.rs: count_only special case; otherwise parser.append then batch.finish then batch.project",
+        "crates/vail-vcf/src/lib.rs: Parser::append iterates all header.info and batch.entries"
+      ],
+      "direction": "Pass projection requirements into native parser/builders; skip unused field stripes and cells at parse time, retaining record/locus validity rules."
+    },
+    {
+      "id": "VCF-FORMAT-CACHE",
+      "status": "queued",
+      "severity": "medium",
+      "problem": "FORMAT plan cache retains every distinct FORMAT string for the entire source lifetime.",
+      "evidence": [
+        "crates/vail-vcf/src/lib.rs: Parser.plans HashMap; append inserts every newly observed format and never removes it"
+      ],
+      "direction": "Bound the cache by entries/bytes or use a small last-plan/LRU cache, with adversarial changing-FORMAT regression."
+    },
+    {
+      "id": "TEXT-DIRECT-PUBLICATION",
+      "status": "queued",
+      "severity": "medium",
+      "problem": "Text/CSV/NDJSON sinks overwrite the actual destination while upstream execution can still fail, unlike staged native VCF output.",
+      "evidence": [
+        "crates/vail-table/src/text_export.rs: sink_config uses original path and InsertOp::Overwrite; export drains DataSinkExec directly"
+      ],
+      "direction": "Stage single-file output in the same directory and publish atomically after successful sink completion; test destination remains intact after late upstream failure."
+    },
+    {
+      "id": "VCF-SOURCE-SORT",
+      "status": "review",
+      "severity": "medium",
+      "problem": "import_vcf unconditionally sorts rows. Correct for arbitrary unsorted VCF input, but redundant for verified sorted sources and can dominate first-action latency.",
+      "evidence": [
+        "python/vail/vcf.py: final matrix._sort_rows call"
+      ],
+      "direction": "Retain ordering correctness; introduce validated source ordering proofs where available, never assume a VCF is sorted merely by filename."
+    }
+  ],
+  "limitations": [
+    "Compressed VCF output, tabix indexing, parallel VCF export and appended headers remain explicit unsupported APIs.",
+    "Sample/header metadata scales with column count and is eager by design; matrix rows and entries remain native.",
+    "The sink is bounded, but upstream operators such as row sorting may require their own buffering/spill strategy; this change does not claim every upstream plan is streaming.",
+    "Parser header/options wrappers still use ordinary in-memory Value representations internally; no encoded Python/Rust transport was added."
+  ]
+}

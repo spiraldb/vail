@@ -18,7 +18,6 @@ use datafusion_physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
     PlanProperties, SendableRecordBatchStream,
     execution_plan::EmissionType,
-    limit::GlobalLimitExec,
     projection::ProjectionExec,
     repartition::RepartitionExec,
     sorts::sort::SortExec,
@@ -122,6 +121,11 @@ pub(crate) fn reset_plan_states(plan: PhysicalPlan) -> datafusion_common::Result
         memo.insert(id, fresh.clone());
         Ok(fresh)
     }
+    // An optimized tree may contain distinct Arc copies of one declared
+    // consumer underneath its partition views. Validate and reunify those
+    // copies before assigning fresh identities, so this fork retains one
+    // complete producer DAG. Each call still has its own fresh reset map.
+    let plan = crate::rng_context::bind_consumers(plan)?;
     reset(plan, &mut std::collections::HashMap::new())
 }
 
@@ -133,15 +137,17 @@ fn required_ordering(input: &PhysicalPlan) -> Option<OrderingRequirements> {
 }
 impl PreparedTable {
     pub fn physical_plan(&self) -> PhysicalPlan {
-        Arc::new(PartitionSetExec::new(
+        Arc::new(PartitionSetExec::with_tag(
             self.parts.clone(),
             self.schema.clone(),
+            Some(self.schema.fields().len() - 1),
         ))
     }
     pub(crate) fn ordered(&self) -> PhysicalPlan {
-        Arc::new(OrderedConcatExec::new(
+        Arc::new(OrderedConcatExec::tagged(
             self.parts.clone(),
             self.schema.clone(),
+            self.schema.fields().len() - 1,
         ))
     }
     pub(crate) async fn partition_counts(&self) -> Result<Vec<usize>> {
@@ -317,9 +323,7 @@ pub fn prepare(table: TableRef) -> BoxFuture<'static, Result<PreparedTable>> {
         };
         let schema = physical.schema();
         let known = table.partition_rows();
-        let parts: Vec<PhysicalPlan> = (0..n)
-            .map(|part| Arc::new(PartitionViewExec::new(physical.clone(), part)) as PhysicalPlan)
-            .collect();
+        let parts = partition_views(physical, n);
         let counts = known
             .filter(|counts| counts.len() == n)
             .map(|counts| counts.into_iter().map(Some).collect())
@@ -519,6 +523,16 @@ impl ExecutionPlan for ProtectedExec {
         self.input.execute(partition, context)
     }
 }
+/// One declared consumer owns the whole producer at a fanout into output
+/// partition views. Physical optimizer tree copies must share that producer's
+/// complete exchange DAG, not merely an inner random-expression boundary.
+pub(crate) fn partition_views(input: PhysicalPlan, count: usize) -> Vec<PhysicalPlan> {
+    let consumer: PhysicalPlan = Arc::new(crate::rng_context::ConsumerScopeExec::new(input));
+    (0..count)
+        .map(|index| Arc::new(PartitionViewExec::new(consumer.clone(), index)) as PhysicalPlan)
+        .collect()
+}
+
 impl PartitionViewExec {
     pub(crate) fn new(input: PhysicalPlan, index: usize) -> Self {
         let mut cache = (**input.properties()).clone();
@@ -608,9 +622,13 @@ struct PartitionSetExec {
     cache: Arc<PlanProperties>,
     requirements: Vec<Option<OrderingRequirements>>,
     concurrency: Arc<Semaphore>,
+    tag_index: Option<usize>,
 }
 impl PartitionSetExec {
     fn new(parts: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
+        Self::with_tag(parts, schema, None)
+    }
+    fn with_tag(parts: Vec<PhysicalPlan>, schema: SchemaRef, tag_index: Option<usize>) -> Self {
         let mut cache = (*properties(schema, EmissionType::Incremental)).clone();
         cache.partitioning = Partitioning::UnknownPartitioning(parts.len().max(1));
         if let Some(ordering) = parts
@@ -627,6 +645,7 @@ impl PartitionSetExec {
         }
         Self {
             requirements: parts.iter().map(required_ordering).collect(),
+            tag_index,
             parts,
             cache: Arc::new(cache),
             concurrency: Arc::new(Semaphore::new(crate::EXECUTION_CONCURRENCY)),
@@ -673,7 +692,11 @@ impl ExecutionPlan for PartitionSetExec {
         self: Arc<Self>,
         children: Vec<PhysicalPlan>,
     ) -> datafusion_common::Result<PhysicalPlan> {
-        Ok(Arc::new(Self::new(children, self.schema())))
+        Ok(Arc::new(Self::with_tag(
+            children,
+            self.schema(),
+            self.tag_index,
+        )))
     }
     fn execute(
         &self,
@@ -693,6 +716,7 @@ impl ExecutionPlan for PartitionSetExec {
         let schema = self.schema();
         let output_schema = schema.clone();
         let concurrency = self.concurrency.clone();
+        let tag_index = self.tag_index;
         let stream = async_stream::try_stream! {
             let _permit = concurrency.acquire_owned().await.map_err(|_| {
                 DataFusionError::Execution("partition concurrency gate closed".into())
@@ -701,11 +725,9 @@ impl ExecutionPlan for PartitionSetExec {
             while let Some(batch) = input.try_next().await? {
                 let schema = output_schema.clone();
                 let mut columns = batch.columns().to_vec();
-                let index = columns
-                    .len()
-                    .checked_sub(1)
-                    .ok_or_else(|| DataFusionError::Internal("partition tag is absent".into()))?;
-                columns[index] = Arc::new(UInt64Array::from_value(p as u64, batch.num_rows()));
+                if let Some(index) = tag_index {
+                    columns[index] = Arc::new(UInt64Array::from_value(p as u64, batch.num_rows()));
+                }
                 let columns = columns
                     .iter()
                     .zip(schema.fields())
@@ -725,10 +747,18 @@ pub(crate) struct OrderedConcatExec {
     parts: Vec<PhysicalPlan>,
     cache: Arc<PlanProperties>,
     requirements: Vec<Option<OrderingRequirements>>,
+    tag_index: Option<usize>,
 }
 impl OrderedConcatExec {
     pub(crate) fn new(parts: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
+        Self::with_tag(parts, schema, None)
+    }
+    pub(crate) fn tagged(parts: Vec<PhysicalPlan>, schema: SchemaRef, tag_index: usize) -> Self {
+        Self::with_tag(parts, schema, Some(tag_index))
+    }
+    fn with_tag(parts: Vec<PhysicalPlan>, schema: SchemaRef, tag_index: Option<usize>) -> Self {
         Self {
+            tag_index,
             requirements: parts.iter().map(required_ordering).collect(),
             parts,
             cache: properties(schema, EmissionType::Incremental),
@@ -772,7 +802,11 @@ impl ExecutionPlan for OrderedConcatExec {
         self: Arc<Self>,
         children: Vec<PhysicalPlan>,
     ) -> datafusion_common::Result<PhysicalPlan> {
-        Ok(Arc::new(Self::new(children, self.schema())))
+        Ok(Arc::new(Self::with_tag(
+            children,
+            self.schema(),
+            self.tag_index,
+        )))
     }
     fn execute(
         &self,
@@ -785,6 +819,7 @@ impl ExecutionPlan for OrderedConcatExec {
             ));
         }
         let parts = self.parts.clone();
+        let tag_index = self.tag_index;
         let schema = self.schema();
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
@@ -793,7 +828,7 @@ impl ExecutionPlan for OrderedConcatExec {
                 while let Some((id, mut stream)) = inputs.next().await {
                     while let Some(batch)=stream.try_next().await? {
                         let mut columns=batch.columns().to_vec();
-                        if !columns.is_empty() {let last=columns.len()-1;columns[last]=Arc::new(UInt64Array::from_iter_values(std::iter::repeat_n(id as u64,batch.num_rows())));}
+                        if let Some(index) = tag_index {columns[index]=Arc::new(UInt64Array::from_iter_values(std::iter::repeat_n(id as u64,batch.num_rows())));}
                         let columns = columns.iter().zip(schema.fields())
                             .map(|(array, field)| arrow_cast::cast(array, field.data_type()))
                             .collect::<std::result::Result<Vec<_>, _>>()?;
@@ -805,106 +840,74 @@ impl ExecutionPlan for OrderedConcatExec {
     }
 }
 
-/// An action-local adapter for callers requiring one ordered input (for example
-/// a total aggregate). Its execution still resolves real independent children.
-#[derive(Debug)]
-struct DeferredOrderedExec {
-    table: TableRef,
-    cache: Arc<PlanProperties>,
+/// Extract already-planned inputs. Semantic extensions may compose physical
+/// operators, but must never invoke the TableIR compiler on a child subtree.
+pub(crate) fn prepared_input(table: &TableRef) -> Result<PreparedTable> {
+    let TableNode::Prepared {
+        rows,
+        count,
+        n_partitions,
+        partition_counts,
+    } = table.node()
+    else {
+        return Err(TableError::Invalid(
+            "semantic operator requires an already-planned child".into(),
+        ));
+    };
+    let actual = rows.properties().output_partitioning().partition_count();
+    if actual != *n_partitions {
+        return Err(TableError::Invalid(format!(
+            "prepared child has {actual} partitions, expected {n_partitions}"
+        )));
+    }
+    let parts = partition_views(rows.clone(), actual);
+    let counts = partition_counts
+        .as_ref()
+        .filter(|counts| counts.len() == actual)
+        .map(|counts| counts.iter().copied().map(Some).collect())
+        .unwrap_or_else(|| {
+            if actual == 1 {
+                vec![*count]
+            } else {
+                vec![None; actual]
+            }
+        });
+    Ok(PreparedTable {
+        parts,
+        counts,
+        schema: rows.schema(),
+    })
 }
-impl DisplayAs for DeferredOrderedExec {
-    fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "OrderedTablePartitionsExec")
-    }
+
+/// Declare a separate planning-phase consumer of an already planned producer.
+/// All output partition views share this one fork; independent passes do not
+/// compete for a channel-based exchange's output streams.
+fn fork_input(table: &TableRef) -> Result<PreparedTable> {
+    let TableNode::Prepared { rows, .. } = table.node() else {
+        return Err(TableError::Invalid(
+            "consumer fork requires an already-planned child".into(),
+        ));
+    };
+    let mut input = prepared_input(table)?;
+    let rows = reset_plan_states(rows.clone())?;
+    let count = rows.properties().output_partitioning().partition_count();
+    input.parts = partition_views(rows, count);
+    Ok(input)
 }
-impl ExecutionPlan for DeferredOrderedExec {
-    fn name(&self) -> &'static str {
-        "OrderedTablePartitionsExec"
-    }
-    fn properties(&self) -> &Arc<PlanProperties> {
-        &self.cache
-    }
-    fn children(&self) -> Vec<&PhysicalPlan> {
-        vec![]
-    }
-    fn apply_expressions(
-        &self,
-        _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
-    ) -> datafusion_common::Result<TreeNodeRecursion> {
-        Ok(TreeNodeRecursion::Continue)
-    }
-    fn with_new_children(
-        self: Arc<Self>,
-        children: Vec<PhysicalPlan>,
-    ) -> datafusion_common::Result<PhysicalPlan> {
-        if !children.is_empty() {
-            return Err(DataFusionError::Plan(
-                "deferred table has no physical children until preparation".into(),
-            ));
-        }
-        Ok(self)
-    }
-    fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
-        // Prepared leaves contain action-local physical plans outside the
-        // physical child tree. Replays must reset those plans as well.
-        let table = match self.table.node() {
-            TableNode::Prepared {
-                rows,
-                count,
-                n_partitions,
-                partition_counts,
-            } => self.table.replacing_node(TableNode::Prepared {
-                rows: crate::partitioned::reset_plan_states(rows.clone())?,
-                count: *count,
-                n_partitions: *n_partitions,
-                partition_counts: partition_counts.clone(),
-            }),
-            _ => self.table.clone(),
-        };
-        Ok(Arc::new(Self {
-            table,
-            cache: self.cache.clone(),
-        }))
-    }
-    fn execute(
-        &self,
-        p: usize,
-        context: Arc<TaskContext>,
-    ) -> datafusion_common::Result<SendableRecordBatchStream> {
-        if p != 0 {
-            return Err(DataFusionError::Execution(
-                "ordered table adapter has one output partition".into(),
-            ));
-        }
-        let table = self.table.clone();
-        let schema = self.schema();
-        Ok(Box::pin(RecordBatchStreamAdapter::new(
-            schema,
-            async_stream::try_stream! {
-                let prepared=prepare_legacy(table).await.map_err(external)?;
-                let mut rows=prepared.ordered().execute(0,context)?;
-                while let Some(batch)=rows.try_next().await? {yield batch;}
-            },
-        )))
-    }
-}
-fn external(error: TableError) -> DataFusionError {
-    DataFusionError::External(Box::new(error))
-}
-pub(crate) fn deferred_ordered(table: TableRef) -> Result<TablePlan> {
-    let schema = plan::physical_schema(&table);
+
+pub(crate) fn prepared_ordered(table: &TableRef) -> Result<TablePlan> {
     Ok(TablePlan {
-        rows: Arc::new(DeferredOrderedExec {
-            table,
-            cache: properties(schema, EmissionType::Incremental),
-        }),
+        rows: prepared_input(table)?.ordered(),
         layout: PartitionLayout::Observed,
     })
 }
 
-pub(crate) fn prepare_legacy(table: TableRef) -> BoxFuture<'static, Result<PreparedTable>> {
+/// Plan one semantic extension over physical children already produced by
+/// DataFusion's single logical tree. This function does not recurse on TableIR.
+pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<PreparedTable>> {
     async move {
         let schema=plan::physical_schema(&table);
+        for child in crate::logical::children(&table) { prepared_input(&child)?; }
         match table.node() {
             TableNode::Lookup {left,right,keys,field,bindings,all_matches,interval_mode,query_interval_mode} => crate::lookup::prepare(&table,left,right,keys,field,bindings,*all_matches,*interval_mode,*query_interval_mode).await,
             TableNode::Join {left,right,kind,join_key} if matches!(kind,crate::TableJoinKind::Semi|crate::TableJoinKind::Anti) =>
@@ -919,96 +922,70 @@ pub(crate) fn prepare_legacy(table: TableRef) -> BoxFuture<'static, Result<Prepa
             TableNode::Expression { expression, bindings, n_partitions } => {
                 let input = plan::expression_array(expression, bindings)?;
                 let source: PhysicalPlan = Arc::new(ExpressionSourceExec::new(input, table.clone(), *n_partitions));
-                let parts = (0..*n_partitions).map(|p| Arc::new(PartitionViewExec::new(source.clone(), p)) as PhysicalPlan).collect();
+                let parts = partition_views(source, *n_partitions);
                 Ok(PreparedTable { parts, counts: vec![None; *n_partitions], schema })
             }
             TableNode::Prepared {rows,count,n_partitions,partition_counts}=> {
                 let actual=rows.properties().output_partitioning().partition_count();
                 if actual!=*n_partitions{return Err(TableError::Invalid(format!("prepared leaf has {actual} physical partitions, expected {n_partitions}")));}
                 let fresh=crate::partitioned::reset_plan_states(rows.clone())?;
-                let parts=(0..actual).map(|p|Arc::new(PartitionViewExec::new(fresh.clone(),p)) as PhysicalPlan).collect();
+                let parts=partition_views(fresh, actual);
                 let counts=partition_counts.as_ref().filter(|counts|counts.len()==actual)
                     .map(|counts|counts.iter().copied().map(Some).collect())
                     .unwrap_or_else(||if actual==1{vec![*count]}else{vec![None;actual]});
                 Ok(PreparedTable {parts,counts,schema})
             }
             TableNode::IntervalRead {child,intervals,point_type,filter}=>crate::interval_read::prepare(child,intervals,point_type,*filter).await,
-            TableNode::MapGlobals {child}=> {let mut input=prepare_legacy(child.clone()).await?;input.schema=schema;Ok(input)},
+            TableNode::MapGlobals {child}=> {let mut input=prepared_input(child)?;input.schema=schema;Ok(input)},
             TableNode::MapRows {child,..}|TableNode::Filter {child,..}|TableNode::Explode {child,..}|TableNode::GroupWithinPartitions {child,..}|TableNode::MapPartitions {child,..}=> {
-                let input=prepare_legacy(child.clone()).await?;
+                let input=prepared_input(child)?;
                 let mut parts=Vec::with_capacity(input.parts.len());let mut counts=Vec::with_capacity(input.parts.len());
                 for (physical,count) in input.parts.into_iter().zip(input.counts) {
                     let replacement=TableIR::prepared(child,physical,count,1);
                     let node=replace_child(table.node().clone(),replacement)?;
                     let one=table.replacing_node(node);
-                    parts.push(plan::lower(&one)?.rows);
+                    parts.push(plan::lower_operation(&one)?.rows);
                     counts.push(match table.node() {TableNode::MapRows {..}=>count,TableNode::GroupWithinPartitions {n,..}=>count.map(|r|r.div_ceil(*n)),_=>None});
                 }
                 Ok(PreparedTable {parts,counts,schema})
             }
             TableNode::FilterPartitions {child,parts,keep}=> {
-                let input=prepare_legacy(child.clone()).await?;
+                let input=prepared_input(child)?;
                 if let Some(invalid)=parts.iter().find(|&&p|p>=input.parts.len()) {return Err(TableError::Invalid(format!("_filter_partitions: no partition with index {invalid} (num partitions = {})",input.parts.len())));}
                 let (selected,counts)=input.parts.into_iter().zip(input.counts).enumerate().filter(|(i,_)|parts.contains(i)==*keep).map(|(_,entry)|entry).unzip();
                 Ok(PreparedTable {parts:selected,counts,schema})
             }
-            TableNode::Head {child,n}|TableNode::Tail {child,n}=> {
-                if *n==0{return Ok(PreparedTable {parts:vec![],counts:vec![],schema});}
-                let mut input=prepare_legacy(child.clone()).await?;
-                let tail=matches!(table.node(),TableNode::Tail {..});
-                let known=if let Some(lengths)=child.partition_rows(){lengths}else {input.partition_counts().await?};
-                if input.counts.iter().any(Option::is_none) { input=prepare_legacy(child.clone()).await?; }
-                let mut remaining=*n;let mut selected=Vec::new();
-                let indices:Vec<usize>=if tail {(0..input.parts.len()).rev().collect()}else{(0..input.parts.len()).collect()};
-                for i in indices {
-                    let count=known[i].min(remaining);
-                    if count==0{continue;}
-                    let skip=if tail {known[i]-count}else{0};
-                    let plan:PhysicalPlan=Arc::new(GlobalLimitExec::new(input.parts[i].clone(),skip,Some(count)));
-                    selected.push((i,plan,Some(count)));remaining-=count;
-                    if remaining==0{break;}
-                }
-                selected.sort_by_key(|(i,_,_)|*i);
-                let (parts,counts)=selected.into_iter().map(|(_,p,n)|(p,n)).unzip();
-                Ok(PreparedTable {parts,counts,schema})
+            // Tail needs only a bounded suffix buffer, not a full-input count
+            // window or a counting pass followed by a second data scan.
+            TableNode::Tail { child, .. } => {
+                let input = prepared_input(child)?;
+                let one = table.replacing_node(replace_tail_child(table.node().clone(), TableIR::prepared(child, input.ordered(), None, 1))?);
+                let rows = plan::lower_operation(&one)?.rows;
+                Ok(PreparedTable { schema: rows.schema(), parts: vec![rows], counts: vec![None] })
             }
             TableNode::Repartition {child,n,strategy}=> {
-                // Hail's Range simplification can regenerate any requested layout
-                // without moving input rows, including a naive/coalesce increase.
-                if let TableNode::Range {n:rows,..}=child.node(){return prepare_legacy(TableIR::range(*rows,*n)?).await;}
-                let mut input=prepare_legacy(child.clone()).await?;
+                let mut input=prepared_input(child)?;
                 if *strategy!=RepartitionStrategy::Shuffle {
                     let counts=if *strategy==RepartitionStrategy::NaiveCoalesce {vec![0;input.parts.len()]} else {input.partition_counts().await?};
-                    if *strategy!=RepartitionStrategy::NaiveCoalesce && input.counts.iter().any(Option::is_none) { input=prepare_legacy(child.clone()).await?; }
+                    if *strategy!=RepartitionStrategy::NaiveCoalesce && input.counts.iter().any(Option::is_none) { input=fork_input(child)?; }
                     let entries=counts.iter().copied().enumerate().collect::<Vec<_>>();
                     let ends=crate::partitioning::coalesce_ends(&entries,*n,*strategy);
                     let mut start=0;let mut parts=Vec::new();let mut sizes=Vec::new();
                     for end in ends {
-                        parts.push(Arc::new(OrderedConcatExec::new(input.parts[start..=end].to_vec(),schema.clone())) as PhysicalPlan);
+                        parts.push(Arc::new(OrderedConcatExec::tagged(input.parts[start..=end].to_vec(),schema.clone(),schema.fields().len()-1)) as PhysicalPlan);
                         sizes.push(input.counts[start..=end].iter().copied().collect::<Option<Vec<_>>>().map(|c|c.into_iter().sum()));start=end+1;
                     }
                     Ok(PreparedTable {parts,counts:sizes,schema})
                 } else {shuffle(input,child,child.keys(),*n).await}
             }
-            TableNode::KeyBy {child,keys} if keys.is_empty()=>prepare_legacy(child.clone()).await,
-            TableNode::KeyBy {child,..} => {
-                let n = child.known_n_partitions().unwrap_or(1);
-                let sorted = global(&table).await?;
-                if n == 1 { Ok(sorted) } else {
-                    // The ordinary sort produces one ordered stream. Split it
-                    // with DataFusion range repartitioning by stable ordinal,
-                    // keeping the original number of real execution partitions.
-                    let count = sorted.counts.iter().copied().collect::<Option<Vec<_>>>().map(|c|c.into_iter().sum());
-                    let prepared = TableIR::prepared(&table, sorted.ordered(), count, 1);
-                    shuffle(sorted, &prepared, &[], n).await
-                }
-            },
-            TableNode::OrderBy {child,keys} if keys.is_empty()=>prepare_legacy(child.clone()).await,
+            TableNode::KeyBy {child,keys} if keys.is_empty()=>Ok(prepared_input(child)?),
+            TableNode::KeyBy { .. } => global(&table).await,
+            TableNode::OrderBy {child,keys} if keys.is_empty()=>Ok(prepared_input(child)?),
             TableNode::Union {children} if table.keys().is_empty()=> {
                 let mut parts = Vec::new();
                 let mut counts = Vec::new();
                 for child in children {
-                    let input = prepare_legacy(child.clone()).await?;
+                    let input = prepared_input(child)?;
                     for (part, count) in input.parts.into_iter().zip(input.counts) {
                         let mut fields: Vec<(Arc<dyn PhysicalExpr>, String)> = Vec::new();
                         for field in table.schema().fields() {
@@ -1028,6 +1005,14 @@ pub(crate) fn prepare_legacy(table: TableRef) -> BoxFuture<'static, Result<Prepa
             _=>global(&table).await,
         }
     }.boxed()
+}
+fn replace_tail_child(mut node: TableNode, child: TableRef) -> Result<TableNode> {
+    if let TableNode::Tail { child: target, .. } = &mut node {
+        *target = child;
+        Ok(node)
+    } else {
+        Err(TableError::Invalid("expected tail extension".into()))
+    }
 }
 fn replace_child(mut node: TableNode, child: TableRef) -> Result<TableNode> {
     match &mut node {
@@ -1057,7 +1042,7 @@ async fn global(table: &TableRef) -> Result<PreparedTable> {
         _ => None,
     };
     let one = if let Some(child) = child {
-        let input = prepare_legacy(child.clone()).await?;
+        let input = prepared_input(child)?;
         let count = input
             .counts
             .iter()
@@ -1066,12 +1051,12 @@ async fn global(table: &TableRef) -> Result<PreparedTable> {
             .map(|c| c.into_iter().sum());
         table.replacing_node(replace_child(
             table.node().clone(),
-            TableIR::prepared(child, input.ordered(), count, input.parts.len()),
+            TableIR::prepared(child, input.ordered(), count, 1),
         )?)
     } else {
         table.clone()
     };
-    let rows = plan::lower(&one)?.rows;
+    let rows = plan::lower_operation(&one)?.rows;
     Ok(PreparedTable {
         schema: rows.schema(),
         parts: vec![rows],
@@ -1120,7 +1105,7 @@ async fn shuffle(
     let total: usize = counts.iter().sum();
     let context = Arc::new(TaskContext::default());
     if input.counts.iter().any(Option::is_none) {
-        input = prepare_legacy(child.clone()).await?;
+        input = fork_input(child)?;
     }
     let ordered = input.ordered();
     let (numbered, range) = if keys.is_empty() {
@@ -1159,7 +1144,7 @@ async fn shuffle(
     } else {
         let ranges =
             crate::partitioning::key_ranges(ordered.clone(), keys, total, n, context).await?;
-        input = prepare_legacy(child.clone()).await?;
+        input = fork_input(child)?;
         let ordered = input.ordered();
         let range = RangePartitioning::try_new(ranges.ordering, ranges.splits)?;
         (plan::ordinal(ordered), range)
@@ -1195,18 +1180,18 @@ async fn shuffle(
             let ordinal = plan::ordinal(input.ordered());
             ordinal.schema()
         });
-    let inputs: PhysicalPlan = Arc::new(PartitionSetExec::new(numbered_parts, numbered_schema));
-    let shuffled: PhysicalPlan = Arc::new(RepartitionExec::try_new(
-        inputs,
-        Partitioning::Range(range),
-    )?);
+    let inputs: PhysicalPlan = Arc::new(PartitionSetExec::with_tag(
+        numbered_parts,
+        numbered_schema,
+        None,
+    ));
+    let shuffled: PhysicalPlan = Arc::new(ProtectedRangeRepartitionExec::new(inputs, range)?);
     let count = shuffled
         .properties()
         .output_partitioning()
         .partition_count();
     let mut parts = Vec::with_capacity(count);
-    for p in 0..count {
-        let selected: PhysicalPlan = Arc::new(OutputPartitionExec::new(shuffled.clone(), p));
+    for selected in partition_views(shuffled, count) {
         let last = selected.schema().fields().len() - 1;
         let sorted: PhysicalPlan = Arc::new(SortExec::new(
             LexOrdering::new(vec![PhysicalSortExpr::new(
@@ -1216,6 +1201,9 @@ async fn shuffle(
             .unwrap(),
             selected,
         ));
+        // Observe the ordinal ordering before projecting the ordinal away.
+        // Otherwise DF may remove the sort as an unobserved intermediate order.
+        let sorted: PhysicalPlan = Arc::new(ProtectedExec::new(sorted, "VailShuffleOrderExec"));
         let expressions: Vec<_> = (0..last)
             .map(|i| (column(&sorted, i), sorted.schema().field(i).name().clone()))
             .collect();
@@ -1235,81 +1223,6 @@ async fn shuffle(
         parts,
     })
 }
-#[derive(Debug)]
-struct OutputPartitionExec {
-    input: PhysicalPlan,
-    partition: usize,
-    cache: Arc<PlanProperties>,
-}
-impl OutputPartitionExec {
-    fn new(input: PhysicalPlan, partition: usize) -> Self {
-        Self {
-            cache: properties(input.schema(), EmissionType::Incremental),
-            input,
-            partition,
-        }
-    }
-}
-impl DisplayAs for OutputPartitionExec {
-    fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // This selected-partition boundary owns the exact internal partition
-        // map. Show its physical subtree even though the optimizer must not
-        // rewrite that subtree independently of the selected index.
-        write!(
-            f,
-            "OutputPartitionExec: partition={}\n{}",
-            self.partition,
-            datafusion_physical_plan::displayable(self.input.as_ref()).indent(true)
-        )
-    }
-}
-impl ExecutionPlan for OutputPartitionExec {
-    fn name(&self) -> &'static str {
-        "OutputPartitionExec"
-    }
-    fn properties(&self) -> &Arc<PlanProperties> {
-        &self.cache
-    }
-    fn children(&self) -> Vec<&PhysicalPlan> {
-        vec![]
-    }
-    fn apply_expressions(
-        &self,
-        _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
-    ) -> datafusion_common::Result<TreeNodeRecursion> {
-        Ok(TreeNodeRecursion::Continue)
-    }
-    fn with_new_children(
-        self: Arc<Self>,
-        children: Vec<PhysicalPlan>,
-    ) -> datafusion_common::Result<PhysicalPlan> {
-        if !children.is_empty() {
-            return Err(DataFusionError::Plan(
-                "selected partition boundary has no rewritable children".into(),
-            ));
-        }
-        Ok(self)
-    }
-    fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
-        Ok(Arc::new(Self::new(
-            crate::partitioned::reset_plan_states(self.input.clone())?,
-            self.partition,
-        )))
-    }
-    fn execute(
-        &self,
-        p: usize,
-        ctx: Arc<TaskContext>,
-    ) -> datafusion_common::Result<SendableRecordBatchStream> {
-        if p != 0 {
-            return Err(DataFusionError::Execution(
-                "partition view has one output".into(),
-            ));
-        }
-        self.input.execute(self.partition, ctx)
-    }
-}
-
 pub async fn count(table: TableRef) -> Result<usize> {
     crate::logical::count(&table).await
 }

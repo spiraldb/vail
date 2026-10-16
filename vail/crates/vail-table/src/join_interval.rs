@@ -47,8 +47,8 @@ pub(crate) async fn prepare(
     kind: TableJoinKind,
     join_key: usize,
 ) -> Result<PreparedTable> {
-    let left_input = crate::partitioned::prepare_legacy(left.clone()).await?;
-    let right_input = crate::partitioned::prepare_legacy(right.clone()).await?;
+    let left_input = crate::partitioned::prepared_input(left)?;
+    let right_input = crate::partitioned::prepared_input(right)?;
     let left_bounds = bounds(left, &left_input, join_key).await?;
     let right_bounds = bounds(right, &right_input, join_key).await?;
     let cells = cells(&left_bounds, &right_bounds)?;
@@ -103,8 +103,8 @@ pub(crate) async fn prepare_membership(
     kind: TableJoinKind,
     join_key: usize,
 ) -> Result<PreparedTable> {
-    let left_input = crate::partitioned::prepare_legacy(left.clone()).await?;
-    let right_input = crate::partitioned::prepare_legacy(right.clone()).await?;
+    let left_input = crate::partitioned::prepared_input(left)?;
+    let right_input = crate::partitioned::prepared_input(right)?;
     let left_bounds = bounds(left, &left_input, join_key).await?;
     let right_bounds = bounds(right, &right_input, join_key).await?;
     let right_index = BoundIndex::new(&right_bounds)?;
@@ -155,7 +155,11 @@ fn empty_like(schema: &SchemaRef) -> Result<PhysicalPlan> {
 
 fn concat_cell(table: &TableRef, parts: Vec<PhysicalPlan>) -> Result<PhysicalPlan> {
     let schema = plan::physical_schema(table);
-    Ok(Arc::new(OrderedConcatExec::new(parts, schema)))
+    Ok(Arc::new(OrderedConcatExec::tagged(
+        parts,
+        schema.clone(),
+        schema.fields().len() - 1,
+    )))
 }
 
 /// Reuse the same key cells for multi-way joins, preserving one independently
@@ -169,7 +173,7 @@ pub(crate) async fn prepare_zip(
     let mut inputs = Vec::with_capacity(tables.len());
     let mut all_bounds = Vec::new();
     for table in tables {
-        let prepared = crate::partitioned::prepare_legacy(table.clone()).await?;
+        let prepared = crate::partitioned::prepared_input(table)?;
         let bounds = bounds(table, &prepared, join_key).await?;
         all_bounds.extend(bounds.iter().cloned());
         inputs.push((table.clone(), prepared, bounds));

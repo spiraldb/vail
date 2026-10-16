@@ -150,7 +150,7 @@ pub(crate) fn extract(
             let mut nested = steps.to_vec();
             nested.push(Step::Filter((**predicate).clone()));
             let mut has_aggregate = false;
-            body.visit(&mut |node| {
+            body.visit_unique(&mut |node| {
                 has_aggregate |= matches!(
                     node,
                     Expr::Aggregate { .. }
@@ -177,7 +177,7 @@ pub(crate) fn extract(
                 parameter: parameter.clone(),
             });
             let mut has_aggregate = false;
-            body.visit(&mut |node| {
+            body.visit_unique(&mut |node| {
                 has_aggregate |= matches!(
                     node,
                     Expr::Aggregate { .. }
@@ -204,7 +204,7 @@ pub(crate) fn extract(
 /// stay lexical and continue through the existing scalar-expression lowering.
 pub(crate) fn resolve(expr: &Expr, scope: &BTreeMap<String, String>) -> Result<Expr> {
     match expr {
-        Expr::LambdaVariable { name } if scope.contains_key(name) => Ok(Expr::Column {
+        Expr::LambdaVariable { name, .. } if scope.contains_key(name) => Ok(Expr::Column {
             name: scope[name].clone(),
         }),
         Expr::ArrayMap { parameter, .. }
@@ -378,7 +378,7 @@ pub(crate) fn lower_fold(
             ))
         })
         .collect::<Result<BTreeMap<_, _>>>()?;
-    let seq = lower_with_bindings(&seq, &seq_schema, globals, &seq_indices)?;
+    let seq = vail_execution::fold_aggregate::FoldProgram::lower(&seq, &seq_schema, globals, &seq_indices)?;
     let combine = resolve(
         combine,
         &BTreeMap::from([
@@ -390,13 +390,10 @@ pub(crate) fn lower_fold(
         Field::new(&left, state_type.clone(), true),
         Field::new(&right, state_type.clone(), true),
     ]));
-    let combine = lower_with_bindings(
-        &combine,
-        &combine_schema,
-        &Schema::empty(),
-        &BTreeMap::new(),
+    let combine = vail_execution::fold_aggregate::FoldProgram::lower(
+        &combine, &combine_schema, &Schema::empty(), &BTreeMap::new(),
     )?;
-    if combine.data_type(&combine_schema)? != state_type {
+    if combine.output_type()? != state_type {
         return Err(TableError::Invalid("fold combine type mismatch".into()));
     }
     let packed = Expr::Struct {

@@ -1,0 +1,19 @@
+
+running 13 tests
+test logical_expr::tests::set_equality_reports_missing_logical_collection_support ... ok
+test logical_expr::tests::equality_remains_a_native_binary_expression ... ok
+test logical_expr::tests::ordinary_binary_expression_stays_visible_to_optimizer ... ok
+test logical_expr::tests::distinct_physical_kernels_have_distinct_optimizer_identities ... ok
+test logical_expr::tests::reconstructed_pure_kernels_have_the_same_native_identity ... ok
+test logical_expr::tests::independent_annotations_execute_with_distinct_values ... ok
+test logical_expr::tests::integer_division_and_wrapping_keep_vail_semantics ... ok
+test logical_expr::tests::if_else_keeps_null_condition_branch_explicit ... ok
+test logical_expr::tests::integer_negation_wraps_identically_for_scalar_array_and_null ... ok
+test logical_expr::tests::array_map_fallback_is_named_for_the_semantic_operation ... ok
+test logical_expr::tests::type_restoration_constant_folds_without_erasing_nested_metadata ... ok
+test logical_expr::tests::missing_if_condition_produces_missing_and_dead_die_branch_is_not_evaluated ... ok
+test logical_expr::tests::invalid_locus_coordinate_is_deferred_until_selected ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 87 filtered out; finished in 0.01s
+
+{"elapsed_seconds": 0.022888540999701945, "max_rss_bytes": 14385152}

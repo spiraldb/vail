@@ -1,0 +1,336 @@
+{
+  "owner": "stream_scan",
+  "modules": [
+    {
+      "path": "python/vail/allele_functions.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "_mismatches and _transition index captured full allele strings inside per-character array callbacks. This copies/scans repeated strings and can be quadratic in allele length; prefer native linear character comparison (hamming already exists) and a one-pass transition kernel."
+      ],
+      "evidence": [
+        "All classification branches, missingness handling, ASCII-DNA validation and public wrappers read."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/arrow.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "_physical(tndarray) calls arr.ravel().tolist() and reconstructs Python scalar lists before creating Arrow buffers. _logical(tndarray) similarly boxes to a Python list before NumPy allocation. Shared Arrow/NumPy buffer interoperability should avoid these full scalar round trips.",
+        "Locus conversion repeatedly calls dtype.reference_genome and contigs.index; the type accessor rebuilds the complete reference mapping, so N locus literals can perform O(N * number_of_contigs) metadata work."
+      ],
+      "evidence": [
+        "C Stream import/export paths use native owners without IPC or JSON transport.",
+        "rows_to_arrow constructs complete converted row containers before Arrow allocation; ordinary Python-row input is eager, whereas already-Arrow inputs preserve buffers."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/backend.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Native backend capability reporting and local filesystem wrapper are explicit; no JVM fallback."
+      ],
+      "limitations": [
+        "Hadoop/Hail FS remains intentionally out of scope."
+      ]
+    },
+    {
+      "path": "python/vail/builders.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "SwitchBuilder._finish repeats the base expression in each case rather than binding it once. Cost depends on optimizer reuse; this is a confirmed repeated-IR construction, not a demonstrated post-optimization quadratic benchmark."
+      ],
+      "evidence": [
+        "Case branch ordering, branch type promotion and missing case handling read."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/collections.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "_direct_literal_array/_dict_from_entries choose last-key-wins for syntactically literal arrays and first-key-wins for computed arrays. Reproduced identical values yielding {1:3} versus {1:2}. This deliberately reproduces an upstream constant-folding artifact; a coherent duplicate-key policy needs an explicit compatibility decision."
+      ],
+      "evidence": [
+        "Set NaN membership/removal checked: contains(NaN)=True and remove(NaN) removes it; no defect claimed there.",
+        "Native grouping is used for nested set operations; unsupported key/order/reduction shapes raise explicitly."
+      ],
+      "limitations": [
+        "Native collection_group, lookup and equality kernels are separate modules."
+      ]
+    },
+    {
+      "path": "python/vail/context.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "TemporaryFilename is an explicit unsupported compatibility import, not an implemented resource manager."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/display.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Default display reads n+1 rows and caches only formatted sample; negative n explicitly requests complete collect. No hidden unbounded default collect."
+      ],
+      "limitations": [
+        "Native sample/limit pruning and source read counts require provider-side audit."
+      ]
+    },
+    {
+      "path": "python/vail/expr/__init__.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete compatibility namespace read; implementing modules are reused or unavailable Hail/JVM/IR functionality raises explicitly. No execution fallback or fabricated result."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/expr/expressions/__init__.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete compatibility namespace read; implementing modules are reused or unavailable Hail/JVM/IR functionality raises explicitly. No execution fallback or fabricated result."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/expr/expressions/base_expression.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete compatibility namespace read; implementing modules are reused or unavailable Hail/JVM/IR functionality raises explicitly. No execution fallback or fabricated result."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/expr/expressions/typed_expressions.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete compatibility namespace read; implementing modules are reused or unavailable Hail/JVM/IR functionality raises explicitly. No execution fallback or fabricated result."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/expr/functions.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete compatibility namespace read; implementing modules are reused or unavailable Hail/JVM/IR functionality raises explicitly. No execution fallback or fabricated result."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/genetics/__init__.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete compatibility namespace read; implementing modules are reused or unavailable Hail/JVM/IR functionality raises explicitly. No execution fallback or fabricated result."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/ir/__init__.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete compatibility namespace read; implementing modules are reused or unavailable Hail/JVM/IR functionality raises explicitly. No execution fallback or fabricated result."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/ir/renderer.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete compatibility namespace read; implementing modules are reused or unavailable Hail/JVM/IR functionality raises explicitly. No execution fallback or fabricated result."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/inputs.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Row shape inference, Arrow-backed literal ownership, mixed expression assembly and lazy global binding all read. Row-indexed/lookup inputs are explicitly rejected."
+      ],
+      "limitations": [
+        "Large ordinary Python literal construction remains eager; ndarray boxing issue is recorded under arrow.py."
+      ]
+    },
+    {
+      "path": "python/vail/linalg/__init__.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "BlockMatrix is only a constant-fill entry-table interoperability wrapper. fill accepts block_size without using or rejecting it; actual block storage/algebra is absent. Clarify/reject unsupported sizing rather than imply it controls execution."
+      ],
+      "evidence": [
+        "entries constructs a lazy range table, with no full Python matrix materialization."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/lookups.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Key normalization, source checking, owner capture and lookup-reference deduplication read. Added validation of native declared type hints against actual lookup output schema."
+      ],
+      "limitations": [
+        "Each fresh lookup call has a fresh identity; build-side execution reuse must be verified in the native planner.",
+        "Python recursive rewrites do not preserve shared DAG work automatically; global DAG compilation concern applies."
+      ]
+    },
+    {
+      "path": "python/vail/nd.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "nd.array delegates through arrow_literal, whose ndarray conversion boxes NumPy buffers into Python scalar lists; see arrow.py."
+      ],
+      "evidence": [
+        "arange remains expression-based and attaches ndarray metadata via a native cast, rather than materializing a NumPy range."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/qc.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Full variant_qc/HWE wrapper read. Row statistics remain lazy expressions, call_stats uses shared reducers, and matrix column count is a native frontend scope leaf resolved by its owner."
+      ],
+      "limitations": [
+        "Genomic statistical algorithms and matrix row aggregate lowering require separate native/planner audit."
+      ]
+    },
+    {
+      "path": "python/vail/queries.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "_query_rows eagerly evals any non-row-indexed query key, including global-dependent expressions, while constructing the query expression. This creates an action boundary and materializes keys before normal action planning; dynamic native bounds should be bound at the owning action instead."
+      ],
+      "evidence": [
+        "Row-indexed queries lower through all-matches lookup; constant intervals use pruning-aware interval filtering."
+      ],
+      "limitations": [
+        "Avoided-read guarantees must be proven with provider I/O counters, not just plan shape."
+      ]
+    },
+    {
+      "path": "python/vail/reference_genome.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "ReferenceGenome.__eq__ builds full mapping/list definitions for comparison; Locus validation reads the copying lengths property repeatedly and contig ordinals use tuple.index. Together with tlocus.reference_genome reconstruction this causes metadata work proportional to reference size per scalar locus. Prefer shared native immutable reference handles and cached ordinal lookup."
+      ],
+      "evidence": [
+        "External JSON reference file reads are actual persisted formats, not in-memory transport. Sequence/liftover APIs explicitly reject unsupported operations."
+      ],
+      "limitations": [
+        "types.py was only inspected at tlocus.reference_genome accessor; the parent owns its full review."
+      ]
+    },
+    {
+      "path": "python/vail/simulation.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete Balding-Nichols port read, including argument validation and native lazy row/column/entry RNG construction. Generated genotypes are retained as fields before call construction to avoid repeated draws/metadata expansion."
+      ],
+      "limitations": [
+        "Partition parameters remain intentionally untouched: user requested recording the partitioning divergence before implementation.",
+        "Native _generate and RNG layout performance are separate planner modules."
+      ]
+    },
+    {
+      "path": "python/vail/strings.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "_slice_bound(step) and _translate_dynamic build a position array and call substring/index on a captured whole string per element. This repeats full string capture/copy and Unicode traversal rather than scanning once. Dynamic translation also captures the complete dictionary per character. A typed native scalar kernel should consume string/codepoints and dictionary once.",
+        "translate evaluates a native literal dictionary through hl.eval during expression construction to recover a Python mapping. This is pure literal data, but introduces an unnecessary action/latency boundary."
+      ],
+      "evidence": [
+        "UTF-8/codepoint behavior is intentional and preserved; no UTF-16 compatibility restoration requested."
+      ],
+      "limitations": []
+    },
+    {
+      "path": "python/vail/utils/__init__.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete local utility/compatibility surface read. JVM-only operations raise explicitly; subprocess execution occurs only on explicit run_command use; temporary path helper returns an uncreated randomized path."
+      ],
+      "limitations": [
+        "Hadoop/Hail FS support is intentionally excluded."
+      ]
+    },
+    {
+      "path": "python/vail/utils/java.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete local utility/compatibility surface read. JVM-only operations raise explicitly; subprocess execution occurs only on explicit run_command use; temporary path helper returns an uncreated randomized path."
+      ],
+      "limitations": [
+        "Hadoop/Hail FS support is intentionally excluded."
+      ]
+    },
+    {
+      "path": "python/vail/utils/misc.py",
+      "depth": "full",
+      "status": "reviewed",
+      "findings": [],
+      "evidence": [
+        "Complete local utility/compatibility surface read. JVM-only operations raise explicitly; subprocess execution occurs only on explicit run_command use; temporary path helper returns an uncreated randomized path."
+      ],
+      "limitations": [
+        "Hadoop/Hail FS support is intentionally excluded."
+      ]
+    },
+    {
+      "path": "python/vail/variant.py",
+      "depth": "full",
+      "status": "findings queued",
+      "findings": [
+        "_min_rep scans allele strings via captured per-character substring/index callbacks, repeating the same string-capture cost as strings.py/allele_functions.py.",
+        "split_multi_hts builds and rescans the original O(A^2) genotype PL coordinates for each of A split alleles, yielding O(A^3) work relative to O(A^2) input. Native shared downcoding can compute incident minima and the few excluded-allele minima once per original variant."
+      ],
+      "evidence": [
+        "PL diploid/haploid branches, GT/PGT downcoding, AD/GQ updates and symbolic allele behavior read. Table/VEP support is explicitly unavailable."
+      ],
+      "limitations": []
+    }
+  ]
+}

@@ -2,18 +2,18 @@
 use arrow_array::{Array, ArrayRef, Int64Array, ListArray};
 use arrow_schema::DataType;
 use datafusion_common::{DataFusionError, Result, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use datafusion_expr::{Accumulator, AggregateUDF};
 use std::sync::Arc;
 
 pub fn length_udaf(dtype: &DataType) -> Arc<AggregateUDF> {
-    Arc::new(create_udaf(
+    crate::kernel_identity::aggregate_named(
         "vail_array_agg_length",
+        dtype.clone(),
         vec![dtype.clone()],
-        Arc::new(DataType::Int64),
-        Volatility::Immutable,
+        DataType::Int64,
+        vec![DataType::Int64],
         Arc::new(|_| Ok(Box::new(Length(None)))),
-        Arc::new(vec![DataType::Int64]),
-    ))
+    )
 }
 #[derive(Debug)]
 struct Length(Option<i64>);

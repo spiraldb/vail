@@ -362,21 +362,25 @@ async fn range_shuffle_and_coalesce_survive_planning_and_repeat_actions() {
     assert_eq!(coalesced.collect_partitions().await.unwrap().len(), 2);
 }
 #[tokio::test]
-async fn actual_shuffle_output_is_a_datafusion_repartition() {
+async fn actual_shuffle_output_has_disjoint_ordered_key_ranges() {
     let shuffled = keyed_source()
         .repartition(3, RepartitionStrategy::Shuffle)
         .unwrap();
     let prepared = partitioned::prepare(shuffled).await.unwrap();
     let plan = prepared.physical_plan();
-    assert_eq!(plan.output_partitioning().partition_count(), 3);
-    let display = datafusion_physical_plan::displayable(plan.as_ref())
-        .indent(true)
-        .to_string();
-    assert!(display.contains("RepartitionExec"), "{display}");
-    assert!(display.contains("Range("), "{display}");
-    assert!(display.contains("SortExec"), "{display}");
-    assert_eq!(
-        values(plan.execute(1, Arc::new(TaskContext::default())).unwrap()).await,
-        vec![4, 5, 6, 7]
-    );
+    let context = Arc::new(TaskContext::default());
+    let mut all = Vec::new();
+    let mut previous = None;
+    for partition in 0..plan.output_partitioning().partition_count() {
+        let part = values(plan.execute(partition, context.clone()).unwrap()).await;
+        assert!(part.windows(2).all(|pair| pair[0] <= pair[1]));
+        if let (Some(last), Some(first)) = (previous, part.first()) {
+            assert!(last < *first);
+        }
+        if let Some(last) = part.last() {
+            previous = Some(*last);
+        }
+        all.extend(part);
+    }
+    assert_eq!(all, (0..12).collect::<Vec<_>>());
 }

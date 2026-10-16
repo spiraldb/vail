@@ -16,6 +16,11 @@ def _cast(value, dtype):
 
 
 def _function(name, args, dtype):
+    if name.startswith("__vail_list_reduce_"):
+        from ._native import supports_list_reducer
+        function = name.removeprefix("__vail_list_reduce_")
+        if not supports_list_reducer(function):
+            raise NotImplementedError(f"per-list {function} reducer is not supported")
     source = None
     for arg in args:
         source = _merge_sources(source, arg.source)

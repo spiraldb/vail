@@ -104,7 +104,7 @@ pub(crate) fn lower(
     let mut key_value_names = Vec::with_capacity(tables.len());
     let mut ordinal_names = Vec::with_capacity(tables.len());
     for (table_index, table) in tables.iter().enumerate() {
-        let mut rows = crate::partitioned::deferred_ordered(table.clone())?.rows;
+        let mut rows = crate::partitioned::prepared_ordered(table)?.rows;
         let schema = rows.schema();
         let key_indices = keys
             .iter()

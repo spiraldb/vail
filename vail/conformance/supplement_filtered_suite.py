@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+from upstream_scope import exclusion_reason
 
 
 def main():
@@ -33,13 +34,16 @@ def main():
         for path in folder.glob('[0-9]*.json'):
             result = json.loads(path.read_text())
             observed.add((result['module'], result['name']))
-    cases = [row for row in manifest['included'] if (row['module'], row['name']) not in observed]
+    cases = [row for row in manifest['included']
+             if (row['module'], row['name']) not in observed
+             and exclusion_reason(row['module'], row['name']) is None]
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / 'selection.json').write_text(json.dumps(cases, indent=2))
     runner = Path(__file__).with_name('full_hail_bodies.py').resolve()
     def run(pair):
         index, case = pair
         result_path = args.output / f'{index:04d}.json'
+        result_path.unlink(missing_ok=True)
         command = [sys.executable, str(runner), '--suite', str(source), '--output', str(result_path),
                    '--worker-source', str(source / case['module']), '--worker-name', case['name']]
         with result_path.with_suffix('.log').open('w') as log:

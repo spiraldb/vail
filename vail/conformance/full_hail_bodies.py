@@ -8,6 +8,7 @@ import argparse
 from upstream_scope import exclusion_reason
 import ast
 import copy
+import hashlib
 import inspect
 import itertools
 import json
@@ -37,6 +38,8 @@ def worker(source, name, output, suite):
     from upstream_matrix_cases import BackendDependency
     tree = ast.parse(source.read_text())
     report = dict(module=str(source.relative_to(suite)), name=name, variants=[], setup_errors=[],
+                  execution_mode='isolated_original_body',
+                  source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
                   backend=hl.current_backend().name,
                   backend_capabilities=sorted(hl.current_backend().capabilities))
     def save():
@@ -245,7 +248,7 @@ def worker(source, name, output, suite):
                 else:
                     target(**kwargs)
             except BaseException as exc:
-                outcome.update(status='blocked' if phase == 'fixture' or isinstance(exc, (NameError, KeyError)) else 'failed',
+                outcome.update(status='blocked' if phase == 'fixture' else 'failed',
                                category=backend.classify_failure(phase, exc),
                                phase=phase, error_type=type(exc).__name__, error=str(exc), traceback=traceback.format_exc())
             report['variants'].append(outcome)
@@ -269,8 +272,7 @@ def main():
                         help='Also attempt backend-specific definitions')
     args = parser.parse_args()
     if args.worker_name:
-        if args.output.exists():
-            return
+        args.output.unlink(missing_ok=True)
         worker(args.worker_source, args.worker_name, args.output, args.suite)
         return
     args.output.mkdir(parents=True, exist_ok=True)
@@ -279,12 +281,14 @@ def main():
              if not exclusion_reason(s.relative_to(args.suite))
              if args.include_backend or 'backend' not in s.relative_to(args.suite).parts
              if args.include_relational or str(s.relative_to(args.suite)) not in ('table/test_table.py', 'matrixtable/test_matrix_table.py')
-             for name, node in definitions(ast.parse(s.read_text()))]
+             for name, node in definitions(ast.parse(s.read_text()))
+             if not exclusion_reason(s.relative_to(args.suite), name)]
     results = {}
     def run(index, source, name):
         path = args.output / f'{index:04d}.json'
-        if path.exists():
-            return index, json.loads(path.read_text())
+        # Numeric slots are not identities, and neither a source nor backend
+        # change may silently reuse the preceding attempt's pass.
+        path.unlink(missing_ok=True)
         command = [sys.executable, str(Path(__file__).resolve()), '--suite', str(args.suite), '--output', str(path),
                    '--worker-source', str(source), '--worker-name', name]
         with path.with_suffix('.log').open('w') as log:

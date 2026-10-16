@@ -802,8 +802,8 @@ pub(crate) async fn prepare(
         ));
     }
     let output_schema = plan::physical_schema(output);
-    let left_prepared = crate::partitioned::prepare_legacy(left.clone()).await?;
-    let right_rows = crate::partitioned::deferred_ordered(right.clone())?.rows;
+    let left_prepared = crate::partitioned::prepared_input(left)?;
+    let right_rows = crate::partitioned::prepared_ordered(right)?.rows;
     let no_external_bindings = GlobalBindings::new();
     let (right_projected, right_key, right_ordinal, right_values, right_marker) = keyed_input(
         right_rows,
@@ -864,7 +864,9 @@ pub(crate) async fn prepare(
         )?;
         parts.push(join_partition(
             left_projected,
-            right_reduced.clone(),
+            // Each join has its own right-side consumer. Sharing the Arc
+            // alone would make independent joins compete for exchange output.
+            crate::partitioned::reset_plan_states(right_reduced.clone())?,
             &left_key,
             &right_key,
             &left_ordinal,

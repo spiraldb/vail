@@ -46,7 +46,7 @@ class VailTestBackend:
 
     @staticmethod
     def classify_failure(phase, error):
-        if phase != 'body' or isinstance(error, (NameError, KeyError)):
+        if phase != 'body':
             return 'harness_error'
         if isinstance(error, NotImplementedError):
             return 'unsupported'

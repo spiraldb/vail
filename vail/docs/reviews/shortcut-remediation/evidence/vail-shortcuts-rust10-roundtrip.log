@@ -1,0 +1,13 @@
+
+running 9 tests
+test local_paths_reject_encoding_the_iceberg_fileio_cannot_roundtrip ... ok
+test empty_snapshot_preserves_globals_without_data_files ... ok
+test pr_iceberg_reader_preserves_single_file_multisplit_sequence ... ok
+test ordered_execution_survives_vortex_iceberg_snapshot_and_fresh_read ... ok
+test vortex_file_is_committed_and_reopened_from_iceberg_metadata ... ok
+test stale_initial_writer_cannot_append_under_old_descriptor ... ok
+test canonical_float_bounds_select_across_two_vortex_files ... ok
+test ordered_snapshot_reads_three_real_vortex_files_in_key_order ... ok
+test interval_bounds_select_across_two_vortex_files ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s

@@ -33,6 +33,7 @@ static NEXT_NODE: AtomicU64 = AtomicU64::new(1);
 struct OrderedNode {
     id: u64,
     freeze: bool,
+    independent: bool,
     input: LogicalPlan,
     schema: DFSchemaRef,
 }
@@ -54,7 +55,9 @@ impl Hash for OrderedNode {
 }
 impl UserDefinedLogicalNodeCore for OrderedNode {
     fn name(&self) -> &str {
-        if self.freeze {
+        if self.independent {
+            "VailIndependentConsumer"
+        } else if self.freeze {
             "VailRngContext"
         } else {
             "VailOrderedPartitions"
@@ -102,6 +105,20 @@ pub(crate) fn ordered(input: LogicalPlan) -> LogicalPlan {
         node: Arc::new(OrderedNode {
             id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
             freeze: false,
+            independent: false,
+            schema: input.schema().clone(),
+            input,
+        }),
+    })
+}
+
+/// Declare an independent relational consumer before physical planning.
+pub(crate) fn independent_consumer(input: LogicalPlan) -> LogicalPlan {
+    LogicalPlan::Extension(Extension {
+        node: Arc::new(OrderedNode {
+            id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
+            freeze: true,
+            independent: true,
             schema: input.schema().clone(),
             input,
         }),
@@ -113,6 +130,7 @@ fn frozen_rng_context(input: LogicalPlan) -> LogicalPlan {
         node: Arc::new(OrderedNode {
             id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
             freeze: true,
+            independent: false,
             schema: input.schema().clone(),
             input,
         }),
@@ -293,7 +311,7 @@ fn node_name(node: &TableNode) -> &'static str {
     }
 }
 
-fn children(table: &TableRef) -> Vec<TableRef> {
+pub(crate) fn children(table: &TableRef) -> Vec<TableRef> {
     match table.node() {
         TableNode::Read { .. }
         | TableNode::IntervalRead { .. }
@@ -394,80 +412,6 @@ fn indexed_column(plan: &LogicalPlan, index: usize) -> Expr {
 fn is_scan(expr: &vail_execution::expressions::Expr) -> bool {
     matches!(expr, vail_execution::expressions::Expr::Aggregate { options, .. }
         if options.get("__vail_scan").and_then(serde_json::Value::as_bool) == Some(true))
-}
-
-fn table_has_scan(table: &TableRef) -> bool {
-    (match table.node() {
-        TableNode::MapRows { fields, .. } => fields.iter().any(|(_, expr)| {
-            let mut found = false;
-            expr.visit(&mut |node| found |= is_scan(node));
-            found
-        }),
-        _ => false,
-    }) || children(table).iter().any(table_has_scan)
-}
-
-fn lower_scan_tail(table: &TableRef, child: &TableRef, n: usize) -> Result<LogicalPlan> {
-    use datafusion_expr::{Operator, WindowFunctionDefinition, expr::WindowFunction};
-
-    let input = ordered(lower(child)?);
-    let used = input
-        .schema()
-        .fields()
-        .iter()
-        .map(|field| field.name().clone())
-        .collect::<HashSet<_>>();
-    let mut ordinal_name = "__vail_scan_tail_ordinal".to_owned();
-    while used.contains(&ordinal_name) {
-        ordinal_name.push('_');
-    }
-    let mut total_name = "__vail_scan_tail_total".to_owned();
-    while used.contains(&total_name) || total_name == ordinal_name {
-        total_name.push('_');
-    }
-    if n == 0 {
-        return Ok(LogicalPlanBuilder::from(input).limit(0, Some(0))?.build()?);
-    }
-
-    let mut ordinal = WindowFunction::new(
-        WindowFunctionDefinition::WindowUDF(
-            datafusion_functions_window::row_number::row_number_udwf(),
-        ),
-        vec![],
-    );
-    ordinal.params.window_frame = WindowFrame::new(Some(true));
-    let mut total = WindowFunction::new(
-        WindowFunctionDefinition::AggregateUDF(datafusion_functions_aggregate::count::count_udaf()),
-        vec![datafusion_expr::lit(1u64)],
-    );
-    let mut full_rows = WindowFrame::new(Some(true));
-    full_rows.end_bound = WindowFrameBound::Following(ScalarValue::UInt64(None));
-    total.params.window_frame = full_rows;
-    let numbered = LogicalPlanBuilder::from(input)
-        .window(vec![
-            Expr::WindowFunction(Box::new(ordinal)).alias(&ordinal_name),
-            Expr::WindowFunction(Box::new(total)).alias(&total_name),
-        ])?
-        .build()?;
-    // ordinal + n > total includes every row when n exceeds the table size
-    // and otherwise selects precisely the final n rows.
-    let keep = Expr::BinaryExpr(datafusion_expr::expr::BinaryExpr::new(
-        Box::new(datafusion_expr::col(&ordinal_name) + datafusion_expr::lit(n as u64)),
-        Operator::Gt,
-        Box::new(datafusion_expr::col(&total_name)),
-    ));
-    let filtered = LogicalPlanBuilder::from(numbered)
-        .filter(keep)?
-        .sort(vec![datafusion_expr::col(&ordinal_name).sort(true, true)])?
-        .build()?;
-    let projected = (0..child.schema().fields().len() + 1)
-        .map(|i| indexed_column(&filtered, i))
-        .collect::<Vec<_>>();
-    let output = LogicalPlanBuilder::from(filtered)
-        .project(projected)?
-        .build()?;
-    let _ = table;
-    Ok(ordered(output))
 }
 
 fn lower_scans(
@@ -757,6 +701,72 @@ fn lower_rng_uids(
     )))
 }
 
+/// Stable SQL sort for native key types. The explicit ordinal is the final
+/// key, preserving duplicate-key encounter order through optimizer rewrites.
+fn lower_sort(child: &TableRef, keys: &[(String, bool)]) -> Result<LogicalPlan> {
+    if keys.is_empty() {
+        return lower(child);
+    }
+    let input = ordered(lower(child)?);
+    let mut ordinal_name = "__vail_sort_ordinal".to_owned();
+    while input
+        .schema()
+        .has_column_with_unqualified_name(&ordinal_name)
+    {
+        ordinal_name.push('_');
+    }
+    let mut ordinal = WindowFunction::new(
+        datafusion_expr::WindowFunctionDefinition::WindowUDF(
+            datafusion_functions_window::row_number::row_number_udwf(),
+        ),
+        vec![],
+    );
+    ordinal.params.window_frame = WindowFrame::new(Some(true));
+    let numbered = LogicalPlanBuilder::from(input)
+        .window(vec![
+            Expr::WindowFunction(Box::new(ordinal)).alias(&ordinal_name),
+        ])?
+        .build()?;
+    let mut order = keys
+        .iter()
+        .map(|(name, descending)| {
+            Expr::Column(datafusion_common::Column::new_unqualified(name)).sort(!descending, false)
+        })
+        .collect::<Vec<_>>();
+    order.push(
+        Expr::Column(datafusion_common::Column::new_unqualified(&ordinal_name)).sort(true, true),
+    );
+    let sorted = LogicalPlanBuilder::from(numbered).sort(order)?.build()?;
+    let mut fields = (0..child.schema().fields().len())
+        .map(|i| indexed_column(&sorted, i))
+        .collect::<Vec<_>>();
+    fields.push(datafusion_expr::lit(0u64).alias(crate::plan::private_name(
+        child.schema(),
+        child.globals().schema(),
+        "__vail_partition",
+    )));
+    // Row order remains observable after projections/global binding. SQL
+    // cross joins can otherwise make the optimizer discard this sort. The
+    // sort is already singleton; record its full ordering contract before
+    // projection drops the ordinal used to stabilize duplicate-key ties.
+    Ok(LogicalPlanBuilder::from(ordered(sorted))
+        .project(fields)?
+        .build()?)
+}
+
+fn native_sort_keys(child: &TableRef, keys: impl Iterator<Item = String>) -> Result<bool> {
+    for name in keys {
+        if !vail_execution::expressions::Type::from_arrow(
+            child.schema().field_with_name(&name)?.data_type(),
+        )?
+        .native_key()
+        {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
 pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
     match table.node() {
         TableNode::Read { .. }
@@ -772,6 +782,32 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             )
         }
         TableNode::MapGlobals { child } => lower(child),
+        TableNode::KeyBy { child, keys } if native_sort_keys(child, keys.iter().cloned())? => {
+            lower_sort(
+                child,
+                &keys
+                    .iter()
+                    .map(|name| (name.clone(), false))
+                    .collect::<Vec<_>>(),
+            )
+        }
+        TableNode::OrderBy { child, keys }
+            if native_sort_keys(child, keys.iter().map(|(name, _)| name.clone()))? =>
+        {
+            lower_sort(child, keys)
+        }
+        TableNode::Head { child, n } => Ok(LogicalPlanBuilder::from(ordered(lower(child)?))
+            .limit(0, Some(*n))?
+            .build()?),
+        TableNode::MapPartitions {
+            child,
+            rows_name,
+            body,
+            bindings,
+        } => match crate::partition_map::lower_stream(child, rows_name, body, bindings)? {
+            Some(rewritten) => lower(&rewritten),
+            None => extension(table),
+        },
         // Vail union concatenates observable execution partitions. Native SQL
         // Union permits branch interleaving and repartitioning; the extension
         // keeps each optimized child partition as an independent output.
@@ -857,7 +893,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             }
             if fields.iter().any(|(_, e)| {
                 let mut found = false;
-                e.visit(&mut |n| found |= is_scan(n));
+                e.visit_unique(&mut |n| found |= is_scan(n));
                 found
             }) {
                 if let Some(plan) =
@@ -941,7 +977,6 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                 Err(error) => Err(error.into()),
             }
         }
-        TableNode::Tail { child, n } if table_has_scan(child) => lower_scan_tail(table, child, *n),
         _ => extension(table),
     }
 }
@@ -966,18 +1001,67 @@ pub(crate) fn max_partitions(table: &TableRef) -> usize {
         .max(1)
 }
 
+/// Scalar subqueries are resolved once per action, before optimizing and
+/// compiling the complete data relation. No execution operator invokes a planner.
 pub(crate) async fn physical_plan(
     logical: LogicalPlan,
     target_partitions: usize,
 ) -> Result<PhysicalPlan> {
+    let state = session_state(target_partitions);
+    let context = state.task_ctx();
+    physical_in_context(logical, state, context).await
+}
+
+pub(crate) async fn physical_with_context(
+    table: &TableRef,
+    context: Arc<datafusion_execution::TaskContext>,
+) -> Result<PhysicalPlan> {
+    let state =
+        SessionContext::new_with_config_rt(context.session_config().clone(), context.runtime_env())
+            .state();
+    physical_in_context(lower(table)?, with_metadata_optimizer(state), context).await
+}
+
+async fn physical_in_context(
+    logical: LogicalPlan,
+    state: datafusion::execution::SessionState,
+    context: Arc<datafusion_execution::TaskContext>,
+) -> Result<PhysicalPlan> {
+    let mut bindings = crate::action_parameters::ActionParameters::with_context(state, context);
+    let logical = crate::action_parameters::resolve(logical, &mut bindings).await?;
+    let plan = compile(logical, &bindings.state).await?;
+    Ok(crate::action_parameters::with_context(
+        plan,
+        bindings.context.clone(),
+    ))
+}
+
+pub(crate) async fn compile(
+    logical: LogicalPlan,
+    state: &datafusion::execution::SessionState,
+) -> Result<PhysicalPlan> {
+    compile_mode(logical, state, false).await
+}
+
+pub(crate) async fn diagnostic(
+    logical: LogicalPlan,
+    target_partitions: usize,
+) -> Result<PhysicalPlan> {
+    compile_mode(logical, &session_state(target_partitions), true).await
+}
+
+async fn compile_mode(
+    logical: LogicalPlan,
+    state: &datafusion::execution::SessionState,
+    diagnostic: bool,
+) -> Result<PhysicalPlan> {
     let planner = DefaultPhysicalPlanner::with_extension_planners(vec![
-        Arc::new(VailExtensionPlanner),
+        Arc::new(VailExtensionPlanner { diagnostic }),
         Arc::new(crate::logical_globals::GlobalsExtensionPlanner),
         Arc::new(crate::logical_same::SameExtensionPlanner),
-        Arc::new(crate::logical_aggregate_init::InitializerPlanner),
     ]);
     use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
-    let mut state = session_state(target_partitions);
+    let mut state = state.clone();
     let optimized = state.optimize(&logical)?;
     // DF55 physical filter pushdown can inline volatile projection expressions
     // and evaluate a checked cast before an earlier filter. Keep logical scan
@@ -998,7 +1082,8 @@ pub(crate) async fn physical_plan(
             .with_physical_optimizer_rules(rules)
             .build();
     }
-    Ok(planner.create_physical_plan(&optimized, &state).await?)
+    let plan = planner.create_physical_plan(&optimized, &state).await?;
+    Ok(crate::rng_context::bind_consumers(plan)?)
 }
 
 #[derive(Debug)]
@@ -1046,7 +1131,12 @@ fn session_state(target_partitions: usize) -> datafusion::execution::SessionStat
     let config = SessionConfig::new()
         .with_target_partitions(target_partitions.clamp(1, crate::EXECUTION_CONCURRENCY))
         .with_round_robin_repartition(false);
-    let state = SessionContext::new_with_config(config).state();
+    with_metadata_optimizer(SessionContext::new_with_config(config).state())
+}
+
+fn with_metadata_optimizer(
+    state: datafusion::execution::SessionState,
+) -> datafusion::execution::SessionState {
     let mut rules: Vec<
         Arc<dyn datafusion::physical_optimizer::PhysicalOptimizerRule + Send + Sync>,
     > = vec![Arc::new(MetadataCrossJoin)];
@@ -1132,7 +1222,9 @@ pub(crate) async fn count(table: &TableRef) -> Result<usize> {
     Ok(value as usize)
 }
 
-struct VailExtensionPlanner;
+struct VailExtensionPlanner {
+    diagnostic: bool,
+}
 #[async_trait]
 impl ExtensionPlanner for VailExtensionPlanner {
     async fn plan_extension(
@@ -1144,14 +1236,32 @@ impl ExtensionPlanner for VailExtensionPlanner {
         session: &dyn Session,
         _planning_ctx: &PhysicalPlanningContext,
     ) -> datafusion_common::Result<Option<PhysicalPlan>> {
-        if let Some(node) = node
-            .as_any()
-            .downcast_ref::<crate::logical_scan::ScanInitializationNode>()
-        {
-            return Ok(Some(
-                crate::logical_scan::plan_initialized(node.clone(), physical_inputs[0].clone())
-                    .await?,
-            ));
+        if self.diagnostic {
+            let label = if node
+                .as_any()
+                .is::<crate::logical_aggregate_init::InitNode>()
+            {
+                Some("aggregate singleton parameters remain unbound".to_owned())
+            } else if node
+                .as_any()
+                .is::<crate::logical_scan::ScanInitializationNode>()
+            {
+                Some("scan singleton parameters remain unbound".to_owned())
+            } else {
+                node.as_any().downcast_ref::<VailNode>().map(|node| {
+                    format!(
+                        "{} semantic operation; action preparation remains unbound",
+                        node_name(node.table.node())
+                    )
+                })
+            };
+            if let Some(label) = label {
+                return Ok(Some(crate::diagnostics::unbound(
+                    label,
+                    Arc::new(node.schema().as_arrow().clone()),
+                    physical_inputs.to_vec(),
+                )));
+            }
         }
         if let Some(node) = node.as_any().downcast_ref::<RestorePartitionsNode>() {
             let input = &physical_inputs[0];
@@ -1179,25 +1289,31 @@ impl ExtensionPlanner for VailExtensionPlanner {
         if let Some(node) = node.as_any().downcast_ref::<OrderedNode>() {
             let input = &physical_inputs[0];
             if node.freeze {
+                let input = if node.independent {
+                    crate::partitioned::reset_plan_states(input.clone())?
+                } else {
+                    input.clone()
+                };
                 let input = DefaultPhysicalPlanner::default().optimize_physical_plan(
                     input.clone(),
                     session,
                     |_, _| {},
                 )?;
-                return Ok(Some(Arc::new(crate::rng_context::RngContextExec::new(
+                return Ok(Some(Arc::new(crate::rng_context::ConsumerScopeExec::new(
                     input,
                 ))));
             }
-            let parts = (0..input.properties().output_partitioning().partition_count())
-                .map(|p| {
-                    Arc::new(crate::partitioned::PartitionViewExec::new(input.clone(), p))
-                        as PhysicalPlan
-                })
-                .collect();
-            return Ok(Some(Arc::new(crate::partitioned::OrderedConcatExec::new(
-                parts,
-                input.schema(),
-            ))));
+            let parts = crate::partitioned::partition_views(
+                input.clone(),
+                input.properties().output_partitioning().partition_count(),
+            );
+            return Ok(Some(Arc::new(
+                crate::partitioned::OrderedConcatExec::tagged(
+                    parts,
+                    input.schema(),
+                    input.schema().fields().len() - 1,
+                ),
+            )));
         }
         let Some(node) = node.as_any().downcast_ref::<VailNode>() else {
             return Ok(None);
@@ -1227,6 +1343,9 @@ impl ExtensionPlanner for VailExtensionPlanner {
             .iter()
             .zip(logical_inputs)
             .map(|(input, logical)| {
+                // Each semantic operand is an independent consumer, even
+                // when DF shares an upstream physical DAG between operands.
+                let input = crate::partitioned::reset_plan_states(input.clone())?;
                 use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
                 let mut needs_finalization = false;
                 logical.apply(|plan| {
@@ -1331,7 +1450,7 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 *n_partitions,
             )));
         }
-        let prepared = crate::partitioned::prepare_legacy(table)
+        let prepared = crate::partitioned::prepare_operation(table)
             .await
             .map_err(|e| DataFusionError::External(Box::new(e)))?;
         Ok(Some(prepared.physical_plan()))

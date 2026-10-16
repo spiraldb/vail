@@ -5,9 +5,7 @@ use arrow_array::{Array, ArrayRef, BooleanArray, Int64Array, ListArray, RecordBa
 use arrow_buffer::OffsetBuffer;
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
-use datafusion_expr::{
-    Accumulator, AggregateUDF, EmitTo, GroupsAccumulator, Volatility, expr_fn::create_udaf,
-};
+use datafusion_expr::{Accumulator, AggregateUDF, EmitTo, GroupsAccumulator};
 use datafusion_functions_aggregate_common::aggregate::groups_accumulator::GroupsAccumulatorAdapter;
 use datafusion_physical_expr::PhysicalExpr;
 use datafusion_physical_plan::aggregates::{
@@ -16,12 +14,40 @@ use datafusion_physical_plan::aggregates::{
 };
 use std::{
     fmt,
-    sync::{
-        Arc,
-        atomic::{AtomicU64, Ordering},
-    },
+    hash::{Hash, Hasher},
+    sync::Arc,
 };
-static NEXT: AtomicU64 = AtomicU64::new(0);
+
+#[derive(Clone, Debug)]
+struct PhysicalIdentity(Arc<dyn PhysicalExpr>);
+impl PartialEq for PhysicalIdentity {
+    fn eq(&self, other: &Self) -> bool {
+        self.0.eq(&other.0)
+    }
+}
+impl Eq for PhysicalIdentity {}
+impl Hash for PhysicalIdentity {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.0.hash(state);
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum ScopeIdentity {
+    Composition {
+        children: Vec<ScanState>,
+        schema: SchemaRef,
+        projection: PhysicalIdentity,
+    },
+    Transform {
+        child: ScanState,
+        transform: Transform,
+    },
+    Indexed {
+        child: ScanState,
+        key: DataType,
+        array: bool,
+    },
+}
 fn error(message: &str) -> DataFusionError {
     DataFusionError::Execution(message.into())
 }
@@ -60,19 +86,20 @@ fn flatten(values: &ListArray) -> Result<ArrayRef> {
 }
 fn udf(
     name: &str,
+    identity: ScopeIdentity,
     input: DataType,
     output: DataType,
     states: Vec<DataType>,
     factory: datafusion_expr::AccumulatorFactoryFunction,
 ) -> Arc<AggregateUDF> {
-    Arc::new(create_udaf(
-        &format!("vail_scan_{name}_{}", NEXT.fetch_add(1, Ordering::Relaxed)),
+    crate::kernel_identity::aggregate(
+        &format!("vail_scan_{name}"),
+        identity,
         vec![input],
-        Arc::new(output),
-        Volatility::Immutable,
+        output,
+        states,
         factory,
-        Arc::new(states),
-    ))
+    )
 }
 
 #[derive(Clone)]
@@ -95,6 +122,11 @@ pub fn composed(spec: Composition, input: DataType) -> Result<Arc<AggregateUDF>>
         .collect();
     Ok(udf(
         "composition",
+        ScopeIdentity::Composition {
+            children: spec.children.clone(),
+            schema: spec.schema.clone(),
+            projection: PhysicalIdentity(spec.projection.clone()),
+        },
         input,
         output,
         states,
@@ -159,7 +191,7 @@ impl Accumulator for CompositionAccumulator {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Transform {
     Filter,
     Explode,
@@ -172,6 +204,10 @@ pub fn transformed(child: ScanState, input: DataType, transform: Transform) -> A
         .collect();
     udf(
         "scope",
+        ScopeIdentity::Transform {
+            child: child.clone(),
+            transform,
+        },
         input,
         child.output_type(),
         states,
@@ -294,6 +330,11 @@ pub fn indexed(
     ];
     Ok(udf(
         if array { "array" } else { "group" },
+        ScopeIdentity::Indexed {
+            child: spec.child.clone(),
+            key: spec.key.clone(),
+            array,
+        },
         input,
         output,
         states,

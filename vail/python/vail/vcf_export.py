@@ -1,4 +1,4 @@
-"""Basic local VCF serialization for reader round trips and input fixtures.
+"""Local VCF export with a bounded native Arrow batch sink.
 
 Parallel export, tabix indexing, and BGZF output are deliberately unsupported.
 """
@@ -7,7 +7,8 @@ from uuid import uuid4
 
 
 def export_vcf(dataset, output, *, metadata=None, parallel=None, tabix=False, append_to_header=None):
-    from . import MatrixTable
+    from . import MatrixTable, eval as evaluate
+    from .matrixtable import _COL
     from .types import tarray, tstr, tcall, tint32, tfloat32, tfloat64, tbool
     from .vcf import _local_path
     if not isinstance(dataset, MatrixTable):
@@ -22,7 +23,9 @@ def export_vcf(dataset, output, *, metadata=None, parallel=None, tabix=False, ap
     if len(dataset.col_key)!=1 or next(iter(dataset.col_key.dtype.values()))!=tstr:
         raise ValueError('VCF export requires one string sample key')
     sample_key=next(iter(dataset.col_key))
-    samples=[column[sample_key] for column in dataset.cols().collect()]
+    # cols() returns a keyed Table and can sort the public column keys. VCF
+    # sample headers must use the same positional order as the entry arrays.
+    samples = evaluate(dataset._mir.column_records.map(lambda record: record[_COL][sample_key]))
     if any(sample is None or any(c in sample for c in '\t\r\n') for sample in samples):
         raise ValueError('invalid sample IDs')
     entry_names=list(dataset.entry.dtype)
@@ -56,33 +59,5 @@ def export_vcf(dataset, output, *, metadata=None, parallel=None, tabix=False, ap
     header.append('\t'.join(fields))
     entries_name='__export_entries_'+uuid4().hex
     columns_name='__export_columns_'+uuid4().hex
-    rows=dataset.localize_entries(entries_name,columns_name).collect()
-    def value_text(value,dtype):
-        if value is None:return './.' if dtype==tcall else '.'
-        if dtype==tcall:return ('|' if value.phased else '/').join(str(a) for a in value.alleles) or '.'
-        if isinstance(dtype,tarray):return ','.join(value_text(v,dtype.element_type) for v in value) or '.'
-        text=str(value)
-        if any(c in text for c in '\t\r\n'):
-            raise ValueError('VCF values must not contain tabs or newlines')
-        return text
-    with open(output,'w',encoding='utf-8',newline='\n') as stream:
-        stream.write('\n'.join(header)+'\n')
-        for row in rows:
-            locus=row.locus
-            alleles=row.alleles
-            info=[]
-            for name,dtype in info_fields:
-                value=row.info[name]
-                if dtype==tbool:
-                    if value:info.append(name)
-                elif value is not None:info.append(name+'='+value_text(value,dtype))
-            filters=row.get('filters')
-            fixed=[locus.contig,str(locus.position),row.get('rsid') or '.',alleles[0],','.join(alleles[1:]) or '.',
-                   '.' if row.get('qual') is None else str(row.qual),
-                   '.' if filters is None else ';'.join(sorted(filters)) if filters else 'PASS',
-                   ';'.join(info) or '.']
-            if samples:
-                fixed.append(':'.join(entry_names) or '.')
-                for entry in row[entries_name]:
-                    fixed.append(':'.join(value_text(None if entry is None else entry[name],dataset.entry.dtype[name]) for name in entry_names) or '.')
-            stream.write('\t'.join(fixed)+'\n')
+    localized = dataset.localize_entries(entries_name, columns_name)
+    localized._native.export_vcf(output, header, entries_name, entry_names, len(samples))

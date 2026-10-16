@@ -4,20 +4,12 @@ use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Int64Array, Struc
 use arrow_schema::{DataType, Field, FieldRef, Fields, Schema};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::function::{AccumulatorArgs, StateFieldsArgs};
-use datafusion_expr::{
-    Accumulator, AggregateUDF, ColumnarValue, ScalarUDF, Volatility,
-    expr_fn::{create_udaf, create_udf},
-};
+use datafusion_expr::{Accumulator, AggregateUDF, ColumnarValue, ScalarUDF, Volatility};
 use datafusion_physical_expr::expressions::Literal;
-use std::sync::{
-    Arc,
-    atomic::{AtomicU64, Ordering},
-};
-static NEXT_SCAN_ID: AtomicU64 = AtomicU64::new(0);
+use std::sync::Arc;
 
-#[derive(Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScanState {
-    id: u64,
     aggregate: Arc<AggregateUDF>,
     inputs: Vec<DataType>,
     output: DataType,
@@ -39,7 +31,6 @@ impl ScanState {
             is_distinct: false,
         })?;
         Ok(Self {
-            id: NEXT_SCAN_ID.fetch_add(1, Ordering::Relaxed),
             aggregate,
             inputs,
             output,
@@ -129,17 +120,16 @@ impl ScanState {
         } else {
             self.inputs.clone()
         };
-        let name = format!(
-            "vail_scan_{}_{}_{}",
-            if merge_input { "merge" } else { "state" },
-            self.aggregate.name(),
-            self.id
-        );
-        Arc::new(create_udaf(
-            &name,
+        crate::kernel_identity::aggregate(
+            if merge_input {
+                "vail_scan_merge"
+            } else {
+                "vail_scan_state"
+            },
+            (self.clone(), merge_input),
             input,
-            Arc::new(self.state_type()),
-            Volatility::Immutable,
+            self.state_type(),
+            self.fields.iter().map(|f| f.data_type().clone()).collect(),
             Arc::new(move |_| {
                 Ok(Box::new(StateAccumulator {
                     inner: descriptor.accumulator()?,
@@ -148,8 +138,7 @@ impl ScanState {
                     input_count: descriptor.inputs.len(),
                 }))
             }),
-            Arc::new(self.fields.iter().map(|f| f.data_type().clone()).collect()),
-        ))
+        )
     }
     pub fn finish_udf(&self) -> Arc<ScalarUDF> {
         self.finisher(false)
@@ -166,17 +155,14 @@ impl ScanState {
         // Other reducers keep the generic accumulator-based path below.
         let sum_fast_path =
             !validation && self.aggregate.name() == "sum" && is_hail_sum_state(self);
-        let name = format!(
-            "vail_scan_finish_{}_{}_{}",
-            self.aggregate.name(),
-            self.id,
-            validation
-        );
-        Arc::new(create_udf(
-            &name,
-            vec![self.state_type(); if validation { 3 } else { 2 }],
+        Arc::new(crate::kernel_identity::scalar(
+            "vail_scan_finish",
+            (self.clone(), validation),
+            datafusion_expr::Signature::exact(
+                vec![self.state_type(); if validation { 3 } else { 2 }],
+                Volatility::Immutable,
+            ),
             self.output.clone(),
-            Volatility::Immutable,
             Arc::new(move |args| {
                 let arrays = ColumnarValue::values_to_arrays(args)?;
                 let [carry, local] = &arrays[..2] else {

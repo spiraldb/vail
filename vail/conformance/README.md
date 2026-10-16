@@ -60,9 +60,17 @@ compatibility (`utils/test_hl_hadoop_and_hail_fs.py`), and worker/driver filesys
 tests (`fs/`). These are out of scope for now, not implementation failures.
 Expression type tests (`expr/test_types.py`) remain in scope.
 
-The shared policy lives in `upstream_scope.py` and is applied by both
-`full_hail_pytest.py` and `full_hail_bodies.py`. Pytest audits record omitted
-modules and reasons in `scope-exclusions.json`. New orchestration scripts must
+The shared policy lives in `upstream_scope.py` and is applied by
+`full_hail_pytest.py`, `full_hail_bodies.py`, and `suite_selection.py`.
+It also excludes `test_hadoop_*` definitions in otherwise eligible mixed modules.
+Pytest audits record omitted modules/definitions and reasons in
+`scope-exclusions.json`. New orchestration scripts must
 apply this policy when constructing their inventory and failure denominator;
 explicit-module requests do not bypass the exclusions. Historical run reports
 retain their original scope and counts.
+
+Reusing an output directory starts fresh attempts; previous event logs and body
+results are not accepted as evidence for a new run. Isolated original-body
+execution is labelled separately from pytest execution. Errors raised inside a
+test body remain failures even when their exception class is `NameError` or
+`KeyError`; fixture/setup errors are recorded separately.

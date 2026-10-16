@@ -349,8 +349,8 @@ pub(crate) fn lower(
     kind: TableJoinKind,
     join_key: usize,
 ) -> Result<TablePlan> {
-    let left_plan = plan::ordinal(crate::partitioned::deferred_ordered(left.clone())?.rows);
-    let right_plan = plan::ordinal(crate::partitioned::deferred_ordered(right.clone())?.rows);
+    let left_plan = plan::ordinal(crate::partitioned::prepared_ordered(left)?.rows);
+    let right_plan = plan::ordinal(crate::partitioned::prepared_ordered(right)?.rows);
     let left_width = left_plan.schema().fields().len();
     let right_width = right_plan.schema().fields().len();
     let left_ordinal = left_width - 1;

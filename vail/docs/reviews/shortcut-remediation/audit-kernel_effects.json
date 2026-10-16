@@ -1,0 +1,585 @@
+{
+  "owner": "kernel_effects",
+  "scope": "Native expression identities/effects and touched Arrow/type integration; explicitly partial for large neighboring modules.",
+  "modules": [
+    {
+      "path": "crates/vail-execution/src/logical_expr.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 1422,
+      "evidence": "Read complete scalar lowering, semantic kernel reference binding/evaluation, Arrow type restoration and tests. Reviewed optimizer exposure, error movement, deterministic RNG context and metadata. Shared non-leaf native subgraphs receive bounded native kernel boundaries before boxed DataFusion expansion. New public table/native-planner resource regressions retain depth64; small graphs execute through real logical planner. Candidate9: complete revised capture adapter reviewed. Zero-row invocations return typed empty arrays without body evaluation; all-scalar execution uses one-row batch and returns Scalar. Mixed scalar captures become owned native RuntimeLiterals (O(IR) request-local specialization), array captures share buffers. No per-row captured-list expansion. Both logical/physical IfElse use engine simple CASE, whose base evaluates once and branches receive only selected rows.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/kernel_identity.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 190,
+      "evidence": "Complete native keyed scalar/aggregate adapters read. Equality compares actual native keys, signature and result/state types. New identity-only collision/factory assertions removed per R7 review; public configured-aggregate coexistence/results and nested metadata execution remain.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/expression_identity.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 240,
+      "evidence": "Complete native property descriptor and DAG hash/equality read; ordered children and optional slots participate. New HashSet/fingerprint-only tests removed per R7; retained public depth64 table/native DataFusion planning and actual modest-size execution.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/expression_effects.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 135,
+      "evidence": "Read complete conservative effects registry and all-node effect propagation. Known total string/list kernels enumerated; unknown validators and context-bound RNG preserve barriers. LocusOp accessor retains MayError because imported coordinates are validated at runtime; real simplifier dead/live invalid-locus execution regression added.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/scan_state.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 484,
+      "evidence": "Read state construction/update/merge/finishing and tests. Stable native reducer identity; compact numeric sum fast path; generic collection-output cost can be output-size bound.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/scan_scopes.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 667,
+      "evidence": "Read composition, filtering/explode, grouped/array accumulator snapshots and tests. Replaced fresh IDs with native child/projection/configuration identities. Snapshot restore is required because DF grouped adapter emission is destructive.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/reducer.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 216,
+      "evidence": "Read entire shared registry and full-contract identity wrapper. Forwarded accumulator/state/return-field/groups/sliding/order/reverse/coercion/statistics/null-policy hooks.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/aggregate_identity.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 10,
+      "evidence": "Read complete name helper. Native hashing replaces Debug and formatted JSON encoding; optimizer equality does not depend on the digest.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/string_kernels.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 159,
+      "evidence": "Read complete regex, hamming and entropy implementations. Regex has value-domain errors; entropy/hamming are total for validated string inputs. Changed closure-only identity to native name/signature key.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/fold_aggregate.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 198,
+      "evidence": "Read full update/merge/state paths. FoldProgram captures native source identity and exact compilation context; nested fold states use metadata-preserving scalar_at.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-python/src/arrow_memory.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 60,
+      "evidence": "Read entire C Stream transfer/import/export and materialization helper. Ownership transfer and Arc retention are sound under the Arrow C protocol; separate generic parallelize concatenation issue is tracked.",
+      "validation": "Central root build/test coordination; no separate native build run by this agent."
+    },
+    {
+      "path": "crates/vail-execution/src/expressions.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 7017,
+      "evidence": "Read complete enum, visitors, typing, literals, casts, comparisons, reducers, physical lowering, locus/string implementations and tests. Added per-compilation native node/context caches and retained generated execution nodes in a local Arc arena. Aggregate typing extension is now owned by logical_planning agent."
+    },
+    {
+      "path": "crates/vail-execution/src/aggregates.rs",
+      "read_depth": "targeted",
+      "sections": [
+        "stable_stddev factory and state schema",
+        "aggregate_udf full registry and factory"
+      ],
+      "limitations": "HailAccumulator update/merge arithmetic implementation not fully reviewed here; shared-reducer agent owns that audit.",
+      "lines": 970
+    },
+    {
+      "path": "crates/vail-execution/src/array_aggregate_scan.rs",
+      "read_depth": "targeted",
+      "sections": [
+        "make_udf native identity and declared error effect",
+        "exclusive accumulator loop and visit-count test"
+      ],
+      "limitations": "Stream-scan agent owns full behavioral/performance audit.",
+      "lines": 69
+    },
+    {
+      "path": "crates/vail-python/src/native_ir.rs",
+      "read_depth": "full_source",
+      "lines": 2119,
+      "evidence": "Read native options/type constructors, complete expression constructor dispatch, native type inference, literal binding, every expression view variant and projection helper. Arc-backed children/buffers remain native; transient views are shallow.",
+      "limitations": "Native repr is now bounded. get/getitem still constructs a complete shallow view; queued below."
+    },
+    {
+      "path": "crates/vail-python/src/lib.rs",
+      "read_depth": "targeted",
+      "sections": [
+        "parallelize_arrow multi-batch materialization",
+        "scalar Arrow entry points"
+      ],
+      "limitations": "Root owns full boundary/session module audit.",
+      "lines": 882
+    },
+    {
+      "path": "crates/vail-execution/src/calls.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 202,
+      "evidence": "Native expression pack/unpack construction and test cases; no Python row fallback."
+    },
+    {
+      "path": "crates/vail-execution/src/collection_lookup.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 166,
+      "evidence": "Full grouped dictionary indexing and nullable/missing handling; index built once per batch, then owner/key lookups."
+    },
+    {
+      "path": "crates/vail-execution/src/hwe_counts.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 60,
+      "evidence": "Full exact HWE adapter, count validation and reuse of native genomic implementation."
+    },
+    {
+      "path": "crates/vail-execution/src/array_length_aggregate.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 67,
+      "evidence": "Full mergeable length validator. Factory still uses closure identity; queued separately."
+    },
+    {
+      "path": "crates/vail-execution/src/reference.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 312,
+      "evidence": "Complete native reference validation and prepared contig/PAR indexes plus tests; no demonstrated shortcut found."
+    },
+    {
+      "path": "crates/vail-execution/src/csv_line.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 289,
+      "evidence": "Full strict quote validation, CSV parsing and tests. Parser constructed per line and intermediate owned field strings; no throughput measurement."
+    },
+    {
+      "path": "crates/vail-execution/src/collection_groups.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 337,
+      "evidence": "Full owner-local grouping, first/last selection, native DataFusion GroupValues, sorted output and sliced/null-list tests. Linear grouping then key sort; no quadratic search. Scalar adapter metadata conversion queued."
+    },
+    {
+      "path": "crates/vail-execution/src/matrix_arrays.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 647,
+      "evidence": "Full native layout validation, gather/group-gather/dense scatter/alignment and tests. Indices constructed once then Arrow take; scalar outputs now metadata-safe, dense value field cloned preserving metadata."
+    },
+    {
+      "path": "crates/vail-execution/src/matrix_transpose.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 482,
+      "evidence": "Full transpose offsets/index construction and sliced/missing/ragged tests. Work proportional to input validation plus emitted transpose items; field metadata and scalar conversion repaired."
+    },
+    {
+      "path": "crates/vail-execution/src/randomness.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 644,
+      "evidence": "Full Threefry/PMAC stream, all distributions, type/domain validators and golden tests. Generic shuffle now uses Arrow take preserving exact declared field. Hypergeometric sample-linear work queued."
+    },
+    {
+      "path": "crates/vail-execution/src/advanced_numeric_aggregates.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 1154,
+      "evidence": "Full histogram/KLL/correlation/downsample/linreg factories, state and merge/evaluation. Stable DF correlation reused; KLL owns serialized binary state protocol. Downsample grid rebin and linreg normal equations queued."
+    },
+    {
+      "path": "crates/vail-execution/src/lib.rs",
+      "read_depth": "full_source_and_tests",
+      "lines": 566,
+      "evidence": "Full ordering API, physical sort/merge construction and tests. Always-sort explicitly documented; no arbitrary upstream order-proof propagation. Caller memory limit and spill tests present."
+    },
+    {
+      "path": "crates/vail-execution/examples/ordered_table.rs",
+      "read_depth": "full_source",
+      "lines": 53,
+      "evidence": "Full small native ordering example; explicit materialized batches and output printing."
+    },
+    {
+      "path": "crates/vail-execution/src/randomness_binding.rs",
+      "read_depth": "full_source",
+      "lines": 199,
+      "evidence": "Reviewed complete new scoped native graph rewrite, child order, callback shadowing, reducer input/result scopes and grouped result UID minima. Native retained node+scope memo; no in-memory serialized AST or global memo.",
+      "validation": "cargo check and execution --tests compilation passed; matching-package randomness tests pending."
+    }
+  ],
+  "findings": [
+    {
+      "id": "S005",
+      "status": "fixed_focused_public_runtime_validated",
+      "title": "Native semantic identity and effects replace fresh IDs / blanket volatile kernels",
+      "evidence": [
+        "logical_expr semantic kernel keys retain native expression DAG + exact Arrow schema",
+        "restore_type immutable scalar preserves List/Struct field metadata through folding",
+        "scan state/scope adapters use native semantic keys",
+        "configured reducer wrapper forwards full behavioral contract",
+        "pure custom string kernels have stable native identity",
+        "Native DAG hash/equality memoization; depth64 public HashSet/planner tests under external resource guard"
+      ],
+      "limits": [
+        "MayError deliberately maps to Volatile because DataFusion exposes no independent error-order movement effect.",
+        "Unknown function names conservatively remain MayError; no effects are accepted from Python.",
+        "Per-expression typing/physical compilation now memoized. Logical planning and repeated runtime expression evaluation still need separate end-to-end measurement."
+      ]
+    },
+    {
+      "id": "K001",
+      "status": "fixed_focused_public_runtime_validated",
+      "priority": "high",
+      "title": "Shared native DAG typing and physical compilation use per-request context memoization",
+      "paths": [
+        "crates/vail-execution/src/expressions.rs::dtype_scoped",
+        "crates/vail-execution/src/expressions.rs::lower_scoped"
+      ],
+      "evidence": "CompilationMemo keys by live native node address plus exact schema/global/lexical context. Generated execution rewrites retained in a local Arc arena. Deterministic 64-level graph asserts 65 typing and physical-construction cache misses. Runtime Rust suite exposed an additional exponential DataFusion metadata recursion despite 65 native cache misses. CompiledPhysical now binds exact return Field once per native node/context and shares the context schema; root data_type/nullability and bounded diagnostic checks added to the unchanged depth-64 regression. Physical hashes cached after child facades are bound. Exact dynamic DF equality uses a synchronous comparison-scoped thread-local pair/result map, RAII-cleared on return/unwind; retains no node ownership and no cross-comparison cache. Depth64 regression also compares independently rebuilt physical graphs. Reviewer requested black-box validation: removed private visit/work counters, retained depth64 using public type/physical/logical APIs with metadata and rebuilt equality, plus actual small-graph value execution.",
+      "next_step": "Execute unchanged depth64 graph compilation/metadata/rebuild-equality regression, then full execution tests. Shared runtime edge evaluation remains K007; no end-to-end performance completion claim.",
+      "measured": false
+    },
+    {
+      "id": "K002",
+      "status": "queued",
+      "priority": "medium",
+      "title": "Generic Arrow table import combines valid input batches before reslicing them",
+      "paths": [
+        "crates/vail-python/src/lib.rs::NativeSession::parallelize_arrow",
+        "crates/vail-table/src/lib.rs::TableIR::parallelize",
+        "TableNode::Parallelize"
+      ],
+      "evidence": "parallelize_arrow collects the stream and concat_batches merges every chunk solely because the table input node requires one RecordBatch. A multi-chunk Arrow table already has native columnar buffers; concatenation allocates combined buffers for multiple nonempty batches.",
+      "next_step": "Let the native table input descriptor retain Vec<RecordBatch>/schema and partition or stream original batches without whole-table concatenation. Verify buffer addresses, row order and peak allocation across multiple chunks.",
+      "limits": "Single-row scalar import has a legitimate cardinality/materialization contract; this finding does not classify every concat_batches call as a defect. No throughput number claimed.",
+      "measured": false
+    },
+    {
+      "id": "K003",
+      "status": "fixed_focused_public_runtime_validated",
+      "priority": "medium",
+      "title": "Fold reducers still use closure identity and scalar conversion that can erase nested metadata",
+      "paths": [
+        "crates/vail-execution/src/fold_aggregate.rs::fold_udaf",
+        "crates/vail-execution/src/fold_aggregate.rs::FoldAccumulator::evaluate_one",
+        "crates/vail-execution/src/fold_aggregate.rs::FoldAccumulator::merge_batch"
+      ],
+      "evidence": "FoldProgram carries native sequence/combine source and compilation bindings; fold identity includes initial value and actual schema. Metadata-preserving scalar_at used for update/merge states.",
+      "next_step": "Execute nested-set fold regression and canonical fold identity tests.",
+      "measured": false
+    },
+    {
+      "id": "K004",
+      "status": "fixed_focused_public_runtime_validated",
+      "priority": "medium",
+      "title": "Integer unary negation had scalar/array overflow disagreement",
+      "evidence": "DataFusion NegativeExpr uses checked ScalarValue arithmetic_negate for scalar MIN but neg_wrapping for arrays. Both Vail lowering paths now use integer wrapping subtraction (0 - value), retaining ordinary floating negation.",
+      "tests": [
+        "logical_expr::tests::integer_negation_wraps_identically_for_scalar_array_and_null",
+        "python/tests/test_kernel_optimizer_contract.py"
+      ]
+    },
+    {
+      "id": "K005",
+      "status": "queued",
+      "priority": "medium",
+      "title": "Native field inspection constructs every field of a node",
+      "paths": [
+        "crates/vail-python/src/native_ir.rs::NativeExpr::__getitem__",
+        "crates/vail-python/src/native_ir.rs::NativeExpr::get",
+        "crates/vail-python/src/native_ir.rs::NativeExpr::view"
+      ],
+      "evidence": "Except op, get/getitem creates a full PyDict shallow view and all child wrappers. A literal dtype inquiry also converts its value to a one-row Arrow array and creates NativeArrow/RecordBatch even when that value was not requested.",
+      "next_step": "Profile planning/IR traversal calls; provide direct native field access or native traversal/rewriting for hot analysis paths. Preserve explicit view() as diagnostic compatibility inspection.",
+      "measured": false
+    },
+    {
+      "id": "K006",
+      "status": "fixed_focused_public_runtime_validated",
+      "priority": "high",
+      "title": "Deep debug/repr formatting expands shared DAGs despite bounded semantic identity",
+      "paths": [
+        "crates/vail-python/src/native_ir.rs::NativeExpr::__repr__",
+        "crates/vail-execution/src/expression_identity.rs::Identity derive Debug",
+        "crates/vail-execution/src/kernel_identity.rs::Scalar Debug"
+      ],
+      "evidence": "NativeExpr repr summarizes operation; semantic Identity Debug summarizes fingerprint/node count; keyed UDF Debug summarizes name. Raw internal Expr Debug remains recursive and is not intended for bounded handle diagnostics.",
+      "next_step": "Execute bounded diagnostic regression.",
+      "measured": false
+    },
+    {
+      "id": "K007",
+      "status": "queued",
+      "priority": "high",
+      "title": "Shared logical subgraphs use bounded native kernels; shared runtime evaluation remains queued",
+      "evidence": "lower_logical detects multiply referenced native non-leaf nodes in a unique traversal and retains those subgraphs as native semantic kernels. Ordinary surrounding operators remain visible to optimization. This bounds boxed logical trees, while DF physical evaluation still follows repeated edges.",
+      "next_step": "Run external bounded-resource depth64 public compilation test and representative real queries. Runtime shared-expression scheduling needs per-batch intermediates with lexical/effect correctness; do not evaluate huge doubling graphs.",
+      "measured": false
+    },
+    {
+      "id": "K008",
+      "status": "queued",
+      "priority": "medium",
+      "title": "Projection fields create independent compilation memo contexts",
+      "evidence": "validate_projection_with_globals invokes root dtype per output; CompiledProjection compiles each field independently, repeating shared source subgraphs across fields.",
+      "next_step": "Retain one request memo for an entire projection with unchanged global bindings.",
+      "measured": false
+    },
+    {
+      "id": "K009",
+      "status": "implemented_pending_runtime_validation",
+      "priority": "medium",
+      "title": "Length-validator reducer still uses captured factory identity",
+      "paths": [
+        "crates/vail-execution/src/array_length_aggregate.rs::length_udaf"
+      ],
+      "evidence": "Factory uses create_udaf; equivalent validators receive fresh captured factory closure identities.",
+      "next_step": "Use native keyed aggregate helper with exact validator configuration and preserve reducer contract.",
+      "measured": false
+    },
+    {
+      "id": "K010",
+      "status": "fixed_focused_public_runtime_validated",
+      "priority": "medium",
+      "title": "Nested collection scalar adapters bypass metadata-preserving conversion",
+      "paths": [
+        "crates/vail-execution/src/collection_groups.rs::invoke_with_args"
+      ],
+      "evidence": "Collection grouping, matrix gather/transpose scalar adapters now use shared scalar_at. Transpose and dense scatter clone source Fields rather than reconstructing metadata-free Fields.",
+      "next_step": "Run Set/Dict-valued scalar grouping regression; route nested output through metadata-preserving native helper. collection_lookup directly retains its StructArray and is not affected.",
+      "measured": false
+    },
+    {
+      "id": "K011",
+      "status": "queued",
+      "priority": "high",
+      "title": "Hypergeometric samplers perform one random draw per sampled item",
+      "paths": [
+        "crates/vail-execution/src/randomness.rs::Rng::hyper"
+      ],
+      "evidence": "hyper loops 0..sample and multi_hyper repeats that draw loop for colors with remaining sample count; large population/sample requests therefore take linear sampling work rather than parameter-bounded rejection/inversion work.",
+      "next_step": "Use validated hypergeometric distribution algorithm with explicit stream-compatibility policy and small/exhaustive distribution tests; benchmark large balanced populations.",
+      "measured": false
+    },
+    {
+      "id": "K012",
+      "status": "queued",
+      "priority": "medium",
+      "title": "Downsample rebins retained grid on each expanding bound",
+      "paths": [
+        "crates/vail-execution/src/advanced_numeric_aggregates.rs::DownsampleAccumulator::insert"
+      ],
+      "evidence": "Any new min/max takes the retained BTreeMap and reinserts all representatives; monotone expanding points can repeatedly rebin O(divisions^2) retained state.",
+      "next_step": "Compare upstream algorithm and use amortized bounds expansion or an equivalent streaming spatial sketch; preserve retained-point and merge semantics.",
+      "measured": false
+    },
+    {
+      "id": "K013",
+      "status": "queued",
+      "priority": "medium",
+      "title": "Linear regression solves normal equations with explicit matrix inverse",
+      "paths": [
+        "crates/vail-execution/src/advanced_numeric_aggregates.rs::LinregAccumulator::result"
+      ],
+      "evidence": "Accumulator retains XTX and XTy, then try_inverse and multiplication; conditioning is squared relative to X and subtractive RSS may lose precision. Existing ordinary examples cannot establish ill-conditioned behavior.",
+      "next_step": "Audit Hail numerical contract, add rank-deficient/ill-conditioned cases and assess mergeable QR or stable symmetric solve with rank detection. No unsupported claim of observed incorrect output.",
+      "measured": false
+    },
+    {
+      "id": "K014",
+      "status": "justified_externalizable_aggregate_state_codec",
+      "title": "KLL accumulator state uses serialized sketch bytes",
+      "paths": [
+        "crates/vail-execution/src/advanced_numeric_aggregates.rs::KllAccumulator::state",
+        "crates/vail-execution/src/advanced_numeric_aggregates.rs::KllAccumulator::merge_batch"
+      ],
+      "evidence": "DataFusion accumulator state is Arrow Binary; kll-rs exposes serialize/deserialize for mergeable sketch state. This is internal Rust aggregate state transfer, not Python/Rust IR serialization.",
+      "next_step": "DF state must be Arrow-representable for partial/final aggregation, spill and shuffle. kll-rs exposes serialize/deserialize and merge without native retained-level export/import. Keep Binary codec at this boundary; do not use opaque pointers that invalidate externalization. Avoid unnecessary state() calls."
+    },
+    {
+      "id": "K015",
+      "status": "queued",
+      "priority": "medium",
+      "title": "Random ndarray dimensions pass through f64",
+      "paths": [
+        "crates/vail-execution/src/randomness.rs::evaluate"
+      ],
+      "evidence": "norm_nd/unif_nd read int64 rows/columns through number() -> f64 -> i64. Exact dimensions beyond 2^53 can change; even zero-by-large shapes need exact original int64 dimensions despite having no data allocation.",
+      "next_step": "Read typed Int64Array dimensions directly and test a zero-length ndarray with a large second dimension.",
+      "measured": false
+    },
+    {
+      "id": "K016",
+      "status": "fixed_candidate9_focused_runtime_passed",
+      "priority": "medium",
+      "title": "Python RNG context rewrites still recursively rebuild occurrence trees",
+      "paths": [
+        "python/vail/randomness.py::bind_rows",
+        "python/vail/randomness.py::bind_context"
+      ],
+      "evidence": "Native randomness detection is now graph-aware, but when randomness is present, contextual rewrite recurses through Python shallow views without native node/context memoization. Shared random-containing graphs can repeat rewrite work and reconstruct duplicated native children.",
+      "next_step": "Validate public callback/reducer seeded randomness and depth64 random graph planning on matching candidate9 package.",
+      "measured": false,
+      "resolution": "Native randomness_binding rewrite memoizes original node plus lexical/reducer scope, retains Arc graph outputs, handles callback replacement/shadowing, reducer inputs/results and group result UID minima. Python preserves ownership refs and obtains row-index flag natively.",
+      "validation": "Public scoped callback/grouped reducer exact-value behavior and random depth64 table planning pass candidate9; external16/32/64/128 guard completes. Broader40failures all consumer replay, owned planner."
+    },
+    {
+      "id": "K017",
+      "status": "queued_baseline_reproduced_by_table_agent",
+      "priority": "medium",
+      "title": "Projection schema inference canonicalizes away arbitrary Arrow field metadata",
+      "paths": [
+        "crates/vail-table/src/lib.rs::TableIR::map_rows",
+        "crates/vail-execution/src/expressions.rs::Type::from_arrow",
+        "crates/vail-execution/src/expressions.rs::Type::to_arrow"
+      ],
+      "evidence": "Table agent isolated pre-existing RuntimeLiteral projection schema loss: Type::from_arrow then to_arrow preserves recognized logical type but drops arbitrary Arrow List element Field metadata before collect. Raw native seed/physical return-field cases13/14 passed; failure is generic schema reconstruction, not configured UDAF forwarding.",
+      "next_step": "Define native type representation retaining Arrow field metadata, or preserve exact source return Field when deriving projection schemas. Add real imported Arrow arbitrary-metadata roundtrip regression; coordinate table/type owners. No overlapping production fix in this batch.",
+      "measured": false
+    },
+    {
+      "id": "K018",
+      "status": "fixed_candidate8_focused_runtime_passed",
+      "priority": "high",
+      "title": "Physical metadata facade validated rewritten lambda indices against the old source schema",
+      "paths": [
+        "crates/vail-execution/src/expressions.rs::CompiledPhysical"
+      ],
+      "evidence": "Build7 densify and heterogeneous nested array/dict lambda cases failed with List/Dict versus Int comparator/arithmetic errors. DataFusion LambdaExpr projects column indices before supplying the new callback schema. Eager with_new_children metadata binding used the old schema, so rewritten indices addressed different types.",
+      "resolution": "Child rewrites/snapshots invalidate derived fields. Per-node OnceLock seeds original shared Arc<Schema>/exact Field for constant-time common queries without wide-schema hashing or vector cloning; first actual projected schema binds rewritten nodes lazily. Other schemas use a success-only secondary map; no lock spans recursive metadata computation. Eq/hash exclude derived cache/labels. Compact root function/operator labels retained without recursive Display.",
+      "validation": "Isolated package8 original nested-array/dict-global/densify regressions plus full optimizer suite:17passed .45s, guard .62s RSS175751168 bytes. New native metadata test queries actual descriptors and float/null execution across schemas; all new Hash/Eq inspection assertions removed per R7."
+    },
+    {
+      "id": "K019",
+      "status": "queued_outside_current_freeze",
+      "priority": "medium",
+      "title": "DataFusion scalar primitive array_repeat constructs an avoidable wide repeat-index array",
+      "paths": [
+        "DataFusion55 datafusion-functions-nested array_repeat",
+        "datafusion_common::ScalarValue::to_array_of_size"
+      ],
+      "evidence": "Root relayed another agent profile: scalar primitive100M zeros allocates UInt64 repeat indices (~800MB) plus Int32 result child (~400MB). Existing ScalarValue::to_array_of_size primitive path directly constructs repeated Arrow values.",
+      "next_step": "General upstream-compatible scalar primitive array_repeat fast path using existing ScalarValue primitive repeated-array construction plus List wrapper; no Vail-specific numeric loop. Dense multirow broadcast byte-batch policy is separately owned by the other agent.",
+      "measurement_owner": "Other agent profile relayed by root; not reproduced/measured by kernel_effects",
+      "measured": true
+    },
+    {
+      "id": "K020",
+      "status": "queued",
+      "priority": "medium",
+      "title": "Alpha-equivalent pure lambda kernels retain frontend UUID binder spelling in identity",
+      "paths": [
+        "crates/vail-execution/src/expression_identity.rs::properties",
+        "python/vail/expressions.py lambda/bind construction"
+      ],
+      "evidence": "Native property descriptors include ArrayMap/Filter/Fold parameter strings and LambdaVariable names; frontend-generated binder UUIDs differ between independently constructed equivalent expressions. Stable actual-name identity is conservative but misses semantic reuse for alpha-equivalent binders.",
+      "next_step": "Canonicalize lexical binders and bound-variable references by lexical depth/position in native identity, preserving distinct free references, capture/shadowing and actual type metadata. Add public equivalently constructed higher-order value/optimizer behavior tests without private implementation counters.",
+      "measured": false
+    }
+  ],
+  "validation": {
+    "status": "candidate9_source_checked_matching_runtime_pending",
+    "new_python_contract_tests": "python/tests/test_kernel_optimizer_contract.py: real error/filter/branch, RNG, collection metadata, folds, configured grouped reducers, public table depth64 planning, and scan result behavior",
+    "new_rust_tests": [
+      "Public depth64 type/physical/logical compilation under external resource bound; actual modest-size execution",
+      "Real simplifier metadata preservation and deferred invalid imported-locus execution",
+      "Actual grouped-array/lexical-context evaluation",
+      "Actual descriptors and float/null results across input schemas"
+    ],
+    "syntax_only": "Python py_compile passed; owned Rust modules formatted with rustfmt.",
+    "checks": [
+      "Focused cargo check -p vail-execution -p vail-table --tests passed (3m27).",
+      "Central check8 all three crates --tests passed including compilation memo/native Type/reference config production; three newest compilation tests added afterward.",
+      "Focused cargo check -p vail-execution --tests passed after bounded physical metadata patch (1.96s cached rerun). Release depth64 runtime regression pending root.",
+      "Focused execution --tests cargo check passed with scoped physical Eq and rebuilt depth64 equality regression (1.72s). Runtime release verification pending root.",
+      "Focused execution --tests cargo check passed all review changes including shared logical boundaries and real invalid-locus execution test (0.68s). Runtime execution pending central release.",
+      "Focused execution --tests cargo check passed final public DataFusion physical planner depth64 test additions (0.64s). Actual table depth64 Python test requires matching rebuilt binary and external30s/resource guard.",
+      "Final listed reviewer test-policy cleanup execution --tests check passed (1.04s); no CountUpdates spy, fake OrderingAware adapter, private compilation/Identity counters, private volatility assertion or scan adapter Eq-only test remains. Genuine pre-existing math/state tests retained.",
+      "Coherent execution/table/PyO3 cdylib cargo check without --tests passed8.73s including native contains_random and latest table read-only visitor/dependency memo fixes. Production frozen for build7."
+    ],
+    "runtime_build6": {
+      "optimizer_effect_tests": "9 passed, 4 failed, 1 deselected in 2.93s; peak process RSS 179240960 bytes",
+      "log": "/private/tmp/vail-kernel-optimizer-python6.log",
+      "failures": [
+        "Three consumer UnknownPartitioning equality failures owned/fixed by logical planner agent pending build7",
+        "Nested Set shuffle receives metadata-free argument descriptors from generic NestedFunction lowering; constructing its tagged output failed. Restoring selected declared descriptor before ListArray validation added pending build7. Arrow take preserves its input fields; it is not the original metadata stripping site."
+      ],
+      "depth64": "Actual Table test timed out at 30s in Python randomness.contains; native project separately timed out in globals referenced_bindings occurrence visitor. Native contains_random unique traversal implemented; logical agent fixing native visitors; matching build7 required."
+    },
+    "guarded_rust6": {
+      "public_depth64": {
+        "passed": 1,
+        "test_elapsed_seconds": 0.01,
+        "subprocess_elapsed_seconds": 1.2096869579982013,
+        "max_rss_bytes": 10043392,
+        "deadline_seconds": 30,
+        "log": "/private/tmp/vail-kernel-depth64-rust6.log"
+      },
+      "logical_execution_effect_metadata": {
+        "passed": 13,
+        "test_elapsed_seconds": 0.01,
+        "subprocess_elapsed_seconds": 0.022888540999701945,
+        "max_rss_bytes": 14385152,
+        "deadline_seconds": 30,
+        "log": "/private/tmp/vail-kernel-logical-rust6.log"
+      },
+      "limitations": "Rust public depth64 planner passes; Python actual table depth64 requires matching build7 detection/visitor fixes. Shared runtime repeated-edge evaluation remains queued."
+    },
+    "guarded_python7": {
+      "artifact": "/private/tmp/vail-shortcut-wheels7/vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl",
+      "import_root": "/private/tmp/vail-kernel-effects-wheel7",
+      "deadline_seconds": 30,
+      "depth64_table": {
+        "passed": 1,
+        "pytest_seconds": 0.95,
+        "guard_seconds": 2.7068934589988203,
+        "max_rss_bytes": 156172288,
+        "log": "/private/tmp/vail-kernel-depth64-python7.log"
+      },
+      "optimizer_effects": {
+        "passed": 14,
+        "pytest_seconds": 0.47,
+        "guard_seconds": 0.7856761250004638,
+        "max_rss_bytes": 157630464,
+        "log": "/private/tmp/vail-kernel-optimizer-python7.log"
+      },
+      "public_planning_scaling": {
+        "log": "/private/tmp/vail-kernel-public-planning-scaling7.log",
+        "cold_depth16_total_seconds": 0.09948637500201585,
+        "warm_depth32_total_seconds": 0.0018743340006039944,
+        "warm_depth64_total_seconds": 0.0016470829978061374,
+        "warm_depth128_total_seconds": 0.0024596250004833564,
+        "max_rss_bytes_depth128": 48398336,
+        "limits": "Real table construction plus logical optimization/physical planning; huge repeated-edge computation is not evaluated. Cold first case includes startup. No global value cache or private work counters."
+      }
+    }
+  },
+  "limitations": [
+    "Full reads are explicitly labeled; aggregates, array_aggregate_scan and Python lib remain targeted reads here.",
+    "Assigned remaining execution neighbor reads complete. Broader modules owned by other audit agents remain outside this report.",
+    "Cargo check validates compilation, not behavioral success. Parent owns frozen release build3, actual regressions and end-to-end profiles."
+  ],
+  "candidate9_review_delta": {
+    "status": "matching_package9_focused_runtime_passed_broader_consumer_replay_blockers",
+    "checks": [
+      "Coherent execution/table/Python cargo check passed; execution cargo check --tests passed; Python compile passed.",
+      "Isolated candidate8 original array_map/dict-global/densify plus optimizer suite: 17 passed in .45s; guarded process .62s, max RSS175751168 bytes.",
+      "Coherent package9 optimizer/capture/RNG-depth64/nullable-CASE plus original3binding regressions20passed .50s (guard .68s), /private/tmp/vail-kernel-optimizer-python9.log.",
+      "Coherent package9 randomness+fold+stream:104passed40failed13.96s. Every40error is explicit consumer replay rejection; no RNG/value/type discrepancy. /private/tmp/vail-kernel-randomness-python9.log.",
+      "External30s capture resource probe100rows\u00d73lookups with10k/100k/1M retained scalar elements: .00357/.00276/.00634s; cumulative max RSS122.5/127.0/200.3MB including constructing source Python lists. /private/tmp/vail-kernel-capture-probe9.log.",
+      "External30s random shared DAG public table planning16/32/64/128 all completed; /private/tmp/vail-kernel-random-dag-probe9.log."
+    ],
+    "changes": [
+      "Native scoped random DAG rewrites replace Python recursive bind_context/bind_rows and callback replacement; memo keys contain lexical reducer scope and shadowing. Native row-index classification avoids a subsequent Python edge traversal.",
+      "Scalar ownership/cardinality and zero-selected-row capture semantics fixed; captured List indexing selects directly from retained child buffers.",
+      "Simple CASE for nullable condition avoids duplicate condition evaluation, using DataFusion selected-only branch execution.",
+      "R7 newly added kernel/factory/Hash/Eq private identity inspections removed; actual field/value/null/public-planner and aggregate coexistence regressions retained."
+    ],
+    "limits": [
+      "Broader randomness suite blocked by logical consumer replay errors, assigned planner/root; focused capture/RNG/CASE regressions pass coherent package9.",
+      "Mixed scalar kernel specialization remains O(native IR) per invocation, deliberately no mutable/global cache.",
+      "K007 repeated runtime evaluation of shared edges remains queued; bounded compilation does not claim runtime CSE."
+    ]
+  }
+}
