@@ -34,12 +34,12 @@ fn down<T: Array + 'static>(array: &dyn Array) -> Result<&T, ExprError> {
 
 /// A row adapter that applies parent validity before checking the packed word.
 /// Successful present rows are canonical according to the shared Call codec.
-struct CallRows<'a> {
+pub(crate) struct CallRows<'a> {
     parent: &'a StructArray,
     words: &'a Int32Array,
 }
 impl<'a> CallRows<'a> {
-    fn new(value: &'a ArrayRef) -> Result<Self, ExprError> {
+    pub(crate) fn new(value: &'a ArrayRef) -> Result<Self, ExprError> {
         let parent = down::<StructArray>(value.as_ref())?;
         let words = parent
             .column_by_name("__vail_call_word")
@@ -49,7 +49,7 @@ impl<'a> CallRows<'a> {
             words: down(words.as_ref())?,
         })
     }
-    fn get(&self, row: usize) -> Result<Option<(Vec<i32>, bool)>, ExprError> {
+    pub(crate) fn get(&self, row: usize) -> Result<Option<(Vec<i32>, bool)>, ExprError> {
         if self.parent.is_null(row) {
             return Ok(None);
         }

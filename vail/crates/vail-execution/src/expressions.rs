@@ -4241,12 +4241,20 @@ pub(crate) fn string_function(
     let strings = Type::Array {
         array: Box::new(text.clone()),
     };
+    if name == "genomic_list_call_stats" {
+        return crate::advanced_genomic_aggregates::list_call_stats();
+    }
     if matches!(name, "variant_min_rep" | "variant_entry") {
         return crate::variant_kernels::function(name);
     }
     Ok(match name {
+        "hwe_both_counts" => (
+            crate::hwe_counts::udf(true),
+            vec![int32.clone(); 3],
+            Type::from_arrow(&crate::hwe_counts::result_type(true))?,
+        ),
         "hardy_weinberg_counts" => (
-            crate::hwe_counts::udf(),
+            crate::hwe_counts::udf(false),
             vec![int32.clone(), int32.clone(), int32, boolean],
             Type::Array {
                 array: Box::new(Type::Primitive(PrimitiveType::Float64)),

@@ -102,6 +102,15 @@ def variant_qc(mt, name='variant_qc'):
     n_cols_ref = mt._num_cols()
     bound_exprs['n_filtered'] = hl.int64(n_cols_ref) - hl.agg.count()
     bound_exprs['call_stats'] = hl.agg.call_stats(mt.GT, mt.alleles)
+    bound_exprs['n_het'] = hl.agg.count_where(hl.bind(
+        lambda a: hl.if_else(hl.len(a) == 2, a[0] != a[1], False), mt.GT.alleles))
+    bound_exprs['n_non_ref'] = hl.agg.count_where(hl.any(lambda a: a > 0, mt.GT.alleles))
+    for label, a, b in [('hom_ref', 0, 0), ('het', 0, 1), ('hom_var', 1, 1)]:
+        bound_exprs['hwe_' + label] = hl.agg.count_where(hl.bind(
+            lambda call, a=a, b=b: hl.if_else(
+                hl.len(call) == 2,
+                ((call[0] == a) & (call[1] == b)) | ((call[0] == b) & (call[1] == a)),
+                False), mt.GT.alleles))
 
     result = hl.rbind(
         hl.struct(**bound_exprs),
@@ -109,19 +118,7 @@ def variant_qc(mt, name='variant_qc'):
             hl.case()
             .when(
                 hl.len(mt.alleles) == 2,
-                (
-                    hl.hardy_weinberg_test(
-                        e1.call_stats.homozygote_count[0],
-                        e1.call_stats.AC[1] - 2 * e1.call_stats.homozygote_count[1],
-                        e1.call_stats.homozygote_count[1],
-                    ),
-                    hl.hardy_weinberg_test(
-                        e1.call_stats.homozygote_count[0],
-                        e1.call_stats.AC[1] - 2 * e1.call_stats.homozygote_count[1],
-                        e1.call_stats.homozygote_count[1],
-                        one_sided=True,
-                    ),
-                ),
+                _hwe_both(e1.hwe_hom_ref, e1.hwe_het, e1.hwe_hom_var),
             )
             .or_missing(),
             lambda hwe: hl.struct(**{
@@ -131,11 +128,11 @@ def variant_qc(mt, name='variant_qc'):
                 'n_called': e1.n_called,
                 'n_not_called': e1.n_not_called,
                 'n_filtered': e1.n_filtered,
-                'n_het': e1.n_called - hl.sum(e1.call_stats.homozygote_count),
-                'n_non_ref': e1.n_called - e1.call_stats.homozygote_count[0],
-                'het_freq_hwe': hwe[0].het_freq_hwe,
-                'p_value_hwe': hwe[0].p_value,
-                'p_value_excess_het': hwe[1].p_value,
+                'n_het': e1.n_het,
+                'n_non_ref': e1.n_non_ref,
+                'het_freq_hwe': hwe.het_freq_hwe,
+                'p_value_hwe': hwe.p_value,
+                'p_value_excess_het': hwe.p_value_excess_het,
             }),
         ),
     )
@@ -158,3 +155,17 @@ def hardy_weinberg_test(n_hom_ref, n_het, n_hom_var, one_sided=False):
         'args': [arg.to_ir() for arg in args],
     })
     return hl.bind(lambda x: hl.or_missing(hl.is_defined(x), hl.struct(het_freq_hwe=x[0], p_value=x[1])), result)
+
+
+def _hwe_both(n_hom_ref, n_het, n_hom_var):
+    """Share the exact-test distribution when QC needs both tail modes."""
+    import vail as hl
+    from .expressions import Expression, _merge_sources
+    args = [hl.int32(n) for n in (n_hom_ref, n_het, n_hom_var)]
+    source = None
+    for arg in args:
+        source = _merge_sources(source, arg.source)
+    return Expression(hl.tstruct(het_freq_hwe=hl.tfloat64, p_value=hl.tfloat64,
+                                 p_value_excess_het=hl.tfloat64), source, {
+        'op': 'scalar_function', 'function': 'hwe_both_counts',
+        'args': [arg.to_ir() for arg in args]})

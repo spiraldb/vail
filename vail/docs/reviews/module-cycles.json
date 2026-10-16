@@ -302,6 +302,26 @@
       ],
       "reports": [
         "vail/docs/reviews/variant-cost.json"
+      ],
+      "merged_commit": "97ae7790"
+    },
+    {
+      "module": "Vail variant QC, genomic aggregators and direct Matrix list reducers",
+      "reviewed_base": "97ae7790",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "count heterozygous/non-reference calls directly across supported ploidies and use only diploid counts for HWE",
+        "replace private IR/options/state tests and mocked cardinality checks with public results, errors and partition equivalence",
+        "reuse native checked CallStats tally for linear per-list counts instead of rescanning calls per allele",
+        "avoid repeated fixed allele-count scratch, share prepared CallRows and checked tally",
+        "share HWE distribution preparation through a typed named combined result"
+      ],
+      "validation": [
+        "79 public Python tests passed: QC/genomic/HWE/Matrix-array/initializer/scan modules",
+        "72 Rust vail-execution library tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/qc-cost.json"
       ]
     }
   ],

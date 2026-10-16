@@ -1,0 +1,142 @@
+{
+  "base_commit": "97ae7790",
+  "native_sha256": "2b36c25ede6daf936a78f858d4e5ad54923899e64357cfb6a17b2431bf5da990",
+  "method": "Fresh processes,20-second cap per case. Full public Matrix variant_qc rows().collect includes all reducers, not isolated kernels. Baseline reloads original qc.py and matrix_list_aggregates.py from97ae7790 against the same rebuilt runtime; captures Python lowering change, not an exact old-native comparison. Scalar HWE baseline is thus a same-runtime control, final absolute resource evidence only. Input construction/runtime warmup excluded from action; peak RSS includes runtime and inputs. Public outputs asserted.",
+  "baseline": [
+    {
+      "mode": "qc",
+      "samples": 128,
+      "alleles": 2,
+      "construction_seconds": 0.012367041999823414,
+      "action_seconds": 0.0626809589957702,
+      "max_rss_bytes": 142393344
+    },
+    {
+      "mode": "qc",
+      "samples": 1024,
+      "alleles": 2,
+      "construction_seconds": 0.01291924999532057,
+      "action_seconds": 0.06305262499517994,
+      "max_rss_bytes": 144769024
+    },
+    {
+      "mode": "qc",
+      "samples": 8192,
+      "alleles": 2,
+      "construction_seconds": 0.012539540999568999,
+      "action_seconds": 0.08212449999700766,
+      "max_rss_bytes": 146817024
+    },
+    {
+      "mode": "qc",
+      "samples": 1024,
+      "alleles": 32,
+      "construction_seconds": 0.012540957999590319,
+      "action_seconds": 0.08794595800281968,
+      "max_rss_bytes": 185073664
+    },
+    {
+      "mode": "qc",
+      "samples": 1024,
+      "alleles": 256,
+      "construction_seconds": 0.01236100000096485,
+      "action_seconds": 0.6731291250034701,
+      "max_rss_bytes": 915390464
+    },
+    {
+      "mode": "hwe",
+      "samples": 100,
+      "alleles": 2,
+      "construction_seconds": 0.0003573750000214204,
+      "action_seconds": 0.0010494590023881756,
+      "max_rss_bytes": 131465216
+    },
+    {
+      "mode": "hwe",
+      "samples": 10000,
+      "alleles": 2,
+      "construction_seconds": 0.0003453329991316423,
+      "action_seconds": 0.001054749998729676,
+      "max_rss_bytes": 130170880
+    },
+    {
+      "mode": "hwe",
+      "samples": 1000000,
+      "alleles": 2,
+      "construction_seconds": 0.0003480829982436262,
+      "action_seconds": 0.0031760830024722964,
+      "max_rss_bytes": 133431296
+    }
+  ],
+  "final": [
+    {
+      "mode": "qc",
+      "samples": 128,
+      "alleles": 2,
+      "construction_seconds": 0.01467104200128233,
+      "action_seconds": 0.033132124997791834,
+      "max_rss_bytes": 142802944
+    },
+    {
+      "mode": "qc",
+      "samples": 1024,
+      "alleles": 2,
+      "construction_seconds": 0.012879333000455517,
+      "action_seconds": 0.03885104200162459,
+      "max_rss_bytes": 143523840
+    },
+    {
+      "mode": "qc",
+      "samples": 8192,
+      "alleles": 2,
+      "construction_seconds": 0.012354999998933636,
+      "action_seconds": 0.04330487500556046,
+      "max_rss_bytes": 144949248
+    },
+    {
+      "mode": "qc",
+      "samples": 1024,
+      "alleles": 32,
+      "construction_seconds": 0.014226999999664258,
+      "action_seconds": 0.039262499994947575,
+      "max_rss_bytes": 142721024
+    },
+    {
+      "mode": "qc",
+      "samples": 1024,
+      "alleles": 256,
+      "construction_seconds": 0.01338062499416992,
+      "action_seconds": 0.041095375003351364,
+      "max_rss_bytes": 147587072
+    },
+    {
+      "mode": "hwe",
+      "samples": 100,
+      "alleles": 2,
+      "construction_seconds": 0.0004580000022542663,
+      "action_seconds": 0.0012690830044448376,
+      "max_rss_bytes": 132382720
+    },
+    {
+      "mode": "hwe",
+      "samples": 10000,
+      "alleles": 2,
+      "construction_seconds": 0.0004127080028411001,
+      "action_seconds": 0.0012462500017136335,
+      "max_rss_bytes": 131104768
+    },
+    {
+      "mode": "hwe",
+      "samples": 1000000,
+      "alleles": 2,
+      "construction_seconds": 0.0004358329970273189,
+      "action_seconds": 0.004783917000168003,
+      "max_rss_bytes": 128516096
+    }
+  ],
+  "limits": [
+    "Bounded one-row Matrix workloads; no production scaling guarantee. Allele/sample independent sizing exercises O(C+A) native tally rather than former per-allele scans.",
+    "Per-list native output materializes one checked result per owning row. Matrix AF for AN0 remains element-wise missing; table aggregate AF remains missing array.",
+    "QC still has a fixed number of separate call predicate passes, each linear in samples. HWE two tails share the same distribution; recurrence storage grows with its non-underflowed support, rather than a claimed constant-space exact test."
+  ]
+}

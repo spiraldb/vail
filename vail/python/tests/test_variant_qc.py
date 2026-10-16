@@ -2,20 +2,16 @@ import pytest
 import vail as hl
 
 
-def test_num_cols_is_lazy_matrix_scoped_and_counts_filtered_slots(monkeypatch):
-    mt = hl.range_matrix_table(2, 4)
-    monkeypatch.setattr(hl.MatrixTable, 'count_cols', lambda *args, **kwargs: pytest.fail('eager count'))
-    count = mt._num_cols()
-    assert count.source is mt
-    assert count.to_ir() == {'op': 'matrix_num_cols'}
-    assert hl.eval(count) == 4
-    assert mt.annotate_rows(n=count).rows().collect()[0].n == 4
+def test_variant_qc_tracks_filtered_columns_and_empty_rows():
+    mt = hl.range_matrix_table(2, 4).annotate_rows(alleles=['A', 'C'])
+    mt = mt.annotate_entries(GT=hl.call(0, 1))
     filtered = mt.filter_cols(mt.col_idx < 2)
-    assert hl.eval(filtered._num_cols()) == 2
-    empty = mt.filter_rows(False)
-    assert hl.eval(empty._num_cols()) == 4
-    with pytest.raises(hl.ExpressionException, match='source mismatch'):
-        filtered.annotate_rows(n=count)
+    qc = hl.variant_qc(filtered).rows().collect()[0].variant_qc
+    assert (qc.n_called, qc.n_not_called, qc.n_filtered) == (2, 0, 0)
+    assert qc.call_rate == 1
+    empty = hl.variant_qc(filtered.filter_rows(False))
+    assert empty.count() == (0, 2)
+    assert empty.rows().collect() == []
 
 
 def test_variant_qc_filtered_missing_and_multiallelic():
@@ -70,14 +66,6 @@ def test_parse_variant_and_struct_select():
     assert hl.eval(absent.select('a')) is None
 
 
-def test_num_cols_inside_entry_expressions_and_reductions():
-    mt = hl.range_matrix_table(2, 3)
-    annotated = mt.annotate_entries(n=mt._num_cols())
-    assert annotated.n.collect() == [3] * 6
-    result = mt.annotate_rows(n=hl.agg.sum(mt._num_cols())).rows().collect()
-    assert [row.n for row in result] == [9, 9]
-    assert mt.aggregate_entries(hl.agg.sum(mt._num_cols())) == 18
-
 
 def test_hwe_scalar_broadcast_and_global_mode():
     table = hl.range_table(3).annotate_globals(mode=True)
@@ -99,3 +87,47 @@ def test_variant_qc_empty_axes_and_optional_fields():
     assert qc.p_value_hwe == .5
     assert 'gq_stats' in qc and 'dp_stats' not in qc
     assert hl.variant_qc(mt.head(0)).count_rows() == 0
+
+
+def test_variant_qc_mixed_ploidy_uses_diploid_hwe_and_direct_call_counts():
+    calls = [hl.Call([0, 0]), hl.Call([0, 1], True), hl.Call([1, 1]),
+             hl.Call([0]), hl.Call([1]), hl.Call([]), None]
+    mt = hl.range_matrix_table(1, len(calls))
+    mt = mt.annotate_rows(alleles=['A', 'C'])
+    values = hl.literal(calls, hl.tarray(hl.tcall))
+    mt = mt.annotate_entries(GT=values[mt.col_idx])
+    qc = hl.variant_qc(mt).rows().collect()[0].variant_qc
+    assert (qc.n_called, qc.n_not_called, qc.n_filtered) == (6, 1, 0)
+    assert (qc.n_het, qc.n_non_ref) == (1, 3)
+    assert qc.AC == [4, 4] and qc.AN == 8
+    assert qc.homozygote_count == [1, 1]
+    assert qc.het_freq_hwe == pytest.approx(hl.eval(hl.hardy_weinberg_test(1, 1, 1)).het_freq_hwe)
+    assert qc.p_value_hwe == pytest.approx(hl.eval(hl.hardy_weinberg_test(1, 1, 1)).p_value)
+    assert qc.p_value_excess_het == pytest.approx(hl.eval(hl.hardy_weinberg_test(1, 1, 1, True)).p_value)
+
+
+@pytest.mark.parametrize('n_alleles', [0, 1, 2, 7])
+def test_matrix_call_stats_matches_public_table_reducer(n_alleles):
+    calls = [None, hl.Call([])] if n_alleles == 0 else [hl.Call([0]), hl.Call([0, n_alleles - 1]), None, hl.Call([])]
+    table = hl.Table.parallelize([{'GT': c} for c in calls], schema=hl.tstruct(GT=hl.tcall), n_partitions=3)
+    expected = table.aggregate(hl.agg.call_stats(table.GT, n_alleles))
+    mt = hl.range_matrix_table(3, len(calls), n_partitions=2)
+    values = hl.literal(calls, hl.tarray(hl.tcall))
+    mt = mt.annotate_entries(GT=values[mt.col_idx])
+    mt = mt.annotate_rows(stats=hl.agg.call_stats(mt.GT, n_alleles))
+    if expected.AN == 0:
+        expected = hl.Struct(AC=expected.AC, AF=[None] * n_alleles, AN=0, homozygote_count=expected.homozygote_count)
+    assert [r.stats for r in mt.rows().collect()] == [expected] * 3
+
+
+def test_matrix_call_stats_empty_filtered_and_invalid_calls():
+    mt = hl.range_matrix_table(1, 2).annotate_entries(GT=hl.call(0, 1))
+    for empty in [mt.filter_entries(False), mt.filter_cols(False)]:
+        row = empty.annotate_rows(stats=hl.agg.call_stats(empty.GT, 3)).rows().collect()[0]
+        assert row.stats == hl.Struct(AC=[0, 0, 0], AF=[None, None, None], AN=0, homozygote_count=[0, 0, 0])
+    bad = mt.annotate_entries(GT=hl.call(0, 3))
+    with pytest.raises(RuntimeError, match='allele index'):
+        bad.annotate_rows(stats=hl.agg.call_stats(bad.GT, 2)).rows().collect()
+    for n in [-1, hl.missing(hl.tint32)]:
+        with pytest.raises(RuntimeError, match='allele count'):
+            mt.annotate_rows(stats=hl.agg.call_stats(mt.GT, n)).rows().collect()

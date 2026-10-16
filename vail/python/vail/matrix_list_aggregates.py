@@ -354,61 +354,19 @@ def reduce_list(
                     )
                 result = values[: options["n"]]
             elif function == "call_stats":
-                from . import range as array_range
-
-                calls = values.map(lambda v: v["__vail_genomic_call"]).filter(
-                    is_defined
-                )
-                alleles = calls.map(
-                    lambda call: raw(
-                        {
-                            "op": "get_field",
-                            "value": call.to_ir(),
-                            "name": "__vail_call_alleles",
-                        },
-                        tarray(tint32),
-                    )
-                )
+                calls = values.map(lambda value: value["__vail_genomic_call"])
                 initial = dict(node.get("init", []))["n_alleles"]
                 n = raw(bind(initial, fixed), tint32)
-                n = (
-                    case()
-                    .when(is_defined(n) & (n >= 0), n)
-                    .or_error("call_stats requires a defined nonnegative allele count")
-                )
-                flattened = alleles.flatmap(lambda a: a)
-                valid = length(flattened.filter(lambda a: (a < 0) | (a >= n))) == 0
-                n = (
-                    case()
-                    .when(valid, n)
-                    .or_error("call_stats allele index outside allele count")
-                )
-                an = cast(array_sum(alleles.map(length)), tint32)
-                ac = array_range(n).map(
-                    lambda a: cast(
-                        array_sum(flattened.map(lambda v: if_else(v == a, 1, 0))),
-                        tint32,
-                    )
-                )
-                hom = array_range(n).map(
-                    lambda a: cast(
-                        array_sum(
-                            alleles.map(
-                                lambda call: if_else(
-                                    (length(call) == 2)
-                                    & (length(call.filter(lambda v: v != a)) == 0),
-                                    1,
-                                    0,
-                                )
-                            )
-                        ),
-                        tint32,
-                    )
-                )
-                af = ac.map(
-                    lambda count: if_else(an > 0, count / an, missing(tfloat64))
-                )
-                result = struct(AC=ac, AF=af, AN=an, homozygote_count=hom)
+                result = raw({"op": "scalar_function", "function": "genomic_list_call_stats",
+                              "args": [calls.to_ir(), n.to_ir()]}, dtype)
+                # Matrix row reductions historically return element-wise missing
+                # frequencies for AN=0; table aggregates return a missing array.
+                from . import bind as bind_value, range as array_range
+                result = bind_value(lambda stats: struct(
+                    AC=stats.AC,
+                    AF=if_else(stats.AN > 0, stats.AF,
+                               array_range(n).map(lambda _: missing(tfloat64))),
+                    AN=stats.AN, homozygote_count=stats.homozygote_count), result)
             elif function in ("sum", "product", "min", "max", "mean", "stddev_pop"):
                 numbers = values.map(
                     lambda v: cast(

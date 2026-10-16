@@ -282,22 +282,41 @@ impl GenomicAccumulator {
             let Some(call) = call_alleles(calls, row)? else {
                 continue;
             };
-            for &allele in &call {
-                let index = allele as usize;
-                if index >= n {
-                    return Err(bad("call_stats allele index out of range"));
-                }
-                self.ac[index] = self.ac[index]
-                    .checked_add(1)
-                    .ok_or_else(|| bad("call_stats count overflow"))?;
-                self.ints[0] += 1;
+            self.tally_call(&call, n)?;
+        }
+        Ok(())
+    }
+    // Both adapters validate n == self.ac.len() before calling this shared tally.
+    fn tally_call(&mut self, call: &[i32], n: usize) -> DfResult<()> {
+        for &allele in call {
+            let index = allele as usize;
+            if index >= n {
+                return Err(bad("call_stats allele index out of range"));
             }
-            if call.len() == 2 && call[0] == call[1] {
-                self.hom[call[0] as usize] += 1;
+            self.ac[index] = self.ac[index]
+                .checked_add(1)
+                .ok_or_else(|| bad("call_stats count overflow"))?;
+            self.ints[0] += 1;
+        }
+        if call.len() == 2 && call[0] == call[1] {
+            self.hom[call[0] as usize] += 1;
+        }
+        Ok(())
+    }
+
+    fn update_fixed_calls(&mut self, calls: &ArrayRef, n: usize) -> DfResult<()> {
+        if n != self.ac.len() {
+            return Err(bad("call_stats allele count differs from initializer"));
+        }
+        let rows = crate::calls::CallRows::new(calls).map_err(|e| bad(e.to_string()))?;
+        for row in 0..calls.len() {
+            if let Some((call, _)) = rows.get(row).map_err(|e| bad(e.to_string()))? {
+                self.tally_call(&call, n)?;
             }
         }
         Ok(())
     }
+
     fn update_ndarray(&mut self, s: &StructArray) -> DfResult<()> {
         let datas = packed_col(s, "__vail_ndarray_data")?
             .as_any()
@@ -777,11 +796,16 @@ impl Accumulator for GenomicAccumulator {
 
 // Levene-Haldane conditional distribution; aggregate states remain three counters.
 pub(crate) fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64, f64) {
+    let (frequency, two, one) = hwe_both(hom_ref, het, hom_var);
+    (frequency, if one_sided { one } else { two })
+}
+
+pub(crate) fn hwe_both(hom_ref: i64, het: i64, hom_var: i64) -> (f64, f64, f64) {
     // Hail's LeveneHaldane recurrence, including normalization and summation
     // order. Sharing this kernel keeps scalar and aggregate tests identical.
     let n = hom_ref + het + hom_var;
     if n == 0 {
-        return (f64::NAN, 0.5);
+        return (f64::NAN, 0.5, 0.5);
     }
     let minor = het + 2 * hom_ref.min(hom_var);
     let major = 2 * n - minor;
@@ -826,7 +850,7 @@ pub(crate) fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64
     } else {
         left.get(((mode - het) / 2) as usize).copied().unwrap_or(0.)
     };
-    let p = if one_sided {
+    let one = {
         let tail = if het >= mode {
             let start = ((het - mode) / 2 + 1) as usize;
             let cutoff = right.get(start).copied().unwrap_or(0.) * 1e-16;
@@ -850,7 +874,8 @@ pub(crate) fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64
                     .sum::<f64>()
         };
         tail / norm + 0.5 * (observed / norm)
-    } else if observed <= f64::MIN_POSITIVE {
+    };
+    let two = if observed <= f64::MIN_POSITIVE {
         0.
     } else {
         let mid_tail = |weights: &[f64]| {
@@ -870,108 +895,109 @@ pub(crate) fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64
         };
         (mid_tail(&left[1..]) + mid_tail(&right)) / norm
     };
-    (freq, p)
+    (freq, two, one)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn call_array(calls: Vec<Option<Vec<i32>>>) -> StructArray {
-        let words = Int32Array::from(
-            calls
+/// Per-owning-row adapter for the same checked CallStats reducer used by tables.
+/// It scans calls once and never constructs one predicate array per allele.
+pub(crate) fn list_call_stats() -> Result<
+    (
+        Arc<datafusion_expr::ScalarUDF>,
+        Vec<crate::expressions::Type>,
+        crate::expressions::Type,
+    ),
+    ExprError,
+> {
+    use crate::expressions::{PrimitiveType, Type};
+    use datafusion_expr::{ColumnarValue, expr_fn::create_udf};
+    let call = Type::Primitive(PrimitiveType::Call);
+    let integer = Type::Primitive(PrimitiveType::Int32);
+    let calls = Type::Array {
+        array: Box::new(call.clone()),
+    };
+    let input_type = struct_type(vec![
+        ("__vail_genomic_call", call.to_arrow()?),
+        ("__vail_genomic_alleles", DataType::Int32),
+    ]);
+    let output = struct_type(vec![
+        ("AC", list_type(DataType::Int32)),
+        ("AF", list_type(DataType::Float64)),
+        ("AN", DataType::Int32),
+        ("homozygote_count", list_type(DataType::Int32)),
+    ]);
+    let result_type = Type::from_arrow(&output)?;
+    let output_empty = output.clone();
+    let udf = create_udf(
+        "vail_list_call_stats",
+        vec![calls.to_arrow()?, DataType::Int32],
+        output,
+        Volatility::Immutable,
+        Arc::new(move |values| {
+            let rows = values
                 .iter()
-                .map(|call| {
-                    call.as_ref()
-                        .map(|alleles| crate::calls::pack(alleles, false).unwrap())
+                .find_map(|v| {
+                    if let ColumnarValue::Array(a) = v {
+                        Some(a.len())
+                    } else {
+                        None
+                    }
                 })
-                .collect::<Vec<_>>(),
-        );
-        StructArray::new(
-            vec![field("__vail_call_word", DataType::Int32)].into(),
-            vec![Arc::new(words)],
-            Some(arrow_buffer::NullBuffer::from(
-                calls.iter().map(Option::is_some).collect::<Vec<_>>(),
-            )),
-        )
-    }
-
-    #[test]
-    fn call_stats_requires_initializer_and_never_infers_shape_from_rows() {
-        let call_type = call_array(vec![]).data_type().clone();
-        let packed_type = struct_type(vec![
-            ("__vail_genomic_call", call_type),
-            ("__vail_genomic_alleles", DataType::Int32),
-        ]);
-        for options in [
-            serde_json::json!({}),
-            serde_json::json!({"n_alleles": null}),
-            serde_json::json!({"n_alleles": -1}),
-        ] {
-            assert!(make_udaf("call_stats", &packed_type, &options).is_err());
-        }
-        assert!(
-            make_udaf(
-                "call_stats",
-                &packed_type,
-                &serde_json::json!({"n_alleles": 0})
-            )
-            .is_ok()
-        );
-
-        let calls = call_array(vec![None]);
-        let packed = StructArray::from(vec![
-            (
-                field("__vail_genomic_call", calls.data_type().clone()),
-                Arc::new(calls) as ArrayRef,
-            ),
-            (
-                field("__vail_genomic_alleles", DataType::Int32),
-                Arc::new(Int32Array::from(vec![2])) as ArrayRef,
-            ),
-        ]);
-        let mut accumulator =
-            GenomicAccumulator::new(Kind::CallStats(0), packed.data_type().clone());
-        assert!(
-            accumulator
-                .update_batch(&[Arc::new(packed)])
-                .unwrap_err()
-                .to_string()
-                .contains("differs from initializer")
-        );
-    }
-
-    #[test]
-    fn hwe_matches_hail_examples_and_mid_p() {
-        assert_eq!(hwe(1, 1, 1, false), (0.6, 0.7));
-        assert_eq!(hwe(1, 1, 1, true), (0.6, 0.7000000000000001));
-        let (freq, p) = hwe(250, 500, 250, false);
-        assert!((freq - 0.5002501250625313).abs() < 1e-12);
-        assert!((p - 0.9747844394217698).abs() < 1e-10);
-        let (freq, p) = hwe(37, 200, 85, false);
-        assert!((freq - 0.48964964307448583).abs() < 1e-12);
-        assert!((p - 1.1337210383168987e-6).abs() < 1e-12);
-    }
-
-    #[test]
-    fn hwe_skips_non_diploid_and_merges_counts() {
-        let calls = call_array(vec![
-            Some(vec![0, 0]),
-            Some(vec![0, 1]),
-            Some(vec![1, 1]),
-            Some(vec![1]),
-            None,
-        ]);
-        let mut a = GenomicAccumulator::new(Kind::Hwe(false), calls.data_type().clone());
-        a.update_batch(&[Arc::new(calls)]).unwrap();
-        assert_eq!(a.ints, [1, 1, 1]);
-        let states = a.state().unwrap();
-        let arrays = states
-            .into_iter()
-            .map(|v| v.to_array_of_size(1).unwrap())
-            .collect::<Vec<_>>();
-        let mut b = GenomicAccumulator::new(Kind::Hwe(false), a.input_type.clone());
-        b.merge_batch(&arrays).unwrap();
-        assert_eq!(b.ints, [1, 1, 1]);
-    }
+                .unwrap_or(1);
+            let inputs = values
+                .iter()
+                .map(|v| match v {
+                    ColumnarValue::Array(a) => Ok(a.clone()),
+                    ColumnarValue::Scalar(s) => s.to_array(),
+                })
+                .collect::<DfResult<Vec<_>>>()?;
+            let arrays = inputs[0]
+                .as_any()
+                .downcast_ref::<ListArray>()
+                .ok_or_else(|| bad("list call_stats requires Call array"))?;
+            let counts = inputs[1]
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .ok_or_else(|| bad("list call_stats requires int32 allele count"))?;
+            let row_at = |arg: usize, row: usize| {
+                if matches!(values[arg], ColumnarValue::Scalar(_)) {
+                    0
+                } else {
+                    row
+                }
+            };
+            let mut results = Vec::with_capacity(rows);
+            for row in 0..rows {
+                let cr = row_at(1, row);
+                if counts.is_null(cr) || counts.value(cr) < 0 {
+                    return Err(bad(
+                        "call_stats requires a defined nonnegative allele count",
+                    ));
+                }
+                let n = counts.value(cr) as usize;
+                let ar = row_at(0, row);
+                let calls = if arrays.is_null(ar) {
+                    arrow_array::new_empty_array(&arrays.value_type())
+                } else {
+                    arrays.value(ar)
+                };
+                let mut accumulator =
+                    GenomicAccumulator::new(Kind::CallStats(n), input_type.clone());
+                accumulator.update_fixed_calls(&calls, n)?;
+                results.push(accumulator.result()?);
+            }
+            let result = if results.is_empty() {
+                arrow_array::new_empty_array(&output_empty)
+            } else {
+                ScalarValue::iter_to_array(results)?
+            };
+            if values.iter().all(|v| matches!(v, ColumnarValue::Scalar(_))) {
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                    &result, 0,
+                )?))
+            } else {
+                Ok(ColumnarValue::Array(result))
+            }
+        }),
+    );
+    Ok((Arc::new(udf), vec![calls, integer], result_type))
 }

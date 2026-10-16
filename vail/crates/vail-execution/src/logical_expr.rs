@@ -463,6 +463,8 @@ fn lower(
                     | "unicode_translate"
                     | "variant_min_rep"
                     | "variant_entry"
+                    | "genomic_list_call_stats"
+                    | "hwe_both_counts"
             ) {
                 return logical_kernel(expr, schema, globals, bindings, scope);
             }
