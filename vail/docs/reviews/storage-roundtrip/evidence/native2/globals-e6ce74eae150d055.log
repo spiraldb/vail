@@ -1,0 +1,13 @@
+
+running 6 tests
+test singleton_schemas_reject_ambiguous_or_unsupported_fields ... ok
+test binding_declarations_are_checked_even_when_the_reference_is_shared ... ok
+test literal_globals_keep_compatible_string_storage_and_metadata ... ok
+test singleton_projection_requires_closed_callbacks_before_execution ... ok
+test empty_projection_does_not_read_a_discarded_singleton_in_either_lowering_path ... ok
+test stored_globals_reject_misadvertised_names_and_logical_types ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+Guard elapsed: 1.319s; exit: 0

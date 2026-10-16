@@ -1,0 +1,228 @@
+{
+  "completed_modules": 56,
+  "definitions": 1468,
+  "definition_statuses": {
+    "failed": 617,
+    "passed": 453,
+    "collection_blocked": 398
+  },
+  "parameter_cases": {
+    "failed": 1212,
+    "passed": 480
+  },
+  "definition_categories_inferred": {
+    "missing_or_unsupported_api": 389,
+    "format_io_api": 83,
+    "passed": 453,
+    "collection_blocked": 398,
+    "execution_or_other_error": 25,
+    "expression_types_or_validation": 49,
+    "assertion_mismatch": 12,
+    "harness_or_fixture_setup_blocker": 2,
+    "genetics_or_other_high_level_api": 14,
+    "fixture_or_storage_format_blocker": 24,
+    "randomness_dependency": 3,
+    "hail_backend_or_ir_dependency": 16
+  },
+  "failed_case_phases": {
+    "setup": 461,
+    "call": 751
+  },
+  "collection_errors": 20,
+  "timeout_modules": [],
+  "crashed_modules": [],
+  "structural_ir_omissions": 97,
+  "scope_exclusions": [
+    {
+      "module": "fs/test_worker_driver_fs.py",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "typecheck/test_typecheck.py",
+      "reason": "Python typecheck decorator tests are out of scope"
+    },
+    {
+      "module": "utils/test_hl_hadoop_and_hail_fs.py",
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_methods",
+      "line": 37,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_exists",
+      "line": 81,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_mkdir_p",
+      "line": 85,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_mkdir_p_2",
+      "line": 98,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_copy_log",
+      "line": 105,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_is_file",
+      "line": 111,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_is_dir",
+      "line": 116,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_stat",
+      "line": 122,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_no_glob_in_bucket",
+      "line": 134,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_simple",
+      "line": 151,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls",
+      "line": 161,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_file_that_does_not_exist",
+      "line": 182,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_glob_heterogenous_structure",
+      "line": 192,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_glob_no_slash_in_group",
+      "line": 217,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_glob_1",
+      "line": 227,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "Tests.test_hadoop_ls_glob_2",
+      "line": 232,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_folder_glob",
+      "line": 368,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_prefix_folder_glob_qmarks",
+      "line": 374,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_two_folder_globs",
+      "line": 380,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_two_folder_globs_and_two_qmarks",
+      "line": 391,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_one_folder_glob_and_qmarks_in_multiple_components",
+      "line": 402,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_groups",
+      "line": 408,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_size_one_groups",
+      "line": 414,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_component_with_only_groups",
+      "line": 420,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    },
+    {
+      "module": "utils/test_utils.py",
+      "name": "test_hadoop_ls_negated_group",
+      "line": 432,
+      "reason": "Hadoop open and Hail filesystem compatibility are out of scope"
+    }
+  ],
+  "randomness_definitions": {
+    "passed": 58,
+    "failed": 2,
+    "collection_blocked": 38
+  },
+  "random_using_definitions": {
+    "passed": 22,
+    "failed": 59,
+    "collection_blocked": 18
+  },
+  "native_library_sha256": "c601aee1b1cc02ab70ec08a5d74c21f432fed367cb3a8d62f3d0286875867deb",
+  "native_source_revision": "e79f57db4376528c51510d772dda78a494612a59",
+  "upstream_source_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "fixture_adaptations": {
+    "randomness_reset": {
+      "replacement": "vail.reset_global_randomness",
+      "scope": "function",
+      "autouse": true,
+      "timing": "pytest autouse fixture before each test",
+      "upstream_fixture": "conftest.py::reset_global_randomness",
+      "upstream_line": 103,
+      "upstream_conftest_sha256": "5302579021387f74f43ec9b353fddcbfa4dbcba3f1a12754a1c840772a97b017"
+    }
+  },
+  "module_timeout_seconds": 300,
+  "per_test_timeout_seconds": 45,
+  "selection": null,
+  "definition_status_changes_vs_upstream20": 0,
+  "category_note": "Automated categories inferred from first failing parameter and exception text; raw errors retained. Categories do not establish root cause."
+}

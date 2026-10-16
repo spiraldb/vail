@@ -1,0 +1,19 @@
+
+running 12 tests
+test interval_inclusivity_order_matches_physical_struct_order ... ok
+test call_order_differs_from_physical_allele_order ... ok
+test dictionary_entry_order_is_not_logical_dictionary_equality ... ok
+test ndarray_order_differs_from_physical_data_first_order ... ok
+test set_physical_order_is_not_logical_set_equality ... ok
+test nested_nulls_demonstrate_missing_first_vs_missing_last ... ok
+test floating_constant_folding_and_compression_preserve_comparisons ... ok
+test present_nested_values_agree ... ok
+test floats_all_six_operators_agree_including_nan_bits ... ok
+test ordinary_scalars_and_outer_nulls_agree ... ok
+test iceberg_metrics_pruning_drops_nan_rows_that_vortex_matches ... ok
+test interval_struct_order_matches_hail_endpoint_order ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+
+
+Guard elapsed: 0.540s; exit: 0

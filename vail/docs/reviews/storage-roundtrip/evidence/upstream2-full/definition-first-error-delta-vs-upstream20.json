@@ -1,0 +1,17 @@
+{
+  "comparison": "First error line only, ignoring object addresses and 32-hex lambda IDs. Definitions without an old first_error are excluded. Status comparison separately covers every definition.",
+  "changes": [
+    {
+      "module": "expr/test_expr.py",
+      "name": "Tests.test_agg_prev_nonnull",
+      "before": "E   AttributeError: module 'vail.scan' has no attribute '_prev_nonnull'",
+      "after": "E   AttributeError: module 'vail' has no attribute '_values_similar'"
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "name": "Tests.test_overwrite",
+      "before": "E   FileExistsError: /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/ELv9zs30L0242i2AuYasPa.mt",
+      "after": "E   FileExistsError: /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/tGuUGe5hGB8o0g6Nd6XT8e.mt"
+    }
+  ]
+}

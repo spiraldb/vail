@@ -1,0 +1,13 @@
+
+running 2 tests
+__vail_call_word: 64 calls=3 allocations, 8192 calls=3
+constructor: 64 calls=8 allocations, 8192 calls=8
+test constructor_borrows_sliced_alleles_without_per_call_wrappers ... ok
+__vail_call_alleles: 64 calls=14 allocations, 8192 calls=14
+__vail_call_phased: 64 calls=8 allocations, 8192 calls=8
+test accessor_allocations_do_not_scale_with_number_of_calls ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+Guard elapsed: 0.379s; exit: 0

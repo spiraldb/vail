@@ -1,0 +1,5 @@
+{"kind": "inventory", "items": ["test_call_caching.py::test_execution_cache_creation"]}
+{"kind": "started", "nodeid": "test_call_caching.py::test_execution_cache_creation"}
+{"kind": "test", "nodeid": "test_call_caching.py::test_execution_cache_creation", "when": "setup", "outcome": "passed", "duration": 0.0014755840002180776, "category": null, "error": ""}
+{"kind": "test", "nodeid": "test_call_caching.py::test_execution_cache_creation", "when": "call", "outcome": "failed", "duration": 0.00011545799952727975, "category": "behavior_failure", "error": "/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/test_call_caching.py:9: in test_execution_cache_creation\n    assert not fs.exists(folder)\n               ^^^^^^^^^\nE   AttributeError: 'LocalFilesystem' object has no attribute 'exists'"}
+{"kind": "test", "nodeid": "test_call_caching.py::test_execution_cache_creation", "when": "teardown", "outcome": "passed", "duration": 0.00013929199940321269, "category": null, "error": ""}

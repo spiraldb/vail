@@ -1,0 +1,19 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________________________ test_mating_simulation ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_simulation.py:5: in test_mating_simulation
+    mt = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_simulation.py::test_mating_simulation
+1 failed in 0.06s

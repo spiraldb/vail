@@ -1,0 +1,41 @@
+
+running 34 tests
+test comparison::tests::hail_relative_tolerance_and_ieee_rules ... ok
+test nested_projection::tests::bare_container_use_disables_its_nested_hints ... ok
+test nested_projection::tests::returning_whole_lambda_element_disables_nested_hints ... ok
+test nested_projection::tests::captured_columns_are_full_while_lambda_fields_are_narrow ... ok
+test nested_projection::tests::map_paths_union_across_outputs_and_keep_field_names_atomic ... ok
+test nested_projection::tests::nested_array_map_falls_back_to_full_source_column ... ok
+test nested_projection::tests::nested_lambda_shadowing_keeps_the_correct_source_root ... ok
+test line_source::tests::preserves_quotes_blank_lines_crlf_and_unicode_across_chunks ... ok
+test line_source::tests::splits_hail_universal_newlines_even_across_chunks ... ok
+test line_source::tests::trailing_lf_does_not_create_an_extra_row ... ok
+test diagnostics::tests::unbound_diagnostics_cannot_be_mistaken_for_executable_actions ... ok
+test line_source::tests::opener_streams_object_store_file_and_rejects_invalid_utf8 ... ok
+test provider::interval_intersection_tests::intersection_sweep_handles_overlaps_and_unbounded_endpoints ... ok
+test provider::interval_intersection_tests::interval_union_normalization_preserves_open_shared_endpoints ... ok
+test provider::interval_intersection_tests::valid_disjoint_intersection_is_empty ... ok
+test provider::interval_intersection_tests::malformed_key_comparison_is_an_error_not_an_empty_intersection ... ok
+test partitioned::expression_source_tests::replay_preserves_shared_physical_inputs_without_sharing_across_actions ... ok
+test partitioned::expression_source_tests::exposed_children_are_reset_once_through_nested_ordering_wrappers ... ok
+test interval_read::prefix_partition_index_tests::indexed_prefix_candidates_match_brute_force_with_overlaps_and_open_bounds ... ok
+test partitioned::concurrent_partition_tests::canceling_ordered_output_aborts_prefetched_producers ... ok
+test text_schema::tests::schema_inference_rejects_unbounded_json_array_mode ... ok
+test text_schema::tests::unknown_options_and_empty_paths_are_rejected ... ok
+test partitioned::expression_source_tests::array_expression_evaluates_once_per_action_across_partitions ... ok
+test provider::interval_intersection_tests::intersection_sweep_matches_cartesian_oracle_for_generated_bounds ... ok
+test text_schema::tests::json_inference_handles_nested_values_and_merges_files ... ok
+test interval_read::prefix_partition_index_tests::prefix_interval_predicate_growth_is_linear ... ok
+test text_schema::tests::csv_inference_merges_typed_columns_across_files ... ok
+test text_schema::tests::csv_inference_rejects_different_column_names_or_order ... ok
+test partitioned::concurrent_partition_tests::singleton_adapters_keep_all_rows_after_a_parallel_child_rewrite ... ok
+test partitioned::concurrent_partition_tests::force_count_drains_later_partitions_while_first_is_gated ... ok
+test partitioned::concurrent_partition_tests::native_partition_consumers_are_limited_and_propagate_errors ... ok
+test partitioned::concurrent_partition_tests::ordered_producers_are_concurrent_bounded_and_keep_row_order ... ok
+test provider::projected_provider_tests::read_projection_reaches_storage_and_returns_only_selected_field ... ok
+test provider::projected_provider_tests::map_rows_nested_array_projection_reads_selected_struct_child ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+
+
+Guard elapsed: 1.379s; exit: 0

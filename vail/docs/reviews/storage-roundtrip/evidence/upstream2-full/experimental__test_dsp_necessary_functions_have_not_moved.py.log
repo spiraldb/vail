@@ -1,0 +1,10 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+____________________ test_dsp_used_functions_have_not_moved ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_dsp_necessary_functions_have_not_moved.py:4: in test_dsp_used_functions_have_not_moved
+    assert hl.experimental.full_outer_join_mt is not None
+           ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_dsp_necessary_functions_have_not_moved.py::test_dsp_used_functions_have_not_moved
+1 failed in 0.05s

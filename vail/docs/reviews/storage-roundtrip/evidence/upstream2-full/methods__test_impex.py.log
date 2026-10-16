@@ -1,0 +1,1214 @@
+...FFF..FFF.FFFF.F...F...FF..........F....F..FFF.FFFFF.FFFF...FFFFFFFFFF [ 35%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 71%]
+FFFFFFFFFFFFFFFFFFFFFFFFFFFFF.F..F...F.F..FFFF.FFFFFFFFFF                [100%]
+=================================== FAILURES ===================================
+___________ VCFTests.test_combiner_parse_allele_specific_annotations ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:358: in test_combiner_parse_allele_specific_annotations
+    from vail.vds.combiner.combine import parse_allele_specific_fields
+E   ModuleNotFoundError: No module named 'vail.vds'
+_________________________ VCFTests.test_combiner_works _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:325: in test_combiner_works
+    from vail.vds.combiner.combine import combine_variant_datasets, transform_gvcf
+E   ModuleNotFoundError: No module named 'vail.vds'
+_________________________ VCFTests.test_contigs_header _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:478: in test_contigs_header
+    assert False, 'expected pattern not found'
+E   AssertionError: expected pattern not found
+E   assert False
+________________________ VCFTests.test_empty_read_write ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:431: in test_empty_read_write
+    hl.export_vcf(mt, out2)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________ VCFTests.test_export_sites_only_from_table __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:234: in test_export_sites_only_from_table
+    hl.export_vcf(mt.rows(), tmp)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:14: in export_vcf
+    raise TypeError('export_vcf requires a MatrixTable')
+E   TypeError: export_vcf requires a MatrixTable
+___________________________ VCFTests.test_export_vcf ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:185: in test_export_vcf
+    with TemporaryFilename(suffix='.vcf') as sample_vcf, TemporaryFilename(suffix='.vcf') as no_sample_vcf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/context.py:6: in __init__
+    raise NotImplementedError('vail.context.TemporaryFilename is not implemented')
+E   NotImplementedError: vail.context.TemporaryFilename is not implemented
+_______________________ VCFTests.test_export_vcf_haploid _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:256: in test_export_vcf_haploid
+    with TemporaryFilename(suffix='.vcf') as export_path:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/context.py:6: in __init__
+    raise NotImplementedError('vail.context.TemporaryFilename is not implemented')
+E   NotImplementedError: vail.context.TemporaryFilename is not implemented
+________________ VCFTests.test_export_vcf_invalid_format_types _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:248: in test_export_vcf_invalid_format_types
+    with pytest.raises(FatalError) as exp, TemporaryFilename(suffix='.vcf') as export_path:
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/context.py:6: in __init__
+    raise NotImplementedError('vail.context.TemporaryFilename is not implemented')
+E   NotImplementedError: vail.context.TemporaryFilename is not implemented
+_________________ VCFTests.test_export_vcf_invalid_info_types __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:240: in test_export_vcf_invalid_info_types
+    with pytest.raises(FatalError) as exp, TemporaryFilename(suffix='.vcf') as export_path:
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/context.py:6: in __init__
+    raise NotImplementedError('vail.context.TemporaryFilename is not implemented')
+E   NotImplementedError: vail.context.TemporaryFilename is not implemented
+___________________ VCFTests.test_export_vcf_no_alt_alleles ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:229: in test_export_vcf_no_alt_alleles
+    self.assertTrue(mt._same(mt2))
+E   AssertionError: False is not true
+----------------------------- Captured stdout call -----------------------------
+Table._same: types differ at field "__matrix_compare_entries_d34b9173cc384eb0b063da6eefd2b58f"
+_________ VCFTests.test_export_vcf_quotes_and_backslash_in_description _________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:200: in test_export_vcf_quotes_and_backslash_in_description
+    with TemporaryFilename(suffix='.vcf') as test_vcf:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/context.py:6: in __init__
+    raise NotImplementedError('vail.context.TemporaryFilename is not implemented')
+E   NotImplementedError: vail.context.TemporaryFilename is not implemented
+________________________ VCFTests.test_format_genotypes ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:463: in test_format_genotypes
+    assert expected in line
+E   AssertionError: assert 'GT:AD:DP:GQ:PL\t1/1:0,6:6:18:234,18,0\t1/1:0,4:4:12:159,12,0\t1/1:0,4:4:12:163,12,0\t1/1:0,12:12:36:479,36,0\t1/1:0,4...1:0,6:6:18:232,18,0\t1/1:0,6:6:18:242,18,0\t1/1:0,3:3:9:119,9,0\t1/1:0,9:9:27:374,27,0\t./.:1,0:1\t1/1:0,3:3:9:133,9,0' in '20\t13029920\trs934335\tC\tG\t181727.0\tPASS\tHWP=0.0;AC=172;culprit=MQ;MQ0=0;ReadPosRankSum=0.0;AN=172;InbreedingCoe...3:9:114,9,0\t./.:2,0:2:.:.\t1/1:0,3:3:9:124,9,0\t1/1:0,6:6:18:257,18,0\t1/1:0,4:4:12:154,12,0\t1/1:0,6:6:18:252,18,0\n'
+______________________ VCFTests.test_haploid_combiner_ok _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:338: in test_haploid_combiner_ok
+    from vail.vds.combiner.combine import transform_gvcf
+E   ModuleNotFoundError: No module named 'vail.vds'
+__________________________ VCFTests.test_import_gvcfs __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:296: in test_import_gvcfs
+    self.import_gvcfs_sample_vcf(path)
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:262: in import_gvcfs_sample_vcf
+    parts_str = json.dumps(parts_type._convert_to_json(parts))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'tarray' object has no attribute '_convert_to_json'
+_ VCFTests.test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements _
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:133: in test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements
+    mt._force_count_rows()
+/private/tmp/vail-storage-package2/vail/matrixtable.py:1236: in _force_count_rows
+    return self._mir.core._force_count()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1298: in _force_count
+    return self._native.force_count()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: /Users/danielking/projects/vail/hail/hail/hail/test/resources/missingInfoArray.vcf:15: Missing value in INFO array. Use 'hl.import_vcf(..., array_elements_required=False)'.
+__________________ VCFTests.test_import_vcf_skip_invalid_loci __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:157: in test_import_vcf_skip_invalid_loci
+    hl.import_vcf(resource('skip_invalid_loci.vcf')).count()
+/private/tmp/vail-storage-package2/vail/matrixtable.py:1233: in count
+    return self.count_rows(), self.count_cols()
+           ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:1212: in count_rows
+    return self._mir.core.count()
+           ^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1295: in count
+    return self._native.count()
+           ^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: Invalid locus 0:1 for reference GRCh37
+______________________ VCFTests.test_invalid_info_fields _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:504: in test_invalid_info_fields
+    with mock.patch('hail.methods.impex.warning', autospec=True) as warning:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/mock.py:1451: in __enter__
+    self.target = self.getter()
+                  ^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/pkgutil.py:513: in resolve_name
+    mod = importlib.import_module(modname)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/importlib/__init__.py:90: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1387: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1360: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1324: in _find_and_load_unlocked
+    ???
+E   ModuleNotFoundError: No module named 'hail'
+___________________________ VCFTests.test_malformed ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:57: in test_malformed
+    mt._force_count_rows()
+/private/tmp/vail-storage-package2/vail/matrixtable.py:1236: in _force_count_rows
+    return self._mir.core._force_count()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1298: in _force_count
+    return self._native.force_count()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   RuntimeError: Execution error: /Users/danielking/projects/vail/hail/hail/hail/test/resources/malformed.vcf:54: invalid character in numeric literal "rs685723"
+_______________________ VCFTests.test_metadata_argument ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:484: in test_metadata_argument
+    hl.export_vcf(mt, f, metadata=metadata)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:82: in export_vcf
+    header.extend(declaration('format',name,dataset.entry.dtype[name]) for name in entry_names)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:82: in <genexpr>
+    header.extend(declaration('format',name,dataset.entry.dtype[name]) for name in entry_names)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/vcf_export.py:69: in declaration
+    raise ValueError(f'VCF metadata Number disagrees with {name!r}')
+E   ValueError: VCF metadata Number disagrees with 'GT'
+_____________________ VCFTests.test_not_identical_headers ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:64: in test_not_identical_headers
+    hl.import_vcf([resource('sample.vcf'), t])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/vcf.py:78: in import_vcf
+    native, samples, _ = _native_session().read_vcf(
+E   ValueError: invalid sample IDs: VCF headers differ
+___________________________ VCFTests.test_same_bgzip ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:377: in test_same_bgzip
+    hl.export_vcf(mt, f)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+_____________________________ VCFTests.test_sorted _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:412: in test_sorted
+    mt = mt.annotate_entries(GT=hl.unphased_diploid_gt_index_call(0))
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'unphased_diploid_gt_index_call'
+__________________________ VCFTests.test_tabix_export __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:283: in test_tabix_export
+    hl.export_vcf(mt, tmp, tabix=True)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:16: in export_vcf
+    raise NotImplementedError('parallel VCF export, tabix, and appended headers are not implemented')
+E   NotImplementedError: parallel VCF export, tabix, and appended headers are not implemented
+____________________ VCFTests.test_tabix_export_file_exists ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:289: in test_tabix_export_file_exists
+    hl.export_vcf(mt, tmp, tabix=True, parallel='header_per_shard')
+/private/tmp/vail-storage-package2/vail/vcf_export.py:16: in export_vcf
+    raise NotImplementedError('parallel VCF export, tabix, and appended headers are not implemented')
+E   NotImplementedError: parallel VCF export, tabix, and appended headers are not implemented
+___________________ VCFTests.test_vcf_different_info_errors ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:514: in test_vcf_different_info_errors
+    mt = hl.import_vcf([resource('different_info_test1.vcf'), resource('different_info_test2.vcf')])
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/vcf.py:78: in import_vcf
+    native, samples, _ = _native_session().read_vcf(
+E   ValueError: Check that all files have same INFO fields
+______________ VCFTests.test_vcf_parallel_separate_header_export _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:390: in test_vcf_parallel_separate_header_export
+    hl.export_vcf(mt, f, parallel='separate_header')
+/private/tmp/vail-storage-package2/vail/vcf_export.py:16: in export_vcf
+    raise NotImplementedError('parallel VCF export, tabix, and appended headers are not implemented')
+E   NotImplementedError: parallel VCF export, tabix, and appended headers are not implemented
+______________ VCFTests.test_vcf_parser_golden_master__ex_GRCh37 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:309: in test_vcf_parser_golden_master__ex_GRCh37
+    self._test_vcf_parser_golden_master(resource('ex.vcf'), 'GRCh37')
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master
+    mt = hl.read_matrix_table(vcf_path + '.mt')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/ex.vcf.mt/_vail_matrix.json'
+_____________ VCFTests.test_vcf_parser_golden_master__gvcf_GRCh37 ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:316: in test_vcf_parser_golden_master__gvcf_GRCh37
+    self._test_vcf_parser_golden_master(resource('gvcfs/HG00096.g.vcf.gz'), 'GRCh38')
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:320: in _test_vcf_parser_golden_master
+    mt = hl.read_matrix_table(vcf_path + '.mt')
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/gvcfs/HG00096.g.vcf.gz.mt/_vail_matrix.json'
+___________________ PLINKTests.test_contig_recoding_defaults ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:709: in test_contig_recoding_defaults
+    hl.import_plink(resource('sex_mt_contigs.bed'), resource('sex_mt_contigs.bim'), resource('sex_mt_contigs.fam'), reference_genome='GRCh37')
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+___________________ PLINKTests.test_export_import_plink_same ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:530: in test_export_import_plink_same
+    mt = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_________________________ PLINKTests.test_export_plink _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:627: in test_export_plink
+    with hl.TemporaryFilename() as split_vcf_file:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+_________________ PLINKTests.test_export_plink_call_expression _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:690: in test_export_plink_call_expression
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+________________ PLINKTests.test_export_plink_default_arguments ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:655: in test_export_plink_default_arguments
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+______________ PLINKTests.test_export_plink_non_default_arguments ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:666: in test_export_plink_non_default_arguments
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+____________ PLINKTests.test_export_plink_non_default_bim_arguments ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:682: in test_export_plink_non_default_bim_arguments
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_____________ PLINKTests.test_export_plink_quantitative_phenotype ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:674: in test_export_plink_quantitative_phenotype
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+__________________ PLINKTests.test_export_plink_struct_locus ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:720: in test_export_plink_struct_locus
+    hl.export_plink(mt, out)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_plink'
+_______ PLINKTests.test_export_plink_white_space_in_fam_id_raises_error ________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:699: in test_export_plink_white_space_in_fam_id_raises_error
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+________ PLINKTests.test_export_plink_white_space_in_varid_raises_error ________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:704: in test_export_plink_white_space_in_varid_raises_error
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+__________________________ PLINKTests.test_import_fam __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:521: in test_import_fam
+    nfam = hl.import_fam(fam_file).count()
+           ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_fam'. Did you mean: 'import_vcf'?
+____________________ PLINKTests.test_import_plink_a1_major _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:555: in test_import_plink_a1_major
+    mt = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_________________ PLINKTests.test_import_plink_and_ignore_rows _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:606: in test_import_plink_and_ignore_rows
+    plink = hl.import_plink(bfile + '.bed', bfile + '.bim', bfile + '.fam', block_size=16)
+            ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+___________ PLINKTests.test_import_plink_contig_recoding_w_reference ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:593: in test_import_plink_contig_recoding_w_reference
+    hl.export_plink(vcf, bfile)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_plink'
+____________________ PLINKTests.test_import_plink_empty_bim ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:548: in test_import_plink_empty_bim
+    mt = get_dataset().filter_rows(False)
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+____________________ PLINKTests.test_import_plink_empty_fam ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:541: in test_import_plink_empty_fam
+    mt = get_dataset().filter_cols(False)
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_____________ PLINKTests.test_import_plink_no_reference_specified ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:601: in test_import_plink_no_reference_specified
+    plink = hl.import_plink(bfile + '.bed', bfile + '.bim', bfile + '.fam', reference_genome=None)
+            ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+___________________ PLINKTests.test_import_plink_partitions ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:585: in test_import_plink_partitions
+    hl.export_plink(mt, out)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_plink'
+___________________ PLINKTests.test_import_plink_same_locus ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:573: in test_import_plink_same_locus
+    hl.export_plink(mt, out)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_plink'
+________________ PLINKTests.test_import_plink_skip_invalid_loci ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:610: in test_import_plink_skip_invalid_loci
+    mt = hl.import_plink(resource('skip_invalid_loci.bed'), resource('skip_invalid_loci.bim'), resource('skip_invalid_loci.fam'), reference_genome='GRCh37', skip_invalid_loci=True, contig_recoding={'chr1': '1'})
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+_____________________________ BGENTests.test_drop ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:889: in test_drop
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['dosage'])
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+________________________ BGENTests.test_error_if_no_gp _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:741: in test_error_if_no_gp
+    hl.export_bgen(mt, tmp_path)
+    ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'export_bgen'. Did you mean: 'export_vcf'?
+__________________________ BGENTests.test_export_bgen __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:966: in test_export_bgen
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GP'], sample_file=resource('example.sample'))
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_____________________ BGENTests.test_export_bgen_from_vcf ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:999: in test_export_bgen_from_vcf
+    with hl.TemporaryDirectory(ensure_exists=False) as tmpdir:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+_____________________ BGENTests.test_export_bgen_parallel ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:984: in test_export_bgen_parallel
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GP'], sample_file=resource('example.sample'), n_partitions=3)
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_______________________ BGENTests.test_export_bgen_zstd ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:975: in test_export_bgen_zstd
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GP'], sample_file=resource('example.sample'))
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+___________________ BGENTests.test_import_bgen_GT_GP_entries ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:752: in test_import_bgen_GT_GP_entries
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GT', 'GP'], sample_file=resource('example.sample'))
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+________ BGENTests.test_import_bgen_dosage_and_gp_dosage_function_agree ________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:797: in test_import_bgen_dosage_and_gp_dosage_function_agree
+    bgenmt = hl.import_bgen(bgen_file, ['GP', 'dosage'], sample_file)
+             ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+___________________ BGENTests.test_import_bgen_dosage_entry ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:746: in test_import_bgen_dosage_entry
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['dosage'])
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_______________ BGENTests.test_import_bgen_empty_variant_filter ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:876: in test_import_bgen_empty_variant_filter
+    actual = hl.import_bgen(bgen_file, ['GT'], n_partitions=10, variants=[])
+             ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_____________ BGENTests.test_import_bgen_errors_with_invalid_loci ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:769: in test_import_bgen_errors_with_invalid_loci
+    with hl.TemporaryFilename(suffix='.bgen') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+___________________ BGENTests.test_import_bgen_gavin_example ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:779: in test_import_bgen_gavin_example
+    genmt = hl.import_gen(resource('example.gen'), sample_file, contig_recoding=recoding, reference_genome='GRCh37')
+            ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?
+________ BGENTests.test_import_bgen_locus_filtering_from_Struct_object _________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:833: in test_import_bgen_locus_filtering_from_Struct_object
+    data = hl.import_bgen(bgen_file, ['GT'], variants=desired_loci)
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+____________ BGENTests.test_import_bgen_locus_filtering_from_exprs _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:852: in test_import_bgen_locus_filtering_from_exprs
+    everything = hl.import_bgen(bgen_file, ['GT'])
+                 ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+______ BGENTests.test_import_bgen_locus_filtering_from_struct_expression _______
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:840: in test_import_bgen_locus_filtering_from_struct_expression
+    data = hl.import_bgen(bgen_file, ['GT'], variants=desired_loci)
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+____________ BGENTests.test_import_bgen_locus_filtering_from_table _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:871: in test_import_bgen_locus_filtering_from_table
+    result = hl.import_bgen(bgen_file, ['GT'], variants=desired_loci)
+             ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+____________________ BGENTests.test_import_bgen_no_entries _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:756: in test_import_bgen_no_entries
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=[], sample_file=resource('example.sample'))
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+___________________ BGENTests.test_import_bgen_no_reference ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:760: in test_import_bgen_no_reference
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GT', 'GP', 'dosage'], index_file_map={resource('example.8bits.bgen'): resource('example.8bits.bgen-NO-REFERENCE-GENOME.idx2')})
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+______________________ BGENTests.test_import_bgen_random _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:786: in test_import_bgen_random
+    genmt = hl.import_gen(resource('random.gen'), sample_file)
+            ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?
+____________________ BGENTests.test_import_bgen_row_fields _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:803: in test_import_bgen_row_fields
+    default_row_fields = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['dosage'])
+                         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_ BGENTests.test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci _
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:765: in test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci
+    mt = hl.import_bgen(resource('skip_invalid_loci.bgen'), entry_fields=[], sample_file=resource('skip_invalid_loci.sample'))
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+___________ BGENTests.test_import_bgen_variant_filtering_from_exprs ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:845: in test_import_bgen_variant_filtering_from_exprs
+    everything = hl.import_bgen(bgen_file, ['GT'])
+                 ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+__________ BGENTests.test_import_bgen_variant_filtering_from_literals __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:820: in test_import_bgen_variant_filtering_from_literals
+    part_1 = hl.import_bgen(bgen_file, ['GT'], n_partitions=1, variants=desired_variants)
+             ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+___________ BGENTests.test_import_bgen_variant_filtering_from_table ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:861: in test_import_bgen_variant_filtering_from_table
+    everything = hl.import_bgen(bgen_file, ['GT'])
+                 ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_____ BGENTests.test_index_bgen_errors_when_index_file_has_wrong_extension _____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:960: in test_index_bgen_errors_when_index_file_has_wrong_extension
+    with hl.TemporaryFilename(suffix='.idx') as index_file:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+___ BGENTests.test_index_multiple_bgen_files_does_not_fail_and_is_importable ___
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:899: in test_index_multiple_bgen_files_does_not_fail_and_is_importable
+    with hl.TemporaryFilename(suffix='.bgen') as f, hl.TemporaryFilename(suffix='.bgen') as g, hl.TemporaryFilename(suffix='.bgen') as h:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+____________________ BGENTests.test_multiple_files_disjoint ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:924: in test_multiple_files_disjoint
+    hl.import_bgen(bgen_file, ['GT', 'GP'], sample_file, n_partitions=3)
+    ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_______________ BGENTests.test_multiple_files_variant_filtering ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:913: in test_multiple_files_variant_filtering
+    actual = hl.import_bgen(bgen_file, ['GT'], n_partitions=10, variants=desired_variants)
+             ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_______________ BGENTests.test_multiple_references_throws_error ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:931: in test_multiple_references_throws_error
+    hl.import_bgen([bgen_file1, bgen_file2], ['GT'], sample_file=sample_file, index_file_map={resource('random-b.bgen'): resource('random-b.bgen-NO-REFERENCE-GENOME.idx2'), resource('random-c.bgen'): resource('random-c.bgen.idx2')})
+    ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_________________________ BGENTests.test_n_partitions __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:885: in test_n_partitions
+    bgen = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['dosage'], n_partitions=210)
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+__________________ BGENTests.test_old_index_file_throws_error __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:936: in test_old_index_file_throws_error
+    with hl.TemporaryFilename() as f:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+________________________ BGENTests.test_parallel_import ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:791: in test_parallel_import
+    mt = hl.import_bgen(resource('parallelBgenExport.bgen'), ['GT', 'GP'], resource('parallelBgenExport.sample'))
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+__________________________ BGENTests.test_randomness ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1011: in test_randomness
+    bgen1 = hl.import_bgen(resource('example.8bits.bgen'), entry_fields=['GT'], sample_file=resource('example.sample'), n_partitions=3)
+            ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bgen'. Did you mean: 'import_lines'?
+_________________ BGENTests.test_specify_different_index_file __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:952: in test_specify_different_index_file
+    with hl.TemporaryFilename(suffix='.idx2') as index_file:
+         ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryFilename'
+___________________________ GENTests.test_export_gen ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1044: in test_export_gen
+    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37', min_partitions=3)
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?
+________________________ GENTests.test_export_gen_exprs ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1055: in test_export_gen_exprs
+    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37', min_partitions=3).add_col_index().add_row_index()
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?
+___________________________ GENTests.test_import_gen ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1021: in test_import_gen
+    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), contig_recoding={'01': '1'}, reference_genome='GRCh37').rows()
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?
+________________ GENTests.test_import_gen_no_chromosome_in_file ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1027: in test_import_gen_no_chromosome_in_file
+    gen = hl.import_gen(resource('no_chromosome.gen'), resource('skip_invalid_loci.sample'), chromosome='1', reference_genome=None, skip_invalid_loci=True)
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?
+_______________ GENTests.test_import_gen_no_reference_specified ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1031: in test_import_gen_no_reference_specified
+    gen = hl.import_gen(resource('example.gen'), sample_file=resource('example.sample'), reference_genome=None)
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?
+__________________ GENTests.test_import_gen_skip_invalid_loci __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1036: in test_import_gen_skip_invalid_loci
+    mt = hl.import_gen(resource('skip_invalid_loci.gen'), resource('skip_invalid_loci.sample'), reference_genome='GRCh37', skip_invalid_loci=True)
+         ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_gen'. Did you mean: 'import_vcf'?
+______________________ LocusIntervalTests.test_import_bed ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1104: in test_import_bed
+    bed = hl.import_bed(bed_file, reference_genome='GRCh37')
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_vcf'?
+__________ LocusIntervalTests.test_import_bed_badly_defined_intervals __________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1144: in test_import_bed_badly_defined_intervals
+    t = hl.import_bed(bed_file, reference_genome='GRCh37', skip_invalid_intervals=True)
+        ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_vcf'?
+__________ LocusIntervalTests.test_import_bed_kwargs_to_import_table ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1139: in test_import_bed_kwargs_to_import_table
+    t = hl.import_bed(bed_file, reference_genome='GRCh37', find_replace=('gene', ''))
+        ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_vcf'?
+__________ LocusIntervalTests.test_import_bed_no_reference_specified ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1133: in test_import_bed_no_reference_specified
+    t = hl.import_bed(bed_file, reference_genome=None)
+        ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_vcf'?
+_________________ LocusIntervalTests.test_import_bed_recoding __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1127: in test_import_bed_recoding
+    bed = hl.import_bed(bed_file, reference_genome='GRCh38', contig_recoding={str(i): f'chr{i}' for i in [*range(1, 23), 'X', 'Y', 'M']})
+          ^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_bed'. Did you mean: 'import_vcf'?
+________________ LocusIntervalTests.test_import_locus_intervals ________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1067: in test_import_locus_intervals
+    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+____ LocusIntervalTests.test_import_locus_intervals_badly_defined_intervals ____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1097: in test_import_locus_intervals_badly_defined_intervals
+    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37', skip_invalid_intervals=True)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+____ LocusIntervalTests.test_import_locus_intervals_no_reference_specified _____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1085: in test_import_locus_intervals_no_reference_specified
+    t = hl.import_locus_intervals(interval_file, reference_genome=None)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+___________ LocusIntervalTests.test_import_locus_intervals_recoding ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1091: in test_import_locus_intervals_recoding
+    t = hl.import_locus_intervals(interval_file, contig_recoding={str(i): f'chr{i}' for i in [*range(1, 23), 'X', 'Y', 'M']}, reference_genome='GRCh38')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+__________________ LocusIntervalTests.test_pass_through_args ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1151: in test_pass_through_args
+    t = hl.import_locus_intervals(interval_file, reference_genome='GRCh37', skip_invalid_intervals=True, filter='target_\\d\\d')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_locus_intervals'
+____ ImportMatrixTableTests.test_devilish_nine_separated_eight_missing_file ____
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1223: in test_devilish_nine_separated_eight_missing_file
+    mt = hl.import_matrix_table(resource('import_matrix_table_devlish.ninesv'), row_fields=fields, row_key=['chr', ''], sep='9', missing='8')
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+____________ ImportMatrixTableTests.test_empty_import_matrix_table _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1241: in test_empty_import_matrix_table
+    mt.x.export(path)
+    ^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________ ImportMatrixTableTests.test_headers_not_identical _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1193: in test_headers_not_identical
+    hl.import_matrix_table([resource('sampleheader1.txt'), resource('sampleheader2.txt')], row_fields={'f0': hl.tstr}, row_key=['f0'])
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+____________ ImportMatrixTableTests.test_headers_same_len_diff_elem ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1197: in test_headers_same_len_diff_elem
+    hl.import_matrix_table([resource('sampleheader2.txt'), resource('sampleheaderdiffelem.txt')], row_fields={'f0': hl.tstr}, row_key=['f0'])
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_comment _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1187: in test_import_matrix_comment
+    mt1 = hl.import_matrix_table(no_comment, row_fields=row_fields, row_key=[])
+          ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_table_1 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1157: in test_import_matrix_table_1
+    mt = hl.import_matrix_table(doctest_resource('matrix1.tsv'), row_fields={'Barcode': hl.tstr, 'Tissue': hl.tstr, 'Days': hl.tfloat32})
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_table_2 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1166: in test_import_matrix_table_2
+    hl.import_matrix_table(doctest_resource('matrix2.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, row_key=[])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_table_3 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1169: in test_import_matrix_table_3
+    hl.import_matrix_table(doctest_resource('matrix3.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, no_header=True)._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ ImportMatrixTableTests.test_import_matrix_table_4 _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1172: in test_import_matrix_table_4
+    hl.import_matrix_table(doctest_resource('matrix3.tsv'), row_fields={'f0': hl.tstr, 'f1': hl.tstr, 'f2': hl.tfloat32}, no_header=True, row_key=[])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+___________ ImportMatrixTableTests.test_import_matrix_table_no_cols ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1177: in test_import_matrix_table_no_cols
+    mt = hl.import_matrix_table(file, row_fields=fields, row_key=['Chromosome', 'Position'])
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+________ ImportMatrixTableTests.test_import_row_id_multiple_partitions _________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1248: in test_import_row_id_multiple_partitions
+    hl.utils.range_matrix_table(50, 50).annotate_entries(x=1).key_rows_by().key_cols_by().x.export(path, header=False, delimiter=' ')
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+__________ ImportMatrixTableTests.test_key_by_after_empty_key_import ___________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1216: in test_key_by_after_empty_key_import
+    mt = hl.import_matrix_table(resource('sample2_va_nomulti.tsv'), row_fields=fields, row_key=[], entry_type=hl.tfloat)
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+___________________ ImportMatrixTableTests.test_long_parsing ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1254: in test_long_parsing
+    mt = hl.import_matrix_table(path, row_fields={'foo': hl.tint64})
+         ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+_________________ ImportMatrixTableTests.test_too_few_entries __________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1204: in test_too_few_entries
+    boom()
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1202: in boom
+    hl.import_matrix_table(resource('samplesmissing.txt'), row_fields={'f0': hl.tstr}, row_key=['f0'])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+_________________ ImportMatrixTableTests.test_wrong_entry_type _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1212: in test_wrong_entry_type
+    hl.import_matrix_table(resource('samplenonintentries.txt'), row_fields={'f0': hl.tstr}, row_key=['f0'])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+_______________ ImportMatrixTableTests.test_wrong_row_field_type _______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1208: in test_wrong_row_field_type
+    hl.import_matrix_table(resource('sampleheader1.txt'), row_fields={'f0': hl.tint32}, row_key=['f0'])._force_count_rows()
+    ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_matrix_table'. Did you mean: 'range_matrix_table'?
+______________ test_import_matrix_table_round_trip[.-,-True-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.-,-True-int32] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[.-,-True-float64] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.-,-False-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.-,-False-int32] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[.-,-False-float64] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________ test_import_matrix_table_round_trip[.- -True-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.- -True-int32] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[.- -True-float64] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.- -False-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[.- -False-int32] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[.- -False-float64] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________ test_import_matrix_table_round_trip[9-,-True-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9-,-True-int32] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[9-,-True-float64] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9-,-False-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9-,-False-int32] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[9-,-False-float64] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+______________ test_import_matrix_table_round_trip[9- -True-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9- -True-int32] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[9- -True-float64] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9- -False-str_] ______________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+_____________ test_import_matrix_table_round_trip[9- -False-int32] _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________ test_import_matrix_table_round_trip[9- -False-float64] ____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1269: in test_import_matrix_table_round_trip
+    mt.key_rows_by(*mt.row).x.export(path, missing=missing, delimiter=delimiter, header=header)
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: export
+____________________ ImportLinesTest.test_import_lines_bgz _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1312: in test_import_lines_bgz
+    lines_table = hl.import_lines(resource('sample.vcf.gz'), min_partitions=5, force_bgz=True)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/text.py:70: in import_lines
+    raise NotImplementedError('BGZF and gzip text scans are not implemented')
+E   NotImplementedError: BGZF and gzip text scans are not implemented
+___________________ ImportTableTests.test_error_with_context ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1395: in test_error_with_context
+    ht = hl.import_table(resource('tsv_errors.tsv'), types={'col1': 'int32'})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/text.py:196: in import_table
+    raise NotImplementedError('typed text imports currently support primitive fields')
+E   NotImplementedError: typed text imports currently support primitive fields
+___________________ ImportTableTests.test_import_table_empty ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1329: in test_import_table_empty
+    rows = hl.import_table(resource('empty.tsv')).collect()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/text.py:160: in import_table
+    raise ValueError('no lines remaining after filters')
+E   ValueError: no lines remaining after filters
+
+During handling of the above exception, another exception occurred:
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1331: in test_import_table_empty
+    assert f"Invalid file: no lines remaining after filters\n Files provided: {resource('empty.tsv')}" in err.args[0]
+E   AssertionError: assert 'Invalid file: no lines remaining after filters\n Files provided: /Users/danielking/projects/vail/hail/hail/hail/test/resources/empty.tsv' in 'no lines remaining after filters'
+_________________ ImportTableTests.test_import_table_force_bgz _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1321: in test_import_table_force_bgz
+    t.export(f)
+/private/tmp/vail-storage-package2/vail/__init__.py:525: in export
+    return export(self, output, types_file, header, parallel, delimiter)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/text.py:246: in export
+    table._native.export_text(_local_path(output), 'text', {
+                              ^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/text.py:26: in _local_path
+    raise NotImplementedError('compressed text IO is not implemented')
+E   NotImplementedError: compressed text IO is not implemented
+______________________ ImportTableTests.test_source_file _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1373: in test_source_file
+    ht = ht.add_index()
+         ^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:426: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: add_index
+____________________ ImportTableTests.test_type_imputation _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1343: in test_type_imputation
+    ht = hl.import_table(resource('type_imputation.tsv'), delimiter=' ', missing='.', impute=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/text.py:131: in import_table
+    raise NotImplementedError('Hail type imputation is not implemented; supply types explicitly')
+E   NotImplementedError: Hail type imputation is not implemented; supply types explicitly
+________________________ GrepTests.test_grep_show_false ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1404: in test_grep_show_false
+    from vail.backend.service_backend import ServiceBackend
+E   ModuleNotFoundError: No module named 'vail.backend.service_backend'; 'vail.backend' is not a package
+__________________________ AvroTests.test_simple_avro __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1420: in test_simple_avro
+    data = hl.import_avro([avro_file]).collect()
+           ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_avro'. Did you mean: 'import_vcf'?
+__________________________ test_import_export_same[0] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[1] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[2] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[3] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[4] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[5] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[6] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[7] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[8] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+__________________________ test_import_export_same[9] __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py:1441: in test_import_export_same
+    hl.export_vcf(mt, f1)
+/private/tmp/vail-storage-package2/vail/vcf_export.py:19: in export_vcf
+    raise NotImplementedError('compressed VCF export is not implemented')
+E   NotImplementedError: compressed VCF export is not implemented
+=============================== warnings summary ===============================
+test_impex.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_impex.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_combiner_parse_allele_specific_annotations
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_combiner_works
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_contigs_header
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_empty_read_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_export_sites_only_from_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_haploid
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_invalid_format_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_invalid_info_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_no_alt_alleles
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_export_vcf_quotes_and_backslash_in_description
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_format_genotypes
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_haploid_combiner_ok
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_import_gvcfs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_has_good_error_message_when_info_fields_have_missing_elements
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_import_vcf_skip_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_invalid_info_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_malformed
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_metadata_argument
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_not_identical_headers
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_same_bgzip
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_sorted
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_tabix_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_tabix_export_file_exists
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_different_info_errors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parallel_separate_header_export
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parser_golden_master__ex_GRCh37
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::VCFTests::test_vcf_parser_golden_master__gvcf_GRCh37
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_contig_recoding_defaults
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_import_plink_same
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_call_expression
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_default_arguments
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_non_default_arguments
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_non_default_bim_arguments
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_quantitative_phenotype
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_struct_locus
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_white_space_in_fam_id_raises_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_export_plink_white_space_in_varid_raises_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_fam
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_a1_major
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_and_ignore_rows
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_empty_bim
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_empty_fam
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_partitions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_same_locus
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::PLINKTests::test_import_plink_skip_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_drop
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_error_if_no_gp
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_export_bgen
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_export_bgen_from_vcf
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_export_bgen_parallel
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_export_bgen_zstd
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_GT_GP_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_dosage_and_gp_dosage_function_agree
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_dosage_entry
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_empty_variant_filter
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_errors_with_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_gavin_example
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_Struct_object
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_exprs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_struct_expression
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_locus_filtering_from_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_no_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_no_reference
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_random
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_row_fields
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_skip_invalid_loci_does_not_error_with_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_exprs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_literals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_import_bgen_variant_filtering_from_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_index_bgen_errors_when_index_file_has_wrong_extension
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_index_multiple_bgen_files_does_not_fail_and_is_importable
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_multiple_files_disjoint
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_multiple_files_variant_filtering
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_multiple_references_throws_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_n_partitions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_old_index_file_throws_error
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_parallel_import
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_randomness
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::BGENTests::test_specify_different_index_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::GENTests::test_export_gen
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::GENTests::test_export_gen_exprs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::GENTests::test_import_gen
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::GENTests::test_import_gen_no_chromosome_in_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::GENTests::test_import_gen_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::GENTests::test_import_gen_skip_invalid_loci
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed_badly_defined_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed_kwargs_to_import_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_bed_recoding
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_locus_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_locus_intervals_badly_defined_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_locus_intervals_no_reference_specified
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_import_locus_intervals_recoding
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::LocusIntervalTests::test_pass_through_args
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_devilish_nine_separated_eight_missing_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_empty_import_matrix_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_headers_not_identical
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_headers_same_len_diff_elem
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_comment
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_3
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_4
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_matrix_table_no_cols
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_import_row_id_multiple_partitions
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_key_by_after_empty_key_import
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_long_parsing
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_too_few_entries
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_wrong_entry_type
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportMatrixTableTests::test_wrong_row_field_type
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-True-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-True-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-True-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-False-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-False-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.-,-False-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -True-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -True-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -True-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -False-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -False-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[.- -False-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-True-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-True-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-True-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-False-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-False-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9-,-False-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -True-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -True-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -True-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -False-str_]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -False-int32]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_matrix_table_round_trip[9- -False-float64]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportLinesTest::test_import_lines_bgz
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportTableTests::test_error_with_context
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportTableTests::test_import_table_empty
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportTableTests::test_import_table_force_bgz
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportTableTests::test_source_file
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::ImportTableTests::test_type_imputation
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::GrepTests::test_grep_show_false
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::AvroTests::test_simple_avro
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[0]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[1]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[2]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[3]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[4]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[5]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[6]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[7]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[8]
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_impex.py::test_import_export_same[9]
+157 failed, 44 passed, 1 warning in 17.70s

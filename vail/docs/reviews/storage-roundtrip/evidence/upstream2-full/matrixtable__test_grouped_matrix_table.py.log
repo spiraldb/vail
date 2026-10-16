@@ -1,0 +1,57 @@
+.F.FFF..                                                                 [100%]
+=================================== FAILURES ===================================
+______________________ Tests.test_errors_caught_correctly ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_grouped_matrix_table.py:32: in test_errors_caught_correctly
+    self.assertRaises(ExpressionException, mt.group_rows_by, mt['group1'] + 1)
+/private/tmp/vail-storage-package2/vail/matrixtable.py:1829: in group_rows_by
+    return GroupedMatrixTable(self, "row", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2413: in __init__
+    raise ValueError("positional grouping requires field references")
+E   ValueError: positional grouping requires field references
+______________________ Tests.test_group_cols_by_aggregate ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_grouped_matrix_table.py:118: in test_group_cols_by_aggregate
+    self.assertTrue(col_result.entries()._same(col_expected))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1289: in _same
+    same, diagnostic = left._native.same(right._native, tolerance, absolute, reorder_fields)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "2a3ae64902084397ae13e5937392c65d" in physical lowering
+______________________ Tests.test_group_rows_by_aggregate ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_grouped_matrix_table.py:111: in test_group_rows_by_aggregate
+    row_result.entries().show()
+/private/tmp/vail-storage-package2/vail/__init__.py:1095: in show
+    text = builtins.str(TableDisplay(self, n, width, truncate, types))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/display.py:155: in __str__
+    return self._ascii_str()
+           ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/display.py:187: in _ascii_str
+    rows, has_more, columns = self.data()
+                              ^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/display.py:162: in data
+    pa.table(self.table._native.sample_arrow(self.n + 1)))
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "4d70e08c116942be9e907b60dcf4bbf4" in physical lowering
+_______________________ Tests.test_joins_work_correctly ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_grouped_matrix_table.py:102: in test_joins_work_correctly
+    self.assertTrue(col_result.entries()._same(col_expected))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1289: in _same
+    same, diagnostic = left._native.same(right._native, tolerance, absolute, reorder_fields)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   ValueError: invalid expression: unbound lambda variable "3190fd8d21a14050bb14957a98c39308" in physical lowering
+=============================== warnings summary ===============================
+test_grouped_matrix_table.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_grouped_matrix_table.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_errors_caught_correctly
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_group_cols_by_aggregate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_group_rows_by_aggregate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_grouped_matrix_table.py::Tests::test_joins_work_correctly
+4 failed, 4 passed, 1 warning in 1.72s

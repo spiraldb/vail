@@ -1,0 +1,20 @@
+{
+  "command": [
+    "/Users/danielking/.codex/worktrees/1611/vail/vail/.venv/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "--tb=short",
+    "-o",
+    "faulthandler_timeout=60",
+    "vail/python/tests",
+    "vail/conformance/test_harness.py",
+    "vail/conformance/test_upstream_backend.py",
+    "vail/conformance/test_upstream_scope.py"
+  ],
+  "native_sha256": "c601aee1b1cc02ab70ec08a5d74c21f432fed367cb3a8d62f3d0286875867deb",
+  "exit_code": 1,
+  "timeout": false,
+  "seconds": 80.76958270799969,
+  "log": "/Users/danielking/.codex/worktrees/1611/vail/vail/docs/reviews/storage-roundtrip/evidence/python2-full.log"
+}

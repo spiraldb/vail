@@ -1,0 +1,10 @@
+F                                                                        [100%]
+=================================== FAILURES ===================================
+________________________ test_execution_cache_creation _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/test_call_caching.py:9: in test_execution_cache_creation
+    assert not fs.exists(folder)
+               ^^^^^^^^^
+E   AttributeError: 'LocalFilesystem' object has no attribute 'exists'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/test_call_caching.py::test_execution_cache_creation
+1 failed in 0.04s

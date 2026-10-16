@@ -1,0 +1,10 @@
+F.                                                                       [100%]
+=================================== FAILURES ===================================
+_______________________________ test_constructor _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_locus.py:5: in test_constructor
+    l = Locus.parse('1:100')
+        ^^^^^^^^^^^
+E   AttributeError: type object 'Locus' has no attribute 'parse'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_locus.py::test_constructor
+1 failed, 1 passed in 0.35s

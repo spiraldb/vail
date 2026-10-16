@@ -1,0 +1,147 @@
+.FFF.FFFFFFFFFFFFFF                                                      [100%]
+=================================== FAILURES ===================================
+______________________ Tests.test_annotate_intervals_bed1 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:17: in test_annotate_intervals_bed1
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+______________________ Tests.test_annotate_intervals_bed2 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:28: in test_annotate_intervals_bed2
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+______________________ Tests.test_annotate_intervals_bed3 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:44: in test_annotate_intervals_bed3
+    ds = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_____________________________ Tests.test_lambda_gc _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:147: in test_lambda_gc
+    lgc = hl.lambda_gc(ht.x)
+          ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'lambda_gc'
+__________________________ Tests.test_lambda_gc_nans ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:155: in test_lambda_gc_nans
+    lgc_nan = hl.lambda_gc(hl.case().when(ht.is_even, hl.float('nan')).default(ht.x))
+              ^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'lambda_gc'
+______________________ Tests.test_matrix_filter_intervals ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:101: in test_matrix_filter_intervals
+    self.assertEqual(hl.filter_intervals(ds, [hl.parse_locus_interval('20:10639222-10644705')]).count_rows(), 3)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'parse_locus_interval'
+______________________ Tests.test_maximal_independent_set ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:53: in test_maximal_independent_set
+    mis_table = hl.maximal_independent_set(graph.i, graph.j, True, lambda l, r: l - r)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'maximal_independent_set'
+_____________________ Tests.test_maximal_independent_set2 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:65: in test_maximal_independent_set2
+    mis_t = hl.maximal_independent_set(t.i, t.j)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'maximal_independent_set'
+_____________________ Tests.test_maximal_independent_set3 ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:77: in test_maximal_independent_set3
+    mis = hl.maximal_independent_set(t.i, t.j, tie_breaker=tiebreaker)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'maximal_independent_set'
+_________________ Tests.test_maximal_independent_set_on_floats _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:91: in test_maximal_independent_set_on_floats
+    actual = hl.maximal_independent_set(t.l, t.r, keep=False, tie_breaker=lambda l, r: l.x - r.x).collect()
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'maximal_independent_set'
+_____________ Tests.test_maximal_independent_set_string_node_names _____________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:96: in test_maximal_independent_set_string_node_names
+    ret = {row.node for row in hl.maximal_independent_set(ht.i, ht.j, False).collect()}
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'maximal_independent_set'
+___________________ Tests.test_maximal_independent_set_types ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:86: in test_maximal_independent_set_types
+    hl.maximal_independent_set(ht.ii, ht.jj).count()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'maximal_independent_set'
+_________________________ Tests.test_rename_duplicates _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:10: in test_rename_duplicates
+    assert hl.rename_duplicates(mt.key_cols_by(s=hl.str(mt.col_idx))).unique_id.collect() == ['0', '1', '2', '3', '4']
+           ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'rename_duplicates'
+_________________________ Tests.test_segment_intervals _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:161: in test_segment_intervals
+    segmented1 = hl.segment_intervals(intervals, points1)
+                 ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'segment_intervals'. Did you mean: 'filter_intervals'?
+________________________ Tests.test_summarize_variants _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:131: in test_summarize_variants
+    variants = hl.literal({0: hl.Struct(locus=hl.Locus('1', 1), alleles=['A', 'T', 'C']), 1: hl.Struct(locus=hl.Locus('2', 1), alleles=['A', 'AT', '@']), 2: hl.Struct(locus=hl.Locus('2', 1), alleles=['AC', 'GT'])})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:982: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/types.py:634: in infer_type
+    return tstruct(**{name: infer_type(field) for name, field in value.items()})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+______________________ Tests.test_table_filter_intervals _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:113: in test_table_filter_intervals
+    self.assertEqual(hl.filter_intervals(ds, [hl.parse_locus_interval('20:10639222-10644705')]).count(), 3)
+                                              ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'parse_locus_interval'
+_________________________ Tests.test_verify_biallelic __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py:142: in test_verify_biallelic
+    hl.methods.misc.require_biallelic(mt, '')._force_count_rows()
+    ^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'methods'
+=============================== warnings summary ===============================
+test_misc.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_misc.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_annotate_intervals_bed1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_annotate_intervals_bed2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_annotate_intervals_bed3
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_lambda_gc
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_lambda_gc_nans
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_matrix_filter_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_maximal_independent_set
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_maximal_independent_set2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_maximal_independent_set3
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_maximal_independent_set_on_floats
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_maximal_independent_set_string_node_names
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_maximal_independent_set_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_rename_duplicates
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_segment_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_summarize_variants
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_table_filter_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/methods/test_misc.py::Tests::test_verify_biallelic
+17 failed, 2 passed, 1 warning in 0.88s

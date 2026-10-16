@@ -1,0 +1,144 @@
+.FFF.FFFFFFFFFFFF.FFF                                                    [100%]
+=================================== FAILURES ===================================
+______________________ Tests.test_block_matrices_tofiles _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:180: in test_block_matrices_tofiles
+    bms = [hl.linalg.BlockMatrix._create(11, 12, data[0].tolist(), block_size=4), hl.linalg.BlockMatrix._create(5, 17, data[1].tolist(), block_size=8)]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: type object 'BlockMatrix' has no attribute '_create'
+__________________________ Tests.test_define_function __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:135: in test_define_function
+    f1 = hl.experimental.define_function(lambda a, b: (a + 7) * b, hl.tint32, hl.tint32)
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+_______________________ Tests.test_export_block_matrices _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:193: in test_export_block_matrices
+    bms = [hl.linalg.BlockMatrix._create(11, 12, data[0].tolist(), block_size=4), hl.linalg.BlockMatrix._create(5, 17, data[1].tolist(), block_size=8)]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: type object 'BlockMatrix' has no attribute '_create'
+________________________ Tests.test_ld_score_annotated _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:33: in test_ld_score_annotated
+    mt = self.get_ld_score_mt()
+         ^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:16: in get_ld_score_mt
+    mt = hl.import_plink(bed=doctest_resource('ldsc.bed'), bim=doctest_resource('ldsc.bim'), fam=doctest_resource('ldsc.fam'))
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+_______________________ Tests.test_ld_score_regression_1 _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:85: in test_ld_score_regression_1
+    ht_results = hl.experimental.ld_score_regression(weight_expr=mt['ld_score'], ld_score_expr=mt['ld_score'], chi_sq_exprs=mt['chi_squared'], n_samples_exprs=mt['n'], n_blocks=20, two_step_threshold=5, n_reference_panel_variants=1173569)
+                 ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+_______________________ Tests.test_ld_score_regression_2 _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:104: in test_ld_score_regression_2
+    ht_results = hl.experimental.ld_score_regression(weight_expr=ht['ld_score'], ld_score_expr=ht['ld_score'], chi_sq_exprs=[ht['chi_squared_50_irnt'], ht['chi_squared_20160']], n_samples_exprs=[ht['n_50_irnt'], ht['n_20160']], n_blocks=20, two_step_threshold=5, n_reference_panel_variants=1173569)
+                 ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+________________________ Tests.test_ld_score_univariate ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:22: in test_ld_score_univariate
+    mt = self.get_ld_score_mt()
+         ^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:16: in get_ld_score_mt
+    mt = hl.import_plink(bed=doctest_resource('ldsc.bed'), bim=doctest_resource('ldsc.bim'), fam=doctest_resource('ldsc.fam'))
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'import_plink'. Did you mean: 'import_lines'?
+_______________________________ Tests.test_loop ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:219: in test_loop
+    assert_evals_to(triangle(20), sum(range(21)))
+                    ^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:214: in triangle_with_ints
+    return hl.experimental.loop(lambda f, x, c: hl.if_else(x > 0, f(x - 1, c + x), c), hl.tint32, n, 0)
+           ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+____________________________ Tests.test_loop_errors ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:245: in test_loop_errors
+    hl.experimental.loop(lambda f, my_nd: hl.if_else(my_nd[0, 0] == 1000, my_nd, f(my_nd + 1)), hl.tndarray(hl.tint32, 2), hl.nd.zeros((20, 10), hl.tfloat64))
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+____________________________ Tests.test_loop_memory ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:258: in test_loop_memory
+    assert hl.eval(hl.experimental.loop(foo, hl.tarray(hl.tstr), hl.literal(['foo']), 1)) == ['foo', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10']
+                   ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+____________________ Tests.test_loop_with_struct_of_strings ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:252: in test_loop_with_struct_of_strings
+    assert hl.eval(hl.experimental.loop(loop_func, hl.tstruct(s1=hl.tstr, s2=hl.tstr), initial_struct)) == hl.Struct(s1='abcd', s2='gfe')
+                   ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+________________________ Tests.test_mt_full_outer_join _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:161: in test_mt_full_outer_join
+    mtj = hl.experimental.full_outer_join_mt(mt1, mt2)
+          ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+______________________ Tests.test_mt_full_outer_join_self ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:171: in test_mt_full_outer_join_self
+    jmt = hl.experimental.full_outer_join_mt(mt, mt)
+          ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+___________________________ Tests.test_nested_loops ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:237: in test_nested_loops
+    assert_evals_to(triangle_loop(5, lambda x, c: c + x), 15)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:236: in triangle_loop
+    return hl.experimental.loop(recur, hl.tint32, 0, 0)
+           ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+____________________________ Tests.test_pc_project _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:145: in test_pc_project
+    _, _, loadings_ht = hl.hwe_normalized_pca(mt.GT, k=10, compute_loadings=True)
+                        ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'
+______________________________ Tests.test_sparse _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:121: in test_sparse
+    mt = hl.experimental.sparse_split_multi(unsplit_mt).drop('a_index', 'was_split').select_entries(*expected_split_mt.entry.keys())
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+_______________________ Tests.test_sparse_split_haploid ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:129: in test_sparse_split_haploid
+    mt = hl.experimental.sparse_split_multi(mt)
+         ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+___________________________ Tests.test_trivial_loop ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:209: in test_trivial_loop
+    assert hl.eval(hl.experimental.loop(lambda recur: 0, hl.tint32)) == 0
+                   ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+=============================== warnings summary ===============================
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:75
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:75: PytestUnknownMarkWarning: Unknown pytest.mark.unchecked_allocator - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unchecked_allocator
+
+../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:98
+  /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py:98: PytestUnknownMarkWarning: Unknown pytest.mark.unchecked_allocator - is this a typo?  You can register custom marks to avoid this warning - for details, see https://docs.pytest.org/en/stable/how-to/mark.html
+    @pytest.mark.unchecked_allocator
+
+test_experimental.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_experimental.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+test_experimental.py::Tests::test_plot_roc_curve
+  /Users/danielking/.local/share/uv/python/cpython-3.12.12-macos-aarch64-none/lib/python3.12/unittest/case.py:690: DeprecationWarning: It is deprecated to return a value that is not None from a test case (MarkDecorator(mark=Mark(name='backend', args=('local', 'spark'), kwargs={})))
+    return self.run(*args, **kwds)
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_block_matrices_tofiles
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_define_function
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_export_block_matrices
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_ld_score_annotated
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_ld_score_regression_1
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_ld_score_regression_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_ld_score_univariate
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_loop
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_loop_errors
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_loop_memory
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_loop_with_struct_of_strings
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_mt_full_outer_join
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_mt_full_outer_join_self
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_nested_loops
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_pc_project
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_sparse
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_sparse_split_haploid
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/experimental/test_experimental.py::Tests::test_trivial_loop
+18 failed, 3 passed, 4 warnings in 1.11s

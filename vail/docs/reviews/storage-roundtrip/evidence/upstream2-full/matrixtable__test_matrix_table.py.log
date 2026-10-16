@@ -1,0 +1,341 @@
+........F.F.........F.....FF..F..........F..................F...F.....F. [ 31%]
+........F...F.....F.F...F.FF.....FFFFF...FFF.F.FF....................... [ 62%]
+.............F.F.................................................F...... [ 93%]
+..............                                                           [100%]
+=================================== FAILURES ===================================
+_____________________ Tests.test_aggregate_cols_by_init_op _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:304: in test_aggregate_cols_by_init_op
+    cs = mt.group_cols_by(mt.s).aggregate(cs=hl.agg.call_stats(mt.GT, mt.alleles))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2457: in aggregate
+    return self.aggregate_entries(**fields).result()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2568: in result
+    core.annotate(**{_CELLS: indexed_groups.map(cell)}), columns,
+                             ^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:593: in _array_map
+    body = as_expr(f(variable))
+                   ^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2560: in cell
+    m, m._validate(v, "entry", aggregate=True), core,
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:551: in _validate
+    check_initializers(expr.to_ir())
+/private/tmp/vail-storage-package2/vail/matrixtable.py:541: in check_initializers
+    raise NotImplementedError(
+E   NotImplementedError: matrix-axis aggregate initialization requires native Table support for group-dependent initializers
+__________________ Tests.test_aggregate_cols_scope_violation ___________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:308: in test_aggregate_cols_scope_violation
+    mt = get_dataset()
+         ^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:50: in get_dataset
+    _dataset = hl.read_matrix_table(resource('split-multi-sample.vcf.mt')).select_globals()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/split-multi-sample.vcf.mt/_vail_matrix.json'
+_____________________ Tests.test_annotate_col_agg_lowering _____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1211: in test_annotate_col_agg_lowering
+    mt = mt.annotate_cols(exploded=hl.agg.explode(lambda e: common_ref + hl.agg.sum(e), mt.e2), array=hl.agg.array_agg(lambda e: common_ref + hl.agg.sum(e), mt.e2), filt=hl.agg.filter(mt.e1 < 5, hl.agg.sum(mt.e1) + common_ref), grouped=hl.agg.group_by(mt.e1 % 5, hl.agg.sum(mt.e1) + common_ref))
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:919: in annotate_cols
+    return self._annotate("col", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:853: in _annotate
+    return self._project_axis(
+/private/tmp/vail-storage-package2/vail/matrixtable.py:810: in _project_axis
+    self._axis_aggregates(v, axis, base)
+/private/tmp/vail-storage-package2/vail/matrixtable.py:726: in _axis_aggregates
+    return Expression(expr.dtype, self, _IR(rewrite(expr.to_ir()), refs, lookups))
+                                            ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:708: in rewrite
+    native = native.grouped_aggregate(
+E   ValueError: invalid TableIR: row fields must be inside an aggregator in Table.aggregate
+___________________________ Tests.test_codecs_matrix ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:770: in test_codecs_matrix
+    supported_codecs = scala_object(Env.hail().io, 'BufferSpec').specs()
+                                    ^^^^^^^^
+E   AttributeError: type object 'Env' has no attribute 'hail'
+___________________________ Tests.test_codecs_table ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:782: in test_codecs_table
+    supported_codecs = scala_object(Env.hail().io, 'BufferSpec').specs()
+                                    ^^^^^^^^
+E   AttributeError: type object 'Env' has no attribute 'hail'
+________________________ Tests.test_collect_cols_by_key ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:324: in test_collect_cols_by_key
+    col_dict = hl.literal({0: [1], 1: [2, 3], 2: [4, 5, 6]})
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:982: in literal
+    dtype = infer_type(value)
+            ^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/types.py:634: in infer_type
+    return tstruct(**{name: infer_type(field) for name, field in value.items()})
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+________________________ Tests.test_entry_filter_stats _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1202: in test_entry_filter_stats
+    assert mt.aggregate_rows(hl.agg.all(mt.entry_stats_row == row_expected[mt.row_idx % 4 == 0]))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:370: in __eq__
+    def __eq__(self, other): return self._compare(other, "eq")
+                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:308: in _compare
+    _check_comparable(self.dtype, other.dtype, operator)
+/private/tmp/vail-storage-package2/vail/expressions.py:1361: in _check_comparable
+    raise TypeError(f"incompatible comparison types: {left} and {right}")
+E   TypeError: incompatible comparison types: struct{n_filtered: int64, n_remaining: int64, fraction_filtered: float64} and struct{n_filtered: int32, n_remaining: int32, fraction_filtered: float32}
+_______________________ Tests.test_fix3307_read_mt_wrong _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:793: in test_fix3307_read_mt_wrong
+    with hl.TemporaryDirectory(suffix='.mt', ensure_exists=False) as mt_path:
+         ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'TemporaryDirectory'
+________________________ Tests.test_hardy_weinberg_test ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:997: in test_hardy_weinberg_test
+    mt_two_sided = mt.select_rows(**hl.agg.hardy_weinberg_test(mt.GT, one_sided=False))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:928: in select_rows
+    return self._select("row", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:878: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:810: in _project_axis
+    self._axis_aggregates(v, axis, base)
+/private/tmp/vail-storage-package2/vail/matrixtable.py:692: in _axis_aggregates
+    return reduce_list(self, expr, base, self._row_contexts(base))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrix_list_aggregates.py:428: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrix_list_aggregates.py:419: in walk
+    return {k: walk(v, items, fixed) for k, v in node.items()}
+               ^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrix_list_aggregates.py:411: in walk
+    result = _function(
+/private/tmp/vail-storage-package2/vail/collections.py:23: in _function
+    raise NotImplementedError(f"per-list {function} reducer is not supported")
+E   NotImplementedError: per-list hardy_weinberg_test reducer is not supported
+_______________________ Tests.test_hw_func_and_agg_agree _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1014: in test_hw_func_and_agg_agree
+    mt_two_sided = mt.annotate_rows(stats=hl.agg.call_stats(mt.GT, mt.alleles), hw=hl.agg.hardy_weinberg_test(mt.GT, one_sided=False))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:916: in annotate_rows
+    return self._annotate("row", named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:853: in _annotate
+    return self._project_axis(
+/private/tmp/vail-storage-package2/vail/matrixtable.py:810: in _project_axis
+    self._axis_aggregates(v, axis, base)
+/private/tmp/vail-storage-package2/vail/matrixtable.py:692: in _axis_aggregates
+    return reduce_list(self, expr, base, self._row_contexts(base))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrix_list_aggregates.py:428: in reduce_list
+    result = walk(expr.to_ir(), contexts, fixed)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrix_list_aggregates.py:411: in walk
+    result = _function(
+/private/tmp/vail-storage-package2/vail/collections.py:23: in _function
+    raise NotImplementedError(f"per-list {function} reducer is not supported")
+E   NotImplementedError: per-list hardy_weinberg_test reducer is not supported
+_________________________ Tests.test_invalid_metadata __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1269: in test_invalid_metadata
+    hl.read_matrix_table(resource('0.1-1fd5cc7.vds'))
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_paths.py:24: in read_matrix_table
+    return self._read_matrix_table(str(path), *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2211: in read_matrix_table
+    with open(root / "_vail_matrix.json") as stream:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: [Errno 2] No such file or directory: '/Users/danielking/projects/vail/hail/hail/hail/test/resources/0.1-1fd5cc7.vds/_vail_matrix.json'
+________________ Tests.test_legacy_files_with_required_globals _________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1272: in test_legacy_files_with_required_globals
+    hl.read_table(resource('required_globals.ht'))._force_count()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1937: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+______________________ Tests.test_lower_row_agg_init_arg _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1331: in test_lower_row_agg_init_arg
+    hl.hwe_normalized_pca(mt.GT)
+    ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'hwe_normalized_pca'
+___________________ Tests.test_make_table_empty_entry_field ____________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:947: in test_make_table_empty_entry_field
+    mt = mt.select_entries(**{'': mt.row_idx * mt.col_idx})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:934: in select_entries
+    return self._select("entry", exprs, named)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:878: in _select
+    return self._project_axis(axis, fields + list(named.items()))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:746: in _project_axis
+    raise ValueError("field names must be nonempty strings")
+E   ValueError: field names must be nonempty strings
+_____________________ Tests.test_matrix_multi_write_range ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1284: in test_matrix_multi_write_range
+    hl.experimental.write_matrix_tables(mts, f)
+    ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+_______________________ Tests.test_matrix_type_equality ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1183: in test_matrix_type_equality
+    assert mt._type == mt._type
+           ^^^^^^^^
+/private/tmp/vail-storage-package2/vail/matrixtable.py:445: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _type
+____________________________ Tests.test_multi_write ____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1175: in test_multi_write
+    paths = hl.experimental.write_matrix_tables(mts, prefix)
+            ^^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute 'experimental'
+________________________ Tests.test_order_by_intervals _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:913: in test_order_by_intervals
+    ht = ht.annotate_globals(ilist=intervals)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:475: in annotate_globals
+    expressions = {name: as_expr(value) for name, value in named_exprs.items()}
+                         ^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:90: in as_expr
+    return StructExpression(value)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:957: in __init__
+    dtype = tstruct(**{name: expr.dtype for name, expr in field_exprs.items()})
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   TypeError: keywords must be strings
+_____________________________ Tests.test_overwrite _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1264: in test_overwrite
+    mt.write(f)
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2110: in write
+    raise FileExistsError(output)
+E   FileExistsError: /var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/tGuUGe5hGB8o0g6Nd6XT8e.mt
+_________________________ Tests.test_partitioned_write _________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1244: in test_partitioned_write
+    test_parts([(0, 40, True, False)])
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1240: in test_parts
+    mt.write(tmp, _partitions=parts)
+E   TypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'
+_____________________ Tests.test_partitioned_write_coerce ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1253: in test_partitioned_write_coerce
+    mt.write(tmp, _partitions=parts)
+E   TypeError: MatrixTable.write() got an unexpected keyword argument '_partitions'
+_______________________________ Tests.test_range _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:821: in test_range
+    et = ds.annotate_entries(entry_idx=10 * ds.row_idx + ds.col_idx).entries().add_index()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:426: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: add_index
+_________________________ Tests.test_read_stored_cols __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:715: in test_read_stored_cols
+    t = hl.read_table(f + '/cols')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1937: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+________________________ Tests.test_read_stored_globals ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:731: in test_read_stored_globals
+    t = hl.read_table(f + '/globals')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1937: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+_________________________ Tests.test_read_stored_rows __________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:723: in test_read_stored_rows
+    t = hl.read_table(f + '/rows')
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/__init__.py:1937: in read_table
+    native, keys = _native_session().read_table(os.fspath(path))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   FileNotFoundError: No such file or directory (os error 2)
+______________________________ Tests.test_rename _______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:804: in test_rename
+    self.assertEqual(renamed1['locus2']._type, dataset['locus']._type)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: _type. Did you mean: 'dtype'?
+______________________ Tests.test_row_joins_into_table_2 _______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1107: in test_row_joins_into_table_2
+    with self.assertRaises(hl.expr.ExpressionException):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   AssertionError: ExpressionException not raised
+______________________ Tests.test_row_key_field_show_runs ______________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:28: in test_row_key_field_show_runs
+    ds.locus.show()
+    ^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:857: in __getattr__
+    raise AttributeError(name)
+E   AttributeError: show
+________________________ Tests.test_write_stage_locally ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1026: in test_write_stage_locally
+    mt.write(f, stage_locally=True)
+/private/tmp/vail-storage-package2/vail/matrixtable.py:2098: in write
+    raise NotImplementedError("matrix codecs and staging are not implemented")
+E   NotImplementedError: matrix codecs and staging are not implemented
+__________________________ test_read_write_all_types ___________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1342: in test_read_write_all_types
+    mt = create_all_values_matrix_table()
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:72: in create_all_values_matrix_table
+    all_values = create_all_values()
+                 ^^^^^^^^^^^^^^^^^^^
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/helpers.py:62: in create_all_values
+    return hl.struct(f32=hl.float32(3.14), i64=hl.int64(-9), m=hl.missing(hl.tfloat64), astruct=hl.struct(a=hl.missing(hl.tint32), b=5.5), mstruct=hl.missing(hl.tstruct(x=hl.tint32, y=hl.tstr)), aset=hl.set(['foo', 'bar', 'baz']), mset=hl.missing(hl.tset(hl.tfloat64)), d=hl.dict({hl.array(['a', 'b']): 0.5, hl.array(['x', hl.missing(hl.tstr), 'z']): 0.3}), md=hl.missing(hl.tdict(hl.tint32, hl.tstr)), h38=hl.locus('chr22', 33878978, 'GRCh38'), ml=hl.missing(hl.tlocus('GRCh37')), i=hl.interval(hl.locus('1', 999), hl.locus('1', 1001)), c=hl.call(0, 1), mc=hl.missing(hl.tcall), t=hl.tuple([hl.call(1, 2, phased=True), 'foo', hl.missing(hl.tstr)]), mt=hl.missing(hl.ttuple(hl.tlocus('GRCh37'), hl.tbool)), nd=hl.nd.arange(0, 10).reshape((2, 5)))
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package2/vail/expressions.py:368: in reshape
+    raise NotImplementedError("ndarray reshape is not implemented")
+E   NotImplementedError: ndarray reshape is not implemented
+________________________ test_struct_of_arrays_encoding ________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py:1717: in test_struct_of_arrays_encoding
+    with hl._with_flags(use_unstable_encodings='1'):
+         ^^^^^^^^^^^^^^
+E   AttributeError: module 'vail' has no attribute '_with_flags'
+=============================== warnings summary ===============================
+test_matrix_table.py::test_timeout
+  /Users/danielking/.codex/worktrees/1611/vail/vail/.venv/lib/python3.12/site-packages/_pytest/python.py:171: PytestReturnNotNoneWarning: Test functions should return None, but test_matrix_table.py::test_timeout returned <class 'function'>.
+  Did you mean to use `assert` instead of `return`?
+  See https://docs.pytest.org/en/stable/how-to/assert.html#return-not-none for more information.
+    warnings.warn(
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_aggregate_cols_by_init_op
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_aggregate_cols_scope_violation
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_annotate_col_agg_lowering
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_codecs_matrix
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_codecs_table
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_collect_cols_by_key
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_entry_filter_stats
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_fix3307_read_mt_wrong
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_hardy_weinberg_test
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_hw_func_and_agg_agree
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_invalid_metadata
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_legacy_files_with_required_globals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_lower_row_agg_init_arg
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_make_table_empty_entry_field
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_matrix_multi_write_range
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_matrix_type_equality
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_multi_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_order_by_intervals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_overwrite
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_partitioned_write
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_partitioned_write_coerce
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_range
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_cols
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_globals
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_read_stored_rows
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_rename
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_row_joins_into_table_2
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_row_key_field_show_runs
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::Tests::test_write_stage_locally
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::test_read_write_all_types
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/matrixtable/test_matrix_table.py::test_struct_of_arrays_encoding
+31 failed, 199 passed, 1 warning in 28.45s

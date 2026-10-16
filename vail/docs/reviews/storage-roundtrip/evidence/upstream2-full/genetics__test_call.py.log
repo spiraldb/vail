@@ -1,0 +1,34 @@
+FFFFF.                                                                   [100%]
+=================================== FAILURES ===================================
+______________________________ Tests.test_haploid ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py:63: in test_haploid
+    self.assertTrue(c_haploid.is_haploid())
+                    ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'Call' object has no attribute 'is_haploid'
+________________________________ Tests.test_het ________________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py:30: in test_het
+    self.assertFalse(c_het_phased.is_haploid())
+                     ^^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'Call' object has no attribute 'is_haploid'
+______________________________ Tests.test_hom_ref ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py:13: in test_hom_ref
+    self.assertFalse(c_hom_ref.is_haploid())
+                     ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'Call' object has no attribute 'is_haploid'
+______________________________ Tests.test_hom_var ______________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py:46: in test_hom_var
+    self.assertFalse(c_hom_var.is_haploid())
+                     ^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'Call' object has no attribute 'is_haploid'
+_____________________________ Tests.test_zeroploid _____________________________
+/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py:79: in test_zeroploid
+    self.assertFalse(c_zeroploid.is_haploid())
+                     ^^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'Call' object has no attribute 'is_haploid'
+=========================== short test summary info ============================
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py::Tests::test_haploid
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py::Tests::test_het
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py::Tests::test_hom_ref
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py::Tests::test_hom_var
+FAILED ../../../../../../../var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/vail-full-hail-w5pdd556/upstream_hail/genetics/test_call.py::Tests::test_zeroploid
+5 failed, 1 passed in 0.36s

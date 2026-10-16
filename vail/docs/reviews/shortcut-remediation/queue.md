@@ -33,9 +33,9 @@ Both defects were reproduced with its matching native extension
 
 | ID | Defect | Status / acceptance |
 | --- | --- | --- |
-| ST001 | Empty nested-list storage write fails with `ListLayoutStrategy needs at least one chunk` | Writer fix implemented; 15 focused public nested-collection cases pass. Full validation/review pending. Preserve empty versus missing lists at every nesting level; support ordinary batch/slice boundaries without sentinel data. |
-| ST002 | A present struct whose children are all missing reads back as a missing parent | Reader fix implemented; raw Vortex boundaries and focused public cases pass. Preserve parent and child validity independently; complete validation/review pending. |
-| ST003 | Nested sliced Arrow input panics in C Stream import | Reproduces on main before storage. Published Arrow60 struct-slice correction backported to pinned59.2; matching native validation pending. Preserve zero-copy buffers; no fixture normalization workaround. |
+| ST001 | Empty nested-list storage write fails with `ListLayoutStrategy needs at least one chunk` | Writer fix validated; 15 focused public nested-collection cases pass. Full Vail native/Python validation passes; final integration review pending. Preserve empty versus missing lists at every nesting level; support ordinary batch/slice boundaries without sentinel data. |
+| ST002 | A present struct whose children are all missing reads back as a missing parent | Reader fix validated; raw Vortex boundaries and focused public cases pass. Parent and child validity remain independent; full Vail native/Python validation passes, final integration review pending. |
+| ST003 | Nested sliced Arrow input panics in C Stream import | Reproduces on main before storage. Published Arrow60 struct-slice correction backported to pinned59.2; matching native/public Arrow validation passes; final integration review pending. Preserve zero-copy buffers; no fixture normalization workaround. |
 
 ## Prior review findings requiring current-code audit
 

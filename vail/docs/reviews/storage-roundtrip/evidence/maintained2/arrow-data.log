@@ -1,0 +1,52 @@
+    Blocking waiting for file lock on build directory
+   Compiling arrow-data v59.2.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/patches/arrow-data)
+    Finished `release` profile [optimized] target(s) in 11.78s
+     Running unittests src/lib.rs (/Users/danielking/projects/vail/vail/target/release/deps/arrow_data-69bd47b27a91b281)
+
+running 43 tests
+test data::tests::test_alignment_struct ... ok
+test data::tests::should_fail_validation_when_having_map_field_type_is_not_struct ... ok
+test data::tests::test_builder ... ok
+test data::tests::test_alignment ... ok
+test data::tests::test_count_nulls ... ok
+test data::tests::test_contains_nulls ... ok
+test data::tests::empty_and_null_map_array_should_pass_validation ... ok
+test data::tests::should_fail_validation_when_having_entries_is_nullable_for_map ... ok
+test data::tests::should_allow_to_create_map_from_data ... ok
+test data::tests::should_fail_validation_when_having_map_entries_only_have_1_field ... ok
+test data::tests::should_fail_validation_when_having_map_entries_have_3_fields ... ok
+test data::tests::should_fail_validation_when_having_nullable_map_keys ... ok
+test data::tests::test_dont_panic_on_bad_input_when_using_try_new ... ok
+test data::tests::test_builder_with_child_data ... ok
+test data::tests::test_null_buffer_ref ... ok
+test data::tests::test_equality ... ok
+test data::tests::test_null_count ... ok
+test data::tests::test_null_view_types ... ok
+test data::tests::test_slice ... ok
+test data::tests::test_slice_memory_size ... ok
+test data::tests::test_slice_memory_size_binary_offset_buffer_len_plus_one ... ok
+test data::tests::test_slice_memory_size_utf8_offset_buffer_len_plus_one ... ok
+test data::tests::test_try_new_length_offset_overflow ... ok
+test data::tests::test_typed_offsets_length_overflow ... ok
+test data::tests::test_validate_typed_buffer_length_overflow ... ok
+test equal::variable_size::tests::test_variable_sized_equal_diff_offsets ... ok
+test data::tests::test_slice_panics_on_offset_length_overflow - should panic ... ok
+test ffi::tests::null_array_n_buffers ... ok
+test transform::run::tests::test_build_extend_arrays_int16 ... ok
+test transform::run::tests::test_build_extend_arrays_int64 ... ok
+test transform::run::tests::test_build_extend_overflow_i16 ... ok
+test transform::run::tests::test_build_extend_overflow_i32 ... ok
+test transform::run::tests::test_extend_empty ... ok
+test transform::run::tests::test_extend_int32 ... ok
+test transform::run::tests::test_extend_nulls_int16 ... ok
+test transform::run::tests::test_extend_nulls_int32 ... ok
+test transform::run::tests::test_extend_nulls_int64 ... ok
+test transform::run::tests::test_extend_nulls_overflow_i16 ... ok
+test transform::run::tests::test_extend_string_dict ... ok
+test transform::test::test_list_append_with_capacities ... ok
+test transform::utils::tests::test_overflow_restores_buffer ... ok
+test transform::utils::tests::test_overflow_returns_error ... ok
+test transform::run::tests::test_extend_nulls_overflow_i32 ... ok
+
+test result: ok. 43 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

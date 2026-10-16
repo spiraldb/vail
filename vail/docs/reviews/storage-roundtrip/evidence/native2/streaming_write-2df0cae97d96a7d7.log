@@ -1,0 +1,20 @@
+
+running 9 tests
+test invalid_limits_and_existing_destination_do_not_poll_the_source ... ok
+
+thread 'partition_worker_panic_cannot_publish_a_partial_snapshot' (394024) panicked at crates/vail-storage/tests/streaming_write.rs:434:13:
+injected partition panic
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test partition_worker_panic_cannot_publish_a_partial_snapshot ... ok
+test partition_stream_failure_does_not_publish_a_snapshot ... ok
+test input_failure_after_a_flush_never_publishes_a_partial_snapshot ... ok
+test oversized_batches_split_at_row_limit_and_unkeyed_order_is_persisted ... ok
+test duplicate_and_missing_keys_keep_arrival_order_across_file_rollover ... ok
+test partition_stream_writes_overlap_and_descriptor_restores_partition_order ... ok
+test row_and_byte_limits_flush_before_requesting_more_input ... ok
+test partition_writer_drains_more_than_one_worker_wave ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s
+
+
+Guard elapsed: 1.169s; exit: 0

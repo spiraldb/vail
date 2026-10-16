@@ -1,0 +1,14 @@
+
+running 7 tests
+test partitions_are_independent_datafusion_outputs_after_narrow_operations ... ok
+test actual_shuffle_output_has_disjoint_ordered_key_ranges ... ok
+test range_shuffle_and_coalesce_survive_planning_and_repeat_actions ... ok
+test pushed_key_filter_prunes_unicode_utf8_string_fragments ... ok
+test pushed_key_filter_skips_unmatched_files_inside_a_source_partition ... ok
+test pushed_key_or_filter_unions_disjoint_fragment_ranges ... ok
+test read_partition_runs_without_any_unrelated_data_files ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+
+Guard elapsed: 1.395s; exit: 0
