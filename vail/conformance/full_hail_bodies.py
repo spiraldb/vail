@@ -251,6 +251,8 @@ def worker(source, name, output, suite):
             outcome = dict(status='passed', parameters={k: repr(v)[:300] for k,v in params.items()})
             try:
                 reset_test_randomness()
+                if scope.get('reset_global_randomness') is reset_test_randomness:
+                    cache['reset_global_randomness'] = None
                 kwargs = {key: value for key, value in params.items() if not key.startswith('__fixture_param_')}
                 for key, parameter in inspect.signature(target).parameters.items():
                     if key not in kwargs and parameter.default is inspect.Parameter.empty:

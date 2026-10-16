@@ -262,6 +262,7 @@ def test_original_body_runner_resets_default_randomness_between_parameter_varian
     import json
     adapter.reset_test_randomness()
     expected = hl.eval(hl.rand_int64())
+    expected_second = hl.eval(hl.rand_int64())
     suite = tmp_path / 'test' / 'hail'
     suite.mkdir(parents=True)
     (suite / 'helpers.py').write_text('')
@@ -269,12 +270,16 @@ def test_original_body_runner_resets_default_randomness_between_parameter_varian
 @pytest.fixture(autouse=True)
 def reset_global_randomness():
     Env.reset_global_randomness()
+@pytest.fixture
+def seeded_capture():
+    return hl.eval(hl.rand_int64())
 ''')
     source = suite / 'test_rng.py'
     source.write_text(f'''import pytest
 @pytest.mark.parametrize('draw_count', [3, 7])
-def test_variants(draw_count):
-    assert hl.eval(hl.rand_int64()) == {expected!r}
+def test_variants(draw_count, seeded_capture, reset_global_randomness):
+    assert seeded_capture == {expected!r}
+    assert hl.eval(hl.rand_int64()) == {expected_second!r}
     for _ in range(draw_count):
         hl.eval(hl.rand_int64())
 ''')
