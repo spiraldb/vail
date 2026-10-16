@@ -104,12 +104,6 @@ enum Source {
     ReadPartition(Arc<LocalRead>, usize),
     ReadPartitionProjected(Arc<LocalRead>, usize, Vec<i32>),
     ReadPartitionNested(Arc<LocalRead>, usize, Vec<i32>, Vec<Vec<String>>),
-    Read(Arc<LocalRead>),
-    Range {
-        n: usize,
-        partitions: usize,
-        batch_size: std::num::NonZeroUsize,
-    },
     Parallelize {
         rows: crate::arrow_batches::ArrowBatches,
         partitions: usize,
@@ -130,11 +124,9 @@ impl DisplayAs for SourceExec {
 impl ExecutionPlan for SourceExec {
     fn name(&self) -> &'static str {
         match self.source {
-            Source::Read(_)
-            | Source::ReadPartition(_, _)
+            Source::ReadPartition(_, _)
             | Source::ReadPartitionProjected(_, _, _)
             | Source::ReadPartitionNested(_, _, _, _) => "VicebergScanExec",
-            Source::Range { .. } => "RangeExec",
             Source::Globals(_) => "GlobalsScanExec",
             Source::Parallelize { .. } => "ParallelizeExec",
         }
@@ -201,32 +193,6 @@ impl ExecutionPlan for SourceExec {
                                 let batch = normalize(&batch, row_schema.clone()).map_err(external)?;
                                 yield tag(batch, 0, schema.clone())?;
                             }
-                        }
-                    }
-                    Source::Read(source) => {
-                        let mut input = source.batches();
-                        let mut current = 0usize;
-                        let mut first = true;
-                        while let Some(event) = input.try_next().await.map_err(external)? {
-                            match event {
-                                PartitionEvent::StartPartition => { if !first { current += 1; } first = false; }
-                                PartitionEvent::Batch(batch) => {
-                                    let batch = normalize(&batch, row_schema.clone()).map_err(external)?;
-                                    yield tag(batch, current, schema.clone())?;
-                                }
-                            }
-                        }
-                    }
-                    Source::Range { n, partitions, batch_size } => {
-                        let mut start = 0;
-                        for p in 0..partitions {
-                            let end = start + n / partitions + usize::from(p < n % partitions);
-                            for offset in (start..end).step_by(batch_size.get()) {
-                                let array = Int32Array::from_iter_values((offset..end.min(offset.saturating_add(batch_size.get()))).map(|i| i as i32));
-                                let batch = RecordBatch::try_new(row_schema.clone(), vec![Arc::new(array)])?;
-                                yield tag(batch, p, schema.clone())?;
-                            }
-                            start = end;
                         }
                     }
                     Source::Parallelize { rows, partitions } => {

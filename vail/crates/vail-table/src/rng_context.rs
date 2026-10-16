@@ -55,6 +55,7 @@ fn repeatable_with_memo(plan: &PhysicalPlan, memo: &mut HashMap<usize, bool>) ->
         || crate::action_parameters::repeatable_node(plan)
         || crate::scan_ordinal::repeatable_node(plan)
         || crate::zip_dedup::repeatable_node(plan)
+        || crate::joins::repeatable_node(plan)
         || plan.as_ref().is::<ProjectionExec>()
         || plan.as_ref().is::<FilterExec>()
         || plan.as_ref().is::<SortExec>()
@@ -71,9 +72,6 @@ fn repeatable_with_memo(plan: &PhysicalPlan, memo: &mut HashMap<usize, bool>) ->
         || plan.as_ref().is::<SortMergeJoinExec>()
         || plan.as_ref().is::<EmptyExec>()
         || plan.as_ref().is::<PlaceholderRowExec>();
-    if !known && std::env::var_os("VAIL_TRACE_PLANNING").is_some() {
-        eprintln!("vail repeatability: uncertified operator {}", plan.name());
-    }
     let value = own_replay
         || (known
             && plan

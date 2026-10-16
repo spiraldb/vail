@@ -421,6 +421,12 @@ impl JoinOrderingExec {
         })
     }
 }
+/// This wrapper only certifies an existing key ordering and forwards execute.
+/// Replaying it is legal exactly when its already-planned input is replayable.
+pub(crate) fn repeatable_node(plan: &PhysicalPlan) -> bool {
+    plan.as_ref().is::<JoinOrderingExec>()
+}
+
 impl datafusion_physical_plan::DisplayAs for JoinOrderingExec {
     fn fmt_as(
         &self,
