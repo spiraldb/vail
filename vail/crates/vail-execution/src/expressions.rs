@@ -4169,6 +4169,16 @@ pub fn restore_physical_type(
     }
 }
 
+/// Normalize a checked logical expression's physical Arrow storage.
+/// Callers establish logical type agreement before requesting this conversion.
+pub fn cast_physical_storage(value: Arc<dyn PhysicalExpr>, schema: &Schema, dtype: DataType)
+    -> datafusion_common::Result<Arc<dyn PhysicalExpr>> {
+    let value = cast(value, schema, dtype.clone())?;
+    // Some compiled struct expressions promise canonical child storage while
+    // their borrowed children retain alternate Arrow layouts at runtime.
+    Ok(custom(HailKind::RestoreArrowType, vec![value], dtype))
+}
+
 fn cast(
     value: Arc<dyn PhysicalExpr>,
     schema: &Schema,

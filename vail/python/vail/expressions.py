@@ -97,10 +97,11 @@ def as_expr(value):
 
 class _IR(NativeExpr):
     """Native IR handle with Python owners for captured dataset dependencies."""
-    def __new__(cls, value, references, lookups=None, row_indexed=None):
+    def __new__(cls, value, references, lookups=None, row_indexed=None, lexical_types=None):
         return super().__new__(cls, value)
 
-    def __init__(self, value, references, lookups=None, row_indexed=None):
+    def __init__(self, value, references, lookups=None, row_indexed=None, lexical_types=None):
+        self.lexical_types = _lexical_types_of(value) if lexical_types is None else dict(lexical_types)
         if row_indexed is None:
             self.references = _references(value) | dict(references)
             self.lookups = _lookup_references(value) | dict(lookups or {})
@@ -117,6 +118,36 @@ class _IR(NativeExpr):
 
 
 IR_NODE_TYPES = (dict, NativeExpr)
+
+
+def _lexical_types_of(ir):
+    if isinstance(ir, _IR):
+        return dict(ir.lexical_types)
+    if isinstance(ir, dict):
+        op = ir.get('op')
+        if op == 'literal':
+            return {}
+        bound = {}
+        if op in ('array_map', 'array_filter', 'array_predicate', 'agg_array', 'agg_explode'):
+            bound['predicate' if op in ('array_filter', 'array_predicate') else 'body'] = {ir.get('parameter')}
+        elif op == 'array_fold':
+            bound['body'] = {ir.get('parameter'), ir.get('accumulator')}
+        elif op == 'aggregate_fold':
+            bound['seq'] = {ir.get('state_parameter')}
+            bound['combine'] = {ir.get('left_parameter'), ir.get('right_parameter')}
+        elif op == 'switch':
+            bound = {name: {ir.get('parameter')} for name in ('cases', 'default', 'missing')}
+        result = {}
+        for name, value in ir.items():
+            result.update({key: ty for key, ty in _lexical_types_of(value).items()
+                           if key not in bound.get(name, ())})
+        return result
+    if isinstance(ir, (list, tuple)):
+        result = {}
+        for value in ir:
+            result.update(_lexical_types_of(value))
+        return result
+    return {}
 
 
 def _row_indexed(ir):
@@ -178,7 +209,7 @@ def _external_globals(native, dtype):
 
 
 class Expression:
-    __slots__ = ("dtype", "source", "_native_expr", "_selection_name", "_top_level_name", "_global_refs", "_lookup_refs", "_row_indexed")
+    __slots__ = ("dtype", "source", "_native_expr", "_lexical_types", "_selection_name", "_top_level_name", "_global_refs", "_lookup_refs", "_row_indexed")
 
     def __new__(cls, *args, **kwargs):
         if cls is Expression:
@@ -195,9 +226,14 @@ class Expression:
         object.__setattr__(self, "_global_refs", MappingProxyType(_references(ir)))
         object.__setattr__(self, "_lookup_refs", MappingProxyType(_lookup_references(ir)))
         object.__setattr__(self, "_row_indexed", _row_indexed(ir) if row_indexed is None else row_indexed)
+        native = NativeExpr(ir)
+        lexical_types = _lexical_types_of(ir)
+        if isinstance(ir, dict) and ir.get('op') == 'lambda_variable':
+            lexical_types[ir['name']] = dtype
+        object.__setattr__(self, '_lexical_types', MappingProxyType(lexical_types))
         object.__setattr__(self, "dtype", dtype)
         object.__setattr__(self, "source", source)
-        object.__setattr__(self, "_native_expr", NativeExpr(ir))
+        object.__setattr__(self, "_native_expr", native)
         object.__setattr__(self, "_selection_name", selection_name)
         object.__setattr__(self, "_top_level_name", top_level_name)
 
@@ -210,7 +246,7 @@ class Expression:
     @property
     def _ir(self):
         # Return another immutable handle sharing the existing native expression node.
-        return _IR(self._native_expr, self._global_refs, self._lookup_refs, self._row_indexed)
+        return _IR(self._native_expr, self._global_refs, self._lookup_refs, self._row_indexed, self._lexical_types)
 
     def to_ir(self):
         return self._ir

@@ -340,8 +340,21 @@ pub(crate) fn lower_fold(
     let Expr::RuntimeLiteral { value: initial } = initial.as_ref() else {
         return Err(TableError::Invalid("fold initializer was not bound".into()));
     };
-    let initial = initial.clone();
-    let state_type = initial.data_type();
+    let state_type = vail_execution::expressions::Type::from_arrow(&initial.data_type())?.to_arrow()?;
+    let initial_array: arrow_array::ArrayRef = match initial {
+        ScalarValue::List(array) => array.clone(),
+        ScalarValue::LargeList(array) => array.clone(),
+        ScalarValue::FixedSizeList(array) => array.clone(),
+        ScalarValue::Struct(array) => array.clone(),
+        value => value.to_array()?,
+    };
+    let initial_array = if vail_ordering::same_layout(initial_array.data_type(), &state_type) {
+        vail_execution::logical_expr::restore_arrow_array_type(&initial_array, &state_type)?
+    } else {
+        let cast = arrow_cast::cast(&initial_array, &state_type)?;
+        vail_execution::logical_expr::restore_arrow_array_type(&cast, &state_type)?
+    };
+    let initial = vail_execution::expressions::scalar_at(&initial_array, 0)?;
     let mut used = input.fields().iter().map(|f| f.name().clone()).collect();
     let state = fresh(&mut used, "__vail_fold_state");
     let left = fresh(&mut used, "__vail_fold_left");
@@ -358,19 +371,30 @@ pub(crate) fn lower_fold(
     {
         return Err(TableError::Invalid("fold state type mismatch".into()));
     }
-    let payload_schema = Arc::new(Schema::new(
-        input
-            .fields()
-            .iter()
-            .filter(|f| *f.data_type() != DataType::UInt64)
-            .cloned()
-            .collect::<Vec<_>>(),
-    ));
+    fn captures(node: &Expr, input: &Schema, bindings: &BTreeMap<String, usize>,
+        seen: &mut HashSet<*const Expr>, used: &mut HashSet<usize>) {
+        if !seen.insert(node as *const Expr) { return; }
+        let index = match node {
+            Expr::Column { name } | Expr::Global { name } => input.index_of(name).ok(),
+            Expr::ExternalGlobal { reference, .. } => bindings.get(reference).copied(),
+            _ => None,
+        };
+        if let Some(index) = index { used.insert(index); }
+        node.visit_children(&mut |child| captures(child,input,bindings,seen,used));
+    }
+    let mut captured = HashSet::new();
+    captures(&seq,input,indices,&mut HashSet::new(),&mut captured);
+    let payload_schema = Arc::new(Schema::new(input.fields().iter().enumerate()
+        .filter(|(index,_)| captured.contains(index)).map(|(_,field)| {
+            let dtype = vail_execution::expressions::Type::from_arrow(field.data_type())?.to_arrow()?;
+            Ok(Arc::new(field.as_ref().clone().with_data_type(dtype).with_nullable(true)))
+        }).collect::<Result<Vec<_>>>()?));
     let mut fields = vec![Arc::new(Field::new(&state, state_type.clone(), true))];
     fields.extend(payload_schema.fields().iter().cloned());
     let seq_schema = Arc::new(Schema::new(fields));
     let seq_indices = indices
         .iter()
+        .filter(|(_, index)| captured.contains(index))
         .map(|(name, i)| {
             Ok((
                 name.clone(),
@@ -379,6 +403,7 @@ pub(crate) fn lower_fold(
         })
         .collect::<Result<BTreeMap<_, _>>>()?;
     let seq = lower_with_bindings(&seq, &seq_schema, globals, &seq_indices)?;
+    let seq = vail_execution::expressions::cast_physical_storage(seq, &seq_schema, state_type.clone())?;
     let combine = resolve(
         combine,
         &BTreeMap::from([
@@ -390,12 +415,16 @@ pub(crate) fn lower_fold(
         Field::new(&left, state_type.clone(), true),
         Field::new(&right, state_type.clone(), true),
     ]));
+    if combine.dtype(&combine_schema)?.to_arrow()? != state_type {
+        return Err(TableError::Invalid("fold combine type mismatch".into()));
+    }
     let combine = lower_with_bindings(
         &combine,
         &combine_schema,
         &Schema::empty(),
         &BTreeMap::new(),
     )?;
+    let combine = vail_execution::expressions::cast_physical_storage(combine, &combine_schema, state_type.clone())?;
     if combine.data_type(&combine_schema)? != state_type {
         return Err(TableError::Invalid("fold combine type mismatch".into()));
     }
@@ -414,6 +443,7 @@ pub(crate) fn lower_fold(
             .collect(),
     };
     let packed = lower_with_bindings(&packed, input, &Schema::empty(), &BTreeMap::new())?;
+    let packed = vail_execution::expressions::cast_physical_storage(packed, input, DataType::Struct(payload_schema.fields().clone()))?;
     Ok((
         Arc::new(vail_execution::fold_aggregate::fold_udaf(
             payload_schema,
@@ -421,7 +451,7 @@ pub(crate) fn lower_fold(
             state_type,
             seq,
             combine,
-        )),
+        )?),
         packed,
     ))
 }

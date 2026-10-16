@@ -212,9 +212,12 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     context.bindings,
                     &BTreeMap::new(),
                 )?;
+                let packed_type = packed.data_type(&schema)?;
+                let DataType::Struct(packed_fields) = &packed_type else { return Err(TableError::Invalid("fold input must be a struct".into())); };
+                let selected = packed_fields.iter().map(|field|field.name()).collect::<std::collections::HashSet<_>>();
                 let mut fields = Vec::new();
                 for (i, field) in schema.fields().iter().enumerate() {
-                    if *field.data_type() == DataType::UInt64 {
+                    if !selected.contains(field.name()) {
                         continue;
                     }
                     let value = match aliases.iter().find(|(_, column)| *column == field.name()) {
@@ -231,7 +234,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                 return Ok(Built::identity(
                     udf,
                     Expr::Struct { fields },
-                    packed.data_type(&schema)?,
+                    packed_type,
                 ));
             }
             let argument = value.as_deref().cloned().unwrap_or(Expr::Literal {

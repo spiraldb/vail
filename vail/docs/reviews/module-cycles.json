@@ -542,6 +542,33 @@
         "Gather/transpose allocate emitted payload/context",
         "Count-based cost cases are projection-prunable and do not prove kernel copy bounds"
       ],
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "9967d961"
+    },
+    {
+      "module": "Vail collection callback aggregation and fold/coordinate aggregate state adapters",
+      "reviewed_base": "9967d961",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "merge callback dataset sources before rewrite and retain valid literal-array captures",
+        "derive actual reducer input/result types in lexical scope for tuple/array/cast/arithmetic containers",
+        "rewrite borrowed native DAG nodes with scoped memoized shallow type summaries and prepared dependency metadata",
+        "track immutable free lexical types from immediate child/binder summaries, preserving outer captures without closed-variable accumulation",
+        "retain historical seeded random filter zip contexts with an explicit cost exception",
+        "pack only referenced fold inputs using one canonical optional physical descriptor shared across logical/physical/nested scan paths",
+        "retain one-row Arrow fold state with metadata-preserving result scalars and canonical callback storage",
+        "check public fold constructor type agreement and coordinate identity output type at construction; reject missing packed record parents",
+        "replace private callback/aggregate IR/kernel/state-strategy tests with public values/errors/partition/native storage cases"
+      ],
+      "validation": [
+        "242 public Python tests passed including callback containers/sources/lexical scopes/lookup/Matrix/RNG/fold/scan/array/randomness/simulation/input boundaries",
+        "71 Rust execution tests passed (53 library +2 checked aggregate factories +2 array methods +7 Matrix layout +7 type contracts)",
+        "65 Rust table tests passed (49 library +1 conditional globals +5 DataFusion plans +1 raw alternate-storage fold/scan +7 physical partitions +2 type contracts)"
+      ],
+      "reports": [
+        "vail/docs/reviews/fold-aggregate-cost.json"
+      ],
+      "native_sha256": "22112636296ef1774e82dd11dbdb961e00c4184fcf3786906aef79c025d5372b",
       "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests."
     }
   ],
@@ -671,6 +698,7 @@
     "vail/crates/vail-python/src/random_binding.rs",
     "vail/crates/vail-execution/src/aggregate_contract.rs",
     "vail/crates/vail-execution/src/collection_grouped.rs",
-    "vail/crates/vail-execution/src/ndarray.rs"
+    "vail/crates/vail-execution/src/ndarray.rs",
+    "vail/crates/vail-python/src/collection_aggregate.rs"
   ]
 }

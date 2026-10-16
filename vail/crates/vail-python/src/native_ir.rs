@@ -946,6 +946,19 @@ impl NativeExpr {
         let uid=uid.into_iter().map(|v|v.inner.clone()).collect::<Vec<_>>();
         Ok(Self{inner:Arc::new(crate::random_binding::context(&self.inner,&uid)?)})
     }
+    fn collection_aggregate(&self, value: PyRef<'_, NativeExpr>, parameter: &str,
+        element: PyRef<'_, NativeType>, rows: PyRef<'_, NativeType>,
+        globals: PyRef<'_, NativeType>, axes: Vec<(String, PyRef<'_, NativeType>)>,
+        lookups: Vec<(String, PyRef<'_, NativeType>)>, lexical: Vec<(String, PyRef<'_, NativeType>)>) -> PyResult<Self> {
+        let context=crate::collection_aggregate::Context {
+            rows:crate::collection_aggregate::schema(&rows.inner)?,
+            globals:crate::collection_aggregate::schema(&globals.inner)?,
+            axes:axes.into_iter().map(|(name,ty)|(name,(*ty.inner).clone())).collect(),
+            lookups:lookups.into_iter().map(|(name,ty)|(name,(*ty.inner).clone())).collect(),
+            lexical:lexical.into_iter().map(|(name,ty)|(name,(*ty.inner).clone())).collect(),
+        };
+        Ok(Self { inner: Arc::new(crate::collection_aggregate::rewrite(value.inner.clone(), &self.inner, parameter, (*element.inner).clone(), &context)?) })
+    }
     fn replace_parameter(&self,name: &str,value: PyRef<'_,NativeExpr>) -> PyResult<Self> {
         Ok(Self{inner:Arc::new(crate::random_binding::replace_parameter(&self.inner,name,&value.inner)?)})
     }

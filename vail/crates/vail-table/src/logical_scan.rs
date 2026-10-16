@@ -606,6 +606,7 @@ pub(crate) fn lower(
             child.globals().schema(),
             bindings,
         )?;
+        let arg = vail_execution::logical_expr::restore_type(arg, leaf.descriptor.input_type());
         let arg = guard_argument(
             arg,
             leaf.filter.as_ref(),
@@ -655,6 +656,7 @@ pub(crate) fn lower(
             child.globals().schema(),
             bindings,
         )?;
+        let arg = vail_execution::logical_expr::restore_type(arg, leaf.descriptor.input_type());
         let arg = guard_argument(
             arg,
             leaf.filter.as_ref(),

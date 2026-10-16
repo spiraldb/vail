@@ -238,7 +238,7 @@ def resolve(native, expressions, mode="row"):
             e.dtype,
             e.source,
             _IR((bound := bind_rows(e.to_ir(), uid, scope)), e._global_refs, e._lookup_refs,
-                row_indexed=bound.references_rows()),
+                row_indexed=bound.references_rows(), lexical_types=e._lexical_types),
             selection_name=e._selection_name,
             top_level_name=e._top_level_name,
         )
@@ -267,4 +267,4 @@ def index_callback(collection, parameter, body):
     replaced = _native_expression(ir).replace_parameter(parameter, _native_expression(value))
     bound = bind_context(replaced, [index])
     return indexed, Expression(body.dtype, body.source, _IR(
-        bound, ir.references, ir.lookups, row_indexed=body._row_indexed))
+        bound, ir.references, ir.lookups, row_indexed=body._row_indexed, lexical_types=body._lexical_types))

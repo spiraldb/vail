@@ -1,4 +1,5 @@
 mod random_binding;
+mod collection_aggregate;
 mod input_binding;
 mod ir_view;
 mod native_ir;

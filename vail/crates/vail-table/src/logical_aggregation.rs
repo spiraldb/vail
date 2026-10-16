@@ -319,8 +319,8 @@ pub(crate) fn scope_plan(
             },
             _ => return Err(TableError::Invalid("aggregate argument missing".into())),
         };
-        let (fold_udf, fold_value) = if reducer.function == "__fold" {
-            let (udf, _) = crate::aggregation::lower_fold(
+        let (fold_udf, fold_value, fold_storage) = if reducer.function == "__fold" {
+            let (udf, packed_input) = crate::aggregation::lower_fold(
                 &value,
                 input.schema().as_arrow(),
                 input.schema().as_arrow(),
@@ -328,13 +328,17 @@ pub(crate) fn scope_plan(
                 bindings,
                 &scope,
             )?;
+            let DataType::Struct(payload_fields) = packed_input.data_type(input.schema().as_arrow())? else {
+                return Err(TableError::Invalid("fold input must be a struct".into()));
+            };
+            let packed_names = payload_fields.iter().map(|field|field.name()).collect::<std::collections::HashSet<_>>();
             let packed = Expr::Struct {
                 fields: input
                     .schema()
                     .fields()
                     .iter()
                     .enumerate()
-                    .filter(|(_, f)| *f.data_type() != DataType::UInt64)
+                    .filter(|(_, f)| packed_names.contains(f.name()))
                     .map(|(i, f)| {
                         (
                             f.name().clone(),
@@ -351,9 +355,9 @@ pub(crate) fn scope_plan(
                     })
                     .collect(),
             };
-            (Some(udf), Some(packed))
+            (Some(udf), Some(packed), Some(DataType::Struct(payload_fields)))
         } else {
-            (None, None)
+            (None, None, None)
         };
         let value = fold_value.as_ref().unwrap_or(&value);
         let mut logical_value =
@@ -367,22 +371,10 @@ pub(crate) fn scope_plan(
                     .to_arrow()?,
             )
         };
-        let dtype = if fold_udf.is_some() {
-            let payload = DataType::Struct(
-                input
-                    .schema()
-                    .fields()
-                    .iter()
-                    .filter(|f| *f.data_type() != DataType::UInt64)
-                    .cloned()
-                    .collect(),
-            );
-            logical_value =
-                vail_execution::logical_expr::restore_type(logical_value, payload.clone());
+        let dtype = if let Some(payload) = fold_storage {
+            logical_value = vail_execution::logical_expr::restore_type(logical_value, payload.clone());
             Some(payload)
-        } else {
-            dtype
-        };
+        } else { dtype };
         let udf = match fold_udf {
             Some(udf) => udf,
             None => factory(reducer, dtype.as_ref())?,
