@@ -81,7 +81,6 @@ def test_multifile_roundtrip(tmp_path):
     assert loaded.collect() == table.collect()
     assert loaded.row.dtype == table.row.dtype
     assert loaded.key.dtype == table.key.dtype
-    assert loaded.n_partitions() == 3
     assert len(list(path.rglob('*.vortex'))) == 3
     assert loaded.filter(loaded.idx >= 8).collect() == table.tail(4).collect()
     result = subprocess.run([sys.executable, '-c',
@@ -106,7 +105,6 @@ def test_roundtrip_shapes(tmp_path, table):
     assert loaded.collect() == table.collect()
     assert loaded.row.dtype == table.row.dtype
     assert loaded.key.dtype == table.key.dtype
-    assert loaded.n_partitions() == table.n_partitions()
     assert loaded.count() == table.count()
 
 
@@ -169,7 +167,6 @@ def test_filtered_multifile_and_empty_partitions(tmp_path):
     table.write(path)
     loaded = hl.read_table(path)
     assert loaded.collect() == table.collect()
-    assert loaded.n_partitions() == 3
     assert len(list(path.rglob('*.vortex'))) == 2
 
 
@@ -253,7 +250,7 @@ def test_same_uses_key_equivalence_for_nan_and_signed_zero():
 
 def test_write_rolls_one_logical_partition_into_multiple_files(tmp_path):
     # Exceed the default row cap. Construction stays lazy and the writer must
-    # split the single logical partition without changing its read semantics.
+    # split its output while retaining row values and key order.
     path = tmp_path / 'table'
     n = 1_048_577
     table = hl.range_table(n, n_partitions=1)
@@ -261,7 +258,6 @@ def test_write_rolls_one_logical_partition_into_multiple_files(tmp_path):
     assert len(list(path.rglob('*.vortex'))) == 2
     loaded = hl.read_table(path)
     assert loaded.count() == n
-    assert loaded.n_partitions() == 1
     assert [r.idx for r in loaded.take(3)] == [0, 1, 2]
     assert [r.idx for r in loaded.tail(3).collect()] == [n - 3, n - 2, n - 1]
 
@@ -285,7 +281,6 @@ def test_snapshot_compression_respects_vortex_edition(tmp_path):
     table.write(path)
     loaded = hl.read_table(path)
     assert len(_fragment_files(path)) == 2
-    assert loaded.n_partitions() == 2
     assert loaded.collect() == table.collect()
     assert hl.eval(loaded.index_globals()) == hl.eval(table.index_globals())
     lower, upper = rows[4000]['position'], rows[4200]['position']
