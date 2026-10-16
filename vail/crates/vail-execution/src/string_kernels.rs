@@ -47,14 +47,14 @@ pub(crate) fn udf(name: &str) -> Arc<ScalarUDF> {
 
 /// Scalars keep one shared value; arrays are borrowed without broadcasting or
 /// copying strings. All three Arrow UTF-8 storage forms are accepted.
-enum Text<'a> {
+pub(crate) enum Text<'a> {
     Scalar(Option<&'a str>),
     Array(&'a StringArray),
     Large(&'a LargeStringArray),
     View(&'a StringViewArray),
 }
 impl<'a> Text<'a> {
-    fn new(value: &'a ColumnarValue) -> Result<Self> {
+    pub(crate) fn new(value: &'a ColumnarValue) -> Result<Self> {
         match value {
             ColumnarValue::Scalar(
                 ScalarValue::Utf8(v) | ScalarValue::LargeUtf8(v) | ScalarValue::Utf8View(v),
@@ -71,7 +71,7 @@ impl<'a> Text<'a> {
             _ => exec_err!("string argument requires Utf8"),
         }
     }
-    fn get(&self, row: usize) -> Option<&'a str> {
+    pub(crate) fn get(&self, row: usize) -> Option<&'a str> {
         match self {
             Self::Scalar(v) => *v,
             Self::Array(v) => (!v.is_null(row)).then(|| v.value(row)),

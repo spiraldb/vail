@@ -461,6 +461,8 @@ fn lower(
                     | "first_match_in"
                     | "unicode_slice"
                     | "unicode_translate"
+                    | "variant_min_rep"
+                    | "variant_entry"
             ) {
                 return logical_kernel(expr, schema, globals, bindings, scope);
             }

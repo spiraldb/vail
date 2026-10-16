@@ -1,0 +1,110 @@
+{
+  "base_commit": "113f8ba0",
+  "native_sha256": "5f42a7444dc6e891c60cdafc17ef2673c0a70963f0a4a75983b02b4a6b7245bd",
+  "method": "Fresh processes,20-second cap per case,1 row/1 column. Full public split construction and rows/entries collect including Matrix expansion and final sorting. Input construction and runtime warmup excluded from action. Peak RSS is whole process and includes input/runtime. Baseline original variant.py loaded as vail package module from git show113f8ba0; identical current runtime. All result values checked. Baseline caps include construction and action, so no isolated kernel speedup ratio is claimed.",
+  "baseline": [
+    {
+      "mode": "long",
+      "size": 128,
+      "timeout_seconds": 20
+    },
+    {
+      "mode": "long",
+      "size": 1024,
+      "timeout_seconds": 20
+    },
+    {
+      "mode": "long",
+      "size": 8192,
+      "timeout_seconds": 20
+    },
+    {
+      "mode": "long",
+      "size": 65536,
+      "timeout_seconds": 20
+    },
+    {
+      "mode": "pl",
+      "size": 8,
+      "timeout_seconds": 20
+    },
+    {
+      "mode": "pl",
+      "size": 32,
+      "timeout_seconds": 20
+    },
+    {
+      "mode": "pl",
+      "size": 128,
+      "timeout_seconds": 20
+    },
+    {
+      "mode": "pl",
+      "size": 256,
+      "timeout_seconds": 20
+    }
+  ],
+  "final": [
+    {
+      "mode": "long",
+      "size": 128,
+      "construction_seconds": 0.027416166994953528,
+      "action_seconds": 0.15850554200005718,
+      "max_rss_bytes": 142229504
+    },
+    {
+      "mode": "long",
+      "size": 1024,
+      "construction_seconds": 0.026744624999992084,
+      "action_seconds": 0.1591892079959507,
+      "max_rss_bytes": 142426112
+    },
+    {
+      "mode": "long",
+      "size": 8192,
+      "construction_seconds": 0.027339332998963073,
+      "action_seconds": 0.16009091700107092,
+      "max_rss_bytes": 142016512
+    },
+    {
+      "mode": "long",
+      "size": 65536,
+      "construction_seconds": 0.028605084000446368,
+      "action_seconds": 0.2609061670009396,
+      "max_rss_bytes": 158121984
+    },
+    {
+      "mode": "pl",
+      "size": 8,
+      "construction_seconds": 0.03539166700647911,
+      "action_seconds": 0.1868525829995633,
+      "max_rss_bytes": 147439616
+    },
+    {
+      "mode": "pl",
+      "size": 32,
+      "construction_seconds": 0.033729583003150765,
+      "action_seconds": 0.18419908299983945,
+      "max_rss_bytes": 144506880
+    },
+    {
+      "mode": "pl",
+      "size": 128,
+      "construction_seconds": 0.033778083001379855,
+      "action_seconds": 0.1921199999997043,
+      "max_rss_bytes": 169541632
+    },
+    {
+      "mode": "pl",
+      "size": 256,
+      "construction_seconds": 0.03555870799755212,
+      "action_seconds": 0.2269360830032383,
+      "max_rss_bytes": 260259840
+    }
+  ],
+  "limits": [
+    "All-alternate prepared arrays remain attached temporarily during Matrix row expansion; prepared payload replication is quadratic in allele count, within diploid PL input-size order. Original quadratic PL vector removed before explosion, avoiding its former cubic duplication.",
+    "Output row key sorting remains required. One-row bounded evidence is not a production scaling guarantee.",
+    "Missing GT yields missing PL; absent GT uses diploid PL; missing likelihood elements ignored for bucket minima. Validation executes when relevant values are demanded; count-only actions may prune value evaluation."
+  ]
+}

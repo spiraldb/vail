@@ -282,6 +282,26 @@
       ],
       "reports": [
         "vail/docs/reviews/query-cost.json"
+      ],
+      "merged_commit": "113f8ba0"
+    },
+    {
+      "module": "Vail variant parsing and HTS splitting",
+      "reviewed_base": "113f8ba0",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "validate complete variant key schema and allele/call/AD/PL contracts",
+        "replace mismatch arrays with direct constant-scratch Unicode traversal",
+        "prepare AD and all alternate likelihood buckets once per original entry; drop original AD/PL before explode",
+        "preserve borrowed scalar/array inputs without batch broadcasting",
+        "add public end-to-end split correctness/error coverage and bounded full-Matrix resource evidence"
+      ],
+      "validation": [
+        "71 public Python tests passed (split_multi_hts, variant_qc, call_value, matrix_entry_sum)",
+        "5 public Rust variant/string integration tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/variant-cost.json"
       ]
     }
   ],
@@ -405,6 +425,7 @@
     "vail/crates/vail-execution/src/conditionals.rs",
     "vail/crates/vail-python/src/input_binding.rs",
     "vail/crates/vail-table/src/range_lookup.rs",
-    "vail/crates/vail-table/src/conditional_globals.rs"
+    "vail/crates/vail-table/src/conditional_globals.rs",
+    "vail/crates/vail-execution/src/variant_kernels.rs"
   ]
 }

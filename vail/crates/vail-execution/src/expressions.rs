@@ -4241,6 +4241,9 @@ pub(crate) fn string_function(
     let strings = Type::Array {
         array: Box::new(text.clone()),
     };
+    if matches!(name, "variant_min_rep" | "variant_entry") {
+        return crate::variant_kernels::function(name);
+    }
     Ok(match name {
         "hardy_weinberg_counts" => (
             crate::hwe_counts::udf(),
