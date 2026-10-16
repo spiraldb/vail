@@ -846,7 +846,7 @@ fn inherited_bounds(table: &TableRef, join_key: usize) -> Result<Option<Vec<Opti
         // A range table's source partitions are exact, contiguous Int32 key
         // intervals. Reuse those known bounds instead of encoding every row
         // just to rediscover each partition's endpoints.
-        TableNode::Range { n, n_partitions }
+        TableNode::Range { n, n_partitions, .. }
             if join_key == 1 && table.keys().first().is_some_and(|key| key == "idx") =>
         {
             let mut result = Vec::with_capacity(*n_partitions);

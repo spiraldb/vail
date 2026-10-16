@@ -222,6 +222,7 @@ pub enum TableNode {
     Range {
         n: usize,
         n_partitions: usize,
+        batch_size: std::num::NonZeroUsize,
     },
     MapGlobals {
         child: TableRef,
@@ -814,6 +815,12 @@ impl TableIR {
         ))
     }
     pub fn range(n: usize, n_partitions: usize) -> Result<TableRef> {
+        Self::range_batched(n, n_partitions, 65536)
+    }
+    /// Stream at most batch_size indices per batch, including clipped scans.
+    pub fn range_batched(n: usize, n_partitions: usize, batch_size: usize) -> Result<TableRef> {
+        let batch_size = std::num::NonZeroUsize::new(batch_size)
+            .ok_or_else(|| TableError::Invalid("range batch size must be positive".into()))?;
         if n_partitions == 0 || n > i32::MAX as usize {
             return Err(TableError::Invalid(
                 "range requires positive partitions and n <= 2**31 - 1".into(),
@@ -826,6 +833,7 @@ impl TableIR {
             TableNode::Range {
                 n,
                 n_partitions: n.min(n_partitions).max(1),
+                batch_size,
             },
         ))
     }
@@ -1248,6 +1256,20 @@ impl TableIR {
         ))
     }
     pub fn head(self: &Arc<Self>, n: usize) -> TableRef {
+        // Projection and global attachment preserve row order/cardinality.
+        // Scan expressions consume only the preceding prefix, so truncating
+        // their input preserves every retained value and RNG ordinal. Keep
+        // the original globals/bindings: their captures may require all rows.
+        let pushed = match self.node() {
+            TableNode::MapRows { child, fields, bindings } => Some(TableNode::MapRows {
+                child: child.head(n), fields: fields.clone(), bindings: bindings.clone(),
+            }),
+            TableNode::MapGlobals { child } => Some(TableNode::MapGlobals { child: child.head(n) }),
+            _ => None,
+        };
+        if let Some(node) = pushed {
+            return Self::new(self.schema.clone(), self.keys.clone(), self.globals.clone(), node);
+        }
         Self::new(
             self.schema.clone(),
             self.keys.clone(),
@@ -1533,7 +1555,7 @@ impl TableIR {
             } => {
                 json!({"node":"TableParallelizeExpression", "expression":expression, "n_partitions":n_partitions})
             }
-            TableNode::Range { n, n_partitions } => {
+            TableNode::Range { n, n_partitions, .. } => {
                 json!({"node":"TableRange", "n":n, "n_partitions":n_partitions})
             }
             TableNode::MapGlobals { child } => {
@@ -1618,7 +1640,7 @@ impl TableIR {
                     .collect(),
             ),
             TableNode::Expression { .. } => None,
-            TableNode::Range { n, n_partitions } => Some(
+            TableNode::Range { n, n_partitions, .. } => Some(
                 (0..*n_partitions)
                     .map(|p| n / n_partitions + usize::from(p < n % n_partitions))
                     .collect(),

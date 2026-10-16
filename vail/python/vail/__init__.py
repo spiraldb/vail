@@ -261,9 +261,9 @@ class Table:
     def __delattr__(self, name):
         raise TypeError("Table is immutable")
 
-    def _unlocalize_entries(self, entries_field_name, cols_field_name, col_key):
+    def _unlocalize_entries(self, entries_field_name, cols_field_name, col_key, *, _aligned=False):
         from .matrixtable import unlocalize_entries
-        return unlocalize_entries(self, entries_field_name, cols_field_name, col_key)
+        return unlocalize_entries(self, entries_field_name, cols_field_name, col_key, _aligned=_aligned)
 
     def to_matrix_table(self, row_key, col_key, row_fields=(), col_fields=(), n_partitions=None):
         from .matrixtable import to_matrix_table
@@ -358,17 +358,25 @@ class Table:
         return table
 
     @classmethod
-    def _generate(cls, contexts, globals, partitions, rowfn):
-        """Generate rows lazily from partition contexts and singleton globals."""
-        contexts, globals = as_expr(contexts), as_expr(globals)
-        if not isinstance(contexts.dtype, tarray) or not isinstance(globals.dtype, tstruct):
-            raise TypeError("_generate requires array contexts and struct globals")
-        _validate_n(partitions, "partitions", positive=True)
-        singleton = range_table(0).annotate_globals(**{n: globals[n] for n in globals.dtype})
-        bound_globals = singleton.index_globals()
-        rows = contexts.flatmap(lambda context: as_expr(rowfn(context, bound_globals)))
-        return cls.parallelize(rows, n_partitions=partitions,
-                               globals={n: bound_globals[n] for n in globals.dtype})
+    def _generate_rows(cls, n, partitions, batch_size, globals, rowfn):
+        """Stream generated rows with explicitly supplied random context words.
+
+        rowfn receives the indexed source and returns (row, context_words).
+        The words completely determine row RNG identity; normal projection
+        must not prepend an additional row ordinal.
+        """
+        from .randomness import bind_context
+        native = _native_session().range_table(n, partitions, batch_size)
+        source = cls(native.with_keys([]), tstruct(idx=tint32)).annotate_globals(**globals)
+        row, context = rowfn(source)
+        bound = bind_context(row.to_ir(), [word.to_ir() for word in context])
+        row = Expression(row.dtype, source, _IR(bound, row._global_refs, row._lookup_refs,
+                                               row_indexed=True))
+        expressions = [row[name] for name in row.dtype]
+        native = source._native.project(
+            _native_projection([[name, expr.to_ir()] for name, expr in builtins.zip(row.dtype, expressions)]),
+            _global_bindings(expressions))
+        return cls(native, row.dtype)
 
     @classmethod
     def _parallelize_expression(cls, rows, schema, key, n_partitions, globals):

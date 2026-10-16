@@ -294,8 +294,9 @@ impl NativeSession {
         })
     }
 
-    fn range_table(&self, n: usize, n_partitions: usize) -> PyResult<NativeTable> {
-        let ir = TableIR::range(n, n_partitions).map_err(table_error)?;
+    #[pyo3(signature = (n, n_partitions, batch_size=65536))]
+    fn range_table(&self, n: usize, n_partitions: usize, batch_size: usize) -> PyResult<NativeTable> {
+        let ir = TableIR::range_batched(n, n_partitions, batch_size).map_err(table_error)?;
         Ok(NativeTable {
             runtime: self.runtime.clone(),
             ir,

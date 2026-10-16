@@ -978,7 +978,7 @@ pub(crate) fn prepare_legacy(table: TableRef) -> BoxFuture<'static, Result<Prepa
             TableNode::Repartition {child,n,strategy}=> {
                 // Hail's Range simplification can regenerate any requested layout
                 // without moving input rows, including a naive/coalesce increase.
-                if let TableNode::Range {n:rows,..}=child.node(){return prepare_legacy(TableIR::range(*rows,*n)?).await;}
+                if let TableNode::Range {n:rows,batch_size,..}=child.node(){return prepare_legacy(TableIR::range_batched(*rows,*n,batch_size.get())?).await;}
                 let mut input=prepare_legacy(child.clone()).await?;
                 if *strategy!=RepartitionStrategy::Shuffle {
                     let counts=if *strategy==RepartitionStrategy::NaiveCoalesce {vec![0;input.parts.len()]} else {input.partition_counts().await?};

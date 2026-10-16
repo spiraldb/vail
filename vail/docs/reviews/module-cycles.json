@@ -374,6 +374,29 @@
       ],
       "reports": [
         "vail/docs/reviews/random-cost.json"
+      ],
+      "merged_commit": "8f8030f1"
+    },
+    {
+      "module": "Vail Balding\u2013Nichols simulation, sampling and bounded row generation adapters",
+      "reviewed_base": "8f8030f1",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "validate int32 counts before defaults/allocations and use exact partition arithmetic",
+        "require finite supported population/FST parameters and stably rescale overflowed categorical totals without changing ordinary seeded rounding",
+        "validate realized ancestral frequencies and handle endpoint fixation lazily; correct beta parameter documentation",
+        "replace unavailable upstream fixtures/private comparisons with public seeded goldens, moments, replay and errors",
+        "stream bounded native range batches with explicit original logical partition/local RNG identities",
+        "push head demand through order/cardinality-preserving row projections and global attachment while preserving original captures and prefix scan values",
+        "carry simulation alignment proof to Matrix construction so redundant filtering cannot block early demand"
+      ],
+      "validation": [
+        "220 public Python tests +10 subtests passed (simulation/range/expression inputs/partition operations/randomness/Matrix/aggregate initialization/tail)",
+        "31 public scan tests passed",
+        "63 Rust table tests passed (49 library +14 integration)"
+      ],
+      "reports": [
+        "vail/docs/reviews/simulation-cost.json"
       ]
     }
   ],

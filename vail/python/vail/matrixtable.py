@@ -2318,7 +2318,7 @@ def read_matrix_table(
     return result
 
 
-def unlocalize_entries(table, entries_field_name, cols_field_name, col_key):
+def unlocalize_entries(table, entries_field_name, cols_field_name, col_key, *, _aligned=False):
     """Inverse of localization, retaining missing structs as filtered cells."""
     from . import len as length, range as array_range, case
 
@@ -2379,7 +2379,10 @@ def unlocalize_entries(table, entries_field_name, cols_field_name, col_key):
     core = core.select_globals(
         **{n: globals[n] for n in table._global_schema if n != cols_field_name}
     )
-    return MatrixTable(MatrixIR(core, columns, row_key=table._keys, col_key=col_key))
+    # Internal generators can establish alignment by construction: each row's
+    # entry count equals the shared column count, in the same physical order.
+    return MatrixTable(MatrixIR(core, columns, row_key=table._keys, col_key=col_key,
+                                _aligned=_aligned))
 
 
 class GroupedMatrixTable:

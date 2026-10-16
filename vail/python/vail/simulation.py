@@ -7,7 +7,8 @@ and native call construction. All random draws remain lazy expressions.
 """
 from __future__ import annotations
 
-import itertools
+import math
+from numbers import Real
 from logging import info
 from typing import List, Optional, Union
 import vail as hl
@@ -137,7 +138,7 @@ def balding_nichols_model(
         \end{aligned}
 
     The beta distribution by its mean and variance above; the usual parameters
-    are :math:`a = (1 - p) \frac{1 - F}{F}` and :math:`b = p \frac{1 - F}{F}` with
+    are :math:`a = p \frac{1 - F}{F}` and :math:`b = (1 - p) \frac{1 - F}{F}` with
     :math:`F = F_k` and :math:`p = p_m`.
 
     The resulting dataset has the following fields.
@@ -188,17 +189,20 @@ def balding_nichols_model(
         Number of variants.
     n_partitions : :obj:`int`, optional
         Number of partitions.
-        Default is 1 partition per million entries or 8, whichever is larger.
+        Default is one partition per 128 * 1024 * 1024 entries or eight,
+        whichever is larger, capped at the number of variants.
     pop_dist : :obj:`list` of :obj:`float`, optional
         Unnormalized population distribution, a list of length
-        `n_populations` with non-negative values.
+        `n_populations` with finite non-negative values and at least one positive value.
         Default is ``[1, ..., 1]``.
     fst : :obj:`list` of :obj:`float`, optional
         :math:`F_{ST}` values, a list of length `n_populations` with values
-        in (0, 1). Default is ``[0.1, ..., 0.1]``.
+        in (0, 1), with finite concentration ``(1 - fst) / fst``.
+        Default is ``[0.1, ..., 0.1]``.
     af_dist : :class:`.Float64Expression`, optional
         Representing a random function.  Ancestral allele frequency
-        distribution.  Default is :func:`.rand_unif` over the range
+        distribution. Realized values must be defined and finite in [0, 1];
+        endpoints produce deterministic fixation. Default is :func:`.rand_unif` over the range
         `[0.1, 0.9]` with seed 0.
     reference_genome : :class:`str` or :class:`.ReferenceGenome`
         Reference genome to use.
@@ -214,39 +218,55 @@ def balding_nichols_model(
         Simulated matrix table of variants, samples, and genotypes.
 
     """
+    # Native range and array positions are int32. Check counts before using
+    # them for defaults, partition metadata, or population-sized allocations.
+    def count(value, name):
+        if type(value) is not int:
+            raise TypeError(f'{name} must be an integer')
+        if not 1 <= value <= 2**31 - 1:
+            raise ValueError(f'{name} must be positive and fit int32')
+        return value
+
+    for name, value in [('n_populations', n_populations), ('n_samples', n_samples),
+                        ('n_variants', n_variants)]:
+        count(value, name)
+    if type(mixture) is not bool or type(phased) is not bool:
+        raise TypeError('mixture and phased must be bool')
+    if n_partitions is None:
+        n_partitions = min(n_variants, max(8, n_samples * n_variants // (128 * 1024 * 1024)))
+    else:
+        count(n_partitions, 'n_partitions')
+        n_partitions = min(n_partitions, n_variants)
     if pop_dist is None:
-        pop_dist = [1 for _ in range(n_populations)]
-
+        pop_dist = [1] * n_populations
     if fst is None:
-        fst = [0.1 for _ in range(n_populations)]
+        fst = [0.1] * n_populations
 
+    def parameters(values, name):
+        values = list(values)
+        if len(values) != n_populations:
+            raise ValueError(f'{name} must be of length n_populations={n_populations}')
+        if any(isinstance(value, bool) or not isinstance(value, Real) for value in values):
+            raise TypeError(f'{name} values must be numeric')
+        try:
+            values = [float(value) for value in values]
+        except OverflowError as error:
+            raise ValueError(f'{name} values must be finite') from error
+        if any(not math.isfinite(value) for value in values):
+            raise ValueError(f'{name} values must be finite')
+        return values
+
+    pop_dist = parameters(pop_dist, 'pop_dist')
+    fst = parameters(fst, 'fst')
+    if any(value < 0 for value in pop_dist) or not any(value > 0 for value in pop_dist):
+        raise ValueError('pop_dist must be nonnegative with at least one positive weight')
+    if any(not 0 < value < 1 for value in fst):
+        raise ValueError('elements of fst must satisfy 0 < x < 1')
+    concentrations = [(1 - value) / value for value in fst]
+    if any(not math.isfinite(value) for value in concentrations):
+        raise ValueError('fst produces an unsupported nonfinite beta concentration')
     if af_dist is None:
         af_dist = hl.rand_unif(0.1, 0.9, seed=0)
-
-    if n_partitions is None:
-        n_partitions = max(8, int(n_samples * n_variants / (128 * 1024 * 1024)))
-
-    # verify args
-    for name, var in {
-        "populations": n_populations,
-        "samples": n_samples,
-        "variants": n_variants,
-        "partitions": n_partitions,
-    }.items():
-        if var < 1:
-            raise ValueError("n_{} must be positive, got {}".format(name, var))
-
-    for name, var in {"pop_dist": pop_dist, "fst": fst}.items():
-        if len(var) != n_populations:
-            raise ValueError(
-                "{} must be of length n_populations={}, got length {}".format(name, n_populations, len(var))
-            )
-
-    if any(x < 0 for x in pop_dist):
-        raise ValueError("pop_dist must be non-negative, got {}".format(pop_dist))
-
-    if any(x <= 0 or x >= 1 for x in fst):
-        raise ValueError("elements of fst must satisfy 0 < x < 1, got {}".format(fst))
 
     # verify af_dist
     af_dist = hl.as_expr(af_dist)
@@ -260,53 +280,58 @@ def balding_nichols_model(
     if af_dist.dtype != tfloat64:
         raise ValueError("af_dist must be a hail function with return type tfloat64.")
 
+    af_dist = hl.bind(lambda value: hl.case(missing_false=True).when(
+        (value >= 0) & (value <= 1), value).or_error(
+        'ancestral allele frequency must be defined, finite and in [0,1]'), af_dist)
+
     info(
         "balding_nichols_model: generating genotypes for {} populations, {} samples, and {} variants...".format(
             n_populations, n_samples, n_variants
         )
     )
 
-    # generate matrix table
-    from numpy import linspace
-
-    n_partitions = min(n_partitions, n_variants)
-    start_idxs = [int(x) for x in linspace(0, n_variants, n_partitions + 1)]
-    idx_bounds = list(itertools.pairwise(start_idxs))
+    # The original generator nested context and row array callbacks. Retain
+    # their exact UID words while streaming rows from a bounded range source.
+    # floor partition bounds invert to ((idx + 1) * partitions - 1) // variants.
+    def generated_row(source):
+        idx = source.idx
+        partition = ((hl.int64(idx) + 1) * n_partitions - 1) // n_variants
+        local = hl.int64(idx) - partition * n_variants // n_partitions
+        row = hl.bind(
+            lambda ancestral: hl.struct(
+                locus=hl.locus_from_global_position(idx, reference_genome),
+                alleles=['A', 'C'],
+                ancestral_af=ancestral,
+                af=hl.literal(concentrations).map(lambda x: hl.if_else(
+                    ancestral * x == 0, 0., hl.if_else(
+                        (1 - ancestral) * x == 0, 1.,
+                        hl.rand_beta(ancestral * x, (1 - ancestral) * x)))),
+                entries=hl.repeat(hl.struct(), n_samples),
+            ), af_dist)
+        return row, [partition, local]
 
     pop_f = hl.rand_dirichlet if mixture else hl.rand_cat
-
-    bn = hl.Table._generate(
-        contexts=idx_bounds,
-        globals=hl.struct(
+    # Preserve ordinary categorical rounding and seeds. Only overflowed totals
+    # need rescaling; finite weights always have a finite positive maximum.
+    sampling_weights = pop_dist
+    if not mixture and not math.isfinite(sum(pop_dist)):
+        largest = max(pop_dist)
+        sampling_weights = [weight / largest for weight in pop_dist]
+    bn = hl.Table._generate_rows(
+        n=n_variants, partitions=n_partitions,
+        # Bound placeholder entries to roughly 64K per produced batch. A row
+        # remains indivisible and therefore requires O(n_samples) storage.
+        batch_size=max(1, min(1024, 65536 // n_samples)),
+        globals=dict(
             bn=hl.struct(
-                n_populations=n_populations,
-                n_samples=n_samples,
-                n_variants=n_variants,
-                n_partitions=n_partitions,
-                pop_dist=pop_dist,
-                fst=fst,
-                mixture=mixture,
-            ),
-            cols=hl.range(n_samples).map(lambda idx: hl.struct(sample_idx=idx, pop=pop_f(pop_dist))),
-        ),
-        partitions=n_partitions,
-        rowfn=lambda idx_range, _: hl.range(idx_range[0], idx_range[1]).map(
-            lambda idx: hl.bind(
-                lambda ancestral: hl.struct(
-                    locus=hl.locus_from_global_position(idx, reference_genome),
-                    alleles=['A', 'C'],
-                    ancestral_af=ancestral,
-                    af=hl.array([(1 - x) / x for x in fst]).map(
-                        lambda x: hl.rand_beta(ancestral * x, (1 - ancestral) * x)
-                    ),
-                    entries=hl.repeat(hl.struct(), n_samples),
-                ),
-                af_dist,
-            )
-        ),
+                n_populations=n_populations, n_samples=n_samples,
+                n_variants=n_variants, n_partitions=n_partitions,
+                pop_dist=pop_dist, fst=fst, mixture=mixture),
+            cols=hl.range(n_samples).map(lambda idx: hl.struct(sample_idx=idx, pop=pop_f(sampling_weights)))),
+        rowfn=generated_row,
     )
 
-    bn = bn._with_keys('locus', 'alleles')._unlocalize_entries('entries', 'cols', ['sample_idx'])
+    bn = bn._with_keys('locus', 'alleles')._unlocalize_entries('entries', 'cols', ['sample_idx'], _aligned=True)
 
     # entry info
     p = hl.sum(bn.pop * bn.af) if mixture else bn.af[bn.pop]

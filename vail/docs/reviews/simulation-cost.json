@@ -1,0 +1,326 @@
+{
+  "base_commit": "8f8030f1",
+  "comparison": "Base Python package versus current Python, both using current release native extension. Native range defaults unchanged; base does not request bounded batches.",
+  "action": "model.head(1).entries().collect()",
+  "child_source": "import json, resource, time\nimport vail as hl\nhl.reset_global_randomness()\nt=time.perf_counter()\nm=hl.balding_nichols_model(2, SAMPLES, VARIANTS, n_partitions=PARTITIONS)\nconstruction=time.perf_counter()-t\nt=time.perf_counter()\nrows=m.head(1).entries().collect()\nprint(json.dumps(dict(construction_seconds=construction, action_seconds=time.perf_counter()-t, peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss, entries=len(rows), genotypes=[x.GT.alleles for x in rows][:4])))\n",
+  "native_sha256": "84b4936f84c33475a22d433b84b7aef7ba08f1d490bfb8998cb62b32182bc64d",
+  "timeout_seconds": 20,
+  "cases": [
+    {
+      "version": "base_python",
+      "n_samples": 64,
+      "n_variants": 100,
+      "n_partitions": 1,
+      "construction_seconds": 0.18158137499995064,
+      "action_seconds": 0.08112716700270539,
+      "peak_rss_bytes": 144752640,
+      "entries": 64,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "base_python",
+      "n_samples": 64,
+      "n_variants": 10000,
+      "n_partitions": 1,
+      "construction_seconds": 0.16499554099573288,
+      "action_seconds": 0.11183799999707844,
+      "peak_rss_bytes": 184336384,
+      "entries": 64,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "base_python",
+      "n_samples": 64,
+      "n_variants": 10000,
+      "n_partitions": 7,
+      "construction_seconds": 0.16303008400427643,
+      "action_seconds": 0.09779491699737264,
+      "peak_rss_bytes": 151437312,
+      "entries": 64,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "base_python",
+      "n_samples": 512,
+      "n_variants": 10000,
+      "n_partitions": 1,
+      "construction_seconds": 0.16859145800117403,
+      "action_seconds": 0.1742748750039027,
+      "peak_rss_bytes": 438583296,
+      "entries": 512,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "streaming",
+      "n_samples": 64,
+      "n_variants": 100,
+      "n_partitions": 1,
+      "construction_seconds": 0.16228425000008428,
+      "action_seconds": 0.06075737499486422,
+      "peak_rss_bytes": 143081472,
+      "entries": 64,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "streaming",
+      "n_samples": 64,
+      "n_variants": 10000,
+      "n_partitions": 1,
+      "construction_seconds": 0.1707403330001398,
+      "action_seconds": 0.07001283299905481,
+      "peak_rss_bytes": 145309696,
+      "entries": 64,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "streaming",
+      "n_samples": 64,
+      "n_variants": 10000,
+      "n_partitions": 7,
+      "construction_seconds": 0.16143483300402295,
+      "action_seconds": 0.06787325000186684,
+      "peak_rss_bytes": 143982592,
+      "entries": 64,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "streaming",
+      "n_samples": 512,
+      "n_variants": 10000,
+      "n_partitions": 1,
+      "construction_seconds": 0.1649130410005455,
+      "action_seconds": 0.06375883400323801,
+      "peak_rss_bytes": 145014784,
+      "entries": 512,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "streaming",
+      "n_samples": 64,
+      "n_variants": 1000000,
+      "n_partitions": 1,
+      "construction_seconds": 0.16044820800016169,
+      "action_seconds": 0.0682919579994632,
+      "peak_rss_bytes": 144064512,
+      "entries": 64,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "version": "streaming",
+      "n_samples": 512,
+      "n_variants": 1000000,
+      "n_partitions": 7,
+      "construction_seconds": 0.171723874998861,
+      "action_seconds": 0.06812962499679998,
+      "peak_rss_bytes": 146817024,
+      "entries": 512,
+      "genotypes": [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    }
+  ],
+  "full_model_child_source": "import json,time,resource\nimport vail as hl\nhl.reset_global_randomness()\nm=hl.balding_nichols_model(2,64,VARIANTS,n_partitions=PARTITIONS)\nt=time.perf_counter(); calls=m.GT.collect()\nprint(json.dumps(dict(action_seconds=time.perf_counter()-t,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,entries=len(calls),alternate_alleles=sum(sum(c.alleles) for c in calls))))\n",
+  "full_model_cases": [
+    {
+      "n_variants": 100,
+      "n_samples": 64,
+      "n_partitions": 1,
+      "action_seconds": 0.11256887500348967,
+      "peak_rss_bytes": 151207936,
+      "entries": 6400,
+      "alternate_alleles": 6145
+    },
+    {
+      "n_variants": 1000,
+      "n_samples": 64,
+      "n_partitions": 1,
+      "action_seconds": 0.21338516700052423,
+      "peak_rss_bytes": 177143808,
+      "entries": 64000,
+      "alternate_alleles": 63906
+    },
+    {
+      "n_variants": 1000,
+      "n_samples": 64,
+      "n_partitions": 7,
+      "action_seconds": 0.3088481660015532,
+      "peak_rss_bytes": 187629568,
+      "entries": 64000,
+      "alternate_alleles": 65041
+    }
+  ],
+  "limitations": [
+    "Measurements are single bounded runs, not a statistical performance estimate.",
+    "Old-Python comparison uses the same final native extension, including generic head demand pushdown; it is not an old-native baseline.",
+    "A complete simulation still produces O(n_variants*n_samples) genotypes. A row and population/sample globals remain indivisible.",
+    "Source batches bound generated rows; no universal hard cap is claimed for arbitrary downstream joins."
+  ]
+}
