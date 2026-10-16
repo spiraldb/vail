@@ -121,8 +121,8 @@ async fn oversized_batches_split_at_row_limit_and_unkeyed_order_is_persisted() {
     .unwrap();
     assert_eq!(files(&root).len(), 4);
     let read = read_local(root.to_str().unwrap()).await.unwrap();
-    assert_eq!(read.partitions.len(), 3);
-    assert!(read.partitions[0].is_empty() && read.partitions[2].is_empty());
+    assert_eq!(read.partitions.len(), 4);
+    assert!(read.partitions.iter().all(|partition| !partition.is_empty()));
     assert_eq!(values(read.partitions), vec![9, 1, 8, 2, 7, 3, 6]);
 }
 
@@ -346,7 +346,7 @@ async fn partition_stream_writes_overlap_and_descriptor_restores_partition_order
             .iter()
             .map(|partition| partition.iter().map(RecordBatch::num_rows).sum::<usize>())
             .collect::<Vec<_>>(),
-        vec![2, 2]
+        vec![1, 1, 1, 1]
     );
     assert_eq!(values(read.partitions), vec![7, 7, 3, 3]);
     assert_eq!(files(&root).len(), 4);
@@ -416,7 +416,7 @@ async fn partition_writer_drains_more_than_one_worker_wave() {
             .iter()
             .map(|partition| partition.iter().map(RecordBatch::num_rows).sum::<usize>())
             .collect::<Vec<_>>(),
-        vec![2; 40]
+        vec![1; 80]
     );
     assert_eq!(
         values(read.partitions),

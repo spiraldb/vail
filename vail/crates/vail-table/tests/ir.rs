@@ -130,7 +130,7 @@ async fn write_streams_transformed_rows_into_rolled_files() {
         .unwrap();
     let read = TableIR::read(path.to_str().unwrap()).await.unwrap();
     assert_eq!(read.known_count(), Some(16));
-    assert_eq!(read.known_n_partitions(), Some(2));
+    assert_eq!(read.known_n_partitions(), Some(6));
     let collected = read.collect_partitions().await.unwrap();
     let values = collected
         .iter()

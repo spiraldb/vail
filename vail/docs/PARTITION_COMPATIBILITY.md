@@ -34,6 +34,25 @@ authorized as part of recording this decision. Other API details, including
 `n_partitions()`, repartition/coalesce hints, and partition-stream operations,
 require a separate decision; this entry does not silently remove or redefine them.
 
+## File-aligned reads (2026-10-16)
+
+On opening a Viceberg snapshot, Vail derives execution partitions from the
+ordered physical data files, one nonempty file per task. Persisted writer
+partition counts are validated against the snapshot total but do not determine
+read parallelism. Empty writer partitions disappear; an empty table retains one
+empty execution partition. This does not rewrite existing snapshots.
+
+Concatenating tasks in manifest order preserves table row order. Each task reads
+its own file range, and interval candidate selection and certified key bounds
+use the same execution layout. Splitting a file into smaller overlapping read
+tasks is intentionally avoided because it can decode the same file repeatedly.
+The existing bounded execution scheduler controls concurrent tasks; file count
+is not a promise that every file runs simultaneously. A single large file still
+has a single read task.
+
+This implements the reader-layout part of the decision above. Removing legacy
+partition-selection APIs and improving single-file parallelism are separate work.
+
 ## Historical Hail compatibility research
 
 The remainder records prior observations and implementation state. Where it

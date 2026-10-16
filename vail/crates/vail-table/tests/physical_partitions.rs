@@ -69,7 +69,7 @@ async fn read_partition_runs_without_any_unrelated_data_files() {
     let tmp = tempfile::tempdir().unwrap();
     let path = tmp.path().join("table");
     let path = path.to_str().unwrap();
-    TableIR::range(12, 3)
+    TableIR::range(12, 1)
         .unwrap()
         .write_with_options(
             path,
@@ -96,10 +96,10 @@ async fn read_partition_runs_without_any_unrelated_data_files() {
     let table = TableIR::read(path).await.unwrap();
     let prepared = partitioned::prepare(table).await.unwrap();
     let plan = prepared.physical_plan();
-    assert_eq!(plan.output_partitioning().partition_count(), 3);
+    assert_eq!(plan.output_partitioning().partition_count(), 6);
     assert_eq!(
-        values(plan.execute(1, Arc::new(TaskContext::default())).unwrap()).await,
-        vec![4, 5, 6, 7]
+        values(plan.execute(2, Arc::new(TaskContext::default())).unwrap()).await,
+        vec![4, 5]
     );
     assert!(
         plan.execute(0, Arc::new(TaskContext::default()))

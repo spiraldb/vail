@@ -631,7 +631,7 @@ impl LocalRead {
             .ok_or_else(|| StorageError::Invalid("ordered fragment index missing".into()))
     }
 
-    /// Certified full-key bounds for each original reader partition. The
+    /// Certified full-key bounds for each file-aligned execution partition. The
     /// descriptor records partition row counts while the fragment index records
     /// inclusive file key bounds; intersecting those two ordinal layouts gives
     /// conservative bounds without opening a data file.
@@ -668,7 +668,7 @@ impl LocalRead {
             .collect()
     }
 
-    /// Typed Arrow view of each original source partition's certified key
+    /// Typed Arrow view of each file-aligned source partition's certified key
     /// bounds. Components are one-row arrays in key-field order.
     pub fn partition_typed_key_bounds(
         &self,
@@ -701,7 +701,7 @@ impl LocalRead {
         )
     }
 
-    /// Read one logical partition by its original row ordinal range. Only
+    /// Read one file-aligned execution partition by its snapshot row ordinal range. Only
     /// physical files intersecting this partition are opened, so requesting a
     /// later partition does not scan or decode earlier partition files.
     pub fn partition_batches(
@@ -1002,7 +1002,7 @@ fn partition_bounds_from_plan(
 /// snapshot read plan. Data files remain unopened until a stream is consumed.
 pub async fn open_local(path: &str) -> Result<LocalRead> {
     let root = directory(path)?;
-    let entry: Entry = serde_json::from_slice(&fs::read(root.join(ENTRY))?)?;
+    let mut entry: Entry = serde_json::from_slice(&fs::read(root.join(ENTRY))?)?;
     if entry.version != 2 {
         return Err(StorageError::Unsupported(
             "local table version 1 used byte-encoded ordered keys; rewrite the table with the Arrow-typed index format".into(),
@@ -1022,7 +1022,6 @@ pub async fn open_local(path: &str) -> Result<LocalRead> {
     let plan =
         std::sync::Arc::new(super::load_snapshot_read_plan(&table, snapshot_id, true).await?);
     let descriptor = plan.descriptor.clone();
-    let typed_partition_bounds = partition_bounds_from_plan(&plan, &entry.partition_rows)?;
     let keys = descriptor
         .semantics
         .key_field_ids
@@ -1073,6 +1072,22 @@ pub async fn open_local(path: &str) -> Result<LocalRead> {
             "partition row counts differ from snapshot".into(),
         ));
     }
+    // Writer partitions are not an execution contract. Each ordered physical
+    // file becomes an independent task, avoiding both serial multi-file reads
+    // and repeated whole-file decoding by overlapping ordinal slices.
+    entry.partition_rows = plan
+        .files
+        .iter()
+        .filter(|file| file.identity.row_count != 0)
+        .map(|file| {
+            usize::try_from(file.identity.row_count)
+                .map_err(|_| StorageError::Invalid("file row count exceeds address space".into()))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    if entry.partition_rows.is_empty() {
+        entry.partition_rows.push(0);
+    }
+    let typed_partition_bounds = partition_bounds_from_plan(&plan, &entry.partition_rows)?;
     if entry.empty_row && (descriptor.semantics.row_type != json!([]) || !keys.is_empty()) {
         return Err(StorageError::Invalid("invalid empty row encoding".into()));
     }
@@ -1202,7 +1217,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn ordinal_partition_reads_open_only_overlapping_duplicate_key_files() {
+    async fn file_partitions_split_one_writer_partition_and_prune_unrelated_files() {
         let dir = tempfile::tempdir().unwrap();
         let root = dir.path().join("partition-read");
         let schema = Arc::new(Schema::new(vec![
@@ -1223,9 +1238,7 @@ mod tests {
         let input = futures::stream::iter(vec![
             Ok(PartitionEvent::StartPartition),
             Ok(PartitionEvent::Batch(batch(vec![0, 1, 2, 3]))),
-            Ok(PartitionEvent::StartPartition),
             Ok(PartitionEvent::Batch(batch(vec![4, 5, 6, 7]))),
-            Ok(PartitionEvent::StartPartition),
             Ok(PartitionEvent::Batch(batch(vec![8, 9, 10, 11]))),
         ])
         .boxed();
@@ -1245,23 +1258,39 @@ mod tests {
         .unwrap();
 
         let read = open_local(root.to_str().unwrap()).await.unwrap();
-        let clone = read.clone();
-        assert!(std::sync::Arc::ptr_eq(&read.plan, &clone.plan));
         assert_eq!(read.field_ids(), &[1, 2]);
-        let snapshot_id = read.descriptor.snapshot_id;
-        let descriptor = read.descriptor.clone();
+        let snapshot_id = read.descriptor().snapshot_id;
+        let descriptor = read.descriptor().clone();
         assert!(descriptor.files.iter().all(|file| file.sha256.is_none()));
         assert_eq!(
             descriptor.files.len(),
             6,
-            "each 4-row partition spans two files"
+            "one writer partition is flushed into six files"
         );
+        assert_eq!(read.partition_rows(), &[2, 2, 2, 2, 2, 2]);
+        let all = read_local(root.to_str().unwrap()).await.unwrap();
+        let values = all
+            .partitions
+            .iter()
+            .flatten()
+            .flat_map(|batch| {
+                batch
+                    .column(1)
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap()
+                    .values()
+                    .to_vec()
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(values, (0..12).collect::<Vec<_>>());
+        assert_eq!(all.partitions.len(), 6);
         let index_path = crate::local_path(descriptor.index_path.as_deref().unwrap()).unwrap();
         fs::write(&index_path, b"changed after open").unwrap();
         assert_eq!(read.index_binding().unwrap().snapshot_id, snapshot_id);
 
-        // A later file is absent, but reading partition zero only opens files
-        // whose descriptor row offsets overlap [0, 4).
+        // A later file is absent, but execution partition zero opens only
+        // its own file, whose snapshot row range is [0, 2).
         let later = crate::local_path(&descriptor.files[5].path).unwrap();
         assert!(later.exists(), "descriptor path {:?} does not exist", later);
         fs::remove_file(later).unwrap();
@@ -1289,7 +1318,7 @@ mod tests {
                 PartitionEvent::StartPartition => None,
             })
             .collect::<Vec<_>>();
-        assert_eq!(projected_batches.len(), 2);
+        assert_eq!(projected_batches.len(), 1);
         assert_eq!(projected_batches[0].schema().field(0).name(), "v");
         assert_eq!(projected_batches[0].num_columns(), 1);
         let projected_interval = read
@@ -1304,7 +1333,7 @@ mod tests {
             read.candidate_partitions(std::slice::from_ref(&query))
                 .await
                 .unwrap(),
-            vec![0, 1, 2]
+            vec![0, 1, 2, 3, 4, 5]
         );
         let mut first = read.partition_batches(0);
         let mut first_values = Vec::new();
@@ -1318,7 +1347,7 @@ mod tests {
                 first_values.extend((0..values.len()).map(|i| values.value(i)));
             }
         }
-        assert_eq!(first_values, vec![0, 1, 2, 3]);
+        assert_eq!(first_values, vec![0, 1]);
         let indexed_first = read
             .interval_batches_in_rows(std::slice::from_ref(&query), 0..4)
             .try_collect::<Vec<_>>()
@@ -1336,7 +1365,7 @@ mod tests {
         // removed. Its duplicated keys do not affect ordinal selection.
         let earlier = crate::local_path(&descriptor.files[0].path).unwrap();
         fs::remove_file(earlier).unwrap();
-        let mut second = read.partition_batches(1);
+        let mut second = read.partition_batches(2);
         let mut second_values = Vec::new();
         while let Some(event) = second
             .try_next()
@@ -1352,7 +1381,7 @@ mod tests {
                 second_values.extend((0..values.len()).map(|i| values.value(i)));
             }
         }
-        assert_eq!(second_values, vec![4, 5, 6, 7]);
+        assert_eq!(second_values, vec![4, 5]);
         let indexed_middle = read
             .interval_batches_in_rows(std::slice::from_ref(&query), 4..8)
             .try_collect::<Vec<_>>()
@@ -1391,7 +1420,47 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn ordinal_partition_read_preserves_empty_partition_events() {
+    async fn empty_snapshot_has_one_empty_execution_partition() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("empty-table");
+        let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, false)]));
+        let input = futures::stream::iter(vec![
+            Ok(PartitionEvent::StartPartition),
+            Ok(PartitionEvent::StartPartition),
+        ])
+        .boxed();
+        write_local_stream(
+            root.to_str().unwrap(),
+            false,
+            schema,
+            input,
+            json!([["x", "int32"]]),
+            vec![],
+            WriteOptions::default(),
+        )
+        .await
+        .unwrap();
+        let read = open_local(root.to_str().unwrap()).await.unwrap();
+        assert_eq!(read.partition_rows(), &[0]);
+        let events = read
+            .partition_batches(0)
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+        assert_eq!(events.len(), 1);
+        assert!(matches!(events[0], PartitionEvent::StartPartition));
+        assert_eq!(
+            read_local(root.to_str().unwrap())
+                .await
+                .unwrap()
+                .partitions
+                .len(),
+            1
+        );
+    }
+
+    #[tokio::test]
+    async fn file_partitions_discard_empty_writer_partitions() {
         let dir = tempfile::tempdir().unwrap();
         let root = dir.path().join("empty-partitions");
         let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Int32, false)]));
@@ -1418,18 +1487,25 @@ mod tests {
         .unwrap();
 
         let read = open_local(root.to_str().unwrap()).await.unwrap();
-        assert_eq!(read.partition_rows(), &[0, 2, 0]);
-        for partition in [0, 2] {
-            let events = read
-                .partition_batches(partition)
-                .try_collect::<Vec<_>>()
-                .await
-                .unwrap();
-            assert_eq!(events.len(), 1);
-            assert!(matches!(events[0], PartitionEvent::StartPartition));
-        }
+        assert_eq!(read.partition_rows(), &[2]);
+        let events = read
+            .partition_batches(0)
+            .try_collect::<Vec<_>>()
+            .await
+            .unwrap();
+        assert!(matches!(events[0], PartitionEvent::StartPartition));
+        assert_eq!(
+            events
+                .iter()
+                .filter_map(|event| match event {
+                    PartitionEvent::Batch(batch) => Some(batch.num_rows()),
+                    _ => None,
+                })
+                .sum::<usize>(),
+            2
+        );
         assert!(
-            read.partition_batches(3)
+            read.partition_batches(1)
                 .try_collect::<Vec<_>>()
                 .await
                 .is_err()
