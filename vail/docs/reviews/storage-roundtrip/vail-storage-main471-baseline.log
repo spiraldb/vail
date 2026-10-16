@@ -1,0 +1,22 @@
+FF                                                                       [100%]
+=================================== FAILURES ===================================
+____ test_tagged_types_survive_execution_export_and_storage[dtype4-value4] _____
+vail/python/tests/test_arrow_type_metadata.py:70: in test_tagged_types_survive_execution_export_and_storage
+    table.write(path)
+vail/python/vail/__init__.py:521: in write
+    self._native.write(os.fspath(output), overwrite)
+E   RuntimeError: Unexpected => Vortex error, source: Other error: ListLayoutStrategy needs at least one chunk
+___________ test_mixed_and_nested_keys_and_missing_values_round_trip ___________
+vail/python/tests/test_computed_keys_order.py:31: in test_mixed_and_nested_keys_and_missing_values_round_trip
+    assert keyed._same(hl.read_table(path))
+E   AssertionError: assert False
+E    +  where False = _same(<vail.Table object at 0x10af0a600>)
+E    +    where _same = <vail.Table object at 0x10baa4230>._same
+E    +    and   <vail.Table object at 0x10af0a600> = <function read_table at 0x1070711c0>(PosixPath('/private/var/folders/2l/yzgrtp5s1kqgxk5nsw8dc4hw0000gn/T/pytest-of-danielking/pytest-399/test_mixed_and_nested_keys_and0/computed.viceberg'))
+E    +      where <function read_table at 0x1070711c0> = hl.read_table
+----------------------------- Captured stdout call -----------------------------
+Table._same: row values, keys, or row counts differ
+=========================== short test summary info ============================
+FAILED vail/python/tests/test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]
+FAILED vail/python/tests/test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip
+2 failed in 2.11s

@@ -1,0 +1,18 @@
+{
+  "base": "471f8479b0544fd6d0f27abf1c05c1f027906594",
+  "code_candidate": "8c66da27",
+  "toolchain": "1.98.0",
+  "cargo_target_dir": "/Users/danielking/projects/vail/vail/target",
+  "rustflags": [
+    "-C",
+    "link-arg=-undefined",
+    "-C",
+    "link-arg=dynamic_lookup"
+  ],
+  "deployment_target": "11.0",
+  "command": "cargo test --release -j4 -p vail-storage --test struct_validity -- --nocapture",
+  "patch_paths": "Current checked-in workspace defaults; previous temporary cache-path override removed after interruption",
+  "boundary_before": "Arrow conversion passes; raw Vortex root projection loses present-parent bit",
+  "boundary_after": "Reader fix passes root/select and non-strict expressions; final added raw filter checks included in subsequent full validation",
+  "current_validation_status": "Python wheel build in progress; broader native/public validation pending"
+}

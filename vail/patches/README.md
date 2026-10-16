@@ -43,8 +43,8 @@ all-missing batch); rechunking may then emit no chunks. Like the existing flat
 and chunked writers, the list strategy writes a typed zero-row chunked layout
 with no segments. A one-chunk lookahead preserves the original stream and
 sequence IDs for nonempty input. No artificial element or validity is added.
-The matching native empty-stream contract test and public nested collection
-round-trip tests cover this delta.
+Public persisted nested collection round-trip tests cover empty nested streams
+and retain their value/type assertions at the table boundary.
 
 # Vortex nullable struct projection
 

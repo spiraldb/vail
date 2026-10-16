@@ -1,0 +1,18 @@
+{
+  "base": "471f8479b0544fd6d0f27abf1c05c1f027906594",
+  "branch": "dk/storage-roundtrip-correctness",
+  "toolchain": "1.98.0",
+  "cargo_target_dir": "/Users/danielking/projects/vail/vail/target",
+  "rustflags": [
+    "-C",
+    "link-arg=-undefined",
+    "-C",
+    "link-arg=dynamic_lookup"
+  ],
+  "deployment_target": "11.0",
+  "command": "cargo test --release -j4 -p vail-storage --test struct_validity --config patch.crates-io.vortex-array.path=\"/private/tmp/vail-prev-nonnull/vail/patches/vortex-array\" -- --nocapture",
+  "cache_path_override": "Unchanged Vortex array dependency source at previous main build path, compared byte-for-byte below; changed layout dependency remains current branch.",
+  "vortex_array_inputs_compared": 773,
+  "vortex_array_differences": [],
+  "baseline_native_sha256": "83a0b3ad91b4224cc13e00435d3bd89e75e3f5fc3a971311c458371837f23aa5"
+}

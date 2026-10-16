@@ -1,0 +1,18 @@
+.........................F                                               [100%]
+=================================== FAILURES ===================================
+_______ test_sliced_arrow_struct_validity_across_batches_and_key_filter ________
+vail/python/tests/test_struct_parent_validity_storage.py:90: in test_sliced_arrow_struct_validity_across_batches_and_key_filter
+    table = hl.Table.parallelize(arrow, key="id", n_partitions=2)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/vail-storage-package1/vail/__init__.py:319: in parallelize
+    native = _native_session().parallelize_arrow(as_arrow(arrow_table), n_partitions)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   pyo3_runtime.PanicException: assertion failed: end <= self.len()
+----------------------------- Captured stderr call -----------------------------
+
+thread '<unnamed>' (236372) panicked at /kache/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/arrow-data-59.2.0/src/data.rs:628:9:
+assertion failed: end <= self.len()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+=========================== short test summary info ============================
+FAILED vail/python/tests/test_struct_parent_validity_storage.py::test_sliced_arrow_struct_validity_across_batches_and_key_filter
+1 failed, 25 passed in 3.15s

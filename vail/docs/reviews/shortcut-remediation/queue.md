@@ -1,21 +1,41 @@
 # Architectural remediation queue
 
-Original audit base: `2c02020`; final integration includes main `dc51582f`. This queue separates confirmed costs/correctness defects from
-unproven design concerns. A passing compatibility suite is not an acceptance
-criterion by itself. Each fix needs a stated invariant, general implementation,
-focused correctness/complexity or boundedness evidence, and integration review.
-Module coverage is tracked in `module-audit.json`; pending modules have not yet
-been audited in this pass. Individual agents record findings with file/line evidence.
+Status reconciled against main `471f8479b0544fd6d0f27abf1c05c1f027906594`
+on 2026-10-16. The original module-audit base is `2c02020`. The 134 raw findings
+in `findings.json` overlap and include unmeasured concerns; they are not 134 unique
+confirmed bugs. Original read-depth coverage remains in `module-audit.json`.
+Passing a compatibility suite alone does not close a complexity or ownership issue.
 
-## Known implementation defects: fix now
+## Reviewed and integrated
 
-| ID | Issue | Status / owner | Required architecture |
-| --- | --- | --- | --- |
-| S001 | Stream aggregate-scan recomputes every prefix | Implemented; native shared scan state and native19 integration pass; follow-up review pending | Shared accumulator state; no prefix rescans for bounded-state reducers; preserve RNG and nested scopes. |
-| S002 | VCF export collects the whole matrix into Python | Implemented; public file tests and isolated bounded-memory evidence pass; follow-up review pending | Native bounded batch sink with backpressure and error propagation; only header/sample metadata may be eager. |
-| S003 | Matrix/list reducers duplicate table algorithms | Shared factory and native19 integration pass; follow-up review pending | One configured reducer factory/state contract adapted to row-owned lists and scans; remove per-allele repeated call scans and duplicated numerical semantics. |
-| S004 | General legacy physical compiler and deferred planning bridges | Implemented and native19 validated; required follow-up review pending | One optimized logical tree; semantic extensions consume already-planned children; preserve ordering and RNG without exposing Hail partition identity as a required contract. |
-| S005 | Pure kernels get fresh identities and blanket Volatile flags | Implemented and native19 validated; required follow-up review pending | Stable native identities, accurate effects, and explicit metadata/RNG boundaries; prove folding/reuse is legal. |
+| ID | Issue | Disposition / evidence |
+| --- | --- | --- |
+| S001 | Stream scans recomputed every prefix | Shared incremental native reducer state; reviewed at `71a471e1`, integrated through `dcbaac28`. Public stream API and behavior tests replace private forged IR assertions. |
+| S002 | VCF export collected the matrix into Python | Bounded native sink with batch-bound field access; reviewed/integrated through `dcbaac28`. Historical memory observations remain qualified in the review record. |
+| S003 | Table/list/matrix reducer algorithms were duplicated | Shared configured reducer contracts; reviewed/integrated through `dcbaac28`. Later QC adapters use the same list reducer kernels. |
+| S004 | Deferred physical compilation split planning | One logical tree and explicit retained lowering context/action binding; reviewed/integrated through `dcbaac28`. Runtime costs still queued below. |
+| S005 | Kernel identities/effects blocked lawful reuse | Stable complete native identities/effects and scoped RNG handling; reviewed/integrated through `dcbaac28`. Runtime DAG CSE remains open. |
+| QC follow-up | Per-cell Call decode allocations and unnecessary GetField masks | Reviewed/integrated through `0cbeba43`; see `conformance/runs/20261016-sex-specific-qc/README.md` and `REVIEW.md`. Workload-specific timings do not certify universal matrix performance. |
+| Prev-nonnull follow-up | Non-scalar previous-value scan used expensive window machinery | Reviewed supported-domain streaming path integrated through `471f8479`; see `conformance/runs/20261016-streaming-prev-nonnull/README.md` and `REVIEW.md`. Conservative source capability and summary replay limits remain explicit. |
+
+The initial architecture review and final corrected validation are recorded in
+`REVIEW_HANDOFF.md`, `required-review.json`, and `evidence/upstream20/`.
+The final architecture run had 261 native passes; local Python had 1756 passes
+and two known storage failures. Earlier upstream17/18 counts are superseded by
+the corrected per-test randomness reset; interrupted upstream19 is discarded.
+Those historical results do not certify later changes or close the remaining queue.
+
+## Current storage correctness work
+
+Branch `dk/storage-roundtrip-correctness` starts from main `471f8479`.
+Both defects were reproduced with its matching native extension
+`83a0b3ad91b4224cc13e00435d3bd89e75e3f5fc3a971311c458371837f23aa5`.
+
+| ID | Defect | Status / acceptance |
+| --- | --- | --- |
+| ST001 | Empty nested-list storage write fails with `ListLayoutStrategy needs at least one chunk` | Writer fix implemented; 15 focused public nested-collection cases pass. Full validation/review pending. Preserve empty versus missing lists at every nesting level; support ordinary batch/slice boundaries without sentinel data. |
+| ST002 | A present struct whose children are all missing reads back as a missing parent | Reader fix implemented; raw Vortex boundaries and focused public cases pass. Preserve parent and child validity independently; complete validation/review pending. |
+| ST003 | Nested sliced Arrow input panics in C Stream import | Reproduces on main before storage. Published Arrow60 struct-slice correction backported to pinned59.2; matching native validation pending. Preserve zero-copy buffers; no fixture normalization workaround. |
 
 ## Prior review findings requiring current-code audit
 
@@ -31,78 +51,26 @@ been audited in this pass. Individual agents record findings with file/line evid
 | A008 | Upstream scope excludes filesystem modules but misses Hadoop definitions in mixed modules | Audit and consolidate module+definition policy. Preserve historical reports. |
 | A009 | Independent reporting/selection tools count incompatible scopes | Audit current tools, share policy/outcome schema where necessary and label evidence accurately. |
 
-## Already resolved before this branch
+## Contracts and remaining work
 
-- JSON expression trees and IPC row transport at the PyO3 boundary were replaced
-  in `2c02020` by native expression/type handles and Arrow C Streams. This audit
-  still checks their ownership and cost model; it does not assume the migration
-  certifies all expression/planning paths.
+Native expression/type handles and Arrow C Streams replaced serialized PyO3 IR
+and row transport before this audit. External persisted formats and their metadata
+remain legitimate serialization boundaries. Audit their ownership and cost model
+rather than treating migration itself as a correctness certificate.
 
-## Intentional contracts
+UTF-8 codepoint string semantics and intentional partition divergence remain.
+Exact Hail partition counts/selection/layout are not required. Real file/segment
+pruning must avoid impossible reads; persisted output must remain sorted and
+key-range-disjoint across files, with truthful physical execution metadata.
 
-UTF-8/codepoint string semantics and the documented partition divergence remain
-in force. Avoiding incompatible Hail partition assertions is not a shortcut.
-Vortex pruning must avoid opening impossible segments; persisted output remains
-sorted and key-range-disjoint across files. Do not silently preserve deprecated
-Hail controls as a design requirement.
+Open concerns include runtime shared-DAG evaluation/CSE, repeated action/reset
+work, per-batch scalar IR specialization, Arrow concatenation, segment pushdown,
+lookup/join costs and tiny-query latency. Check current code and consequences
+before classifying historical reports as still-present defects. Upstream missing
+APIs/collection blockers and the phased-BNM fixed-golden mismatch remain explicit;
+the fresh exact-main paired probe establishes that narrow mismatch predates the
+architecture integration, not that all seeded consumers are Hail-equivalent.
 
-## Module-audit additions
-
-The machine-readable [findings queue](findings.json) consolidates each agent report,
-including evidence, confirmed versus unmeasured status, and acceptance criteria.
-These are open work unless explicitly marked fixed and centrally validated.
-Partial audits remain partial in the module inventory.
-
-## Validated development historical candidate10
-
-All five initial remediations are implemented. The final coherent candidate has
-239 native tests passing across 20 binaries and 227 focused planner/matrix/scan/
-randomness tests passing. The full Python suite has 1,343 passes, 2 known storage
-failures, 1 skip, and 19 passing subtests (96.45 seconds). Exact logs and native/source
-hashes are in `evidence/` and `required-review.json`. Passing tests do not close
-the separately queued performance or architectural findings.
-
-The two remaining baseline failures are the Vortex empty-list writer and loss
-of parent validity for a present struct whose children are all missing. The
-remediation's prior replay, scalar capture, type, filter, shuffle and ordering
-failures are fixed in this candidate. Actual file pruning passes a deleted-
-nonmatching-file test with a deleted-matching-file positive read control.
-
-This branch has not updated main. The exact76cbbeb0 follow-up review was delivered
-after user authorization and cleared most findings; R7 public-test replacements
-and the reconciliation with newer main still require validation and review.
-See `REVIEW_HANDOFF.md` and `required-review.json`.
-
-The audit contains 180 reviewed modules/resources and 3 removed modules; the raw
-findings records overlap and are not a count of unique confirmed defects. Known
-open costs include runtime shared-DAG evaluation, repeated globals planning,
-per-operand reset work, mixed-scalar capture specialization per batch, reader
-segment pushdown gaps, and the tiny matrix latency recorded in the findings.
-
-Main advanced independently to `6bce5077d98f61e49f0b7ec9241f855f493b54d3` during
-this work. These results apply to base `2c02020` plus this development branch.
-Reconcile the newer main and revalidate before any final merge approval. The
-only production edits after historical candidate10 validation remove two extra final blank
-lines; `required-review.json` lists them explicitly.
-
-## Integration with newer main
-
-The pending development merge includes main `6bce5077`. Earlier module-audit
-coverage and historical candidate10 results do not certify these additions. Native execution
-merge details are in `merge-execution-audit.json`; fresh coherent runtime evidence
-and exact-revision source review are required before main is updated.
-
-Source investigation disproved the purported RNG compatibility requirement in
-newer main's indexed collection fallback: pinned Hail handles each StreamZip
-input's randomness independently. The fallback preserved an accidental Vail
-rebinding bug. It is removed in the integration in favor of native n-ary zip,
-index-values, and one shared correlation state. See
-`merge-semantic-decisions.json` for source provenance and corrected expectations.
-
-## Concurrent follow-up outside this candidate
-
-Sex-QC profiling identified per-cell packed-call temporary allocations and a
-GetField parent-null Vec<bool> mask even for a non-null parent. The tables agent
-is replacing them with existing stack-backed decoding and Arrow validity/child
-borrowing on its separate development branch. These costs are not fixed or
-claimed accepted by the architectural integration candidate.
+Every new main update requires the standing exact-revision review in `AGENTS.md`,
+including follow-up review after material fixes. Development-branch validation and
+concrete evidence precede that gate; no subagent may update main.

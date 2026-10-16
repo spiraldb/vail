@@ -1,0 +1,60 @@
+warning: multiple methods are never used
+   --> patches/iceberg-rust/crates/iceberg/src/expr/visitors/strict_metrics_evaluator.rs:63:8
+    |
+ 43 | impl<'a> StrictMetricsEvaluator<'a> {
+    | ----------------------------------- methods in this implementation
+...
+ 63 |     fn nan_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^
+...
+ 67 |     fn null_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^
+...
+ 71 |     fn value_count(&self, field_id: i32) -> Option<&u64> {
+    |        ^^^^^^^^^^^
+...
+ 75 |     fn lower_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 79 |     fn upper_bound(&self, field_id: i32) -> Option<&Datum> {
+    |        ^^^^^^^^^^^
+...
+ 83 |     fn contains_nans_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^
+...
+ 90 |     fn contains_nulls_only(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+...
+ 97 |     fn may_contain_null(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^^
+...
+105 |     fn may_contain_nan(&self, field_id: i32) -> bool {
+    |        ^^^^^^^^^^^^^^^
+...
+113 |     fn visit_inequality(
+    |        ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `iceberg` (lib) generated 1 warning
+   Compiling vail-storage v0.1.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/crates/vail-storage)
+    Finished `release` profile [optimized] target(s) in 3.94s
+     Running tests/struct_validity.rs (/Users/danielking/projects/vail/vail/target/release/deps/struct_validity-caf40686f9fc2408)
+
+running 1 test
+
+thread 'vortex_roundtrip_retains_struct_parent_validity' (191783) panicked at crates/vail-storage/tests/struct_validity.rs:55:9:
+assertion `left == right` failed: file projection root
+  left: [true, false, false]
+ right: [true, true, false]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test vortex_roundtrip_retains_struct_parent_validity ... FAILED
+
+failures:
+
+failures:
+    vortex_roundtrip_retains_struct_parent_validity
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p vail-storage --test struct_validity`
