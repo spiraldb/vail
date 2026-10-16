@@ -95,3 +95,33 @@ fn fold_and_scan_accept_alternate_string_storage() {
         }
     }
 }
+
+#[test]
+fn ndarray_constructor_checks_numeric_input_and_declared_rank() {
+    use vail_execution::expressions::{PrimitiveType as P, Type};
+    for (element, rank, valid) in [
+        (P::Int32, 1, true),
+        (P::Float64, 1, true),
+        (P::Str, 1, false),
+        (P::Int32, 2, false),
+    ] {
+        let element = Type::Primitive(element);
+        let schema = Schema::new(vec![Field::new(
+            "a",
+            Type::Array {
+                array: Box::new(element.clone()),
+            }
+            .to_arrow()
+            .unwrap(),
+            true,
+        )]);
+        let expression = Expr::NestedFunction {
+            function: "__vail_ndarray_from_array".into(),
+            args: vec![Expr::Column { name: "a".into() }],
+            dtype: Type::Ndarray {
+                ndarray: Box::new((element, rank)),
+            },
+        };
+        assert_eq!(lower(&expression, &schema).is_ok(), valid);
+    }
+}

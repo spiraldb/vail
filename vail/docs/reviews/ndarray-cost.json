@@ -1,0 +1,176 @@
+{
+  "base_commit": "cac2af62",
+  "baseline_native_sha256": "b2e1ae668c7c992c87bdf2bfbb5cbee53bbcf070445db689f89944d298ad845f",
+  "current_native_sha256": "31dba8e794217bbf48d6714dbf205770be4fe48cca87e77bead026443960aa58",
+  "method": "Fresh subprocess per case, independent complete baseline Python/native package, 10s cap. macOS ru_maxrss bytes; one measurement per case, includes runtime/preparation. Literal input is strided float64 with half n elements; entries action is head(1).",
+  "limitations": [
+    "Generic nested row NumPy conversion still uses Python boxing; direct NumPy literal constructor optimized",
+    "nd.arange baseline fails checked cast rather than providing comparable performance",
+    "BlockMatrix explicit physical block_size unsupported; dimensions/product constrained to int32 source",
+    "No universal bound for full collect/export; head demands tested"
+  ],
+  "cases": [
+    {
+      "mode": "literal",
+      "n": 40000,
+      "version": "baseline",
+      "construction_seconds": 0.1431073329949868,
+      "execution_seconds": 0.018663957998796832,
+      "peak_rss_bytes": 131514368,
+      "check": 399980000.0
+    },
+    {
+      "mode": "literal",
+      "n": 40000,
+      "version": "current",
+      "construction_seconds": 0.13484800000151154,
+      "execution_seconds": 0.012429083995812107,
+      "peak_rss_bytes": 126648320,
+      "check": 399980000.0
+    },
+    {
+      "mode": "literal",
+      "n": 400000,
+      "version": "baseline",
+      "construction_seconds": 0.14373283299937611,
+      "execution_seconds": 0.11064808299852302,
+      "peak_rss_bytes": 146964480,
+      "check": 39999800000.0
+    },
+    {
+      "mode": "literal",
+      "n": 400000,
+      "version": "current",
+      "construction_seconds": 0.13562420800008113,
+      "execution_seconds": 0.11166254200361436,
+      "peak_rss_bytes": 165412864,
+      "check": 39999800000.0
+    },
+    {
+      "mode": "literal",
+      "n": 4000000,
+      "version": "baseline",
+      "construction_seconds": 0.21185033300571376,
+      "execution_seconds": 1.0858524159993976,
+      "peak_rss_bytes": 391888896,
+      "check": 3999998000000.0
+    },
+    {
+      "mode": "literal",
+      "n": 4000000,
+      "version": "current",
+      "construction_seconds": 0.14966341700346675,
+      "execution_seconds": 1.092883958001039,
+      "peak_rss_bytes": 386351104,
+      "check": 3999998000000.0
+    },
+    {
+      "mode": "entries",
+      "n": 1000,
+      "version": "baseline",
+      "construction_seconds": 0.0009751669931574725,
+      "execution_seconds": 0.15915979099372635,
+      "peak_rss_bytes": 130957312,
+      "check": [
+        0,
+        0,
+        2.0
+      ]
+    },
+    {
+      "mode": "entries",
+      "n": 1000,
+      "version": "current",
+      "construction_seconds": 0.0006910000010975637,
+      "execution_seconds": 0.15058024999598274,
+      "peak_rss_bytes": 130859008,
+      "check": [
+        0,
+        0,
+        2.0
+      ]
+    },
+    {
+      "mode": "entries",
+      "n": 10000,
+      "version": "baseline",
+      "construction_seconds": 0.0007788329967297614,
+      "execution_seconds": 0.15078733299742453,
+      "peak_rss_bytes": 133332992,
+      "check": [
+        0,
+        0,
+        2.0
+      ]
+    },
+    {
+      "mode": "entries",
+      "n": 10000,
+      "version": "current",
+      "construction_seconds": 0.0007367910002358258,
+      "execution_seconds": 0.15388545900350437,
+      "peak_rss_bytes": 130220032,
+      "check": [
+        0,
+        0,
+        2.0
+      ]
+    },
+    {
+      "mode": "entries",
+      "n": 100000,
+      "version": "baseline",
+      "construction_seconds": 0.0009145840012934059,
+      "execution_seconds": 0.1682498750014929,
+      "peak_rss_bytes": 182337536,
+      "check": [
+        0,
+        0,
+        2.0
+      ]
+    },
+    {
+      "mode": "entries",
+      "n": 100000,
+      "version": "current",
+      "construction_seconds": 0.0006738750016666017,
+      "execution_seconds": 0.2630543330014916,
+      "peak_rss_bytes": 134086656,
+      "check": [
+        0,
+        0,
+        2.0
+      ]
+    },
+    {
+      "mode": "arange",
+      "n": 1000,
+      "version": "baseline",
+      "error": "ValueError: invalid expression: cannot cast Struct { struct: [(\"__vail_ndarray_data\", Array { array: Primitive(Int32) }), (\"__vail_ndarray_shape\", Array { array: Primitive(Int64) })] } to Ndarray { ndarray: (Primitive(Int32), 1) }"
+    },
+    {
+      "mode": "arange",
+      "n": 1000,
+      "version": "current",
+      "construction_seconds": 0.0001582080003572628,
+      "execution_seconds": 0.15196095799910836,
+      "peak_rss_bytes": 125501440,
+      "check": 499500
+    },
+    {
+      "mode": "arange",
+      "n": 100000,
+      "version": "baseline",
+      "error": "ValueError: invalid expression: cannot cast Struct { struct: [(\"__vail_ndarray_data\", Array { array: Primitive(Int32) }), (\"__vail_ndarray_shape\", Array { array: Primitive(Int64) })] } to Ndarray { ndarray: (Primitive(Int32), 1) }"
+    },
+    {
+      "mode": "arange",
+      "n": 100000,
+      "version": "current",
+      "construction_seconds": 0.0001662499998928979,
+      "execution_seconds": 0.20029745899955742,
+      "peak_rss_bytes": 137773056,
+      "check": 4999950000
+    }
+  ]
+}

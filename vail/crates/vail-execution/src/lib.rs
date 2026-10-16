@@ -27,6 +27,7 @@ mod aggregate_identity;
 pub mod aggregate_contract;
 pub mod aggregates;
 mod array_fold;
+mod ndarray;
 pub mod calls;
 pub mod collect_aggregate;
 mod conditionals;

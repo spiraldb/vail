@@ -937,6 +937,11 @@ def literal(value, dtype=None):
     elif not _valid_type(dtype):
         raise TypeError(f"literal dtype must be a Vail type, found {dtype!r}")
     native_type = type_to_wire(dtype)
+    if value is not None and isinstance(dtype, tndarray):
+        import numpy as np
+        if isinstance(value, np.ndarray):
+            from .arrow import ndarray_literal_arrow
+            return Expression(dtype, None, NativeExpr.literal(native_type, ndarray_literal_arrow(value, dtype)))
     if value is not None and not isinstance(dtype, _PrimitiveType) or dtype == tcall and value is not None:
         from .arrow import rows_to_arrow
         value = rows_to_arrow([{"value": value}], tstruct(value=dtype))

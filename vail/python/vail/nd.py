@@ -18,18 +18,11 @@ def array(value, dtype=None):
 
 def arange(start, stop=None, step=1):
     """Build a lazy one-dimensional int32 ndarray from a range expression."""
-    from .expressions import array, cast, struct, is_defined, or_missing
     from .streams import stream_range
-    from .collections import length
     from .types import type_to_wire
 
     values = stream_range(start, stop, step).to_array()
-    # Ndarray uses the same Arrow struct storage as these two fields. Casting
-    # only attaches the logical rank and element type metadata; range creation
-    # and array length remain native DataFusion expressions.
-    packed = struct(__vail_ndarray_data=values,
-                    __vail_ndarray_shape=array([cast(length(values), tint64)]))
-    result = Expression(tndarray(tint32, 1), values.source,
-                        {"op": "cast", "dtype": type_to_wire(tndarray(tint32, 1)),
-                         "value": packed.to_ir()})
-    return or_missing(is_defined(values), result)
+    return Expression(tndarray(tint32, 1), values.source,
+                      {"op": "nested_function", "function": "__vail_ndarray_from_array",
+                       "args": [values.to_ir()],
+                       "dtype": type_to_wire(tndarray(tint32, 1))})

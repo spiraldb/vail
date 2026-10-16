@@ -4403,6 +4403,7 @@ fn same_collection_storage(left: &DataType, right: &DataType) -> bool {
 
 pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarUDF>, ExprError> {
     use datafusion_functions_nested as nested;
+    if name == "__vail_ndarray_from_array" { return Ok(crate::ndarray::udf()); }
     if let Some(function) = crate::matrix_transpose::udf(name) {
         return Ok(function);
     }

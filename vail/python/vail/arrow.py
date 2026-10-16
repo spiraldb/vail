@@ -156,9 +156,21 @@ def _logical_converter(dtype, *, key=False):
         element_type = dtype.element_type
         element = _logical_converter(element_type)
         numpy_type = str(element_type)
-        return _nullable(lambda value: np.asarray(
-            [element(v) for v in value["__vail_ndarray_data"]], dtype=numpy_type,
-        ).reshape(value["__vail_ndarray_shape"]))
+        rank = dtype.ndim
+        def localize_ndarray(value):
+            data, shape = value["__vail_ndarray_data"], value["__vail_ndarray_shape"]
+            if data is None or shape is None:
+                raise ValueError("ndarray data and shape must be defined")
+            if len(shape) != rank:
+                raise ValueError("ndarray rank does not match dtype")
+            if any(type(size) is not int or size < 0 for size in shape):
+                raise ValueError("ndarray shape must contain nonnegative integers")
+            if prod(shape) != len(data):
+                raise ValueError("ndarray data size does not match shape")
+            if numpy_type in ("int32", "int64") and any(v is None for v in data):
+                raise ValueError("integer ndarray elements must be defined")
+            return np.asarray([element(v) for v in data], dtype=numpy_type).reshape(shape)
+        return _nullable(localize_ndarray)
     if isinstance(dtype, tset):
         element = _logical_converter(dtype.element_type, key=True)
         collection = frozenset if key else set
@@ -231,3 +243,20 @@ def dtype_from_arrow(ty):
     except ValueError as error:
         raise TypeError(str(error)) from error
     return type_from_wire(native)
+
+
+def ndarray_literal_arrow(value, dtype):
+    """Snapshot NumPy payload once, then lend its contiguous storage to Arrow."""
+    import numpy as np
+    pa = _pa()
+    owned = np.array(value, dtype=str(dtype.element_type), order='C', copy=True)
+    if owned.ndim != dtype.ndim:
+        raise ValueError('ndarray rank does not match dtype')
+    storage = arrow_type(dtype)
+    data_field, shape_field = storage[0], storage[1]
+    data = pa.ListArray.from_arrays(pa.array([0, owned.size], type=pa.int32()),
+                                    pa.array(owned.reshape(-1), type=data_field.type.value_type),
+                                    type=data_field.type)
+    shape = pa.array([list(owned.shape)], type=shape_field.type)
+    array = pa.StructArray.from_arrays([data, shape], fields=list(storage))
+    return pa.Table.from_arrays([array], names=['value'])
