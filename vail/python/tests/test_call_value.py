@@ -35,19 +35,18 @@ def test_call_equality_with_expressions_and_phase_order():
     assert hl.eval(expression == value)
 
 
-@pytest.mark.parametrize('word', [6, 7, 8, 9, -1, -8, None])
+@pytest.mark.parametrize('fields', [(0,0,3,False),(1,0,0,False),(0,1,1,False),(2,1,2,False),(None,0,2,False)])
 @pytest.mark.parametrize('accessor', ['phase', 'alleles', 'ploidy', 'alternate_count', 'first', 'het', 'hom_var'])
-def test_imported_malformed_call_is_rejected_by_executed_accessors(word, accessor):
+def test_imported_malformed_call_is_rejected_by_executed_accessors(fields, accessor):
     import pyarrow as pa
     from vail.arrow import arrow_type
-    dtype = arrow_type(hl.tcall)
-    calls = pa.StructArray.from_arrays([pa.array([word], type=pa.int32())], fields=list(dtype))
-    table = hl.Table.parallelize(pa.table({'c': calls}))
-    value = {'phase': lambda: table.c.phased, 'alleles': lambda: table.c.alleles,
-             'ploidy': lambda: table.c.ploidy, 'alternate_count': lambda: table.c.n_alt_alleles(),
-             'first': lambda: table.c[0], 'het': lambda: table.c.is_het(),
-             'hom_var': lambda: table.c.is_hom_var()}[accessor]()
-    with pytest.raises((ValueError, RuntimeError), match='Call|call'):
+    dtype=arrow_type(hl.tcall)
+    calls=pa.StructArray.from_arrays([pa.array([value],type=field.type) for value,field in zip(fields,dtype)],fields=list(dtype))
+    table=hl.Table.parallelize(pa.table({'c':calls}))
+    value={'phase':lambda:table.c.phased,'alleles':lambda:table.c.alleles,'ploidy':lambda:table.c.ploidy,
+           'alternate_count':lambda:table.c.n_alt_alleles(),'first':lambda:table.c[0],
+           'het':lambda:table.c.is_het(),'hom_var':lambda:table.c.is_hom_var()}[accessor]()
+    with pytest.raises((ValueError,RuntimeError),match='Call|call'):
         table.select(value=value).collect()
 
 
@@ -56,7 +55,7 @@ def test_imported_parent_missing_call_ignores_invalid_hidden_word():
     from vail.arrow import arrow_type
     dtype = arrow_type(hl.tcall)
     calls = pa.StructArray.from_arrays(
-        [pa.array([8, 21], type=pa.int32())], fields=list(dtype), mask=pa.array([True, False]))
+        [pa.array(v,type=f.type) for v,f in zip([[0,1],[0,0],[3,2],[False,True]],dtype)], fields=list(dtype), mask=pa.array([True, False]))
     table = hl.Table.parallelize(pa.table({'c': calls}))
     rows = table.select(alleles=table.c.alleles, phase=table.c.phased,
                         ploidy=table.c.ploidy, n=table.c.n_alt_alleles(), first=table.c[0]).collect()
@@ -66,7 +65,7 @@ def test_imported_parent_missing_call_ignores_invalid_hidden_word():
 
 @pytest.mark.parametrize('phased', [False, True])
 def test_dynamic_call_construction_missing_values_and_boundaries(phased):
-    pairs = [(0, 32767), (16383, 16384), (1, 0), (None, 1), (1, None)]
+    pairs = [(0, 32767), (65535, 65535), (1, 0), (None, 1), (1, None)]
     table = hl.Table.parallelize([{'a': a, 'b': b} for a, b in pairs],
                                  schema=hl.tstruct(a=hl.tint32, b=hl.tint32))
     table = table.select(c=hl.call(table.a + 0, table.b * 1, phased=phased))
@@ -76,7 +75,7 @@ def test_dynamic_call_construction_missing_values_and_boundaries(phased):
     assert [r.a for r in rows] == [c.alleles if c else None for c in expected]
     assert [r.phase for r in rows] == [c.phased if c else None for c in expected]
     assert [r.ploidy for r in rows] == [c.ploidy if c else None for c in expected]
-    for alleles in [(2**31-1,2**31-1),(-1,0),(32767,32767)]:
+    for alleles in [(2**31-1,2**31-1),(-1,0),(65536,0)]:
         bad = hl.Table.parallelize([{'a':alleles[0],'b':alleles[1]}])
         with pytest.raises((ValueError,RuntimeError), match='Call|allele'):
             bad.select(c=hl.call(bad.a,bad.b,phased=phased)).collect()
@@ -137,7 +136,7 @@ def test_packed_call_properties_preserve_missingness_of_sliced_parent(property):
     dtype = arrow_type(hl.tcall)
     # Invalid words beneath missing parents must never be validated or exposed.
     values = pa.StructArray.from_arrays(
-        [pa.array([6, 21, 8, -6, 20], type=pa.int32())], fields=list(dtype),
+        [pa.array(v,type=f.type) for v,f in zip([[0,1,0,65535,1],[0,0,0,0,1],[3,2,3,1,2],[False,True,False,False,False]],dtype)], fields=list(dtype),
         mask=pa.array([True, False, True, False, False]),
     ).slice(1, 3)
     table = hl.Table.parallelize(pa.table({"c": values}))
@@ -153,7 +152,7 @@ def test_packed_call_properties_preserve_missingness_of_sliced_parent(property):
             "is_hom_var": not het and all(a > 0 for a in alleles),
             "n_alt_alleles": sum(a > 0 for a in alleles),
         }[property]
-    expected = [expected_for([1, 0]), None, expected_for([(1 << 29) - 1])]
+    expected = [expected_for([1, 0]), None, expected_for([65535])]
     assert [row.value for row in result] == expected
 
 
@@ -193,3 +192,48 @@ def test_stored_nested_call_accessors_and_literal_accessor_field_names(tmp_path)
     assert read.select(values=read.xs.map(lambda item: item.GT.is_het()),
                        real=read.s["__vail_call_is_het"]).collect() == [
         hl.Struct(values=[True, None, None], real=True)]
+
+
+@pytest.mark.parametrize("alleles", [[65536], [0,65536], [-1], [65536,0]])
+def test_uint16_call_limit_rejects_overflow(alleles):
+    with pytest.raises(ValueError,match="Call|call|65535|nonnegative"):
+        hl.Call(alleles)
+    table=hl.range_table(1)
+    with pytest.raises((ValueError,RuntimeError),match="Call|call|65535"):
+        table.select(c=hl.call(*(table.idx+a for a in alleles))).collect()
+
+
+def test_call_storage_uses_actual_uint16_fields():
+    import pyarrow as pa
+    from vail.arrow import arrow_type
+    fields=arrow_type(hl.tcall)
+    assert [f.type for f in fields] == [pa.uint16(),pa.uint16(),pa.uint8(),pa.bool_()]
+    calls=[hl.Call([65535]),hl.Call([65535,65535]),hl.Call([65535,0],True)]
+    table=hl.Table.parallelize([{'c':c} for c in calls])
+    assert table.collect()==[hl.Struct(c=c) for c in calls]
+    assert table.to_arrow().schema.field('c').type == fields
+    assert table.to_arrow().column('c').to_pylist() == [
+        {'__vail_call_allele0':65535,'__vail_call_allele1':0,'__vail_call_ploidy':1,'__vail_call_phased':False},
+        {'__vail_call_allele0':65535,'__vail_call_allele1':65535,'__vail_call_ploidy':2,'__vail_call_phased':False},
+        {'__vail_call_allele0':65535,'__vail_call_allele1':0,'__vail_call_ploidy':2,'__vail_call_phased':True},
+    ]
+
+
+def test_direct_call_order_grouping_and_joins():
+    calls = [hl.Call([1, 1]), hl.Call([0, 2]), hl.Call([0, 1]), hl.Call([]),
+             hl.Call([0]), hl.Call([0, 0]), hl.Call([65535]), hl.Call([1, 0], True)]
+    table = hl.Table.parallelize([{'c':c} for c in calls], schema=hl.tstruct(c=hl.tcall)).key_by('c')
+    expected = sorted(calls, key=lambda c: ((c.alleles + [0, 0])[:2], c.ploidy, c.phased))
+    assert [r.c for r in table.collect()] == expected
+    assert table.join(table).count() == len(calls)
+    grouped = table.group_by(c=table.c).aggregate(n=hl.agg.count()).collect()
+    assert {r.c:r.n for r in grouped} == {c:1 for c in calls}
+
+
+def test_legacy_packed_call_metadata_is_rejected():
+    import pyarrow as pa
+    from vail.arrow import TYPE_DESCRIPTOR, TYPE_VERSION
+    field=pa.field('__vail_call_word',pa.int32(),metadata={TYPE_VERSION:b'1',TYPE_DESCRIPTOR:b'"call"'})
+    legacy=pa.StructArray.from_arrays([pa.array([12],type=pa.int32())],fields=[field])
+    with pytest.raises((ValueError,RuntimeError,TypeError),match='metadata|layout|Call|call'):
+        hl.Table.parallelize(pa.table({'c':legacy})).collect()

@@ -870,3 +870,27 @@ def test_nested_matrix_array_aggregation_retains_lexical_and_lookup_types():
     result = m.annotate_rows(nested=expression)
     assert result.nested.dtype == hl.tarray(hl.tint64)
     assert result.nested.collect() == [[48, 57], [78, 87]]
+
+
+def test_row_aggregations_keep_sparse_column_alignment_and_call_fields():
+    m = hl.range_matrix_table(2, 4).annotate_globals(offset=10)
+    m = m.annotate_rows(alleles=['A', 'C'])
+    m = m.annotate_entries(
+        GT=hl.if_else(m.col_idx == 2, hl.missing(hl.tcall), hl.call(0, 1)),
+        value=m.row_idx + m.col_idx,
+        unused=hl.range(50),
+    ).choose_cols([3, 1, 1, 2])
+    m = m.filter_entries(m.col_idx != 3)
+    result = m.annotate_rows(
+        cs=hl.agg.call_stats(m.GT, m.alleles),
+        values=hl.agg.collect(m.value),
+        count=hl.agg.count(),
+        weighted=hl.agg.sum(m.value + m.col_idx + m.offset),
+        selected=hl.agg.filter(m.col_idx == 1, hl.agg.collect(m.value)),
+    ).rows().collect()
+    assert [row.cs.AC for row in result] == [[2, 2], [2, 2]]
+    assert [row.cs.AN for row in result] == [4, 4]
+    assert [row["values"] for row in result] == [[1, 1, 2], [2, 2, 3]]
+    assert [row.count for row in result] == [3, 3]
+    assert [row.weighted for row in result] == [38, 41]
+    assert [row.selected for row in result] == [[1, 1], [2, 2]]

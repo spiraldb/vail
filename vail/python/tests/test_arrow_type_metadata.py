@@ -19,7 +19,7 @@ def untagged(ty):
     (hl.ttuple(), {'__vail_tuple_empty': False}, hl.tstruct(__vail_tuple_empty=hl.tbool)),
     (hl.tlocus('GRCh37'), {'__vail_locus_ordinal': 0, '__vail_locus_contig': '1', '__vail_locus_position': 2},
      hl.tstruct(__vail_locus_ordinal=hl.tint32, __vail_locus_contig=hl.tstr, __vail_locus_position=hl.tint32)),
-    (hl.tcall, {'__vail_call_word': 36}, hl.tstruct(__vail_call_word=hl.tint32)),
+    (hl.tstruct(__vail_call_word=hl.tint32), {'__vail_call_word': 36}, hl.tstruct(__vail_call_word=hl.tint32)),
     (hl.tinterval(hl.tint32), {'__vail_interval_start': 1, '__vail_interval_start_exclusive': False,
                             '__vail_interval_end': 3, '__vail_interval_end_inclusive': False},
      hl.tstruct(__vail_interval_start=hl.tint32, __vail_interval_start_exclusive=hl.tbool,
@@ -136,3 +136,15 @@ def test_unknown_nested_metadata_version_is_rejected():
     raw = pa.table({'x': pa.array([{'__vail_tuple_0': [1]}], type=ty)})
     with pytest.raises(TypeError, match='version'):
         hl.Table.parallelize(raw)
+
+
+def test_direct_call_metadata_stripping_requires_explicit_logical_schema():
+    table=hl.Table.parallelize([{'c':hl.Call([65535,0],True)},{'c':None}],schema=hl.tstruct(c=hl.tcall))
+    raw=table.to_arrow()
+    stripped=pa.Table.from_arrays(raw.columns,schema=pa.schema([pa.field('c',untagged(raw.schema.field('c').type))]))
+    # UInt16/UInt8 physical fields are not inferred as a Call from sentinel names.
+    with pytest.raises((ValueError,TypeError,RuntimeError),match='UInt16|uint16|unsupported'):
+        hl.Table.parallelize(stripped)
+    restored=hl.Table.parallelize(stripped,schema=hl.tstruct(c=hl.tcall))
+    assert restored.collect()==table.collect()
+    assert restored.to_arrow().schema==raw.schema

@@ -264,3 +264,17 @@ def test_projection_shape_requests_cannot_alias_user_field_names(tmp_path):
     assert mt.entry['__vail_shape'].collect() == [7, 9]
     selected = mt.select_entries(__vail_shape=mt.entry['__vail_shape'])
     assert selected.entry['__vail_shape'].collect() == [7, 9]
+
+
+@pytest.mark.parametrize('gt',['65536','0/65536','./65536','70000|.','65536/.'])
+def test_vcf_uint16_call_range_is_checked_even_when_partly_missing(tmp_path,gt):
+    path=tmp_path/'overflow.vcf'
+    path.write_text(HEADER+f'1\t1\t.\tA\tC\t.\tPASS\t.\tGT\t{gt}\t0/0\n')
+    with pytest.raises((ValueError,RuntimeError),match='65535|allele'):
+        hl.import_vcf(path).entries().collect()
+
+
+def test_vcf_uint16_call_boundary_roundtrips(tmp_path):
+    path=tmp_path/'max.vcf'
+    path.write_text(HEADER+'1\t1\t.\tA\tC\t.\tPASS\t.\tGT\t65535|0\t65535/65535\n')
+    assert hl.import_vcf(path).GT.collect()==[hl.Call([65535,0],True),hl.Call([65535,65535])]

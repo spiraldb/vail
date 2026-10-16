@@ -682,6 +682,35 @@ class MatrixTable:
             return contexts.filter(lambda ctx: ctx.present)
         return contexts
 
+    def _row_aggregate_contexts(self, expr, base):
+        """Build aligned contexts containing only fields consumed by this aggregate.
+
+        Cell and column arrays have identical positional order. Project before
+        zipping or filtering so unrelated wide entry fields are never copied.
+        Position-sensitive and random expressions retain their UID context.
+        """
+        node = expr.to_ir()
+        entries, columns, needs_position = node.matrix_dependencies()
+        if needs_position or node.contains_random() or expr._lookup_refs:
+            return self._row_contexts(base)
+
+        def entry(cell):
+            return struct(**{name: cell[_VALUE][name] for name in entries})
+
+        cells = base[_CELLS]
+        if columns:
+            cells = cells.map(lambda cell: struct(
+                entry=entry(cell), present=cell[_PRESENT]))
+            cols = self._mir.column_records.map(lambda column: struct(
+                **{name: column[_COL][name] for name in columns}))
+            contexts = _zip_arrays(cells, cols).map(lambda item: struct(
+                entry=item["1"].entry, present=item["1"].present,
+                col=item["2"], bindings=struct()))
+        else:
+            contexts = cells.map(lambda cell: struct(
+                entry=entry(cell), present=cell[_PRESENT], bindings=struct()))
+        return contexts.filter(lambda ctx: ctx.present)
+
     def _axis_aggregates(self, expr, axis, base):
         if axis == "row":
             from .matrix_list_aggregates import reduce_list, reduce_row_predicate
@@ -689,7 +718,7 @@ class MatrixTable:
             direct = reduce_row_predicate(self, expr, base)
             if direct is not None:
                 return direct
-            return reduce_list(self, expr, base, self._row_contexts(base))
+            return reduce_list(self, expr, base, self._row_aggregate_contexts(expr, base))
         context = self._context("entry")
         refs, lookups = dict(expr._global_refs), dict(expr._lookup_refs)
 

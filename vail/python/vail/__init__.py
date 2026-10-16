@@ -291,7 +291,7 @@ class Table:
         from .inputs import contains_expression, infer_input_type, input_expression
         if isinstance(rows, Expression):
             return cls._parallelize_expression(rows, schema, key, n_partitions, globals)
-        from .arrow import as_arrow, dtype_from_arrow, arrow_type, same_arrow_layout
+        from .arrow import as_arrow, dtype_from_arrow, arrow_type, same_arrow_layout, validate_arrow_metadata
         try:
             import pyarrow as _pa
         except ImportError:
@@ -309,7 +309,7 @@ class Table:
             # An explicit logical schema is authoritative. Validate physical
             # layouts rather than guessing tuples from ordinary struct names.
             for field in arrow_table.schema:
-                dtype_from_arrow(field.type)  # validate any advertised metadata
+                validate_arrow_metadata(field.type)
                 if not same_arrow_layout(field.type, arrow_type(schema[field.name])):
                     raise TypeError("Arrow field types must match the supplied schema")
             if schema:

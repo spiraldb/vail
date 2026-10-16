@@ -35,6 +35,23 @@ def same_arrow_layout(left, right):
     return left.equals(right)
 
 
+def validate_arrow_metadata(ty):
+    """Validate advertised logical tags without inferring untagged physical types."""
+    pa = _pa()
+    if pa.types.is_struct(ty):
+        children = list(ty)
+    elif pa.types.is_list(ty) or pa.types.is_large_list(ty):
+        children = [ty.value_field]
+    else:
+        return
+    if any(TYPE_DESCRIPTOR in (field.metadata or {}) or TYPE_VERSION in (field.metadata or {})
+           for field in children):
+        dtype_from_arrow(ty)
+        return
+    for field in children:
+        validate_arrow_metadata(field.type)
+
+
 def arrow_type(dtype):
     from .types import type_to_wire
     return _pa().table(type_to_wire(dtype).arrow_type()).schema.field(0).type
@@ -56,8 +73,8 @@ def _physical_converter(dtype):
             "__vail_locus_position": value.position,
         })
     if dtype == tcall:
-        from .types import _pack_call
-        return _nullable(lambda value: {"__vail_call_word": _pack_call(value)})
+        from .types import _call_fields
+        return _nullable(_call_fields)
     if isinstance(dtype, tinterval):
         point = _physical_converter(dtype.point_type)
         return _nullable(lambda value: {
@@ -131,8 +148,8 @@ def _logical_converter(dtype, *, key=False):
             return Locus(contig, value["__vail_locus_position"], reference)
         return _nullable(convert_locus)
     if dtype == tcall:
-        from .types import _unpack_call
-        return _nullable(lambda value: _unpack_call(value["__vail_call_word"]))
+        from .types import _call_from_fields
+        return _nullable(_call_from_fields)
     if isinstance(dtype, tinterval):
         point_type = dtype.point_type
         point = _logical_converter(point_type, key=key)

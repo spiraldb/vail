@@ -41,8 +41,9 @@ fn list(value: ArrayRef, item_type: DataType) -> ScalarValue {
     )))
 }
 fn call_input(t: &DataType) -> bool {
-    matches!(t,DataType::Struct(fields) if fields.len()==1 && fields[0].name()=="__vail_call_word" && fields[0].data_type()==&DataType::Int32)
+    vail_ordering::same_layout(t, &crate::calls::storage_type())
 }
+
 fn packed<'a>(t: &'a DataType, name: &str) -> Result<&'a DataType, ExprError> {
     let DataType::Struct(fs) = t else {
         return Err(invalid("expected packed struct input"));
@@ -269,7 +270,7 @@ impl GenomicAccumulator {
         Ok(())
     }
     // Both adapters validate n == self.ac.len() before calling this shared tally.
-    fn tally_call(&mut self, call: &[i32], n: usize) -> DfResult<()> {
+    fn tally_call(&mut self, call: &[u16], n: usize) -> DfResult<()> {
         for &allele in call {
             let index = allele as usize;
             if index >= n {
@@ -567,7 +568,8 @@ impl Accumulator for GenomicAccumulator {
                     .as_any()
                     .downcast_ref::<StructArray>()
                     .ok_or_else(|| bad("HWE requires Call"))?;
-                let calls = crate::calls::CallRows::from_struct(s).map_err(|e| bad(e.to_string()))?;
+                let calls =
+                    crate::calls::CallRows::from_struct(s).map_err(|e| bad(e.to_string()))?;
                 for i in 0..s.len() {
                     let Some(call) = calls.get(i).map_err(|e| bad(e.to_string()))? else {
                         continue;
@@ -595,7 +597,8 @@ impl Accumulator for GenomicAccumulator {
                     .as_any()
                     .downcast_ref::<Float64Array>()
                     .ok_or_else(|| bad("inbreeding prior must be float64"))?;
-                let decoded = crate::calls::CallRows::from_struct(calls).map_err(|e| bad(e.to_string()))?;
+                let decoded =
+                    crate::calls::CallRows::from_struct(calls).map_err(|e| bad(e.to_string()))?;
                 for i in 0..s.len() {
                     if s.is_null(i) || priors.is_null(i) {
                         continue;

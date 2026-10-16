@@ -522,7 +522,9 @@ fn append_call(builder: &mut StructBuilder, token: &str) -> Result<()> {
             if allele < 0 {
                 return Err("negative genotype allele".into());
             }
-            alleles[ploidy] = allele;
+            let allele = u16::try_from(allele)
+                .map_err(|_| "Call allele index must be between 0 and 65535")?;
+            alleles[ploidy] = i32::from(allele);
         }
         ploidy += 1;
     }
@@ -532,15 +534,26 @@ fn append_call(builder: &mut StructBuilder, token: &str) -> Result<()> {
     if !token.contains('|') && ploidy == 2 && alleles[0] > alleles[1] {
         alleles.swap(0, 1);
     }
-    let words = builder.field_builder::<Int32Builder>(0).unwrap();
-    if missing {
-        words.append_null();
-    } else {
-        words.append_value(vail_execution::calls::pack(
-            &alleles[..ploidy],
-            token.contains('|'),
-        )?);
-    }
+    let call = vail_execution::calls::Call::new(
+        if missing { &[] } else { &alleles[..ploidy] },
+        token.contains('|'),
+    )?;
+    builder
+        .field_builder::<UInt16Builder>(0)
+        .unwrap()
+        .append_value(call.first());
+    builder
+        .field_builder::<UInt16Builder>(1)
+        .unwrap()
+        .append_value(call.second());
+    builder
+        .field_builder::<UInt8Builder>(2)
+        .unwrap()
+        .append_value(call.ploidy());
+    builder
+        .field_builder::<BooleanBuilder>(3)
+        .unwrap()
+        .append_value(call.phased());
     builder.append(!missing);
     Ok(())
 }

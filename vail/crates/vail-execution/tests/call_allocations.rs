@@ -3,7 +3,10 @@ use std::alloc::{GlobalAlloc, Layout, System};
 use std::cell::Cell;
 use std::sync::Arc;
 
-use arrow_array::{Array, ArrayRef, BooleanArray, Int32Array, ListArray, RecordBatch, StructArray};
+use arrow_array::{
+    Array, ArrayRef, BooleanArray, Int32Array, ListArray, RecordBatch, StructArray, UInt8Array,
+    UInt16Array,
+};
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field, Schema};
 use vail_execution::expressions::{Expr, PrimitiveType, Type, lower};
@@ -62,17 +65,25 @@ fn calls(rows: usize) -> RecordBatch {
     let DataType::Struct(fields) = dtype else {
         unreachable!()
     };
-    let words = Int32Array::from_iter_values((0..rows + 2).map(|i| {
-        if i % 5 == 0 {
-            6
-        } else if i % 2 == 0 {
-            12
-        } else {
-            21
-        }
-    }));
+    let first =
+        UInt16Array::from_iter_values((0..rows + 2).map(|i| if i % 2 == 0 { 0 } else { 1 }));
+    let second =
+        UInt16Array::from_iter_values((0..rows + 2).map(|i| if i % 2 == 0 { 1 } else { 0 }));
+    let ploidy =
+        UInt8Array::from_iter_values((0..rows + 2).map(|i| if i % 5 == 0 { 3 } else { 2 }));
+    let phased = BooleanArray::from((0..rows + 2).map(|i| i % 2 != 0).collect::<Vec<_>>());
     let valid = NullBuffer::from((0..rows + 2).map(|i| i % 5 != 0).collect::<Vec<_>>());
-    let calls = StructArray::new(fields, vec![Arc::new(words)], Some(valid)).slice(1, rows);
+    let calls = StructArray::new(
+        fields,
+        vec![
+            Arc::new(first),
+            Arc::new(second),
+            Arc::new(ploidy),
+            Arc::new(phased),
+        ],
+        Some(valid),
+    )
+    .slice(1, rows);
     let schema = Arc::new(Schema::new(vec![Field::new(
         "c",
         calls.data_type().clone(),
@@ -84,7 +95,6 @@ fn calls(rows: usize) -> RecordBatch {
 #[test]
 fn accessor_allocations_do_not_scale_with_number_of_calls() {
     for name in [
-        "__vail_call_word",
         "__vail_call_alleles",
         "__vail_call_phased",
         "__vail_call_ploidy",
@@ -121,20 +131,6 @@ fn accessor_allocations_do_not_scale_with_number_of_calls() {
         eprintln!(
             "{name}: 64 calls={small_allocations} allocations, 8192 calls={large_allocations}"
         );
-        if name == "__vail_call_word" {
-            let source = large
-                .column(0)
-                .as_any()
-                .downcast_ref::<StructArray>()
-                .unwrap();
-            let source = source
-                .column(0)
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap();
-            let output = output.as_any().downcast_ref::<Int32Array>().unwrap();
-            assert_eq!(source.values().as_ptr(), output.values().as_ptr());
-        }
     }
 }
 
@@ -175,18 +171,18 @@ fn constructor_borrows_sliced_alleles_without_per_call_wrappers() {
     let (_, small_allocations) = execute(&constructor_input(64), &expression);
     let (output, large_allocations) = execute(&constructor_input(8192), &expression);
     let output = output.as_any().downcast_ref::<StructArray>().unwrap();
-    let words = output
+    let alleles = output
         .column(0)
         .as_any()
-        .downcast_ref::<Int32Array>()
+        .downcast_ref::<UInt16Array>()
         .unwrap();
-    assert!(
-        words
-            .values()
-            .iter()
-            .enumerate()
-            .all(|(i, word)| *word == if i % 2 == 0 { 12 } else { 13 })
-    );
+    assert!(alleles.values().iter().all(|a| *a == 0));
+    let second = output
+        .column(1)
+        .as_any()
+        .downcast_ref::<UInt16Array>()
+        .unwrap();
+    assert!(second.values().iter().all(|a| *a == 1));
     assert!(
         large_allocations <= small_allocations + 32,
         "constructor: allocations grew from {small_allocations} to {large_allocations}"
@@ -224,39 +220,47 @@ fn packed_predicate_throughput() {
 }
 
 #[test]
-fn public_packed_properties_match_alleles_at_triangular_boundaries() {
-    use vail_ordering::call::{decode, pack};
-    let mut words = (0..4096)
-        .filter(|word| decode(*word).is_ok())
-        .collect::<Vec<_>>();
+fn public_direct_properties_cover_uint16_alleles() {
+    use vail_ordering::call::Call;
+    let mut calls = Vec::new();
     for phased in [false, true] {
-        words.push(pack(&[], phased).unwrap());
-        for allele in [0, 1, 31, 32767, (1 << 29) - 1] {
-            words.push(pack(&[allele], phased).unwrap());
+        calls.push(Call::new(&[], phased).unwrap());
+        for allele in 0..=65535 {
+            calls.push(Call::new(&[allele], phased).unwrap());
         }
-        for k in 1..=32767u32 {
-            let triangular = k * (k + 1) / 2;
-            for repr in [triangular - 1, triangular, triangular + 1] {
-                if repr < 1 << 29 {
-                    words.push(((repr << 3) | 4 | u32::from(phased)) as i32);
-                }
+        for a in [0, 1, 255, 256, 32767, 65535] {
+            for b in [0, 1, 255, 256, 32767, 65535] {
+                calls.push(Call::new(&[a, b], phased).unwrap());
             }
         }
     }
     let DataType::Struct(fields) = Type::Primitive(PrimitiveType::Call).to_arrow().unwrap() else {
         unreachable!()
     };
-    let calls = StructArray::new(
+    let data = StructArray::new(
         fields,
-        vec![Arc::new(Int32Array::from(words.clone()))],
+        vec![
+            Arc::new(UInt16Array::from_iter_values(
+                calls.iter().map(|c| c.first()),
+            )),
+            Arc::new(UInt16Array::from_iter_values(
+                calls.iter().map(|c| c.second()),
+            )),
+            Arc::new(UInt8Array::from_iter_values(
+                calls.iter().map(|c| c.ploidy()),
+            )),
+            Arc::new(BooleanArray::from(
+                calls.iter().map(|c| c.phased()).collect::<Vec<_>>(),
+            )),
+        ],
         None,
     );
     let schema = Arc::new(Schema::new(vec![Field::new(
         "c",
-        calls.data_type().clone(),
+        data.data_type().clone(),
         true,
     )]));
-    let batch = RecordBatch::try_new(schema, vec![Arc::new(calls)]).unwrap();
+    let batch = RecordBatch::try_new(schema, vec![Arc::new(data)]).unwrap();
     for property in [
         "ploidy",
         "n_alt_alleles",
@@ -269,19 +273,18 @@ fn public_packed_properties_match_alleles_at_triangular_boundaries() {
         "is_het_non_ref",
         "is_hom_var",
     ] {
-        let expression = Expr::GetField {
+        let expr = Expr::GetField {
             value: Arc::new(Expr::Column { name: "c".into() }),
             name: format!("__vail_call_{property}"),
         };
-        let result = lower(&expression, batch.schema().as_ref())
+        let output = lower(&expr, batch.schema().as_ref())
             .unwrap()
             .evaluate(&batch)
             .unwrap()
-            .into_array(batch.num_rows())
+            .into_array(calls.len())
             .unwrap();
-        for (row, word) in words.iter().enumerate() {
-            let call = decode(*word).unwrap();
-            let a = call.alleles();
+        for (row, c) in calls.iter().enumerate() {
+            let a = c.alleles();
             let het = a.len() == 2 && a[0] != a[1];
             let expected = match property {
                 "ploidy" => a.len() as i32,
@@ -296,18 +299,18 @@ fn public_packed_properties_match_alleles_at_triangular_boundaries() {
                 "is_hom_var" => i32::from(!a.is_empty() && !het && a[0] > 0),
                 _ => unreachable!(),
             };
-            let actual = if let Some(values) = result.as_any().downcast_ref::<Int32Array>() {
+            let actual = if let Some(values) = output.as_any().downcast_ref::<Int32Array>() {
                 values.value(row)
             } else {
                 i32::from(
-                    result
+                    output
                         .as_any()
                         .downcast_ref::<BooleanArray>()
                         .unwrap()
                         .value(row),
                 )
             };
-            assert_eq!(actual, expected, "word={word} property={property}");
+            assert_eq!(actual, expected, "{c:?} {property}");
         }
     }
 }

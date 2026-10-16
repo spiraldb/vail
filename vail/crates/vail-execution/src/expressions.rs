@@ -159,12 +159,6 @@ impl Type {
                     .map(|(i, t)| (format!("__vail_tuple_{i}"), t.clone()))
                     .collect(),
             }),
-            Self::Primitive(PrimitiveType::Call) => Some(Self::Struct {
-                r#struct: vec![(
-                    "__vail_call_word".into(),
-                    Self::Primitive(PrimitiveType::Int32),
-                )],
-            }),
             Self::Dict { dict } => Some(Self::Array {
                 array: Box::new(Self::Struct {
                     r#struct: vec![
@@ -215,7 +209,8 @@ impl Type {
             Self::Primitive(PrimitiveType::Float64) => DataType::Float64,
             Self::Primitive(PrimitiveType::Bool) => DataType::Boolean,
             Self::Primitive(PrimitiveType::Str) => DataType::Utf8,
-            Self::Tuple { .. } | Self::Primitive(PrimitiveType::Call) | Self::Interval { .. } => {
+            Self::Primitive(PrimitiveType::Call) => crate::calls::storage_type(),
+            Self::Tuple { .. } | Self::Interval { .. } => {
                 self.storage_type().unwrap().to_arrow()?
             }
             Self::Locus { locus } => {
@@ -317,19 +312,21 @@ impl Type {
         if let Some(logical) =
             vail_ordering::type_metadata(dtype).map_err(|e| ExprError::Invalid(e.to_string()))?
         {
-            match dtype {
-                DataType::Struct(fields) => {
-                    for field in fields {
-                        Self::from_arrow(field.data_type())?;
-                    }
-                }
-                DataType::List(field) => {
-                    Self::from_arrow(field.data_type())?;
-                }
-                _ => (),
-            }
             let ty: Self = serde_json::from_value(logical)
                 .map_err(|e| ExprError::Invalid(format!("invalid Arrow logical type: {e}")))?;
+            if ty != Self::Primitive(PrimitiveType::Call) {
+                match dtype {
+                    DataType::Struct(fields) => {
+                        for field in fields {
+                            Self::from_arrow(field.data_type())?;
+                        }
+                    }
+                    DataType::List(field) => {
+                        Self::from_arrow(field.data_type())?;
+                    }
+                    _ => (),
+                }
+            }
             if let Self::Locus { locus } = &ty {
                 locus.validate().map_err(ExprError::Invalid)?;
                 let DataType::Struct(fields) = dtype else {
@@ -839,13 +836,21 @@ impl Expr {
         }
         let mut closed = true;
         self.visit_unique(&mut |node| {
-            closed &= !matches!(node,
-                Expr::Column { .. } | Expr::TableLookup { .. }
-                | Expr::MatrixField { .. } | Expr::MatrixScope { .. }
-                | Expr::MatrixNumCols { .. } | Expr::MatrixColumnPosition { .. }
-                | Expr::Aggregate { .. } | Expr::AggregateFold { .. }
-                | Expr::AggFilter { .. } | Expr::AggExplode { .. }
-                | Expr::AggGroupBy { .. } | Expr::AggArray { .. });
+            closed &= !matches!(
+                node,
+                Expr::Column { .. }
+                    | Expr::TableLookup { .. }
+                    | Expr::MatrixField { .. }
+                    | Expr::MatrixScope { .. }
+                    | Expr::MatrixNumCols { .. }
+                    | Expr::MatrixColumnPosition { .. }
+                    | Expr::Aggregate { .. }
+                    | Expr::AggregateFold { .. }
+                    | Expr::AggFilter { .. }
+                    | Expr::AggExplode { .. }
+                    | Expr::AggGroupBy { .. }
+                    | Expr::AggArray { .. }
+            );
         });
         closed
     }
@@ -2283,7 +2288,9 @@ impl Expr {
                 },
                 Type::Primitive(PrimitiveType::Call) => crate::calls::CallAccessor::for_field(name)
                     .map(|accessor| accessor.result_type())
-                    .ok_or_else(|| ExprError::Invalid(format!("invalid call storage field {name:?}"))),
+                    .ok_or_else(|| {
+                        ExprError::Invalid(format!("invalid call storage field {name:?}"))
+                    }),
                 Type::Ndarray { ndarray } => match name.as_str() {
                     "__vail_ndarray_data" => Ok(Type::Array {
                         array: Box::new(ndarray.0),
@@ -2472,16 +2479,12 @@ fn validate_literal(value: &Value, dtype: &Type) -> Result<(), ExprError> {
     if value.is_null() {
         return Ok(());
     }
+    if *dtype == Type::Primitive(PrimitiveType::Call) {
+        return crate::calls::literal_call(value).map(|_| ());
+    }
     if !matches!(dtype, Type::Interval { .. }) {
         if let Some(storage) = dtype.storage_type() {
             validate_literal(value, &storage)?;
-            if *dtype == Type::Primitive(PrimitiveType::Call) {
-                let word = value["__vail_call_word"]
-                    .as_i64()
-                    .ok_or_else(|| ExprError::Invalid("Call word must be present".into()))?
-                    as i32;
-                vail_ordering::call::decode(word).map_err(ExprError::Invalid)?;
-            }
             return Ok(());
         }
     }
@@ -2848,6 +2851,9 @@ pub(crate) fn literal_array(v: &Value, t: &Type, len: usize) -> Result<ArrayRef,
     let dt = t.to_arrow()?;
     if v.is_null() {
         return Ok(new_null_array(&dt, len));
+    }
+    if *t == Type::Primitive(PrimitiveType::Call) {
+        return crate::calls::literal_array(v, &dt, len);
     }
     if let Some(storage) = t.storage_type() {
         let storage_value = match t {
@@ -3971,18 +3977,28 @@ fn annotation_text(array: &ArrayRef, row: usize, dtype: &Type) -> Result<String,
     })
 }
 
-fn call_word(array: &ArrayRef, row: usize) -> Result<i32, ExprError> {
-    let st = down::<StructArray>(array.as_ref())?;
-    let word = down::<Int32Array>(st.column(0).as_ref())?;
-    if word.is_null(row) {
-        return Err(ExprError::Invalid("present Call has missing word".into()));
-    }
-    let word = word.value(row);
-    vail_ordering::call::decode(word).map_err(ExprError::Invalid)?;
-    Ok(word)
-}
 fn call_raw(array: &ArrayRef, row: usize) -> Result<String, ExprError> {
-    Ok(call_word(array, row)?.to_string())
+    let call = crate::calls::CallRows::new(array)?
+        .get(row)?
+        .ok_or_else(|| ExprError::Invalid("missing Call".into()))?;
+    Ok(match call.alleles() {
+        [] => {
+            if call.phased() {
+                "|-".into()
+            } else {
+                "-".into()
+            }
+        }
+        [a] => {
+            if call.phased() {
+                format!("|{a}")
+            } else {
+                a.to_string()
+            }
+        }
+        [a, b] => format!("{a}{}{b}", if call.phased() { "|" } else { "/" }),
+        _ => unreachable!(),
+    })
 }
 
 fn hail_value_string(
@@ -3994,7 +4010,10 @@ fn hail_value_string(
     if array.is_null(row) {
         return Ok(if top { "NA".into() } else { "null".into() });
     }
-    if let Some(storage) = dtype.storage_type() {
+    if let Some(storage) = dtype
+        .storage_type()
+        .or_else(|| (*dtype == Type::Primitive(PrimitiveType::Call)).then(|| dtype.clone()))
+    {
         return match dtype {
             Type::Interval { interval } => {
                 let st = down::<StructArray>(array.as_ref())?;
@@ -4043,8 +4062,11 @@ fn hail_value_string(
                 }
             }
             Type::Primitive(PrimitiveType::Call) => {
-                let (alleles, phased) = vail_ordering::call::unpack(call_word(array, row)?)
-                    .map_err(ExprError::Invalid)?;
+                let call_value = crate::calls::CallRows::new(array)?
+                    .get(row)?
+                    .ok_or_else(|| ExprError::Invalid("missing Call".into()))?;
+                let alleles = call_value.alleles();
+                let phased = call_value.phased();
                 let call = if alleles.is_empty() {
                     if phased { "|-".into() } else { "-".into() }
                 } else if phased && alleles.len() == 1 {

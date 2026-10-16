@@ -134,6 +134,8 @@ pub fn has_type_metadata(dtype: &DataType) -> bool {
 pub fn supports(data_type: &DataType) -> bool {
     match data_type {
         DataType::Boolean
+        | DataType::UInt8
+        | DataType::UInt16
         | DataType::Int32
         | DataType::Int64
         | DataType::Float32

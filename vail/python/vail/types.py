@@ -230,7 +230,7 @@ class Call:
             raise TypeError("phased must be bool")
         object.__setattr__(self, "_alleles", alleles if phased else tuple(sorted(alleles)))
         object.__setattr__(self, "phased", phased)
-        _pack_call(self)
+        _call_fields(self)
 
     @property
     def alleles(self):
@@ -254,40 +254,24 @@ tfloat32 = _PrimitiveType("float32")
 tfloat64 = _PrimitiveType("float64")
 tbool = _PrimitiveType("bool")
 tstr = _PrimitiveType("str")
-def _pack_call(value):
-    a = value.alleles
-    if not a:
-        representation = 0
-    elif len(a) == 1:
-        representation = a[0]
-    else:
-        j, k = (a[0], a[0] + a[1]) if value.phased else (min(a), max(a))
-        representation = k * (k + 1) // 2 + j
-    if not 0 <= representation < (1 << 29):
-        raise ValueError("Call allele representation exceeds 29 bits")
-    word = (representation << 3) | (len(a) << 1) | int(value.phased)
-    return word if word < (1 << 31) else word - (1 << 32)
+def _call_fields(value):
+    if any(a > 65535 for a in value._alleles):
+        raise ValueError("Call allele index must be between 0 and 65535")
+    return {"__vail_call_allele0": value._alleles[0] if value._alleles else 0,
+            "__vail_call_allele1": value._alleles[1] if len(value._alleles) == 2 else 0,
+            "__vail_call_ploidy": len(value._alleles),
+            "__vail_call_phased": value.phased}
 
 
-def _unpack_call(word):
-    if type(word) is not int or not -(1 << 31) <= word < (1 << 31):
-        raise ValueError("invalid packed Call word")
-    bits = word & 0xffffffff
-    ploidy, representation, phased = (bits >> 1) & 3, bits >> 3, bool(bits & 1)
-    if ploidy == 0 and representation == 0:
-        alleles = ()
-    elif ploidy == 1:
-        alleles = (representation,)
-    elif ploidy == 2:
-        k = (math.isqrt(8 * representation + 1) - 1) // 2
-        j = representation - k * (k + 1) // 2
-        alleles = (j, k-j if phased else k)
-    else:
-        raise ValueError("invalid packed Call ploidy")
-    result = Call(alleles, phased)
-    if _pack_call(result) != word:
-        raise ValueError("invalid packed Call")
-    return result
+def _call_from_fields(value):
+    a, b, n, phased = (value[k] for k in ("__vail_call_allele0", "__vail_call_allele1",
+                                        "__vail_call_ploidy", "__vail_call_phased"))
+    if (type(a) is not int or type(b) is not int or type(n) is not int or type(phased) is not bool
+            or not 0 <= a <= 65535 or not 0 <= b <= 65535 or not 0 <= n <= 2
+            or (n == 0 and a != 0) or (n < 2 and b != 0)
+            or (n == 2 and not phased and a > b)):
+        raise ValueError("invalid Call fields")
+    return Call((a, b)[:n], phased)
 
 
 tcall = _PrimitiveType("call")
@@ -707,7 +691,7 @@ def decode_value(value, dtype=None):
         return Interval(decode_value(value["start"], dtype.point_type), decode_value(value["end"], dtype.point_type),
                         value["includes_start"], value["includes_end"], dtype.point_type)
     if dtype == tcall:
-        return _unpack_call(value["__vail_call_word"])
+        return _call_from_fields(value)
     if isinstance(dtype, ttuple):
         return tuple(decode_value(value[f"__vail_tuple_{i}"], t) for i, t in enumerate(dtype.types))
     if isinstance(dtype, tdict):

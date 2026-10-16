@@ -32,7 +32,7 @@ enum Values<'a> {
     F64(&'a Float64Array),
     Bool(&'a BooleanArray),
     List(&'a ListArray, Box<Values<'a>>),
-    Call(&'a StructArray, &'a Int32Array),
+    Call(&'a StructArray, vail_execution::calls::CallRows<'a>),
 }
 impl<'a> Values<'a> {
     fn bind(dtype: &Type, a: &'a dyn Array) -> Result<Self> {
@@ -49,10 +49,11 @@ impl<'a> Values<'a> {
             Type::Primitive(P::Bool) => Self::Bool(down(a)?),
             Type::Primitive(P::Call) => {
                 let a: &StructArray = down(a)?;
-                let words = a
-                    .column_by_name("__vail_call_word")
-                    .ok_or_else(|| bad("VCF Call lacks word"))?;
-                Self::Call(a, down(words.as_ref())?)
+                Self::Call(
+                    a,
+                    vail_execution::calls::CallRows::from_struct(a)
+                        .map_err(|e| bad(&e.to_string()))?,
+                )
             }
             Type::Array { array } | Type::Set { set: array } => {
                 let list: &ListArray = down(a)?;
@@ -97,12 +98,13 @@ impl<'a> Values<'a> {
                 write!(out, "{:?}", a.value(row)).unwrap();
             }
             Self::Bool(a) => out.push_str(if a.value(row) { "true" } else { "false" }),
-            Self::Call(_, words) => {
-                if words.is_null(row) {
-                    return Err(bad("present VCF Call has missing word"));
-                }
-                let (alleles, phased) =
-                    vail_execution::calls::unpack(words.value(row)).map_err(bad)?;
+            Self::Call(_, rows) => {
+                let call = rows
+                    .get(row)
+                    .map_err(|e| bad(&e.to_string()))?
+                    .ok_or_else(|| bad("missing VCF Call"))?;
+                let alleles = call.alleles();
+                let phased = call.phased();
                 if alleles.is_empty() {
                     out.push('.');
                 }
