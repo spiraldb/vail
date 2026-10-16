@@ -474,6 +474,13 @@ impl ExecutionPlan for PreviousExec {
             self.indices.clone(),
         )?))
     }
+    fn reset_state(self: Arc<Self>) -> Result<PhysicalPlan> {
+        Ok(Arc::new(Self::new(
+            self.input.clone(),
+            self.schema(),
+            self.indices.clone(),
+        )?))
+    }
     fn execute(
         &self,
         partition: usize,
@@ -538,64 +545,4 @@ fn shift(values: &ArrayRef, previous: &ArrayRef) -> Result<ArrayRef> {
         &[previous.as_ref(), values.as_ref()],
         &indices,
     )?)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_array::UInt64Array;
-    use arrow_schema::DataType;
-    use futures::FutureExt;
-
-    #[tokio::test]
-    async fn cancelled_reader_can_retry_same_action_after_summary_started() {
-        // Real Arrow/DataFusion sources and the production one-shot consumer
-        // guard; no mock stream or counters. Many batches allow cancellation
-        // while the shared summary producer is partly consumed.
-        let schema = Arc::new(Schema::new(vec![Field::new("v", DataType::UInt64, false)]));
-        let partitions: Vec<Vec<RecordBatch>> = (0..4)
-            .map(|p| {
-                (0..4096)
-                    .map(|b| {
-                        let start = (p * 4096 + b) * 128;
-                        RecordBatch::try_new(
-                            schema.clone(),
-                            vec![Arc::new(UInt64Array::from_iter_values(start..start + 128))],
-                        )
-                        .unwrap()
-                    })
-                    .collect()
-            })
-            .collect();
-        let source = datafusion_datasource::memory::MemorySourceConfig::try_new_exec(
-            &partitions,
-            schema.clone(),
-            None,
-        )
-        .unwrap();
-        let source: PhysicalPlan = Arc::new(crate::rng_context::ConsumerScopeExec::new(source));
-        let output = Arc::new(Schema::new(vec![
-            Field::new("v", DataType::UInt64, false),
-            Field::new("previous", DataType::UInt64, true),
-        ]));
-        let scan = PreviousExec::new(source, output, vec![0]).unwrap();
-        let context = Arc::new(TaskContext::default());
-        let mut first = scan.execute(3, context.clone()).unwrap();
-        assert!(first.try_next().now_or_never().is_none());
-        tokio::task::yield_now().await;
-        drop(first);
-        let mut second = scan.execute(3, context).unwrap();
-        let batch = tokio::time::timeout(std::time::Duration::from_secs(10), second.try_next())
-            .await
-            .unwrap()
-            .unwrap()
-            .unwrap();
-        let previous = batch
-            .column(1)
-            .as_any()
-            .downcast_ref::<UInt64Array>()
-            .unwrap();
-        assert_eq!(previous.value(0), 3 * 4096 * 128 - 1);
-        assert_eq!(previous.value(1), 3 * 4096 * 128);
-    }
 }

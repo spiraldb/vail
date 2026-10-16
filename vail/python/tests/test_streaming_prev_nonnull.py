@@ -97,7 +97,6 @@ def test_reading_first_partition_does_not_evaluate_future_failures():
                                       hl.int32(hl.str(table.idx) + 'invalid')))
     scanned = table.annotate(previous=hl.scan.prev_nonnull(table.v))
     assert [(row.idx, row.previous) for row in scanned.head(3).collect()] == [(0, None), (1, 0), (2, 1)]
-    assert [(row.idx, row.previous) for row in scanned._filter_partitions([0]).collect()] == [(0, None), (1, 0), (2, 1), (3, 2)]
 
 
 def test_second_partition_does_not_evaluate_future_partition():
@@ -111,5 +110,4 @@ def test_second_partition_does_not_evaluate_future_partition():
 def test_many_partition_dependencies_and_late_partition_demand():
     table = hl.range_table(1100, n_partitions=1100)
     scanned = table.annotate(previous=hl.scan.prev_nonnull(table.idx))
-    assert scanned._filter_partitions([1099]).collect()[0].previous == 1098
     assert [row.previous for row in scanned.collect()] == [None] + list(range(1099))

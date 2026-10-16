@@ -77,3 +77,35 @@ prefix. Missing arrays are skipped; known empty arrays remain empty.
 
 Private `_prev_nonnull` and `_densify` helpers compose fold and existing array
 expressions. Seeded randomness remains outside the supported scope.
+
+## Streaming previous-defined values
+
+`hl.scan.prev_nonnull(value)` (also available as Hail's private
+`hl.scan._prev_nonnull`) returns the most recent defined value strictly before
+this row, or missing when there is none. A defined struct containing missing
+fields is still a defined value. The same canonical `scan.fold` composition
+receives this lowering; arbitrary state-dependent folds do not.
+
+For deterministic pointwise projections/filters over independently executable
+native read, parallelize, or range partitions, a logical streaming extension
+keeps values as Arrow arrays. DataFusion still plans the input expressions.
+The extension uses Arrow concatenation for null-free batches and interleaving
+indices for missing values; it does not convert each row to a scalar or add a
+window, join, or sort. One compact retained row survives each batch. Argument
+storage is normalized recursively to its logical Arrow type, so a retained
+string view cannot pin a large unrelated backing buffer.
+
+Each partition's initial value depends only on predecessor partitions' last
+values. These summaries replay the same optimized physical producer with fresh
+execution state; no second logical compilation can change their partition
+membership/order. Summaries share one action-owned producer, run at most 32 at
+a time, and cache one value per scan per partition. Carry tasks scale with
+partitions, not rows, and avoid recursively polling thousands of futures.
+Cancellation aborts outstanding tasks; a cancelled summary retry forks fresh
+producer state. Resetting a physical action clears all carry/summary caches.
+
+Mixed reducers, filtered/nested aggregate scopes, randomness, and upstream
+exchanges/sorts/joins/scans retain the existing general lowering. The streaming
+path does not assume that an exchange can execute one output independently of
+its other consumers. This is a performance capability boundary, not a change
+to previous-defined-value results.
