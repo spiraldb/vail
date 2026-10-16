@@ -684,8 +684,11 @@ class MatrixTable:
 
     def _axis_aggregates(self, expr, axis, base):
         if axis == "row":
-            from .matrix_list_aggregates import reduce_list
+            from .matrix_list_aggregates import reduce_list, reduce_row_predicate
 
+            direct = reduce_row_predicate(self, expr, base)
+            if direct is not None:
+                return direct
             return reduce_list(self, expr, base, self._row_contexts(base))
         context = self._context("entry")
         refs, lookups = dict(expr._global_refs), dict(expr._lookup_refs)

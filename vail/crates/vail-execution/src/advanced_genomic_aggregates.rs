@@ -40,25 +40,6 @@ fn list(value: ArrayRef, item_type: DataType) -> ScalarValue {
         None,
     )))
 }
-fn call_alleles(call: &StructArray, row: usize) -> DfResult<Option<Vec<i32>>> {
-    if call.is_null(row) {
-        return Ok(None);
-    }
-    let words = call
-        .column_by_name("__vail_call_word")
-        .ok_or_else(|| bad("Call missing packed word"))?
-        .as_any()
-        .downcast_ref::<Int32Array>()
-        .ok_or_else(|| bad("Call word must be int32"))?;
-    if words.is_null(row) {
-        return Err(bad("present Call has missing word"));
-    }
-    Ok(Some(
-        vail_ordering::call::unpack(words.value(row))
-            .map_err(bad)?
-            .0,
-    ))
-}
 fn call_input(t: &DataType) -> bool {
     matches!(t,DataType::Struct(fields) if fields.len()==1 && fields[0].name()=="__vail_call_word" && fields[0].data_type()==&DataType::Int32)
 }
@@ -252,6 +233,7 @@ impl GenomicAccumulator {
             .downcast_ref::<StructArray>()
             .ok_or_else(|| bad("call_stats requires Call"))?;
         let allele_counts = packed_col(s, "__vail_genomic_alleles")?;
+        let decoded = crate::calls::CallRows::from_struct(calls).map_err(|e| bad(e.to_string()))?;
         for row in 0..s.len() {
             if s.is_null(row) {
                 continue;
@@ -279,10 +261,10 @@ impl GenomicAccumulator {
             if n != self.ac.len() {
                 return Err(bad("call_stats allele count differs from initializer"));
             }
-            let Some(call) = call_alleles(calls, row)? else {
+            let Some(call) = decoded.get(row).map_err(|e| bad(e.to_string()))? else {
                 continue;
             };
-            self.tally_call(&call, n)?;
+            self.tally_call(call.alleles(), n)?;
         }
         Ok(())
     }
@@ -310,8 +292,8 @@ impl GenomicAccumulator {
         }
         let rows = crate::calls::CallRows::new(calls).map_err(|e| bad(e.to_string()))?;
         for row in 0..calls.len() {
-            if let Some((call, _)) = rows.get(row).map_err(|e| bad(e.to_string()))? {
-                self.tally_call(&call, n)?;
+            if let Some(call) = rows.get(row).map_err(|e| bad(e.to_string()))? {
+                self.tally_call(call.alleles(), n)?;
             }
         }
         Ok(())
@@ -585,10 +567,12 @@ impl Accumulator for GenomicAccumulator {
                     .as_any()
                     .downcast_ref::<StructArray>()
                     .ok_or_else(|| bad("HWE requires Call"))?;
+                let calls = crate::calls::CallRows::from_struct(s).map_err(|e| bad(e.to_string()))?;
                 for i in 0..s.len() {
-                    let Some(call) = call_alleles(s, i)? else {
+                    let Some(call) = calls.get(i).map_err(|e| bad(e.to_string()))? else {
                         continue;
                     };
+                    let call = call.alleles();
                     if call.len() != 2 {
                         continue;
                     }
@@ -611,13 +595,15 @@ impl Accumulator for GenomicAccumulator {
                     .as_any()
                     .downcast_ref::<Float64Array>()
                     .ok_or_else(|| bad("inbreeding prior must be float64"))?;
+                let decoded = crate::calls::CallRows::from_struct(calls).map_err(|e| bad(e.to_string()))?;
                 for i in 0..s.len() {
                     if s.is_null(i) || priors.is_null(i) {
                         continue;
                     }
-                    let Some(call) = call_alleles(calls, i)? else {
+                    let Some(call) = decoded.get(i).map_err(|e| bad(e.to_string()))? else {
                         continue;
                     };
+                    let call = call.alleles();
                     if call.len() != 2 || call.iter().any(|&x| x > 1) {
                         return Err(bad(
                             "'inbreeding' does not support non-diploid or multiallelic genotypes",

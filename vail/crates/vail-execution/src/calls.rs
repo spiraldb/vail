@@ -1,11 +1,12 @@
 //! Checked Arrow adapters for packed Calls. Each input expression is evaluated
 //! once by the physical caller; each present row is packed or decoded once.
 use crate::expressions::ExprError;
-use arrow_array::builder::{Int32Builder, ListBuilder};
+use arrow_array::builder::{BooleanBuilder, Int32Builder, ListBuilder};
 use arrow_array::{Array, ArrayRef, BooleanArray, Int32Array, ListArray, StructArray};
 use arrow_schema::DataType;
 use std::sync::Arc;
 pub use vail_ordering::call::{pack, unpack};
+use vail_ordering::call::{DecodedCall, decode};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub(crate) enum CallAccessor {
@@ -41,6 +42,9 @@ pub(crate) struct CallRows<'a> {
 impl<'a> CallRows<'a> {
     pub(crate) fn new(value: &'a ArrayRef) -> Result<Self, ExprError> {
         let parent = down::<StructArray>(value.as_ref())?;
+        Self::from_struct(parent)
+    }
+    pub(crate) fn from_struct(parent: &'a StructArray) -> Result<Self, ExprError> {
         let words = parent
             .column_by_name("__vail_call_word")
             .ok_or_else(|| ExprError::Invalid("Call word is absent".into()))?;
@@ -49,14 +53,14 @@ impl<'a> CallRows<'a> {
             words: down(words.as_ref())?,
         })
     }
-    pub(crate) fn get(&self, row: usize) -> Result<Option<(Vec<i32>, bool)>, ExprError> {
+    pub(crate) fn get(&self, row: usize) -> Result<Option<DecodedCall>, ExprError> {
         if self.parent.is_null(row) {
             return Ok(None);
         }
         if self.words.is_null(row) {
             return Err(ExprError::Invalid("present Call has missing word".into()));
         }
-        unpack(self.words.value(row))
+        decode(self.words.value(row))
             .map(Some)
             .map_err(ExprError::Invalid)
     }
@@ -66,11 +70,12 @@ pub(crate) fn access(value: &ArrayRef, accessor: CallAccessor) -> Result<ArrayRe
     let rows = CallRows::new(value)?;
     match accessor {
         CallAccessor::Alleles => {
-            let mut out = ListBuilder::new(Int32Builder::new());
+            let mut out = ListBuilder::with_capacity(
+                Int32Builder::with_capacity(value.len().saturating_mul(2)), value.len());
             for row in 0..value.len() {
                 match rows.get(row)? {
-                    Some((alleles, _)) => {
-                        out.values().append_slice(&alleles);
+                    Some(call) => {
+                        out.values().append_slice(call.alleles());
                         out.append(true);
                     }
                     None => out.append(false),
@@ -79,10 +84,11 @@ pub(crate) fn access(value: &ArrayRef, accessor: CallAccessor) -> Result<ArrayRe
             Ok(Arc::new(out.finish()))
         }
         CallAccessor::Phased => {
-            let values = (0..value.len())
-                .map(|row| rows.get(row).map(|v| v.map(|(_, phased)| phased)))
-                .collect::<Result<Vec<_>, _>>()?;
-            Ok(Arc::new(BooleanArray::from(values)))
+            let mut values = BooleanBuilder::with_capacity(value.len());
+            for row in 0..value.len() {
+                values.append_option(rows.get(row)?.map(|call| call.phased()));
+            }
+            Ok(Arc::new(values.finish()))
         }
         CallAccessor::Word => {
             for row in 0..value.len() {
@@ -105,20 +111,21 @@ pub(crate) fn construct(value: &ArrayRef, dtype: &DataType) -> Result<ArrayRef, 
     };
     let alleles = down::<ListArray>(field("__vail_call_alleles")?.as_ref())?;
     let phased = down::<BooleanArray>(field("__vail_call_phased")?.as_ref())?;
+    let values = down::<Int32Array>(alleles.values().as_ref())?;
     let mut words = Vec::with_capacity(value.len());
     for row in 0..value.len() {
         if parent.is_null(row) || alleles.is_null(row) || phased.is_null(row) {
             words.push(None);
             continue;
         }
-        let values = alleles.value(row);
-        let values = down::<Int32Array>(values.as_ref())?;
-        if values.null_count() != 0 {
+        let start = alleles.value_offsets()[row] as usize;
+        let end = alleles.value_offsets()[row + 1] as usize;
+        if (start..end).any(|index| values.is_null(index)) {
             words.push(None);
             continue;
         }
         words.push(Some(
-            pack(values.values(), phased.value(row)).map_err(ExprError::Invalid)?,
+            pack(&values.values()[start..end], phased.value(row)).map_err(ExprError::Invalid)?,
         ));
     }
     let words = Int32Array::from(words);

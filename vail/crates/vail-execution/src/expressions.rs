@@ -2487,7 +2487,7 @@ fn validate_literal(value: &Value, dtype: &Type) -> Result<(), ExprError> {
                     .as_i64()
                     .ok_or_else(|| ExprError::Invalid("Call word must be present".into()))?
                     as i32;
-                vail_ordering::call::unpack(word).map_err(ExprError::Invalid)?;
+                vail_ordering::call::decode(word).map_err(ExprError::Invalid)?;
             }
             return Ok(());
         }
@@ -3985,7 +3985,7 @@ fn call_word(array: &ArrayRef, row: usize) -> Result<i32, ExprError> {
         return Err(ExprError::Invalid("present Call has missing word".into()));
     }
     let word = word.value(row);
-    vail_ordering::call::unpack(word).map_err(ExprError::Invalid)?;
+    vail_ordering::call::decode(word).map_err(ExprError::Invalid)?;
     Ok(word)
 }
 fn call_raw(array: &ArrayRef, row: usize) -> Result<String, ExprError> {
@@ -4435,11 +4435,12 @@ impl PhysicalExpr for HailPhysicalExpr {
                     let child = st.column_by_name(name).ok_or_else(|| {
                         ExprError::Invalid(format!("struct field {name:?} absent"))
                     })?;
-                    let mask = Arc::new(BooleanArray::from(
-                        (0..len).map(|i| parent.is_null(i)).collect::<Vec<_>>(),
-                    )) as ArrayRef;
-                    let mask = mask.as_any().downcast_ref::<BooleanArray>().unwrap();
-                    Ok(nullif(child.as_ref(), mask)?)
+                    if parent.null_count() == 0 {
+                        Ok(child.clone())
+                    } else {
+                        let mask = arrow_arith::boolean::is_null(parent.as_ref())?;
+                        Ok(nullif(child.as_ref(), &mask)?)
+                    }
                 }
                 HailKind::Struct(names) => {
                     let fields = names

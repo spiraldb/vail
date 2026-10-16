@@ -1052,6 +1052,31 @@ impl NativeExpr {
     fn is_closed_scalar(&self) -> bool {
         self.inner.is_closed_scalar()
     }
+    /// Summarize matrix dependencies by visiting each borrowed DAG node once.
+    fn matrix_dependencies(&self) -> (Vec<String>, Vec<String>, bool) {
+        let mut entries = std::collections::BTreeSet::new();
+        let mut columns = std::collections::BTreeSet::new();
+        let mut position = false;
+        let mut seen = std::collections::HashSet::new();
+        let mut pending = vec![self.inner.as_ref()];
+        while let Some(node) = pending.pop() {
+            if !seen.insert(node as *const Expr) {
+                continue;
+            }
+            match node {
+                Expr::MatrixField { axis, name } if axis == "entry" => {
+                    entries.insert(name.clone());
+                }
+                Expr::MatrixField { axis, name } if axis == "col" => {
+                    columns.insert(name.clone());
+                }
+                Expr::MatrixColumnPosition {} => position = true,
+                _ => {}
+            }
+            node.visit_children(&mut |child| pending.push(child));
+        }
+        (entries.into_iter().collect(), columns.into_iter().collect(), position)
+    }
     fn references_rows(&self) -> bool {
         crate::random_binding::rows_referenced(&self.inner)
     }

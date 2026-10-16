@@ -10,6 +10,75 @@ from .expressions import Expression, _IR, cast
 from .types import tarray, tbool, tint32, tint64, type_from_wire
 
 
+def reduce_row_predicate(matrix, expr, base):
+    """Reduce a primitive predicate without filtering or rebuilding cell structs.
+
+    The general context path is needed for aggregate combinators. Plain boolean
+    reductions can instead apply entry presence inside the primitive projection,
+    leaving DataFusion to map the predicate and reduce the resulting list.
+    """
+    from . import if_else, literal, struct, sum as array_sum
+    from .types import tfloat64
+    from .matrixtable import _CELLS, _COL, _PRESENT, _VALUE, _zip_arrays
+
+    node = expr.to_ir()
+    functions = {"count_where", "fraction", "any", "all"}
+    if (node.get("op") != "aggregate" or node.get("function") not in functions
+            or matrix._is_scan_node(node)):
+        return None
+    function = node["function"]
+    predicate = Expression(tbool, matrix, _IR(node["value"], expr._global_refs, expr._lookup_refs))
+    # Filtering first supplies random expressions' present-entry UID context.
+    # Lookup expressions also retain the established position-sensitive path.
+    if predicate.to_ir().contains_random() or predicate._lookup_refs:
+        return None
+    entries, columns, needs_position = predicate.to_ir().matrix_dependencies()
+    required = {"entry": set(entries), "col": set(columns)}
+    # Position-sensitive lookups retain the established indexed-context path.
+    if needs_position:
+        return None
+    cells = base[_CELLS]
+    if required["col"]:
+        # Project before zipping: arrays_zip must not replicate unrelated column
+        # annotations, and the predicate never needs a full entry context.
+        cells = cells.map(lambda cell: struct(**{
+            _PRESENT: cell[_PRESENT],
+            _VALUE: struct(**{name: cell[_VALUE][name]
+                             for name in matrix.entry.dtype if name in required["entry"]}),
+        }))
+        columns = matrix._mir.column_records.map(lambda column: struct(**{
+            name: column[_COL][name]
+            for name in matrix.col.dtype if name in required["col"]
+        }))
+        items = _zip_arrays(cells, columns)
+
+        def project(item):
+            cell = item["1"]
+            value = matrix._lower_cell(predicate, base, cell, item["2"])
+            value = ~value if function == "all" else value
+            selected = if_else(value, literal(1, tint64), literal(0, tint64), missing_false=True)
+            return if_else(cell[_PRESENT], selected, literal(0, tint64))
+
+    else:
+        items = cells
+
+        def project(cell):
+            value = matrix._lower_cell(predicate, base, cell, struct())
+            value = ~value if function == "all" else value
+            selected = if_else(value, literal(1, tint64), literal(0, tint64), missing_false=True)
+            return if_else(cell[_PRESENT], selected, literal(0, tint64))
+
+    count = array_sum(items.map(project))
+    if function == "any":
+        return count > 0
+    if function == "all":
+        return count == 0
+    if function == "fraction":
+        present = array_sum(base[_CELLS].map(lambda cell: cast(cell[_PRESENT], tint64)))
+        return if_else(present > 0, count / present, literal(float("nan"), tfloat64))
+    return count
+
+
 def reduce_list(
     matrix, expr, base, contexts, outside=None, bound=None, *, direct_entry_sum=False
 ):

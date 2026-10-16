@@ -1,8 +1,14 @@
 """Call predicates lowered to DataFusion arithmetic on the packed call word."""
-from .expressions import float64, if_else, int32, int64
+from .expressions import bind, float64, if_else, int32, int64
 
 
 def call_property(word, name):
+    # The word accessor validates the Call. Bind it once so repeated arithmetic
+    # operands do not decode the same genotype again for every occurrence.
+    return bind(lambda value: _call_property(value, name), word)
+
+
+def _call_property(word, name):
     ploidy = int32((int64(word) // 2) % 4)
     if name == "ploidy":
         return ploidy
