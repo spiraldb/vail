@@ -1,0 +1,695 @@
+--- a/src/layouts/list/reader.rs
++++ b/src/layouts/list/reader.rs
+@@ -20,7 +20,10 @@
+ use vortex_array::dtype::Nullability;
+ use vortex_array::dtype::PType;
+ use vortex_array::expr::BoundExpression;
++use vortex_array::expr::Expression;
+ use vortex_array::expr::root;
++use vortex_array::scalar_fn::fns::list_project::Project;
++use vortex_array::scalar_fn::fns::list_project::project_paths;
+ use vortex_array::scalar_fn::fns::operators::Operator;
+ use vortex_array::validity::Validity;
+ use vortex_error::VortexExpect;
+@@ -177,7 +180,7 @@
+         let expr = expr.clone();
+ 
+         let offsets_fut = self.fetch_raw_offsets(&(0..row_count))?;
+-        let elements_fut = self.fetch_raw_elements(&(0..elements_row_count))?;
++        let elements_fut = self.fetch_elements_for_projection(&(0..elements_row_count), &expr)?;
+         let validity_fut = fetch_validity(
+             self.validity.as_ref(),
+             &(0..row_count),
+@@ -192,7 +195,11 @@
+                 ListArray::new_unchecked(elements, offsets, create_validity(validity, nullability))
+             }
+             .into_array();
+-            list.apply_bound(&expr)
++            if is_root_list_project(&expr) {
++                Ok(list)
++            } else {
++                list.apply_bound(&expr)
++            }
+         }
+         .boxed())
+     }
+@@ -227,7 +234,7 @@
+             let offsets = offsets_fut.await?;
+ 
+             let elements_range = elements_range_from_offsets(&offsets, &reader.session)?;
+-            let elements_fut = reader.fetch_raw_elements(&elements_range)?;
++            let elements_fut = reader.fetch_elements_for_projection(&elements_range, &expr)?;
+             let validity_fut = fetch_validity(
+                 reader.validity.as_ref(),
+                 &selected_row_range,
+@@ -248,7 +255,11 @@
+             } else {
+                 list.filter(selected_mask)?
+             };
+-            list.apply_bound(&expr)
++            if is_root_list_project(&expr) {
++                Ok(list)
++            } else {
++                list.apply_bound(&expr)
++            }
+         }
+         .boxed())
+     }
+@@ -317,6 +328,37 @@
+         self.elements
+             .projection_evaluation(row_range, &root, MaskFuture::new_true(row_count))
+     }
++
++    /// Fetch elements using the nested paths requested by a list projection when present.
++    /// This lets the child struct reader prune unreferenced element fields (including nested
++    /// fields) while this reader continues to own and preserve offsets and list validity.
++    fn fetch_elements_for_projection(
++        &self,
++        row_range: &Range<u64>,
++        expr: &BoundExpression,
++    ) -> VortexResult<ArrayFuture> {
++        let Some(paths) = expr
++            .as_scalar()
++            .and_then(|scalar_fn| scalar_fn.as_opt::<Project>())
++        else {
++            return self.fetch_raw_elements(row_range);
++        };
++        if !expr.children()[0].is_root() {
++            return self.fetch_raw_elements(row_range);
++        }
++        let projection = project_paths(&paths.0, Expression::Root, self.elements.dtype())?
++            .bind(self.elements.dtype())?;
++        let row_count = usize::try_from(row_range.end - row_range.start)?;
++        self.elements
++            .projection_evaluation(row_range, &projection, MaskFuture::new_true(row_count))
++    }
++}
++
++fn is_root_list_project(expr: &BoundExpression) -> bool {
++    expr.as_scalar()
++        .and_then(|scalar_fn| scalar_fn.as_opt::<Project>())
++        .is_some()
++        && expr.children()[0].is_root()
+ }
+ 
+ fn selected_row_range(mask: &Mask) -> Option<Range<usize>> {
+@@ -615,7 +657,10 @@
+     use vortex_array::arrays::BoolArray;
+     use vortex_array::arrays::ListArray;
+     use vortex_array::arrays::PrimitiveArray;
++    use vortex_array::arrays::StructArray;
+     use vortex_array::assert_arrays_eq;
++    use vortex_array::dtype::FieldName;
++    use vortex_array::dtype::FieldNames;
+     use vortex_array::expr::Expression;
+     use vortex_array::expr::cast;
+     use vortex_array::expr::gt;
+@@ -623,6 +668,7 @@
+     use vortex_array::expr::is_null;
+     use vortex_array::expr::list_length;
+     use vortex_array::expr::lit;
++    use vortex_array::scalar_fn::fns::list_project::list_project;
+     use vortex_buffer::buffer;
+     use vortex_io::session::RuntimeSession;
+     use vortex_io::session::RuntimeSessionExt;
+@@ -635,6 +681,7 @@
+     use crate::layouts::list::writer::ListLayoutStrategy;
+     use crate::layouts::repartition::RepartitionStrategy;
+     use crate::layouts::repartition::RepartitionWriterOptions;
++    use crate::layouts::struct_::StructStrategy;
+     use crate::scan::split_by::SplitBy;
+     use crate::segments::SegmentFuture;
+     use crate::segments::SegmentSource;
+@@ -1113,6 +1160,41 @@
+         request_count: Arc<AtomicUsize>,
+     }
+ 
++    struct RejectSegmentSource {
++        inner: Arc<dyn SegmentSource>,
++        forbidden: Vec<crate::segments::SegmentId>,
++        request_count: Arc<AtomicUsize>,
++    }
++
++    impl SegmentSource for RejectSegmentSource {
++        fn request(&self, id: crate::segments::SegmentId) -> SegmentFuture {
++            self.request_count.fetch_add(1, Ordering::Relaxed);
++            if self.forbidden.contains(&id) {
++                return Box::pin(async move {
++                    Err(vortex_error::vortex_err!(
++                        "unexpected read of pruned segment {id}"
++                    ))
++                });
++            }
++            self.inner.request(id)
++        }
++    }
++
++    fn segment_ids_at_path(
++        layout: &LayoutRef,
++        path: &[&str],
++    ) -> VortexResult<Vec<crate::segments::SegmentId>> {
++        if path.is_empty() {
++            return Ok(layout.segment_ids().to_vec());
++        }
++        for (child_type, child) in layout.child_types().zip(layout.children()?) {
++            if child_type.name().as_ref() == path[0] {
++                return segment_ids_at_path(&child, &path[1..]);
++            }
++        }
++        vortex_error::vortex_bail!("layout has no child at path {path:?}");
++    }
++
+     impl SegmentSource for CountingSegmentSource {
+         fn request(&self, id: crate::segments::SegmentId) -> SegmentFuture {
+             self.request_count.fetch_add(1, Ordering::Relaxed);
+@@ -1161,6 +1243,97 @@
+         let mut exec_ctx = session.create_execution_ctx();
+         assert_arrays_eq!(result, expected, &mut exec_ctx);
+         assert_eq!(request_count.load(Ordering::Relaxed), 2);
++        Ok(())
++    }
++
++    /// Nested list projection reads only the requested element leaves. This exercises the actual
++    /// serialized layout/read path (not just the scalar function's in-memory result).
++    #[tokio::test]
++    async fn nested_list_projection_prunes_unrequested_leaf() -> VortexResult<()> {
++        let nested = StructArray::try_new(
++            FieldNames::from(["GT", "DP"]),
++            vec![
++                buffer![10i32, 20, 30].into_array(),
++                buffer![1i32, 2, 3].into_array(),
++            ],
++            3,
++            Validity::NonNullable,
++        )?;
++        let elements = StructArray::try_new(
++            FieldNames::from(["cid", "present", "value", "unused"]),
++            vec![
++                buffer![1i32, 1, 2].into_array(),
++                BoolArray::from_iter([true, false, true]).into_array(),
++                nested.into_array(),
++                buffer![90i32, 91, 92].into_array(),
++            ],
++            3,
++            Validity::NonNullable,
++        )?;
++        let list = ListArray::try_new(
++            elements.into_array(),
++            buffer![0u32, 2, 3].into_array(),
++            Validity::NonNullable,
++        )?
++        .into_array();
++        let paths = vec![
++            vec![FieldName::from("cid")],
++            vec![FieldName::from("present")],
++            vec![FieldName::from("value"), FieldName::from("GT")],
++        ];
++        let flat: Arc<dyn LayoutStrategy> = Arc::new(FlatLayoutStrategy::default());
++        let value_strategy = StructStrategy::new(Arc::clone(&flat), Arc::clone(&flat))
++            .with_field_writer("GT", Arc::clone(&flat))
++            .with_field_writer("DP", Arc::clone(&flat));
++        let elements_strategy = StructStrategy::new(Arc::clone(&flat), Arc::clone(&flat))
++            .with_field_writer("value", Arc::new(value_strategy));
++        let strategy = ListLayoutStrategy::default().with_elements(Arc::new(elements_strategy));
++        let (segments, layout, session) = write_layout(&strategy, list.clone()).await?;
++        let pruned_segments = segment_ids_at_path(&layout, &["elements", "value", "DP"])?;
++        assert!(
++            !pruned_segments.is_empty(),
++            "DP must have its own physical segment"
++        );
++
++        let full_count = Arc::new(AtomicUsize::new(0));
++        let full_source = Arc::new(CountingSegmentSource {
++            inner: Arc::clone(&segments),
++            request_count: Arc::clone(&full_count),
++        });
++        let full_reader = layout.new_reader(
++            "".into(),
++            full_source,
++            &session,
++            &LayoutReaderContext::new(),
++        )?;
++        let full_expr = root().bind(full_reader.dtype())?;
++        full_reader
++            .projection_evaluation(&(0..2), &full_expr, MaskFuture::new_true(2))?
++            .await?;
++
++        let projected_count = Arc::new(AtomicUsize::new(0));
++        let projected_source = Arc::new(RejectSegmentSource {
++            inner: segments,
++            forbidden: pruned_segments,
++            request_count: Arc::clone(&projected_count),
++        });
++        let projected_reader = layout.new_reader(
++            "".into(),
++            projected_source,
++            &session,
++            &LayoutReaderContext::new(),
++        )?;
++        let projected_expr = list_project(&paths, root(), projected_reader.dtype())?
++            .bind(projected_reader.dtype())?;
++        let projected = projected_reader
++            .projection_evaluation(&(0..2), &projected_expr, MaskFuture::new_true(2))?
++            .await?;
++
++        let expected_expr = list_project(&paths, root(), list.dtype())?;
++        let expected = list.apply(&expected_expr)?;
++        let mut exec_ctx = session.create_execution_ctx();
++        assert_arrays_eq!(projected, expected, &mut exec_ctx);
++        assert!(full_count.load(Ordering::Relaxed) > projected_count.load(Ordering::Relaxed));
+         Ok(())
+     }
+ 
+--- a/src/layouts/list/writer.rs
++++ b/src/layouts/list/writer.rs
+@@ -33,6 +33,8 @@
+ use crate::LayoutRef;
+ use crate::LayoutStrategy;
+ use crate::LayoutWriterContext;
++use crate::children::OwnedLayoutChildren;
++use crate::layouts::chunked::ChunkedLayout;
+ use crate::layouts::flat::writer::FlatLayoutStrategy;
+ use crate::layouts::list::ListLayout;
+ use crate::segments::SegmentSinkRef;
+@@ -117,7 +119,7 @@
+         &self,
+         ctx: LayoutWriterContext,
+         segment_sink: SegmentSinkRef,
+-        stream: SendableSequentialStream,
++        mut stream: SendableSequentialStream,
+         mut eof: SequencePointer,
+         session: &VortexSession,
+     ) -> VortexResult<LayoutRef> {
+@@ -128,6 +130,22 @@
+                 .write_stream(ctx, segment_sink, stream, eof, session)
+                 .await;
+         }
++
++        // Rechunking may remove every zero-length chunk from a nested element
++        // stream. Such a stream is a valid empty list column, just as for the
++        // flat/chunked strategies: it has a dtype and zero rows, with no data
++        // segments or offsets to encode.
++        let Some(first) = stream.next().await else {
++            return Ok(
++                ChunkedLayout::new(0, dtype, OwnedLayoutChildren::layout_children(vec![]))
++                    .into_layout(),
++            );
++        };
++        let stream = SequentialStreamAdapter::new(
++            dtype.clone(),
++            futures::stream::once(async { first }).chain(stream).boxed(),
++        )
++        .sendable();
+ 
+         let is_nullable = dtype.is_nullable();
+         let element_dtype = dtype
+@@ -432,7 +450,7 @@
+     }
+ 
+     #[tokio::test]
+-    async fn empty_stream_errors() {
++    async fn empty_stream_retains_dtype_and_zero_rows() {
+         let segments = Arc::new(TestSegments::default());
+         let (_, eof) = SequenceId::root().split();
+         let empty = stream::empty::<VortexResult<(SequenceId, ArrayRef)>>().boxed();
+@@ -448,7 +466,9 @@
+                 &session,
+             )
+             .await;
+-        assert!(res.is_err())
++        let layout = res.unwrap();
++        assert_eq!(layout.row_count(), 0);
++        assert_eq!(layout.dtype(), &i32_list_dtype(false));
+     }
+ 
+     #[tokio::test]
+--- a/src/layouts/struct_/reader.rs
++++ b/src/layouts/struct_/reader.rs
+@@ -5,15 +5,8 @@
+ use std::sync::Arc;
+ use std::sync::OnceLock;
+ 
+-use futures::try_join;
+ use itertools::Itertools;
+-use vortex_array::ArrayRef;
+-use vortex_array::IntoArray;
+ use vortex_array::MaskFuture;
+-use vortex_array::VortexSessionExecute;
+-use vortex_array::arrays::StructArray;
+-use vortex_array::arrays::struct_::StructArrayExt;
+-use vortex_array::builtins::ArrayBuiltins;
+ use vortex_array::dtype::DType;
+ use vortex_array::dtype::FieldMask;
+ use vortex_array::dtype::FieldName;
+@@ -22,6 +15,8 @@
+ use vortex_array::expr::BoundExpression;
+ use vortex_array::expr::ExactBoundExpr;
+ use vortex_array::expr::bound::get_item;
++use vortex_array::expr::bound::mask;
++use vortex_array::expr::bound::not;
+ use vortex_array::expr::bound::pack;
+ use vortex_array::expr::make_bound_free_field_annotator;
+ use vortex_array::expr::root;
+@@ -31,8 +26,11 @@
+ use vortex_array::expr::traversal::Transformed;
+ use vortex_array::expr::traversal::TraversalOrder;
+ use vortex_array::scalar_fn::fns::get_item::GetItem;
+-use vortex_array::scalar_fn::fns::merge::Merge;
+-use vortex_array::scalar_fn::fns::pack::Pack;
++use vortex_array::scalar_fn::fns::is_not_null::IsNotNull;
++use vortex_array::scalar_fn::fns::is_null::IsNull;
++use vortex_array::scalar_fn::fns::list_project::Project;
++use vortex_array::scalar_fn::fns::list_project::project_paths_bound;
++use vortex_array::scalar_fn::fns::mask::Mask as MaskFn;
+ use vortex_array::scalar_fn::fns::select::Select;
+ use vortex_error::VortexExpect;
+ use vortex_error::VortexResult;
+@@ -41,6 +39,7 @@
+ use vortex_session::VortexSession;
+ use vortex_utils::aliases::dash_map::DashMap;
+ use vortex_utils::aliases::hash_map::HashMap;
++use vortex_utils::aliases::hash_set::HashSet;
+ 
+ use crate::ArrayFuture;
+ use crate::LayoutReader;
+@@ -63,6 +62,9 @@
+     expanded_root_expr: BoundExpression,
+ 
+     field_lookup: Option<HashMap<FieldName, usize>>,
++    /// Scope used only while partitioning: nullable parents have an independent validity field.
++    partition_fields: StructFields,
++    validity_field: Option<FieldName>,
+     partitioned_expr_cache: DashMap<ExactBoundExpr, Arc<OnceLock<Partitioned>>>,
+ }
+ 
+@@ -108,7 +110,31 @@
+         );
+ 
+         // Create an expanded root expression that contains all fields of the struct.
+-        let expanded_root_expr = expanded_struct_root(layout.dtype(), struct_dt)?;
++        let validity_field = nullable.then(|| {
++            let names: HashSet<_> = struct_dt.names().iter().cloned().collect();
++            let mut name = FieldName::from("__vortex_parent_validity");
++            let mut suffix = 0usize;
++            while names.contains(&name) {
++                name = FieldName::from(format!("__vortex_parent_validity_{suffix}"));
++                suffix += 1;
++            }
++            name
++        });
++        let partition_fields = StructFields::from_iter(
++            struct_dt
++                .names()
++                .iter()
++                .cloned()
++                .zip(struct_dt.fields())
++                .chain(
++                    validity_field
++                        .iter()
++                        .cloned()
++                        .map(|name| (name, DType::Bool(Nullability::NonNullable))),
++                ),
++        );
++        let expanded_root_expr =
++            expanded_struct_root(&partition_fields, struct_dt, validity_field.as_ref())?;
+ 
+         // This is where we need to do some complex things with the scan in order to split it into
+         // different scans for different fields.
+@@ -119,6 +145,8 @@
+             expanded_root_expr,
+             lazy_children,
+             field_lookup,
++            partition_fields,
++            validity_field,
+             partitioned_expr_cache: Default::default(),
+         })
+     }
+@@ -130,6 +158,11 @@
+ 
+     /// Return the child reader for the field.
+     fn field_reader(&self, name: &FieldName) -> VortexResult<&LayoutReaderRef> {
++        if self.validity_field.as_ref() == Some(name) {
++            return self
++                .validity()?
++                .ok_or_else(|| vortex_err!("nullable struct has no validity reader"));
++        }
+         let idx = self
+             .field_lookup
+             .as_ref()
+@@ -194,11 +227,7 @@
+         // Partition the expression into expressions that can be evaluated over individual fields
+         let mut partitioned = partition_bound(
+             expr.clone(),
+-            make_bound_free_field_annotator(
+-                self.dtype()
+-                    .as_struct_fields_opt()
+-                    .vortex_expect("We know it's a struct DType"),
+-            ),
++            make_bound_free_field_annotator(&self.partition_fields),
+         )?;
+ 
+         if partitioned.partitions.len() == 1 {
+@@ -235,19 +264,27 @@
+ }
+ 
+ fn expanded_struct_root(
+-    root_dtype: &DType,
++    partition_fields: &StructFields,
+     fields: &StructFields,
++    validity_field: Option<&FieldName>,
+ ) -> VortexResult<BoundExpression> {
+-    let root = BoundExpression::new_root(root_dtype.clone());
++    let root = BoundExpression::new_root(DType::Struct(
++        partition_fields.clone(),
++        Nullability::NonNullable,
++    ));
+     let children = fields
+         .names()
+         .iter()
+         .map(|name| get_item(name.clone(), root.clone()))
+         .collect::<Vec<_>>();
+-    Ok(pack(
++    let packed = pack(
+         fields.names().iter().cloned().zip(children),
+         Nullability::NonNullable,
+-    ))
++    );
++    Ok(match validity_field {
++        Some(name) => mask(packed, get_item(name.clone(), root)),
++        None => packed,
++    })
+ }
+ 
+ fn expand_struct_root(
+@@ -255,6 +292,20 @@
+     expanded_root: &BoundExpression,
+     fields: &StructFields,
+ ) -> VortexResult<BoundExpression> {
++    let (packed, validity) = if expanded_root
++        .as_scalar()
++        .is_some_and(|scalar_fn| scalar_fn.is::<MaskFn>())
++    {
++        let children = expanded_root.children();
++        (&children[0], Some(&children[1]))
++    } else {
++        (expanded_root, None)
++    };
++    let with_validity = |expr: BoundExpression| match validity {
++        Some(validity) => mask(expr, validity.clone()),
++        None => expr,
++    };
++
+     Ok(expr
+         .transform_down(|node| {
+             if node.is_root() {
+@@ -280,8 +331,9 @@
+                 let idx = fields.find(field_name).ok_or_else(|| {
+                     vortex_err!("Field {field_name} not found while expanding struct root")
+                 })?;
++                let child = packed.children()[idx].clone();
+                 return Ok(Transformed {
+-                    value: expanded_root.children()[idx].clone(),
++                    value: with_validity(child),
+                     changed: true,
+                     order: TraversalOrder::Skip,
+                 });
+@@ -295,16 +347,75 @@
+                         let idx = fields.find(name).vortex_expect(
+                             "normalized selection fields must exist in the struct root",
+                         );
+-                        expanded_root.children()[idx].clone()
++                        packed.children()[idx].clone()
+                     })
+                     .collect();
+                 return Ok(Transformed {
+-                    value: pack(names.into_iter().zip(children), Nullability::NonNullable),
++                    value: with_validity(pack(
++                        names.into_iter().zip(children),
++                        Nullability::NonNullable,
++                    )),
+                     changed: true,
+                     order: TraversalOrder::Skip,
+                 });
+             }
+ 
++            if let Some(paths) = scalar_fn.as_opt::<Project>() {
++                let mut names = Vec::new();
++                let mut children = Vec::new();
++                for name in fields.names().iter() {
++                    let matching: Vec<_> = paths
++                        .0
++                        .iter()
++                        .filter(|path| path.first() == Some(name))
++                        .collect();
++                    if matching.is_empty() {
++                        continue;
++                    }
++                    names.push(name.clone());
++                    let descendants: Vec<_> = matching
++                        .iter()
++                        .filter_map(|path| path.get(1..))
++                        .filter(|path| !path.is_empty())
++                        .map(|path| path.to_vec())
++                        .collect();
++                    let idx = fields.find(name).vortex_expect("project path field exists");
++                    let child = packed.children()[idx].clone();
++                    if matching.iter().any(|path| path.len() == 1) || descendants.is_empty() {
++                        children.push(child);
++                    } else {
++                        children.push(project_paths_bound(&descendants, child)?);
++                    }
++                }
++                return Ok(Transformed {
++                    value: with_validity(pack(
++                        names.into_iter().zip(children),
++                        Nullability::NonNullable,
++                    )),
++                    changed: true,
++                    order: TraversalOrder::Skip,
++                });
++            }
++
++            let Some(validity) = validity else {
++                return Ok(Transformed::no(node));
++            };
++
++            // You can alternatively call optimize_recursive but this is cheaper
++            if scalar_fn.is::<IsNotNull>() {
++                return Ok(Transformed {
++                    value: validity.clone(),
++                    changed: true,
++                    order: TraversalOrder::Skip,
++                });
++            }
++            if scalar_fn.is::<IsNull>() {
++                return Ok(Transformed {
++                    value: not(validity.clone()),
++                    changed: true,
++                    order: TraversalOrder::Skip,
++                });
++            }
+             Ok(Transformed::no(node))
+         })?
+         .into_inner())
+@@ -334,11 +445,6 @@
+             }
+         })?
+         .into_inner())
+-}
+-
+-fn is_pack_or_merge(expr: &BoundExpression) -> bool {
+-    expr.as_scalar()
+-        .is_some_and(|scalar_fn| scalar_fn.is::<Pack>() || scalar_fn.is::<Merge>())
+ }
+ 
+ /// When partitioning an expression, in the case it only has a single partition we can avoid
+@@ -461,75 +567,27 @@
+         expr: &BoundExpression,
+         mask_fut: MaskFuture,
+     ) -> VortexResult<ArrayFuture> {
+-        let validity_fut = self
+-            .validity()?
+-            .map(|reader| {
+-                let root = root().bind(reader.dtype())?;
+-                reader.projection_evaluation(row_range, &root, mask_fut.clone())
+-            })
+-            .transpose()?;
+-
+-        // Partition the expression into expressions that can be evaluated over individual fields
+-        let (projected, is_pack_merge) = match &self.partition_expr(expr)? {
+-            Partitioned::Single(name, partition) => {
+-                let reader = self.field_reader(name)?;
+-                (
+-                    reader
+-                        .projection_evaluation(row_range, partition, mask_fut)
+-                        .map_err(|err| {
+-                            err.with_context(format!(
+-                                "While evaluating projection partition {name}"
+-                            ))
+-                        })?,
+-                    is_pack_or_merge(partition),
+-                )
+-            }
+-
+-            Partitioned::Multi(partitioned) => (
++        // Parent validity is an explicit partition dependency in expanded expressions.
++        // Applying it again here would incorrectly null non-strict results such as is_null($).
++        match &self.partition_expr(expr)? {
++            Partitioned::Single(name, partition) => self
++                .field_reader(name)?
++                .projection_evaluation(row_range, partition, mask_fut)
++                .map_err(|err| {
++                    err.with_context(format!("While evaluating projection partition {name}"))
++                }),
++            Partitioned::Multi(partitioned) => {
+                 Arc::clone(partitioned).into_array_future(mask_fut, |name, expr, mask| {
+-                    let reader = self.field_reader(name)?;
+-                    reader
++                    self.field_reader(name)?
+                         .projection_evaluation(row_range, expr, mask)
+                         .map_err(|err| {
+                             err.with_context(format!(
+                                 "While evaluating projection partition {name}"
+                             ))
+                         })
+-                })?,
+-                is_pack_or_merge(&partitioned.root),
+-            ),
+-        };
+-
+-        let session = self.session.clone();
+-        Ok(Box::pin(async move {
+-            if let Some(validity_fut) = validity_fut {
+-                let (array, validity) = try_join!(projected, validity_fut)?;
+-
+-                // If root expression was a pack, then we apply the validity to each child field
+-                if is_pack_merge {
+-                    let mut ctx = session.create_execution_ctx();
+-                    let struct_array = array.execute::<StructArray>(&mut ctx)?;
+-                    let masked_fields: Vec<ArrayRef> = struct_array
+-                        .iter_unmasked_fields()
+-                        .map(|a| a.clone().mask(validity.clone()))
+-                        .try_collect()?;
+-
+-                    Ok(StructArray::try_new(
+-                        struct_array.names().clone(),
+-                        masked_fields,
+-                        struct_array.len(),
+-                        struct_array.validity()?,
+-                    )?
+-                    .into_array())
+-                } else {
+-                    // If the root expression was not a pack or merge, e.g. if it's something like
+-                    // a get_item, then we apply the validity directly to the result
+-                    array.mask(validity)
+-                }
+-            } else {
+-                projected.await
+-            }
+-        }))
++                })
++            }
++        }
+     }
+ 
+     fn as_any(&self) -> &dyn std::any::Any {

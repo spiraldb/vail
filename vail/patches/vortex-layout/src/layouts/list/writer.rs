@@ -33,6 +33,8 @@ use vortex_session::VortexSession;
 use crate::LayoutRef;
 use crate::LayoutStrategy;
 use crate::LayoutWriterContext;
+use crate::children::OwnedLayoutChildren;
+use crate::layouts::chunked::ChunkedLayout;
 use crate::layouts::flat::writer::FlatLayoutStrategy;
 use crate::layouts::list::ListLayout;
 use crate::segments::SegmentSinkRef;
@@ -117,7 +119,7 @@ impl LayoutStrategy for ListLayoutStrategy {
         &self,
         ctx: LayoutWriterContext,
         segment_sink: SegmentSinkRef,
-        stream: SendableSequentialStream,
+        mut stream: SendableSequentialStream,
         mut eof: SequencePointer,
         session: &VortexSession,
     ) -> VortexResult<LayoutRef> {
@@ -128,6 +130,22 @@ impl LayoutStrategy for ListLayoutStrategy {
                 .write_stream(ctx, segment_sink, stream, eof, session)
                 .await;
         }
+
+        // Rechunking may remove every zero-length chunk from a nested element
+        // stream. Such a stream is a valid empty list column, just as for the
+        // flat/chunked strategies: it has a dtype and zero rows, with no data
+        // segments or offsets to encode.
+        let Some(first) = stream.next().await else {
+            return Ok(
+                ChunkedLayout::new(0, dtype, OwnedLayoutChildren::layout_children(vec![]))
+                    .into_layout(),
+            );
+        };
+        let stream = SequentialStreamAdapter::new(
+            dtype.clone(),
+            futures::stream::once(async { first }).chain(stream).boxed(),
+        )
+        .sendable();
 
         let is_nullable = dtype.is_nullable();
         let element_dtype = dtype
@@ -432,7 +450,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn empty_stream_errors() {
+    async fn empty_stream_retains_dtype_and_zero_rows() {
         let segments = Arc::new(TestSegments::default());
         let (_, eof) = SequenceId::root().split();
         let empty = stream::empty::<VortexResult<(SequenceId, ArrayRef)>>().boxed();
@@ -448,7 +466,9 @@ mod tests {
                 &session,
             )
             .await;
-        assert!(res.is_err())
+        let layout = res.unwrap();
+        assert_eq!(layout.row_count(), 0);
+        assert_eq!(layout.dtype(), &i32_list_dtype(false));
     }
 
     #[tokio::test]

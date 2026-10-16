@@ -5,15 +5,8 @@ use std::ops::Range;
 use std::sync::Arc;
 use std::sync::OnceLock;
 
-use futures::try_join;
 use itertools::Itertools;
-use vortex_array::ArrayRef;
-use vortex_array::IntoArray;
 use vortex_array::MaskFuture;
-use vortex_array::VortexSessionExecute;
-use vortex_array::arrays::StructArray;
-use vortex_array::arrays::struct_::StructArrayExt;
-use vortex_array::builtins::ArrayBuiltins;
 use vortex_array::dtype::DType;
 use vortex_array::dtype::FieldMask;
 use vortex_array::dtype::FieldName;
@@ -22,7 +15,6 @@ use vortex_array::dtype::StructFields;
 use vortex_array::expr::BoundExpression;
 use vortex_array::expr::ExactBoundExpr;
 use vortex_array::expr::bound::get_item;
-use vortex_array::expr::bound::is_not_null;
 use vortex_array::expr::bound::mask;
 use vortex_array::expr::bound::not;
 use vortex_array::expr::bound::pack;
@@ -34,13 +26,11 @@ use vortex_array::expr::traversal::NodeExt;
 use vortex_array::expr::traversal::Transformed;
 use vortex_array::expr::traversal::TraversalOrder;
 use vortex_array::scalar_fn::fns::get_item::GetItem;
-use vortex_array::scalar_fn::fns::list_project::Project;
 use vortex_array::scalar_fn::fns::is_not_null::IsNotNull;
 use vortex_array::scalar_fn::fns::is_null::IsNull;
-use vortex_array::scalar_fn::fns::mask::Mask as MaskFn;
+use vortex_array::scalar_fn::fns::list_project::Project;
 use vortex_array::scalar_fn::fns::list_project::project_paths_bound;
-use vortex_array::scalar_fn::fns::merge::Merge;
-use vortex_array::scalar_fn::fns::pack::Pack;
+use vortex_array::scalar_fn::fns::mask::Mask as MaskFn;
 use vortex_array::scalar_fn::fns::select::Select;
 use vortex_error::VortexExpect;
 use vortex_error::VortexResult;
@@ -49,6 +39,7 @@ use vortex_mask::Mask;
 use vortex_session::VortexSession;
 use vortex_utils::aliases::dash_map::DashMap;
 use vortex_utils::aliases::hash_map::HashMap;
+use vortex_utils::aliases::hash_set::HashSet;
 
 use crate::ArrayFuture;
 use crate::LayoutReader;
@@ -71,6 +62,9 @@ pub struct StructReader {
     expanded_root_expr: BoundExpression,
 
     field_lookup: Option<HashMap<FieldName, usize>>,
+    /// Scope used only while partitioning: nullable parents have an independent validity field.
+    partition_fields: StructFields,
+    validity_field: Option<FieldName>,
     partitioned_expr_cache: DashMap<ExactBoundExpr, Arc<OnceLock<Partitioned>>>,
 }
 
@@ -116,7 +110,31 @@ impl StructReader {
         );
 
         // Create an expanded root expression that contains all fields of the struct.
-        let expanded_root_expr = expanded_struct_root(layout.dtype(), struct_dt)?;
+        let validity_field = nullable.then(|| {
+            let names: HashSet<_> = struct_dt.names().iter().cloned().collect();
+            let mut name = FieldName::from("__vortex_parent_validity");
+            let mut suffix = 0usize;
+            while names.contains(&name) {
+                name = FieldName::from(format!("__vortex_parent_validity_{suffix}"));
+                suffix += 1;
+            }
+            name
+        });
+        let partition_fields = StructFields::from_iter(
+            struct_dt
+                .names()
+                .iter()
+                .cloned()
+                .zip(struct_dt.fields())
+                .chain(
+                    validity_field
+                        .iter()
+                        .cloned()
+                        .map(|name| (name, DType::Bool(Nullability::NonNullable))),
+                ),
+        );
+        let expanded_root_expr =
+            expanded_struct_root(&partition_fields, struct_dt, validity_field.as_ref())?;
 
         // This is where we need to do some complex things with the scan in order to split it into
         // different scans for different fields.
@@ -127,6 +145,8 @@ impl StructReader {
             expanded_root_expr,
             lazy_children,
             field_lookup,
+            partition_fields,
+            validity_field,
             partitioned_expr_cache: Default::default(),
         })
     }
@@ -138,6 +158,11 @@ impl StructReader {
 
     /// Return the child reader for the field.
     fn field_reader(&self, name: &FieldName) -> VortexResult<&LayoutReaderRef> {
+        if self.validity_field.as_ref() == Some(name) {
+            return self
+                .validity()?
+                .ok_or_else(|| vortex_err!("nullable struct has no validity reader"));
+        }
         let idx = self
             .field_lookup
             .as_ref()
@@ -202,11 +227,7 @@ impl StructReader {
         // Partition the expression into expressions that can be evaluated over individual fields
         let mut partitioned = partition_bound(
             expr.clone(),
-            make_bound_free_field_annotator(
-                self.dtype()
-                    .as_struct_fields_opt()
-                    .vortex_expect("We know it's a struct DType"),
-            ),
+            make_bound_free_field_annotator(&self.partition_fields),
         )?;
 
         if partitioned.partitions.len() == 1 {
@@ -243,10 +264,14 @@ impl StructReader {
 }
 
 fn expanded_struct_root(
-    root_dtype: &DType,
+    partition_fields: &StructFields,
     fields: &StructFields,
+    validity_field: Option<&FieldName>,
 ) -> VortexResult<BoundExpression> {
-    let root = BoundExpression::new_root(root_dtype.clone());
+    let root = BoundExpression::new_root(DType::Struct(
+        partition_fields.clone(),
+        Nullability::NonNullable,
+    ));
     let children = fields
         .names()
         .iter()
@@ -256,11 +281,10 @@ fn expanded_struct_root(
         fields.names().iter().cloned().zip(children),
         Nullability::NonNullable,
     );
-    if root_dtype.is_nullable() {
-        Ok(mask(packed, is_not_null(root)))
-    } else {
-        Ok(packed)
-    }
+    Ok(match validity_field {
+        Some(name) => mask(packed, get_item(name.clone(), root)),
+        None => packed,
+    })
 }
 
 fn expand_struct_root(
@@ -423,11 +447,6 @@ fn step_into_struct_field(
         .into_inner())
 }
 
-fn is_pack_or_merge(expr: &BoundExpression) -> bool {
-    expr.as_scalar()
-        .is_some_and(|scalar_fn| scalar_fn.is::<Pack>() || scalar_fn.is::<Merge>())
-}
-
 /// When partitioning an expression, in the case it only has a single partition we can avoid
 /// some cost and just delegate to the child reader directly.
 // TODO(joe): this is a duplicate of the Partitioned enum in arrays/expr/vtable/rules
@@ -548,75 +567,27 @@ impl LayoutReader for StructReader {
         expr: &BoundExpression,
         mask_fut: MaskFuture,
     ) -> VortexResult<ArrayFuture> {
-        let validity_fut = self
-            .validity()?
-            .map(|reader| {
-                let root = root().bind(reader.dtype())?;
-                reader.projection_evaluation(row_range, &root, mask_fut.clone())
-            })
-            .transpose()?;
-
-        // Partition the expression into expressions that can be evaluated over individual fields
-        let (projected, is_pack_merge) = match &self.partition_expr(expr)? {
-            Partitioned::Single(name, partition) => {
-                let reader = self.field_reader(name)?;
-                (
-                    reader
-                        .projection_evaluation(row_range, partition, mask_fut)
-                        .map_err(|err| {
-                            err.with_context(format!(
-                                "While evaluating projection partition {name}"
-                            ))
-                        })?,
-                    is_pack_or_merge(partition),
-                )
-            }
-
-            Partitioned::Multi(partitioned) => (
+        // Parent validity is an explicit partition dependency in expanded expressions.
+        // Applying it again here would incorrectly null non-strict results such as is_null($).
+        match &self.partition_expr(expr)? {
+            Partitioned::Single(name, partition) => self
+                .field_reader(name)?
+                .projection_evaluation(row_range, partition, mask_fut)
+                .map_err(|err| {
+                    err.with_context(format!("While evaluating projection partition {name}"))
+                }),
+            Partitioned::Multi(partitioned) => {
                 Arc::clone(partitioned).into_array_future(mask_fut, |name, expr, mask| {
-                    let reader = self.field_reader(name)?;
-                    reader
+                    self.field_reader(name)?
                         .projection_evaluation(row_range, expr, mask)
                         .map_err(|err| {
                             err.with_context(format!(
                                 "While evaluating projection partition {name}"
                             ))
                         })
-                })?,
-                is_pack_or_merge(&partitioned.root),
-            ),
-        };
-
-        let session = self.session.clone();
-        Ok(Box::pin(async move {
-            if let Some(validity_fut) = validity_fut {
-                let (array, validity) = try_join!(projected, validity_fut)?;
-
-                // If root expression was a pack, then we apply the validity to each child field
-                if is_pack_merge {
-                    let mut ctx = session.create_execution_ctx();
-                    let struct_array = array.execute::<StructArray>(&mut ctx)?;
-                    let masked_fields: Vec<ArrayRef> = struct_array
-                        .iter_unmasked_fields()
-                        .map(|a| a.clone().mask(validity.clone()))
-                        .try_collect()?;
-
-                    Ok(StructArray::try_new(
-                        struct_array.names().clone(),
-                        masked_fields,
-                        struct_array.len(),
-                        struct_array.validity()?,
-                    )?
-                    .into_array())
-                } else {
-                    // If the root expression was not a pack or merge, e.g. if it's something like
-                    // a get_item, then we apply the validity directly to the result
-                    array.mask(validity)
-                }
-            } else {
-                projected.await
+                })
             }
-        }))
+        }
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
