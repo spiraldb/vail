@@ -1,0 +1,195 @@
+{
+  "base_commit": "93b4fe32",
+  "comparison": "Base Python type wrappers versus final Python on the same final native extension. This isolates Python traversal/getter changes and is not an old-native comparison.",
+  "child_source": "import time,tracemalloc,json\nimport vail as hl\nfrom vail.types import infer_type,unify_types\nWIDTH=WIDTH_VALUE\nMODE=MODE_VALUE\nif MODE=='unify':\n a=hl.tstruct(**{f'f{i}':hl.tint32 for i in range(WIDTH)})\n b=hl.tstruct(**{f'f{i}':hl.tint64 for i in range(WIDTH)})\n def run():\n  result=unify_types(a,b)\n  assert len(result)==WIDTH and result['f0']==hl.tint64\nelif MODE=='key_access':\n a=hl.tdict(hl.tstr,hl.tstruct(**{f'f{i}':hl.tint32 for i in range(WIDTH)}))\n def run():\n  for _ in range(100): assert a.key_type==hl.tstr\nelif MODE=='infer':\n a=list(range(WIDTH))\n infer_type(0)  # exclude one-time NumPy import from temporary inference cost\n def run(): assert infer_type(a)==hl.tarray(hl.tint32)\nelse:\n a=hl.tstruct(**{f'f{i}':hl.tint32 for i in range(WIDTH)})\n def run():\n  t=hl.range_table(1).annotate(k=hl.missing(a)).key_by('k')\n  assert t.count()==1\ntracemalloc.start();t=time.perf_counter();run();elapsed=time.perf_counter()-t\nprint(json.dumps(dict(seconds=elapsed,python_peak_bytes=tracemalloc.get_traced_memory()[1])))\n",
+  "cases": [
+    {
+      "version": "base_python",
+      "mode": "unify",
+      "width": 64,
+      "seconds": 0.0007814159980625845,
+      "python_peak_bytes": 10174
+    },
+    {
+      "version": "base_python",
+      "mode": "unify",
+      "width": 256,
+      "seconds": 0.00270062500203494,
+      "python_peak_bytes": 40858
+    },
+    {
+      "version": "base_python",
+      "mode": "unify",
+      "width": 1024,
+      "seconds": 0.01212308400135953,
+      "python_peak_bytes": 162670
+    },
+    {
+      "version": "base_python",
+      "mode": "unify",
+      "width": 8192,
+      "seconds": 0.1966738749979413,
+      "python_peak_bytes": 1323886
+    },
+    {
+      "version": "base_python",
+      "mode": "key_access",
+      "width": 64,
+      "seconds": 0.0006627920010942034,
+      "python_peak_bytes": 598
+    },
+    {
+      "version": "base_python",
+      "mode": "key_access",
+      "width": 1024,
+      "seconds": 0.005395000000135042,
+      "python_peak_bytes": 598
+    },
+    {
+      "version": "base_python",
+      "mode": "key_access",
+      "width": 4096,
+      "seconds": 0.018570207997981925,
+      "python_peak_bytes": 598
+    },
+    {
+      "version": "base_python",
+      "mode": "infer",
+      "width": 1000,
+      "seconds": 0.0013339170036488213,
+      "python_peak_bytes": 20448
+    },
+    {
+      "version": "base_python",
+      "mode": "infer",
+      "width": 100000,
+      "seconds": 0.11955175000184681,
+      "python_peak_bytes": 1604576
+    },
+    {
+      "version": "base_python",
+      "mode": "key_action",
+      "width": 32,
+      "seconds": 0.0010519159986870363,
+      "python_peak_bytes": 6161
+    },
+    {
+      "version": "base_python",
+      "mode": "key_action",
+      "width": 128,
+      "seconds": 0.0014264999990700744,
+      "python_peak_bytes": 11234
+    },
+    {
+      "version": "base_python",
+      "mode": "key_action",
+      "width": 512,
+      "seconds": 0.0036122500023338944,
+      "python_peak_bytes": 31586
+    },
+    {
+      "version": "base_python",
+      "mode": "key_action",
+      "width": 2048,
+      "seconds": 0.013449915997625794,
+      "python_peak_bytes": 114042
+    },
+    {
+      "version": "current",
+      "mode": "unify",
+      "width": 64,
+      "seconds": 0.0008009590019355528,
+      "python_peak_bytes": 17342
+    },
+    {
+      "version": "current",
+      "mode": "unify",
+      "width": 256,
+      "seconds": 0.0028637920040637255,
+      "python_peak_bytes": 72602
+    },
+    {
+      "version": "current",
+      "mode": "unify",
+      "width": 1024,
+      "seconds": 0.010971374998916872,
+      "python_peak_bytes": 288818
+    },
+    {
+      "version": "current",
+      "mode": "unify",
+      "width": 8192,
+      "seconds": 0.09127766600431642,
+      "python_peak_bytes": 2260108
+    },
+    {
+      "version": "current",
+      "mode": "key_access",
+      "width": 64,
+      "seconds": 0.0003134579965262674,
+      "python_peak_bytes": 598
+    },
+    {
+      "version": "current",
+      "mode": "key_access",
+      "width": 1024,
+      "seconds": 0.00031749999470775947,
+      "python_peak_bytes": 598
+    },
+    {
+      "version": "current",
+      "mode": "key_access",
+      "width": 4096,
+      "seconds": 0.0003158750041620806,
+      "python_peak_bytes": 598
+    },
+    {
+      "version": "current",
+      "mode": "infer",
+      "width": 1000,
+      "seconds": 0.0012777499941876158,
+      "python_peak_bytes": 4328
+    },
+    {
+      "version": "current",
+      "mode": "infer",
+      "width": 100000,
+      "seconds": 0.12398937499528984,
+      "python_peak_bytes": 4328
+    },
+    {
+      "version": "current",
+      "mode": "key_action",
+      "width": 32,
+      "seconds": 0.0009250000002793968,
+      "python_peak_bytes": 8191
+    },
+    {
+      "version": "current",
+      "mode": "key_action",
+      "width": 128,
+      "seconds": 0.0014412089949473739,
+      "python_peak_bytes": 23195
+    },
+    {
+      "version": "current",
+      "mode": "key_action",
+      "width": 512,
+      "seconds": 0.0032923749968176708,
+      "python_peak_bytes": 83547
+    },
+    {
+      "version": "current",
+      "mode": "key_action",
+      "width": 2048,
+      "seconds": 0.011624874998233281,
+      "python_peak_bytes": 327475
+    }
+  ],
+  "native_sha256": "5f47765c67820444ce05b1b75891f22645e564922b33f659b0828606334dedbb",
+  "limitations": [
+    "Single bounded executions, not statistical benchmarks.",
+    "tracemalloc measures Python allocations only; it does not measure Rust/Arrow memory.",
+    "unify/key_access/infer measure public type operations, not query execution; key_action includes count action."
+  ]
+}

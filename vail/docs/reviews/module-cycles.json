@@ -397,6 +397,36 @@
       ],
       "reports": [
         "vail/docs/reviews/simulation-cost.json"
+      ],
+      "merged_commit": "93b4fe32"
+    },
+    {
+      "module": "Vail type/value wrappers, native type handles and checked cast/scan aggregate signatures",
+      "reviewed_base": "93b4fe32",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "preserve raw Unicode while decoding quoted identifier escapes and provide parseable nested type text",
+        "use ordered child snapshots for wide struct unification/orderability and one-pass array/set inference",
+        "select targeted native type children without copying unrelated dictionary subtrees",
+        "reject duplicate plain Arrow struct names at native type import",
+        "share checked logical cast compatibility with Python while retaining value-dependent fallible casts",
+        "validate scan inputs/functions/static options/closed initializer types and fold lexical state agreement before checking annotations",
+        "share execution-owned aggregate signatures and compare executable UDAF outputs to their promised logical types",
+        "preserve signed quantile k compatibility, nullable/default quantiles and ordered-take packing contract",
+        "replace scoped private plan/transport/bypass/comparison tests with public type/value/operator/Arrow roundtrips and Rust public checked boundaries",
+        "validate exact packed numeric family field layouts while preserving supported scalar regression predictors and Float64 weights"
+      ],
+      "validation": [
+        "171 scoped public Python tests passed;1 known dependency-only Vortex storagecase deselected",
+        "130 public Python cast/randomness/collections/input/simulation regression tests passed",
+        "77 Rust execution tests passed (70 library +7 public integration)",
+        "15 public Rust table integration tests passed (conditional globals/DataFusion plans/physical partitions +2 signature/factory behavior tests)"
+      ],
+      "reports": [
+        "vail/docs/reviews/type-cost.json"
+      ],
+      "excluded_tests": [
+        "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: excluded patched Vortex empty nested-list writer"
       ]
     }
   ],
@@ -523,6 +553,7 @@
     "vail/crates/vail-table/src/conditional_globals.rs",
     "vail/crates/vail-execution/src/variant_kernels.rs",
     "vail/crates/vail-table/src/vcf_export.rs",
-    "vail/crates/vail-python/src/random_binding.rs"
+    "vail/crates/vail-python/src/random_binding.rs",
+    "vail/crates/vail-execution/src/aggregate_contract.rs"
   ]
 }

@@ -1304,8 +1304,7 @@ def _check_comparable(left, right, operator):
 
 
 def _cast_compatible(source, target):
-    primitive = (tint32, tint64, tfloat32, tfloat64, tbool, tstr)
-    return source in primitive and target in primitive or source == target
+    return type_to_wire(source).can_cast_to(type_to_wire(target))
 
 
 # Hail-shaped typed casts.

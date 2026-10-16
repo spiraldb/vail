@@ -70,6 +70,29 @@ pub enum Type {
 }
 
 impl Type {
+    /// Casts preserve logical shape and parameters. Primitive conversions and
+    /// recursively numeric array conversions use Arrow's checked cast kernels;
+    /// Call construction is the sole explicit structural conversion.
+    pub fn ensure_castable_to(&self, target: &Type) -> Result<(), ExprError> {
+        if self == target { return Ok(()); }
+        let primitive = |ty: &Type| matches!(ty, Type::Primitive(p) if *p != PrimitiveType::Call);
+        let compatible = if primitive(self) && primitive(target) {
+            arrow_cast::can_cast_types(&self.to_arrow()?, &target.to_arrow()?)
+        } else if let (Type::Array { array: left }, Type::Array { array: right }) = (self, target) {
+            left.ensure_castable_to(right).is_ok()
+                && arrow_cast::can_cast_types(&self.to_arrow()?, &target.to_arrow()?)
+        } else if let (Type::Struct { r#struct: fields }, Type::Primitive(PrimitiveType::Call)) = (self, target) {
+            fields.len() == 2
+                && fields.iter().any(|(name, ty)| name == "__vail_call_alleles"
+                    && matches!(ty, Type::Array { array } if **array == Type::Primitive(PrimitiveType::Int32)))
+                && fields.iter().any(|(name, ty)| name == "__vail_call_phased"
+                    && *ty == Type::Primitive(PrimitiveType::Bool))
+        } else { false };
+        if compatible { Ok(()) } else {
+            Err(ExprError::Invalid(format!("cannot cast {self:?} to {target:?}")))
+        }
+    }
+
     pub fn contains_unordered(&self) -> bool {
         match self {
             Self::Set { .. } | Self::Dict { .. } => true,
@@ -330,11 +353,16 @@ impl Type {
             DataType::Utf8 | DataType::LargeUtf8 | DataType::Utf8View => {
                 Self::Primitive(PrimitiveType::Str)
             }
-            DataType::Struct(fields) => Self::Struct {
-                r#struct: fields
-                    .iter()
-                    .map(|f| Ok((f.name().clone(), Self::from_arrow(f.data_type())?)))
-                    .collect::<Result<_, ExprError>>()?,
+            DataType::Struct(fields) => {
+                let mut names = HashSet::with_capacity(fields.len());
+                if fields.iter().any(|field| !names.insert(field.name())) {
+                    return Err(ExprError::Invalid("duplicate struct field in Arrow input".into()));
+                }
+                Self::Struct {
+                    r#struct: fields.iter()
+                        .map(|f| Ok((f.name().clone(), Self::from_arrow(f.data_type())?)))
+                        .collect::<Result<_, ExprError>>()?,
+                }
             },
             DataType::List(field) => Self::Array {
                 array: Box::new(Self::from_arrow(field.data_type())?),
@@ -1133,69 +1161,43 @@ impl Expr {
             | Self::MatrixColumnPosition { .. } => Err(ExprError::Invalid(
                 "unresolved frontend expression scope".into(),
             )),
-            Self::Aggregate {
-                function,
-                value,
-                options,
-                result_type,
-                ..
-            } if options.get("__vail_scan").and_then(Value::as_bool) == Some(true) => {
-                if function == "__scan_fold" {
-                    if let Some(value) = value {
-                        if let Self::AggregateFold { initial, .. } = value.as_ref() {
-                            return initial.dtype_scoped(schema, globals, scope);
-                        }
+            Self::Aggregate { function, value, options, result_type, init }
+                if options.get("__vail_scan").and_then(Value::as_bool) == Some(true) => {
+                let inferred = if function == "__scan_fold" {
+                    if !init.is_empty() || options.as_object().is_none_or(|o| o.keys().any(|k| k != "__vail_scan")) {
+                        return Err(ExprError::Invalid("invalid scan fold options/initializers".into()));
                     }
-                    return Err(ExprError::Invalid("scan fold requires fold IR".into()));
+                    let Some(Self::AggregateFold { initial, seq, combine, state_parameter, left_parameter, right_parameter }) = value.as_deref() else {
+                        return Err(ExprError::Invalid("scan fold requires fold IR".into()));
+                    };
+                    let state = initial.dtype_scoped(&Schema::empty(), globals, &[])?;
+                    let mut sequence_scope = scope.to_vec();
+                    sequence_scope.push((state_parameter.clone(), state.clone(), 0));
+                    let combine_scope = vec![(left_parameter.clone(),state.clone(),0),
+                                             (right_parameter.clone(),state.clone(),0)];
+                    if seq.dtype_scoped(schema, globals, &sequence_scope)? != state
+                        || combine.dtype_scoped(&Schema::empty(), globals, &combine_scope)? != state {
+                        return Err(ExprError::Invalid("scan fold initial/update/combine types must agree".into()));
+                    }
+                    state
+                } else {
+                    let input = value.as_ref().map(|v| v.dtype_scoped(schema,globals,scope)).transpose()?;
+                    let input = if options.get("__vail_exploded").and_then(Value::as_bool) == Some(true) {
+                        match input {
+                            Some(Type::Array { array }) => Some(*array),
+                            _ => return Err(ExprError::Invalid("exploded scan requires array input".into())),
+                        }
+                    } else { input };
+                    // Initializers are closed over globals, never row/scan state.
+                    let initializers = init.iter().map(|(name, expr)|
+                        Ok((name.clone(),expr.dtype_scoped(&Schema::empty(),globals,&[])?)))
+                        .collect::<Result<Vec<_>,ExprError>>()?;
+                    crate::aggregate_contract::result_type(function,input.as_ref(),options,&initializers)?
+                };
+                if result_type.as_ref().is_some_and(|annotation| *annotation != inferred) {
+                    return Err(ExprError::Invalid("scan result type annotation disagrees with aggregate result".into()));
                 }
-                if let Some(dtype) = result_type {
-                    return Ok(dtype.clone());
-                }
-                let value_type = value
-                    .as_ref()
-                    .map(|v| v.dtype_scoped(schema, globals, scope))
-                    .transpose()?;
-                let i64_type = Type::Primitive(PrimitiveType::Int64);
-                let f64_type = Type::Primitive(PrimitiveType::Float64);
-                Ok(match function.as_str() {
-                    "count" | "count_where" => i64_type,
-                    "any" | "all" => Type::Primitive(PrimitiveType::Bool),
-                    "fraction" | "mean" | "stddev" => f64_type,
-                    "sum" | "product" => match value_type {
-                        Some(Type::Primitive(PrimitiveType::Float32 | PrimitiveType::Float64)) => {
-                            f64_type
-                        }
-                        _ => i64_type,
-                    },
-                    "collect" => {
-                        Type::Array {
-                            array: Box::new(value_type.ok_or_else(|| {
-                                ExprError::Invalid("collect requires input".into())
-                            })?),
-                        }
-                    }
-                    "take" => Type::Array {
-                        array: Box::new(
-                            value_type
-                                .ok_or_else(|| ExprError::Invalid("take requires input".into()))?,
-                        ),
-                    },
-                    "collect_as_set" => Type::Set {
-                        set: Box::new(value_type.ok_or_else(|| {
-                            ExprError::Invalid("collect_as_set requires input".into())
-                        })?),
-                    },
-                    "corr" => f64_type,
-                    "ndarray_sum" => value_type
-                        .ok_or_else(|| ExprError::Invalid("ndarray_sum requires input".into()))?,
-                    "min" | "max" => value_type
-                        .ok_or_else(|| ExprError::Invalid("aggregate requires input".into()))?,
-                    _ => {
-                        return Err(ExprError::Invalid(format!(
-                            "unsupported scan aggregate {function:?}"
-                        )));
-                    }
-                })
+                Ok(inferred)
             }
             Self::AggExplode {
                 value,
@@ -1892,8 +1894,9 @@ impl Expr {
                 Ok(element)
             }
             Self::Cast { dtype, value } => {
-                value.dtype_scoped(schema, globals, scope)?;
+                let source = value.dtype_scoped(schema, globals, scope)?;
                 dtype.to_arrow()?;
+                source.ensure_castable_to(dtype)?;
                 Ok(dtype.clone())
             }
             Self::GetField { value, name } => match value.dtype_scoped(schema, globals, scope)? {

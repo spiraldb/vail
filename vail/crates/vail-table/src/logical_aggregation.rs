@@ -84,6 +84,24 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
 }
 
 pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<AggregateUDF>> {
+    if reducer.function.starts_with("__coordinate_") {
+        return factory_inner(reducer, dtype);
+    }
+    // Initializer values have been bound by this point. The descriptor and
+    // executable UDAF must promise precisely the same logical output.
+    let input_type = dtype.map(vail_execution::expressions::Type::from_arrow).transpose()?;
+    let expected = vail_execution::aggregate_contract::result_type(
+        &reducer.function, if reducer.function == "count" { None } else { input_type.as_ref() },
+        &reducer.options, &[])?;
+    let udf = factory_inner(reducer, dtype)?;
+    let arguments = dtype.into_iter().cloned().collect::<Vec<_>>();
+    let actual = vail_execution::expressions::Type::from_arrow(&udf.return_type(&arguments)?)?;
+    if actual != expected {
+        return Err(TableError::Invalid("aggregate descriptor disagrees with executable result".into()));
+    }
+    Ok(udf)
+}
+fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<AggregateUDF>> {
     let f = &reducer.function;
     if let Some(function) = f.strip_prefix("__coordinate_") {
         let Some(DataType::List(element)) = dtype else {

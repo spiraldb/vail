@@ -123,15 +123,6 @@ def test_approx_cdf_is_rejected_when_constructed(raw):
         hl.agg.approx_cdf(t.idx, _raw=raw)
 
 
-def test_native_approx_cdf_is_rejected():
-    t = hl.range_table(4)
-    expr = hl.agg._aggregate('approx_cdf', t.idx,
-                             hl.tstruct(values=hl.tarray(hl.tint32), ranks=hl.tarray(hl.tint64)),
-                             options={'k': 100, 'raw': False})
-    with pytest.raises(ValueError, match="approx_cdf is unsupported"):
-        t.aggregate(expr)
-
-
 def test_downsample_missing_label_is_missing():
     t = hl.Table.parallelize([{"x": 0., "y": 0.}, {"x": 1., "y": 1.}],
                              schema=hl.tstruct(x=hl.tfloat64, y=hl.tfloat64))

@@ -195,6 +195,19 @@ impl NativeType {
             _ => vec![],
         }
     }
+    /// Select one child without cloning unrelated subtrees.
+    fn child(&self, index: usize) -> PyResult<Self> {
+        let selected = match self.inner.as_ref() {
+            Type::Array { array } | Type::Set { set: array } | Type::Interval { interval: array } =>
+                (index == 0).then_some(array.as_ref()),
+            Type::Dict { dict } => match index { 0 => Some(&dict.0), 1 => Some(&dict.1), _ => None },
+            Type::Tuple { tuple } => tuple.get(index),
+            Type::Struct { r#struct: fields } => fields.get(index).map(|(_, ty)| ty),
+            Type::Ndarray { ndarray } => (index == 0).then_some(&ndarray.0),
+            _ => None,
+        }.ok_or_else(|| pyo3::exceptions::PyIndexError::new_err("type child index out of range"))?;
+        Ok(Self::new_type(selected.clone()))
+    }
     #[getter]
     fn field_names(&self) -> Vec<String> {
         match self.inner.as_ref() {
@@ -224,6 +237,9 @@ impl NativeType {
             Type::Locus { locus } => reference_object(py, locus),
             _ => Err(value_error("not a locus type")),
         }
+    }
+    fn can_cast_to(&self, target: &Self) -> bool {
+        self.inner.ensure_castable_to(&target.inner).is_ok()
     }
     fn __hash__(&self) -> isize {
         use std::hash::{Hash, Hasher};

@@ -5,6 +5,8 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 import math
 import pprint
+import json
+import re
 
 
 from ._native import NativeType
@@ -45,7 +47,7 @@ class tarray(_NativeType):
         self._set_native(NativeType.construct('array', [type_to_wire(element_type)]))
 
     @property
-    def element_type(self): return _wrap_native_type(self._native_type.children[0])
+    def element_type(self): return _wrap_native_type(self._native_type.child(0))
     def __str__(self): return f"array<{self.element_type}>"
     def __repr__(self): return f"tarray({self.element_type!r})"
 
@@ -55,7 +57,7 @@ class tset(_NativeType):
         if not is_type(element_type): raise TypeError("tset requires a Vail type")
         self._set_native(NativeType.construct('set', [type_to_wire(element_type)]))
     @property
-    def element_type(self): return _wrap_native_type(self._native_type.children[0])
+    def element_type(self): return _wrap_native_type(self._native_type.child(0))
     def __str__(self): return f"set<{self.element_type}>"
     def __repr__(self): return f"tset({self.element_type!r})"
 
@@ -70,6 +72,7 @@ class ttuple(_NativeType):
         if not isinstance(value, tuple): raise TypeError("expected a Python tuple")
         if len(value) != len(self.types):
             raise TypeError(f"expected a tuple with {len(self.types)} elements, found {len(value)}")
+    def __str__(self): return f"tuple({', '.join(str(t) for t in self.types)})"
     def __repr__(self): return f"ttuple({', '.join(repr(t) for t in self.types)})"
 
 
@@ -78,9 +81,10 @@ class tdict(_NativeType):
         if not is_type(key_type) or not is_type(value_type): raise TypeError("tdict requires Vail key and value types")
         self._set_native(NativeType.construct('dict', [type_to_wire(key_type), type_to_wire(value_type)]))
     @property
-    def key_type(self): return _wrap_native_type(self._native_type.children[0])
+    def key_type(self): return _wrap_native_type(self._native_type.child(0))
     @property
-    def value_type(self): return _wrap_native_type(self._native_type.children[1])
+    def value_type(self): return _wrap_native_type(self._native_type.child(1))
+    def __str__(self): return f"dict<{self.key_type}, {self.value_type}>"
     def __repr__(self): return f"tdict({self.key_type!r}, {self.value_type!r})"
 
 
@@ -90,9 +94,10 @@ class tndarray(_NativeType):
             raise TypeError("tndarray requires a numeric type and nonnegative rank")
         self._set_native(NativeType.construct('ndarray', [type_to_wire(element_type)], rank=ndim))
     @property
-    def element_type(self): return _wrap_native_type(self._native_type.children[0])
+    def element_type(self): return _wrap_native_type(self._native_type.child(0))
     @property
     def ndim(self): return self._native_type.ndim
+    def __str__(self): return f"ndarray<{self.element_type}, {self.ndim}>"
     def __repr__(self): return f"tndarray({self.element_type!r}, {self.ndim})"
 
 
@@ -101,7 +106,7 @@ class tinterval(_NativeType):
         if not is_type(point_type): raise TypeError("tinterval requires a Vail point type")
         self._set_native(NativeType.construct('interval', [type_to_wire(point_type)]))
     @property
-    def point_type(self): return _wrap_native_type(self._native_type.children[0])
+    def point_type(self): return _wrap_native_type(self._native_type.child(0))
     def __str__(self): return f"interval<{self.point_type}>"
     def __repr__(self): return f"tinterval({self.point_type!r})"
 
@@ -127,7 +132,7 @@ class tlocus(_NativeType):
             object.__setattr__(self, '_reference', reference)
         return reference
 
-    def __str__(self): return f"locus<{self.reference_genome.name}>"
+    def __str__(self): return f"locus<{_type_identifier(self.reference_genome.name)}>"
     def __repr__(self): return f"tlocus({self.reference_genome.name!r})"
 
 
@@ -303,7 +308,7 @@ class tstruct(_NativeType, Mapping):
         """Return an ordered snapshot without a separate field search per item."""
         return tuple(zip(self._native_type.field_names,
                          map(_wrap_native_type, self._native_type.children)))
-    def __repr__(self): return "struct{" + ", ".join(f"{k}: {v}" for k, v in self.items()) + "}"
+    def __repr__(self): return "struct{" + ", ".join(f"{_type_identifier(k)}: {v}" for k, v in self.items()) + "}"
 
 
 
@@ -394,7 +399,7 @@ pprint.PrettyPrinter = _StructPrettyPrinter
 
 
 def is_type(value):
-    return value in (tint32, tint64, tfloat32, tfloat64, tbool, tstr, tcall) or isinstance(value, (tstruct, tarray, tset, tdict, tndarray, ttuple, tinterval, tlocus))
+    return isinstance(value, _NativeType)
 
 
 def dtype(type_string):
@@ -409,6 +414,18 @@ def dtype(type_string):
     if parser.position != len(type_string):
         parser.error("unexpected trailing input")
     return result
+
+
+def _type_identifier(name):
+    if name and all(char.isalnum() or char == "_" for char in name):
+        return name
+    # JSON supplies standard control/backslash escapes without changing raw
+    # Unicode. Backticks delimit identifiers, so escape those independently.
+    encoded = json.dumps(name, ensure_ascii=False)[1:-1].replace('`', r'\`')
+    return f"`{encoded}`"
+
+
+_IDENTIFIER_ESCAPES = re.compile(r"\\(?:N\{[^}]*\}|x.{0,2}|u.{0,4}|U.{0,8}|[0-7]{1,3}|.)", re.DOTALL)
 
 
 class _TypeParser:
@@ -445,11 +462,19 @@ class _TypeParser:
                 if char == "`" and not escaped:
                     encoded = self.text[start:self.position]
                     self.position += 1
-                    # Match Hail's parsable identifier escaping (including Unicode).
-                    try:
-                        return bytes(encoded.replace("\\`", "`"), "utf-8").decode("unicode_escape")
-                    except UnicodeDecodeError:
-                        self.error("invalid escaped identifier")
+                    # Decode only escape sequences, never UTF-8 bytes from
+                    # ordinary Unicode characters in the identifier.
+                    def decode_escape(match):
+                        escape = match.group()
+                        if escape == r"\`":
+                            return "`"
+                        if escape[1] not in "\\\"'abfnrtv01234567xuUN\n":
+                            return escape
+                        try:
+                            return escape.encode('ascii').decode('unicode_escape')
+                        except (UnicodeDecodeError, UnicodeEncodeError):
+                            self.error("invalid escaped identifier")
+                    return _IDENTIFIER_ESCAPES.sub(decode_escape, encoded)
                 self.position += 1
                 escaped = char == "\\" and not escaped
             self.error("unterminated escaped identifier")
@@ -607,30 +632,21 @@ def infer_type(value):
         if any(field is None for field in value.values()):
             raise ValueError("cannot infer a struct field type from a missing value; provide a type")
         return tstruct(**{name: infer_type(field) for name, field in value.items()})
-    if isinstance(value, list):
+    if isinstance(value, (list, set, frozenset)):
+        kind = 'array' if isinstance(value, list) else 'set'
         if not value:
-            raise ValueError("cannot infer an array element type from an empty array")
-        types = [infer_type(x) for x in value if x is not None]
-        if not types:
-            raise ValueError("cannot infer an array element type from only missing values")
-        dtype = types[0]
-        for other in types[1:]:
-            dtype = unify_types(dtype, other)
-            if dtype is None:
-                raise TypeError("array elements have incompatible types")
-        return tarray(dtype)
-    if isinstance(value, (set, frozenset)):
-        if not value:
-            raise ValueError("cannot infer a set element type from an empty set")
-        types = [infer_type(x) for x in value if x is not None]
-        if not types:
-            raise ValueError("cannot infer a set element type from only missing values")
-        element = types[0]
-        for other in types[1:]:
-            element = unify_types(element, other)
+            raise ValueError(f"cannot infer an {kind} element type from an empty {kind}")
+        element = None
+        for item in value:
+            if item is None:
+                continue
+            inferred = infer_type(item)
+            element = inferred if element is None else unify_types(element, inferred)
             if element is None:
-                raise TypeError("set elements have incompatible types")
-        return tset(element)
+                raise TypeError(f"{kind} elements have incompatible types")
+        if element is None:
+            raise ValueError(f"cannot infer an {kind} element type from only missing values")
+        return tarray(element) if kind == 'array' else tset(element)
     if isinstance(value, tuple):
         return ttuple(*(infer_type(v) for v in value))
     raise TypeError(f"cannot infer a Vail type for {type(value).__name__}")
@@ -657,7 +673,7 @@ def unify_types(left, right):
         element = unify_types(left.element_type, right.element_type)
         return None if element is None else tset(element)
     if isinstance(left, tstruct) and isinstance(right, tstruct) and list(left) == list(right):
-        fields = {name: unify_types(left[name], right[name]) for name in left}
+        fields = {name: unify_types(a, b) for (name, a), (_, b) in zip(left.items(), right.items())}
         return None if any(value is None for value in fields.values()) else tstruct(**fields)
     if isinstance(left, ttuple) and isinstance(right, ttuple) and len(left.types) == len(right.types):
         elements = [unify_types(a, b) for a, b in zip(left.types, right.types)]
@@ -739,7 +755,7 @@ def _ensure_orderable(dtype):
     if isinstance(dtype, (tset, tdict)):
         raise NotImplementedError("Set/Dictionary ordering and keying are unsupported")
     if isinstance(dtype, tstruct):
-        children = dtype.values()
+        children = (ty for _, ty in dtype.items())
     elif isinstance(dtype, ttuple):
         children = dtype.types
     elif isinstance(dtype, (tarray, tndarray)):

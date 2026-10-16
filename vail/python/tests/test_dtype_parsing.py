@@ -46,3 +46,86 @@ def test_non_string_non_type_rejected():
         hl.dtype(42)
     with pytest.raises(TypeError, match='literal dtype'):
         hl.literal(1, dtype=42)
+
+
+@pytest.mark.parametrize('text,name', [
+    ('struct{`é漢😀`: int32}', 'é漢😀'),
+    (r'struct{`é\u6f22\U0001f600`: int32}', 'é漢😀'),
+    (r'struct{`é\`\\\n\t`: int32}', 'é`\\\n\t'),
+    (r'struct{`é\x41\101`: int32}', 'éAA'),
+])
+def test_quoted_identifiers_preserve_unicode_and_decode_escapes(text, name):
+    parsed = hl.dtype(text)
+    assert list(parsed) == [name]
+    assert parsed[name] == hl.tint32
+    assert hl.eval(hl.literal({name: 7}, parsed)) == hl.Struct(**{name: 7})
+
+
+@pytest.mark.parametrize('name', ['', 'a b', 'é', '℘', 'é漢😀', 'a`b', 'a\\b', 'a\n\t\0b', '"quoted"'])
+def test_nested_type_text_roundtrip(name):
+    dtype = hl.tstruct(**{name: hl.ttuple(
+        hl.tdict(hl.tstr, hl.tndarray(hl.tfloat64, 2)),
+        hl.tarray(hl.tinterval(hl.tint32)))})
+    assert hl.dtype(str(dtype)) == dtype
+
+
+@pytest.mark.parametrize('text', [r'struct{`bad\xZ0`: int32}',
+                                  r'struct{`bad\u12`: int32}',
+                                  r'struct{`bad\U99999999`: int32}'])
+def test_malformed_identifier_escapes(text):
+    with pytest.raises(ValueError, match='invalid escaped identifier'):
+        hl.dtype(text)
+
+
+def test_duplicate_arrow_struct_names_rejected():
+    import pyarrow as pa
+    nested = pa.struct([('x', pa.int32()), ('x', pa.string())])
+    raw = pa.table({'value': pa.array([], type=nested)})
+    with pytest.raises((TypeError, ValueError), match='duplicate'):
+        hl.Table.parallelize(raw)
+
+
+def test_recursive_numeric_array_cast_and_invalid_logical_casts():
+    from vail.expressions import cast
+    assert hl.eval(cast([[1, None], [2]], hl.tarray(hl.tarray(hl.tfloat64)))) == [[1., None], [2.]]
+    for value, target in [(True, hl.tarray(hl.tint32)), (1, hl.tlocus()),
+                          ([1], hl.tset(hl.tint32)), (hl.Call([0, 1]), hl.tint32)]:
+        with pytest.raises(TypeError, match='cannot cast'):
+            cast(value, target)
+
+
+@pytest.mark.parametrize('k', [-(2**31), -1, 0, 7, 8, 65535])
+def test_quantile_parameter_preserves_supported_signed_range(k):
+    table = hl.utils.range_table(5, 2)
+    assert table.aggregate(hl.agg.approx_quantiles(table.idx, [0., 1.], k=k)) == [0, 4]
+    scanned = table.annotate(median=hl.scan.approx_median(table.idx, k=k))
+    values = scanned.median.collect()
+    assert values[0] is None
+    assert all(value is None or 0 <= value <= 4 for value in values)
+
+
+@pytest.mark.parametrize('k', [-(2**31)-1, 65536])
+def test_quantile_parameter_rejects_unsupported_range(k):
+    table = hl.utils.range_table(5)
+    with pytest.raises((ValueError, RuntimeError), match='k|quantile'):
+        table.aggregate(hl.agg.approx_median(table.idx, k=k))
+
+
+def test_inbreeding_result_has_integer_observed_homozygotes():
+    table = hl.Table.parallelize([{'gt': hl.Call([0, 0])}, {'gt': hl.Call([0, 1])}])
+    result = table.aggregate(hl.agg.inbreeding(table.gt, .5))
+    assert type(result.observed_homs) is int
+    assert result.observed_homs == 1
+    scanned = table.annotate(prefix=hl.scan.inbreeding(table.gt, .5))
+    assert scanned.prefix.observed_homs.dtype == hl.tint64
+    assert [r.prefix.observed_homs for r in scanned.collect()] == [0, 1]
+
+
+@pytest.mark.parametrize('weight', [None, 2.0])
+def test_public_scalar_regression_predictor_and_weight(weight):
+    table = hl.utils.range_table(5, 2)
+    result = table.aggregate(hl.agg.linreg(table.idx, 1., weight=weight))
+    assert result.beta == pytest.approx([2.])
+    assert result.n == 5
+    scanned = table.annotate(prefix=hl.scan.linreg(table.idx, 1., weight=weight))
+    assert scanned.prefix.n.collect() == [0, 1, 2, 3, 4]
