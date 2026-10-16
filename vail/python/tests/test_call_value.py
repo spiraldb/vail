@@ -36,7 +36,7 @@ def test_call_equality_with_expressions_and_phase_order():
 
 
 @pytest.mark.parametrize('word', [6, 7, 8, 9, None])
-@pytest.mark.parametrize('accessor', ['phase', 'alleles', 'ploidy', 'alternate_count', 'first'])
+@pytest.mark.parametrize('accessor', ['phase', 'alleles', 'ploidy', 'alternate_count', 'first', 'het', 'hom_var'])
 def test_imported_malformed_call_is_rejected_by_executed_accessors(word, accessor):
     import pyarrow as pa
     from vail.arrow import arrow_type
@@ -45,7 +45,8 @@ def test_imported_malformed_call_is_rejected_by_executed_accessors(word, accesso
     table = hl.Table.parallelize(pa.table({'c': calls}))
     value = {'phase': lambda: table.c.phased, 'alleles': lambda: table.c.alleles,
              'ploidy': lambda: table.c.ploidy, 'alternate_count': lambda: table.c.n_alt_alleles(),
-             'first': lambda: table.c[0]}[accessor]()
+             'first': lambda: table.c[0], 'het': lambda: table.c.is_het(),
+             'hom_var': lambda: table.c.is_hom_var()}[accessor]()
     with pytest.raises((ValueError, RuntimeError), match='Call|call'):
         table.select(value=value).collect()
 
@@ -91,3 +92,35 @@ def test_call_adapters_keep_lazy_errors_haploid_and_empty_batches():
     empty = hl.range_table(0)
     c = hl.call(empty.idx, 1)
     assert empty.select(c=c, a=c.alleles, phase=c.phased).collect() == []
+
+
+def test_call_predicates_use_packed_words_for_every_supported_ploidy():
+    import vail as hl
+
+    calls = [None]
+    for phased in (False, True):
+        calls.extend(hl.Call(alleles, phased=phased) for alleles in (
+            [], [0], [2], [0, 0], [0, 1], [1, 0], [1, 1], [1, 2], [2, 1], [0, 30000],
+        ))
+    calls.append(hl.Call([30000, 30000]))
+    table = hl.Table.parallelize([{"c": call} for call in calls], schema=hl.tstruct(c=hl.tcall))
+    result = table.select(
+        ploidy=table.c.ploidy, haploid=table.c.is_haploid(), diploid=table.c.is_diploid(),
+        hom_ref=table.c.is_hom_ref(), hom_var=table.c.is_hom_var(), non_ref=table.c.is_non_ref(),
+        het=table.c.is_het(), het_ref=table.c.is_het_ref(), het_non_ref=table.c.is_het_non_ref(),
+        n_alt=table.c.n_alt_alleles(),
+    ).collect()
+    assert all(value is None for value in result[0].values())
+    for call, row in zip(calls[1:], result[1:]):
+        alleles = list(call.alleles)
+        heterozygous = len(alleles) == 2 and alleles[0] != alleles[1]
+        assert row.ploidy == len(alleles)
+        assert row.haploid == (len(alleles) == 1)
+        assert row.diploid == (len(alleles) == 2)
+        assert row.hom_ref == (bool(alleles) and all(a == 0 for a in alleles))
+        assert row.hom_var == (bool(alleles) and len(set(alleles)) == 1 and alleles[0] > 0)
+        assert row.non_ref == any(a > 0 for a in alleles)
+        assert row.het == heterozygous
+        assert row.het_ref == (heterozygous and 0 in alleles)
+        assert row.het_non_ref == (heterozygous and all(a > 0 for a in alleles))
+        assert row.n_alt == sum(a > 0 for a in alleles)
