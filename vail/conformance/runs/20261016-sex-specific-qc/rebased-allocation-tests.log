@@ -1,0 +1,29 @@
+   Compiling datafusion-common v55.0.0 (/Users/danielking/.codex/worktrees/1611/vail/vail/patches/datafusion-common)
+   Compiling datafusion-expr-common v55.0.0
+   Compiling datafusion-physical-expr-common v55.0.0
+   Compiling datafusion-functions-window-common v55.0.0
+   Compiling datafusion-functions-aggregate-common v55.0.0
+   Compiling datafusion-expr v55.0.0
+   Compiling datafusion-execution v55.0.0
+   Compiling datafusion-physical-expr v55.0.0
+   Compiling datafusion-functions v55.0.0
+   Compiling datafusion-functions-aggregate v55.0.0
+   Compiling datafusion-physical-plan v55.0.0
+   Compiling datafusion-physical-expr-adapter v55.0.0
+   Compiling datafusion-functions-nested v55.0.0
+   Compiling datafusion-session v55.0.0
+   Compiling datafusion-datasource v55.0.0
+   Compiling datafusion-optimizer v55.0.0
+   Compiling vail-execution v0.1.0 (/private/tmp/vail-sex-specific-qc/vail/crates/vail-execution)
+    Finished `release` profile [optimized] target(s) in 7m 25s
+     Running tests/call_allocations.rs (/Users/danielking/projects/vail/vail/target/release/deps/call_allocations-aac9b4c525aa87a9)
+
+running 2 tests
+__vail_call_word: 64 calls=3 allocations, 8192 calls=3
+constructor: 64 calls=8 allocations, 8192 calls=8
+test constructor_borrows_sliced_alleles_without_per_call_wrappers ... ok
+__vail_call_alleles: 64 calls=14 allocations, 8192 calls=14
+__vail_call_phased: 64 calls=8 allocations, 8192 calls=8
+test accessor_allocations_do_not_scale_with_number_of_calls ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s

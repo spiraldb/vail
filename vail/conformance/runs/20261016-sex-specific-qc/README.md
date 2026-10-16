@@ -1,6 +1,6 @@
 # Sex-specific QC: eliminate per-Call allocation and bulky predicate contexts
 
-The unmodified upstream `test_kyle_sex_specific_qc` now completes in **38.27s**, versus **198.95s** before the fix on this laptop: **5.20× faster**, with **5.24× less CPU time**. Both runs use the same original immutable MatrixTable snapshot and return 24,885 rows. These are single measurements, not confidence intervals.
+The unmodified upstream `test_kyle_sex_specific_qc` now completes in **38.27s**, versus **198.95s** before the fix on this laptop: **5.20× faster**, with **5.24× less CPU time**. Both runs use the same original immutable MatrixTable snapshot and return 24,885 rows. These are single measurements, not confidence intervals. The final comparison includes newer main changes between baseline6bce5077 and final base dcbaac28, so the measured 5.20× ratio does not isolate this patch's contribution. Before rebasing, this patch measured 40.76s / 40.49 CPU-seconds on the old base (4.88× faster than baseline).
 
 | Run | Wall seconds | CPU seconds | Average cores | Peak RSS GiB |
 |---|---:|---:|---:|---:|
@@ -19,6 +19,8 @@ The third row changes logical partition metadata and is **not** an engine-only b
 
 There is still O(entries) arithmetic and storage for output column buffers. The execution adapters no longer perform O(entries) **heap allocation calls**. This is not a claim that every operation throughout Vail, including Python localization/export, has been audited.
 
+![10Hz CPU and RSS telemetry](telemetry.png)
+
 ## Profiles and remaining cost
 
 The baseline profile showed allocator/free traffic, `CallRows::get` and allocating `unpack`, plus repeated full-context construction. The final profile is dominated by bulk Arrow copying, integer arithmetic, validity/CASE buffer operations and predicate decoding arithmetic. `CallRows::get` is about 1.6% of leaf samples on the busiest thread; it no longer allocates per call. Hotspot summaries are included. Local Samply captures and symbol sidecars remain in the root checkout's identically named run directory; they are deliberately excluded from the commit.
@@ -32,7 +34,7 @@ Open performance work:
 ## Validation and provenance
 
 - Matching rebuilt native: 70 focused Call/predicate/genomics/function tests pass; 104 broader MatrixTable/layout/shared-reducer/variant-QC/entry-sum/array-aggregation tests pass. JUnit reports included.
-- Allocator regression tests execute public expression lowering/evaluation with a real System-backed counting allocator; input construction is excluded. Compare 64 and 8,192 calls, require bounded allocation growth, check nullable sliced inputs, malformed words hidden under missing parents, original shared word buffers, and sliced allele construction. Matching final results are recorded in `rebased-allocation-tests.log`.
+- Allocator regression tests execute public expression lowering/evaluation with a real System-backed counting allocator; input construction is excluded. Compare 64 and 8,192 calls, require bounded allocation growth, check nullable sliced inputs, malformed words hidden under missing parents, original shared word buffers, and sliced allele construction. Both matching final tests pass. Allocation counts are identical at 64 and 8,192 calls: checked word **3/3**, allele list **14/14**, phase **8/8**, constructor **8/8**. Full results are recorded in `rebased-allocation-tests.log`.
 - Code candidate: `9f678d9a2e90919200208123d130ca6dca1d148b`, based on main `dcbaac28b5d5377d8999ad112dc2827a206468a8`. Native SHA256: `7ecb7cfbac3eb783db21991097c4dffa0bc89b471d143f77517a17da717d4394`.
 - Baseline engine: main `6bce5077d98f61e49f0b7ec9241f855f493b54d3`, plus the 25-line dependency-summary binding (unused by the old lowering). Python includes the identical restored Call predicates from `dc51582fcb2413be6f14372ea8887a4cabc85f88`, required to run this case. Baseline native SHA256 `7d0ee1e202098f797f1f2cb63f99dfc65cf6d8740407bc7ea895d24b204aaa54`. No claim of bit-identical pristine main.
 - Intermediate `bound-full` results (40.76s) precede the final rebase/shared Boolean reducers and are retained only as an intermediate measurement. An earlier 279s run overlapped compilation and is excluded from the comparison.
