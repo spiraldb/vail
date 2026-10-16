@@ -49,11 +49,13 @@ pub(crate) fn arity(function: &str) -> Option<usize> {
     ) {
         return None;
     }
-    Some(if matches!(function, "call_stats" | "take" | "take_ordered") {
-        2
-    } else {
-        1
-    })
+    Some(
+        if matches!(function, "call_stats" | "take" | "take_ordered") {
+            2
+        } else {
+            1
+        },
+    )
 }
 
 pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
@@ -188,9 +190,13 @@ impl ScalarUDFImpl for ListAggregate {
                     _ => return Err(exec_datafusion_err!("invalid reducer initializer type")),
                 };
                 if init.is_null(row) || value < 0 {
-                    let function = &self.function;
+                    let parameter = if self.function == "call_stats" {
+                        "call_stats allele count"
+                    } else {
+                        &self.function
+                    };
                     return Err(exec_datafusion_err!(
-                        "{function} requires a defined nonnegative initializer"
+                        "{parameter} requires a defined nonnegative initializer"
                     ));
                 }
                 usize::try_from(value).map_err(|_| {

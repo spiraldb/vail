@@ -65,52 +65,40 @@ def test_integer_entry_sum_empty_axes_globals_and_nonlocalized_result():
     assert hl.eval(lazy) == 32
 
 
-def test_entry_sum_routes_public_aggregate_through_native_row_array_reduction(monkeypatch):
+def test_entry_sum_preserves_axis_values_types_and_replay():
     matrix = hl.utils.range_matrix_table(3, 4, 2)
     value = hl.int64(matrix.row_idx + matrix.col_idx)
+    expressions = [
+        (hl.agg.sum(hl.int64(matrix.row_idx)), 12),
+        (hl.agg.count(), 12),
+        (hl.agg.sum(value), 30),
+        (hl.agg.sum(hl.int64(matrix.col_idx)), 18),
+    ]
+    for expression, expected in expressions:
+        lazy = matrix.aggregate_entries(expression, _localize=False)
+        assert lazy.dtype == hl.tint64
+        for _ in range(2):
+            assert matrix.aggregate_entries(expression) == expected
+            assert hl.eval(lazy) == expected
 
-    # Capture the actual Table.aggregate input from the public MatrixTable API;
-    # this demonstrates that the optimization is selected and lowered, rather
-    # than merely proving a helper plan can be constructed.
-    original_aggregate = hl.Table.aggregate
-    captured = {}
+    sparse = matrix.filter_entries(matrix.col_idx % 2 == 0)
+    assert sparse.aggregate_entries(hl.agg.count()) == 6
+    assert sparse.aggregate_entries(hl.agg.sum(hl.int64(sparse.row_idx))) == 6
+    assert sparse.aggregate_entries(hl.agg.sum(hl.int64(sparse.col_idx))) == 6
 
-    def capture_aggregate(table, expr, _localize=True):
-        captured["plan"] = table._native.physical_plan()
-        captured["ir"] = expr.to_ir()
-        return original_aggregate(table, expr, _localize=_localize)
+    with_globals = matrix.annotate_globals(offset=7)
+    expression = hl.agg.sum(hl.int64(with_globals.row_idx + with_globals.offset))
+    lazy = with_globals.aggregate_entries(expression, _localize=False)
+    assert lazy.dtype == hl.tint64
+    assert hl.eval(lazy) == 96
+    assert hl.eval(lazy) == 96
 
-    monkeypatch.setattr(hl.Table, "aggregate", capture_aggregate)
-
-    def unexpected_context(self, axis):
-        raise AssertionError(f"plain entry sum unexpectedly used _context({axis!r})")
-
-    monkeypatch.setattr(hl.MatrixTable, "_context", unexpected_context)
-    assert matrix.aggregate_entries(hl.agg.sum(hl.int64(matrix.row_idx))) == 12
-    assert "UnnestExec" not in captured["plan"]
-    assert captured["ir"]["function"] == "sum"
-    assert captured["ir"]["value"]["op"] == "array_reduce"
-    inner_map = captured["ir"]["value"]["value"]
-    assert inner_map["op"] == "array_map"
-    assert inner_map["body"]["op"] == "if_else"
-
-    def ops(node):
-        if isinstance(node, dict):
-            return [node.get("op")] + [op for value in node.values() for op in ops(value)]
-        if isinstance(node, list):
-            return [op for value in node for op in ops(value)]
-        return []
-
-    lowered_ops = ops(captured["ir"])
-    assert "stream_range" not in lowered_ops
-    assert "array_index" not in lowered_ops
-
-    monkeypatch.undo()
-    # General entry aggregations and column-scoped sums retain the established
-    # exploded-cell/context route and values.
-    assert matrix.aggregate_entries(hl.agg.count()) == 12
-    assert matrix.aggregate_entries(hl.agg.sum(value)) == 30
-    assert matrix.aggregate_entries(hl.agg.sum(hl.int64(matrix.col_idx))) == 18
+    for rows, columns in [(0, 4), (3, 0)]:
+        empty = hl.utils.range_matrix_table(rows, columns, 2)
+        lazy = empty.aggregate_entries(hl.agg.sum(hl.int64(empty.row_idx)), _localize=False)
+        assert lazy.dtype == hl.tint64
+        assert hl.eval(lazy) == 0
+        assert hl.eval(lazy) == 0
 
 
 def test_integer_entry_sum_uses_wrapping_int64_arithmetic():

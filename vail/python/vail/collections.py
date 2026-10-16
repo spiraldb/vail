@@ -45,8 +45,8 @@ def _contains_unordered_or_ndarray(dtype, *, include_ndarray=True):
         )
     if isinstance(dtype, tstruct):
         return builtins.any(
-            _contains_unordered_or_ndarray(dtype[name], include_ndarray=include_ndarray)
-            for name in dtype
+            _contains_unordered_or_ndarray(ty, include_ndarray=include_ndarray)
+            for _, ty in dtype.items()
         )
     if isinstance(dtype, ttuple):
         return builtins.any(
@@ -95,7 +95,7 @@ def _distinct_supported(dtype):
     if isinstance(dtype, tarray):
         return _distinct_supported(dtype.element_type)
     if isinstance(dtype, tstruct):
-        return builtins.all(_distinct_supported(dtype[name]) for name in dtype)
+        return builtins.all(_distinct_supported(ty) for _, ty in dtype.items())
     if isinstance(dtype, ttuple):
         return builtins.all(_distinct_supported(ty) for ty in dtype.types)
     from .types import tinterval, tndarray
@@ -170,8 +170,8 @@ def _ensure_key_supported(dtype):
     if isinstance(dtype, tarray):
         _ensure_key_supported(dtype.element_type)
     elif isinstance(dtype, tstruct):
-        for name in dtype:
-            _ensure_key_supported(dtype[name])
+        for _, ty in dtype.items():
+            _ensure_key_supported(ty)
     elif isinstance(dtype, ttuple):
         for item in dtype.types:
             _ensure_key_supported(item)
@@ -179,37 +179,10 @@ def _ensure_key_supported(dtype):
         _ensure_key_supported(dtype.point_type)
 
 
-def _literal_container_ir(node):
-    if not isinstance(node, IR_NODE_TYPES):
-        return True
-    op = node.get("op")
-    if op == "literal":
-        return True
-    if op == "cast":
-        return _literal_container_ir(node.get("value"))
-    if op == "unary":
-        return _literal_container_ir(node.get("value"))
-    if op == "binary":
-        return _literal_container_ir(node.get("left")) and _literal_container_ir(node.get("right"))
-    if op not in ("array", "tuple", "struct"):
-        return False
-    if op in ("array", "tuple"):
-        children = node.get("elements", [])
-    else:
-        fields = node.get("fields", {})
-        children = [entry[1] for entry in fields] if isinstance(fields, list) else fields.values()
-    return builtins.all(_literal_container_ir(child) for child in children)
-
-
 def _direct_literal_array(value):
-    """Whether an array is a direct literal container, eligible for Hail's
-    constant-folded ToDict duplicate resolution."""
-    node = value.to_ir()
-    if node.get("op") == "literal":
-        return True
-    return node.get("op") == "array" and builtins.all(
-        _literal_container_ir(item) for item in node.get("elements", [])
-    )
+    """Retain literal/computed duplicate precedence using original-node DAG analysis."""
+    from .expressions import _native_expression
+    return _native_expression(value.to_ir()).literal_dict_precedence()
 
 
 def _dict_from_entries(entries, key_type, value_type, *, last_wins=False):
@@ -418,11 +391,19 @@ def reduce(value, operation, filter_missing=True):
         raise NotImplementedError("DataFusion array_sum/product use float64; exact integer and float32 set reductions are unsupported")
     if operation in ('min', 'max') and element not in (tint32, tint64, tfloat32, tfloat64):
         raise TypeError("set reductions require numeric elements")
-    result = _function('array_' + operation, [to_array(value)], element)
-    if operation in ('sum', 'product'):
-        # SQL returns null for empty/all-null collections; Hail returns identity.
-        compact = _function('array_compact', [to_array(value)], tarray(element))
-        result = if_else(length(compact) == 0, literal(0.0 if operation == 'sum' else 1.0, element), result)
+    # Extrema are independent of iteration order. Floating sum/product retain
+    # their established sorted input order and SQL reduction arithmetic.
+    view = _cast(value, tarray(element))
+    if operation in ('min', 'max'):
+        result = _function('array_' + operation, [view], element)
+    else:
+        identity = literal(0.0 if operation == 'sum' else 1.0, element)
+        from .expressions import bind
+        def reduce_sorted(ordered):
+            reduced = _function('array_' + operation, [ordered], element)
+            defined = bind(lambda result: if_else(is_missing(result), identity, result), reduced)
+            return if_else(is_missing(ordered), missing(element), defined)
+        result = bind(reduce_sorted, to_array(value))
     if not filter_missing:
         result = if_else(predicate(value, lambda item: is_missing(item)), missing(element), result)
     return result

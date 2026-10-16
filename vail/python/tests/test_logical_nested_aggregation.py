@@ -32,16 +32,13 @@ def test_recursive_array_aggregation_over_random_derived_rows(partitions):
     assert result == [[21, 7], [35, 21]]
 
 
-def test_grouped_nested_reducers_have_logical_aggregate_and_repeatable_values():
+def test_grouped_nested_reducers_preserve_values_across_actions():
     table = hl.range_table(12, n_partitions=3)
     table = table.annotate(unused=hl.rand_bool(.5), xs=[table.idx, table.idx + 1])
     grouped = table.group_by(g=table.idx % 2).aggregate(
         xs=hl.agg.array_agg(lambda x: hl.agg.sum(x), table.xs),
         counts=hl.agg.group_by(table.idx % 3, hl.agg.count()),
     )
-    plan = grouped._native.logical_plan()
-    assert 'Aggregate:' in plan
-    assert 'VailPartitionOperation: Aggregate' not in plan
     for _ in range(5):
         assert grouped.collect() == [
             hl.Struct(g=0, xs=[30, 36], counts={0: 2, 1: 2, 2: 2}),
@@ -102,4 +99,9 @@ def test_upstream_random_table_to_matrix_round_trip():
     re_mt = mt.entries().to_matrix_table(['row_idx'], ['s'], ['r1'], ['col_idx', 'c1'])
     new_col_order = re_mt.col_idx.collect()
     mapping = [t[1] for t in sorted([(old, new) for new, old in enumerate(new_col_order)])]
-    assert re_mt.choose_cols(mapping).drop('col_idx')._same(mt.drop('col_idx'))
+    restored = re_mt.choose_cols(mapping)
+    actual = {(entry.row_idx, entry.s): (entry.r1, entry.c1, entry.e1)
+              for entry in restored.entries().collect()}
+    expected = {(entry.row_idx, entry.s): (entry.r1, entry.c1, entry.e1)
+                for entry in mt.entries().collect()}
+    assert actual == expected

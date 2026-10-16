@@ -1,6 +1,6 @@
 {
   "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
-  "candidate": "/private/tmp/vail-shortcuts-review-candidate5",
+  "candidate": "76cbbeb0cada9efc955254d9ce5eea0c3339f082",
   "manifest_sha256": "79b445352023fcc23e91d6a7dea7756f08cf0f51ff0571bac5a17a0531ba93d1",
   "decision": "request_changes",
   "final_runtime_acceptance": false,
@@ -18,21 +18,21 @@
       "priority": 1,
       "issue": "Sort/unkey metadata disagrees with physical partition layout",
       "owner": "logical_planning",
-      "status": "fix_implemented_runtime_pending"
+      "status": "source_review_addressed_at_76cbbeb0"
     },
     {
       "id": "R3",
       "priority": 2,
       "issue": "Head/tail metadata disagrees with execution layout",
       "owner": "logical_planning",
-      "status": "fix_implemented_runtime_pending"
+      "status": "source_review_addressed_at_76cbbeb0"
     },
     {
       "id": "R4",
       "priority": 2,
       "issue": "Consumer canonicalization enumerates physical DAG paths",
       "owner": "logical_planning",
-      "status": "fix_implemented_runtime_pending"
+      "status": "source_review_addressed_at_76cbbeb0"
     },
     {
       "id": "R5",
@@ -46,21 +46,21 @@
       "priority": 2,
       "issue": "VCF sink repeatedly scans field names in sample loops",
       "owner": "root",
-      "status": "batch_bindings_implemented_4_public_roundtrip_and_error_tests_passed_build6"
+      "status": "source_review_addressed_at_76cbbeb0"
     },
     {
       "id": "R7",
       "priority": 2,
       "issue": "New tests rely on private counters/identities/mocks instead of public behavior",
       "owner": "all",
-      "status": "replacement_in_progress"
+      "status": "request_changes_at_76cbbeb0; public replacements written in unvalidated integration"
     },
     {
       "id": "R8",
       "priority": 2,
       "issue": "LocusOp Pure effect needs valid-coordinate ingestion proof",
       "owner": "kernel_effects",
-      "status": "MayError_restored_native_and_public_optimizer_tests_passed"
+      "status": "source_review_addressed_at_76cbbeb0"
     }
   ],
   "latest_integration": {
@@ -88,7 +88,7 @@
       "test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip: present struct with all missing children reads back as missing struct"
     ],
     "new_remediation_failures": 0,
-    "main_review": "not_approved; followup handoff rejected by app approval policy",
+    "main_review": "not_approved; exact76 source follow-up delivered; reconciled revision requires separate validation/review",
     "post_validation_nonsemantic_changes": {
       "change": "Removed extra final blank lines only",
       "paths": [
@@ -120,5 +120,13 @@
     "reason": "MCP tool call requires approval, but approval policy is never",
     "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
     "main_gate": "not_approved"
+  },
+  "reviewed_revision": "76cbbeb0cada9efc955254d9ce5eea0c3339f082",
+  "review_delivery": "delivered_after_explicit_user_authorization",
+  "review_disposition": "Source follow-up cleared scalar capture, scoped RNG, predicate-once fixes and R2/R3/R4/R6/R8. R7 public-behavior replacements required. Subsequent main reconciliation is outside this review.",
+  "pending_integration": {
+    "main_parent": "6bce5077d98f61e49f0b7ec9241f855f493b54d3",
+    "status": "reconciliation_in_progress_not_validated_not_reviewed",
+    "main_updated": false
   }
 }

@@ -5,18 +5,21 @@ Branch: `dk/architectural-shortcut-removal`, based on `2c02020`. This branch has
 
 Please review the development branch's final commit before it is merged to main.
 The previous review requested changes; it does not approve this candidate.
-Sending the newer candidate was rejected by the app: “MCP tool call requires
-approval, but approval policy is never.” This file is a local handoff draft, not
-a delivered message or an approval.
+The handoff was delivered after explicit user authorization. Exact revision
+`76cbbeb0cada9efc955254d9ce5eea0c3339f082` received partial source clearance:
+scalar capture, scoped randomness, predicate-once filtering and R2/R3/R4/R6/R8
+are addressed. R7 remains request changes for newly added private RNG-consumer
+tests. Public behavior replacements are written in the pending integration;
+they still require validation and follow-up review. The reconciliation with
+newer main is a separate material revision and remains unapproved.
 
 The five remediations replace stream prefix rescans, Python matrix collection
 for VCF output, duplicated reducers, general physical/deferred compilation, and
 per-instance pure-kernel identities/effects. Follow-up fixes cover scalar capture
 ownership/cardinality, native scoped randomness rewriting, predicate-once lazy
 filtering, physical schema rewrites, partition-tag corruption, and canonicalized
-consumer fan-out before independent state reset. New private strategy/identity
-assertions were replaced by actual public values/types/actions and supported
-native storage/diagnostic contracts.
+consumer fan-out before independent state reset. Most new private strategy/identity assertions were replaced by public outcomes;
+the remaining RNG consumer assertions are being replaced in the integration.
 
 Final coherent candidate10 evidence:
 

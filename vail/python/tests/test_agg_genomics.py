@@ -11,18 +11,16 @@ class GenomicAggregateExpressionTests(unittest.TestCase):
         self.assertEqual(expr.dtype["AC"], hl.tarray(hl.tint32))
         self.assertEqual(expr.dtype["AF"], hl.tarray(hl.tfloat64))
         self.assertEqual(expr.dtype["homozygote_count"], hl.tarray(hl.tint32))
-        self.assertEqual(expr._ir["value"]["op"], "struct")
+        self.assertEqual(table.aggregate(expr).AC, [1, 1])
 
     def test_hwe_options_and_inbreeding_arguments(self):
         table = hl.Table.parallelize([{"gt": hl.Call((0, 1)), "p": 0.25}],
                                      schema=hl.tstruct(gt=hl.tcall, p=hl.tfloat64))
         hwe = hl.agg.hardy_weinberg_test(table.gt, one_sided=True)
-        self.assertIs(hwe._ir["options"]["one_sided"], True)
-        self.assertEqual(hwe._ir["options"]["__vail_result_type"],
-                         hwe.dtype._native_type)
+        self.assertAlmostEqual(table.aggregate(hwe).p_value, 0.5)
         ib = hl.agg.inbreeding(table.gt, table.p)
         self.assertEqual(ib.dtype["f_stat"], hl.tfloat64)
-        self.assertEqual(ib._ir["value"]["op"], "struct")
+        self.assertEqual(table.aggregate(ib).n_called, 1)
 
     def test_info_score_and_ndarray_result_types(self):
         table = hl.Table.parallelize([{"gp": [0.25, 0.5, 0.25]}],
@@ -31,10 +29,10 @@ class GenomicAggregateExpressionTests(unittest.TestCase):
         self.assertEqual(info.dtype["score"], hl.tfloat64)
         self.assertEqual(info.dtype["n_included"], hl.tint32)
 
-        arrays = hl.Table.parallelize([{"x": {"__vail_ndarray_data": [1.] * 6,
-                                               "__vail_ndarray_shape": [2, 3]}}],
+        arrays = hl.Table.parallelize([{"x": np.ones((2, 3))}],
                                       schema=hl.tstruct(x=hl.tndarray(hl.tfloat64, 2)))
         self.assertEqual(hl.agg.ndarray_sum(arrays.x).dtype, hl.tndarray(hl.tfloat64, 2))
+        np.testing.assert_array_equal(arrays.aggregate(hl.agg.ndarray_sum(arrays.x)), np.ones((2, 3)))
 
     def test_rejects_wrong_inputs(self):
         with self.assertRaises(TypeError):
@@ -113,7 +111,7 @@ class GenomicAggregateExecutionTests(unittest.TestCase):
     def test_ndarray_sum_and_shape_mismatch(self):
         dtype = hl.tndarray(hl.tfloat64, 2)
         def array(data, shape):
-            return {"__vail_ndarray_data": data, "__vail_ndarray_shape": shape}
+            return np.asarray(data).reshape(shape)
         table = hl.Table.parallelize(
             [{"x": array([1., 2., 3., 4.], [2, 2])},
              {"x": array([5., 6., 7., 8.], [2, 2])}, {"x": None}],
@@ -130,19 +128,19 @@ class GenomicAggregateExecutionTests(unittest.TestCase):
     def test_ndarray_sum_preserves_large_int64_values(self):
         value = 2**53 + 7
         table = hl.Table.parallelize(
-            [{"x": {"__vail_ndarray_data": [value], "__vail_ndarray_shape": [1]}},
-             {"x": {"__vail_ndarray_data": [3], "__vail_ndarray_shape": [1]}}],
+            [{"x": np.array([value], dtype=np.int64)},
+             {"x": np.array([3], dtype=np.int64)}],
             schema=hl.tstruct(x=hl.tndarray(hl.tint64, 1)), n_partitions=2)
         np.testing.assert_array_equal(table.aggregate(hl.agg.ndarray_sum(table.x)),
                                       np.array([value + 3], dtype=np.int64))
 
-    def test_ndarray_sum_treats_missing_element_as_zero(self):
+    def test_ndarray_sum_ignores_missing_arrays(self):
         table = hl.Table.parallelize(
-            [{"x": {"__vail_ndarray_data": [1., None], "__vail_ndarray_shape": [2]}},
-             {"x": {"__vail_ndarray_data": [None, 4.], "__vail_ndarray_shape": [2]}}],
+            [{"x": np.array([1., 2.])}, {"x": None},
+             {"x": np.array([3., 4.])}],
             schema=hl.tstruct(x=hl.tndarray(hl.tfloat64, 1)), n_partitions=2)
         np.testing.assert_array_equal(table.aggregate(hl.agg.ndarray_sum(table.x)),
-                                      np.array([1., 4.]))
+                                      np.array([4., 6.]))
 
     def test_grouped_call_stats_merges_partition_states(self):
         table = hl.Table.parallelize(
@@ -155,3 +153,33 @@ class GenomicAggregateExecutionTests(unittest.TestCase):
         self.assertEqual(by_group["a"].AC, [2, 2])
         self.assertEqual(by_group["a"].homozygote_count, [1, 1])
         self.assertEqual(by_group["b"].AC, [1, 1])
+
+
+def test_public_hwe_reference_examples_and_partitioned_equivalence():
+    import pytest
+    for counts, frequency, p in [
+        ((1, 1, 1), .6, .7),
+        ((250, 500, 250), .5002501250625313, .9747844394217698),
+        ((37, 200, 85), .48964964307448583, 1.1337210383168987e-6),
+    ]:
+        scalar = hl.eval(hl.hardy_weinberg_test(*counts))
+        assert scalar.het_freq_hwe == pytest.approx(frequency, abs=1e-12)
+        assert scalar.p_value == pytest.approx(p, abs=1e-10)
+        calls = [hl.Call([0, 0])] * counts[0] + [hl.Call([0, 1])] * counts[1] + [hl.Call([1, 1])] * counts[2]
+        calls += [hl.Call([0]), hl.Call([1]), hl.Call([]), None]
+        for parts in [1, 7]:
+            table = hl.Table.parallelize([{'gt': c} for c in calls],
+                                         schema=hl.tstruct(gt=hl.tcall), n_partitions=parts)
+            actual = table.aggregate(hl.agg.hardy_weinberg_test(table.gt))
+            assert actual.het_freq_hwe == pytest.approx(scalar.het_freq_hwe)
+            assert actual.p_value == pytest.approx(scalar.p_value)
+            one = table.aggregate(hl.agg.hardy_weinberg_test(table.gt, one_sided=True))
+            assert one.p_value == pytest.approx(hl.eval(hl.hardy_weinberg_test(*counts, True)).p_value)
+
+
+def test_call_stats_public_invalid_initializer_and_indices():
+    import pytest
+    table = hl.Table.parallelize([{'gt': hl.Call([2])}], schema=hl.tstruct(gt=hl.tcall))
+    for n in [2, -1, hl.missing(hl.tint32)]:
+        with pytest.raises((RuntimeError, ValueError), match='allele|initializer'):
+            table.aggregate(hl.agg.call_stats(table.gt, n))

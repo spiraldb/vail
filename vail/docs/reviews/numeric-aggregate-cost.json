@@ -1,0 +1,315 @@
+{
+  "base_commit": "b23a1a2a",
+  "baseline_native_sha256": "22112636296ef1774e82dd11dbdb961e00c4184fcf3786906aef79c025d5372b",
+  "current_native_sha256": "c2ca714e27b90dddef3ea38ddc59381f3dc902128d0d6dfceb213cc98a2b651e",
+  "method": "22 fresh subprocess cases against independent complete baseline Python/native package. Warm eval(0), prepare lazy expression, time public aggregate action. 10s cap per case; macOS peak RSS bytes includes runtime/preparation/output. One run per case.",
+  "limitations": [
+    "Geometric-grid representatives differ from old exact-extrema rebinning and can depend on input order/partitioning; every measured representative is a real input point with its original label",
+    "Downsample retained count is bounded by divisions squared; arbitrary label payload bytes remain unbounded and are charged to accumulator size",
+    "QR keeps bounded mergeable factors/origins but cannot guarantee meaningful fits for arbitrary ill-conditioned or unrepresentable floating-point problems",
+    "Regression timing is mixed (16 predictors slower in this measurement); no universal latency gain claimed",
+    "Histogram rejects bins whose finite edges cannot be represented distinctly",
+    "Quantile implementation unchanged; no claim of identical stochastic sketch representatives across runs"
+  ],
+  "cases": [
+    {
+      "mode": "hist",
+      "n": 100000,
+      "size": 64,
+      "version": "baseline",
+      "execution_seconds": 0.007256457996845711,
+      "peak_rss_bytes": 149078016,
+      "check": {
+        "total": 100000,
+        "first": 0.0,
+        "last": 100000.0
+      }
+    },
+    {
+      "mode": "hist",
+      "n": 100000,
+      "size": 64,
+      "version": "current",
+      "execution_seconds": 0.0030300829967018217,
+      "peak_rss_bytes": 132399104,
+      "check": {
+        "total": 100000,
+        "first": 0.0,
+        "last": 100000.0
+      }
+    },
+    {
+      "mode": "hist",
+      "n": 100000,
+      "size": 1024,
+      "version": "baseline",
+      "execution_seconds": 0.0042057499958900735,
+      "peak_rss_bytes": 135610368,
+      "check": {
+        "total": 100000,
+        "first": 0.0,
+        "last": 100000.0
+      }
+    },
+    {
+      "mode": "hist",
+      "n": 100000,
+      "size": 1024,
+      "version": "current",
+      "execution_seconds": 0.002945792002719827,
+      "peak_rss_bytes": 133021696,
+      "check": {
+        "total": 100000,
+        "first": 0.0,
+        "last": 100000.0
+      }
+    },
+    {
+      "mode": "hist",
+      "n": 100000,
+      "size": 8192,
+      "version": "baseline",
+      "execution_seconds": 0.014753082999959588,
+      "peak_rss_bytes": 148635648,
+      "check": {
+        "total": 100000,
+        "first": 0.0,
+        "last": 100000.0
+      }
+    },
+    {
+      "mode": "hist",
+      "n": 100000,
+      "size": 8192,
+      "version": "current",
+      "execution_seconds": 0.0035817079988191836,
+      "peak_rss_bytes": 136347648,
+      "check": {
+        "total": 100000,
+        "first": 0.0,
+        "last": 100000.0
+      }
+    },
+    {
+      "mode": "downsample",
+      "n": 4096,
+      "size": 128,
+      "version": "baseline",
+      "execution_seconds": 0.01661170800070977,
+      "peak_rss_bytes": 134021120,
+      "check": {
+        "retained": 75,
+        "all_real": true
+      }
+    },
+    {
+      "mode": "downsample",
+      "n": 4096,
+      "size": 128,
+      "version": "current",
+      "execution_seconds": 0.005871583998668939,
+      "peak_rss_bytes": 134529024,
+      "check": {
+        "retained": 128,
+        "all_real": true
+      }
+    },
+    {
+      "mode": "downsample",
+      "n": 16384,
+      "size": 128,
+      "version": "baseline",
+      "execution_seconds": 0.15030358399963006,
+      "peak_rss_bytes": 138756096,
+      "check": {
+        "retained": 80,
+        "all_real": true
+      }
+    },
+    {
+      "mode": "downsample",
+      "n": 16384,
+      "size": 128,
+      "version": "current",
+      "execution_seconds": 0.0048060830013128,
+      "peak_rss_bytes": 136167424,
+      "check": {
+        "retained": 128,
+        "all_real": true
+      }
+    },
+    {
+      "mode": "downsample",
+      "n": 65536,
+      "size": 128,
+      "version": "baseline",
+      "execution_seconds": 0.21182645900262287,
+      "peak_rss_bytes": 136511488,
+      "check": {
+        "retained": 86,
+        "all_real": true
+      }
+    },
+    {
+      "mode": "downsample",
+      "n": 65536,
+      "size": 128,
+      "version": "current",
+      "execution_seconds": 0.006379333994118497,
+      "peak_rss_bytes": 133005312,
+      "check": {
+        "retained": 128,
+        "all_real": true
+      }
+    },
+    {
+      "mode": "downsample",
+      "n": 65536,
+      "size": 512,
+      "version": "baseline",
+      "execution_seconds": 0.72771045799891,
+      "peak_rss_bytes": 134250496,
+      "check": {
+        "retained": 298,
+        "all_real": true
+      }
+    },
+    {
+      "mode": "downsample",
+      "n": 65536,
+      "size": 512,
+      "version": "current",
+      "execution_seconds": 0.008801333002338652,
+      "peak_rss_bytes": 136282112,
+      "check": {
+        "retained": 512,
+        "all_real": true
+      }
+    },
+    {
+      "mode": "regression",
+      "n": 4096,
+      "size": 2,
+      "version": "baseline",
+      "execution_seconds": 0.0036998750001657754,
+      "peak_rss_bytes": 131858432,
+      "check": {
+        "n": 4096,
+        "beta": [
+          2.0300000000000393,
+          2.999985351562459
+        ],
+        "sigma": 0.02000793418665968
+      }
+    },
+    {
+      "mode": "regression",
+      "n": 4096,
+      "size": 2,
+      "version": "current",
+      "execution_seconds": 0.003420749999349937,
+      "peak_rss_bytes": 133922816,
+      "check": {
+        "n": 4096,
+        "beta": [
+          2.0299999999999923,
+          2.9999853515625134
+        ],
+        "sigma": 0.02000793418920374
+      }
+    },
+    {
+      "mode": "regression",
+      "n": 4096,
+      "size": 16,
+      "version": "baseline",
+      "execution_seconds": 0.007641875003173482,
+      "peak_rss_bytes": 134496256,
+      "check": {
+        "n": 4096,
+        "beta": [
+          2.030000000000591,
+          2.9998828124993864
+        ],
+        "sigma": 0.02004207954262892
+      }
+    },
+    {
+      "mode": "regression",
+      "n": 4096,
+      "size": 16,
+      "version": "current",
+      "execution_seconds": 0.009344250000140164,
+      "peak_rss_bytes": 135872512,
+      "check": {
+        "n": 4096,
+        "beta": [
+          2.0299999999999994,
+          2.9998828125000228
+        ],
+        "sigma": 0.02004207956471053
+      }
+    },
+    {
+      "mode": "regression",
+      "n": 4096,
+      "size": 64,
+      "version": "baseline",
+      "execution_seconds": 0.021010917000239715,
+      "peak_rss_bytes": 146161664,
+      "check": {
+        "n": 4096,
+        "beta": [
+          2.0295312499732177,
+          3.0001562500262366
+        ],
+        "sigma": 0.02015867275892761
+      }
+    },
+    {
+      "mode": "regression",
+      "n": 4096,
+      "size": 64,
+      "version": "current",
+      "execution_seconds": 0.013086499995552003,
+      "peak_rss_bytes": 138952704,
+      "check": {
+        "n": 4096,
+        "beta": [
+          2.0295312500001605,
+          3.0001562500001193
+        ],
+        "sigma": 0.020158672335065398
+      }
+    },
+    {
+      "mode": "translated",
+      "n": 101,
+      "size": 2,
+      "version": "baseline",
+      "execution_seconds": 0.002732916000240948,
+      "peak_rss_bytes": 132055040,
+      "check": {
+        "n": 101,
+        "beta": null,
+        "sigma": null
+      }
+    },
+    {
+      "mode": "translated",
+      "n": 101,
+      "size": 2,
+      "version": "current",
+      "execution_seconds": 0.0025876660001813434,
+      "peak_rss_bytes": 132939776,
+      "check": {
+        "n": 101,
+        "beta": [
+          -3000060078099.5337,
+          3.000060078101531
+        ],
+        "sigma": 0.1438345436581223
+      }
+    }
+  ]
+}

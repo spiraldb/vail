@@ -1,0 +1,20 @@
+{
+  "workload": "100 public ReferenceDefinition.validate calls with equal contig and PAR counts; half X, half Y; length7, PAR[1,6). Standalone rustc -O compiling reference.rs with existing serde/rangemap dependencies, same compiler and harness for both snapshots. Shared machine load; illustrative, not isolated throughput.",
+  "baseline_commit": "24ac2f8",
+  "baseline_seconds": {
+    "256": 0.024538083,
+    "1024": 0.590996833,
+    "4096": 10.879654958
+  },
+  "indexed_seconds": {
+    "256": 0.012447583,
+    "1024": 0.051634584,
+    "4096": 0.663973542
+  },
+  "reproduce": "cargo run --release -p vail-execution --example reference_validation_cost",
+  "cargo_example_indexed_seconds": {
+    "256": 0.014528208,
+    "1024": 0.055829542,
+    "4096": 0.447282416
+  }
+}

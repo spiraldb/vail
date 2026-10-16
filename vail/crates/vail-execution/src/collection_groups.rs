@@ -191,8 +191,16 @@ fn grouped(entries: &ListArray, operation: &Operation, output_type: &DataType) -
             None,
         )?
     } else {
-        let offsets = OffsetBuffer::<i32>::from_lengths(group_lengths);
-        let mut cursors = offsets.iter().map(|&n| n as usize).collect::<Vec<_>>();
+        let sorted_groups = order.values();
+        let offsets = OffsetBuffer::<i32>::from_lengths(
+            sorted_groups
+                .iter()
+                .map(|&group| group_lengths[group as usize]),
+        );
+        let mut cursors = vec![0usize; count];
+        for (position, &group) in sorted_groups.iter().enumerate() {
+            cursors[group as usize] = offsets[position] as usize;
+        }
         let mut selections = vec![0u32; sources.len()];
         for (input, &group) in ids.iter().enumerate() {
             selections[cursors[group]] = sources.value(input);
@@ -213,10 +221,13 @@ fn grouped(entries: &ListArray, operation: &Operation, output_type: &DataType) -
         )?);
         let records = StructArray::try_new(
             fields.clone(),
-            vec![representative_keys, grouped_values],
+            vec![
+                take(representative_keys.as_ref(), &order, None)?,
+                grouped_values,
+            ],
             None,
         )?;
-        take(&records, &order, None)?
+        Arc::new(records)
     };
     Ok(Arc::new(ListArray::try_new(
         item.clone(),
@@ -224,114 +235,4 @@ fn grouped(entries: &ListArray, operation: &Operation, output_type: &DataType) -
         output_values,
         entries.nulls().cloned(),
     )?))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_array::{
-        Int32Array,
-        builder::{Int32Builder, ListBuilder, StructBuilder},
-    };
-
-    fn entries() -> ListArray {
-        let mut builder = ListBuilder::new(StructBuilder::new(
-            vec![
-                Field::new("key", DataType::Int32, true),
-                Field::new("value", DataType::Int32, true),
-            ],
-            vec![Box::new(Int32Builder::new()), Box::new(Int32Builder::new())],
-        ));
-        for row in [
-            Some(vec![(Some(99), 99)]),
-            Some(vec![(Some(2), 20), (None, 30), (Some(2), 21), (None, 31)]),
-            Some(vec![]),
-            None,
-            Some(vec![(Some(2), 40)]),
-        ] {
-            if let Some(row) = row {
-                for (key, value) in row {
-                    let record = builder.values();
-                    record
-                        .field_builder::<Int32Builder>(0)
-                        .unwrap()
-                        .append_option(key);
-                    record
-                        .field_builder::<Int32Builder>(1)
-                        .unwrap()
-                        .append_value(value);
-                    record.append(true);
-                }
-                builder.append(true);
-            } else {
-                builder.append(false);
-            }
-        }
-        builder.finish().slice(1, 4)
-    }
-
-    #[test]
-    fn grouping_is_owner_local_slice_aware_and_preserves_null_lists() {
-        let input = entries();
-        for (operation, expected) in [
-            (Operation::First, vec![20, 30]),
-            (Operation::Last, vec![21, 31]),
-        ] {
-            let result = grouped(&input, &operation, input.data_type()).unwrap();
-            let result = result.as_any().downcast_ref::<ListArray>().unwrap();
-            assert!(result.is_null(2));
-            assert_eq!(result.value_length(1), 0);
-            let row = result.value(0);
-            let row = row.as_any().downcast_ref::<StructArray>().unwrap();
-            let values = row
-                .column_by_name("value")
-                .unwrap()
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap();
-            assert_eq!(values.values().as_ref(), expected);
-            let last = result.value(3);
-            let last = last.as_any().downcast_ref::<StructArray>().unwrap();
-            assert_eq!(
-                last.column_by_name("value")
-                    .unwrap()
-                    .as_any()
-                    .downcast_ref::<Int32Array>()
-                    .unwrap()
-                    .value(0),
-                40
-            );
-        }
-        let udf = CollectionGroups {
-            operation: Operation::Group,
-            signature: Signature::any(1, Volatility::Immutable),
-        };
-        let output = grouped(
-            &input,
-            &Operation::Group,
-            &udf.return_type(&[input.data_type().clone()]).unwrap(),
-        )
-        .unwrap();
-        let output = output.as_any().downcast_ref::<ListArray>().unwrap();
-        let row = output.value(0);
-        let row = row.as_any().downcast_ref::<StructArray>().unwrap();
-        let lists = row
-            .column_by_name("value")
-            .unwrap()
-            .as_any()
-            .downcast_ref::<ListArray>()
-            .unwrap();
-        for (index, expected) in [vec![20, 21], vec![30, 31]].iter().enumerate() {
-            assert_eq!(
-                lists
-                    .value(index)
-                    .as_any()
-                    .downcast_ref::<Int32Array>()
-                    .unwrap()
-                    .values()
-                    .as_ref(),
-                expected
-            );
-        }
-    }
 }

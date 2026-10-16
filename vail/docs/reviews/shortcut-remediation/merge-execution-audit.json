@@ -1,0 +1,450 @@
+{
+  "parents": {
+    "branch": "76cbbeb0cada9efc955254d9ce5eea0c3339f082",
+    "main": "6bce5077d98f61e49f0b7ec9241f855f493b54d3",
+    "base": "2c020200d4d59352922588e158ac78e402d86cc3"
+  },
+  "scope": "Execution-only development merge reconciliation. Both parent changes and base Fold/state/identity behavior compared. Includes automatically merged source files; read depth is explicit.",
+  "modules": [
+    {
+      "path": "vail/crates/vail-execution/Cargo.toml",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 44
+    },
+    {
+      "path": "vail/crates/vail-execution/examples/reference_validation_cost.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 31
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_collection_aggregates.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main TakeState chunk retention and bounded ordered interleave preserve unselected payload ownership. Removed obsolete private tests tied to old items state; retained main public execution tests and added branch-equivalent public multi-batch Set null/dedup and unordered take values.",
+      "lines": 359
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_genomic_aggregates.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 1003
+    },
+    {
+      "path": "vail/crates/vail-execution/src/advanced_numeric_aggregates.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 1498
+    },
+    {
+      "path": "vail/crates/vail-execution/src/aggregate_contract.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 367
+    },
+    {
+      "path": "vail/crates/vail-execution/src/aggregates.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main typed Arrow numeric/Boolean reducers and moments supersede baseline per-value reducer. Retain exact native-key scalar aggregate factory with input descriptor; shared reducer registry remains only collection/scan/table dispatch.",
+      "lines": 392
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_aggregate.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main GroupsAccumulator/coordinate state implementation retained. Exact native coordinate identity includes inner UDF, input type and empty identity; no captured closure alias.",
+      "lines": 329
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_aggregate_scan.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 111
+    },
+    {
+      "path": "vail/crates/vail-execution/src/array_fold.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main owned row-selection/callback storage preserved. Replaced newly introduced recursive collect_columns/captured-variable walks by one visited-native-physical-node traversal to retain bounded compilation of shared graphs.",
+      "lines": 427
+    },
+    {
+      "path": "vail/crates/vail-execution/src/calls.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 135
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collect_aggregate.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 155
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collection_grouped.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Read full new grouped-offset kernel: preserves original children and hidden null spans, checked dimensions. Scalar result now uses metadata-preserving scalar_at.",
+      "lines": 113
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collection_groups.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 238
+    },
+    {
+      "path": "vail/crates/vail-execution/src/collection_lookup.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 168
+    },
+    {
+      "path": "vail/crates/vail-execution/src/conditionals.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Read actual callback structure/evaluation and physical capture interface: selector evaluated once, ordered selection only; compact capture schema integrated with shared compilation memo.",
+      "lines": 249
+    },
+    {
+      "path": "vail/crates/vail-execution/src/csv_line.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main prepared CSV parser retained; replace new digest-only captured UDF identity by exact native delimiter/quote/missing/field-count key. MayError volatility preserves selected-row errors.",
+      "lines": 206
+    },
+    {
+      "path": "vail/crates/vail-execution/src/expression_effects.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 136
+    },
+    {
+      "path": "vail/crates/vail-execution/src/expression_identity.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 244
+    },
+    {
+      "path": "vail/crates/vail-execution/src/expressions.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Reconciled every conflict against both parents: one CompilationMemo for typed/physical/lexical/schema contexts, native Type/reference values, typed call kernels, native Switch callback captures, simple CASE and coalesce, lazy error/random kernels, owned scalar captures. Main scan aggregate_contract validation replaces old ad hoc result inference. Added Switch structural/effect/binder coverage. Physical callbacks route through request memo; metadata caches remain schema-specific and derived caches excluded from identity.",
+      "lines": 7465
+    },
+    {
+      "path": "vail/crates/vail-execution/src/fold_aggregate.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main one-row owned ArrayRef state, row slicing and schema normalization retained. Branch native FoldProgram source/context identities retained; expected physical storage descriptor now part of identity via lower_with_state_type. Fallible constructor validates initial/update/combine output. No closure-address/program serialization.",
+      "lines": 248
+    },
+    {
+      "path": "vail/crates/vail-execution/src/hwe_counts.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 125
+    },
+    {
+      "path": "vail/crates/vail-execution/src/lib.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 572
+    },
+    {
+      "path": "vail/crates/vail-execution/src/list_aggregate.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 233
+    },
+    {
+      "path": "vail/crates/vail-execution/src/logical_expr.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Exact native-key restore adapter delegates main owned scalar/Arrow normalization. Shared graph cuts, scalar capture specialization, error effects retained; typed main coalesce/Switch paths retained. Conditional base is evaluated once with missing-only fallback.",
+      "lines": 1452
+    },
+    {
+      "path": "vail/crates/vail-execution/src/matrix_arrays.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 594
+    },
+    {
+      "path": "vail/crates/vail-execution/src/matrix_transpose.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Both-source semantic algorithm changes retained with branch result/error behavior tests; no fresh captured scalar identity introduced.",
+      "lines": 481
+    },
+    {
+      "path": "vail/crates/vail-execution/src/moments.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Targeted new source review: typed moment state framing, overflow/nonfinite merge contracts and explicit GroupsAccumulator/state fields retained. No old StableStddev adapter remains.",
+      "lines": 586
+    },
+    {
+      "path": "vail/crates/vail-execution/src/ndarray.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Read full new native constructor: shared list payload, shape offsets, scalar cardinality. Scalar result now uses metadata-preserving scalar_at.",
+      "lines": 89
+    },
+    {
+      "path": "vail/crates/vail-execution/src/randomness.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main typed primitive builders and borrowed scalar/array argument selection retained. Scalar stream context is never expanded per row. Direct exact int64 ndarray dimensions resolve earlier f64 dimension precision concern. Reapplied branch Arrow take descriptor restoration for nested Set/Dict shuffle output.",
+      "lines": 887
+    },
+    {
+      "path": "vail/crates/vail-execution/src/randomness_binding.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 200
+    },
+    {
+      "path": "vail/crates/vail-execution/src/reference.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 254
+    },
+    {
+      "path": "vail/crates/vail-execution/src/scan_scopes.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main return-field/input validation and scalar input borrowing retained with branch exact native composition/transform identities. Clone moved input descriptor before capturing factory, preserving owned configuration.",
+      "lines": 664
+    },
+    {
+      "path": "vail/crates/vail-execution/src/scan_state.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main type-coercion/state validation and borrowed scalar StateRows retained. Exact native-key finish adapter retained, sum Arrow vector fastpath reconciled with scalar Datum broadcasting and outer null-state identity. Other reducers still use the shared accumulator contract.",
+      "lines": 386
+    },
+    {
+      "path": "vail/crates/vail-execution/src/string_kernels.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main borrowed Unicode text scalars, prepared patterns and linear output builders retained. Branch keyed scalar factory and precise effects retained; validator errors remain volatile.",
+      "lines": 435
+    },
+    {
+      "path": "vail/crates/vail-execution/src/variant_kernels.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 341
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/aggregate_factories.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 66
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/array_methods.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 132
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/collection_aggregates.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 202
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/conditionals.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Read actual callback structure/evaluation and physical capture interface: selector evaluated once, ordered selection only; compact capture schema integrated with shared compilation memo.",
+      "lines": 177
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/core_aggregates.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 99
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/csv_line.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main prepared CSV parser retained; replace new digest-only captured UDF identity by exact native delimiter/quote/missing/field-count key. MayError volatility preserves selected-row errors.",
+      "lines": 105
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/matrix_layout.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 341
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/numeric_aggregates.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 153
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/reference.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 450
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/scan_scopes.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "conflict_blocks_plus_integration_call_paths",
+      "evidence": "Main return-field/input validation and scalar input borrowing retained with branch exact native composition/transform identities. Clone moved input descriptor before capturing factory, preserving owned configuration.",
+      "lines": 271
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/string_operations.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 82
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/type_contracts.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 396
+    },
+    {
+      "path": "vail/crates/vail-execution/tests/variant_operations.rs",
+      "resolution": "conflict_reconciled_or_auto_merge_reviewed",
+      "read_depth": "auto_merge_diff_and_boundary_review",
+      "evidence": "Reviewed automatically merged changes at call/return/type/ownership boundaries. Incoming typed Arrow algorithms and tests retained; existing branch native identity/effect/type ownership adapters preserved. Not a claim of a fresh exhaustive line-by-line audit.",
+      "lines": 82
+    }
+  ],
+  "api_changes": [
+    "FoldProgram::lower_with_state_type(expression,schema,globals,bindings,&storage) retains expected storage in native identity.",
+    "fold_udaf returns DfResult<AggregateUDF>; table planner updated by its owner.",
+    "Expr::Switch participates in native structural identity, effect propagation, child traversal and lexical RNG binder scope.",
+    "visit_children is an alias for existing native for_each_child, avoiding duplicate child traversal definitions."
+  ],
+  "validation": [
+    "Execution cargo check --tests passed final check7 in1.17s with no warnings after all source/collection test changes: /private/tmp/vail-execution-merge-check7.log. git diff --check clean.",
+    "No release build or matching-package runtime tests run by this agent. Root owns integrated release validation."
+  ],
+  "limits": [
+    "K007 runtime DAG CSE remains queued; bounded compilation does not bound repeated shared-edge runtime evaluation.",
+    "Mixed scalar semantic kernels specialize owned native literals O(IR) per invocation; no global/value cache.",
+    "Persistent Arrow logical metadata tags still use established metadata codec; this merge does not serialize expression trees between Python and Rust.",
+    "Other module owners resolve table/Python/native bridge and consolidate the duplicate RNG binder API."
+  ],
+  "native_bridge_integration": {
+    "status": "source_frozen_cargo_check_passed_matching_runtime_pending",
+    "check": "cargo check -p vail-python (actual cdylib, not --tests) passed1.77s; /private/tmp/vail-python-merge-check2.log",
+    "files": [
+      {
+        "path": "crates/vail-python/src/random_binding.rs",
+        "read_depth": "full_source_before_and_after",
+        "resolution": "Single thin bridge adapter to execution scoped DAG binder. Same lexical shadowing/reducer semantics for Python callbacks, collection aggregate callback mapping, parameter replacement. rows_referenced uses unique native visitor; no duplicate binding implementation."
+      },
+      {
+        "path": "crates/vail-python/src/collection_aggregate.rs",
+        "read_depth": "full_source",
+        "resolution": "Retain typed main aggregate_contract validation and lexical/axis/lookup context; every supported per-list aggregate dispatches the shared list reducer (take/ordered/call_stats initializer source preserved). Replace fake typed-null inquiry IR with actual native nodes carrying field/lookup type annotations and real lexical type checking. Query-local retention prevents ephemeral items Arc addresses recycling under memo keys; no global/value cache. Initializer validation shared with NativeExpr frontend method."
+      },
+      {
+        "path": "crates/vail-python/src/native_ir.rs",
+        "read_depth": "RNG/initializer/collection/typehint constructor/view interfaces plus compile integration",
+        "resolution": "Remove duplicate contains_random/bind_random_rows/bind_random_context; preserve optional callback substitution, references_rows/is_row_indexed aliases, native metadata and Arrow handles. This is targeted reconciliation, not a new full-source audit."
+      },
+      {
+        "path": "crates/vail-python/src/input_binding.rs",
+        "read_depth": "full_source",
+        "resolution": "Native DAG global-name validation and closed-global binding retained. Borrowed original-node memo; no serialized expression transport."
+      },
+      {
+        "path": "crates/vail-python/src/scan_mark.rs",
+        "read_depth": "full_source",
+        "resolution": "Retain native original-node memoized scan mark transform, wrapping folds with scan semantics once and preserving initializer/native type fields."
+      },
+      {
+        "path": "crates/vail-python/src/arrow_memory.rs",
+        "read_depth": "full_source",
+        "resolution": "Retain Arrow C Stream ownership transfer and scalar one-row validation with no IPC. NativeArrow retains Vec<RecordBatch>, scalar validation never concatenates arbitrary stream."
+      },
+      {
+        "path": "crates/vail-python/src/lib.rs",
+        "read_depth": "conflict resolution inherited from root; integration APIs and Arrow/aggregate/callsite review",
+        "resolution": "Keep root-resolved semantic bridge behavior, owned NativeExpr/Type and Arrow APIs. Actual cdylib build check catches PyO3 method duplication, beyond test-only crate configuration."
+      },
+      {
+        "path": "crates/vail-python/src/ir_view.rs",
+        "read_depth": "auto-merge diff/boundary review",
+        "resolution": "Native shallow child/metadata view retained; no claim of new complete audit."
+      }
+    ],
+    "limits": [
+      "No runtime claims until root matching build11 package.",
+      "Runtime CSE/K007 and mixed-scalar O(IR) specialization remain explicit."
+    ]
+  },
+  "build12_native_deltas": {
+    "status": "source_frozen_cargo_check_passed_matching_diagnostics_pending",
+    "check": "Actual vail-python cdylib cargo check passed2.08s; /private/tmp/vail-python-integration-fixes-check2.log. No execution/bridge warnings; table baseline warnings remain.",
+    "fixes": [
+      "Sum fast finisher now constructs Arrow Scalar only for actual one-row broadcast snapshots; N-row/empty state arrays remain Array Datum. Fixes observed Scalar::new length assertion panics in real prefix/stats scans.",
+      "Generated RNG UID minimum uses native empty options object, satisfying main aggregate_contract without serializing native IR.",
+      "Unsupported shared per-list capability reports NotImplementedError; original initializer source expressions still retained.",
+      "NativeExpr.validate_initializer adds optional allow_matrix_rows=false. True allows matrix row/global fields, while retaining rejection of columns/entries/positions/reducers/free lambda captures. Per-list initializer validation excludes current collection binder/reducers while permitting owning-row/enclosing lexical expressions.",
+      "Unbound lambda errors distinguish native typing from physical lowering; Invalid logical-kernel compilation errors add bounded static kernel label, preserving error classes and avoiding recursive tree formatting."
+    ],
+    "source_evidence": [
+      "Shared agg.all/any retain Hail ignore-missing behavior. Local Hail agg.all is count_where(~condition)==0 (aggregators.py671-709); corrected stream expectation is frontend test owner work, no alternate Boolean reducer.",
+      "Public package11 minimal matrix probe shows unbound error triggered by explicit int64 entry cast with captured global, despite complete Table.aggregate input having no free lambda names. No native lexical validation relaxed; package12 diagnostic needed."
+    ],
+    "limits": [
+      "Main integration59Python failures are not claimed resolved by compilation. Matching12 diagnostics and full suites remain root-owned.",
+      "K007 runtime CSE and mixed-scalar O(IR) per invocation remain unchanged."
+    ]
+  },
+  "singleton_admission_fix": {
+    "cause": "Deferred conditional singleton construction admitted a typed but lexically free callback expression; later independent lowering lost its enclosing binder. Native type hints do not establish source or lexical ownership.",
+    "contract": "Execution Expr::is_closed_scalar composes memoized native free-parameter summaries using shared child_binders and visit_unique forbidden-source/aggregate classification. Unresolved matrix/table lookup dependencies are excluded; globals and external globals plus own bound callbacks remain allowed. NativeExpr exposes the same eligibility and NativeSession conditional_globals enforces it before constructing dependencies. Table singleton admission is separately integrated by planner agent.",
+    "diagnostics": "Temporary environment-gated native backtrace and recursive error breadcrumbs removed after decisive caller trace identified conditional_globals.",
+    "validation": "cargo check -p vail-python passed, 2.30s, /private/tmp/vail-singleton-closure-check2.log. Runtime regressions require parent coherent next release package."
+  },
+  "datafusion_empty_struct_patch": {
+    "cause": "Published DataFusion55 ScalarValue::compact_view_buffers reconstructed nested empty structs with length-inferred StructArray::new, panicking during ordered array_agg in grouped matrix entries. Actual release15 stack captured /private/tmp/vail-empty-struct-panic15.log.",
+    "resolution": "Maintained published datafusion-common55.0.0 source snapshot, license/NOTICE/version retained, exact diff patches/datafusion-common-vail.patch. Recursive compaction preserves empty struct len and validity via new_empty_fields; nonempty path unchanged.",
+    "regressions": "Public nested empty/missing struct collect semantics and exact grouped matrix row call_stats\u2192entries\u2192all scenario in test_empty_struct_aggregation.py. First test already passes old package15; grouped matrix case is regression reproducer.",
+    "validation": "Actual cargo check -p vail-python PASSED in 2m03s, /private/tmp/vail-empty-struct-patch-check.log. Coherent release16 runtime verification remains parent-owned."
+  }
+}

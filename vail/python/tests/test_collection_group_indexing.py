@@ -77,12 +77,9 @@ def test_nested_set_binary_uses_canonical_groups():
     dtype = hl.tset(hl.tstruct(members=hl.tset(hl.tint32)))
     left = hl.literal([{"members": [2, 1]}, {"members": [3]}, None], dtype)
     right = hl.literal([{"members": [1, 2]}, {"members": [4]}, None], dtype)
-    from vail.collections import _cast
-    # Inspect the physical members without requesting unsupported set ordering.
     def members(expr):
         return sorted(
-            (None if row is None else sorted(row.members)
-             for row in hl.eval(_cast(expr, hl.tarray(dtype.element_type)))),
+            (None if row is None else sorted(row.members) for row in hl.eval(expr)),
             key=lambda value: (value is None, value or []),
         )
     assert members(left.intersection(right)) == [[1, 2], None]
@@ -107,3 +104,40 @@ def test_batched_dictionary_lookup_scalar_and_row_dictionaries():
     assert [row.own for row in result] == list(range(1, 7))
     assert hl.eval(hl.missing(dictionary.dtype).get(0, 'absent')) is None
     assert hl.eval(hl.empty_dict(hl.tint32, hl.tstr).contains(0)) is False
+
+
+
+def test_public_grouping_over_sliced_arrow_arrays_and_null_owners():
+    import pyarrow as pa
+    pairs = pa.array([[(99, 99)], [(2, 20), (None, 30), (2, 21), (None, 31)], [], None, [(2, 40)]],
+                     type=pa.list_(pa.struct([('key', pa.int32()), ('value', pa.int32())])))
+    # Build struct-array values explicitly to retain a nonzero outer slice.
+    table = hl.Table.parallelize(pa.table({'pairs': pairs.slice(1, 4)}))
+    assert hl.dict(table.pairs).collect() == [{2: 20, None: 30}, {}, None, {2: 40}]
+    values = table.pairs.map(lambda pair: pair.key)
+    assert hl.group_by(lambda key: key, values).collect() == [
+        {2: [2, 2], None: [None, None]}, {}, None, {2: [2]}]
+
+
+def test_random_set_filter_preserves_type_values_and_replay():
+    value = hl.literal({1, 2, 3, None}, hl.tset(hl.tint32))
+    first = value.filter(lambda item: hl.rand_bool(.5, seed=41))
+    second = value.filter(lambda item: hl.rand_bool(.5, seed=41))
+    assert first.dtype == value.dtype
+    assert hl.eval(first) == hl.eval(second)
+    assert hl.eval(first) <= {1, 2, 3, None}
+    assert hl.eval(value.filter(lambda item: hl.rand_bool(1., seed=41))) == {1, 2, 3, None}
+
+
+def test_large_shared_dictionary_lookup_replays_without_expanding_per_key():
+    dictionary = hl.literal({**{i: i + 1 for i in range(10000)}, 7: None, None: 11},
+                            hl.tdict(hl.tint32, hl.tint32))
+    table = hl.range_table(10000, 3)
+    failure = hl.case().when(table.idx < 0, 0).or_error('unselected dictionary default')
+    values = dictionary.get(table.idx, failure)
+    expected = [None if i == 7 else i + 1 for i in range(10000)]
+    assert values.collect() == expected
+    assert values.collect() == expected
+    extra = hl.range_table(10010, 3)
+    assert dictionary.get(extra.idx, -1).collect() == expected + [-1] * 10
+    assert hl.eval(dictionary.get(hl.missing(hl.tint32))) == 11

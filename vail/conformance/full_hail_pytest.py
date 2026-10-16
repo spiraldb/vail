@@ -2,7 +2,9 @@
 
 Imports naming hail are redirected to vail in a temporary source copy. Test
 lifecycle and timeout selection use the Vail backend. Hail flag decorators and
-JVM health fixtures are omitted. Missing internal modules remain collection blockers. Each module
+JVM health fixtures are omitted. Proven local Hail IR-shape helper calls are
+omitted with a separate source-span manifest; behavioral assertions remain.
+Missing internal modules remain collection blockers. Each module
 runs in its own process so a native failure cannot prevent later collection.
 """
 import ast
@@ -19,7 +21,7 @@ import sys
 import tempfile
 import time
 from upstream_paths import doctest_data_dir
-from upstream_backend import adapt_helpers, adapt_class_configuration
+from upstream_backend import adapt_helpers, adapt_class_configuration, adapt_structural_ir_assertions
 
 PLUGIN = '''
 import json, os, signal, pytest
@@ -208,16 +210,22 @@ def main():
         root = Path(folder)
         target = root / 'upstream_hail'
         shutil.copytree(source, target)
+        structural_manifest = []
         for file in target.rglob('*.py'):
             code = file.read_text()
             code = re.sub(r'(?m)^(\s*(?:from|import) )hail(?=[.\s])', r'\1vail', code)
             tree = ast.parse(code)
+            tree, removed = adapt_structural_ir_assertions(tree, file.relative_to(target))
+            structural_manifest.extend(removed)
+            code = ast.unparse(tree)
             if any(isinstance(node, ast.ClassDef) for node in tree.body):
                 tree = adapt_class_configuration(tree)
                 code = ('from upstream_backend import backend_api as _vail_backend_api\n'
                         + ast.unparse(tree))
             file.write_text(code)
-        # Infrastructure adapters only; leave test bodies and API imports intact.
+        (output / 'structural-ir-assertions.json').write_text(json.dumps(
+            dict(count=len(structural_manifest), assertions=structural_manifest), indent=2))
+        # Infrastructure and documented structural assertions only; API imports remain.
         helper = target / 'helpers.py'
         helper.write_text(adapt_helpers(helper.read_text()))
         (target / 'conftest.py').write_text(CONFTEST)

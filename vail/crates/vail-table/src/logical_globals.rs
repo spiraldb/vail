@@ -30,6 +30,24 @@ use vail_execution::logical_expr::lower_logical_with_bindings;
 static NEXT_GLOBAL: AtomicU64 = AtomicU64::new(1);
 
 pub(crate) fn lower(globals: &GlobalsRef) -> Result<LogicalPlan> {
+    lower_in_context(globals, &mut crate::logical::LoweringContext::default())
+}
+pub(crate) fn lower_in_context(
+    globals: &GlobalsRef,
+    context: &mut crate::logical::LoweringContext,
+) -> Result<LogicalPlan> {
+    let key = Arc::as_ptr(globals) as usize;
+    if let Some((_, plan)) = context.globals.get(&key) {
+        return Ok(plan.clone());
+    }
+    let plan = lower_uncached(globals, context)?;
+    context.globals.insert(key, (globals.clone(), plan.clone()));
+    Ok(plan)
+}
+fn lower_uncached(
+    globals: &GlobalsRef,
+    context: &mut crate::logical::LoweringContext,
+) -> Result<LogicalPlan> {
     match globals.node() {
         Node::Empty => Ok(LogicalPlanBuilder::empty(true).build()?),
         Node::ArrowLiteral(batch) => {
@@ -46,8 +64,13 @@ pub(crate) fn lower(globals: &GlobalsRef) -> Result<LogicalPlan> {
             fields,
             bindings,
         } => {
-            let input = lower(child)?;
-            let (input, indices) = bind_external(input, bindings)?;
+            // Selecting no globals has no dependency on the former environment.
+            // Avoid expanding discarded zip-global DAGs before optimization.
+            if fields.is_empty() {
+                return Ok(LogicalPlanBuilder::empty(true).build()?);
+            }
+            let input = lower_in_context(child, context)?;
+            let (input, indices) = bind_external(input, bindings, context)?;
             let expressions =
                 fields
                     .iter()
@@ -70,12 +93,17 @@ pub(crate) fn lower(globals: &GlobalsRef) -> Result<LogicalPlan> {
             expression,
             bindings,
         } => {
-            let input = crate::logical::lower(table)?;
+            let input = crate::logical::lower_for_expressions_in_context(
+                table,
+                std::iter::once(expression),
+                context,
+            )?;
             if let Some(plan) = crate::logical_aggregation::lower_logical_total(
                 table,
                 expression,
                 bindings,
                 input.clone(),
+                context,
             )? {
                 return Ok(plan);
             }
@@ -83,6 +111,17 @@ pub(crate) fn lower(globals: &GlobalsRef) -> Result<LogicalPlan> {
                 "missing logical aggregate plan".into(),
             ))
         }
+        Node::Conditional {
+            condition,
+            consequent,
+            alternate,
+        } => crate::conditional_globals::lower(
+            condition,
+            consequent,
+            alternate,
+            globals.schema(),
+            context,
+        ),
         Node::Read(_) | Node::Prepared(_) => extension(globals, vec![]),
     }
 }
@@ -98,11 +137,15 @@ fn extension(globals: &GlobalsRef, inputs: Vec<LogicalPlan>) -> Result<LogicalPl
     }))
 }
 
-pub(crate) fn bind_globals(input: LogicalPlan, table: &TableRef) -> Result<LogicalPlan> {
+pub(crate) fn bind_globals(
+    input: LogicalPlan,
+    table: &TableRef,
+    context: &mut crate::logical::LoweringContext,
+) -> Result<LogicalPlan> {
     if table.globals().schema().fields().is_empty() {
         return Ok(input);
     }
-    let globals = LogicalPlanBuilder::from(lower(table.globals())?)
+    let globals = LogicalPlanBuilder::from(lower_in_context(table.globals(), context)?)
         .alias("__vail_globals")?
         .build()?;
     let input = LogicalPlanBuilder::from(input)
@@ -116,10 +159,11 @@ pub(crate) fn bind_globals(input: LogicalPlan, table: &TableRef) -> Result<Logic
 pub(crate) fn bind_external(
     mut input: LogicalPlan,
     bindings: &GlobalBindings,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<(LogicalPlan, BTreeMap<String, usize>)> {
     let mut indices = BTreeMap::new();
     for (ordinal, (reference, globals)) in bindings.iter().enumerate() {
-        let bound = lower(globals)?;
+        let bound = lower_in_context(globals, context)?;
         let mut arguments = Vec::new();
         for column in bound.schema().columns() {
             arguments.push(lit(column.name.clone()));
@@ -235,7 +279,9 @@ impl ExtensionPlanner for GlobalsExtensionPlanner {
         };
         let build = || -> Result<PhysicalPlan> {
             match node.globals.node() {
-                Node::Read(_) | Node::Prepared(_) => node.globals.lower(),
+                Node::Read(_) | Node::Prepared(_) | Node::Conditional { .. } => {
+                    node.globals.lower()
+                }
                 _ => Err(crate::TableError::Invalid(
                     "unexpected globals logical extension".into(),
                 )),

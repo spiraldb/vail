@@ -37,7 +37,10 @@ def test_bgzf_members_header_override_and_drop_samples(tmp_path):
     assert hl.import_vcf(path,drop_samples=True).count()==(1,0)
     header=tmp_path/'header.vcf';header.write_text(HEADER)
     body=tmp_path/'body.vcf';body.write_text(rows)
-    assert hl.import_vcf(body,header_file=header)._same(m)
+    overridden = hl.import_vcf(body, header_file=header)
+    assert overridden.DP.collect() == [7, 9]
+    assert overridden.GT.collect() == m.GT.collect()
+    assert overridden.s.collect() == ['a', 'b']
 
 
 def test_column_count_and_partial_call_validation(tmp_path):
@@ -89,3 +92,175 @@ def test_cross_matrix_entry_lookup_with_reordered_string_sample_keys():
     assert values[100:200]==[None]*100
     assert values[:100]==pytest.approx([i/100 for i in range(100)],rel=1e-6)
     assert values[200:]==pytest.approx([2+i/100 for i in range(100)],rel=1e-6)
+
+
+def test_export_keeps_physical_samples_paired_with_entries(tmp_path):
+    mt = hl.range_matrix_table(2, 3)
+    sample = hl.literal(['z', 'a', 'm'])
+    calls = hl.literal([hl.Call([0, 0]), hl.Call([0, 1]), hl.Call([1, 1])], hl.tarray(hl.tcall))
+    mt = mt.annotate_cols(sample=sample[mt.col_idx]).key_cols_by('sample')
+    mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 10), alleles=['A', 'C'])
+    mt = mt.key_rows_by('locus', 'alleles')
+    mt = mt.annotate_entries(GT=calls[mt.col_idx])
+    output = tmp_path / 'out.vcf'
+    hl.export_vcf(mt, output)
+    loaded = hl.import_vcf(output)
+    actual = {(r.locus.position, r.s): r.GT for r in loaded.entries().collect()}
+    assert actual == {(position, sample): call for position in [10, 11]
+                      for sample, call in zip(['z', 'a', 'm'], [hl.Call([0, 0]), hl.Call([0, 1]), hl.Call([1, 1])])}
+
+
+def test_export_info_format_missing_and_filtered_roundtrip(tmp_path):
+    mt = hl.range_matrix_table(2, 2)
+    mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 1), alleles=['A', 'T'],
+                          info=hl.struct(flag=True, number=3, rates=[.2, .3], label='hello'),
+                          filters=hl.set(['q10']), qual=17., rsid='rs1')
+    mt = mt.key_rows_by('locus', 'alleles')
+    mt = mt.annotate_cols(s=hl.str(mt.col_idx)).key_cols_by('s')
+    mt = mt.annotate_entries(GT=hl.if_else(mt.col_idx == 0, hl.call(1, 0, phased=True), hl.missing(hl.tcall)),
+                            DP=7, AD=[2, 5], score=hl.float32(.5))
+    mt = mt.filter_entries((mt.row_idx != 1) | (mt.col_idx != 0))
+    path = tmp_path / 'roundtrip.vcf'
+    hl.export_vcf(mt, path, metadata={'info': {'label': {'Description': 'a, "quote" and \\slash'}}})
+    result = hl.import_vcf(path, array_elements_required=False, entry_float_type=hl.tfloat32)
+    assert [r.info for r in result.rows().collect()] == [hl.Struct(flag=True, number=3, rates=[.2, .3], label='hello')] * 2
+    assert result.DP.collect() == [7, 7, None, 7]
+    assert result.GT.collect() == [hl.Call([1, 0], True), None, None, None]
+    assert result.AD.collect() == [[2, 5], [2, 5], None, [2, 5]]
+    assert hl.get_vcf_metadata(path)['info']['label']['Description'] == 'a, "quote" and \\slash'
+
+
+def test_export_failure_preserves_existing_destination(tmp_path):
+    mt = hl.range_matrix_table(1, 1)
+    mt = mt.annotate_rows(locus=hl.locus('1', 1), alleles=['A', 'C'])
+    mt = mt.annotate_cols(s='a').key_cols_by('s').key_rows_by('locus', 'alleles')
+    mt = mt.annotate_entries(label='bad:delimiter')
+    path = tmp_path / 'existing.vcf'
+    path.write_text('existing output')
+    with pytest.raises((RuntimeError, ValueError), match='delimiter'):
+        hl.export_vcf(mt, path)
+    assert path.read_text() == 'existing output'
+
+
+def test_projection_skips_unrequested_bad_fields_but_keeps_requested_errors(tmp_path):
+    path = tmp_path / 'project.vcf'
+    path.write_text(HEADER + '1\t1\t.\tA\tC\t.\tPASS\tAF=bad\tGT:DP\tbad:7\t0/1:9\n')
+    mt = hl.import_vcf(path)
+    assert mt.locus.collect()[0].position == 1
+    assert mt.DP.collect() == [7, 9]
+    rows = mt.rows()
+    grouped = rows.group_by(contig=rows.locus.contig).aggregate(position=hl.agg.sum(rows.locus.position))
+    assert grouped.collect() == [hl.Struct(contig='1', position=1)]
+    assert rows.filter(rows.locus.position == 1).count() == 1
+    preview = rows.key_by()
+    preview = preview.select(position=preview.locus.position)
+    assert preview.head(1).collect() == [hl.Struct(position=1)]
+    with pytest.raises(RuntimeError, match='invalid character|genotype|Call'):
+        mt.GT.collect()
+    with pytest.raises(RuntimeError, match='parse|invalid'):
+        mt.info.AF.collect()
+    filtered = mt.filter_entries(mt.GT == hl.call(0, 1))
+    with pytest.raises(RuntimeError, match='invalid character|genotype|Call'):
+        filtered.DP.collect()
+
+
+def test_many_format_layouts_decode_consistently(tmp_path):
+    import itertools
+    extra = ''.join(f'##FORMAT=<ID={name},Number=1,Type=Integer,Description="extra">\n' for name in ['X', 'Y', 'Z'])
+    header = HEADER.replace('#CHROM', extra + '#CHROM')
+    values = dict(GT='0/1', DP='7', AD='2,5', X='1', Y='2', Z='3')
+    lines = []
+    for position, names in enumerate(itertools.islice(itertools.permutations(values), 300), 1):
+        sample = ':'.join(values[name] for name in names)
+        lines.append(f'1\t{position}\t.\tA\tC\t.\tPASS\t.\t{":".join(names)}\t{sample}\t{sample}\n')
+    path = tmp_path / 'layouts.vcf'
+    path.write_text(header + ''.join(lines))
+    result = hl.import_vcf(path)
+    assert result.DP.collect() == [7] * 600
+    assert result.GT.collect() == [hl.Call([0, 1])] * 600
+    assert result.AD.collect() == [[2, 5]] * 600
+
+
+def test_projection_retains_constant_callback_entry_shape(tmp_path):
+    path = tmp_path / 'shape.vcf'
+    path.write_text(HEADER + '1\t1\t.\tA\tC\t.\tPASS\t.\tGT:DP\t./.:7\t0/1:9\n')
+    mt = hl.import_vcf(path)
+    assert mt.select_entries(constant=1).constant.collect() == [1, 1]
+    selected = mt.annotate_entries(constant=1).select_entries('constant')
+    assert selected.constant.collect() == [1, 1]
+    filtered = mt.filter_entries(mt.DP == 9).select_entries(constant=1)
+    assert filtered.constant.collect() == [1]
+    localized = mt.localize_entries('entries', 'columns').key_by()
+    projected = localized.select(values=localized.entries.map(lambda _: 7),
+                                 nested=localized.entries.map(lambda _: hl.struct(value=hl.struct(x=3))).map(lambda item: item.value))
+    row = projected.collect()[0]
+    assert row['values'] == [7, 7]
+    assert row.nested == [hl.Struct(x=3), hl.Struct(x=3)]
+    assert mt.filter_cols(False).select_entries(constant=1).entries().collect() == []
+
+
+def test_projection_map_constant_index_then_field(tmp_path):
+    path = tmp_path / 'index-shape.vcf'
+    path.write_text(HEADER + '1\t1\t.\tA\tC\t.\tPASS\t.\tGT\t.\t0/1\n')
+    mt = hl.import_vcf(path)
+    table = mt.localize_entries('entries', 'columns').key_by()
+    table = table.select(mapped=table.entries.map(lambda _: hl.struct(constant=1)))
+    table = table.select(value=table.mapped[0].constant)
+    assert table.collect()[0].value == 1
+
+
+@pytest.mark.parametrize('rows,samples', [(0, 0), (0, 2), (2, 0)])
+def test_export_empty_axes(tmp_path, rows, samples):
+    mt = hl.range_matrix_table(rows, samples)
+    mt = mt.annotate_rows(locus=hl.locus('1', mt.row_idx + 1), alleles=['A', 'T'])
+    mt = mt.key_rows_by('locus', 'alleles')
+    mt = mt.annotate_cols(s=hl.str(mt.col_idx)).key_cols_by('s')
+    path = tmp_path / 'empty.vcf'
+    hl.export_vcf(mt, path)
+    assert hl.import_vcf(path).count() == (rows, samples)
+
+
+def test_export_haploid_unphased_and_missing_info(tmp_path):
+    mt = hl.range_matrix_table(1, 2)
+    mt = mt.annotate_rows(locus=hl.locus('1', 1), alleles=['A', 'T'],
+                          info=hl.missing(hl.tstruct(flag=hl.tbool, label=hl.tstr)))
+    mt = mt.key_rows_by('locus', 'alleles')
+    mt = mt.annotate_cols(s=hl.str(mt.col_idx)).key_cols_by('s')
+    calls = hl.literal([hl.Call([1]), hl.Call([1, 0])], hl.tarray(hl.tcall))
+    mt = mt.annotate_entries(GT=calls[mt.col_idx])
+    path = tmp_path / 'calls.vcf'
+    hl.export_vcf(mt, path)
+    loaded = hl.import_vcf(path)
+    assert loaded.GT.collect() == [hl.Call([1]), hl.Call([0, 1])]
+    assert loaded.info.flag.collect() == [False]
+    assert loaded.info.label.collect() == [None]
+
+
+def test_export_rejects_invalid_schema_and_sample_ids(tmp_path):
+    mt = hl.range_matrix_table(1, 2)
+    mt = mt.annotate_rows(locus=hl.locus('1', 1), alleles=['A', 'C'])
+    mt = mt.annotate_cols(s='duplicate').key_cols_by('s')
+    path = tmp_path / 'bad.vcf'
+    with pytest.raises(ValueError, match='sample IDs'):
+        hl.export_vcf(mt, path)
+    mt = hl.range_matrix_table(1, 1)
+    mt = mt.annotate_cols(s='sample').key_cols_by('s')
+    bad = mt.annotate_rows(locus=hl.locus('1', 1), alleles='AC')
+    with pytest.raises(ValueError, match='locus and alleles'):
+        hl.export_vcf(bad, path)
+    valid = mt.annotate_rows(locus=hl.locus('1', 1), alleles=['A', 'C'])
+    with pytest.raises(TypeError, match='format field'):
+        hl.export_vcf(valid.annotate_entries(flag=True), path)
+    assert not path.exists()
+
+
+def test_projection_shape_requests_cannot_alias_user_field_names(tmp_path):
+    header = HEADER.replace('##INFO=<ID=FLAG', '##INFO=<ID=__vail_shape,Number=1,Type=Integer,Description="user name">\n##INFO=<ID=FLAG')
+    header = header.replace('##FORMAT=<ID=GT', '##FORMAT=<ID=__vail_shape,Number=1,Type=Integer,Description="user name">\n##FORMAT=<ID=GT')
+    path = tmp_path / 'user-name.vcf'
+    path.write_text(header + '1\t1\t.\tA\tC\t.\tPASS\t__vail_shape=42\tGT:__vail_shape\t0/1:7\t0/0:9\n')
+    mt = hl.import_vcf(path)
+    assert mt.info['__vail_shape'].collect() == [42]
+    assert mt.entry['__vail_shape'].collect() == [7, 9]
+    selected = mt.select_entries(__vail_shape=mt.entry['__vail_shape'])
+    assert selected.entry['__vail_shape'].collect() == [7, 9]

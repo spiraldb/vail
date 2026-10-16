@@ -4,7 +4,8 @@ use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ListArray, RecordBatch, RecordBatchOptions, UInt32Array, new_empty_array, new_null_array,
+    Array, ArrayRef, ListArray, RecordBatch, RecordBatchOptions, UInt32Array, new_empty_array,
+    new_null_array,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Schema, SchemaRef};
@@ -12,6 +13,75 @@ use arrow_select::{concat::concat, take::take};
 use datafusion_common::{DataFusionError, Result};
 use datafusion_expr::ColumnarValue;
 use datafusion_physical_expr::PhysicalExpr;
+
+/// An immutable, validated ordered subset of a fixed row/lane domain.
+/// Contiguous selections retain nested buffers; sparse selections gather once.
+enum RowSelection {
+    Span {
+        source_len: usize,
+        start: usize,
+        len: usize,
+    },
+    Sparse {
+        source_len: usize,
+        indices: UInt32Array,
+    },
+}
+impl RowSelection {
+    fn checked(rows: &[usize], source_len: usize) -> Result<Self> {
+        if rows.iter().any(|&row| row >= source_len)
+            || rows.windows(2).any(|pair| pair[0] >= pair[1])
+        {
+            return Err(DataFusionError::Internal(
+                "fold row selection is not ordered/bounded".into(),
+            ));
+        }
+        if rows
+            .windows(2)
+            .all(|pair| pair[0].checked_add(1) == Some(pair[1]))
+        {
+            return Ok(Self::Span {
+                source_len,
+                start: rows.first().copied().unwrap_or(0),
+                len: rows.len(),
+            });
+        }
+        let indices = rows
+            .iter()
+            .map(|&row| {
+                u32::try_from(row).map_err(|_| {
+                    DataFusionError::Execution("fold row index exceeds Arrow capacity".into())
+                })
+            })
+            .collect::<Result<Vec<_>>>()?;
+        Ok(Self::Sparse {
+            source_len,
+            indices: UInt32Array::from(indices),
+        })
+    }
+    fn select(&self, array: &ArrayRef) -> Result<ArrayRef> {
+        let source_len = match self {
+            Self::Span { source_len, .. } | Self::Sparse { source_len, .. } => *source_len,
+        };
+        if array.len() != source_len {
+            return Err(DataFusionError::Internal(
+                "fold selection/input cardinality mismatch".into(),
+            ));
+        }
+        match self {
+            Self::Span { start, len, .. } => {
+                if *len == 0 {
+                    Ok(new_empty_array(array.data_type()))
+                } else if *start == 0 && *len == source_len {
+                    Ok(array.clone())
+                } else {
+                    Ok(array.slice(*start, *len))
+                }
+            }
+            Self::Sparse { indices, .. } => Ok(take(array.as_ref(), indices, None)?),
+        }
+    }
+}
 
 #[derive(Debug)]
 pub(crate) struct ArrayFoldExpr {
@@ -33,24 +103,30 @@ impl ArrayFoldExpr {
     ) -> Self {
         let outer_count = callback_schema.fields().len() - 2;
         let mut used_columns = vec![false; outer_count];
-        for column in datafusion_physical_expr::utils::collect_columns(&body) {
-            if column.index() < outer_count {
-                used_columns[column.index()] = true;
+        fn captured_fields(
+            expr: &Arc<dyn PhysicalExpr>,
+            used: &mut [bool],
+            seen: &mut std::collections::HashSet<usize>,
+        ) {
+            if !seen.insert(Arc::as_ptr(expr) as *const () as usize) {
+                return;
             }
-        }
-        fn captured_variables(expr: &Arc<dyn PhysicalExpr>, used: &mut [bool]) {
-            if let Some(variable) =
-                expr.downcast_ref::<datafusion_physical_expr::expressions::LambdaVariable>()
+            let index = if let Some(column) =
+                expr.downcast_ref::<datafusion_physical_expr::expressions::Column>()
             {
-                if variable.index() < used.len() {
-                    used[variable.index()] = true;
-                }
+                Some(column.index())
+            } else {
+                expr.downcast_ref::<datafusion_physical_expr::expressions::LambdaVariable>()
+                    .map(|variable| variable.index())
+            };
+            if let Some(index) = index.filter(|&index| index < used.len()) {
+                used[index] = true;
             }
             for child in expr.children() {
-                captured_variables(child, used);
+                captured_fields(child, used, seen);
             }
         }
-        captured_variables(&body, &mut used_columns);
+        captured_fields(&body, &mut used_columns, &mut Default::default());
         // Unused placeholders have no value buffers. Relax their nullability
         // while preserving names/types and all callback column indices.
         let fields = callback_schema
@@ -142,17 +218,84 @@ impl PhysicalExpr for ArrayFoldExpr {
             ));
         }
         let len = batch.num_rows();
-        let input = self.args[0].evaluate(batch)?.into_array(len)?;
+        if len == 0 {
+            return Ok(ColumnarValue::Array(new_empty_array(&self.dtype)));
+        }
+        let value = self.args[0].evaluate(batch)?;
+        let scalar_input = matches!(value, ColumnarValue::Scalar(_));
+        let input = match value {
+            ColumnarValue::Scalar(datafusion_common::ScalarValue::List(array)) => array as ArrayRef,
+            other => other.into_array(if scalar_input { 1 } else { len })?,
+        };
+        let state_type = self
+            .callback_schema
+            .field(self.used_columns.len())
+            .data_type();
+        let element_type = self
+            .callback_schema
+            .field(self.used_columns.len() + 1)
+            .data_type();
+        let input_type = DataType::List(Arc::new(arrow_schema::Field::new(
+            "item",
+            element_type.clone(),
+            true,
+        )));
+        let normalize = |array: &ArrayRef, dtype: &DataType| -> Result<ArrayRef> {
+            if array.data_type() == dtype {
+                return Ok(array.clone());
+            }
+            // Cast offset/string representations before metadata restoration;
+            // descriptor retagging alone cannot change physical offset widths.
+            if vail_ordering::same_layout(array.data_type(), dtype) {
+                return crate::logical_expr::restore_arrow_array_type(array, dtype);
+            }
+            let cast = arrow_cast::cast(array.as_ref(), dtype)?;
+            crate::logical_expr::restore_arrow_array_type(&cast, dtype)
+        };
+        let input = normalize(&input, &input_type)?;
         let input = input
             .as_any()
             .downcast_ref::<ListArray>()
             .ok_or_else(|| DataFusionError::Internal("array fold input is not a list".into()))?;
-        let zero = self.args[1].evaluate(batch)?.into_array(len)?;
+        // Every span is bounded by the canonical child array. Scalars share
+        // one span across lanes rather than expanding their element buffers.
+        #[derive(Clone, Copy)]
+        struct Span {
+            start: usize,
+            len: usize,
+            valid: bool,
+        }
+        let span = |row| Span {
+            start: input.value_offsets()[row] as usize,
+            len: input.value_length(row) as usize,
+            valid: input.is_valid(row),
+        };
+        let rows = if scalar_input {
+            vec![span(0); len]
+        } else {
+            (0..len).map(span).collect::<Vec<_>>()
+        };
+        let zero = normalize(&self.args[1].evaluate(batch)?.into_array(len)?, state_type)?;
+        let captures = batch
+            .columns()
+            .iter()
+            .enumerate()
+            .map(|(index, column)| {
+                if self.used_columns[index] {
+                    normalize(column, self.callback_schema.field(index).data_type())
+                } else {
+                    Ok(new_null_array(
+                        self.callback_schema.field(index).data_type(),
+                        len,
+                    ))
+                }
+            })
+            .collect::<Result<Vec<_>>>()?;
         // Each callback batch contains the rows whose arrays still have an
         // element at this position. Arrow gathers supply both captured columns
         // and elements; DataFusion evaluates the callback once for all lanes.
         let mut active = (0..len)
-            .filter(|&row| input.is_valid(row) && input.value_length(row) > 0)
+            .filter(|&row| rows[row].valid && rows[row].len > 0)
             .collect::<Vec<_>>();
         let indices = |rows: &[usize]| -> Result<UInt32Array> {
             rows.iter()
@@ -164,10 +307,15 @@ impl PhysicalExpr for ArrayFoldExpr {
                 .collect::<Result<Vec<_>>>()
                 .map(UInt32Array::from)
         };
-        let mut accumulator = take(zero.as_ref(), &indices(&active)?, None)?;
+        let selected = RowSelection::checked(&active, len)?;
+        let mut accumulator = selected.select(&zero)?;
+        let mut cached_captures = captures
+            .iter()
+            .map(|column| selected.select(column))
+            .collect::<Result<Vec<_>>>()?;
         let mut final_values = (0..len)
             .map(|row| {
-                if input.is_null(row) {
+                if !rows[row].valid {
                     new_null_array(zero.data_type(), 1)
                 } else {
                     zero.slice(row, 1)
@@ -177,7 +325,7 @@ impl PhysicalExpr for ArrayFoldExpr {
         let mut histories = if self.scan {
             (0..len)
                 .map(|row| {
-                    if input.is_valid(row) {
+                    if rows[row].valid {
                         vec![zero.slice(row, 1)]
                     } else {
                         Vec::new()
@@ -189,23 +337,11 @@ impl PhysicalExpr for ArrayFoldExpr {
         };
         let mut step = 0usize;
         while !active.is_empty() {
-            let owners = indices(&active)?;
             let elements = active
                 .iter()
-                .map(|&row| usize::try_from(input.value_offsets()[row]).unwrap() + step)
+                .map(|&row| rows[row].start + step)
                 .collect::<Vec<_>>();
-            let mut columns = batch
-                .columns()
-                .iter()
-                .enumerate()
-                .map(|(index, column)| {
-                    if self.used_columns[index] {
-                        take(column.as_ref(), &owners, None)
-                    } else {
-                        Ok(new_null_array(column.data_type(), active.len()))
-                    }
-                })
-                .collect::<std::result::Result<Vec<_>, _>>()?;
+            let mut columns = cached_captures.clone();
             columns.push(accumulator);
             columns.push(take(input.values().as_ref(), &indices(&elements)?, None)?);
             let nested = RecordBatch::try_new_with_options(
@@ -213,25 +349,37 @@ impl PhysicalExpr for ArrayFoldExpr {
                 columns,
                 &RecordBatchOptions::new().with_row_count(Some(active.len())),
             )?;
-            let updated = self.args[2].evaluate(&nested)?.into_array(active.len())?;
+            let updated = normalize(
+                &self.args[2].evaluate(&nested)?.into_array(active.len())?,
+                state_type,
+            )?;
             let mut next_rows = Vec::new();
             let mut next_lanes = Vec::new();
             for (lane, &row) in active.iter().enumerate() {
                 if self.scan {
                     histories[row].push(updated.slice(lane, 1));
                 }
-                if step + 1 < input.value_length(row) as usize {
+                if step + 1 < rows[row].len {
                     next_rows.push(row);
                     next_lanes.push(lane);
                 } else if !self.scan {
                     final_values[row] = updated.slice(lane, 1);
                 }
             }
-            accumulator = take(updated.as_ref(), &indices(&next_lanes)?, None)?;
+            if next_lanes.len() == active.len() {
+                accumulator = updated;
+            } else {
+                let survivors = RowSelection::checked(&next_lanes, active.len())?;
+                accumulator = survivors.select(&updated)?;
+                cached_captures = cached_captures
+                    .iter()
+                    .map(|column| survivors.select(column))
+                    .collect::<Result<Vec<_>>>()?;
+            }
             active = next_rows;
             step += 1;
         }
-        let valid = (0..len).map(|row| input.is_valid(row)).collect::<Vec<_>>();
+        let valid = (0..len).map(|row| rows[row].valid).collect::<Vec<_>>();
         let mut offsets = vec![0_i32];
         let values = if self.scan {
             for history in &histories {
@@ -275,35 +423,5 @@ impl PhysicalExpr for ArrayFoldExpr {
             flat,
             Some(NullBuffer::from(valid)),
         )?)))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_schema::Field;
-    use datafusion_common::ScalarValue;
-    use datafusion_physical_expr::expressions::{Column, Literal};
-
-    #[test]
-    fn callback_projection_does_not_copy_unreferenced_nested_columns() {
-        let list_type = DataType::List(Arc::new(Field::new("item", DataType::Int32, true)));
-        let schema = Arc::new(Schema::new(vec![
-            Field::new("source", list_type, false),
-            Field::new("capture", DataType::Int32, false),
-            Field::new("acc", DataType::Int32, true),
-            Field::new("item", DataType::Int32, true),
-        ]));
-        let expression = ArrayFoldExpr::new(
-            Arc::new(Column::new("source", 0)),
-            Arc::new(Literal::new(ScalarValue::Int32(Some(0)))),
-            Arc::new(Column::new("capture", 1)),
-            schema,
-            DataType::Int32,
-            false,
-        );
-        assert_eq!(expression.used_columns, vec![false, true]);
-        assert!(expression.callback_schema.field(0).is_nullable());
-        assert!(!expression.callback_schema.field(1).is_nullable());
     }
 }

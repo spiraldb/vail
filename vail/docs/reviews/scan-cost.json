@@ -1,0 +1,412 @@
+{
+  "base_commit": "0af8237e",
+  "baseline_native_sha256": "c81e59f12905e820bc570f7df3a39d9ad09c9e67902f76feecf9aac6550b6211",
+  "current_native_sha256": "ac69b07b19f7af4cbe08e471f7ce47dd1ff7e2f0e332f6ca510536b8f5a55e9f",
+  "method": "46 fresh subprocess cases:6explicit constructor-only and14supported public tail(1).collect actions comparing independent original baseline/current packages;22rows/partition scaling cases and4widepayloadcases comparing an independent intermediate pre-sharing package/current. Warm eval(0), time only supported action, verify output values; one run percase.15sconstructor/30saction caps;macOSRSSbytes includesruntime/preparation/localization. Finalcurrent action/constructor/scaling and paired wide cases rerun sequentially after build/test gates completed.",
+  "limitations": [
+    "Single-run timings are noisy; no universal speedup claim. Constructor cases isolate marking and do not claim arbitrary shared-DAG execution is linear.",
+    "Original baseline mean,array32,andgroup outputs failed assertions; earlier100000rows/64partitions sum also failed. These are the diagnosed nondeterministic ordering defect; failed action timings are unavailable. All measured current actions passed.",
+    "Stable source ordinals are attached before window sort/hash redistribution. The narrow Vail source caller guarantees one ordered physical stream per logical source partition; tail numbers a single ordered concatenation. Checked counters belong to individual execute streams.",
+    "The generic finisher delegates actual UDAF merge/evaluate, without trusting its name/state shape; per-row accumulator work remains for generic reducers. Plain sums/counts retain native window execution.",
+    "Scalar carry snapshots remain one-row at the public finisher boundary; relational joins can still repeat carry payloads. Complete grouped/array prefix snapshots remain costly.",
+    "The sharing fix removes optimizer expansion of a common parallel producer across partition views. Scan-tail full-count windows and prefix sort/join paths may still materialize row data; no universal streaming-memory bound is claimed.",
+    "Two inventory tests require the absent external Hail checkout and are excluded; dependency implementations remain untouched."
+  ],
+  "observed_earlier_baseline_failures": [
+    {
+      "mode": "sum",
+      "n": 100000,
+      "partitions": 64,
+      "width": 0,
+      "version": "baseline",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 10, in <module>\n    if mode=='sum':assert p==(n-1)*(n-2)//2;check=p\n                          ^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    }
+  ],
+  "cases": [
+    {
+      "mode": "constructor",
+      "depth": 8,
+      "version": "baseline",
+      "construction_seconds": 0.0009725829950184561,
+      "peak_rss_bytes": 129744896
+    },
+    {
+      "mode": "constructor",
+      "depth": 12,
+      "version": "baseline",
+      "construction_seconds": 0.014621458998590242,
+      "peak_rss_bytes": 128778240
+    },
+    {
+      "mode": "constructor",
+      "depth": 16,
+      "version": "baseline",
+      "construction_seconds": 0.24549995899724308,
+      "peak_rss_bytes": 224657408
+    },
+    {
+      "mode": "constructor",
+      "depth": 8,
+      "version": "current",
+      "construction_seconds": 5.2041999879293144e-05,
+      "peak_rss_bytes": 123420672
+    },
+    {
+      "mode": "constructor",
+      "depth": 12,
+      "version": "current",
+      "construction_seconds": 5.329200212145224e-05,
+      "peak_rss_bytes": 122929152
+    },
+    {
+      "mode": "constructor",
+      "depth": 16,
+      "version": "current",
+      "construction_seconds": 5.60000044060871e-05,
+      "peak_rss_bytes": 123011072
+    },
+    {
+      "mode": "sum",
+      "n": 100000,
+      "partitions": 4,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.06523179200303275,
+      "peak_rss_bytes": 218365952,
+      "check": 4999850001
+    },
+    {
+      "mode": "sum",
+      "n": 100000,
+      "partitions": 64,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.47903320800105575,
+      "peak_rss_bytes": 1422442496,
+      "check": 4999850001
+    },
+    {
+      "mode": "filtered_sum",
+      "n": 10000,
+      "partitions": 4,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.033420208004827145,
+      "peak_rss_bytes": 167133184,
+      "check": 24995000
+    },
+    {
+      "mode": "mean",
+      "n": 10000,
+      "partitions": 4,
+      "width": 0,
+      "version": "baseline",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 12, in <module>\n    elif mode=='mean':assert math.isclose(p,(n-2)/2,rel_tol=1e-13);check=p\n                             ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "mode": "array",
+      "n": 512,
+      "partitions": 4,
+      "width": 32,
+      "version": "baseline",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 14, in <module>\n    assert len(p)==width and all(math.isclose(v,(n-2)/2+i,rel_tol=1e-13) for i,v in enumerate(p));check=dict(width=len(p),first=p[0],last=p[-1])\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "mode": "array",
+      "n": 1024,
+      "partitions": 4,
+      "width": 128,
+      "version": "baseline",
+      "execution_seconds": 1.714727208003751,
+      "peak_rss_bytes": 654901248,
+      "check": {
+        "width": 128,
+        "first": 511.0,
+        "last": 638.0
+      }
+    },
+    {
+      "mode": "group",
+      "n": 512,
+      "partitions": 4,
+      "width": 16,
+      "version": "baseline",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 17, in <module>\n    assert p==expected;check=dict(groups=len(p),total=sum(p.values()))\n           ^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "mode": "sum",
+      "n": 100000,
+      "partitions": 4,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.020954791994881816,
+      "peak_rss_bytes": 165806080,
+      "check": 4999850001
+    },
+    {
+      "mode": "sum",
+      "n": 100000,
+      "partitions": 64,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.027175124996574596,
+      "peak_rss_bytes": 175947776,
+      "check": 4999850001
+    },
+    {
+      "mode": "filtered_sum",
+      "n": 10000,
+      "partitions": 4,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.019134125002892688,
+      "peak_rss_bytes": 145932288,
+      "check": 24995000
+    },
+    {
+      "mode": "mean",
+      "n": 10000,
+      "partitions": 4,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.027313459002471063,
+      "peak_rss_bytes": 150994944,
+      "check": 4999.0
+    },
+    {
+      "mode": "array",
+      "n": 512,
+      "partitions": 4,
+      "width": 32,
+      "version": "current",
+      "execution_seconds": 0.14573941699927673,
+      "peak_rss_bytes": 158056448,
+      "check": {
+        "width": 32,
+        "first": 255.0,
+        "last": 286.0
+      }
+    },
+    {
+      "mode": "array",
+      "n": 1024,
+      "partitions": 4,
+      "width": 128,
+      "version": "current",
+      "execution_seconds": 1.0375013750017388,
+      "peak_rss_bytes": 391413760,
+      "check": {
+        "width": 128,
+        "first": 511.0,
+        "last": 638.0
+      }
+    },
+    {
+      "mode": "group",
+      "n": 512,
+      "partitions": 4,
+      "width": 16,
+      "version": "current",
+      "execution_seconds": 0.060889041000336874,
+      "peak_rss_bytes": 141688832,
+      "check": {
+        "groups": 16,
+        "total": 130305
+      }
+    }
+  ],
+  "producer_sharing": {
+    "diagnosis": "OrderedNode exposed P partition views of a shared P-lane producer to tree optimization, expanding its plan/state near-quadratically. Optimize producer once and use the existing opaque action-local context before making views; parallel producer lanes remain independent and output consumption stays ordered.",
+    "intermediate_before_sharing_native_sha256": "78a731b8e508e1dfdf2153f48c56340acd0117cb99317f74b2b1af52fecc81b0",
+    "before": [
+      {
+        "n": 1000,
+        "partitions": 1,
+        "execution_seconds": 0.004671040995162912,
+        "peak_rss_bytes": 135380992
+      },
+      {
+        "n": 1000,
+        "partitions": 4,
+        "execution_seconds": 0.008864082999934908,
+        "peak_rss_bytes": 140673024
+      },
+      {
+        "n": 1000,
+        "partitions": 16,
+        "execution_seconds": 0.03346758299448993,
+        "peak_rss_bytes": 195723264
+      },
+      {
+        "n": 1000,
+        "partitions": 64,
+        "execution_seconds": 0.2923265830031596,
+        "peak_rss_bytes": 873168896
+      },
+      {
+        "n": 1000,
+        "partitions": 128,
+        "execution_seconds": 0.9287710000062361,
+        "peak_rss_bytes": 2845949952
+      },
+      {
+        "n": 10000,
+        "partitions": 4,
+        "execution_seconds": 0.010259458002110478,
+        "peak_rss_bytes": 153141248
+      },
+      {
+        "n": 10000,
+        "partitions": 16,
+        "execution_seconds": 0.036270582997531164,
+        "peak_rss_bytes": 213417984
+      },
+      {
+        "n": 10000,
+        "partitions": 64,
+        "execution_seconds": 0.30594504199689254,
+        "peak_rss_bytes": 905134080
+      },
+      {
+        "n": 100000,
+        "partitions": 4,
+        "execution_seconds": 0.02838625000003958,
+        "peak_rss_bytes": 221282304
+      },
+      {
+        "n": 100000,
+        "partitions": 16,
+        "execution_seconds": 0.07583954100118717,
+        "peak_rss_bytes": 453017600
+      },
+      {
+        "n": 100000,
+        "partitions": 64,
+        "execution_seconds": 0.46715816700452706,
+        "peak_rss_bytes": 1464483840
+      }
+    ],
+    "after": [
+      {
+        "n": 1000,
+        "partitions": 1,
+        "execution_seconds": 0.004689042005338706,
+        "peak_rss_bytes": 134660096
+      },
+      {
+        "n": 1000,
+        "partitions": 4,
+        "execution_seconds": 0.005512540999916382,
+        "peak_rss_bytes": 136855552
+      },
+      {
+        "n": 1000,
+        "partitions": 16,
+        "execution_seconds": 0.00781624999945052,
+        "peak_rss_bytes": 140902400
+      },
+      {
+        "n": 1000,
+        "partitions": 64,
+        "execution_seconds": 0.01627412500238279,
+        "peak_rss_bytes": 154648576
+      },
+      {
+        "n": 1000,
+        "partitions": 128,
+        "execution_seconds": 0.02729570800147485,
+        "peak_rss_bytes": 166330368
+      },
+      {
+        "n": 10000,
+        "partitions": 4,
+        "execution_seconds": 0.006804542004829273,
+        "peak_rss_bytes": 139771904
+      },
+      {
+        "n": 10000,
+        "partitions": 16,
+        "execution_seconds": 0.008414625001023524,
+        "peak_rss_bytes": 143065088
+      },
+      {
+        "n": 10000,
+        "partitions": 64,
+        "execution_seconds": 0.017792124999687076,
+        "peak_rss_bytes": 155811840
+      },
+      {
+        "n": 100000,
+        "partitions": 4,
+        "execution_seconds": 0.021230792001006193,
+        "peak_rss_bytes": 162643968
+      },
+      {
+        "n": 100000,
+        "partitions": 16,
+        "execution_seconds": 0.018456500001775566,
+        "peak_rss_bytes": 169656320
+      },
+      {
+        "n": 100000,
+        "partitions": 64,
+        "execution_seconds": 0.027689542002917733,
+        "peak_rss_bytes": 177913856
+      }
+    ],
+    "wide": [
+      {
+        "n": 4096,
+        "partitions": 64,
+        "width": 256,
+        "version": "before_sharing",
+        "execution_seconds": 0.368609249999281,
+        "peak_rss_bytes": 1732771840,
+        "check": {
+          "idx": 4095,
+          "width": 256,
+          "prefix": 8382465
+        }
+      },
+      {
+        "n": 4096,
+        "partitions": 64,
+        "width": 256,
+        "version": "current",
+        "execution_seconds": 0.018801166996126994,
+        "peak_rss_bytes": 181878784,
+        "check": {
+          "idx": 4095,
+          "width": 256,
+          "prefix": 8382465
+        }
+      },
+      {
+        "n": 16384,
+        "partitions": 16,
+        "width": 256,
+        "version": "before_sharing",
+        "execution_seconds": 0.08698966600059066,
+        "peak_rss_bytes": 1049198592,
+        "check": {
+          "idx": 16383,
+          "width": 256,
+          "prefix": 134193153
+        }
+      },
+      {
+        "n": 16384,
+        "partitions": 16,
+        "width": 256,
+        "version": "current",
+        "execution_seconds": 0.018634291001944803,
+        "peak_rss_bytes": 255475712,
+        "check": {
+          "idx": 16383,
+          "width": 256,
+          "prefix": 134193153
+        }
+      }
+    ]
+  }
+}

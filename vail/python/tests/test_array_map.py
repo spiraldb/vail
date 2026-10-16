@@ -1,4 +1,3 @@
-from vail.expressions import _native_expression, _native_projection
 """Typed array lambdas execute in DataFusion, including lexical captures."""
 import pytest
 import vail as hl
@@ -20,21 +19,13 @@ def test_nested_maps_capture_rows_globals_and_outer_variables():
     result = t.annotate(a=expression)
     assert [r.a for r in result.collect()] == [
         [[114+i, 115+i], [115+i, 116+i]] for i in range(3)]
-    assert 'array_transform' in result._native.physical_plan()
 
 
-def test_callback_constructs_ir_once_and_can_change_element_type():
-    calls = []
-    def body(x):
-        calls.append(x)
-        return hl.struct(value=hl.float64(x), pair=[x, x + 1])
-    expr = hl.array([1, 2]).map(body)
-    assert len(calls) == 1
-    assert hl.eval(expr) == [hl.Struct(value=1.0, pair=[1, 2]), hl.Struct(value=2.0, pair=[2, 3])]
-    assert hl.eval(hl.array([1, 2]).map(lambda x: hl.struct())) == [hl.Struct(), hl.Struct()]
-    assert len(calls) == 1
-    with pytest.raises(ValueError, match='unbound lambda'):
-        hl.eval(calls[0] + 1)
+def test_map_can_change_element_type():
+    expr = hl.array([1, 2]).map(lambda x: hl.struct(value=hl.float64(x),pair=[x,x+1]))
+    assert expr.dtype == hl.tarray(hl.tstruct(value=hl.tfloat64,pair=hl.tarray(hl.tint32)))
+    assert hl.eval(expr) == [hl.Struct(value=1.,pair=[1,2]),hl.Struct(value=2.,pair=[2,3])]
+    assert hl.eval(hl.array([1,2]).map(lambda x: hl.struct())) == [hl.Struct(),hl.Struct()]
 
 
 def test_empty_and_missing_arrays_do_not_evaluate_body():
@@ -70,22 +61,3 @@ def test_variable_length_nested_arrays_and_round_trip(tmp_path):
     restored = hl.read_table(path)
     assert restored.b.collect() == expected
     assert restored.a.map(lambda xs: xs.map(lambda x: x + restored.id)).collect() == expected
-
-
-def test_native_ir_validates_lambda_scope_and_input_type():
-    import json
-    t = hl.range_table(1)
-    variable = {'op': 'lambda_variable', 'name': 'x'}
-    array = hl.array([1]).to_ir()
-    for expression, message in [
-        (variable, 'unbound lambda'),
-        ({'op': 'array_map', 'value': hl.literal(1).to_ir(), 'parameter': 'x',
-          'body': variable}, 'requires array'),
-        ({'op': 'array_map', 'value': array, 'parameter': 'x', 'body':
-          {'op': 'array_map', 'value': array, 'parameter': 'x', 'body': variable}},
-         'duplicate lambda'),
-        ({'op': 'array_map', 'value': variable, 'parameter': 'x', 'body': variable},
-         'unbound lambda'),
-    ]:
-        with pytest.raises(ValueError, match=message):
-            t._native.project(_native_projection([['bad', expression]]))

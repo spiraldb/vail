@@ -90,9 +90,9 @@ def test_import_table_rejects_non_hail_quote_syntax(tmp_path, bad):
 
 
 def test_split_line_expression():
-    assert hl.eval(hl.literal('a,NA,')._split_line(',', quote=None)) == ['a', None, '']
-    assert hl.eval(hl.literal('a,"b,c"')._split_line(',', quote='"', missing=[])) == ['a', 'b,c']
-    assert hl.eval(hl.literal('')._split_line(',', missing=[])) == ['']
+    assert hl.eval(hl.split_line('a,NA,', ',', quote=None)) == ['a', None, '']
+    assert hl.eval(hl.split_line('a,"b,c"', ',', quote='"', missing=[])) == ['a', 'b,c']
+    assert hl.eval(hl.split_line('', ',', missing=[])) == ['']
 
 
 def test_text_source_transformations_and_globals(tmp_path):
@@ -225,3 +225,38 @@ def test_text_option_rejections(tmp_path):
         with pytest.raises(NotImplementedError, match='local'):
             getattr(hl.utils.range_table(1), action)('s3://bucket/out.txt')
     assert not (tmp_path / 'out.gz').exists()
+
+
+def test_find_replace_removes_raw_repeated_headers_before_transforming_data(tmp_path):
+    one,two=tmp_path/'one.tsv',tmp_path/'two.tsv'
+    one.write_text('a\tb\na1\tx\na\tb\n')
+    two.write_text('a\tb\na2\ty\n')
+    table=hl.import_table([one,two],find_replace=('a','A'))
+    assert list(table.row)==['a','b']
+    assert table.collect()==[hl.Struct(a='A1',b='x'),hl.Struct(a='A2',b='y')]
+
+
+def test_duplicate_header_suffixes_preserve_existing_name_collisions(tmp_path):
+    path=tmp_path/'duplicates.tsv'
+    names=['a','a','a_1','a','a_2','a']+['a']*128
+    expected=['a','a_1','a_1_1','a_2','a_2_1','a_3']+[f'a_{i}' for i in range(4,132)]
+    path.write_text('\t'.join(names)+'\n'+'\t'.join(map(str,range(len(names))))+'\n')
+    table=hl.import_table(path)
+    assert list(table.row)==expected
+    assert list(table.collect()[0].values())==list(map(str,range(len(names))))
+
+
+def test_public_split_line_missingness_validation_and_lazy_errors():
+    table=hl.Table.parallelize([{'line':'a,,NA','keep':True},{'line':None,'keep':True}],
+                               schema=hl.tstruct(line=hl.tstr,keep=hl.tbool))
+    assert hl.split_line(table.line,',',missing=['','NA']).collect()==[['a',None,None],None]
+    bad=hl.split_line('a,"bad',',',quote='"')
+    with pytest.raises(RuntimeError,match='quot'):
+        hl.eval(bad)
+    assert hl.eval(hl.if_else(False,bad,hl.missing(hl.tarray(hl.tstr)))) is None
+    assert hl.eval(hl.if_else(hl.missing(hl.tbool),bad,hl.missing(hl.tarray(hl.tstr)))) is None
+    assert table.select(value=bad).filter(False).collect()==[]
+    for delimiter in ['', 'é', '\n', '\x00']:
+        with pytest.raises(ValueError): hl.split_line('a',delimiter)
+    with pytest.raises(TypeError,match='string'): hl.split_line(1,',')
+    with pytest.raises(ValueError): hl.split_line('a',',',quote=',')

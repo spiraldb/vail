@@ -79,6 +79,35 @@ fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
 }
 
 pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<AggregateUDF>> {
+    if reducer.function.starts_with("__coordinate_") {
+        return factory_inner(reducer, dtype);
+    }
+    // Initializer values have been bound by this point. The descriptor and
+    // executable UDAF must promise precisely the same logical output.
+    let input_type = dtype
+        .map(vail_execution::expressions::Type::from_arrow)
+        .transpose()?;
+    let expected = vail_execution::aggregate_contract::result_type(
+        &reducer.function,
+        if reducer.function == "count" {
+            None
+        } else {
+            input_type.as_ref()
+        },
+        &reducer.options,
+        &[],
+    )?;
+    let udf = factory_inner(reducer, dtype)?;
+    let arguments = dtype.into_iter().cloned().collect::<Vec<_>>();
+    let actual = vail_execution::expressions::Type::from_arrow(&udf.return_type(&arguments)?)?;
+    if actual != expected {
+        return Err(TableError::Invalid(
+            "aggregate descriptor disagrees with executable result".into(),
+        ));
+    }
+    Ok(udf)
+}
+fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<AggregateUDF>> {
     let f = &reducer.function;
     if let Some(function) = f.strip_prefix("__coordinate_") {
         let Some(DataType::List(element)) = dtype else {
@@ -93,7 +122,7 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
             }
             "min" => datafusion_functions_aggregate::min_max::min_udaf(),
             "max" => datafusion_functions_aggregate::min_max::max_udaf(),
-            "mean" => datafusion_functions_aggregate::average::avg_udaf(),
+            "mean" => vail_execution::aggregates::aggregate_udf("mean", Some(input))?,
             "count" => datafusion_functions_aggregate::count::count_udaf(),
             "stddev_pop" => vail_execution::aggregates::aggregate_udf(function, Some(input))?,
             _ => {
@@ -203,6 +232,7 @@ pub(crate) fn scope_plan(
     bindings: &BTreeMap<String, usize>,
     outer_scope: &BTreeMap<String, String>,
     external: &crate::globals::GlobalBindings,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<(LogicalPlan, BTreeMap<String, ScalarValue>, String)> {
     // Each aggregate scope is an independent consumer of the same relation.
     // Its logical boundary prevents sibling scopes competing for exchange output.
@@ -285,8 +315,8 @@ pub(crate) fn scope_plan(
             },
             _ => return Err(TableError::Invalid("aggregate argument missing".into())),
         };
-        let (fold_udf, fold_value) = if reducer.function == "__fold" {
-            let (udf, _) = crate::aggregation::lower_fold(
+        let (fold_udf, fold_value, fold_storage) = if reducer.function == "__fold" {
+            let (udf, packed_input) = crate::aggregation::lower_fold(
                 &value,
                 input.schema().as_arrow(),
                 input.schema().as_arrow(),
@@ -294,13 +324,22 @@ pub(crate) fn scope_plan(
                 bindings,
                 &scope,
             )?;
+            let DataType::Struct(payload_fields) =
+                packed_input.data_type(input.schema().as_arrow())?
+            else {
+                return Err(TableError::Invalid("fold input must be a struct".into()));
+            };
+            let packed_names = payload_fields
+                .iter()
+                .map(|field| field.name())
+                .collect::<std::collections::HashSet<_>>();
             let packed = Expr::Struct {
                 fields: input
                     .schema()
                     .fields()
                     .iter()
                     .enumerate()
-                    .filter(|(_, f)| *f.data_type() != DataType::UInt64)
+                    .filter(|(_, f)| packed_names.contains(f.name()))
                     .map(|(i, f)| {
                         (
                             f.name().clone(),
@@ -317,9 +356,13 @@ pub(crate) fn scope_plan(
                     })
                     .collect(),
             };
-            (Some(udf), Some(packed))
+            (
+                Some(udf),
+                Some(packed),
+                Some(DataType::Struct(payload_fields)),
+            )
         } else {
-            (None, None)
+            (None, None, None)
         };
         let value = fold_value.as_ref().unwrap_or(&value);
         let mut logical_value =
@@ -333,16 +376,7 @@ pub(crate) fn scope_plan(
                     .to_arrow()?,
             )
         };
-        let dtype = if fold_udf.is_some() {
-            let payload = DataType::Struct(
-                input
-                    .schema()
-                    .fields()
-                    .iter()
-                    .filter(|f| *f.data_type() != DataType::UInt64)
-                    .cloned()
-                    .collect(),
-            );
+        let dtype = if let Some(payload) = fold_storage {
             logical_value =
                 vail_execution::logical_expr::restore_type(logical_value, payload.clone());
             Some(payload)
@@ -406,6 +440,7 @@ pub(crate) fn scope_plan(
             reducer.value.as_ref().unwrap(),
             &reducer.name,
             external,
+            context,
         )?;
         result = join_scope(
             result,
@@ -425,6 +460,7 @@ pub(crate) fn scope_plan(
 pub(crate) fn lower_logical_grouped(
     table: &TableRef,
     child: LogicalPlan,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<Option<LogicalPlan>> {
     let TableNode::Aggregate {
         keys,
@@ -436,7 +472,7 @@ pub(crate) fn lower_logical_grouped(
         return Ok(None);
     };
     Ok(Some(lower_grouped_fields(
-        table, child, keys, fields, bindings,
+        table, child, keys, fields, bindings, context,
     )?))
 }
 
@@ -446,15 +482,21 @@ pub(crate) fn lower_grouped_fields(
     keys: &[(String, Expr)],
     fields: &[(String, Expr)],
     bindings: &crate::globals::GlobalBindings,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<LogicalPlan> {
     let fields = fields
         .iter()
         .map(|(name, expression)| Ok((name.clone(), coordinate_reductions(expression)?)))
         .collect::<Result<Vec<_>>>()?;
     let fields = &fields;
-    if let Some(plan) =
-        crate::logical_aggregate_init::lower(table, child.clone(), Some(keys), fields, bindings)?
-    {
+    if let Some(plan) = crate::logical_aggregate_init::lower(
+        table,
+        child.clone(),
+        Some(keys),
+        fields,
+        bindings,
+        context,
+    )? {
         return Ok(plan);
     }
     // Keep partitions independent for associative reductions. Ordered reducers
@@ -464,8 +506,8 @@ pub(crate) fn lower_grouped_fields(
     } else {
         child
     };
-    let child = crate::logical_globals::bind_globals(child, table)?;
-    let (child, indices) = crate::logical_globals::bind_external(child, bindings)?;
+    let child = crate::logical_globals::bind_globals(child, table, context)?;
+    let (child, indices) = crate::logical_globals::bind_external(child, bindings, context)?;
     let mut used: HashSet<String> = child
         .schema()
         .fields()
@@ -539,6 +581,7 @@ pub(crate) fn lower_grouped_fields(
         &indices,
         &BTreeMap::new(),
         bindings,
+        context,
     )?;
     for group in groups {
         let (right, defaults, presence) = scope_plan(
@@ -551,6 +594,7 @@ pub(crate) fn lower_grouped_fields(
             &indices,
             &BTreeMap::new(),
             bindings,
+            context,
         )?;
         let right_keys = group_names
             .iter()
@@ -592,8 +636,9 @@ pub(crate) fn lower_grouped_fields(
             .project(projection)?
             .build()?;
     }
-    result = crate::logical_globals::bind_globals(result, table)?;
-    let (result, output_indices) = crate::logical_globals::bind_external(result, bindings)?;
+    result = crate::logical_globals::bind_globals(result, table, context)?;
+    let (result, output_indices) =
+        crate::logical_globals::bind_external(result, bindings, context)?;
     let mut projection = keys
         .iter()
         .zip(&key_names)
@@ -622,6 +667,7 @@ pub(crate) fn lower_logical_total(
     expression: &Expr,
     bindings: &crate::globals::GlobalBindings,
     child: LogicalPlan,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<Option<LogicalPlan>> {
     let expression = coordinate_reductions(expression)?;
     let expression = &expression;
@@ -631,6 +677,7 @@ pub(crate) fn lower_logical_total(
         None,
         &[("value".into(), expression.clone())],
         bindings,
+        context,
     )? {
         return Ok(Some(plan));
     }
@@ -649,8 +696,8 @@ pub(crate) fn lower_logical_total(
         } else {
             child
         };
-        let child = crate::logical_globals::bind_globals(child, table)?;
-        let (child, indices) = crate::logical_globals::bind_external(child, bindings)?;
+        let child = crate::logical_globals::bind_globals(child, table, context)?;
+        let (child, indices) = crate::logical_globals::bind_external(child, bindings, context)?;
         for group in groups {
             let (right, _, _) = scope_plan(
                 child.clone(),
@@ -662,14 +709,16 @@ pub(crate) fn lower_logical_total(
                 &indices,
                 &BTreeMap::new(),
                 bindings,
+                context,
             )?;
             result = LogicalPlanBuilder::from(result)
                 .cross_join(right)?
                 .build()?;
         }
     }
-    result = crate::logical_globals::bind_globals(result, table)?;
-    let (result, output_indices) = crate::logical_globals::bind_external(result, bindings)?;
+    result = crate::logical_globals::bind_globals(result, table, context)?;
+    let (result, output_indices) =
+        crate::logical_globals::bind_external(result, bindings, context)?;
     let value = lower_logical_with_bindings(
         &output,
         result.schema(),
@@ -743,6 +792,7 @@ pub(crate) fn body_plan(
     body: &Expr,
     name: &str,
     external: &crate::globals::GlobalBindings,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<LogicalPlan> {
     let mut groups = Vec::new();
     let output = extract(body, &[], &mut groups, used)?;
@@ -764,6 +814,7 @@ pub(crate) fn body_plan(
         bindings,
         scope,
         external,
+        context,
     )?;
     for group in groups {
         let (right, defaults, presence) = scope_plan(
@@ -776,6 +827,7 @@ pub(crate) fn body_plan(
             bindings,
             scope,
             external,
+            context,
         )?;
         let values = group
             .reducers
@@ -784,9 +836,9 @@ pub(crate) fn body_plan(
             .collect::<Vec<_>>();
         result = join_scope(result, right, group_names, &values, &presence, used)?;
     }
-    result = crate::logical_globals::bind_globals(result, table)?;
+    result = crate::logical_globals::bind_globals(result, table, context)?;
     // The external bindings in the input were removed by aggregation.
-    let (result, indices) = crate::logical_globals::bind_external(result, external)?;
+    let (result, indices) = crate::logical_globals::bind_external(result, external, context)?;
     let output = resolve(&output, scope)?;
     let mut fields = group_names
         .iter()

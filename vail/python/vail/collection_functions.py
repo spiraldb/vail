@@ -8,7 +8,7 @@ import builtins
 
 from .expressions import (Expression, as_expr, array, tuple_, literal, missing,
                           if_else, is_missing, float64, array_sum, array_min, array_max)
-from .types import tarray, tset, ttuple, tbool, tint32, tfloat64, type_to_wire
+from .types import tarray, tset, ttuple, tbool, tint32, tfloat64, tstruct, type_to_wire
 from . import collections as ops
 
 
@@ -24,29 +24,8 @@ def _callable(f):
         raise TypeError('expected a callable')
 
 
-def _zip_native(arrays):
-    """Native pairwise zips; callbacks only read their current scalar fields."""
-    from .types import tstruct
-    packed = arrays[0]
-    for value in arrays[1:]:
-        packed = ops._function("arrays_zip", [packed, value], tarray(tstruct(**{
-            "1": packed.dtype.element_type, "2": value.dtype.element_type,
-        })))
-
-    def unpack(value):
-        fields = []
-        for _ in arrays[1:]:
-            fields.append(value["2"])
-            value = value["1"]
-        fields.append(value)
-        return tuple_(reversed(fields))
-
-    return packed.map(unpack)
-
-
 def zip(*arrays, fill_missing=False):
-    """Zip arrays with linear work in the number of emitted elements."""
-    from .expressions import bind
+    """Zip arrays, truncating to the shortest or padding to the longest."""
     if type(fill_missing) is not bool:
         raise TypeError('fill_missing must be bool')
     if not arrays:
@@ -54,19 +33,24 @@ def zip(*arrays, fill_missing=False):
     arrays = [as_expr(a) for a in arrays]
     if not builtins.all(isinstance(a.dtype, tarray) for a in arrays):
         raise TypeError('zip requires arrays')
-
-    def run(*values):
-        absent = literal(False)
-        for value in values:
-            absent = absent | is_missing(value)
-        if not fill_missing:
-            size = array_min(array([ops.length(value) for value in values]), filter_missing=False)
-            values = [value[:size] for value in values]
-        result = _zip_native(values)
-        # DataFusion pads a missing input; Hail/Vail propagate a missing array.
-        return if_else(absent, missing(result.dtype), result)
-
-    return bind(run, *arrays)
+    result_type = tarray(ttuple(*(a.dtype.element_type for a in arrays)))
+    from .expressions import bind
+    def zipped(*bound):
+        def combine(values):
+            physical = tarray(tstruct(**{str(i+1): a.dtype.element_type
+                                        for i,a in builtins.enumerate(values)}))
+            pairs = ops._function('arrays_zip', list(values), physical)
+            return pairs.map(lambda pair: tuple_(pair[str(i+1)] for i in builtins.range(len(values))))
+        if fill_missing:
+            return combine(bound)
+        size = array_min(array([ops.length(a) for a in bound]), filter_missing=False)
+        return bind(lambda size: combine([a[:size] for a in bound]), size)
+    result = bind(zipped, *arrays)
+    # Preserve missing-input short circuiting before evaluating the zip body.
+    absent = literal(False)
+    for a in arrays:
+        absent = absent | is_missing(a)
+    return if_else(absent, missing(result_type), result)
 
 
 def map(f, *collections):
@@ -145,9 +129,8 @@ def enumerate(a, start=0, *, index_first=True):
         raise TypeError('enumerate requires an array and int32 start')
     if type(index_first) is not bool:
         raise TypeError('index_first must be bool')
-    return zip(a, range(ops.length(a))).map(
-        lambda pair: tuple_((pair[1] + start, pair[0]) if index_first
-                            else (pair[0], pair[1] + start)))
+    indexed = ops._function('__vail_index_values', [a], tarray(ttuple(tint32,a.dtype.element_type)))
+    return indexed.map(lambda pair: tuple_((pair[0]+start,pair[1]) if index_first else (pair[1],pair[0]+start)))
 
 
 def zip_with_index(a, index_first=True):

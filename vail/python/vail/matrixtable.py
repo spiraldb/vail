@@ -1368,35 +1368,39 @@ class MatrixTable:
         ctable = Table.parallelize(
             cs, schema=tstruct(col_idx=tint32) if not cs else None
         )
-        from .types import infer_type
+        from .inputs import infer_input_type
 
         if entries and (not nr or not nc):
             raise ValueError("empty entry data requires a typed localized Table")
-        dtype = (
-            infer_type({n: v[0][0] for n, v in entry_matrices.items()})
-            if entries
-            else tstruct()
-        )
-        cell_type = tstruct(**{_CID: tint64, _PRESENT: tbool, _VALUE: dtype})
-        records = [
-            {
-                _ROW: rs[i],
-                _CELLS: [
-                    {
-                        _CID: j,
-                        _PRESENT: True,
-                        _VALUE: {n: v[i][j] for n, v in entry_matrices.items()},
-                    }
-                    for j in range(nc)
-                ],
-            }
-            for i in range(nr)
-        ]
-        core = Table.parallelize(
-            records, schema=tstruct(**{_ROW: rtable._schema, _CELLS: tarray(cell_type)})
-        )
-        if globals:
-            core = core.annotate_globals(**globals)
+        if entries:
+            try:
+                dtype = tstruct(**{
+                    name: infer_input_type(value for row in values for value in row)
+                    for name, values in entry_matrices.items()
+                })
+            except ValueError as error:
+                raise ValueError("all-missing entry data requires a typed localized Table") from error
+            cell_type = tstruct(**{_CID: tint64, _PRESENT: tbool, _VALUE: dtype})
+            records = [
+                {_ROW: rs[i], _CELLS: [
+                    {_CID: j, _PRESENT: True,
+                     _VALUE: {name: values[i][j] for name, values in entry_matrices.items()}}
+                    for j in range(nc)]}
+                for i in range(nr)
+            ]
+            core = Table.parallelize(
+                records, schema=tstruct(**{_ROW: rtable._schema, _CELLS: tarray(cell_type)})
+            )
+            if globals:
+                core = core.annotate_globals(**globals)
+        else:
+            from . import range as array_range
+            # Empty entry records are derived lazily from the dimensions. The
+            # Python constructor owns rows and columns, never their product.
+            cells = array_range(nc).map(lambda j: struct(**{
+                _CID: int64(j), _PRESENT: True, _VALUE: struct(),
+            }))
+            core = _project(rtable, [(_ROW, rtable.row), (_CELLS, cells)])
         ctable = ctable.select(**{_CID: int64(ctable.col_idx), _COL: ctable.row})
         return cls(MatrixIR(core, ctable, row_key=("row_idx",), col_key=("col_idx",), _aligned=True))
 
@@ -2328,7 +2332,7 @@ def read_matrix_table(
     return result
 
 
-def unlocalize_entries(table, entries_field_name, cols_field_name, col_key):
+def unlocalize_entries(table, entries_field_name, cols_field_name, col_key, *, _aligned=False):
     """Inverse of localization, retaining missing structs as filtered cells."""
     from . import len as length, range as array_range, case
 
@@ -2389,7 +2393,10 @@ def unlocalize_entries(table, entries_field_name, cols_field_name, col_key):
     core = core.select_globals(
         **{n: globals[n] for n in table._global_schema if n != cols_field_name}
     )
-    return MatrixTable(MatrixIR(core, columns, row_key=table._keys, col_key=col_key))
+    # Internal generators can establish alignment by construction: each row's
+    # entry count equals the shared column count, in the same physical order.
+    return MatrixTable(MatrixIR(core, columns, row_key=table._keys, col_key=col_key,
+                                _aligned=_aligned))
 
 
 class GroupedMatrixTable:

@@ -8,13 +8,58 @@ use datafusion_expr::{
     Expr as DFExpr, ExprSchemable, LogicalPlan, LogicalPlanBuilder, expr_fn::ExprFunctionExt, lit,
 };
 use std::{
-    collections::{BTreeMap, HashSet},
+    collections::{BTreeMap, HashMap, HashSet},
     sync::Arc,
 };
 use vail_execution::expressions::{Expr, Type};
 use vail_execution::logical_expr::{
     lower_logical_with_bindings, restore_arrow_array_type, restore_type,
 };
+
+/// Indexed callback tuples carry their position through reduction as an
+/// explicit group key. The element itself is a row value and is unavailable
+/// after reduction; a result-context random UID must refer to the key instead.
+fn bind_callback_position(expr: &Expr, parameter: &str, position: &str) -> Result<Expr> {
+    fn rewrite(
+        expr: &Expr,
+        parameter: &str,
+        position: &str,
+        shadowed: bool,
+        memo: &mut HashMap<(usize, bool), Expr>,
+    ) -> Result<Expr> {
+        let key = (expr as *const Expr as usize, shadowed);
+        if let Some(result) = memo.get(&key) {
+            return Ok(result.clone());
+        }
+        let result = if !shadowed
+            && let Expr::GetField { value, name } = expr
+            && name == "__vail_tuple_0"
+            && matches!(value.as_ref(), Expr::LambdaVariable { name, .. } if name == parameter)
+        {
+            // Keep a scoped variable until reducer extraction is complete.
+            // Index tuple positions are int32; relational range keys are int64.
+            Expr::Cast {
+                dtype: Type::Primitive(vail_execution::expressions::PrimitiveType::Int32),
+                value: Arc::new(Expr::LambdaVariable {
+                    name: position.into(),
+                    dtype: Some(Type::Primitive(
+                        vail_execution::expressions::PrimitiveType::Int64,
+                    )),
+                }),
+            }
+        } else {
+            let mut child_index = 0;
+            expr.try_map_children(|child| {
+                let nested = shadowed || expr.child_binders(child_index).contains(&parameter);
+                child_index += 1;
+                rewrite(child, parameter, position, nested, memo)
+            })?
+        };
+        memo.insert(key, result.clone());
+        Ok(result)
+    }
+    rewrite(expr, parameter, position, false, &mut HashMap::new())
+}
 
 fn presence() -> DFExpr {
     datafusion_functions_aggregate::count::count_udaf().call(vec![lit(1i64)])
@@ -69,6 +114,7 @@ pub(crate) fn lower(
     expression: &Expr,
     name: &str,
     external: &crate::globals::GlobalBindings,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<(LogicalPlan, ScalarValue, String)> {
     match expression {
         Expr::AggGroupBy { key, body } => {
@@ -116,6 +162,7 @@ pub(crate) fn lower(
                 body,
                 &value_name,
                 external,
+                context,
             )?;
             let ty = Type::from_arrow(
                 body.schema()
@@ -153,6 +200,10 @@ pub(crate) fn lower(
             body,
         } => {
             let value = resolve(value, scope)?;
+            let indexed_callback = matches!(
+                &value,
+                Expr::NestedFunction { function, .. } if function == "__vail_index_values"
+            );
             let dtype = value
                 .dtype_with_globals(input.schema().as_arrow(), table.globals().schema())?
                 .to_arrow()?;
@@ -207,6 +258,13 @@ pub(crate) fn lower(
             nested_groups.push(index_group);
             let mut scope = scope.clone();
             scope.insert(parameter.clone(), element_name);
+            let body = if indexed_callback {
+                let position = unique(used, "__vail_array_position");
+                scope.insert(position.clone(), index_name.clone());
+                bind_callback_position(body, parameter, &position)?
+            } else {
+                body.as_ref().clone()
+            };
             let body = body_plan(
                 input,
                 table,
@@ -215,9 +273,10 @@ pub(crate) fn lower(
                 &scope,
                 used,
                 bindings,
-                body,
+                &body,
                 &body_name,
                 external,
+                context,
             )?;
             let ty = body
                 .schema()

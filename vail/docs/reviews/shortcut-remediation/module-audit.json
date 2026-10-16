@@ -2658,5 +2658,27 @@
     }
   ],
   "candidate_validation_manifest": "evidence/vail-shortcuts-build10-source-hashes.json",
-  "coverage_interpretation": "Full module reads and subsequent targeted source reviews are recorded per report. Per-module initial hashes identify the audit snapshot; final candidate source hashes are separate. Reviewed does not mean all queued concerns are fixed."
+  "coverage_interpretation": "Full module reads and subsequent targeted source reviews are recorded per report. Per-module initial hashes identify the audit snapshot; final candidate source hashes are separate. Reviewed does not mean all queued concerns are fixed.",
+  "integration_addendum": {
+    "parents": [
+      "76cbbeb0cada9efc955254d9ce5eea0c3339f082",
+      "6bce5077d98f61e49f0b7ec9241f855f493b54d3"
+    ],
+    "status": "final_runtime_validation_and_exact_revision_review_pending",
+    "scope_note": "Original module entries/hashes describe the original remediation audit; they do not certify newer main additions. Integration reports state actual read depth and review ownership. Published vendored dependency source internals are outside full-source audit; exact maintained patch and Vail integration boundaries are reviewed.",
+    "reports": [
+      "merge-execution-audit.json",
+      "merge-semantic-decisions.json"
+    ],
+    "material_integration_boundaries": [
+      "Explicit row/global query-local logical lowering context; prepared-action scalar rebind",
+      "Optimizer-visible source/cell replay ownership and guarded one-shot exchanges",
+      "Shared list/stream/matrix reducers with typed initializers",
+      "Native closed-scalar eligibility and singleton constructor admission",
+      "Scoped native binder edge contract and DAG rewrites",
+      "Arrow empty-struct scalar compaction cardinality and validity dependency patch",
+      "Native atomic bounded VCF sink; shallow typed Python API",
+      "Narrow structural IR assertion adapter with exact per-run statement manifest; behavior retained"
+    ]
+  }
 }

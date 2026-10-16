@@ -60,7 +60,9 @@ pub fn table<'py>(py: Python<'py>, t: &TableIR) -> PyResult<Bound<'py, PyDict>> 
             )?;
             "DataFusionTextRead"
         }
-        TableNode::Range { n, n_partitions } => {
+        TableNode::Range {
+            n, n_partitions, ..
+        } => {
             d.set_item("n", n)?;
             d.set_item("n_partitions", n_partitions)?;
             "TableRange"

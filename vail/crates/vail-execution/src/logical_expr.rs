@@ -91,6 +91,31 @@ pub fn restore_arrow_array_type(
     Ok(arrow_cast::cast(array.as_ref(), dtype)?)
 }
 
+/// Restore descriptors while preserving scalar ownership and shared buffers.
+pub fn restore_arrow_value_type(
+    value: datafusion_expr::ColumnarValue,
+    dtype: &arrow_schema::DataType,
+) -> datafusion_common::Result<datafusion_expr::ColumnarValue> {
+    use datafusion_expr::ColumnarValue;
+    let scalar = matches!(value, ColumnarValue::Scalar(_));
+    let array: arrow_array::ArrayRef = match value {
+        ColumnarValue::Array(array) => array,
+        ColumnarValue::Scalar(ScalarValue::List(array)) => array,
+        ColumnarValue::Scalar(ScalarValue::Struct(array)) => array,
+        ColumnarValue::Scalar(value) => value.to_array()?,
+    };
+    let array = restore_arrow_array_type(&array, dtype)?;
+    if scalar {
+        Ok(ColumnarValue::Scalar(
+            crate::expressions::scalar_at(&array, 0).map_err(|error| {
+                datafusion_common::DataFusionError::Execution(error.to_string())
+            })?,
+        ))
+    } else {
+        Ok(ColumnarValue::Array(array))
+    }
+}
+
 /// Restore an IR-declared type after a library operator constructs new Arrow
 /// fields. The scalar result retains the original nested Arrow fields, so
 /// constant folding preserves logical collection tags and reference metadata.
@@ -101,31 +126,25 @@ pub fn restore_type(value: LogicalExpr, dtype: arrow_schema::DataType) -> Logica
         dtype.clone(),
         Signature::any(1, Volatility::Immutable),
         dtype,
-        Arc::new(move |args| {
-            let scalar = matches!(&args[0], datafusion_expr::ColumnarValue::Scalar(_));
-            let array = args[0].clone().into_array(match &args[0] {
-                datafusion_expr::ColumnarValue::Array(a) => a.len(),
-                _ => 1,
-            })?;
-            let array = restore_arrow_array_type(&array, &output)?;
-            if scalar {
-                Ok(datafusion_expr::ColumnarValue::Scalar(
-                    if let Some(list) = array.as_any().downcast_ref::<arrow_array::ListArray>() {
-                        ScalarValue::List(Arc::new(list.slice(0, 1)))
-                    } else if let Some(record) =
-                        array.as_any().downcast_ref::<arrow_array::StructArray>()
-                    {
-                        ScalarValue::Struct(Arc::new(record.slice(0, 1)))
-                    } else {
-                        ScalarValue::try_from_array(&array, 0)?
-                    },
-                ))
-            } else {
-                Ok(datafusion_expr::ColumnarValue::Array(array))
-            }
-        }),
+        Arc::new(move |args| restore_arrow_value_type(args[0].clone(), &output)),
     );
     udf.call(vec![value])
+}
+
+fn boolean_case(
+    base: LogicalExpr,
+    yes: LogicalExpr,
+    no: LogicalExpr,
+    missing: LogicalExpr,
+) -> LogicalExpr {
+    LogicalExpr::Case(datafusion_expr::expr::Case::new(
+        Some(Box::new(base)),
+        vec![
+            (Box::new(lit(true)), Box::new(yes)),
+            (Box::new(lit(false)), Box::new(no)),
+        ],
+        Some(Box::new(missing)),
+    ))
 }
 
 fn coerce_type(
@@ -451,6 +470,15 @@ fn lower(
             crate::array_aggregate_scan::make_udf(function, &input, options)?
                 .call(vec![recurse(value)?, recurse(predicate)?])
         }
+        Expr::NestedFunction { function, args, .. } if function == "coalesce" => {
+            expr.dtype_with_globals(schema.as_arrow(), globals)?;
+            boolean_case(
+                recurse(&args[0])?,
+                lit(true),
+                lit(false),
+                recurse(&args[1])?,
+            )
+        }
         Expr::NestedFunction { function, args, .. } => {
             if crate::expression_effects::effects(expr) != crate::expression_effects::Effects::Pure
             {
@@ -545,7 +573,8 @@ fn lower(
                 "aggregation expressions require the DataFusion aggregate planner".into(),
             ));
         }
-        Expr::Die { .. }
+        Expr::Switch { .. }
+        | Expr::Die { .. }
         | Expr::ArrayFold { .. }
         | Expr::ArrayMap { .. }
         | Expr::ArrayPredicate { .. }
@@ -786,7 +815,14 @@ fn logical_kernel(
         &mut std::collections::HashMap::new(),
     )?;
     let kernel_schema = Schema::new(fields);
-    let kernel = crate::expressions::lower(&rewritten, &kernel_schema)?;
+    let kernel =
+        crate::expressions::lower(&rewritten, &kernel_schema).map_err(|error| match error {
+            ExprError::Invalid(message) => ExprError::Invalid(format!(
+                "{} kernel compilation: {message}",
+                kernel_label(expr)
+            )),
+            other => other,
+        })?;
     let captured_expression = Arc::new(rewritten.clone());
     let output_type = expr
         .dtype_with_globals(&arrow_schema, globals)?
@@ -895,8 +931,9 @@ fn logical_kernel(
     Ok(udf.call(logical_args))
 }
 
-fn kernel_label(expr: &Expr) -> &'static str {
+pub(crate) fn kernel_label(expr: &Expr) -> &'static str {
     match expr {
+        Expr::Switch { .. } => "switch",
         Expr::Die { .. } => "die",
         Expr::ArrayFold { scan: true, .. } => "array_scan",
         Expr::ArrayFold { scan: false, .. } => "array_fold",

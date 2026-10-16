@@ -1,0 +1,869 @@
+{
+  "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+  "scope": "Vail-owned Rust and Python only; exclude all dependency checkouts and patched/vendored Iceberg, Vortex, and DataFusion code.",
+  "cycles": [
+    {
+      "module": "vail/crates/vail-ordering",
+      "reviewed_base": "2c02020",
+      "merged_commit": "3a2b941",
+      "status": "approved_and_merged",
+      "validation": [
+        "cargo test -p vail-ordering: 9 passed",
+        "cargo check -p vail-execution -p vail-storage --tests: passed"
+      ]
+    },
+    {
+      "module": "vail/python/vail/arrow.py",
+      "reviewed_base": "3a2b941",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "recursively hashable tuple collection keys",
+        "replace mocked transport assertions with public behavior/resource evidence",
+        "replace private graph/type representation assertions",
+        "prepare per-schema converters and reference ordinal indexes",
+        "propagate key context through interval endpoints",
+        "avoid per-locus contig-length map copies"
+      ],
+      "validation_report": "vail/docs/reviews/cycle2-validation.json",
+      "merged_commit": "9ccbccd"
+    },
+    {
+      "module": "vail/patches/vortex-layout/src/layouts/list/writer.rs",
+      "status": "skipped_by_user",
+      "known_defect": "empty nested list stream fails structural storage",
+      "reproduction": "vail/docs/reviews/reproduce_nullable_nested_list_write.py",
+      "reason": "Dependency/patched code excluded by explicit user instruction; upstream fixes handled in PRs10533 and10534."
+    },
+    {
+      "module": "vail/python/vail/reference_genome.py",
+      "reviewed_base": "9ccbccd",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "index contig ranks and share immutable complete definitions for repeated comparison",
+        "index classification and merged half-open PAR coverage",
+        "replace incidental storage topology assertions with reopened reference/data checks",
+        "deduplicate endpoint reference validation and cache immutable locus-type reference resolution during PAR export"
+      ],
+      "validation": [
+        "64 reference/locus/Arrow bridge/dtype parsing tests passed",
+        "bounded public query and export/reregistration workloads saved before and after indexing/caching"
+      ],
+      "reports": [
+        "vail/docs/reviews/reference-genome-baseline.json",
+        "vail/docs/reviews/reference-genome-indexed.json",
+        "vail/docs/reviews/reference-genome-export-baseline.json",
+        "vail/docs/reviews/reference-genome-export-indexed.json",
+        "vail/docs/reviews/reference-genome-many-sex-baseline.json",
+        "vail/docs/reviews/reference-genome-many-sex-indexed.json"
+      ],
+      "merged_commit": "24ac2f8"
+    },
+    {
+      "module": "vail/crates/vail-execution/src/reference.rs and locus execution callers",
+      "reviewed_base": "24ac2f8",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "preserve parent nulls in imported locus field extraction without copying Arrow data buffers",
+        "eliminate quadratic classification/PAR validation and preparation",
+        "own aligned coordinate metadata in an immutable prepared snapshot",
+        "replace private reference tests with public expression and Arrow execution tests"
+      ],
+      "validation": [
+        "cargo test --release -p vail-execution --test reference: 4 passed",
+        "cargo test --release -p vail-execution --lib expressions::tests: 17 passed",
+        "cargo run --release -p vail-execution --example reference_validation_cost: passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/rust-reference-validation-cost.json"
+      ],
+      "merged_commit": "fa90600"
+    },
+    {
+      "module": "vail/crates/vail-execution/src/calls.rs and Vail call adapters",
+      "reviewed_base": "fa90600",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "validate malformed packed Call accessors consistently including present missing word",
+        "replace repeated arithmetic expansion with checked single-row pack/decode adapters",
+        "replace private call-field and codec expectations with public accessors and independent expected values"
+      ],
+      "validation": [
+        "17 Rust expression tests passed",
+        "36 focused Python Call tests passed against rebuilt release native",
+        "Broader Python suite:153 passed; one known Vortex failure excluded by user and4 absent optional upstream Hail fixtures"
+      ],
+      "reports": [
+        "vail/docs/reviews/call-adapter-cost.json"
+      ],
+      "merged_commit": "1ab6499"
+    },
+    {
+      "module": "vail/python/vail/allele_functions.py",
+      "reviewed_base": "1ab6499",
+      "status": "approved_and_merged",
+      "changes": [
+        "replace indexed substring mismatch/transition loops with linear existing string operations",
+        "document ASCII equal-length/single-mismatch preconditions",
+        "public exhaustive/padded/long and all-predicate missingness cases"
+      ],
+      "reports": [
+        "vail/docs/reviews/allele-classification-cost.json"
+      ],
+      "accepted_findings": [
+        "replace per-character substring range/map mismatch and transition work with linear existing kernels"
+      ],
+      "validation": [
+        "73 allele and string-conversion tests passed including final empty projection"
+      ],
+      "merged_commit": "d8f0210"
+    },
+    {
+      "module": "Vail Python strings and Rust string kernels",
+      "reviewed_base": "d8f0210",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "direct Unicode strided slicing and indexed dynamic translation",
+        "retain scalar arguments and split operation-specific loops",
+        "reject missing dynamic translation keys consistently",
+        "reproduced regex constant error across excluding filter; retain fallible expression barrier",
+        "replace Rust physical-node assertion with public Arrow execution tests"
+      ],
+      "validation": [
+        "3 Rust public string integration tests passed",
+        "123 Python string/codepoint/formatting/allele tests passed against rebuilt release native"
+      ],
+      "reports": [
+        "vail/docs/reviews/string-traversal-cost.json"
+      ],
+      "merged_commit": "b6ec0a0"
+    },
+    {
+      "module": "Vail Python runtime bridge and Arrow batch input source",
+      "reviewed_base": "b6ec0a0",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "replace session spies/private export assertions with public ownership/laziness/Arrow export behavior",
+        "retain imported batches in an indexed zero-copy source instead of concatenating",
+        "bound scalar imports and scalar literal inputs to one retained row, rejecting the second row immediately",
+        "avoid usize multiplication overflow in proportional partition boundaries"
+      ],
+      "scope_note": "backend.py and context.py reviewed without findings; source helpers extend into vail-table batch source to address review",
+      "validation": [
+        "67 public Python runtime/table tests passed against final native",
+        "7 Rust ir tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/arrow-runtime-cost.json"
+      ],
+      "merged_commit": "010a343"
+    },
+    {
+      "module": "Vail CSV-line parser and Python text helpers",
+      "reviewed_base": "010a343",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "remove raw repeated headers before replacing data text",
+        "track next suffix per original header name",
+        "prepare missing-marker hash lookup and append borrowed parsed fields to Arrow with reused record scratch",
+        "bundle validated quote grammar and explicit field-count mode in prepared configuration",
+        "replace private parse/manual-grammar/physical-node assertions with public APIs and executed results"
+      ],
+      "validation": [
+        "62 Python text/codepoint tests passed",
+        "3 public Rust CSV integration tests passed",
+        "existing Rust expression CSV projection test passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/csv-cost.json"
+      ],
+      "merged_commit": "7089622"
+    },
+    {
+      "module": "Vail conditional builders and native IfElse adapters",
+      "reviewed_base": "7089622",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "represent switch as flat typed lexical scope with one selector evaluation",
+        "normalize Boolean missing predicates without repeated input evaluation",
+        "lower nullable conditionals with a single simple-CASE base",
+        "capture and gather only referenced callback fields, retaining lexical/matrix/random context",
+        "normalize selected output storage and share full identity output; interleave mixed pieces once"
+      ],
+      "validation": [
+        "72 public Python conditional/row/codepoint/numeric-aggregate tests passed against matching release native",
+        "4 public Rust conditional tests passed",
+        "same bounded cheap and expensive increasing-case workloads improve without the earlier regression"
+      ],
+      "reports": [
+        "vail/docs/reviews/conditional-cost.json"
+      ],
+      "merged_commit": "5ef30e5"
+    },
+    {
+      "module": "Vail stream expressions and partition callbacks",
+      "reviewed_base": "5ef30e5",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "bind scan filter predicates to reducer input, not output row",
+        "bind nested RNG context once per input/output position",
+        "incremental fixed-state exclusive scan, preserving last-input laziness",
+        "linear direct struct projection traversal",
+        "prove key forwarding for conservative ordered shapes; unknown callbacks become unkeyed without implicit sorting",
+        "public stream/partition APIs and behavior tests without callback spies",
+        "unknown-count forward heads read bounded prefixes once instead of count and replay"
+      ],
+      "validation": [
+        "79 public Python tests +10 subtests passed",
+        "9 public Rust integration tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/stream-cost.json"
+      ],
+      "merged_commit": "a7a37a3"
+    },
+    {
+      "module": "Vail expression inputs, backend and context shims",
+      "reviewed_base": "a7a37a3",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "detect dictionary-key expressions and preserve their source/lazy error contracts",
+        "retain literal scalar/Arrow storage directly instead of one globals dependency per leaf",
+        "validate and bind native expression DAGs using stable borrowed-node identity without Python tree expansion",
+        "avoid temporary cloned child pointers during identity-aware inquiry/substitution"
+      ],
+      "validation": [
+        "101 public Python tests passed",
+        "95 Rust execution tests passed",
+        "bounded mixed-input and shared-DAG construction/action evidence, including quiet follow-up resolving the suspected action regression"
+      ],
+      "reports": [
+        "vail/docs/reviews/expression-input-cost.json"
+      ],
+      "merged_commit": "82502bad"
+    },
+    {
+      "module": "Vail table display formatter",
+      "reviewed_base": "82502bad",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "slice displayed Arrow rows before localizing sentinel cells",
+        "prepare ordered field paths/types/formatters once, avoiding per-row native name searches",
+        "stream ordinary nested cells and strict escaped Unicode prefixes to the display budget",
+        "preserve logical atom/parent-null/ASCII behavior with explicit exceptional repr limitations"
+      ],
+      "validation": [
+        "52 public Python display/convenience/native-memory tests passed",
+        "bounded array/nested/string/sentinel/wide workloads recorded"
+      ],
+      "reports": [
+        "vail/docs/reviews/display-cost.json"
+      ],
+      "merged_commit": "66107e63"
+    },
+    {
+      "module": "Vail lazy table/matrix-row query adapters and range lookup",
+      "reviewed_base": "66107e63",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "replace storage-internal pruning fixture with public lazy-source results and bounded resources",
+        "defer computed scalar query arguments; decode only established literal constructors for constant pruning",
+        "carry proven unchanged prefix order through a checked native projection without redundant sort",
+        "share immutable typed binary range index across left batches/partitions and reset owner once per action",
+        "retain right payload batches and interleave only matches instead of concatenating all payloads",
+        "schedule selected-only scalar captured query dependencies with validated nullable singleton conditional relation",
+        "put cheap dependency/scope guards before memoized native RNG discovery",
+        "reuse the existing containment comparison transform for nested missing keys/bounds, preserving source order when comparison orders differ",
+        "share captured scalar query results between selector and chosen branch within one conditional action",
+        "project only needed source globals before record capture to preserve sibling-field laziness"
+      ],
+      "validation": [
+        "146 public Python tests passed",
+        "11 public Rust conditional-globals/IR integration tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/query-cost.json"
+      ],
+      "merged_commit": "113f8ba0"
+    },
+    {
+      "module": "Vail variant parsing and HTS splitting",
+      "reviewed_base": "113f8ba0",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "validate complete variant key schema and allele/call/AD/PL contracts",
+        "replace mismatch arrays with direct constant-scratch Unicode traversal",
+        "prepare AD and all alternate likelihood buckets once per original entry; drop original AD/PL before explode",
+        "preserve borrowed scalar/array inputs without batch broadcasting",
+        "add public end-to-end split correctness/error coverage and bounded full-Matrix resource evidence"
+      ],
+      "validation": [
+        "71 public Python tests passed (split_multi_hts, variant_qc, call_value, matrix_entry_sum)",
+        "5 public Rust variant/string integration tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/variant-cost.json"
+      ],
+      "merged_commit": "97ae7790"
+    },
+    {
+      "module": "Vail variant QC, genomic aggregators and direct Matrix list reducers",
+      "reviewed_base": "97ae7790",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "count heterozygous/non-reference calls directly across supported ploidies and use only diploid counts for HWE",
+        "replace private IR/options/state tests and mocked cardinality checks with public results, errors and partition equivalence",
+        "reuse native checked CallStats tally for linear per-list counts instead of rescanning calls per allele",
+        "avoid repeated fixed allele-count scratch, share prepared CallRows and checked tally",
+        "share HWE distribution preparation through a typed named combined result"
+      ],
+      "validation": [
+        "79 public Python tests passed: QC/genomic/HWE/Matrix-array/initializer/scan modules",
+        "72 Rust vail-execution library tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/qc-cost.json"
+      ],
+      "merged_commit": "e3445ab9"
+    },
+    {
+      "module": "Vail VCF import/parser/source/export and direct projection/Call adapters",
+      "reviewed_base": "e3445ab9",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "derive sample headers and entry arrays from the same physical column order",
+        "replace full Python matrix collection with bounded native Arrow serialization and prepared field renderers",
+        "decode only demanded row/INFO/FORMAT fields; retain sort/filter/array-shape and aggregate runtime dependencies",
+        "prepare dependency analysis once per action with memoized original nodes and lexical scopes",
+        "represent shape/nullness independently from legal field names",
+        "bound shared FORMAT plans, index header duplicate membership, make prepared Parser configuration immutable",
+        "use a checked stack-backed Call view and one-time schema field indexes in the writer",
+        "replace private cache/packed-storage/helper assertions and private matrix comparison tests with public values/errors/roundtrips"
+      ],
+      "validation": [
+        "64 public Python tests passed (VCF/split/QC/Matrix sum/matrix-row query)",
+        "24 public Rust table integration tests passed (IR/text/physical partitions/DataFusion plans)",
+        "4 Rust ordering tests passed; VCF library and both example targets compiled/passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/vcf-cost.json"
+      ],
+      "merged_commit": "1c5f2972"
+    },
+    {
+      "module": "Vail random expressions, context binding, indexed callbacks and native distributions",
+      "reviewed_base": "1c5f2972",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "normalize set/dict callback iteration and attach ordinal tuples over shared value buffers",
+        "move DAG discovery/context/row/lexical parameter rewrites to memoized borrowed-child native code with scope keys",
+        "preserve alternate Arrow string child descriptors and accept supported string-view imports",
+        "retain shared scalar parameters and checked borrowed numeric/UID slices; dispatch distributions before row loops with typed output buffers",
+        "read exact Int64 dimensions, interpolate extreme finite uniform ranges safely, scale PSD covariance arithmetic",
+        "preserve multivariate hypergeometric seeded draw consumption while isolating deterministic direct/full-result shortcuts",
+        "share categorical scalar validation/total while preserving subtractive seeded selection arithmetic",
+        "normalize extreme Dirichlet gamma draws using same-draw scaled/log fallback and reject empty/all-zero concentrations",
+        "replace private/unavailable upstream RNG assertions with public scalar/row/collection/group/partition/numeric goldens and errors",
+        "lift aggregate-array result UID words from both total and grouped input scopes"
+      ],
+      "validation": [
+        "163 public Python tests passed;1 known dependency-only Vortex nested-list writer case deselected",
+        "75 Rust execution/string/variant tests passed"
+      ],
+      "excluded_tests": [
+        "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: known excluded patched Vortex ListLayoutStrategy empty nested-list writer panic"
+      ],
+      "reports": [
+        "vail/docs/reviews/random-cost.json"
+      ],
+      "merged_commit": "8f8030f1"
+    },
+    {
+      "module": "Vail Balding\u2013Nichols simulation, sampling and bounded row generation adapters",
+      "reviewed_base": "8f8030f1",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "validate int32 counts before defaults/allocations and use exact partition arithmetic",
+        "require finite supported population/FST parameters and stably rescale overflowed categorical totals without changing ordinary seeded rounding",
+        "validate realized ancestral frequencies and handle endpoint fixation lazily; correct beta parameter documentation",
+        "replace unavailable upstream fixtures/private comparisons with public seeded goldens, moments, replay and errors",
+        "stream bounded native range batches with explicit original logical partition/local RNG identities",
+        "push head demand through order/cardinality-preserving row projections and global attachment while preserving original captures and prefix scan values",
+        "carry simulation alignment proof to Matrix construction so redundant filtering cannot block early demand"
+      ],
+      "validation": [
+        "220 public Python tests +10 subtests passed (simulation/range/expression inputs/partition operations/randomness/Matrix/aggregate initialization/tail)",
+        "31 public scan tests passed",
+        "63 Rust table tests passed (49 library +14 integration)"
+      ],
+      "reports": [
+        "vail/docs/reviews/simulation-cost.json"
+      ],
+      "merged_commit": "93b4fe32"
+    },
+    {
+      "module": "Vail type/value wrappers, native type handles and checked cast/scan aggregate signatures",
+      "reviewed_base": "93b4fe32",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "preserve raw Unicode while decoding quoted identifier escapes and provide parseable nested type text",
+        "use ordered child snapshots for wide struct unification/orderability and one-pass array/set inference",
+        "select targeted native type children without copying unrelated dictionary subtrees",
+        "reject duplicate plain Arrow struct names at native type import",
+        "share checked logical cast compatibility with Python while retaining value-dependent fallible casts",
+        "validate scan inputs/functions/static options/closed initializer types and fold lexical state agreement before checking annotations",
+        "share execution-owned aggregate signatures and compare executable UDAF outputs to their promised logical types",
+        "preserve signed quantile k compatibility, nullable/default quantiles and ordered-take packing contract",
+        "replace scoped private plan/transport/bypass/comparison tests with public type/value/operator/Arrow roundtrips and Rust public checked boundaries",
+        "validate exact packed numeric family field layouts while preserving supported scalar regression predictors and Float64 weights"
+      ],
+      "validation": [
+        "171 scoped public Python tests passed;1 known dependency-only Vortex storagecase deselected",
+        "130 public Python cast/randomness/collections/input/simulation regression tests passed",
+        "77 Rust execution tests passed (70 library +7 public integration)",
+        "15 public Rust table integration tests passed (conditional globals/DataFusion plans/physical partitions +2 signature/factory behavior tests)"
+      ],
+      "reports": [
+        "vail/docs/reviews/type-cost.json"
+      ],
+      "excluded_tests": [
+        "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: excluded patched Vortex empty nested-list writer"
+      ],
+      "merged_commit": "182c4185"
+    },
+    {
+      "module": "Vail collection APIs, lookup/grouping, consecutive array groups and scalar descriptor restoration",
+      "reviewed_base": "182c4185",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "restore set type after random filtering without redundant deduplication",
+        "avoid sorting set extrema; bind sorted floating sum/product input and SQL reduction once while preserving arithmetic policy",
+        "perform duplicate-precedence discovery with memoized original borrowed native DAG nodes",
+        "use ordered struct type snapshots for collection predicate/key checks",
+        "build grouping selections and offsets in final sorted group order and take payload once",
+        "borrow contiguous scalar dictionary keys instead of taking a copy",
+        "build consecutive group offsets over shared array-column child buffers and check positive group sizes",
+        "replace private grouped-kernel, backing-type, IR-name, cast and _same assertions with public values/types/Arrow input/storage/replay tests",
+        "preserve scalar nested values through physical/logical descriptor restoration before lookup can broadcast them"
+      ],
+      "validation": [
+        "220 public Python tests passed;1 known dependency-only Vortex nested-list storagecase deselected",
+        "76 Rust execution tests passed (69 library +7 public integration); private grouped unit replaced by public execution cases",
+        "15 public Rust table integration tests passed (conditional globals/DataFusion plans/physical partitions/type contracts)"
+      ],
+      "reports": [
+        "vail/docs/reviews/collection-cost.json"
+      ],
+      "excluded_tests": [
+        "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: excluded patched Vortex empty nested-list writer"
+      ],
+      "merged_commit": "b8f9e42c"
+    },
+    {
+      "module": "Vail array methods, collection numerical helpers and native fold/scan callbacks",
+      "reviewed_base": "b8f9e42c",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "normalize alternate Arrow callback storage once at the public native boundary",
+        "cache captured columns across unchanged active lanes and select identity/contiguous spans without gathers",
+        "preserve scalar array children across fold rows and borrow survivor accumulator state",
+        "bind pure zip/enumerate/array arithmetic and numerical reductions once; retain established RNG context for random-dependent arrays",
+        "replace callback spies/private plans and IR assertions with public values, errors, laziness and Arrow cases"
+      ],
+      "validation": [
+        "92 public Python tests passed;1 known dependency-only Vortex storage case deselected",
+        "76 Rust execution tests passed (68 library +7 type contracts +1 public alternate-storage fold/scan integration)"
+      ],
+      "reports": [
+        "vail/docs/reviews/array-method-cost.json"
+      ],
+      "limitations": [
+        "RNG-dependent array helpers retain indexed capture for seeded compatibility",
+        "Sparse survivor changes gather; normalization may convert alternate Arrow storage",
+        "Python storage case passed baseline and final; direct Rust native-boundary coverage is separate"
+      ],
+      "native_sha256": "b2e1ae668c7c992c87bdf2bfbb5cbee53bbcf070445db689f89944d298ad845f",
+      "baseline_native_sha256": "530a6998afbfe4a4660b94c723e0b46c2b5585c00428317673ea12b9aa634b09",
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "cac2af62"
+    },
+    {
+      "module": "Vail ndarray constructors/localization and constant BlockMatrix adapter",
+      "reviewed_base": "cac2af62",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "replace now-rejected structural ndarray cast with checked numeric rank-one constructor that derives shape/null from one evaluated array",
+        "validate imported ndarray rank/nonnegative integer dimensions/product and defined storage; reject missing integer elements while preserving float NaN conversion",
+        "snapshot direct NumPy literals in one owned contiguous numeric buffer without per-element Python boxing",
+        "validate immutable BlockMatrix dimensions/product within int32 source bounds and explicitly reject unsupported block_size",
+        "attach proven row-major coordinate key order without sorting"
+      ],
+      "validation": [
+        "134 public Python tests passed;1 known dependency-only Vortex storagecase deselected",
+        "77 Rust execution tests passed (68 library +7 type contracts +2 public array_methods integration)"
+      ],
+      "reports": [
+        "vail/docs/reviews/ndarray-cost.json"
+      ],
+      "native_sha256": "31dba8e794217bbf48d6714dbf205770be4fe48cca87e77bead026443960aa58",
+      "limitations": [
+        "Generic nested-row NumPy conversion remains boxed; direct NumPy literals use owned contiguous snapshots",
+        "Imported floating null elements retain NumPy NaN conversion; imported integer null elements fail clearly",
+        "Single-process measurements include imports/preparation; no universal latency improvement claimed; full localization still boxes values",
+        "BlockMatrix dimensions/product limited to int32 range; physical block_size explicitly unsupported"
+      ],
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "70a599b4"
+    },
+    {
+      "module": "Vail Matrix layout gathering/alignment/transpose and construction/localization adapters",
+      "reviewed_base": "70a599b4",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "retain checked scalar list ownership for gathers/grouped gathers and gather emitted payload once",
+        "compare exact borrowed row-cell/column identities and presence without temporary Arrow take buffers; retain shared scalar columns",
+        "preserve typed empty-batch behavior without inspecting unused missing scalar list values",
+        "infer entry fields across all present cells with numeric promotion and explicit all-missing typed-input requirement",
+        "derive empty-entry-schema slots lazily from dimensions instead of building Python row-column product",
+        "prepare defined transpose record indices once before emitted-position iteration",
+        "replace private layout/IR/storage assertions and helper unit tests with public Matrix values/localization and public native Expr evaluation",
+        "expose checked public Table.unlocalize_entries without alignment bypass"
+      ],
+      "validation": [
+        "74 Rust execution tests passed (58 library +2 array methods +7 matrix layout +7 type contracts)",
+        "144 public Python Matrix layout/table/array_agg/entry_sum/query/simulation tests passed against final rebuilt native"
+      ],
+      "reports": [
+        "vail/docs/reviews/matrix-layout-cost.json"
+      ],
+      "native_sha256": "daa1d37e2cc267a24cd6afdb856bbc76770c0ea6ae1fd7d4815a3a1239a04422",
+      "limitations": [
+        "Symmetric scalar-cell alignment still broadcasts cells; ordinary row-cell/shared-column path optimized",
+        "Explicit nonempty entry input still constructs per-cell Python records",
+        "Gather/transpose allocate emitted payload/context",
+        "Count-based cost cases are projection-prunable and do not prove kernel copy bounds"
+      ],
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "9967d961"
+    },
+    {
+      "module": "Vail collection callback aggregation and fold/coordinate aggregate state adapters",
+      "reviewed_base": "9967d961",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "merge callback dataset sources before rewrite and retain valid literal-array captures",
+        "derive actual reducer input/result types in lexical scope for tuple/array/cast/arithmetic containers",
+        "rewrite borrowed native DAG nodes with scoped memoized shallow type summaries and prepared dependency metadata",
+        "track immutable free lexical types from immediate child/binder summaries, preserving outer captures without closed-variable accumulation",
+        "retain historical seeded random filter zip contexts with an explicit cost exception",
+        "pack only referenced fold inputs using one canonical optional physical descriptor shared across logical/physical/nested scan paths",
+        "retain one-row Arrow fold state with metadata-preserving result scalars and canonical callback storage",
+        "check public fold constructor type agreement and coordinate identity output type at construction; reject missing packed record parents",
+        "replace private callback/aggregate IR/kernel/state-strategy tests with public values/errors/partition/native storage cases"
+      ],
+      "validation": [
+        "242 public Python tests passed including callback containers/sources/lexical scopes/lookup/Matrix/RNG/fold/scan/array/randomness/simulation/input boundaries",
+        "71 Rust execution tests passed (53 library +2 checked aggregate factories +2 array methods +7 Matrix layout +7 type contracts)",
+        "65 Rust table tests passed (49 library +1 conditional globals +5 DataFusion plans +1 raw alternate-storage fold/scan +7 physical partitions +2 type contracts)"
+      ],
+      "reports": [
+        "vail/docs/reviews/fold-aggregate-cost.json"
+      ],
+      "native_sha256": "22112636296ef1774e82dd11dbdb961e00c4184fcf3786906aef79c025d5372b",
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "b23a1a2a"
+    },
+    {
+      "module": "Vail numeric aggregate APIs and histogram/correlation/regression/quantile/downsample kernels",
+      "reviewed_base": "b23a1a2a",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "prepare finite histogram edges once with stable interpolation/fractions and explicit distinct-edge validation",
+        "pack histogram counts into one bounded list state rather than one state column per bin",
+        "replace regression normal equations/inversion/cancellation with bounded mergeable augmented QR factors and retained column origins",
+        "solve triangular coefficient/covariance systems, compute statistics from residual norms/ratios, borrow predictor slices and prepare Student-t once",
+        "skip/mask null packed parents so hidden child values cannot contribute",
+        "amortize geometric downsample bounds expansion, retain bounds through merges and normalize extreme finite coordinates safely",
+        "materialize labels only for retained representatives and account retained label heap",
+        "replace private numeric IR/options tests with public extreme, translated/scaled, weighted/partitioned, rank/nested-model, label, scan and raw-Arrow executions"
+      ],
+      "validation": [
+        "112 public Python numeric/aggregate/global initializer/lazy/scan/Matrix array/fold tests passed, including 48 numeric cases",
+        "74 Rust execution tests passed (53 library +2 factories +2 array +7 Matrix +3 public raw-Arrow numeric +7 type contracts)",
+        "65 Rust table tests passed (49 library +1 conditional globals +5 DataFusion plans +1 raw fold/scan +7 physical partitions +2 type contracts)"
+      ],
+      "reports": [
+        "vail/docs/reviews/numeric-aggregate-cost.json"
+      ],
+      "native_sha256": "c2ca714e27b90dddef3ea38ddc59381f3dc902128d0d6dfceb213cc98a2b651e",
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "d5b7280b"
+    },
+    {
+      "module": "Vail collect/set/take/counter aggregate adapters and configuration identity",
+      "reviewed_base": "d5b7280b",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "select ordered keys once and interleave only winning value/order rows without concatenating wide input payload",
+        "retain bounded unordered prefix chunks and stop reading payload once full, copying only retained rows",
+        "validate exact canonical ordered packing and reject observed null packed parents",
+        "share singleton collect arrays directly and prepare set item descriptors once per factory",
+        "replace hash-only aggregate configuration names with lossless canonical Arrow/JSON descriptor encoding",
+        "replace private kernel/state/strategy/identity/storage-topology assertions with public values/partitions/IEEE/null/tagged/phase/order/configuration/raw Arrow cases"
+      ],
+      "validation": [
+        "149 public Python collection/aggregate/grouped/numeric/scan/order/global-initialization tests passed; nested-tagged storage subcases limited as documented",
+        "136 Rust tests passed:71 execution (46 library +2 factories +2 array +4 collection +7 Matrix +3 numeric +7 type) and65 table (49 library +1 conditional +5 plans +1 fold/scan +7 partitions +2 type)"
+      ],
+      "reports": [
+        "vail/docs/reviews/collection-aggregate-cost.json"
+      ],
+      "native_sha256": "bc7622bca343ed0da8cf7adf222b200432e9813306d5e4018d54368afb95dc89",
+      "excluded_storage_subcases": "Nested tagged dataset with3/7 partitions: known excluded Vortex ListLayoutStrategy needs at least one chunk;1-partition roundtrip andallpartition aggregatevalues retained",
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "cba67728"
+    },
+    {
+      "module": "Vail core numeric/Boolean reducers, moments and aggregate initializer contracts",
+      "reviewed_base": "cba67728",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "use complete native binder-aware memoized initializer validation instead of recursive Python IR traversal",
+        "share centered power-of-two scaled mergeable mean/population-variance state across scalar means, stats and grouped coordinate means",
+        "prepare typed numeric/bitmap reducers outside row loops and remove per-value boxing and two-element extrema merges",
+        "preserve IEEE total extrema ordering across batch and partition merges",
+        "replace private accumulator/plan/IR assertions with public values, errors, lazy actions and raw Arrow integration tests",
+        "make statistical scan prefix equivalence nondegenerate while retaining separate exact-fit coefficient/residual coverage"
+      ],
+      "validation": [
+        "223 Python tests passed;2 external Hail inventory checks deselected because checkout absent",
+        "173 Rust tests passed: complete cargo test -p vail-execution -p vail-table, including3newpublicArrowintegrationtests"
+      ],
+      "reports": [
+        "vail/docs/reviews/core-aggregate-cost.json"
+      ],
+      "native_sha256": "c81e59f12905e820bc570f7df3a39d9ad09c9e67902f76feecf9aac6550b6211",
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "0af8237e"
+    },
+    {
+      "module": "Vail scan APIs, state/scope adapters, initialization and ordered table callers",
+      "reviewed_base": "0af8237e",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "memoized typed scan marking over borrowed original DAG nodes with literal payload and owner metadata preservation",
+        "validate unary normalized aggregate signature and exact composition/transform/indexed/state schemas at construction and runtime boundaries",
+        "reject missing packed parent structs and retain nullable child semantics",
+        "retain scalar carry snapshots without broadcasting, borrow all-defined contiguous exploded spans, and remove name/layout-based generic sum shortcut",
+        "memoize scan discovery/replacement with exact borrowed node and filter-context identities; bind nested filter predicate once",
+        "define fresh prepared action ownership and reset hidden initialized scan cache; metadata-preserving initializer scalar extraction",
+        "replace private accumulator/state/plan/partition/helper/atomic-builder tests with public factory/results/errors/laziness/prepared replay; remove unused private scan helpers",
+        "freeze source row ordinals before window sorting/hash repartition to preserve batch-crossing logical row order for native/generic prefix scans and tail",
+        "avoid ordinal+n overflow for oversized scan tail limits via guarded subtraction",
+        "optimize shared ordered producer once and retain opaque action-local ownership across partition views, eliminating partition-quadratic optimizer expansion without serializing producer execution"
+      ],
+      "validation": [
+        "346 public Python tests passed including aggregates/scans/RNG/queries/table+interval joins;2 external Hail inventory checks deselected because checkout absent",
+        "172 Rust tests passed:complete cargo test -p vail-execution -p vail-table, including7publicArrow scope/signature/state tests and1preparedaction replay integration",
+        "46freshsubprocess resource cases:allcurrent action results verified;originalbaseline ordering failures retained;independent pre-sharing/current row/partition/wide scaling demonstrates producer-sharing fix"
+      ],
+      "reports": [
+        "vail/docs/reviews/scan-cost.json"
+      ],
+      "native_sha256": "ac69b07b19f7af4cbe08e471f7ce47dd1ff7e2f0e332f6ca510536b8f5a55e9f",
+      "review": "Reviewer final source/test/report acceptance including resource follow-up; reviewer ran no builds/tests.",
+      "merged_commit": "3567ec80"
+    },
+    {
+      "module": "Vail equality/membership/multi-way zip joins, interval routing and atomic rename callers",
+      "reviewed_base": "3567ec80",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "normalize logically equal Arrow key storage at Vail join boundary, including nested strings and native Utf8View admission",
+        "atomic bijective rename preserves key order; handle payload suffix collisions with disappearing right keys and unbounded default suffix search",
+        "prepare Read row offsets once, clip demand through checked key-preserving context-free projections, share bounds producer reset across partitions",
+        "typed lexicographic cell predicates retain nested missing keys and native comparator semantics without SQL three-valued loss",
+        "adjacent canonical-key dedup, fixed present-key domain with native LEFT merge ordering, flat output key selection and explicit actual tuple/tie sort",
+        "share exact repeated child identity through logical preparation and action replay; share bounds/payload owner; prune discarded empty globals; memoize DAG metadata walks",
+        "batch-at-a-time shared replay with8MiB retained-memory budget, IPC spill/cleanup, cancellation-independent advancement/commit, hidden-DAG fresh action reset",
+        "replace private plan/IR/partition/storage-topology assertions with public values/errors/laziness/native mixed-key storage and prepare-once replay tests"
+      ],
+      "validation": [
+        "317public Python tests passed;4deselected:2unavailable external Hail inventory checks and2exact original-baseline storage/global failures documented in cost report",
+        "178Rust tests passed:complete cargo test -p vail-execution -p vail-table -p vail-ordering, including public mixed physical key storage and wide same-action cancellation/fresh prepared replay",
+        "50idle fresh-subprocess resource cases against independent baseline/current packages;all25current public outputs verified;4baseline timeouts retained;shared replay spill and cleanup observed"
+      ],
+      "reports": [
+        "vail/docs/reviews/table-join-cost.json"
+      ],
+      "native_sha256": "43c1c6c90d861762aae8e93ed7c6f9c3af3ff80fd250a3473ba9bf7bcb5ed1be",
+      "review": "Reviewer final source/test/50-case report acceptance, no outstanding scoped findings; reviewer ran no builds/tests.",
+      "merged_commit": "c45ab95e"
+    },
+    {
+      "module": "Vail singleton globals, captured bindings, schema/storage boundaries and scoped type validation",
+      "reviewed_base": "c45ab95e",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "discover referenced columns/globals over original borrowed DAG nodes and skip literal payloads; cache bound target types while checking each distinct declaration",
+        "construct wide globals from ordered schema snapshots and prepared field access, avoiding repeated frontend name searches",
+        "prune empty global maps consistently across logical and legacy lowering",
+        "validate ordered global field names and logical types before WriteGlobals publication and before read representation normalization; reject malformed literal/wire schemas while preserving compatible Arrow storage/metadata",
+        "reject IPC footer batch counts other than one before payload decoding and require exactly one global row",
+        "replace private plans/IR/native-wire/_same/storage-fragment/checksum tests with public actions, owned captured bindings, whole-path laziness, overwrite and fresh failure/recovery",
+        "memoize successful scalar type validation by original node, exact schema frames and full lexical type/index scope; avoid temporary-stack-address cache identity",
+        "summarize scan presence over borrowed original DAG nodes for all scan-wrapper guards; keep normal-worker-stack validation safe with guarded stack growth"
+      ],
+      "validation": [
+        "317public Python tests passed;7exactdocumentedexclusions:6require absentexternalHail and1knownexcluded nestedVortexwriter storagecase",
+        "186Rust tests passed:completeexecution/table/ordering gate;43selected VailStorage tests passed;finaljobs2rerun aftergeneratedbinarydiskcleanup",
+        "36idlefreshsubprocesscases18pairedagainstindependentpackages:allcurrentandbaselineconstructor/actionchecksverified; actioncosts retainedseparatelyfromconstructorimprovements"
+      ],
+      "reports": [
+        "vail/docs/reviews/globals-cost.json"
+      ],
+      "review": "Reviewer final source/test/36-case report acceptance; no outstanding scoped findings; reviewer ran no builds/tests.",
+      "native_sha256": "da41c0dd628511d39ad02feab647aab3cc7e58aebe7b951b087ea824a6aaeb93"
+    }
+  ],
+  "source_inventory": [
+    "vail/crates/vail-execution/src/advanced_collection_aggregates.rs",
+    "vail/crates/vail-execution/src/advanced_genomic_aggregates.rs",
+    "vail/crates/vail-execution/src/advanced_numeric_aggregates.rs",
+    "vail/crates/vail-execution/src/aggregate_contract.rs",
+    "vail/crates/vail-execution/src/aggregate_identity.rs",
+    "vail/crates/vail-execution/src/aggregates.rs",
+    "vail/crates/vail-execution/src/array_aggregate.rs",
+    "vail/crates/vail-execution/src/array_fold.rs",
+    "vail/crates/vail-execution/src/array_length_aggregate.rs",
+    "vail/crates/vail-execution/src/calls.rs",
+    "vail/crates/vail-execution/src/collect_aggregate.rs",
+    "vail/crates/vail-execution/src/collection_grouped.rs",
+    "vail/crates/vail-execution/src/collection_groups.rs",
+    "vail/crates/vail-execution/src/collection_lookup.rs",
+    "vail/crates/vail-execution/src/conditionals.rs",
+    "vail/crates/vail-execution/src/csv_line.rs",
+    "vail/crates/vail-execution/src/expressions.rs",
+    "vail/crates/vail-execution/src/fold_aggregate.rs",
+    "vail/crates/vail-execution/src/hwe_counts.rs",
+    "vail/crates/vail-execution/src/lib.rs",
+    "vail/crates/vail-execution/src/logical_expr.rs",
+    "vail/crates/vail-execution/src/matrix_arrays.rs",
+    "vail/crates/vail-execution/src/matrix_transpose.rs",
+    "vail/crates/vail-execution/src/moments.rs",
+    "vail/crates/vail-execution/src/ndarray.rs",
+    "vail/crates/vail-execution/src/randomness.rs",
+    "vail/crates/vail-execution/src/reference.rs",
+    "vail/crates/vail-execution/src/scan_scopes.rs",
+    "vail/crates/vail-execution/src/scan_state.rs",
+    "vail/crates/vail-execution/src/string_kernels.rs",
+    "vail/crates/vail-execution/src/variant_kernels.rs",
+    "vail/crates/vail-execution/tests/core_aggregates.rs",
+    "vail/crates/vail-execution/tests/scan_scopes.rs",
+    "vail/crates/vail-ordering/src/call.rs",
+    "vail/crates/vail-ordering/src/lib.rs",
+    "vail/crates/vail-python/src/arrow_memory.rs",
+    "vail/crates/vail-python/src/collection_aggregate.rs",
+    "vail/crates/vail-python/src/input_binding.rs",
+    "vail/crates/vail-python/src/ir_view.rs",
+    "vail/crates/vail-python/src/lib.rs",
+    "vail/crates/vail-python/src/native_ir.rs",
+    "vail/crates/vail-python/src/random_binding.rs",
+    "vail/crates/vail-python/src/scan_mark.rs",
+    "vail/crates/vail-storage/src/fragment_index.rs",
+    "vail/crates/vail-storage/src/globals.rs",
+    "vail/crates/vail-storage/src/lib.rs",
+    "vail/crates/vail-storage/src/local_table.rs",
+    "vail/crates/vail-storage/tests/globals.rs",
+    "vail/crates/vail-table/src/aggregation.rs",
+    "vail/crates/vail-table/src/arrow_batches.rs",
+    "vail/crates/vail-table/src/comparison.rs",
+    "vail/crates/vail-table/src/conditional_globals.rs",
+    "vail/crates/vail-table/src/deferred_logical.rs",
+    "vail/crates/vail-table/src/globals.rs",
+    "vail/crates/vail-table/src/initialized_aggregate.rs",
+    "vail/crates/vail-table/src/initialized_scan.rs",
+    "vail/crates/vail-table/src/interval_read.rs",
+    "vail/crates/vail-table/src/join_interval.rs",
+    "vail/crates/vail-table/src/join_key.rs",
+    "vail/crates/vail-table/src/joins.rs",
+    "vail/crates/vail-table/src/lib.rs",
+    "vail/crates/vail-table/src/line_source.rs",
+    "vail/crates/vail-table/src/logical.rs",
+    "vail/crates/vail-table/src/logical_aggregate_init.rs",
+    "vail/crates/vail-table/src/logical_aggregation.rs",
+    "vail/crates/vail-table/src/logical_globals.rs",
+    "vail/crates/vail-table/src/logical_nested_aggregation.rs",
+    "vail/crates/vail-table/src/logical_same.rs",
+    "vail/crates/vail-table/src/logical_scan.rs",
+    "vail/crates/vail-table/src/lookup.rs",
+    "vail/crates/vail-table/src/nested_projection.rs",
+    "vail/crates/vail-table/src/nested_scan.rs",
+    "vail/crates/vail-table/src/partition_grouping.rs",
+    "vail/crates/vail-table/src/partition_map.rs",
+    "vail/crates/vail-table/src/partitioned.rs",
+    "vail/crates/vail-table/src/partitioning.rs",
+    "vail/crates/vail-table/src/plan.rs",
+    "vail/crates/vail-table/src/provider.rs",
+    "vail/crates/vail-table/src/range_lookup.rs",
+    "vail/crates/vail-table/src/rng_context.rs",
+    "vail/crates/vail-table/src/scan_ordinal.rs",
+    "vail/crates/vail-table/src/text_export.rs",
+    "vail/crates/vail-table/src/text_schema.rs",
+    "vail/crates/vail-table/src/vcf_export.rs",
+    "vail/crates/vail-table/src/vcf_source.rs",
+    "vail/crates/vail-table/src/zip_dedup.rs",
+    "vail/crates/vail-table/src/zip_join.rs",
+    "vail/crates/vail-table/src/zip_snapshot.rs",
+    "vail/crates/vail-table/tests/globals.rs",
+    "vail/crates/vail-table/tests/scan_replay.rs",
+    "vail/crates/vail-vcf/src/lib.rs",
+    "vail/python/tests/test_core_aggregate_kernels.py",
+    "vail/python/vail/__init__.py",
+    "vail/python/vail/agg.py",
+    "vail/python/vail/agg_collections.py",
+    "vail/python/vail/agg_fold.py",
+    "vail/python/vail/agg_genomics.py",
+    "vail/python/vail/agg_numeric.py",
+    "vail/python/vail/allele_functions.py",
+    "vail/python/vail/array_aggregate.py",
+    "vail/python/vail/array_methods.py",
+    "vail/python/vail/arrow.py",
+    "vail/python/vail/backend.py",
+    "vail/python/vail/builders.py",
+    "vail/python/vail/collection_functions.py",
+    "vail/python/vail/collections.py",
+    "vail/python/vail/context.py",
+    "vail/python/vail/display.py",
+    "vail/python/vail/expr/__init__.py",
+    "vail/python/vail/expr/expressions/__init__.py",
+    "vail/python/vail/expr/expressions/base_expression.py",
+    "vail/python/vail/expr/expressions/typed_expressions.py",
+    "vail/python/vail/expr/functions.py",
+    "vail/python/vail/expressions.py",
+    "vail/python/vail/genetics/__init__.py",
+    "vail/python/vail/inputs.py",
+    "vail/python/vail/ir/__init__.py",
+    "vail/python/vail/ir/renderer.py",
+    "vail/python/vail/linalg/__init__.py",
+    "vail/python/vail/lookups.py",
+    "vail/python/vail/matrix_list_aggregates.py",
+    "vail/python/vail/matrixtable.py",
+    "vail/python/vail/nd.py",
+    "vail/python/vail/qc.py",
+    "vail/python/vail/queries.py",
+    "vail/python/vail/randomness.py",
+    "vail/python/vail/reference_genome.py",
+    "vail/python/vail/scan.py",
+    "vail/python/vail/simulation.py",
+    "vail/python/vail/streams.py",
+    "vail/python/vail/strings.py",
+    "vail/python/vail/text.py",
+    "vail/python/vail/types.py",
+    "vail/python/vail/utils/__init__.py",
+    "vail/python/vail/utils/java.py",
+    "vail/python/vail/utils/misc.py",
+    "vail/python/vail/variant.py",
+    "vail/python/vail/vcf.py",
+    "vail/python/vail/vcf_export.py"
+  ]
+}

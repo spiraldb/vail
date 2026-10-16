@@ -92,15 +92,20 @@ fn plan(
     keys: Option<&[(String, Expr)]>,
     fields: &[(String, Expr)],
     bindings: &GlobalBindings,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<LogicalPlan> {
     match keys {
-        Some(keys) => {
-            crate::logical_aggregation::lower_grouped_fields(table, child, keys, fields, bindings)
-        }
-        None => {
-            crate::logical_aggregation::lower_logical_total(table, &fields[0].1, bindings, child)?
-                .ok_or_else(|| TableError::Invalid("missing logical total aggregation".into()))
-        }
+        Some(keys) => crate::logical_aggregation::lower_grouped_fields(
+            table, child, keys, fields, bindings, context,
+        ),
+        None => crate::logical_aggregation::lower_logical_total(
+            table,
+            &fields[0].1,
+            bindings,
+            child,
+            context,
+        )?
+        .ok_or_else(|| TableError::Invalid("missing logical total aggregation".into())),
     }
 }
 
@@ -110,6 +115,7 @@ pub(crate) fn lower(
     keys: Option<&[(String, Expr)]>,
     fields: &[(String, Expr)],
     bindings: &GlobalBindings,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<Option<LogicalPlan>> {
     let mut parameters = Vec::new();
     let placeholders = fields
@@ -129,8 +135,9 @@ pub(crate) fn lower(
         return Ok(None);
     }
     let (globals, indices) = crate::logical_globals::bind_external(
-        crate::logical_globals::lower(table.globals())?,
+        crate::logical_globals::lower_in_context(table.globals(), context)?,
         bindings,
+        context,
     )?;
     let expressions = parameters
         .iter()
@@ -148,7 +155,7 @@ pub(crate) fn lower(
     let initializers = LogicalPlanBuilder::from(globals)
         .project(expressions)?
         .build()?;
-    let template = plan(table, child.clone(), keys, &placeholders, bindings)?;
+    let template = plan(table, child.clone(), keys, &placeholders, bindings, context)?;
     let schema = template.schema().clone();
     Ok(Some(LogicalPlan::Extension(Extension {
         node: Arc::new(InitNode {
@@ -169,6 +176,7 @@ pub(crate) fn bind(
     node: &InitNode,
     batch: &arrow_array::RecordBatch,
     child: LogicalPlan,
+    context: &mut crate::logical::LoweringContext,
 ) -> Result<LogicalPlan> {
     let mut index = 0;
     let fields = node
@@ -194,5 +202,6 @@ pub(crate) fn bind(
         node.keys.as_deref(),
         &fields,
         &node.bindings,
+        context,
     )
 }

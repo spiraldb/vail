@@ -36,6 +36,7 @@ enum Properties<'a> {
     Fold(&'a str, &'a str, bool),
     Scan(&'a str, &'a serde_json::Value, &'a Type),
     Predicate(&'a str, bool),
+    Switch(&'a str, bool),
     Binary(BinaryOperator),
     Unary(UnaryOperator),
     Slice(bool, bool, bool),
@@ -113,6 +114,9 @@ fn properties(expr: &Expr) -> (Discriminant<Expr>, Properties<'_>) {
         Expr::StreamRange { .. } | Expr::ArrayGrouped { .. } => Properties::None,
         Expr::ExternalGlobal { reference, dtype } => Properties::TextType(reference, dtype),
         Expr::Global { name } | Expr::Column { name } => Properties::Text(name),
+        Expr::Switch {
+            parameter, missing, ..
+        } => Properties::Switch(parameter, missing.is_some()),
         Expr::Unary { operator, .. } => Properties::Unary(*operator),
         Expr::ToString { .. } | Expr::IsMissing { .. } | Expr::IfElse { .. } => Properties::None,
         Expr::GetField { name, .. } => Properties::Text(name),

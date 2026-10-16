@@ -216,6 +216,7 @@ struct VailNode {
     table: TableRef,
     inputs: Vec<LogicalPlan>,
     row_input_count: usize,
+    row_input_indices: Vec<usize>,
     child_global_inputs: Vec<Option<usize>>,
     output_global_input: Option<usize>,
     binding_names: Vec<String>,
@@ -342,24 +343,50 @@ pub(crate) fn children(table: &TableRef) -> Vec<TableRef> {
     }
 }
 
-fn extension(table: &TableRef) -> Result<LogicalPlan> {
+fn extension(
+    table: &TableRef,
+    context: &mut crate::logical::LoweringContext,
+) -> Result<LogicalPlan> {
     let row_children = children(table);
-    let mut inputs = row_children.iter().map(lower).collect::<Result<Vec<_>>>()?;
+    // A zip can consume the same immutable source in several slots. Lower
+    // it once: duplicating logical trees expands nested zip DAGs exponentially
+    // before the physical source owner can share their execution.
+    let share_zip = matches!(table.node(), TableNode::MultiWayZipJoin { .. });
+    let mut unique = std::collections::HashMap::new();
+    let mut inputs = Vec::new();
+    let mut row_input_indices = Vec::with_capacity(row_children.len());
+    for child in &row_children {
+        let id = Arc::as_ptr(child) as usize;
+        if share_zip && let Some(index) = unique.get(&id) {
+            row_input_indices.push(*index);
+            continue;
+        }
+        let index = inputs.len();
+        inputs.push(lower_inner(child, context)?);
+        row_input_indices.push(index);
+        unique.insert(id, index);
+    }
     let row_input_count = inputs.len();
     let mut child_global_inputs = Vec::with_capacity(row_children.len());
     for child in &row_children {
-        if matches!(child.globals().node(), crate::globals::Node::Empty) {
+        if child.globals().schema().fields().is_empty() {
             child_global_inputs.push(None);
         } else {
             child_global_inputs.push(Some(inputs.len()));
-            inputs.push(crate::logical_globals::lower(child.globals())?);
+            inputs.push(crate::logical_globals::lower_in_context(
+                child.globals(),
+                context,
+            )?);
         }
     }
-    let output_global_input = if matches!(table.globals().node(), crate::globals::Node::Empty) {
+    let output_global_input = if table.globals().schema().fields().is_empty() {
         None
     } else {
         let index = inputs.len();
-        inputs.push(crate::logical_globals::lower(table.globals())?);
+        inputs.push(crate::logical_globals::lower_in_context(
+            table.globals(),
+            context,
+        )?);
         Some(index)
     };
     let bindings = bindings_for_node(table.node());
@@ -370,7 +397,7 @@ fn extension(table: &TableRef) -> Result<LogicalPlan> {
         inputs.extend(
             bindings
                 .values()
-                .map(crate::logical_globals::lower)
+                .map(|globals| crate::logical_globals::lower_in_context(globals, context))
                 .collect::<Result<Vec<_>>>()?,
         );
     }
@@ -383,6 +410,7 @@ fn extension(table: &TableRef) -> Result<LogicalPlan> {
             table: table.clone(),
             inputs,
             row_input_count,
+            row_input_indices,
             child_global_inputs,
             output_global_input,
             binding_names,
@@ -703,11 +731,15 @@ fn lower_rng_uids(
 
 /// Stable SQL sort for native key types. The explicit ordinal is the final
 /// key, preserving duplicate-key encounter order through optimizer rewrites.
-fn lower_sort(child: &TableRef, keys: &[(String, bool)]) -> Result<LogicalPlan> {
+fn lower_sort(
+    child: &TableRef,
+    keys: &[(String, bool)],
+    context: &mut crate::logical::LoweringContext,
+) -> Result<LogicalPlan> {
     if keys.is_empty() {
-        return lower(child);
+        return lower_inner(child, context);
     }
-    let input = ordered(lower(child)?);
+    let input = ordered(lower_inner(child, context)?);
     let mut ordinal_name = "__vail_sort_ordinal".to_owned();
     while input
         .schema()
@@ -767,7 +799,50 @@ fn native_sort_keys(child: &TableRef, keys: impl Iterator<Item = String>) -> Res
     Ok(true)
 }
 
+/// One synchronous lowering request shares completed row/global subplans.
+/// Owning roots keep native identity keys valid for the full compilation.
+#[derive(Default)]
+pub(crate) struct LoweringContext {
+    tables: std::collections::HashMap<usize, (TableRef, LogicalPlan)>,
+    pub(crate) globals: std::collections::HashMap<usize, (crate::globals::GlobalsRef, LogicalPlan)>,
+}
+
 pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
+    lower_in_context(table, &mut LoweringContext::default())
+}
+pub(crate) fn lower_in_context(
+    table: &TableRef,
+    context: &mut LoweringContext,
+) -> Result<LogicalPlan> {
+    let table = crate::nested_projection::prepare_vcf(table);
+    lower_inner(&table, context)
+}
+
+pub(crate) fn lower_for_expressions<'a>(
+    table: &'a TableRef,
+    expressions: impl Iterator<Item = &'a vail_execution::expressions::Expr>,
+) -> Result<LogicalPlan> {
+    lower_for_expressions_in_context(table, expressions, &mut LoweringContext::default())
+}
+pub(crate) fn lower_for_expressions_in_context<'a>(
+    table: &'a TableRef,
+    expressions: impl Iterator<Item = &'a vail_execution::expressions::Expr>,
+    context: &mut LoweringContext,
+) -> Result<LogicalPlan> {
+    let table = crate::nested_projection::prepare_vcf_for(table, expressions);
+    lower_inner(&table, context)
+}
+
+fn lower_inner(table: &TableRef, context: &mut LoweringContext) -> Result<LogicalPlan> {
+    let key = Arc::as_ptr(table) as usize;
+    if let Some((_, plan)) = context.tables.get(&key) {
+        return Ok(plan.clone());
+    }
+    let plan = lower_uncached(table, context)?;
+    context.tables.insert(key, (table.clone(), plan.clone()));
+    Ok(plan)
+}
+fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<LogicalPlan> {
     match table.node() {
         TableNode::Read { .. }
         | TableNode::IntervalRead { .. }
@@ -781,7 +856,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                     .build()?,
             )
         }
-        TableNode::MapGlobals { child } => lower(child),
+        TableNode::MapGlobals { child } => lower_inner(child, context),
         TableNode::KeyBy { child, keys } if native_sort_keys(child, keys.iter().cloned())? => {
             lower_sort(
                 child,
@@ -789,31 +864,42 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                     .iter()
                     .map(|name| (name.clone(), false))
                     .collect::<Vec<_>>(),
+                context,
             )
         }
         TableNode::OrderBy { child, keys }
             if native_sort_keys(child, keys.iter().map(|(name, _)| name.clone()))? =>
         {
-            lower_sort(child, keys)
+            lower_sort(child, keys, context)
         }
-        TableNode::Head { child, n } => Ok(LogicalPlanBuilder::from(ordered(lower(child)?))
-            .limit(0, Some(*n))?
-            .build()?),
+        TableNode::Head { n: 0, .. } => {
+            Ok(LogicalPlan::EmptyRelation(datafusion_expr::EmptyRelation {
+                produce_one_row: false,
+                schema: Arc::new(DFSchema::try_from(
+                    crate::plan::physical_schema(table).as_ref().clone(),
+                )?),
+            }))
+        }
+        TableNode::Head { child, n } => Ok(LogicalPlanBuilder::from(ordered(lower_inner(
+            child, context,
+        )?))
+        .limit(0, Some(*n))?
+        .build()?),
         TableNode::MapPartitions {
             child,
             rows_name,
             body,
             bindings,
         } => match crate::partition_map::lower_stream(child, rows_name, body, bindings)? {
-            Some(rewritten) => lower(&rewritten),
-            None => extension(table),
+            Some(rewritten) => lower_inner(&rewritten, context),
+            None => extension(table, context),
         },
         // Vail union concatenates observable execution partitions. Native SQL
         // Union permits branch interleaving and repartitioning; the extension
         // keeps each optimized child partition as an independent output.
-        TableNode::Union { .. } => extension(table),
+        TableNode::Union { .. } => extension(table, context),
         TableNode::Explode { child, path } if path.len() == 1 => {
-            let input = lower(child)?;
+            let input = lower_inner(child, context)?;
             Ok(LogicalPlanBuilder::from(input)
                 .unnest_column_with_options(
                     datafusion_common::Column::new_unqualified(&path[0]),
@@ -823,8 +909,8 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                 .build()?)
         }
         TableNode::Aggregate { child, keys, .. } => {
-            let input = lower(child)?;
-            match crate::logical_aggregation::lower_logical_grouped(table, input)? {
+            let input = lower_inner(child, context)?;
+            match crate::logical_aggregation::lower_logical_grouped(table, input, context)? {
                 Some(plan) => {
                     let plan = if keys.is_empty() {
                         plan
@@ -876,7 +962,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             let lowered_child = if matches!(child.node(), TableNode::Read { .. }) {
                 let paths = crate::nested_projection::map_rows_paths(fields);
                 if paths.is_empty() {
-                    lower(child)?
+                    lower_inner(child, context)?
                 } else {
                     let provider =
                         crate::provider::provider_with_nested_projection_paths(child, paths)?;
@@ -884,10 +970,10 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                         .build()?
                 }
             } else {
-                lower(child)?
+                lower_inner(child, context)?
             };
-            let input = crate::logical_globals::bind_globals(lowered_child, child)?;
-            let (input, indices) = crate::logical_globals::bind_external(input, bindings)?;
+            let input = crate::logical_globals::bind_globals(lowered_child, child, context)?;
+            let (input, indices) = crate::logical_globals::bind_external(input, bindings, context)?;
             if fields.iter().any(|(_, expr)| is_rng_uid(expr)) {
                 return lower_rng_uids(child, input, fields, &indices);
             }
@@ -896,9 +982,14 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                 e.visit_unique(&mut |n| found |= is_scan(n));
                 found
             }) {
-                if let Some(plan) =
-                    crate::logical_scan::initialize(table, child, input.clone(), fields, &indices)?
-                {
+                if let Some(plan) = crate::logical_scan::initialize(
+                    table,
+                    child,
+                    input.clone(),
+                    fields,
+                    &indices,
+                    context,
+                )? {
                     return Ok(plan);
                 }
                 if let Some(plan) =
@@ -939,7 +1030,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                 Err(vail_execution::expressions::ExprError::Invalid(message))
                     if message.contains("needs a Vail logical kernel") =>
                 {
-                    extension(table)
+                    extension(table, context)
                 }
                 Err(error) => Err(error.into()),
             }
@@ -950,8 +1041,9 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             keep,
             bindings,
         } => {
-            let input = crate::logical_globals::bind_globals(lower(child)?, child)?;
-            let (input, indices) = crate::logical_globals::bind_external(input, bindings)?;
+            let input =
+                crate::logical_globals::bind_globals(lower_inner(child, context)?, child, context)?;
+            let (input, indices) = crate::logical_globals::bind_external(input, bindings, context)?;
             match lower_logical_with_bindings(
                 predicate,
                 input.schema(),
@@ -972,12 +1064,12 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                 Err(vail_execution::expressions::ExprError::Invalid(message))
                     if message.contains("needs a Vail logical kernel") =>
                 {
-                    extension(table)
+                    extension(table, context)
                 }
                 Err(error) => Err(error.into()),
             }
         }
-        _ => extension(table),
+        _ => extension(table, context),
     }
 }
 
@@ -992,13 +1084,17 @@ pub(crate) async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
 }
 
 pub(crate) fn max_partitions(table: &TableRef) -> usize {
-    children(table)
-        .iter()
-        .map(max_partitions)
-        .chain(table.known_n_partitions())
-        .max()
-        .unwrap_or(1)
-        .max(1)
+    let mut seen = HashSet::new();
+    let mut pending = vec![table.clone()];
+    let mut maximum = 1;
+    while let Some(table) = pending.pop() {
+        if !seen.insert(Arc::as_ptr(&table) as usize) {
+            continue;
+        }
+        maximum = maximum.max(table.known_n_partitions().unwrap_or(1));
+        pending.extend(children(&table));
+    }
+    maximum
 }
 
 /// Scalar subqueries are resolved once per action, before optimizing and
@@ -1192,7 +1288,7 @@ pub(crate) async fn count(table: &TableRef) -> Result<usize> {
     let aggregate = datafusion_functions_aggregate::count::count_udaf()
         .call(vec![datafusion_expr::lit(1i32)])
         .alias("count");
-    let logical = LogicalPlanBuilder::from(lower(input)?)
+    let logical = LogicalPlanBuilder::from(lower_for_expressions(input, std::iter::empty())?)
         .aggregate(Vec::<Expr>::new(), vec![aggregate])?
         .build()?;
     let physical = physical_plan(logical, max_partitions(table)).await?;
@@ -1238,6 +1334,11 @@ impl ExtensionPlanner for VailExtensionPlanner {
     ) -> datafusion_common::Result<Option<PhysicalPlan>> {
         if self.diagnostic {
             let label = if node
+                .as_any()
+                .is::<crate::conditional_globals::ConditionalNode>()
+            {
+                Some("conditional singleton selection remains unbound".to_owned())
+            } else if node
                 .as_any()
                 .is::<crate::logical_aggregate_init::InitNode>()
             {
@@ -1286,6 +1387,12 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 crate::partitioned::ProtectedRangeRepartitionExec::new(input.clone(), ranges)?,
             )));
         }
+        if let Some(node) = node
+            .as_any()
+            .downcast_ref::<crate::scan_ordinal::SourceOrdinal>()
+        {
+            return Ok(Some(node.physical(physical_inputs[0].clone())?));
+        }
         if let Some(node) = node.as_any().downcast_ref::<OrderedNode>() {
             let input = &physical_inputs[0];
             if node.freeze {
@@ -1299,9 +1406,7 @@ impl ExtensionPlanner for VailExtensionPlanner {
                     session,
                     |_, _| {},
                 )?;
-                return Ok(Some(Arc::new(crate::rng_context::ConsumerScopeExec::new(
-                    input,
-                ))));
+                return Ok(Some(crate::rng_context::consumer(input)));
             }
             let parts = crate::partitioned::partition_views(
                 input.clone(),
@@ -1380,18 +1485,28 @@ impl ExtensionPlanner for VailExtensionPlanner {
             })
             .collect::<datafusion_common::Result<Vec<_>>>()?;
         let children = children(&node.table);
+        // Equal immutable source identity in one zip action has one prepared
+        // owner, including its bound globals; no digest proves equality.
+        let share_zip = matches!(node.table.node(), TableNode::MultiWayZipJoin { .. });
+        let mut prepared_zip = std::collections::HashMap::<usize, TableRef>::new();
         let prepared = children
             .iter()
-            .zip(&physical_inputs[..node.row_input_count])
             .enumerate()
-            .map(|(i, (child, physical))| {
+            .map(|(i, child)| {
+                let physical = &physical_inputs[node.row_input_indices[i]];
+                let id = Arc::as_ptr(child) as usize;
+                if share_zip {
+                    if let Some(prepared) = prepared_zip.get(&id) {
+                        return prepared.clone();
+                    }
+                }
                 let n = physical
                     .properties()
                     .output_partitioning()
                     .partition_count();
                 let partition_counts = child.partition_rows().filter(|counts| counts.len() == n);
                 let count = partition_counts.as_ref().map(|counts| counts.iter().sum());
-                TableIR::prepared(child, physical.clone(), count, n)
+                let prepared = TableIR::prepared(child, physical.clone(), count, n)
                     .replacing_node(TableNode::Prepared {
                         rows: physical.clone(),
                         count,
@@ -1404,7 +1519,11 @@ impl ExtensionPlanner for VailExtensionPlanner {
                                 crate::globals::GlobalsIR::prepared(physical_inputs[index].clone())
                             })
                             .unwrap_or_else(|| child.globals().clone()),
-                    )
+                    );
+                if share_zip {
+                    prepared_zip.insert(id, prepared.clone());
+                }
+                prepared
             })
             .collect::<Vec<_>>();
         let mut table = replace_children(&node.table, prepared)

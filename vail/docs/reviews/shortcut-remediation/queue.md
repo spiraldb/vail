@@ -68,9 +68,10 @@ remediation's prior replay, scalar capture, type, filter, shuffle and ordering
 failures are fixed in this candidate. Actual file pruning passes a deleted-
 nonmatching-file test with a deleted-matching-file positive read control.
 
-This branch has not updated main. Required follow-up review is NOT approved: sending the
-new candidate to the mandated reviewer was rejected by the app because the tool
-requires approval while its policy is set to never. See `REVIEW_HANDOFF.md`.
+This branch has not updated main. The exact76cbbeb0 follow-up review was delivered
+after user authorization and cleared most findings; R7 public-test replacements
+and the reconciliation with newer main still require validation and review.
+See `REVIEW_HANDOFF.md` and `required-review.json`.
 
 The audit contains 180 reviewed modules/resources and 3 removed modules; the raw
 findings records overlap and are not a count of unique confirmed defects. Known
@@ -83,3 +84,17 @@ this work. These results apply to base `2c02020` plus this development branch.
 Reconcile the newer main and revalidate before any final merge approval. The
 only production edits after candidate10 validation remove two extra final blank
 lines; `required-review.json` lists them explicitly.
+
+## Integration with newer main
+
+The pending development merge includes main `6bce5077`. Earlier module-audit
+coverage and candidate10 results do not certify these additions. Native execution
+merge details are in `merge-execution-audit.json`; fresh coherent runtime evidence
+and exact-revision source review are required before main is updated.
+
+Source investigation disproved the purported RNG compatibility requirement in
+newer main's indexed collection fallback: pinned Hail handles each StreamZip
+input's randomness independently. The fallback preserved an accidental Vail
+rebinding bug. It is removed in the integration in favor of native n-ary zip,
+index-values, and one shared correlation state. See
+`merge-semantic-decisions.json` for source provenance and corrected expectations.

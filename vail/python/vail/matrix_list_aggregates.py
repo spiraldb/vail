@@ -23,8 +23,15 @@ def reduce_list(
         refs.update(contexts._global_refs)
         lookups.update(contexts._lookup_refs)
 
+    lexical_types = dict(expr._lexical_types)
+    if contexts is not None:
+        lexical_types.update(contexts._lexical_types)
+    if outside is not None:
+        lexical_types.update(outside._lexical_types)
+
     def raw(node, dtype=tint32):
-        return Expression(dtype, base, _IR(node, refs, lookups))
+        return Expression(dtype, base, _IR(
+            node, refs, lookups, lexical_types=lexical_types | bound))
 
     def typed(value):
         # Query the original native graph with its real schema and lexical
@@ -54,7 +61,8 @@ def reduce_list(
             [(name, dtype._native_type) for name, dtype in bound.items() if name in free],
         ))
         return Expression(dtype, base, _IR(
-            value.to_ir(), value._global_refs, value._lookup_refs))
+            value.to_ir(), value._global_refs, value._lookup_refs,
+            lexical_types=dict(value._lexical_types) | bound))
 
     def bind(node, context):
         if isinstance(node, list):
@@ -354,4 +362,5 @@ def reduce_list(
         )
     )
     result = walk(expr.to_ir(), contexts, fixed)
-    return Expression(expr.dtype, base, _IR(result, refs, lookups))
+    return Expression(expr.dtype, base, _IR(
+        result, refs, lookups, lexical_types=lexical_types | bound))

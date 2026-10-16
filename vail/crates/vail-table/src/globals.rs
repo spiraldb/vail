@@ -2,7 +2,7 @@
 //! DataFusion ProjectionExec plans; row plans bind it with a singleton cross join.
 use crate::{Result, TableError};
 use arrow_array::RecordBatch;
-use arrow_schema::{Field, Schema, SchemaRef};
+use arrow_schema::{Schema, SchemaRef};
 use datafusion_datasource::memory::MemorySourceConfig;
 use datafusion_execution::TaskContext;
 use datafusion_physical_plan::{execution_plan::collect, projection::ProjectionExec};
@@ -26,26 +26,32 @@ pub fn referenced_bindings<'a>(
     expressions: impl IntoIterator<Item = &'a Expr>,
     bindings: GlobalBindings,
 ) -> Result<GlobalBindings> {
-    let mut references = Vec::new();
-    for expr in expressions {
-        expr.visit_unique(&mut |node| {
-            if let Expr::ExternalGlobal { reference, dtype } = node {
-                references.push((reference.clone(), dtype.clone()));
-            }
-        });
-    }
+    let mut pending = expressions.into_iter().collect::<Vec<_>>();
+    let mut seen = std::collections::HashSet::new();
+    let mut actual_types = BTreeMap::new();
     let mut used = GlobalBindings::new();
-    for (reference, dtype) in references {
-        let target = bindings
-            .get(&reference)
-            .ok_or_else(|| TableError::Invalid("unbound external globals".into()))?;
-        let actual = Type::from_arrow(&arrow_schema::DataType::Struct(
-            target.schema().fields().clone(),
-        ))?;
-        if dtype != actual {
-            return Err(TableError::Invalid("external globals type mismatch".into()));
+    while let Some(expr) = pending.pop() {
+        if !seen.insert(expr as *const Expr) {
+            continue;
         }
-        used.insert(reference, target.clone());
+        if let Expr::ExternalGlobal { reference, dtype } = expr {
+            let target = bindings
+                .get(reference)
+                .ok_or_else(|| TableError::Invalid("unbound external globals".into()))?;
+            if !actual_types.contains_key(reference) {
+                actual_types.insert(
+                    reference,
+                    Type::from_arrow(&arrow_schema::DataType::Struct(
+                        target.schema().fields().clone(),
+                    ))?,
+                );
+            }
+            if actual_types.get(reference) != Some(dtype) {
+                return Err(TableError::Invalid("external globals type mismatch".into()));
+            }
+            used.insert(reference.clone(), target.clone());
+        }
+        expr.visit_children(&mut |child| pending.push(child));
     }
     Ok(used)
 }
@@ -53,6 +59,11 @@ pub fn referenced_bindings<'a>(
 #[derive(Debug)]
 pub(crate) enum Node {
     Empty,
+    Conditional {
+        condition: GlobalsRef,
+        consequent: GlobalsRef,
+        alternate: GlobalsRef,
+    },
     Prepared(crate::plan::PhysicalPlan),
     ArrowLiteral(RecordBatch),
     Aggregate {
@@ -74,22 +85,13 @@ pub struct GlobalsIR {
 }
 
 pub fn schema_from_wire(value: &Value) -> Result<SchemaRef> {
-    if *value == json!({}) {
-        return Ok(Arc::new(Schema::empty()));
-    }
-    let fields: Vec<(String, Type)> =
-        serde_json::from_value(value.clone()).map_err(StorageError::from)?;
-    Ok(Arc::new(Schema::new(
-        fields
-            .into_iter()
-            .map(|(name, ty)| Ok(Field::new(name, ty.to_arrow()?, true)))
-            .collect::<Result<Vec<_>>>()?,
-    )))
+    Ok(vail_storage::globals::schema_from_wire(value)?)
 }
 
 impl GlobalsIR {
     /// Retain one Arrow row as a literal globals value, sharing its buffers.
     pub fn arrow_literal(batch: RecordBatch) -> Result<GlobalsRef> {
+        vail_storage::globals::validate_schema(batch.schema_ref())?;
         if batch.num_rows() != 1 {
             return Err(TableError::Invalid(
                 "Arrow globals literal must contain exactly one row".into(),
@@ -108,12 +110,14 @@ impl GlobalsIR {
         let bindings = referenced_bindings([&expression], bindings)?;
         // Keep schema derivation on the same logical tree used by execution,
         // including MapRows children containing scan windows.
-        let logical_schema = crate::logical::lower(&table)?;
+        let mut context = crate::logical::LoweringContext::default();
+        let logical_schema = crate::logical::lower_in_context(&table, &mut context)?;
         let schema = match crate::logical_aggregation::lower_logical_total(
             &table,
             &expression,
             &bindings,
             logical_schema,
+            &mut context,
         )? {
             Some(plan) => Arc::new(plan.schema().as_arrow().clone()),
             None => {
@@ -132,6 +136,44 @@ impl GlobalsIR {
         }))
     }
 
+    /// Select one validated singleton relation only after evaluating its Boolean
+    /// selector. Unused branch dependencies are neither bound nor executed.
+    pub fn conditional(
+        condition: GlobalsRef,
+        consequent: GlobalsRef,
+        alternate: GlobalsRef,
+    ) -> Result<GlobalsRef> {
+        if condition.schema.fields().len() != 1
+            || condition.schema.field(0).data_type() != &arrow_schema::DataType::Boolean
+            || consequent.schema.fields().len() != 1
+            || alternate.schema.fields().len() != 1
+        {
+            return Err(TableError::Invalid(
+                "conditional globals schema mismatch".into(),
+            ));
+        }
+        let field = consequent.schema.field(0).clone().with_nullable(true);
+        if field != alternate.schema.field(0).clone().with_nullable(true)
+            || consequent.schema.metadata() != alternate.schema.metadata()
+        {
+            return Err(TableError::Invalid(
+                "conditional globals branch types differ".into(),
+            ));
+        }
+        let schema = Arc::new(Schema::new_with_metadata(
+            vec![field],
+            consequent.schema.metadata().clone(),
+        ));
+        Ok(Arc::new(Self {
+            schema,
+            node: Node::Conditional {
+                condition,
+                consequent,
+                alternate,
+            },
+        }))
+    }
+
     pub fn physical_plan(self: &Arc<Self>) -> Result<String> {
         let globals = self.clone();
         std::thread::spawn(move || {
@@ -139,7 +181,10 @@ impl GlobalsIR {
                 .enable_all()
                 .build()
                 .map_err(|e| TableError::Execution(e.to_string()))?;
-            let plan = runtime.block_on(crate::logical::diagnostic(crate::logical_globals::lower(&globals)?, 1))?;
+            let plan = runtime.block_on(crate::logical::diagnostic(
+                crate::logical_globals::lower(&globals)?,
+                1,
+            ))?;
             Ok(datafusion_physical_plan::displayable(plan.as_ref())
                 .indent(true)
                 .to_string())
@@ -179,7 +224,18 @@ impl GlobalsIR {
         fields: Vec<(String, Expr)>,
         bindings: GlobalBindings,
     ) -> Result<GlobalsRef> {
+        if fields
+            .iter()
+            .any(|(_, expression)| !expression.is_closed_scalar())
+        {
+            return Err(TableError::Invalid(
+                "globals projections require lexically closed scalar expressions".into(),
+            ));
+        }
         let bindings = referenced_bindings(fields.iter().map(|(_, expr)| expr), bindings)?;
+        // Dtype annotations cannot substitute for a real lexical binder. The
+        // admission check above also excludes row and reducer scopes before
+        // singleton relations can capture them for deferred action planning.
         // An empty row environment rejects row-indexed expressions in globals.
         let schema = validate_projection_with_globals(&Schema::empty(), &self.schema, &fields)?;
         Ok(Arc::new(Self {
@@ -196,6 +252,13 @@ impl GlobalsIR {
             Node::Aggregate {
                 table, expression, ..
             } => json!({"node":"TableAggregate", "table":table.explain(), "expression":expression}),
+            Node::Conditional {
+                condition,
+                consequent,
+                alternate,
+            } => {
+                json!({"node":"GlobalsConditional", "condition":condition.explain(), "consequent":consequent.explain(), "alternate":alternate.explain()})
+            }
             Node::Prepared(_) => json!({"node":"GlobalsPrepared"}),
             Node::Empty => json!({"node":"GlobalsLiteral", "fields":[]}),
             Node::ArrowLiteral(batch) => {
@@ -227,9 +290,11 @@ impl GlobalsIR {
 
     pub fn lower(self: &Arc<Self>) -> Result<crate::plan::PhysicalPlan> {
         Ok(match &self.node {
-            Node::Aggregate { .. } => return Err(TableError::Invalid(
-                "aggregate globals must be planned through the logical planner".into(),
-            )),
+            Node::Aggregate { .. } | Node::Conditional { .. } => {
+                return Err(TableError::Invalid(
+                    "aggregate globals must be planned through the logical planner".into(),
+                ));
+            }
             Node::Prepared(plan) => plan.clone(),
             Node::Empty => {
                 let batch = vail_storage::globals::empty()?;
@@ -244,6 +309,9 @@ impl GlobalsIR {
                 fields,
                 bindings,
             } => {
+                if fields.is_empty() {
+                    return Self::empty().lower();
+                }
                 let (input, indices) = crate::plan::bind_external(child.lower()?, bindings)?;
                 let expressions = fields
                     .iter()

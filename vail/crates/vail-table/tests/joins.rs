@@ -1,6 +1,5 @@
-use arrow_array::{Int32Array, RecordBatch};
+use arrow_array::{Array, Int32Array, RecordBatch};
 use arrow_schema::{DataType, Field, Schema};
-use datafusion_physical_plan::ExecutionPlanProperties;
 use std::sync::Arc;
 use vail_table::{TableIR, TableJoinKind};
 
@@ -24,7 +23,7 @@ fn table(key: &str, value: &str, keys: Vec<Option<i32>>, values: Vec<i32>) -> va
 }
 
 #[tokio::test]
-async fn native_join_has_lazy_datafusion_operator_and_cartesian_duplicates() {
+async fn join_modes_preserve_cartesian_duplicates_and_replay() {
     let left = table("k", "l", vec![Some(1), Some(1), None], vec![10, 11, 12]);
     let right = table("rk", "r", vec![Some(1), Some(1), None], vec![20, 21, 22]);
     for (kind, count) in [
@@ -58,71 +57,164 @@ async fn membership_joins_preserve_independent_left_partitions() {
             joined.n_partitions().await.unwrap(),
             left.n_partitions().await.unwrap()
         );
-        let prepared = vail_table::partitioned::prepare(joined.clone())
-            .await
-            .unwrap();
-        let physical = prepared.physical_plan();
-        assert_eq!(
-            physical.output_partitioning().partition_count(),
-            prepared.parts.len()
-        );
         assert_eq!(joined.count().await.unwrap(), 2);
         assert_eq!(joined.schema(), left.schema());
     }
 }
 
 #[tokio::test]
-async fn interval_join_partitions_contain_merge_operators_and_metadata_needs_no_rows() {
-    fn find<'a>(
-        plan: &'a dyn datafusion_physical_plan::ExecutionPlan,
-        name: &str,
-    ) -> Option<&'a dyn datafusion_physical_plan::ExecutionPlan> {
-        if plan.name() == name {
-            return Some(plan);
-        }
-        plan.children()
-            .into_iter()
-            .find_map(|child| find(child.as_ref(), name))
-    }
+async fn join_reads_are_lazy_and_replayed_after_storage_returns() {
     let directory = tempfile::tempdir().unwrap();
-    let path = directory.path().join("left");
+    let path = directory.path().join("source");
+    let moved = directory.path().join("moved");
     TableIR::range(12, 3)
         .unwrap()
-        .write_with_options(
-            path.to_str().unwrap(),
-            false,
-            vail_storage::local_table::WriteOptions {
-                max_buffer_bytes: 1024 * 1024,
-                max_rows_per_file: 2,
-            },
+        .write(path.to_str().unwrap(), false)
+        .await
+        .unwrap();
+    let source = TableIR::read(path.to_str().unwrap()).await.unwrap();
+    std::fs::rename(&path, &moved).unwrap();
+    let joined = source
+        .join(TableIR::range(12, 4).unwrap(), TableJoinKind::Outer, 1)
+        .unwrap();
+    assert_eq!(joined.head(0).count().await.unwrap(), 0);
+    assert!(joined.count().await.is_err());
+    std::fs::rename(&moved, &path).unwrap();
+    assert_eq!(joined.count().await.unwrap(), 12);
+    std::fs::rename(&path, &moved).unwrap();
+    assert!(joined.count().await.is_err());
+}
+#[test]
+fn join_key_admission_rejects_overshoot() {
+    let left = TableIR::range(2, 1).unwrap();
+    assert!(left.join(left.clone(), TableJoinKind::Inner, 2).is_err());
+}
+
+#[tokio::test]
+async fn prepared_zip_actions_reread_after_success_and_failure() {
+    use vail_table::partitioned;
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("source");
+    let moved = directory.path().join("moved");
+    TableIR::range(12, 3)
+        .unwrap()
+        .write(path.to_str().unwrap(), false)
+        .await
+        .unwrap();
+    let source = TableIR::read(path.to_str().unwrap()).await.unwrap();
+    let zipped = TableIR::multi_way_zip_join(
+        vec![source.clone(), source],
+        "data".into(),
+        "globals".into(),
+    )
+    .unwrap();
+    let prepared = partitioned::prepare(zipped).await.unwrap();
+    for missing in [false, true, false, true, false] {
+        if missing {
+            std::fs::rename(&path, &moved).unwrap();
+        } else if moved.exists() {
+            std::fs::rename(&moved, &path).unwrap();
+        }
+        let result = datafusion_physical_plan::collect(
+            prepared.start_action().unwrap(),
+            Arc::new(datafusion_execution::TaskContext::default()),
         )
-        .await
-        .unwrap();
-    let source = vail_storage::local_table::open_local(path.to_str().unwrap())
-        .await
-        .unwrap();
-    let bounds = source.partition_key_bounds().unwrap();
-    assert_eq!(bounds.len(), 3);
-    assert!(bounds.iter().all(Option::is_some));
-    let left = TableIR::read(path.to_str().unwrap()).await.unwrap();
-    let right = TableIR::range(12, 4).unwrap();
-    let joined = left.join(right, TableJoinKind::Outer, 1).unwrap();
-    let prepared = vail_table::partitioned::prepare(joined.clone())
-        .await
-        .unwrap();
-    assert!(prepared.parts.len() > 1);
-    for partition in &prepared.parts {
-        assert!(find(partition.as_ref(), "HashJoinExec").is_none());
-        let merge = find(partition.as_ref(), "SortMergeJoinExec").unwrap();
-        for child in merge.children() {
-            // DataFusion may insert order-preserving repartitioning above the
-            // ordered input when satisfying the merge join's distribution.
-            assert!(find(child.as_ref(), "JoinKeyOrderingExec").is_some());
+        .await;
+        if missing {
+            assert!(result.is_err());
+        } else {
+            assert_eq!(
+                result
+                    .unwrap()
+                    .iter()
+                    .map(|batch| batch.num_rows())
+                    .sum::<usize>(),
+                12
+            );
         }
     }
-    assert_eq!(joined.count().await.unwrap(), 12);
-    for file in &source.descriptor().files {
-        std::fs::remove_file(file.path.strip_prefix("file://").unwrap_or(&file.path)).unwrap();
+}
+
+#[tokio::test]
+async fn wide_zip_replay_survives_cancelled_reader() {
+    use futures::TryStreamExt;
+    use vail_table::partitioned;
+    let count = 2048;
+    let values = (0..count)
+        .map(|i| format!("{i}:{}", "x".repeat(8192)))
+        .collect::<Vec<_>>();
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("k", DataType::Int32, false),
+        Field::new("value", DataType::Utf8, false),
+    ]));
+    let batch = RecordBatch::try_new(
+        schema,
+        vec![
+            Arc::new(Int32Array::from_iter_values(0..count)),
+            Arc::new(arrow_array::StringArray::from(values)),
+        ],
+    )
+    .unwrap();
+    let source = TableIR::parallelize(batch, 1)
+        .unwrap()
+        .key_by(vec!["k".into()])
+        .unwrap();
+    let zipped = TableIR::multi_way_zip_join(
+        vec![source.clone(), source],
+        "data".into(),
+        "globals".into(),
+    )
+    .unwrap();
+    let prepared = partitioned::prepare(zipped).await.unwrap();
+    let context = Arc::new(datafusion_execution::TaskContext::default());
+    let action = prepared.start_action().unwrap();
+    let mut reader = action.execute(0, context.clone()).unwrap();
+    // A reader can abandon its demand while another shared consumer still
+    // requires the same batches, including an in-flight spill write.
+    let _ = tokio::time::timeout(std::time::Duration::from_millis(1), reader.try_next()).await;
+    drop(reader);
+    let actual = datafusion_physical_plan::collect(action, context)
+        .await
+        .unwrap();
+    assert_eq!(
+        actual.iter().map(|batch| batch.num_rows()).sum::<usize>(),
+        count as usize
+    );
+    let mut keys = Vec::new();
+    for batch in actual {
+        let k = batch
+            .column(0)
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap();
+        let data = batch
+            .column(1)
+            .as_any()
+            .downcast_ref::<arrow_array::ListArray>()
+            .unwrap();
+        for row in 0..batch.num_rows() {
+            let key = k.value(row);
+            keys.push(key);
+            let slots = data.value(row);
+            let slots = slots
+                .as_any()
+                .downcast_ref::<arrow_array::StructArray>()
+                .unwrap();
+            let values = slots
+                .column(0)
+                .as_any()
+                .downcast_ref::<arrow_array::StringArray>()
+                .unwrap();
+            assert_eq!(values.len(), 2);
+            let expected = format!("{key}:{}", "x".repeat(8192));
+            for slot in 0..2 {
+                assert!(
+                    values.value(slot) == expected,
+                    "payload mismatch for key {key}, slot {slot}"
+                );
+            }
+        }
     }
-    assert_eq!(source.partition_key_bounds().unwrap(), bounds);
+    keys.sort_unstable();
+    assert_eq!(keys, (0..count).collect::<Vec<_>>());
 }

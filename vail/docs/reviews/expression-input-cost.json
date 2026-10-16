@@ -1,0 +1,123 @@
+{
+  "reviewed_base": "a7a37a3",
+  "baseline_native_sha256": "34c7591f8c665d9a869bae750190b84efd96a83bd02527cc107a280eb6d4d0f1",
+  "final_native_sha256": "e68027134ed583e535ac41b47406cf6b67d18dc6353c1d2e5bb5672940951d40",
+  "baseline": [
+    {
+      "workload": "mixed",
+      "size": 128,
+      "construction_seconds": 0.010971208001137711,
+      "action_seconds": 0.053418041999975685,
+      "max_rss_bytes": 145326080
+    },
+    {
+      "workload": "mixed",
+      "size": 512,
+      "construction_seconds": 0.040510332997655496,
+      "action_seconds": 2.3021346669993363,
+      "max_rss_bytes": 366280704
+    },
+    {
+      "workload": "mixed",
+      "size": 2048,
+      "timeout_seconds": 15
+    },
+    {
+      "workload": "shared",
+      "size": 4,
+      "construction_seconds": 0.0003139169930364005,
+      "action_seconds": 0.0008721670019440353,
+      "max_rss_bytes": 126320640
+    },
+    {
+      "workload": "shared",
+      "size": 8,
+      "construction_seconds": 0.002091957998345606,
+      "action_seconds": 0.0033030420017894357,
+      "max_rss_bytes": 126894080
+    },
+    {
+      "workload": "shared",
+      "size": 12,
+      "construction_seconds": 0.030353208996530157,
+      "action_seconds": 0.05383154199807905,
+      "max_rss_bytes": 135380992
+    },
+    {
+      "workload": "shared",
+      "size": 16,
+      "construction_seconds": 0.5138170419959351,
+      "action_seconds": 1.0688478750016657,
+      "max_rss_bytes": 240353280
+    }
+  ],
+  "final": [
+    {
+      "workload": "mixed",
+      "size": 128,
+      "construction_seconds": 0.0045187499999883585,
+      "action_seconds": 0.00639033399784239,
+      "max_rss_bytes": 135626752
+    },
+    {
+      "workload": "mixed",
+      "size": 512,
+      "construction_seconds": 0.01530800000182353,
+      "action_seconds": 0.007989833000465296,
+      "max_rss_bytes": 137691136
+    },
+    {
+      "workload": "mixed",
+      "size": 2048,
+      "construction_seconds": 0.10896108300221385,
+      "action_seconds": 0.03002241699869046,
+      "max_rss_bytes": 154255360
+    },
+    {
+      "workload": "shared",
+      "size": 4,
+      "construction_seconds": 0.00022541600628755987,
+      "action_seconds": 0.0012606669988599606,
+      "max_rss_bytes": 129662976
+    },
+    {
+      "workload": "shared",
+      "size": 8,
+      "construction_seconds": 0.00022583299869438633,
+      "action_seconds": 0.005209458999161143,
+      "max_rss_bytes": 128106496
+    },
+    {
+      "workload": "shared",
+      "size": 12,
+      "construction_seconds": 0.0004799579983227886,
+      "action_seconds": 0.07774012500158278,
+      "max_rss_bytes": 132087808
+    },
+    {
+      "workload": "shared",
+      "size": 16,
+      "construction_seconds": 0.005124500006786548,
+      "action_seconds": 1.9767800420013373,
+      "max_rss_bytes": 170688512
+    }
+  ],
+  "quiet_depth16_after_rust_build": {
+    "workload": "shared",
+    "size": 16,
+    "construction_seconds": 0.0032927499996731058,
+    "action_seconds": 0.9813624160015024,
+    "max_rss_bytes": 167051264
+  },
+  "limitations": [
+    "Each scripted workload runs in a fresh process with a15second timeout; RSS is process high-water in bytes on macOS.",
+    "An earlier exploratory2048row baseline was manually terminated after excessive CPU/memory use; only the subsequently bounded15second timeout is compared here.",
+    "Final scripted run overlapped native Rust test compilation; the depth16 action was remeasured after compilation ended because its first1.98second result was worse than baseline1.07seconds. Quiet final action .98seconds resolves the suspected regression, without an execution speedup claim.",
+    "Input validation/substitution preserves native DAG sharing; downstream native type inference and expression compilation still expand repeated execution work. Do not infer arbitrary-depth bounded execution from the binding improvement.",
+    "Only input-binding/literal dependency costs are claimed improved. No mocked transport counters or native representation assertions are used."
+  ],
+  "validation": [
+    "101 public Python tests passed across expression_inputs/native_memory_boundary/map_partitions_streams/ndarray_scope/interval_reads.",
+    "95 Rust vail-execution tests passed (75 unit tests +20 public integration tests), including conditionals, collections, strings, reference, CSV and tuples."
+  ]
+}

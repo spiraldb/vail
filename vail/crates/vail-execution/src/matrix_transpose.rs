@@ -134,6 +134,7 @@ fn transpose(input: &ListArray) -> Result<ArrayRef> {
         let row_start = input.value_offsets()[row] as usize;
         let row_end = input.value_offsets()[row + 1] as usize;
         let mut width = None;
+        let mut defined = Vec::new();
         for record in row_start..row_end {
             if records.is_null(record) {
                 return exec_err!("matrix transpose records must not be missing");
@@ -141,6 +142,7 @@ fn transpose(input: &ListArray) -> Result<ArrayRef> {
             if arrays.is_null(record) {
                 continue;
             }
+            defined.push(record);
             let len = arrays.value_length(record) as usize;
             if let Some(previous) = width {
                 if previous != len {
@@ -157,10 +159,7 @@ fn transpose(input: &ListArray) -> Result<ArrayRef> {
             return exec_err!("matrix transpose output exceeds Arrow list capacity");
         }
         for position in 0..width {
-            for record in row_start..row_end {
-                if arrays.is_null(record) {
-                    continue;
-                }
+            for &record in &defined {
                 let value_index = arrays.value_offsets()[record] as usize + position;
                 context_indices.push(u32::try_from(record).map_err(|_| {
                     datafusion_common::exec_datafusion_err!(

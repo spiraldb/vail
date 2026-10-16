@@ -119,3 +119,113 @@ def adapt_helpers(code):
     prefix = ('from upstream_backend import VailTestBackend, test_timeout as _vail_test_timeout\n'
               '_vail_test_backend = VailTestBackend()\n')
     return prefix + ast.unparse(ast.fix_missing_locations(tree))
+
+
+def adapt_structural_ir_assertions(tree, module):
+    """Omit calls to a proven local Hail IR-shape helper before arguments run.
+
+    Only the standalone ``assert_contains_node`` helper with an exact upstream
+    _ir, _mir, or _tir base_search assertion body qualifies. Value assertions remain executable.
+    Return an explicit source-span manifest alongside the adapted tree.
+    """
+    removed = []
+
+    def structural_helper(node):
+        if not isinstance(node, ast.FunctionDef) or node.name != 'assert_contains_node':
+            return False
+        args = node.args
+        if (len(args.args) != 2 or args.posonlyargs or args.kwonlyargs
+                or args.vararg or args.kwarg or args.defaults or node.decorator_list):
+            return False
+        expr, kind = (arg.arg for arg in args.args)
+        actual = ast.dump(ast.Module(body=node.body, type_ignores=[]))
+        return any(actual == ast.dump(ast.Module(body=ast.parse(
+            f'assert {expr}.{attribute}.base_search(lambda x: isinstance(x, {kind}))').body,
+            type_ignores=[])) for attribute in ('_ir', '_mir', '_tir'))
+
+    class StructuralCalls(ast.NodeTransformer):
+        enabled = False
+
+        def visit_scope(self, node):
+            previous = self.enabled
+            declarations = [child for child in node.body
+                            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
+                            and child.name == 'assert_contains_node']
+            if declarations:
+                self.enabled = len(declarations) == 1 and structural_helper(declarations[0])
+
+            class Rebinding(ast.NodeVisitor):
+                found = False
+
+                def visit_Name(self, child):
+                    if child.id == 'assert_contains_node' and isinstance(child.ctx, (ast.Store, ast.Del)):
+                        self.found = True
+
+                def visit_Import(self, child):
+                    if any((alias.asname or alias.name.split('.')[0]) == 'assert_contains_node'
+                           for alias in child.names):
+                        self.found = True
+
+                def visit_ImportFrom(self, child):
+                    if any((alias.asname or alias.name) == 'assert_contains_node'
+                           for alias in child.names):
+                        self.found = True
+
+                def visit_FunctionDef(self, child):
+                    # Function bodies have their own lexical binding checks.
+                    if child.name == 'assert_contains_node' and child not in declarations:
+                        self.found = True
+
+                visit_AsyncFunctionDef = visit_FunctionDef
+
+                def visit_ClassDef(self, child):
+                    if child.name == 'assert_contains_node':
+                        self.found = True
+
+                def visit_Global(self, child):
+                    if 'assert_contains_node' in child.names:
+                        self.found = True
+
+                visit_Nonlocal = visit_Global
+
+                def visit_Lambda(self, child):
+                    pass
+
+            rebinding = Rebinding()
+            for child in node.body:
+                rebinding.visit(child)
+            if hasattr(node, 'args'):
+                bound_names = {arg.arg for arg in [*node.args.posonlyargs, *node.args.args,
+                                                   *node.args.kwonlyargs]}
+                if node.args.vararg:
+                    bound_names.add(node.args.vararg.arg)
+                if node.args.kwarg:
+                    bound_names.add(node.args.kwarg.arg)
+                if 'assert_contains_node' in bound_names:
+                    rebinding.found = True
+            if rebinding.found:
+                self.enabled = False
+            self.generic_visit(node)
+            self.enabled = previous
+            return node
+
+        visit_Module = visit_scope
+        visit_ClassDef = visit_scope
+        visit_FunctionDef = visit_scope
+        visit_AsyncFunctionDef = visit_scope
+
+        def visit_Expr(self, node):
+            call = node.value
+            if (self.enabled and isinstance(call, ast.Call)
+                    and isinstance(call.func, ast.Name)
+                    and call.func.id == 'assert_contains_node'
+                    and len(call.args) == 2 and not call.keywords
+                    and not any(isinstance(arg, ast.Starred) for arg in call.args)):
+                removed.append(dict(module=str(module), line=node.lineno,
+                                    end_line=node.end_lineno, column=node.col_offset,
+                                    end_column=node.end_col_offset,
+                                    reason='Hail structural IR assertion; Vail IR topology intentionally differs'))
+                return ast.copy_location(ast.Pass(), node)
+            return self.generic_visit(node)
+
+    return ast.fix_missing_locations(StructuralCalls().visit(tree)), removed

@@ -18,15 +18,136 @@ use std::sync::Arc;
 use vail_execution::expressions::Type;
 
 impl TableIR {
+    /// Physical normalization preserves logical key values and key order.
+    pub(crate) fn canonical_join_keys(self: &Arc<Self>) -> Result<TableRef> {
+        let mut changed = false;
+        let mut fields = Vec::new();
+        let mut schema = Vec::new();
+        for field in self.schema().fields() {
+            let column = ScalarIR::Column {
+                name: field.name().clone(),
+            };
+            if self.keys().contains(field.name()) {
+                let dtype = Type::from_arrow(field.data_type())?;
+                let arrow = dtype.to_arrow()?;
+                changed |= arrow != *field.data_type();
+                schema.push(field.as_ref().clone().with_data_type(arrow));
+                fields.push((
+                    field.name().clone(),
+                    ScalarIR::Cast {
+                        value: Arc::new(column),
+                        dtype,
+                    },
+                ));
+            } else {
+                schema.push(field.as_ref().clone());
+                fields.push((field.name().clone(), column));
+            }
+        }
+        if !changed {
+            return Ok(self.clone());
+        }
+        Ok(Self::new(
+            Arc::new(Schema::new(schema)),
+            self.keys().to_vec(),
+            self.globals().clone(),
+            TableNode::MapRows {
+                child: self.clone(),
+                fields,
+                bindings: GlobalBindings::new(),
+            },
+        ))
+    }
+
+    /// A bijective field rename preserves each key value and its order.
+    pub fn rename_fields(
+        self: &Arc<Self>,
+        mapping: &std::collections::BTreeMap<String, String>,
+    ) -> Result<TableRef> {
+        let known = self
+            .schema()
+            .fields()
+            .iter()
+            .chain(self.globals().schema().fields())
+            .map(|field| field.name())
+            .collect::<std::collections::HashSet<_>>();
+        if mapping
+            .iter()
+            .any(|(old, new)| !known.contains(old) || new.is_empty())
+        {
+            return Err(TableError::Invalid(
+                "rename requires known fields and nonempty names".into(),
+            ));
+        }
+        let renamed = |name: &str| {
+            mapping
+                .get(name)
+                .cloned()
+                .unwrap_or_else(|| name.to_owned())
+        };
+        let mut names = std::collections::HashSet::new();
+        if known.iter().any(|name| !names.insert(renamed(name))) {
+            return Err(TableError::Invalid(
+                "renamed row and global fields must have distinct names".into(),
+            ));
+        }
+        let globals = self.globals().map(
+            self.globals()
+                .schema()
+                .fields()
+                .iter()
+                .map(|field| {
+                    (
+                        renamed(field.name()),
+                        ScalarIR::Global {
+                            name: field.name().clone(),
+                        },
+                    )
+                })
+                .collect(),
+        )?;
+        let fields = self
+            .schema()
+            .fields()
+            .iter()
+            .map(|field| {
+                (
+                    renamed(field.name()),
+                    ScalarIR::Column {
+                        name: field.name().clone(),
+                    },
+                )
+            })
+            .collect();
+        let schema = Arc::new(Schema::new(
+            self.schema()
+                .fields()
+                .iter()
+                .map(|field| field.as_ref().clone().with_name(renamed(field.name())))
+                .collect::<Vec<_>>(),
+        ));
+        Ok(Self::new(
+            schema,
+            self.keys().iter().map(|key| renamed(key)).collect(),
+            globals,
+            TableNode::MapRows {
+                child: self.clone(),
+                fields,
+                bindings: GlobalBindings::new(),
+            },
+        ))
+    }
+
     pub fn join(
         self: &Arc<Self>,
         right: TableRef,
         kind: TableJoinKind,
         join_key: usize,
     ) -> Result<TableRef> {
-        let join_key = join_key.min(self.keys().len().max(right.keys().len()));
+        let left = self.canonical_join_keys()?;
+        let right = right.canonical_join_keys()?;
         let semi = matches!(kind, TableJoinKind::Semi | TableJoinKind::Anti);
-        if join_key > self.keys().len() || join_key > right.keys().len() {
+        if join_key > left.keys().len() || join_key > right.keys().len() {
             return Err(TableError::Invalid(
                 "join key exceeds input key length".into(),
             ));
@@ -36,11 +157,11 @@ impl TableIR {
                 "membership join requires the entire nonempty right key".into(),
             ));
         }
-        for (left, right_key) in self.keys()[..join_key]
+        for (left_name, right_key) in left.keys()[..join_key]
             .iter()
             .zip(&right.keys()[..join_key])
         {
-            if Type::from_arrow(self.schema().field_with_name(left)?.data_type())?
+            if Type::from_arrow(left.schema().field_with_name(left_name)?.data_type())?
                 != Type::from_arrow(right.schema().field_with_name(right_key)?.data_type())?
             {
                 return Err(TableError::Invalid("join key type mismatch".into()));
@@ -48,22 +169,22 @@ impl TableIR {
         }
         let (schema, keys, globals) = if semi {
             (
-                self.schema().clone(),
-                self.keys().to_vec(),
-                self.globals().clone(),
+                left.schema().clone(),
+                left.keys().to_vec(),
+                left.globals().clone(),
             )
         } else {
-            let prefix = &self.keys()[..join_key];
+            let prefix = &left.keys()[..join_key];
             let mut fields = prefix
                 .iter()
                 .map(|name| {
-                    self.schema()
+                    left.schema()
                         .field_with_name(name)
                         .map(|field| field.clone().with_nullable(true))
                 })
                 .collect::<std::result::Result<Vec<_>, _>>()?;
             fields.extend(
-                self.schema()
+                left.schema()
                     .fields()
                     .iter()
                     .filter(|f| !prefix.contains(f.name()))
@@ -84,12 +205,12 @@ impl TableIR {
                 }
                 fields.push(field.as_ref().clone().with_nullable(true));
             }
-            let mut keys = self.keys().to_vec();
+            let mut keys = left.keys().to_vec();
             keys.extend_from_slice(&right.keys()[join_key..]);
             (
                 Arc::new(Schema::new(fields)),
                 keys,
-                combined_globals(self.globals(), right.globals())?,
+                combined_globals(left.globals(), right.globals())?,
             )
         };
         for field in schema.fields() {
@@ -105,7 +226,7 @@ impl TableIR {
             keys,
             globals,
             TableNode::Join {
-                left: self.clone(),
+                left: left.clone(),
                 right,
                 kind,
                 join_key,
@@ -118,6 +239,19 @@ impl TableIR {
         data_field_name: String,
         global_field_name: String,
     ) -> Result<TableRef> {
+        let mut normalized = std::collections::HashMap::<usize, TableRef>::new();
+        let tables = tables
+            .iter()
+            .map(|table| {
+                let id = Arc::as_ptr(table) as usize;
+                if let Some(value) = normalized.get(&id) {
+                    return Ok(value.clone());
+                }
+                let value = table.canonical_join_keys()?;
+                normalized.insert(id, value.clone());
+                Ok(value)
+            })
+            .collect::<Result<Vec<TableRef>>>()?;
         let first = tables.first().ok_or_else(|| {
             TableError::Invalid("multi_way_zip_join requires at least one table".into())
         })?;
@@ -267,13 +401,16 @@ fn prefer_left(
 /// Attach the ordering guaranteed by a keyed TableIR (including interval
 /// clipping). This adapter does not read, sort, or repartition its input.
 #[derive(Debug)]
-struct JoinOrderingExec {
+pub(crate) struct JoinOrderingExec {
     input: PhysicalPlan,
     ordering: datafusion_physical_expr::LexOrdering,
     properties: Arc<datafusion_physical_plan::PlanProperties>,
 }
 impl JoinOrderingExec {
-    fn new(input: PhysicalPlan, ordering: datafusion_physical_expr::LexOrdering) -> PhysicalPlan {
+    pub(crate) fn new(
+        input: PhysicalPlan,
+        ordering: datafusion_physical_expr::LexOrdering,
+    ) -> PhysicalPlan {
         let mut properties = (**input.properties()).clone();
         properties.eq_properties.add_ordering(ordering.clone());
         properties.set_eq_properties(properties.eq_properties.clone());

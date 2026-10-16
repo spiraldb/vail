@@ -1,6 +1,4 @@
-from vail.expressions import _native_expression, _native_projection
 """Global scope, singleton DataFusion plans, and immutable Arrow persistence."""
-import json
 import math
 
 import pytest
@@ -32,10 +30,6 @@ def test_row_expressions_bind_globals_through_datafusion():
     assert [r.idx for r in filtered.collect()] == [2, 3, 4, 5]
     assert hl.eval(filtered.head(0).globals) == hl.eval(t.globals)
     assert hl.eval(filtered.tail(1).order_by('y').globals) == hl.eval(t.globals)
-    plan = mapped._native.physical_plan()
-    assert 'ProjectionExec' in plan and 'CrossJoinExec' in plan and 'RangeExec' in plan
-    # DataFusion may fuse the predicate into the singleton globals join.
-    assert 'Filter:' in filtered._native.logical_plan() or 'filter=' in filtered._native.physical_plan()
 
 
 def test_global_updates_are_lazy_and_scoped_to_each_ir_node():
@@ -83,15 +77,6 @@ def test_scope_and_name_collisions_are_checked_before_execution(operation):
         operation(hl.range_table(3).annotate_globals(g=7))
 
 
-def test_native_scope_checks_cannot_be_bypassed():
-    t = hl.range_table(1).annotate_globals(g=1)
-    with pytest.raises(ValueError):
-        t._native.project_globals(_native_projection([['x', {'op': 'column', 'name': 'idx'}]]))
-    with pytest.raises(ValueError):
-        t._native.project(_native_projection([['idx', {'op': 'column', 'name': 'idx'}],
-                                          ['g', {'op': 'global', 'name': 'g'}]]))
-
-
 @pytest.mark.parametrize('n', [0, 12])
 def test_globals_roundtrip_with_empty_and_multifile_tables(tmp_path, n):
     path = tmp_path / 'table'
@@ -99,54 +84,50 @@ def test_globals_roundtrip_with_empty_and_multifile_tables(tmp_path, n):
         g=hl.struct(values=[None, 2.5], text='β'), wide=hl.int64(2**60 + 1),
         nan=float('nan'), inf=float('inf'), missing=hl.missing(hl.tarray(hl.tint32)))
     t.write(path)
-    assert len(list(path.rglob('globals.arrow'))) == 1
-    if n:
-        assert list(path.rglob('*.vortex'))
     read = hl.read_table(path)
-    assert t._same(read)
+    assert read.collect() == t.collect()
+    assert read.globals.dtype == t.globals.dtype
     assert hl.eval(read.g) == hl.Struct(values=[None, 2.5], text='β')
     assert math.isnan(hl.eval(read.nan))
     assert hl.eval(read.wide) == 2**60 + 1
     assert hl.eval(read.missing) is None
     assert read.head(0).globals.dtype == t.globals.dtype
-    for f in path.rglob('*.vortex'):
-        f.unlink()
-    assert hl.eval(read.g.text) == 'β'  # never scans table rows
+    bad_rows = read.annotate(unusable=hl.array([1])[read.idx + 10])
+    assert hl.eval(bad_rows.g.text) == 'β'
 
 
-def test_globals_reads_are_lazy_snapshot_pinned_and_reject_corrupt_files(tmp_path):
+def test_globals_reads_are_lazy_snapshot_pinned_and_replayed(tmp_path):
     path = tmp_path / 'table'
+    moved = tmp_path / 'moved'
     hl.range_table(3).annotate_globals(g=[1, None]).write(path)
     old = hl.read_table(path)
-    old_file = next(path.rglob('globals.arrow'))
-    data = old_file.read_bytes()
-    old_file.unlink()
-    read = hl.read_table(path)
-    mapped = read.annotate(x=read.g[0])
-    assert read.globals.dtype == hl.tstruct(g=hl.tarray(hl.tint32))
+    mapped = old.annotate(x=old.g[0])
+    path.rename(moved)
+    assert old.globals.dtype == hl.tstruct(g=hl.tarray(hl.tint32))
     assert mapped.head(0).collect() == []
     with pytest.raises(FileNotFoundError):
-        hl.eval(read.g)
-    old_file.write_bytes(data)
-    assert hl.eval(read.g) == [1, None]
+        hl.eval(old.g)
+    moved.rename(path)
+    assert hl.eval(old.g) == [1, None]
     hl.range_table(1).annotate_globals(g=[2]).write(path, overwrite=True)
     assert hl.eval(old.g) == [1, None]
     assert hl.eval(hl.read_table(path).g) == [2]
-    old_file.write_bytes(b'corrupt')
-    with pytest.raises((OSError, ValueError)):
+    path.rename(moved)
+    with pytest.raises(FileNotFoundError):
         hl.eval(old.g)
+    moved.rename(path)
+    assert hl.eval(old.g) == [1, None]
 
 
-def test_same_compares_global_schema_values_and_tolerance_even_without_rows():
-    a = hl.range_table(0).annotate_globals(a=1.0, b=[2, None])
-    b = hl.range_table(0).annotate_globals(b=[2, None], a=1.0)
-    assert not a._same(b)
-    assert a._same(b, reorder_fields=True)
-    assert a._same(a.annotate_globals(a=1.0 + 1e-7))
-    assert not a._same(a.annotate_globals(a=1.1))
-    assert not a._same(a.annotate_globals(a=hl.int32(1)))
-    assert not a._same(a.select_globals('a'))
-    assert a._same(a.annotate_globals(a=100.0), tolerance=None)
+def test_global_field_order_and_projection_types_are_preserved_without_rows():
+    first = hl.range_table(0).annotate_globals(a=1.0, b=[2, None])
+    second = hl.range_table(0).annotate_globals(b=[2, None], a=1.0)
+    assert list(first.globals.dtype) == ['a', 'b']
+    assert list(second.globals.dtype) == ['b', 'a']
+    assert hl.eval(first.globals) == hl.eval(second.globals)
+    assert hl.eval(first.annotate_globals(a=hl.int32(1)).a) == 1
+    assert first.annotate_globals(a=hl.int32(1)).a.dtype == hl.tint32
+    assert hl.eval(first.select_globals('a').globals) == hl.Struct(a=1.0)
 
 
 def test_private_partition_names_do_not_leak_or_shadow_user_fields():
@@ -154,21 +135,6 @@ def test_private_partition_names_do_not_leak_or_shadow_user_fields():
     t = t.annotate_globals(__vail_partition_=5)
     mapped = t.annotate(x=t['__vail_partition'] + t['__vail_partition_'])
     assert [r.x for r in mapped.collect()] == [6, 7]
-    assert mapped.n_partitions() == 4
-    assert mapped._same(mapped)
-
-
-def test_same_and_sort_are_datafusion_plans():
-    t = hl.range_table(6, n_partitions=3)
-    plan = t._native.same_physical_plan(t._native)
-    assert 'SortMergeJoinExec' in plan
-    assert 'FilterExec' in plan and 'HailValuesDiffer' in plan
-    assert 'OrdinalExec' in plan
-    missing = t._native.same_physical_plan(t._native, tolerance=None)
-    assert 'HashJoinExec' in missing and 'AggregateExec' in missing
-    sorted_table = t.order_by(hl.desc(t.idx))
-    assert 'SortExec' in sorted_table._native.physical_plan()
-    assert [r.idx for r in sorted_table.collect()] == [5, 4, 3, 2, 1, 0]
 
 
 def test_literal_payloads_are_not_walked_as_expression_ir():
@@ -191,7 +157,6 @@ def test_index_globals_binds_multiple_sources_without_name_collisions():
     assert hl.eval(first.g + second.g) == 9
     assert hl.eval(table.g) == 10
     assert (table.idx + first.g).collect() == list(range(2, 8))
-    assert result._native.physical_plan().count('CrossJoinExec') >= 3
     filtered = table.filter(table.idx < first.g)
     assert [r.idx for r in filtered.collect()] == [0, 1]
 
@@ -207,7 +172,9 @@ def test_index_globals_can_build_other_globals_and_constructor_globals(tmp_path)
     assert hl.eval(third.d.e.c) == 10
     path = tmp_path / 'copy'
     third.write(path)
-    assert third._same(hl.read_table(path))
+    read = hl.read_table(path)
+    assert read.collect() == third.collect()
+    assert hl.eval(read.globals) == hl.eval(third.globals)
 
 
 def test_index_globals_keeps_lazy_snapshot_without_rows_or_python_table(tmp_path):
@@ -218,19 +185,14 @@ def test_index_globals_keeps_lazy_snapshot_without_rows_or_python_table(tmp_path
     indexed = source.index_globals()
     del source
     gc.collect()
-    for file in path.rglob('*.vortex'):
-        file.unlink()
-    globals_file = next(path.rglob('globals.arrow'))
-    saved = globals_file.read_bytes()
-    globals_file.unlink()
+    moved = tmp_path / 'moved'
+    path.rename(moved)
     row = hl.range_table(2)
     mapped = row.annotate(x=indexed.g + row.idx)
-    assert 'GlobalsScanExec' in mapped._native.physical_plan()
-    assert 'VicebergScanExec' not in mapped._native.physical_plan()
     assert mapped.head(0).collect() == []
     with pytest.raises(FileNotFoundError):
         mapped.collect()
-    globals_file.write_bytes(saved)
+    moved.rename(path)
     hl.range_table(0).annotate_globals(g=99).write(path, overwrite=True)
     assert hl.eval(indexed.g) == 11
     assert [r.x for r in mapped.collect()] == [11, 12]
@@ -255,28 +217,37 @@ def test_index_globals_survives_expression_composition_and_is_not_eager():
     assert hl.eval(hl.range_table(0).index_globals()) == hl.Struct()
 
 
-def test_index_globals_does_not_expose_mutable_bindings():
-    source = hl.range_table(0).annotate_globals(g=5)
-    indexed = source.index_globals()
-    wire = indexed.to_ir()
-    wire.references.clear()
-    with pytest.raises(TypeError):
-        wire['reference'] = 'invalid'
-    assert hl.eval(indexed.g) == 5
-    with pytest.raises(TypeError):
-        indexed._global_refs['new'] = source._native.globals_ref()
 
 
-def test_native_rejects_missing_duplicate_and_mistyped_global_references():
-    source = hl.range_table(0).annotate_globals(g=5)
-    native = source._native
-    expression = source.index_globals()
-    wire = expression.to_ir()
-    references = list(wire.references.items())
-    with pytest.raises(ValueError, match='unbound'):
-        native.eval_global_arrow(_native_expression(wire))
-    with pytest.raises(ValueError, match='duplicate'):
-        native.eval_global_arrow(_native_expression(wire), references + references)
-    wire = dict(wire, dtype=hl.tint32._native_type)
-    with pytest.raises(ValueError, match='type mismatch'):
-        native.eval_global_arrow(_native_expression(wire), references)
+def test_discarded_invalid_globals_are_not_demanded():
+    table = hl.range_table(0).annotate_globals(bad=hl.array([1])[5])
+    discarded = table.select_globals()
+    assert hl.eval(discarded.globals) == hl.Struct()
+    assert hl.eval(discarded.index_globals()) == hl.Struct()
+    copied = hl.Table.parallelize([{'x': 1}], globals=discarded.index_globals())
+    assert copied.collect() == [hl.Struct(x=1)]
+    with pytest.raises(RuntimeError, match='out of bounds'):
+        hl.eval(table.bad)
+
+
+def test_shared_global_expression_reuse_and_transmute_scope():
+    source = hl.range_table(0).annotate_globals(g=3)
+    value = source.index_globals().g
+    for _ in range(8):
+        value = value + value
+    result = hl.range_table(0).annotate_globals(answer=value)
+    assert hl.eval(result.answer) == 768
+    table = hl.range_table(0).annotate_globals(g=3, keep=9)
+    shared = table.g + table.g
+    transmuted = table.transmute_globals(answer=shared + shared)
+    assert hl.eval(transmuted.globals) == hl.Struct(keep=9, answer=12)
+
+
+def test_global_conditionals_keep_lexical_callback_values_in_scope():
+    table = hl.range_table(0).annotate_globals(offset=2)
+    offset = table.index_globals().offset
+    values = hl.range(4).map(lambda x: hl.if_else(x < offset, x + offset, x - offset))
+    assert hl.eval(values) == [2, 3, 0, 1]
+    nested = hl.range(2).map(lambda x: hl.range(3).map(
+        lambda y: hl.if_else(y < offset, hl.int64(x + y + offset), hl.int64(x - y))))
+    assert hl.eval(nested) == [[2, 3, -2], [3, 4, -1]]

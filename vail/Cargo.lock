@@ -1356,8 +1356,6 @@ dependencies = [
 [[package]]
 name = "datafusion-common"
 version = "55.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f72810485975c258f1b4d00baab31728470676c60c5546f366ebd0d99f05ab6"
 dependencies = [
  "arrow",
  "arrow-ipc",
@@ -5306,6 +5304,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "stacker",
  "statrs",
  "thiserror",
  "tokio",
@@ -5372,6 +5371,7 @@ dependencies = [
  "arrow-cast",
  "arrow-csv",
  "arrow-data",
+ "arrow-ipc",
  "arrow-json",
  "arrow-ord",
  "arrow-schema",

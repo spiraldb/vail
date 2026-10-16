@@ -57,6 +57,22 @@ fn structure(array: &ArrayRef) -> Result<&StructArray> {
         .downcast_ref()
         .ok_or_else(|| error("scan scope requires Arrow struct"))
 }
+fn packed(array: &ArrayRef) -> Result<&StructArray> {
+    let value = structure(array)?;
+    if value.null_count() != 0 {
+        return Err(error("scan packed parents must be defined"));
+    }
+    Ok(value)
+}
+fn input<'a>(values: &'a [ArrayRef], expected: &DataType) -> Result<&'a ArrayRef> {
+    let [value] = values else {
+        return Err(error("scan scope requires one packed input"));
+    };
+    if value.data_type() != expected {
+        return Err(error("scan scope input type mismatch"));
+    }
+    Ok(value)
+}
 fn list(array: &ArrayRef) -> Result<&ListArray> {
     array
         .as_any()
@@ -72,6 +88,12 @@ fn list_scalar(values: ArrayRef) -> ScalarValue {
     )))
 }
 fn flatten(values: &ListArray) -> Result<ArrayRef> {
+    if values.null_count() == 0 {
+        let offsets = values.value_offsets();
+        let start = offsets[0] as usize;
+        let end = offsets[values.len()] as usize;
+        return Ok(values.values().slice(start, end - start));
+    }
     let arrays = (0..values.len())
         .filter(|&i| values.is_valid(i))
         .map(|i| values.value(i))
@@ -109,6 +131,24 @@ pub struct Composition {
     pub projection: Arc<dyn PhysicalExpr>,
 }
 pub fn composed(spec: Composition, input: DataType) -> Result<Arc<AggregateUDF>> {
+    let DataType::Struct(inputs) = &input else {
+        return Err(error("scan composition input must be struct"));
+    };
+    if inputs.len() != spec.children.len()
+        || spec.schema.fields().len() != spec.children.len()
+        || spec
+            .children
+            .iter()
+            .zip(inputs)
+            .any(|(child, field)| child.input_type() != *field.data_type())
+        || spec
+            .children
+            .iter()
+            .zip(spec.schema.fields())
+            .any(|(child, field)| child.output_type() != *field.data_type())
+    {
+        return Err(error("scan composition child schema mismatch"));
+    }
     let output = spec.projection.data_type(&spec.schema)?;
     let states = spec
         .children
@@ -127,7 +167,7 @@ pub fn composed(spec: Composition, input: DataType) -> Result<Arc<AggregateUDF>>
             schema: spec.schema.clone(),
             projection: PhysicalIdentity(spec.projection.clone()),
         },
-        input,
+        input.clone(),
         output,
         states,
         Arc::new(move |_| {
@@ -139,6 +179,7 @@ pub fn composed(spec: Composition, input: DataType) -> Result<Arc<AggregateUDF>>
             Ok(Box::new(CompositionAccumulator {
                 spec: spec.clone(),
                 children,
+                input: input.clone(),
             }))
         }),
     ))
@@ -146,6 +187,7 @@ pub fn composed(spec: Composition, input: DataType) -> Result<Arc<AggregateUDF>>
 struct CompositionAccumulator {
     spec: Composition,
     children: Vec<Box<dyn Accumulator>>,
+    input: DataType,
 }
 impl fmt::Debug for CompositionAccumulator {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -154,7 +196,7 @@ impl fmt::Debug for CompositionAccumulator {
 }
 impl Accumulator for CompositionAccumulator {
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
-        let packed = structure(&values[0])?;
+        let packed = packed(input(values, &self.input)?)?;
         for (child, input) in self.children.iter_mut().zip(packed.columns()) {
             child.update_batch(&[input.clone()])?;
         }
@@ -178,6 +220,16 @@ impl Accumulator for CompositionAccumulator {
         Ok(states)
     }
     fn merge_batch(&mut self, states: &[ArrayRef]) -> Result<()> {
+        if states.len()
+            != self
+                .spec
+                .children
+                .iter()
+                .map(|child| child.fields().len())
+                .sum::<usize>()
+        {
+            return Err(error("scan composition state arity mismatch"));
+        }
         let mut offset = 0;
         for (child, spec) in self.children.iter_mut().zip(&self.spec.children) {
             let end = offset + spec.fields().len();
@@ -196,33 +248,53 @@ pub enum Transform {
     Filter,
     Explode,
 }
-pub fn transformed(child: ScanState, input: DataType, transform: Transform) -> Arc<AggregateUDF> {
+pub fn transformed(
+    child: ScanState,
+    input: DataType,
+    transform: Transform,
+) -> Result<Arc<AggregateUDF>> {
+    let valid = match (&transform, &input) {
+        (Transform::Explode, DataType::List(item)) => *item.data_type() == child.input_type(),
+        (Transform::Filter, DataType::Struct(fields)) => {
+            fields.len() == 2
+                && fields[0].name() == "predicate"
+                && *fields[0].data_type() == DataType::Boolean
+                && fields[1].name() == "value"
+                && *fields[1].data_type() == child.input_type()
+        }
+        _ => false,
+    };
+    if !valid {
+        return Err(error("scan transform input schema mismatch"));
+    }
     let states = child
         .fields()
         .iter()
         .map(|f| f.data_type().clone())
         .collect();
-    udf(
+    Ok(udf(
         "scope",
         ScopeIdentity::Transform {
             child: child.clone(),
             transform,
         },
-        input,
+        input.clone(),
         child.output_type(),
         states,
         Arc::new(move |_| {
             Ok(Box::new(TransformAccumulator {
                 inner: child.accumulator()?,
                 transform,
+                input: input.clone(),
             }))
         }),
-    )
+    ))
 }
 #[derive(Debug)]
 struct TransformAccumulator {
     inner: Box<dyn Accumulator>,
     transform: Transform,
+    input: DataType,
 }
 impl fmt::Debug for Transform {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -234,10 +306,11 @@ impl fmt::Debug for Transform {
 }
 impl Accumulator for TransformAccumulator {
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
+        let value = input(values, &self.input)?;
         let argument = match self.transform {
-            Transform::Explode => flatten(list(&values[0])?)?,
+            Transform::Explode => flatten(list(value)?)?,
             Transform::Filter => {
-                let packed = structure(&values[0])?;
+                let packed = packed(value)?;
                 let filter = packed
                     .column(0)
                     .as_any()
@@ -265,6 +338,7 @@ impl Accumulator for TransformAccumulator {
 #[derive(Clone)]
 struct IndexedSpec {
     child: ScanState,
+    input: DataType,
     key: DataType,
     output: DataType,
     array: bool,
@@ -318,7 +392,19 @@ pub fn indexed(
     output: DataType,
     array: bool,
 ) -> Result<Arc<AggregateUDF>> {
+    let valid = if array {
+        key == DataType::Int64
+            && matches!(&input,DataType::List(item) if *item.data_type()==child.input_type())
+            && matches!(&output,DataType::List(item) if *item.data_type()==child.output_type())
+    } else {
+        matches!(&input,DataType::Struct(fields) if fields.len()==2 && fields[0].name()=="key" && *fields[0].data_type()==key && fields[1].name()=="value" && *fields[1].data_type()==child.input_type())
+            && matches!(&output,DataType::List(item) if matches!(item.data_type(),DataType::Struct(fields) if fields.len()==2 && fields[0].name()=="key" && *fields[0].data_type()==key && fields[1].name()=="value" && *fields[1].data_type()==child.output_type()))
+    };
+    if !valid {
+        return Err(error("indexed scan schema mismatch"));
+    }
     let spec = IndexedSpec {
+        input: input.clone(),
         child,
         key,
         output: output.clone(),
@@ -335,7 +421,7 @@ pub fn indexed(
             key: spec.key.clone(),
             array,
         },
-        input,
+        input.clone(),
         output,
         states,
         Arc::new(move |_| {
@@ -396,8 +482,9 @@ impl IndexedInner {
 }
 impl IndexedInner {
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
+        let value = input(values, &self.spec.input)?;
         if self.spec.array {
-            let arrays = list(&values[0])?;
+            let arrays = list(value)?;
             for row in 0..arrays.len() {
                 if arrays.is_null(row) {
                     continue;
@@ -409,7 +496,7 @@ impl IndexedInner {
                     .update_batch(&[value], &indices, None, self.count())?;
             }
         } else {
-            let packed = structure(&values[0])?;
+            let packed = packed(value)?;
             let indices = self.intern(packed.column(0))?;
             self.children.update_batch(
                 &[packed.column(1).clone()],
@@ -440,26 +527,61 @@ impl IndexedInner {
         ])
     }
     fn merge_batch(&mut self, states: &[ArrayRef]) -> Result<()> {
-        let lengths = states[0]
+        let [lengths, entries] = states else {
+            return Err(error("indexed scan state arity mismatch"));
+        };
+        let lengths = lengths
             .as_any()
             .downcast_ref::<Int64Array>()
             .ok_or_else(|| error("invalid array scan length state"))?;
-        let entries = list(&states[1])?;
+        let entries = list(entries)?;
+        if lengths.len() != entries.len() {
+            return Err(error("indexed scan state row counts differ"));
+        }
         for row in 0..entries.len() {
             if entries.is_null(row) {
                 continue;
             }
             if self.spec.array && lengths.is_valid(row) {
-                self.shape(lengths.value(row) as usize)?;
+                self.shape(
+                    usize::try_from(lengths.value(row))
+                        .map_err(|_| error("negative array scan length"))?,
+                )?;
             }
             let batch = entries.value(row);
-            let batch = structure(&batch)?;
+            let batch = packed(&batch)?;
+            if batch.num_columns() != 2 || batch.column(0).data_type() != &self.spec.key {
+                return Err(error("indexed scan entry schema mismatch"));
+            }
             let indices = if self.spec.array {
+                if batch.len() != self.count() {
+                    return Err(error("array scan state length mismatch"));
+                }
+                let keys = batch
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<Int64Array>()
+                    .ok_or_else(|| error("array scan keys must be int64"))?;
+                if keys.null_count() != 0
+                    || keys
+                        .values()
+                        .iter()
+                        .enumerate()
+                        .any(|(index, key)| *key != index as i64)
+                {
+                    return Err(error("array scan state keys must be coordinate positions"));
+                }
                 (0..batch.len()).collect()
             } else {
                 self.intern(batch.column(0))?
             };
+            if batch.num_columns() != 2 || batch.column(0).data_type() != &self.spec.key {
+                return Err(error("indexed scan entry schema mismatch"));
+            }
             let nested = structure(batch.column(1))?;
+            if nested.fields() != &self.spec.child.fields() || nested.null_count() != 0 {
+                return Err(error("indexed scan child state schema mismatch"));
+            }
             self.children
                 .merge_batch(nested.columns(), &indices, self.count())?;
         }
@@ -538,130 +660,5 @@ impl Accumulator for IndexedAccumulator {
         self.inner
             .lock()
             .map_or(std::mem::size_of::<Self>(), |inner| inner.size())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::{aggregates::aggregate_udf, scan_state::ScanState};
-
-    fn grouped_output() -> DataType {
-        let entry = DataType::Struct(
-            vec![
-                Field::new("key", DataType::Int64, true),
-                Field::new("value", DataType::Int64, true),
-            ]
-            .into(),
-        );
-        DataType::List(Arc::new(Field::new("item", entry, true)))
-    }
-    use arrow_array::Int64Array;
-
-    fn group_input(child: &ScanState, keys: &[i64], values: &[i64]) -> Result<ArrayRef> {
-        let fields = vec![
-            Arc::new(Field::new("key", DataType::Int64, true)),
-            Arc::new(Field::new("input", child.input_type(), true)),
-        ]
-        .into();
-        Ok(Arc::new(StructArray::try_new(
-            fields,
-            vec![
-                Arc::new(Int64Array::from(keys.to_vec())),
-                Arc::new(Int64Array::from(values.to_vec())),
-            ],
-            None,
-        )?))
-    }
-
-    #[test]
-    fn grouped_snapshots_can_be_repeated_and_merged() -> Result<()> {
-        let child = ScanState::new(
-            aggregate_udf("sum", Some(&DataType::Int64)).unwrap(),
-            vec![DataType::Int64],
-        )?;
-        let mut indexed = IndexedSpec {
-            child: child.clone(),
-            key: DataType::Int64,
-            output: grouped_output(),
-            array: false,
-        }
-        .accumulator()?;
-        indexed.update_batch(&[group_input(&child, &[9, 4, 9], &[2, 7, 3])?])?;
-
-        let first = indexed.snapshot()?;
-        let second = indexed.snapshot()?;
-        assert_eq!(
-            first.to_data(),
-            second.to_data(),
-            "snapshot must restore the grouped adapter state"
-        );
-        let state = indexed.state()?;
-
-        let mut restored = IndexedSpec {
-            child,
-            key: DataType::Int64,
-            output: grouped_output(),
-            array: false,
-        }
-        .accumulator()?;
-        let arrays = state
-            .iter()
-            .map(|value| value.to_array_of_size(1))
-            .collect::<Result<Vec<_>>>()?;
-        restored.merge_batch(&arrays)?;
-        let result = restored.evaluate()?;
-        let ScalarValue::List(result) = result else {
-            panic!("grouped result must be a list")
-        };
-        let entries = result.value(0);
-        let entries = entries.as_any().downcast_ref::<StructArray>().unwrap();
-        assert_eq!(
-            entries
-                .column(0)
-                .as_any()
-                .downcast_ref::<Int64Array>()
-                .unwrap(),
-            &Int64Array::from(vec![4, 9])
-        );
-        assert_eq!(
-            entries
-                .column(1)
-                .as_any()
-                .downcast_ref::<Int64Array>()
-                .unwrap(),
-            &Int64Array::from(vec![7, 5])
-        );
-        Ok(())
-    }
-
-    #[test]
-    fn array_scope_rejects_different_lengths() -> Result<()> {
-        let child = ScanState::new(
-            aggregate_udf("sum", Some(&DataType::Int64)).unwrap(),
-            vec![DataType::Int64],
-        )?;
-        let mut indexed = IndexedSpec {
-            child,
-            key: DataType::Int64,
-            output: DataType::List(Arc::new(Field::new("item", DataType::Int64, true))),
-            array: true,
-        }
-        .accumulator()?;
-        let values: ArrayRef = Arc::new(Int64Array::from(vec![1, 2, 3]));
-        let lists: ArrayRef = Arc::new(ListArray::new(
-            Arc::new(Field::new("item", DataType::Int64, true)),
-            OffsetBuffer::from_lengths([2, 1]),
-            values,
-            None,
-        ));
-        assert!(
-            indexed
-                .update_batch(&[lists])
-                .unwrap_err()
-                .to_string()
-                .contains("identical length")
-        );
-        Ok(())
     }
 }

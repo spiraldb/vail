@@ -83,7 +83,10 @@ def import_vcf(
         [{_CID: i, _COL: {"s": sample}} for i, sample in enumerate(samples)],
         schema=tstruct(**{_CID: tint64, _COL: tstruct(s=tstr)}),
     ).key_by()
-    matrix = MatrixTable(MatrixIR(core, cols, row_key=("locus", "alleles"), col_key=("s",)))
+    # The native parser emits exactly one ordered cell per header sample and
+    # checks sample cardinality when entries are decoded. Avoid adding a generic
+    # whole-entry alignment predicate that defeats source field projection.
+    matrix = MatrixTable(MatrixIR(core, cols, row_key=("locus", "alleles"), col_key=("s",), _aligned=True))
     core = matrix._sort_rows(matrix._mir.core, matrix._mir.row_key)
     matrix = matrix._copy(rows=core)
     partitions = n_partitions if n_partitions is not None else min_partitions

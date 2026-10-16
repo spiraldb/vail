@@ -81,3 +81,59 @@ def test_corr_long_arrays_use_shared_constant_size_reducer_state():
     # exceeding a gigabyte at only 4000 elements.
     assert hl.eval(hl.corr(hl.range(20000), hl.range(20000))) == pytest.approx(1.0)
     assert hl.eval(hl.corr([1e12, 1e12 + 1, 1e12 + 2], [3, 2, 1])) == pytest.approx(-1.0)
+
+
+def test_random_array_composition_preserves_input_stream_values():
+    def input(): return hl.range(3).map(lambda x:hl.rand_unif(seed=13))
+    expected = hl.eval(input())
+    assert hl.eval(hl.zip(input(),[1.,2.,3.])) == list(zip(expected,[1.,2.,3.]))
+    assert hl.eval(hl.enumerate(input())) == list(enumerate(expected))
+    assert hl.eval(input()+[1.,2.,3.]) == [x + y for x, y in zip(expected, [1.,2.,3.])]
+    from statistics import correlation
+    assert hl.eval(hl.corr(input(),[1.,2.,3.])) == pytest.approx(correlation(expected, [1.,2.,3.]))
+
+
+def test_zip_missing_input_does_not_evaluate_unused_other_array():
+    invalid = hl.array([hl.array([1])[10]])
+    assert hl.eval(hl.zip(hl.missing(hl.tarray(hl.tint32)),invalid)) is None
+
+
+def test_variadic_zip_truncation_padding_and_missing_parents():
+    values = ([1,None,3],['a'],[True,False])
+    assert hl.eval(hl.zip(*values)) == [(1,'a',True)]
+    assert hl.eval(hl.zip(*values,fill_missing=True)) == [(1,'a',True),(None,None,False),(3,None,None)]
+    assert hl.eval(hl.zip(hl.empty_array(hl.tint32),['a'],[True])) == []
+    assert hl.eval(hl.zip([1],hl.missing(hl.tarray(hl.tstr)),[True],fill_missing=True)) is None
+
+
+def test_random_collection_composition_in_rows_globals_and_nested_callbacks():
+    table = hl.range_table(5, n_partitions=3)
+    table = table.annotate_globals(global_draws=hl.range(4).map(lambda _: hl.rand_unif(seed=333)))
+    values = hl.range(table.idx + 2).map(lambda _: hl.rand_int32(1000, seed=334))
+    result = table.annotate(
+        draws=values,
+        paired=hl.zip(values, hl.range(table.idx + 2)),
+        indexed=hl.enumerate(values, start=-2),
+        shifted=values + hl.range(table.idx + 2),
+        globals_paired=hl.zip(table.index_globals().global_draws, [0, 1, 2, 3]),
+    )
+    expected_globals = hl.eval(table.index_globals().global_draws)
+    for _ in range(2):
+        for row in result.collect():
+            assert row.paired == list(zip(row.draws, range(row.idx + 2)))
+            assert row.indexed == list(zip(range(-2, row.idx), row.draws))
+            assert row.shifted == [value + index for index, value in enumerate(row.draws)]
+            assert row.globals_paired == list(zip(expected_globals, range(4)))
+
+    def nested(_):
+        draws = hl.range(4).map(lambda _: hl.rand_unif(seed=335))
+        return hl.struct(draws=draws, paired=hl.zip(draws, [0, 1, 2, 3]))
+    for row in hl.eval(hl.range(3).map(nested)):
+        assert row.paired == list(zip(row.draws, range(4)))
+
+
+def test_zip_evaluates_defined_array_inputs_before_truncation():
+    # Inputs are materialized arrays, even when the zip emits fewer elements.
+    values = hl.range(3).map(lambda x: hl.if_else(x < 2, x, hl.int32('bad')))
+    with pytest.raises(RuntimeError, match='bad'):
+        hl.eval(hl.zip(values, [0, 1]))

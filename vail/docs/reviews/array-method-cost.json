@@ -1,0 +1,529 @@
+{
+  "base_commit": "b8f9e42c",
+  "comparison": "Independent complete baseline Python/native snapshot versus final release. Matching inputs/public actions in fresh processes.",
+  "baseline_native_sha256": "530a6998afbfe4a4660b94c723e0b46c2b5585c00428317673ea12b9aa634b09",
+  "native_sha256": "b2e1ae668c7c992c87bdf2bfbb5cbee53bbcf070445db689f89944d298ad845f",
+  "child_source": "import json,time,resource\nimport vail as hl\nMODE=MODE_VALUE\nN=N_VALUE\nR=R_VALUE\nW=W_VALUE\nhl.reset_global_randomness()\nif MODE=='storage':\n import pyarrow as pa\n t=hl.Table.parallelize(pa.table({'a':pa.array([['a',None,'b'],[],None],type=pa.list_(pa.large_string())),\n                                  'zero':pa.array(['z0','z1','z2'],type=pa.large_string())}))\n e=t.a.scan(lambda acc,item:hl.if_else(hl.is_missing(item),acc,item),t.zero)\nelif MODE in ['zip','enumerate','arithmetic','corr','mean','median','set_median']:\n values=[float((i*8191)%N) for i in range(N)]\n t=hl.Table.parallelize([{'x':values,'y':[2*x+1 for x in values]}],schema=hl.tstruct(x=hl.tarray(hl.tfloat64),y=hl.tarray(hl.tfloat64)))\n if MODE=='zip': e=hl.zip(t.x,t.y)\n elif MODE=='enumerate':e=hl.enumerate(t.x)\n elif MODE=='arithmetic':e=t.x+t.y\n elif MODE=='corr':e=hl.corr(t.x,t.y)\n elif MODE=='mean':e=hl.mean(t.x)\n elif MODE=='median':e=hl.median(t.x)\n else:e=hl.median(hl.set(t.x))\nelif MODE=='capture':\n t=hl.Table.parallelize([{'a':list(range(N)),'c':[i]*W} for i in range(R)],\n   schema=hl.tstruct(a=hl.tarray(hl.tint32),c=hl.tarray(hl.tint32)))\n e=t.a.fold(lambda acc,item:acc+item+t.c[0],0)\nelif MODE in ['state','state_scan']:\n t=hl.Table.parallelize([{'a':list(range(N)),'state':[i]*W} for i in range(R)],\n   schema=hl.tstruct(a=hl.tarray(hl.tint32),state=hl.tarray(hl.tint32)))\n e=t.a.fold(lambda acc,item:acc,t.state) if MODE=='state' else t.a.scan(lambda acc,item:acc,t.state).length()\nelif MODE=='scalar':\n t=hl.range_table(R,1);a=hl.literal(list(range(N)))\n e=a.fold(lambda acc,item:acc+item+t.idx,0)\nelif MODE=='rng_zip':\n a=hl.range(N).map(lambda i:hl.rand_unif(seed=13));e=hl.zip(a,list(range(N)))\nt=time.perf_counter();actual=e.collect() if MODE!='rng_zip' else hl.eval(e);elapsed=time.perf_counter()-t\nif MODE=='storage':assert actual==[['z0','a','a','b'],['z1'],None]\nelif MODE=='zip':assert len(actual[0])==N and actual[0][0]==(values[0],2*values[0]+1)\nelif MODE=='enumerate':assert actual[0]==list(enumerate(values))\nelif MODE=='arithmetic':assert actual[0]==[3*x+1 for x in values]\nelif MODE=='corr':assert abs(actual[0]-1)<1e-10\nelif MODE=='mean':assert actual==[(N-1)/2]\nelif MODE in ['median','set_median']:assert actual==[float((N-1)//2)]\nelif MODE=='capture':assert actual==[N*(N-1)//2+N*i for i in range(R)]\nelif MODE=='scalar':assert actual==[N*(N-1)//2+N*i for i in range(R)]\nelif MODE=='state':assert actual==[[i]*W for i in range(R)]\nelif MODE=='state_scan':assert actual==[N+1]*R\nelif MODE=='rng_zip':assert len(actual)==N\nprint(json.dumps(dict(action_seconds=elapsed,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)))\n",
+  "timeout_seconds": 10,
+  "cases": [
+    {
+      "version": "baseline",
+      "mode": "zip",
+      "n": 256,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.014306083001429215,
+      "peak_rss_bytes": 140525568
+    },
+    {
+      "version": "baseline",
+      "mode": "zip",
+      "n": 1024,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.005129292003402952,
+      "peak_rss_bytes": 150437888
+    },
+    {
+      "version": "baseline",
+      "mode": "zip",
+      "n": 4096,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.02271741600270616,
+      "peak_rss_bytes": 403570688
+    },
+    {
+      "version": "baseline",
+      "mode": "enumerate",
+      "n": 256,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.00378570900647901,
+      "peak_rss_bytes": 132710400
+    },
+    {
+      "version": "baseline",
+      "mode": "enumerate",
+      "n": 1024,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.0046691660027136095,
+      "peak_rss_bytes": 144130048
+    },
+    {
+      "version": "baseline",
+      "mode": "enumerate",
+      "n": 4096,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.015550042000540998,
+      "peak_rss_bytes": 268386304
+    },
+    {
+      "version": "baseline",
+      "mode": "arithmetic",
+      "n": 256,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.003681500005768612,
+      "peak_rss_bytes": 135413760
+    },
+    {
+      "version": "baseline",
+      "mode": "arithmetic",
+      "n": 1024,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.005123332994116936,
+      "peak_rss_bytes": 149536768
+    },
+    {
+      "version": "baseline",
+      "mode": "arithmetic",
+      "n": 4096,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.024935082998126745,
+      "peak_rss_bytes": 402079744
+    },
+    {
+      "version": "baseline",
+      "mode": "corr",
+      "n": 32,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.011928083004022483,
+      "peak_rss_bytes": 137445376
+    },
+    {
+      "version": "baseline",
+      "mode": "corr",
+      "n": 64,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.014482916994893458,
+      "peak_rss_bytes": 139214848
+    },
+    {
+      "version": "baseline",
+      "mode": "corr",
+      "n": 128,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.02165637500002049,
+      "peak_rss_bytes": 169345024
+    },
+    {
+      "version": "baseline",
+      "mode": "mean",
+      "n": 1000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.0034797920015989803,
+      "peak_rss_bytes": 131743744
+    },
+    {
+      "version": "baseline",
+      "mode": "mean",
+      "n": 100000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.0033249579937546514,
+      "peak_rss_bytes": 144818176
+    },
+    {
+      "version": "baseline",
+      "mode": "median",
+      "n": 1000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.004230500002449844,
+      "peak_rss_bytes": 138477568
+    },
+    {
+      "version": "baseline",
+      "mode": "median",
+      "n": 100000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.012982000000192784,
+      "peak_rss_bytes": 147554304
+    },
+    {
+      "version": "baseline",
+      "mode": "set_median",
+      "n": 1000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.005129208002472296,
+      "peak_rss_bytes": 137527296
+    },
+    {
+      "version": "baseline",
+      "mode": "set_median",
+      "n": 100000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.01784162500553066,
+      "peak_rss_bytes": 162267136
+    },
+    {
+      "version": "baseline",
+      "mode": "storage",
+      "n": 0,
+      "rows": 0,
+      "width": 0,
+      "action_seconds": 0.003150125005049631,
+      "peak_rss_bytes": 136314880
+    },
+    {
+      "version": "baseline",
+      "mode": "capture",
+      "n": 64,
+      "rows": 32,
+      "width": 8192,
+      "action_seconds": 0.006499333001556806,
+      "peak_rss_bytes": 141295616
+    },
+    {
+      "version": "baseline",
+      "mode": "capture",
+      "n": 512,
+      "rows": 32,
+      "width": 8192,
+      "action_seconds": 0.02541620899864938,
+      "peak_rss_bytes": 146718720
+    },
+    {
+      "version": "baseline",
+      "mode": "state",
+      "n": 64,
+      "rows": 16,
+      "width": 4096,
+      "action_seconds": 0.014174292002280708,
+      "peak_rss_bytes": 135479296
+    },
+    {
+      "version": "baseline",
+      "mode": "state",
+      "n": 256,
+      "rows": 16,
+      "width": 4096,
+      "action_seconds": 0.012192334004794247,
+      "peak_rss_bytes": 134692864
+    },
+    {
+      "version": "baseline",
+      "mode": "state_scan",
+      "n": 64,
+      "rows": 16,
+      "width": 4096,
+      "action_seconds": 0.00966229199548252,
+      "peak_rss_bytes": 170180608
+    },
+    {
+      "version": "baseline",
+      "mode": "scalar",
+      "n": 256,
+      "rows": 1024,
+      "width": 0,
+      "action_seconds": 0.009268791000067722,
+      "peak_rss_bytes": 136445952
+    },
+    {
+      "version": "baseline",
+      "mode": "scalar",
+      "n": 1024,
+      "rows": 1024,
+      "width": 0,
+      "action_seconds": 0.01461412500066217,
+      "peak_rss_bytes": 137773056
+    },
+    {
+      "version": "baseline",
+      "mode": "rng_zip",
+      "n": 64,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.14706816600664752,
+      "peak_rss_bytes": 129335296
+    },
+    {
+      "version": "current",
+      "mode": "zip",
+      "n": 256,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.0043996250024065375,
+      "peak_rss_bytes": 137265152
+    },
+    {
+      "version": "current",
+      "mode": "zip",
+      "n": 1024,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.004676749995269347,
+      "peak_rss_bytes": 136314880
+    },
+    {
+      "version": "current",
+      "mode": "zip",
+      "n": 4096,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.005824833002407104,
+      "peak_rss_bytes": 140705792
+    },
+    {
+      "version": "current",
+      "mode": "enumerate",
+      "n": 256,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.003468707996944431,
+      "peak_rss_bytes": 133529600
+    },
+    {
+      "version": "current",
+      "mode": "enumerate",
+      "n": 1024,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.004903417000605259,
+      "peak_rss_bytes": 134709248
+    },
+    {
+      "version": "current",
+      "mode": "enumerate",
+      "n": 4096,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.004874542006291449,
+      "peak_rss_bytes": 135577600
+    },
+    {
+      "version": "current",
+      "mode": "arithmetic",
+      "n": 256,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.00496466599724954,
+      "peak_rss_bytes": 135970816
+    },
+    {
+      "version": "current",
+      "mode": "arithmetic",
+      "n": 1024,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.005041500000515953,
+      "peak_rss_bytes": 137199616
+    },
+    {
+      "version": "current",
+      "mode": "arithmetic",
+      "n": 4096,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.005171708995476365,
+      "peak_rss_bytes": 135643136
+    },
+    {
+      "version": "current",
+      "mode": "corr",
+      "n": 32,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.007711957994615659,
+      "peak_rss_bytes": 136577024
+    },
+    {
+      "version": "current",
+      "mode": "corr",
+      "n": 64,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.007786958005453926,
+      "peak_rss_bytes": 137134080
+    },
+    {
+      "version": "current",
+      "mode": "corr",
+      "n": 128,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.007751165998342913,
+      "peak_rss_bytes": 136069120
+    },
+    {
+      "version": "current",
+      "mode": "mean",
+      "n": 1000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.0032344999999622814,
+      "peak_rss_bytes": 132202496
+    },
+    {
+      "version": "current",
+      "mode": "mean",
+      "n": 100000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.003802500003075693,
+      "peak_rss_bytes": 145096704
+    },
+    {
+      "version": "current",
+      "mode": "median",
+      "n": 1000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.003203208005288616,
+      "peak_rss_bytes": 134021120
+    },
+    {
+      "version": "current",
+      "mode": "median",
+      "n": 100000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.004622874999768101,
+      "peak_rss_bytes": 144031744
+    },
+    {
+      "version": "current",
+      "mode": "set_median",
+      "n": 1000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.0033320829970762134,
+      "peak_rss_bytes": 134397952
+    },
+    {
+      "version": "current",
+      "mode": "set_median",
+      "n": 100000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.00597787500009872,
+      "peak_rss_bytes": 148439040
+    },
+    {
+      "version": "current",
+      "mode": "storage",
+      "n": 0,
+      "rows": 0,
+      "width": 0,
+      "action_seconds": 0.0027489999993122183,
+      "peak_rss_bytes": 132710400
+    },
+    {
+      "version": "current",
+      "mode": "capture",
+      "n": 64,
+      "rows": 32,
+      "width": 8192,
+      "action_seconds": 0.002939209000032861,
+      "peak_rss_bytes": 136855552
+    },
+    {
+      "version": "current",
+      "mode": "capture",
+      "n": 512,
+      "rows": 32,
+      "width": 8192,
+      "action_seconds": 0.0037380419962573797,
+      "peak_rss_bytes": 137461760
+    },
+    {
+      "version": "current",
+      "mode": "state",
+      "n": 64,
+      "rows": 16,
+      "width": 4096,
+      "action_seconds": 0.004350333001639228,
+      "peak_rss_bytes": 133464064
+    },
+    {
+      "version": "current",
+      "mode": "state",
+      "n": 256,
+      "rows": 16,
+      "width": 4096,
+      "action_seconds": 0.004469958999834489,
+      "peak_rss_bytes": 134807552
+    },
+    {
+      "version": "current",
+      "mode": "state_scan",
+      "n": 64,
+      "rows": 16,
+      "width": 4096,
+      "action_seconds": 0.004093249997822568,
+      "peak_rss_bytes": 150650880
+    },
+    {
+      "version": "current",
+      "mode": "scalar",
+      "n": 256,
+      "rows": 1024,
+      "width": 0,
+      "action_seconds": 0.004302708999603055,
+      "peak_rss_bytes": 132218880
+    },
+    {
+      "version": "current",
+      "mode": "scalar",
+      "n": 1024,
+      "rows": 1024,
+      "width": 0,
+      "action_seconds": 0.0081825419983943,
+      "peak_rss_bytes": 132169728
+    },
+    {
+      "version": "current",
+      "mode": "rng_zip",
+      "n": 64,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.13280062500416534,
+      "peak_rss_bytes": 128663552
+    },
+    {
+      "version": "current",
+      "mode": "zip",
+      "n": 100000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.042531041995971464,
+      "peak_rss_bytes": 180944896
+    },
+    {
+      "version": "current",
+      "mode": "corr",
+      "n": 8192,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.008878832995833363,
+      "peak_rss_bytes": 138477568
+    },
+    {
+      "version": "current",
+      "mode": "enumerate",
+      "n": 100000,
+      "rows": 1,
+      "width": 0,
+      "action_seconds": 0.0407515000042622,
+      "peak_rss_bytes": 172965888
+    }
+  ],
+  "limitations": [
+    "Single bounded runs, not statistical performance estimates; RSS includes input preparation and Python runtime.",
+    "RNG-containing array inputs retain legacy indexed composition to preserve seeded outputs; that compatibility path retains whole-array capture cost.",
+    "Capture/state sharing applies while lanes remain identical or contiguous; sparse lane drops still require gathers.",
+    "Canonical callback storage can require one conversion of alternate Arrow string/offset layouts; callback results are converted only when needed."
+  ]
+}

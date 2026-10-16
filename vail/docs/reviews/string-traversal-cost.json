@@ -1,0 +1,63 @@
+{
+  "workload": "benchmarks/check_string_traversal_cost.py;16 rows Unicode a\ud83d\ude00b\u4e2d repeated, stepped[::-2] and dynamic global translation with multi-character replacements; exact results checked",
+  "baseline_native_sha256": "6936568d26ca9995f73ee3769efab3797718eadb82f7e21319bf4d9777d6b8ab",
+  "baseline": [
+    {
+      "codepoints": 128,
+      "seconds": 0.12438545899931341,
+      "max_rss_bytes": 135970816
+    },
+    {
+      "codepoints": 512,
+      "seconds": 0.03391479200217873,
+      "max_rss_bytes": 173965312
+    },
+    {
+      "codepoints": 2048,
+      "seconds": 0.44142558300154633,
+      "max_rss_bytes": 741916672
+    }
+  ],
+  "limitations": "Sequential sizes within process; first includes initialization; cumulative RSS high-water and shared machine load.",
+  "indexed_native_sha256": "267a20f9ba47a73a2b1bd92c6a91ae3485a15e17603cb7a22de4d663a9dca4a5",
+  "indexed": [
+    {
+      "codepoints": 128,
+      "seconds": 0.005527291999896988,
+      "max_rss_bytes": 131612672
+    },
+    {
+      "codepoints": 512,
+      "seconds": 0.0016419169987784699,
+      "max_rss_bytes": 131940352
+    },
+    {
+      "codepoints": 2048,
+      "seconds": 0.002032666001468897,
+      "max_rss_bytes": 132562944
+    }
+  ],
+  "shared_scalar_workload": {
+    "script": "benchmarks/check_string_scalar_cost.py",
+    "baseline": "not measured; bounded final-state evidence only",
+    "results": [
+      {
+        "rows": 1000,
+        "shared_scalar_codepoints": 8192,
+        "seconds": 0.15636183400056325,
+        "max_rss_bytes": 128008192
+      },
+      {
+        "rows": 10000,
+        "shared_scalar_codepoints": 8192,
+        "seconds": 0.008156541000062134,
+        "max_rss_bytes": 133316608
+      }
+    ]
+  },
+  "validation": [
+    "3 Rust public string integration tests passed",
+    "17 Rust expression tests passed before final UTF8-accessor refinement; final string integration covers that refinement",
+    "123 Python string/codepoint/formatting/allele tests passed against rebuilt native"
+  ]
+}

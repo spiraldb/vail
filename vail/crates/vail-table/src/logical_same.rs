@@ -31,11 +31,22 @@ pub(crate) async fn plan(
     crate::logical::physical_plan(logical(left, right, options, pairs)?, 1).await
 }
 
-pub(crate) async fn diagnostic(left: &TableRef, right: &TableRef, options: SameOptions, pairs: &[(usize, usize)]) -> Result<PhysicalPlan> {
+pub(crate) async fn diagnostic(
+    left: &TableRef,
+    right: &TableRef,
+    options: SameOptions,
+    pairs: &[(usize, usize)],
+) -> Result<PhysicalPlan> {
     crate::logical::diagnostic(logical(left, right, options, pairs)?, 1).await
 }
 
-fn logical(left: &TableRef, right: &TableRef, options: SameOptions, pairs: &[(usize, usize)]) -> Result<LogicalPlan> {
+fn logical(
+    left: &TableRef,
+    right: &TableRef,
+    options: SameOptions,
+    pairs: &[(usize, usize)],
+) -> Result<LogicalPlan> {
+    let mut context = crate::logical::LoweringContext::default();
     let schema = Schema::new(vec![Field::new("different", DataType::Boolean, false)]);
     let node = SameNode {
         id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
@@ -44,12 +55,14 @@ fn logical(left: &TableRef, right: &TableRef, options: SameOptions, pairs: &[(us
         options,
         pairs: pairs.to_vec(),
         inputs: vec![
-            crate::logical::ordered(crate::logical::lower(left)?),
-            crate::logical::ordered(crate::logical::lower(right)?),
+            crate::logical::ordered(crate::logical::lower_in_context(left, &mut context)?),
+            crate::logical::ordered(crate::logical::lower_in_context(right, &mut context)?),
         ],
         schema: Arc::new(DFSchema::try_from(schema)?),
     };
-    Ok(LogicalPlan::Extension(Extension { node: Arc::new(node) }))
+    Ok(LogicalPlan::Extension(Extension {
+        node: Arc::new(node),
+    }))
 }
 
 #[derive(Debug, Clone)]

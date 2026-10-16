@@ -1,0 +1,117 @@
+{
+  "hail_source_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "decisions": [
+    {
+      "topic": "random input collections",
+      "evidence": [
+        "hail/python/hail/expr/functions.py zip4509/enumerate4559",
+        "hail/python/hail/ir/ir.py StreamZip._handle_randomness1798, ToArray1352",
+        "hail/python/hail/expr/expressions/typed_expressions.py zip_with_index4869"
+      ],
+      "decision": "Input streams evaluate with their own RNG contexts. Remove prior Vail contextual whole-array indexing fallback; bind input once and use native n-ary zip/index_values. Replace old Vail composed seeded goldens with public input-vs-composition equivalence."
+    },
+    {
+      "topic": "correlation",
+      "evidence": [
+        "hail/hail/src/is/hail/expr/ir/functions/ArrayFunctions.scala corr315"
+      ],
+      "decision": "Consume each input array once; shared numerical reducer computes mathematical paired correlation. Replace accidental Vail rebinding golden with independent statistics.correlation oracle."
+    },
+    {
+      "topic": "boolean aggregate missingness",
+      "evidence": [
+        "hail/python/hail/expr/aggregators/aggregators.py all671-709"
+      ],
+      "decision": "Missing values ignored; empty/all-missing all result True. Prefix stream agrees with shared table reducer, replacing separate-fold Kleene expectation."
+    },
+    {
+      "topic": "call_stats empty frequency",
+      "evidence": [
+        "hail/hail/src/is/hail/expr/ir/agg/CallStatsAggregator.scala263"
+      ],
+      "decision": "AN0 sets AF whole field missing. Matrix and table share same state and finish; remove matrix test normalization to array of missing elements."
+    }
+  ],
+  "validation": {
+    "candidate11_full_python": {
+      "passed": 1661,
+      "failed": 59,
+      "skipped": 1,
+      "subtests_passed": 19,
+      "seconds": 94.46
+    },
+    "frontend_python_fixes_on_isolated_native11_package": {
+      "passed": 58,
+      "seconds": 1.91,
+      "log": "/private/tmp/vail-shortcuts-frontend-fixes11.log"
+    },
+    "acceptance": "Intermediate diagnosis only; final coherent integration validation pending",
+    "candidate12_full_python": {
+      "passed": 1694,
+      "failed": 26,
+      "skipped": 1,
+      "subtests_passed": 19,
+      "seconds": 96.89
+    },
+    "candidate12_upstream_randomness_module": {
+      "passed": 6,
+      "failed": 0,
+      "log": "/private/tmp/vail-shortcuts-upstream12-randomness/test_randomness.py.log"
+    },
+    "candidate12_frontend_context_and_demand": {
+      "passed": 14,
+      "failed": 0,
+      "seconds": 0.39
+    },
+    "stream_guard_capture_fix": {
+      "diagnosis": "Last-input guard captured full input array per element; bind scalar length outside callback",
+      "validation": "isolated native12 with revised streams only; final coherent package pending",
+      "elements": 65536,
+      "seconds": 0.0435,
+      "max_rss_bytes": 328663040,
+      "log": "/private/tmp/vail-shortcuts-stream-cost12-scalar-bound.log"
+    },
+    "candidate13_planner_randomness_focus": {
+      "passed": 97,
+      "failed": 1,
+      "log": "/private/tmp/vail-shortcuts-planner13-focus.log"
+    },
+    "candidate14_randomness": {
+      "passed": 40,
+      "failed": 0,
+      "log": "/private/tmp/vail-shortcuts-randomness14.log"
+    },
+    "candidate15_python_full": {
+      "status": "interrupted_after_reproduced_planning_hang",
+      "elapsed_seconds": 302.73,
+      "location": "test_matrix_table.py::test_row_aligned_views_and_transformations_do_not_index_rows, union_cols entries count",
+      "native_profile": "/private/tmp/vail-shortcuts-union15-sample.txt",
+      "result": "not a passing or complete suite; replaced by final integration run"
+    },
+    "candidate15_native": {
+      "passed": 259,
+      "failed": 1,
+      "binaries": 41,
+      "remaining": "wide_zip_replay_survives_cancelled_reader consumer partition already executed"
+    },
+    "candidate15_scope_focus": {
+      "passed": 59,
+      "failed": 0,
+      "seconds": 5.68
+    },
+    "candidate15_stream_scaling": {
+      "native_sha256": "a648dd0144ad8fbbf71ba4f962f11badfc7ec380572dbdc272031327dc958b46",
+      "elements": 65536,
+      "seconds": 0.0667,
+      "max_rss_bytes": 336871424,
+      "log": "/private/tmp/vail-shortcuts-stream-cost15.log",
+      "host_load": "concurrent suites/builds"
+    }
+  },
+  "integration_fixes_pending_final_validation": [
+    "Native closed-scalar eligibility at singleton projection/conditional admission, preserving lexical binder ownership; frontend explicit eligibility instead of exception fallback",
+    "Query-local explicit row/global LoweringContext memo to avoid repeated DAG lowering",
+    "Maintained DataFusion common empty-struct scalar-compaction cardinality/validity patch",
+    "Structural Hail IR helper statements removed before argument evaluation with exact per-run manifest; all behavioral statements retained"
+  ]
+}

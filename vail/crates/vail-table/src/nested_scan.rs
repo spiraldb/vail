@@ -24,29 +24,22 @@ fn symbol() -> String {
         NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
     )
 }
-/// Lexically bind one Boolean Arrow value without introducing an RNG context.
+/// Bind one native Boolean value without introducing an array/RNG context.
 pub(crate) fn bind_predicate(value: Expr, body: impl FnOnce(Expr) -> Expr) -> Expr {
     let parameter = symbol();
     let variable = Expr::LambdaVariable {
         name: parameter.clone(),
         dtype: None,
     };
-    Expr::ArrayIndex {
-        value: Arc::new(Expr::ArrayMap {
-            value: Arc::new(Expr::Array {
-                element_type: Type::Primitive(PrimitiveType::Bool),
-                elements: vec![value],
-            }),
-            parameter,
-            body: Arc::new(body(variable)),
-        }),
-        index: Arc::new(Expr::Literal {
-            dtype: Type::Primitive(PrimitiveType::Int32),
-            value: serde_json::json!(0),
-        }),
+    let body = Arc::new(body(variable));
+    Expr::Switch {
+        value: Arc::new(value),
+        parameter,
+        cases: vec![],
+        default: body.clone(),
+        missing: Some(body),
     }
 }
-
 fn substitute(expr: &Expr, name: &str, value: &Expr) -> Result<Expr> {
     if matches!(expr, Expr::LambdaVariable { name: parameter, .. } if parameter == name) {
         return Ok(value.clone());
@@ -237,9 +230,17 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     context.bindings,
                     &BTreeMap::new(),
                 )?;
+                let packed_type = packed.data_type(&schema)?;
+                let DataType::Struct(packed_fields) = &packed_type else {
+                    return Err(TableError::Invalid("fold input must be a struct".into()));
+                };
+                let selected = packed_fields
+                    .iter()
+                    .map(|field| field.name())
+                    .collect::<std::collections::HashSet<_>>();
                 let mut fields = Vec::new();
                 for (i, field) in schema.fields().iter().enumerate() {
-                    if *field.data_type() == DataType::UInt64 {
+                    if !selected.contains(field.name()) {
                         continue;
                     }
                     let value = match aliases.iter().find(|(_, column)| *column == field.name()) {
@@ -256,11 +257,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     };
                     fields.push((field.name().clone(), value));
                 }
-                return Ok(Built::identity(
-                    udf,
-                    Expr::Struct { fields },
-                    packed.data_type(&schema)?,
-                ));
+                return Ok(Built::identity(udf, Expr::Struct { fields }, packed_type));
             }
             let argument = value.as_deref().cloned().unwrap_or(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
@@ -302,7 +299,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     child,
                     input.clone(),
                     vail_execution::scan_scopes::Transform::Explode,
-                );
+                )?;
                 Ok(Built::identity(udf, argument, input))
             } else {
                 Ok(Built::identity(udf, argument, input))
@@ -333,7 +330,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                 descriptor(&child)?,
                 input.clone(),
                 vail_execution::scan_scopes::Transform::Filter,
-            );
+            )?;
             let mut result = Built::identity(udf, argument, input);
             result.finish = child.finish(Expr::LambdaVariable {
                 name: result.parameter.clone(),
@@ -390,7 +387,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                     descriptor(&child)?,
                     input.clone(),
                     vail_execution::scan_scopes::Transform::Explode,
-                )
+                )?
             };
             let mut result = Built::identity(udf, argument, input);
             let slot = Expr::LambdaVariable {

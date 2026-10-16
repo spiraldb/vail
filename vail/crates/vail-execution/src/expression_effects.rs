@@ -91,6 +91,7 @@ pub(crate) fn effects(expr: &Expr) -> Effects {
             | Expr::CollectionCast { .. }
             | Expr::Unary { .. }
             | Expr::IsMissing { .. }
+            | Expr::Switch { .. }
             | Expr::IfElse { .. }
             | Expr::ToString { .. }
             | Expr::Interval { .. }

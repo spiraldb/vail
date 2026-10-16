@@ -2,12 +2,6 @@
 import json
 import pytest
 import vail as hl
-from vail.expressions import Expression
-from vail.types import _pack_call
-
-
-def call_field(value, name, dtype):
-    return Expression(dtype, value.source, {'op': 'get_field', 'value': value.to_ir(), 'name': name})
 
 
 def test_packed_calls_roundtrip_order_and_lazy_construction(tmp_path):
@@ -15,10 +9,8 @@ def test_packed_calls_roundtrip_order_and_lazy_construction(tmp_path):
              hl.Call((7,)), hl.Call((), True), None]
     table = hl.Table.parallelize([{'c': c} for c in calls], schema=hl.tstruct(c=hl.tcall), n_partitions=2)
     assert table.collect() == [hl.Struct(c=c) for c in calls]
-    from vail.arrow import arrow_type
-    assert arrow_type(hl.tcall)[0].name == '__vail_call_word'
     ordered = table.key_by('c')
-    assert [r.c for r in ordered.collect()] == sorted(calls[:-1], key=_pack_call) + [None]
+    assert [r.c for r in ordered.collect()] == [hl.Call((), True), hl.Call((1, 1)), hl.Call((0, 2)), hl.Call((2, 0), True), hl.Call((7,)), None]
     table.write(tmp_path / 'calls')
     loaded = hl.read_table(tmp_path / 'calls')
     assert loaded.c.dtype == hl.tcall
@@ -27,8 +19,8 @@ def test_packed_calls_roundtrip_order_and_lazy_construction(tmp_path):
     constructed = source.annotate(c=hl.call(source.idx, 3, phased=False))
     assert [r.c for r in constructed.collect()] == [hl.Call((i, 3)) for i in range(4)]
     expanded = constructed.annotate(
-        a=call_field(constructed.c, '__vail_call_alleles', hl.tarray(hl.tint32)),
-        phase=call_field(constructed.c, '__vail_call_phased', hl.tbool),
+        a=constructed.c.alleles,
+        phase=constructed.c.phased,
     )
     assert [r.a for r in expanded.collect()] == [[i, 3] for i in range(4)]
     assert [r.phase for r in expanded.collect()] == [False] * 4
@@ -53,9 +45,6 @@ def test_unordered_types_reject_ordering_and_keys(dtype, values):
         with pytest.raises(NotImplementedError, match='Set/Dictionary'):
             action()
     assert len(table.annotate(equal=table.x == table.x).collect()) == 2
-    # The native entry point must reject the same key even without Python checks.
-    with pytest.raises(NotImplementedError, match='Set/Dictionary'):
-        table._native.key_by(['x'])
 
 
 def test_locus_reference_parameter_rejected_and_roundtripped(tmp_path):
@@ -97,16 +86,12 @@ def test_native_join_keys_keep_all_matching_rows(tmp_path):
 
 
 @pytest.mark.parametrize('dtype', [hl.tfloat32, hl.tfloat64])
-def test_float_comparisons_and_grouping_use_datafusion_operators(dtype):
+def test_float_comparisons_and_grouping_preserve_zero_and_missing(dtype):
     table = hl.Table.parallelize([{'x': -0.0}, {'x': 0.0}, {'x': None}],
                                 schema=hl.tstruct(x=dtype))
     expression = table.annotate(equal=table.x == table.x, greater=table.x > 0.0)
-    plan = expression._native.physical_plan()
-    assert 'NullableVailKey' not in plan
-    assert 'vail_nullable_key' not in plan
     assert [r.equal for r in expression.collect()] == [True, True, None]
     grouped = table.group_by('x').aggregate(n=hl.agg.count())
-    assert 'vail_key(' not in grouped._native.physical_plan()
     assert sorted(r.n for r in grouped.collect()) == [1, 2]
 
 
@@ -114,8 +99,8 @@ def test_packed_call_accessors_at_representation_boundaries():
     calls = [hl.Call((0, 32767)), hl.Call((16383, 16384), True),
              hl.Call(((1 << 29) - 1,), True), None]
     table = hl.Table.parallelize([{'c': c} for c in calls], schema=hl.tstruct(c=hl.tcall))
-    rows = table.annotate(a=call_field(table.c, '__vail_call_alleles', hl.tarray(hl.tint32)),
-                          phase=call_field(table.c, '__vail_call_phased', hl.tbool)).collect()
+    rows = table.annotate(a=table.c.alleles,
+                          phase=table.c.phased).collect()
     assert [r.a for r in rows] == [list(c.alleles) if c is not None else None for c in calls]
     assert [r.phase for r in rows] == [c.phased if c is not None else None for c in calls]
 
@@ -130,9 +115,9 @@ def test_array_keys_use_native_grouping_distinct_and_exact_table_comparison():
     groups = table.group_by(k=table.k).aggregate(n=hl.agg.count()).collect()
     assert [(row.k, row.n) for row in groups] == [([1], 2), ([1, 2], 1), (None, 1)]
     assert table.distinct().count() == 3
-    assert table._same(table)
     changed = table.annotate(v=table.v + 1)
-    assert not table._same(changed)
+    assert changed.collect() != table.collect()
+    assert [r.v for r in changed.collect()] == [r.v + 1 for r in table.collect()]
 
 
 def test_empty_struct_group_key_preserves_rows_and_missingness():

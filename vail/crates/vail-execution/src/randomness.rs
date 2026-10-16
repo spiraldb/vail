@@ -60,20 +60,25 @@ struct Rng {
     gaussian: Option<f64>,
 }
 impl Rng {
-    fn new(nonce: u64, site: u64, uid: &[u64]) -> Self {
+    fn new(nonce: u64, site: u64, mut uid: impl ExactSizeIterator<Item = u64>) -> Self {
         let mut state = encrypt([nonce, site, 0, 0], u64::MAX, 0);
-        let mut padded = uid.to_vec();
-        let pad = uid.is_empty() || uid.len() % 4 != 0;
-        if pad {
-            padded.push(1);
-            while padded.len() % 4 != 0 {
-                padded.push(0);
+        let length = uid.len();
+        let pad = length == 0 || length % 4 != 0;
+        let blocks = length / 4 + usize::from(pad);
+        let mut padded = false;
+        for i in 0..blocks {
+            let mut b = [0; 4];
+            for word in &mut b {
+                *word = uid.next().unwrap_or_else(|| {
+                    if !padded {
+                        padded = true;
+                        1
+                    } else {
+                        0
+                    }
+                });
             }
-        }
-        let n = padded.len() / 4;
-        for (i, block) in padded.chunks_exact(4).enumerate() {
-            let mut b = [block[0], block[1], block[2], block[3]];
-            if i + 1 < n {
+            if i + 1 < blocks {
                 b = encrypt(b, i as u64, 0);
             }
             for j in 0..4 {
@@ -201,6 +206,21 @@ impl Rng {
             }
         }
     }
+    /// The raw value and stream are identical to gamma(). A common scale
+    /// keeps log weights finite even for subnormal positive concentrations.
+    fn gamma_with_scaled_log(&mut self, shape: f64, scale: f64) -> (f64, f64) {
+        if shape < 1.0 {
+            let base = self.gamma(shape + 1.0);
+            let u = self.uniform();
+            (
+                base * u.powf(1.0 / shape),
+                scale * base.ln() + (scale / shape) * u.max(f64::from_bits(1)).ln(),
+            )
+        } else {
+            let value = self.gamma(shape);
+            (value, scale * value.ln())
+        }
+    }
     fn hyper(&mut self, mut pop: i64, mut good: i64, sample: i64) -> i32 {
         let mut result = 0;
         for _ in 0..sample {
@@ -216,49 +236,150 @@ impl Rng {
 fn error(s: &str) -> ExprError {
     ExprError::Invalid(format!("random distribution: {s}"))
 }
-fn number(a: &ArrayRef, row: usize) -> Result<f64, ExprError> {
-    match ScalarValue::try_from_array(a, row)? {
-        ScalarValue::Float64(Some(x)) => Ok(x),
-        ScalarValue::Int32(Some(x)) => Ok(x as f64),
-        ScalarValue::Int64(Some(x)) => Ok(x as f64),
-        _ => Err(error("numeric argument required")),
+enum Kind<'a> {
+    I32(&'a arrow_array::Int32Array),
+    I64(&'a Int64Array),
+    F64(&'a arrow_array::Float64Array),
+    List(&'a ListArray),
+    ListI64(&'a ListArray, &'a Int64Array),
+    ListI32(&'a ListArray, &'a arrow_array::Int32Array),
+    ListF64(&'a ListArray, &'a arrow_array::Float64Array),
+    Other,
+}
+struct Arg<'a> {
+    array: &'a ArrayRef,
+    scalar: bool,
+    kind: Kind<'a>,
+}
+impl<'a> Arg<'a> {
+    fn new(array: &'a ArrayRef, scalar: bool) -> Self {
+        let kind = match array.data_type() {
+            DataType::Int32 => Kind::I32(array.as_any().downcast_ref().unwrap()),
+            DataType::Int64 => Kind::I64(array.as_any().downcast_ref().unwrap()),
+            DataType::Float64 => Kind::F64(array.as_any().downcast_ref().unwrap()),
+            DataType::List(item) => {
+                let list: &ListArray = array.as_any().downcast_ref().unwrap();
+                match item.data_type() {
+                    DataType::Int64 => {
+                        Kind::ListI64(list, list.values().as_any().downcast_ref().unwrap())
+                    }
+                    DataType::Int32 => {
+                        Kind::ListI32(list, list.values().as_any().downcast_ref().unwrap())
+                    }
+                    DataType::Float64 => {
+                        Kind::ListF64(list, list.values().as_any().downcast_ref().unwrap())
+                    }
+                    _ => Kind::List(list),
+                }
+            }
+            _ => Kind::Other,
+        };
+        Self {
+            array,
+            scalar,
+            kind,
+        }
+    }
+    fn row(&self, row: usize) -> usize {
+        if self.scalar { 0 } else { row }
+    }
+    fn null(&self, row: usize) -> bool {
+        self.array.is_null(self.row(row))
+    }
+    fn integer(&self, row: usize) -> Result<i64, ExprError> {
+        let row = self.row(row);
+        match self.kind {
+            Kind::I32(a) => Ok(i64::from(a.value(row))),
+            Kind::I64(a) => Ok(a.value(row)),
+            _ => Err(error("integer argument required")),
+        }
+    }
+    fn number(&self, row: usize) -> Result<f64, ExprError> {
+        let row = self.row(row);
+        match self.kind {
+            Kind::I32(a) => Ok(f64::from(a.value(row))),
+            Kind::I64(a) => Ok(a.value(row) as f64),
+            Kind::F64(a) => Ok(a.value(row)),
+            _ => Err(error("numeric argument required")),
+        }
+    }
+    fn list_ref(&self) -> Result<&'a ListArray, ExprError> {
+        match self.kind {
+            Kind::List(a) | Kind::ListI64(a, _) | Kind::ListI32(a, _) | Kind::ListF64(a, _) => {
+                Ok(a)
+            }
+            _ => Err(error("array argument required")),
+        }
+    }
+    fn range(&self, row: usize) -> Result<std::ops::Range<usize>, ExprError> {
+        let list = self.list_ref()?;
+        let row = self.row(row);
+        let start = list.value_offsets()[row] as usize;
+        let end = list.value_offsets()[row + 1] as usize;
+        if list
+            .values()
+            .nulls()
+            .is_some_and(|n| n.slice(start, end - start).null_count() > 0)
+        {
+            return Err(error("array elements must be defined"));
+        }
+        Ok(start..end)
+    }
+    fn uid(&self, row: usize) -> Result<&'a [i64], ExprError> {
+        let range = self.range(row)?;
+        match self.kind {
+            Kind::ListI64(_, a) => Ok(&a.values()[range]),
+            _ => Err(error("invalid UID words")),
+        }
+    }
+    fn colors(&self, row: usize) -> Result<&'a [i32], ExprError> {
+        let range = self.range(row)?;
+        match self.kind {
+            Kind::ListI32(_, a) => Ok(&a.values()[range]),
+            _ => Err(error("integer array argument required")),
+        }
+    }
+    fn numbers(&self, row: usize) -> Result<&'a [f64], ExprError> {
+        let range = self.range(row)?;
+        match self.kind {
+            Kind::ListF64(_, a) => Ok(&a.values()[range]),
+            _ => Err(error("float64 array argument required")),
+        }
     }
 }
-fn integers(a: &ArrayRef, row: usize) -> Result<Vec<f64>, ExprError> {
-    let a = a
-        .as_any()
-        .downcast_ref::<ListArray>()
-        .ok_or_else(|| error("array argument required"))?;
-    let values = a.value(row);
-    (0..values.len())
-        .map(|i| {
-            if values.is_null(i) {
-                Err(error("array elements must be defined"))
-            } else {
-                number(&values, i)
-            }
-        })
-        .collect()
-}
 fn floats(values: Vec<f64>) -> Result<ScalarValue, ExprError> {
-    Ok(ScalarValue::List(ScalarValue::new_list(
-        &values
-            .into_iter()
-            .map(|x| ScalarValue::Float64(Some(x)))
-            .collect::<Vec<_>>(),
-        &DataType::Float64,
-        true,
-    )))
+    let n = values.len();
+    Ok(ScalarValue::List(Arc::new(ListArray::new(
+        Arc::new(arrow_schema::Field::new("item", DataType::Float64, true)),
+        arrow_buffer::OffsetBuffer::from_lengths([n]),
+        Arc::new(arrow_array::Float64Array::from(values)),
+        None,
+    ))))
 }
 fn ints(values: Vec<i32>) -> Result<ScalarValue, ExprError> {
-    Ok(ScalarValue::List(ScalarValue::new_list(
-        &values
-            .into_iter()
-            .map(|x| ScalarValue::Int32(Some(x)))
-            .collect::<Vec<_>>(),
-        &DataType::Int32,
-        true,
-    )))
+    let n = values.len();
+    Ok(ScalarValue::List(Arc::new(ListArray::new(
+        Arc::new(arrow_schema::Field::new("item", DataType::Int32, true)),
+        arrow_buffer::OffsetBuffer::from_lengths([n]),
+        Arc::new(arrow_array::Int32Array::from(values)),
+        None,
+    ))))
+}
+fn categorical_total(weights: &[f64]) -> Result<f64, ExprError> {
+    let total = weights.iter().sum::<f64>();
+    if weights.iter().any(|v| !v.is_finite() || *v < 0.0) || !total.is_finite() || total <= 0.0 {
+        Err(error("invalid categorical weights"))
+    } else {
+        Ok(total)
+    }
+}
+fn uniform_between(lo: f64, hi: f64, u: f64) -> f64 {
+    let width = hi - lo;
+    if width.is_finite() {
+        lo + width * u
+    } else {
+        lo * (1.0 - u) + hi * u
+    }
 }
 pub(crate) fn validate(
     function: &str,
@@ -306,65 +427,97 @@ pub(crate) fn validate(
 
 pub(crate) fn evaluate(
     function: &str,
-    args: &[ArrayRef],
+    values: &[datafusion_expr::ColumnarValue],
     dtype: &DataType,
     len: usize,
 ) -> Result<ArrayRef, ExprError> {
+    use datafusion_expr::ColumnarValue;
     if len == 0 {
         return Ok(new_empty_array(dtype));
     }
-    if args.len() < 3 {
+    let arrays = values
+        .iter()
+        .map(|v| match v {
+            ColumnarValue::Array(a) => Ok(a.clone()),
+            ColumnarValue::Scalar(v) => v.to_array(),
+        })
+        .collect::<Result<Vec<_>, _>>()?;
+    let inputs = arrays
+        .iter()
+        .zip(values)
+        .map(|(a, v)| Arg::new(a, matches!(v, ColumnarValue::Scalar(_))))
+        .collect::<Vec<_>>();
+    if inputs.len() < 3 {
         return Err(error("missing random stream identity"));
     }
-    let mut out = Vec::with_capacity(len);
-    for row in 0..len {
-        if args.iter().any(|a| a.is_null(row)) {
-            out.push(ScalarValue::try_new_null(dtype)?);
-            continue;
+    if function == "shuffle" {
+        return shuffle(&inputs, dtype, len);
+    }
+    macro_rules! sample {
+        (@primitive,$builder:ty,$variant:ident,$row:ident,$rng:ident,$a:ident,$p:ident,$list:ident,$body:block) => {{
+            let mut out = <$builder>::with_capacity(len);
+            for $row in 0..len {
+                if inputs.iter().any(|argument| argument.null($row)) {
+                    out.append_null();
+                    continue;
+                }
+                #[allow(unused_mut)]
+                let mut $rng = stream(&inputs, $row)?;
+                #[allow(unused_variables)]
+                let $a = &inputs[3..];
+                #[allow(unused_variables)]
+                let $p = |i: usize| $a[i].number($row);
+                #[allow(unused_variables)]
+                let $list = |i: usize| $a[i].numbers($row);
+                let ScalarValue::$variant(Some(value)) = ($body) else {
+                    unreachable!("typed random scalar output");
+                };
+                out.append_value(value);
+            }
+            Ok(Arc::new(out.finish()) as ArrayRef)
+        }};
+
+        ($row:ident,$rng:ident,$a:ident,$p:ident,$list:ident,$body:block) => {{
+            let mut out = Vec::with_capacity(len);
+            for $row in 0..len {
+                if inputs.iter().any(|argument| argument.null($row)) {
+                    out.push(ScalarValue::try_new_null(dtype)?);
+                    continue;
+                }
+                #[allow(unused_mut)]
+                let mut $rng = stream(&inputs, $row)?;
+                #[allow(unused_variables)]
+                let $a = &inputs[3..];
+                #[allow(unused_variables)]
+                let $p = |i: usize| $a[i].number($row);
+                #[allow(unused_variables)]
+                let $list = |i: usize| $a[i].numbers($row);
+                let value = $body;
+                out.push(value);
+            }
+            Ok(ScalarValue::iter_to_array(out)?)
+        }};
+    }
+    match function {
+        "int64" if inputs.len() == 3 => {
+            sample!(@primitive,arrow_array::builder::Int64Builder,Int64,row, rng, a, p, list, {
+                ScalarValue::Int64(Some(rng.long() as i64))
+            })
         }
-        let nonce = args[0]
-            .as_any()
-            .downcast_ref::<Int64Array>()
-            .ok_or_else(|| error("invalid nonce"))?
-            .value(row) as u64;
-        let site = args[1]
-            .as_any()
-            .downcast_ref::<Int64Array>()
-            .ok_or_else(|| error("invalid call site"))?
-            .value(row) as u64;
-        let uid = args[2]
-            .as_any()
-            .downcast_ref::<ListArray>()
-            .ok_or_else(|| error("invalid UID"))?
-            .value(row);
-        let uid = uid
-            .as_any()
-            .downcast_ref::<Int64Array>()
-            .ok_or_else(|| error("invalid UID words"))?
-            .values()
-            .iter()
-            .map(|x| *x as u64)
-            .collect::<Vec<_>>();
-        let mut rng = Rng::new(nonce, site, &uid);
-        let a = &args[3..];
-        let p = |i: usize| number(&a[i], row);
-        let list = |i: usize| integers(&a[i], row);
-        let value = match function {
-            "int64" if a.is_empty() => ScalarValue::Int64(Some(rng.long() as i64)),
-            "int32" => {
+        "int32" => {
+            sample!(@primitive,arrow_array::builder::Int32Builder,Int32,row, rng, a, p, list, {
                 let lo = p(0)? as i64;
                 let hi = p(1)? as i64;
                 if hi <= lo {
                     return Err(error("empty integer interval"));
                 }
                 ScalarValue::Int32(Some((lo + rng.bounded_int((hi - lo) as u32) as i64) as i32))
-            }
-            "int64" => {
-                let lo = ScalarValue::try_from_array(&a[0], row)?;
-                let hi = ScalarValue::try_from_array(&a[1], row)?;
-                let (ScalarValue::Int64(Some(lo)), ScalarValue::Int64(Some(hi))) = (lo, hi) else {
-                    return Err(error("integer bounds required"));
-                };
+            })
+        }
+        "int64" => {
+            sample!(@primitive,arrow_array::builder::Int64Builder,Int64,row, rng, a, p, list, {
+                let lo = a[0].integer(row)?;
+                let hi = a[1].integer(row)?;
                 let n = hi as i128 - lo as i128;
                 if n <= 0 {
                     return Err(error("empty integer interval"));
@@ -380,86 +533,99 @@ pub(crate) fn evaluate(
                     }
                 };
                 ScalarValue::Int64(Some(lo.wrapping_add(offset as i64)))
-            }
-            "unif" => {
+            })
+        }
+        "unif" => {
+            sample!(@primitive,arrow_array::builder::Float64Builder,Float64,row, rng, a, p, list, {
                 let lo = p(0)?;
                 let hi = p(1)?;
                 if !lo.is_finite() || !hi.is_finite() || hi < lo {
                     return Err(error("invalid uniform bounds"));
                 }
-                ScalarValue::Float64(Some(lo + (hi - lo) * rng.direct_uniform()))
-            }
-            "norm" => {
+                ScalarValue::Float64(Some(uniform_between(lo, hi, rng.direct_uniform())))
+            })
+        }
+        "norm" => {
+            sample!(@primitive,arrow_array::builder::Float64Builder,Float64,row, rng, a, p, list, {
                 let sd = p(1)?;
                 if sd < 0.0 || !sd.is_finite() {
                     return Err(error("negative or nonfinite standard deviation"));
                 }
                 ScalarValue::Float64(Some(p(0)? + sd * rng.normal()))
+            })
+        }
+        "norm_nd" | "unif_nd" => sample!(row, rng, a, p, list, {
+            let rows = a[0].integer(row)?;
+            let cols = a[1].integer(row)?;
+            let count = rows
+                .checked_mul(cols)
+                .filter(|_| rows >= 0 && cols >= 0)
+                .ok_or_else(|| error("invalid ndarray dimensions"))?;
+            let count = usize::try_from(count).map_err(|_| error("ndarray is too large"))?;
+            let lo = p(2)?;
+            let hi = p(3)?;
+            if function == "norm_nd" && (hi < 0.0 || !hi.is_finite()) {
+                return Err(error("invalid standard deviation"));
             }
-            "norm_nd" | "unif_nd" => {
-                let rows = p(0)? as i64;
-                let cols = p(1)? as i64;
-                let count = rows
-                    .checked_mul(cols)
-                    .filter(|_| rows >= 0 && cols >= 0)
-                    .ok_or_else(|| error("invalid ndarray dimensions"))?;
-                let count = usize::try_from(count).map_err(|_| error("ndarray is too large"))?;
-                let lo = p(2)?;
-                let hi = p(3)?;
-                if function == "norm_nd" && (hi < 0.0 || !hi.is_finite()) {
-                    return Err(error("invalid standard deviation"));
-                }
-                if function == "unif_nd" && (hi < lo || !lo.is_finite() || !hi.is_finite()) {
-                    return Err(error("invalid uniform bounds"));
-                }
-                let mut values = Vec::new();
-                values
-                    .try_reserve(count)
-                    .map_err(|_| error("ndarray is too large"))?;
-                for _ in 0..count {
-                    values.push(ScalarValue::Float64(Some(if function == "norm_nd" {
-                        lo + hi * rng.normal()
-                    } else {
-                        lo + (hi - lo) * rng.uniform()
-                    })));
-                }
-                let data = ScalarValue::new_list(&values, &DataType::Float64, true);
-                let shape = ScalarValue::new_list(
-                    &[
-                        ScalarValue::Int64(Some(rows)),
-                        ScalarValue::Int64(Some(cols)),
-                    ],
-                    &DataType::Int64,
-                    true,
-                );
-                let DataType::Struct(fields) = dtype else {
-                    return Err(error("invalid ndarray output type"));
-                };
-                ScalarValue::Struct(Arc::new(arrow_array::StructArray::try_new(
-                    fields.clone(),
-                    vec![
-                        arrow_cast::cast(data.as_ref(), fields[0].data_type())?,
-                        arrow_cast::cast(shape.as_ref(), fields[1].data_type())?,
-                    ],
-                    None,
-                )?))
+            if function == "unif_nd" && (hi < lo || !lo.is_finite() || !hi.is_finite()) {
+                return Err(error("invalid uniform bounds"));
             }
-            "bool" => {
+            let mut values = Vec::new();
+            values
+                .try_reserve(count)
+                .map_err(|_| error("ndarray is too large"))?;
+            let draw: fn(&mut Rng, f64, f64) -> f64 = if function == "norm_nd" {
+                |rng, mean, sd| mean + sd * rng.normal()
+            } else {
+                |rng, lo, hi| uniform_between(lo, hi, rng.uniform())
+            };
+            for _ in 0..count {
+                values.push(draw(&mut rng, lo, hi));
+            }
+            let ScalarValue::List(data) = floats(values)? else {
+                unreachable!()
+            };
+            let shape = ScalarValue::new_list(
+                &[
+                    ScalarValue::Int64(Some(rows)),
+                    ScalarValue::Int64(Some(cols)),
+                ],
+                &DataType::Int64,
+                true,
+            );
+            let DataType::Struct(fields) = dtype else {
+                return Err(error("invalid ndarray output type"));
+            };
+            ScalarValue::Struct(Arc::new(arrow_array::StructArray::try_new(
+                fields.clone(),
+                vec![
+                    arrow_cast::cast(data.as_ref(), fields[0].data_type())?,
+                    arrow_cast::cast(shape.as_ref(), fields[1].data_type())?,
+                ],
+                None,
+            )?))
+        }),
+        "bool" => {
+            sample!(@primitive,arrow_array::builder::BooleanBuilder,Boolean,row, rng, a, p, list, {
                 let p = p(0)?;
                 if !(0.0..=1.0).contains(&p) {
                     return Err(error("probability outside [0,1]"));
                 }
                 ScalarValue::Boolean(Some(rng.direct_uniform() < p))
-            }
-            "gamma" => {
+            })
+        }
+        "gamma" => {
+            sample!(@primitive,arrow_array::builder::Float64Builder,Float64,row, rng, a, p, list, {
                 let s = p(0)?;
                 let scale = p(1)?;
                 if s <= 0.0 || !s.is_finite() || scale < 0.0 || !scale.is_finite() {
                     return Err(error("invalid gamma parameters"));
                 }
                 ScalarValue::Float64(Some(rng.gamma(s) * scale))
-            }
-            "beta" => {
+            })
+        }
+        "beta" => {
+            sample!(@primitive,arrow_array::builder::Float64Builder,Float64,row, rng, a, p, list, {
                 let dist = Beta::new(p(0)?, p(1)?).map_err(|_| error("invalid beta parameters"))?;
                 let lo = p(2)?;
                 let hi = p(3)?;
@@ -468,8 +634,10 @@ pub(crate) fn evaluate(
                 }
                 let u = dist.cdf(lo) + (dist.cdf(hi) - dist.cdf(lo)) * rng.uniform();
                 ScalarValue::Float64(Some(dist.inverse_cdf(u)))
-            }
-            "pois" => {
+            })
+        }
+        "pois" => {
+            sample!(@primitive,arrow_array::builder::Float64Builder,Float64,row, rng, a, p, list, {
                 let rate = p(0)?;
                 if rate == 0.0 {
                     ScalarValue::Float64(Some(0.0))
@@ -493,28 +661,77 @@ pub(crate) fn evaluate(
                     }
                     ScalarValue::Float64(Some(lo as f64))
                 }
+            })
+        }
+        "dirichlet" => sample!(row, rng, a, p, list, {
+            let shapes = list(0)?;
+            if shapes.iter().any(|x| *x < 0.0 || !x.is_finite()) {
+                return Err(error("invalid Dirichlet concentration"));
             }
-            "dirichlet" => {
-                let shapes = list(0)?;
-                if shapes.iter().any(|x| *x < 0.0 || !x.is_finite()) {
-                    return Err(error("invalid Dirichlet concentration"));
+            let maximum = shapes.iter().copied().fold(0.0, f64::max);
+            if maximum == 0.0 {
+                return Err(error(
+                    "Dirichlet concentrations must include a positive value",
+                ));
+            }
+            let log_scale = shapes
+                .iter()
+                .copied()
+                .filter(|&v| v > 0.0)
+                .fold(f64::INFINITY, f64::min);
+            // Shapes >=1 have positive base-Gamma draws. Only shapes <1
+            // apply U^(1/shape), which can underflow every raw vector element.
+            let track_logs = maximum > 0.0 && maximum < 1.0;
+            let mut values = Vec::with_capacity(shapes.len());
+            let mut logs = if track_logs {
+                Vec::with_capacity(shapes.len())
+            } else {
+                Vec::new()
+            };
+            for &shape in shapes {
+                if shape == 0.0 {
+                    values.push(0.0);
+                    if track_logs {
+                        logs.push(f64::NEG_INFINITY);
+                    }
+                } else if track_logs {
+                    let (value, log) = rng.gamma_with_scaled_log(shape, log_scale);
+                    values.push(value);
+                    logs.push(log);
+                } else {
+                    values.push(rng.gamma(shape));
                 }
-                let values = shapes
-                    .into_iter()
-                    .map(|x| if x == 0.0 { 0.0 } else { rng.gamma(x) })
-                    .collect::<Vec<_>>();
+            }
+            let total = values.iter().sum::<f64>();
+            if total.is_infinite() {
+                let maximum = values.iter().copied().fold(0.0, f64::max);
+                for value in &mut values {
+                    *value /= maximum;
+                }
                 let total = values.iter().sum::<f64>();
-                floats(values.into_iter().map(|x| x / total).collect())?
-            }
-            "cat" => {
-                let weights = list(0)?;
-                let total: f64 = weights.iter().sum();
-                if weights.iter().any(|x| !x.is_finite() || *x < 0.0)
-                    || !total.is_finite()
-                    || total <= 0.0
-                {
-                    return Err(error("invalid categorical weights"));
+                floats(values.into_iter().map(|v| v / total).collect())?
+            } else if total == 0.0 && track_logs {
+                let maximum = logs.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+                if !maximum.is_finite() {
+                    return Err(error("Dirichlet log weights require a finite value"));
                 }
+                let weights = logs
+                    .into_iter()
+                    .map(|v| ((v - maximum) / log_scale).exp())
+                    .collect::<Vec<_>>();
+                let total = weights.iter().sum::<f64>();
+                floats(weights.into_iter().map(|v| v / total).collect())?
+            } else {
+                floats(values.into_iter().map(|v| v / total).collect())?
+            }
+        }),
+        "cat" => {
+            let mut constant_total = None;
+            sample!(@primitive,arrow_array::builder::Int32Builder,Int32,row, rng, a, p, list, {
+                let weights=list(0)?;
+                let total=if a[0].scalar {
+                    if let Some(total)=constant_total {total} else {let total=categorical_total(weights)?;constant_total=Some(total);total}
+                } else {categorical_total(weights)?};
                 let mut u = total * rng.uniform();
                 let mut index = weights.len() - 1;
                 for (i, w) in weights.iter().enumerate() {
@@ -525,120 +742,146 @@ pub(crate) fn evaluate(
                     }
                 }
                 ScalarValue::Int32(Some(index as i32))
-            }
-            "hyper" => {
+            })
+        }
+        "hyper" => {
+            sample!(@primitive,arrow_array::builder::Int32Builder,Int32,row, rng, a, p, list, {
                 let pop = p(0)? as i64;
                 let good = p(1)? as i64;
                 let sample = p(2)? as i64;
                 if pop < 0 || good < 0 || good > pop || sample < 0 || sample > pop {
                     return Err(error("invalid hypergeometric parameters"));
                 }
-                ScalarValue::Int32(Some(rng.hyper(pop, good, sample)))
-            }
-            "multi_hyper" => {
-                let colors = list(0)?;
-                let mut pop = colors.iter().sum::<f64>() as i64;
-                let mut sample = p(1)? as i64;
-                if colors.iter().any(|x| *x < 0.0) || sample < 0 || sample > pop {
-                    return Err(error("invalid multivariate hypergeometric parameters"));
-                }
-                let mut values = vec![];
-                for color in colors {
-                    let good = color as i64;
-                    let x = rng.hyper(pop, good, sample);
-                    pop -= good;
-                    sample -= x as i64;
-                    values.push(x);
-                }
-                ints(values)?
-            }
-            "norm2d" => {
-                let mean = list(0)?;
-                let cov = list(1)?;
-                if mean.len() != 2
-                    || cov.len() != 3
-                    || cov.iter().any(|x| !x.is_finite())
-                    || cov[0] < 0.0
-                    || cov[2] < 0.0
-                    || cov[0] * cov[2] < cov[1] * cov[1]
-                {
-                    return Err(error("invalid bivariate normal parameters"));
-                }
-                let x = rng.normal();
-                let y = rng.normal();
-                let s = cov[0].sqrt();
-                let (x, y) = if s == 0.0 {
-                    (mean[0], mean[1] + cov[2].sqrt() * y)
+                ScalarValue::Int32(Some(if sample == 0 || good == 0 {
+                    0
+                } else if good == pop {
+                    sample as i32
+                } else if sample == pop {
+                    good as i32
                 } else {
-                    (
-                        mean[0] + s * x,
-                        mean[1]
-                            + cov[1] / s * x
-                            + (cov[2] - cov[1] * cov[1] / cov[0]).max(0.0).sqrt() * y,
-                    )
-                };
-                floats(vec![x, y])?
+                    rng.hyper(pop, good, sample)
+                }))
+            })
+        }
+        "multi_hyper" => sample!(row, rng, a, p, list, {
+            let colors = a[0].colors(row)?;
+            let mut pop = colors.iter().map(|&v| i64::from(v)).sum::<i64>();
+            let mut sample = p(1)? as i64;
+            if colors.iter().any(|x| *x < 0) || sample < 0 || sample > pop {
+                return Err(error("invalid multivariate hypergeometric parameters"));
             }
-            "shuffle" => {
-                let values = a[0]
-                    .as_any()
-                    .downcast_ref::<ListArray>()
-                    .ok_or_else(|| error("shuffle requires array"))?
-                    .value(row);
-                let mut indices = (0..values.len()).collect::<Vec<_>>();
-                for i in (1..indices.len()).rev() {
-                    let j = rng.bounded_long((i + 1) as u64) as usize;
-                    indices.swap(i, j);
+            let mut values = Vec::with_capacity(colors.len());
+            let mut remaining_colors = colors.iter().filter(|&&v| v > 0).count();
+            for &color in colors {
+                let good = i64::from(color);
+                // Skip draws only after all remaining outcomes are deterministic.
+                // Earlier zero-color draws affect later seeded samples.
+                let x = if sample == 0 {
+                    0
+                } else if sample == pop {
+                    good as i32
+                } else if remaining_colors <= 1 {
+                    if good > 0 { sample as i32 } else { 0 }
+                } else {
+                    rng.hyper(pop, good, sample)
+                };
+                if good > 0 {
+                    remaining_colors -= 1;
                 }
-                let indices = arrow_array::UInt32Array::from(
-                    indices
-                        .into_iter()
-                        .map(|index| {
-                            u32::try_from(index)
-                                .map_err(|_| error("shuffle exceeds Arrow take index capacity"))
-                        })
-                        .collect::<Result<Vec<_>, _>>()?,
-                );
-                let selected = arrow_select::take::take(values.as_ref(), &indices, None)?;
-                let DataType::List(field) = dtype else {
-                    return Err(error("shuffle requires list output type"));
-                };
-                // Arrow take reconstructs nested list fields and may discard
-                // logical Set/Dict metadata. Restore the declared descriptor
-                // without copying the selected buffers before list validation.
-                let selected =
-                    crate::logical_expr::restore_arrow_array_type(&selected, field.data_type())?;
-                ScalarValue::List(Arc::new(ListArray::try_new(
-                    field.clone(),
-                    arrow_buffer::OffsetBuffer::from_lengths([selected.len()]),
-                    selected,
-                    None,
-                )?))
+                pop -= good;
+                sample -= x as i64;
+                values.push(x);
             }
-            _ => return Err(error("unknown distribution")),
-        };
-        out.push(value);
+            ints(values)?
+        }),
+        "norm2d" => sample!(row, rng, a, p, list, {
+            let mean = list(0)?;
+            let cov = list(1)?;
+            if mean.len() != 2
+                || cov.len() != 3
+                || cov.iter().any(|x| !x.is_finite())
+                || cov[0] < 0.0
+                || cov[2] < 0.0
+                || mean.iter().any(|x| !x.is_finite())
+            {
+                return Err(error("invalid bivariate normal parameters"));
+            }
+            let sx = cov[0].sqrt();
+            let sy = cov[2].sqrt();
+            let scale = sx.max(sy);
+            let bound = if scale == 0.0 { 0.0 } else { (sx / scale) * sy };
+            // Compare the covariance after scaling, so finite PSD matrices
+            // never require forming variance products or covariance squares.
+            let scaled = if scale == 0.0 { cov[1] } else { cov[1] / scale };
+            if ((sx == 0.0 || sy == 0.0) && cov[1] != 0.0) || scaled.abs() > bound {
+                return Err(error("invalid bivariate normal parameters"));
+            }
+            let correlation = if sx == 0.0 || sy == 0.0 {
+                0.0
+            } else {
+                (cov[1] / sx) / sy
+            };
+            let x = rng.normal();
+            let y = rng.normal();
+            let output_x = mean[0] + sx * x;
+            let output_y = mean[1]
+                + sy * (correlation * x + (1.0 - correlation * correlation).max(0.0).sqrt() * y);
+            floats(vec![output_x, output_y])?
+        }),
+        _ => Err(error("unknown distribution")),
     }
-    Ok(ScalarValue::iter_to_array(out)?)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    #[test]
-    fn hail_integer_golden() {
-        let values = (0..5)
-            .map(|i| Rng::new(0, 0, &[i]).bounded_int(5))
-            .collect::<Vec<_>>();
-        assert_eq!(values, vec![4, 3, 2, 3, 3]);
-        let values = (0..5)
-            .flat_map(|i| (0..2).map(move |j| Rng::new(0, 0, &[i, j]).bounded_int(5)))
-            .collect::<Vec<_>>();
-        assert_eq!(values, vec![0, 3, 2, 4, 1, 4, 4, 2, 4, 4]);
+fn stream(inputs: &[Arg<'_>], row: usize) -> Result<Rng, ExprError> {
+    let uid = inputs[2].uid(row)?;
+    Ok(Rng::new(
+        inputs[0].integer(row)? as u64,
+        inputs[1].integer(row)? as u64,
+        uid.iter().map(|x| *x as u64),
+    ))
+}
+fn shuffle(inputs: &[Arg<'_>], dtype: &DataType, len: usize) -> Result<ArrayRef, ExprError> {
+    let values = inputs[3].list_ref()?;
+    let mut indices = Vec::new();
+    let mut lengths = Vec::with_capacity(len);
+    let mut valid = Vec::with_capacity(len);
+    for row in 0..len {
+        if inputs.iter().any(|a| a.null(row)) {
+            lengths.push(0);
+            valid.push(false);
+            continue;
+        }
+        let mut rng = stream(inputs, row)?;
+        let ar = inputs[3].row(row);
+        let start = values.value_offsets()[ar] as usize;
+        let end = values.value_offsets()[ar + 1] as usize;
+        let count = end - start;
+        let offset = indices.len();
+        i32::try_from(offset + count)
+            .map_err(|_| error("shuffled batch exceeds Arrow offset capacity"))?;
+        indices
+            .try_reserve(count)
+            .map_err(|_| error("shuffled array is too large"))?;
+        indices.extend((start..end).map(|i| i as u32));
+        for i in (1..count).rev() {
+            let j = rng.bounded_long((i + 1) as u64) as usize;
+            indices.swap(offset + i, offset + j);
+        }
+        lengths.push(count);
+        valid.push(true);
     }
-    #[test]
-    fn hail_uniform_golden() {
-        assert_eq!(Rng::new(0, 0, &[]).direct_uniform(), 0.9828239225846387);
-        assert_eq!(Rng::new(0, 1, &[]).direct_uniform(), 0.49094525115847415);
-    }
+    let values = arrow_select::take::take(
+        values.values().as_ref(),
+        &arrow_array::UInt32Array::from(indices),
+        None,
+    )?;
+    let DataType::List(item) = dtype else {
+        return Err(error("shuffle requires list output"));
+    };
+    let values = crate::logical_expr::restore_arrow_array_type(&values, item.data_type())?;
+    Ok(Arc::new(ListArray::try_new(
+        item.clone(),
+        arrow_buffer::OffsetBuffer::from_lengths(lengths),
+        values,
+        Some(arrow_buffer::NullBuffer::from(valid)),
+    )?))
 }

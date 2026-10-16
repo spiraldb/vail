@@ -1,4 +1,4 @@
-"""Expression-based biallelic HTS splitting used by VCF import workflows.
+"""Biallelic HTS splitting used by VCF import workflows.
 
 This MatrixTable implementation always sorts the resulting public variant key.
 Table input and VEP consequence splitting are not yet supported.
@@ -6,82 +6,112 @@ Table input and VEP consequence splitting are not yet supported.
 from uuid import uuid4
 
 
-def _call_field(value, name, dtype):
-    from .expressions import Expression, _IR
-    return Expression(dtype,value.source,_IR({'op':'get_field','value':value.to_ir(),'name':name},value._global_refs,value._lookup_refs))
+def _kernel(name, dtype, *args):
+    from .expressions import Expression, _merge_sources
+    source = None
+    for arg in args:
+        source = _merge_sources(source, arg.source)
+    return Expression(dtype, source, {'op': 'string_function', 'function': name,
+                                     'args': [arg.to_ir() for arg in args]})
 
 
 def _downcode(value, allele):
-    from . import struct,int32,if_else,is_defined,missing,tcall,tarray,tbool,tint32
+    from . import struct, int32, if_else, is_defined, missing, tcall
     from .expressions import Expression
-    alleles=_call_field(value,'__vail_call_alleles',tarray(tint32))
-    phased=_call_field(value,'__vail_call_phased',tbool)
-    coded=alleles.map(lambda original:int32(original==allele))
+    alleles = value.alleles
+    phased = value.phased
+    coded = alleles.map(lambda original: int32(original == allele))
     from . import sorted as sort
-    coded=if_else(phased,coded,sort(coded))
-    packed=struct(__vail_call_alleles=coded,__vail_call_phased=phased)
-    result=Expression(tcall,packed.source,{'op':'cast','dtype':'call','value':packed.to_ir()})
-    return if_else(is_defined(value),result,missing(tcall))
+    coded = if_else(phased, coded, sort(coded))
+    packed = struct(__vail_call_alleles=coded, __vail_call_phased=phased)
+    result = Expression(tcall, packed.source, {'op': 'cast', 'dtype': 'call', 'value': packed.to_ir()})
+    return if_else(is_defined(value), result, missing(tcall))
 
 
 def _min_rep(locus, reference, alternate):
-    from . import len as length,range as array_range,if_else,locus as make_locus,struct
-    symbolic=alternate.startswith('<') | alternate.contains('[') | alternate.contains(']')
-    limit=if_else(length(reference)<length(alternate),length(reference),length(alternate))-1
-    unequal=array_range(limit).filter(lambda i:reference[length(reference)-1-i]!=alternate[length(alternate)-1-i])
-    suffix=if_else(symbolic,0,if_else(length(unequal)>0,unequal[0],limit))
-    ref=reference[:length(reference)-suffix]
-    alt=alternate[:length(alternate)-suffix]
-    limit=if_else(length(ref)<length(alt),length(ref),length(alt))-1
-    unequal=array_range(limit).filter(lambda i:ref[i]!=alt[i])
-    prefix=if_else(symbolic,0,if_else(length(unequal)>0,unequal[0],limit))
-    return struct(locus=make_locus(locus.contig,locus.position+prefix,locus.dtype.reference_genome),
-                  alleles=[ref[prefix:],alt[prefix:]])
+    import vail as hl
+    def normalized(trimmed):
+        position = hl.int64(locus.position) + hl.int64(trimmed.shift)
+        position = hl.case().when(position <= 2**31 - 1, hl.int32(position)).or_error(
+            'split_multi_hts normalized position exceeds int32')
+        return hl.struct(locus=hl.locus(locus.contig, position, locus.dtype.reference_genome),
+                         alleles=trimmed.alleles)
+
+    return hl.bind(normalized, _kernel(
+        'variant_min_rep', hl.tstruct(shift=hl.tint32, alleles=hl.tarray(hl.tstr)),
+        reference, alternate))
 
 
-def split_multi_hts(dataset,keep_star=False,left_aligned=False,vep_root='vep',*,permit_shuffle=False):
+def split_multi_hts(dataset, keep_star=False, left_aligned=False, vep_root='vep', *, permit_shuffle=False):
+    """Split variant rows, sorting by the resulting variant key.
+
+    Alleles must be defined, nonempty strings and calls haploid/diploid with
+    indices in range. Defined AD/PL must match allele count and GT ploidy.
+    Missing GT yields missing PL; absent GT assumes diploidy. Missing PL
+    elements are ignored when reducing buckets. Filtered entries stay filtered.
+    ``permit_shuffle`` is accepted for compatibility; output is always sorted.
+    """
     import vail as hl
     from .types import tlocus
-    if not isinstance(dataset,hl.MatrixTable):
+    if not isinstance(dataset, hl.MatrixTable):
         raise NotImplementedError('split_multi_hts currently supports MatrixTable input')
-    if tuple(dataset.row_key)!=('locus','alleles') or not isinstance(dataset.locus.dtype,tlocus):
+    if (tuple(dataset.row_key) != ('locus', 'alleles')
+            or not isinstance(dataset.locus.dtype, tlocus)
+            or dataset.alleles.dtype != hl.tarray(hl.tstr)):
         raise ValueError('split_multi_hts requires locus and alleles variant keys')
     if vep_root in dataset.row.dtype:
         raise NotImplementedError('VEP consequence splitting is not implemented')
-    expected={'GT':hl.tcall,'PGT':hl.tcall,'AD':hl.tarray(hl.tint32),'PL':hl.tarray(hl.tint32),'DP':hl.tint32,'GQ':hl.tint32,'PID':hl.tstr}
-    for name,dtype in expected.items():
-        if name in dataset.entry.dtype and dataset.entry.dtype[name]!=dtype:
+    expected = {'GT': hl.tcall, 'PGT': hl.tcall, 'AD': hl.tarray(hl.tint32),
+                'PL': hl.tarray(hl.tint32), 'DP': hl.tint32, 'GQ': hl.tint32, 'PID': hl.tstr}
+    for name, dtype in expected.items():
+        if name in dataset.entry.dtype and dataset.entry.dtype[name] != dtype:
             raise TypeError(f'split_multi_hts: invalid type for {name}: {dataset.entry.dtype[name]}')
-    name='__split_allele_'+uuid4().hex
-    indices=hl.range(1,hl.len(dataset.alleles))
-    if not keep_star:indices=indices.filter(lambda i:dataset.alleles[i]!='*')
-    split=dataset.annotate_rows(**{name:indices}).explode_rows(name).key_rows_by()
-    split=split.annotate_rows(a_index=split[name],was_split=hl.len(split.alleles)>2,
-                              old_locus=split.locus,old_alleles=split.alleles)
-    variant=_min_rep(split.locus,split.alleles[0],split.alleles[split.a_index])
+    # Validate before explode, including rows with no alternate (which otherwise
+    # disappear). Entry reductions are materialized before duplicating rows.
+    valid = (hl.is_defined(dataset.locus) & hl.is_defined(dataset.alleles)
+             & (hl.len(dataset.alleles) >= 1)
+             & hl.all(lambda a: hl.is_defined(a) & (hl.len(a) > 0), dataset.alleles))
+    name = '__split_allele_' + uuid4().hex
+    prepared = '__split_entry_' + uuid4().hex
+    indices = hl.case().when(valid, hl.range(1, hl.len(dataset.alleles))).or_error(
+        'split_multi_hts requires a defined locus and defined nonempty alleles')
+    if not keep_star:
+        indices = indices.filter(lambda i: dataset.alleles[i] != '*')
+    dataset = dataset.annotate_rows(**{name: indices})
+    fields = dataset.entry.dtype
+    ints = hl.tarray(hl.tint32)
+    gt = dataset.GT.alleles if 'GT' in fields else hl.literal([0, 0])
+    pgt = dataset.PGT.alleles if 'PGT' in fields else hl.missing(ints)
+    ad = dataset.AD if 'AD' in fields else hl.missing(ints)
+    pl = dataset.PL if 'PL' in fields else hl.missing(ints)
+    entry = _kernel('variant_entry', hl.tstruct(ad=hl.tarray(ints), pl=hl.tarray(ints)),
+                    hl.len(dataset.alleles), gt, pgt, ad, pl)
+    split = dataset.annotate_entries(**{prepared: entry})
+    split = split.drop(*[f for f in ('AD', 'PL') if f in fields])
+    split = split.key_rows_by().explode_rows(name)
+    split = split.annotate_rows(a_index=split[name], was_split=hl.len(split.alleles) > 2,
+                                old_locus=split.locus, old_alleles=split.alleles)
+    variant = _min_rep(split.locus, split.alleles[0], split.alleles[split.a_index])
     if left_aligned:
-        variant=hl.case().when(variant.locus==split.locus,variant).or_error('Found non-left-aligned variant in split_multi_hts')
-    split=split.annotate_rows(locus=variant.locus,alleles=variant.alleles).drop(name)
-    fields=dataset.entry.dtype
-    updates={}
-    for field in ('GT','PGT'):
-        if field in fields:updates[field]=_downcode(split[field],split.a_index)
+        variant = hl.bind(lambda v: hl.case().when(v.locus == split.locus, v).or_error(
+            'Found non-left-aligned variant in split_multi_hts'), variant)
+    split = split.annotate_rows(locus=variant.locus, alleles=variant.alleles).drop(name)
+    updates = {}
+    for field in ('GT', 'PGT'):
+        if field in fields:
+            updates[field] = _downcode(split[field], split.a_index)
     if 'AD' in fields:
-        updates['AD']=hl.or_missing(hl.is_defined(split.AD),[hl.int32(hl.sum(split.AD))-split.AD[split.a_index],split.AD[split.a_index]])
+        updates['AD'] = split[prepared].ad[split.a_index - 1]
     if 'PL' in fields:
-        alleles=hl.len(split.old_alleles)
-        codes=hl.range(alleles).flatmap(lambda b:hl.range(b+1).map(lambda a:hl.struct(
-            index=b*(b+1)//2+a,code=hl.int32(a==split.a_index)+hl.int32(b==split.a_index))))
-        diploid=hl.range(3).map(lambda code:hl.min(codes.filter(lambda x:x.code==code).map(lambda x:split.PL[x.index])))
-        haploid=hl.range(2).map(lambda code:hl.min(hl.range(alleles).filter(lambda a:hl.int32(a==split.a_index)==code).map(lambda a:split.PL[a])))
-        is_diploid=hl.len(_call_field(split.GT,'__vail_call_alleles',hl.tarray(hl.tint32)))==2 if 'GT' in fields else True
-        pl=hl.or_missing(hl.is_defined(split.PL),hl.if_else(is_diploid,diploid,haploid))
-        updates['PL']=pl
+        pl = split[prepared].pl[split.a_index - 1]
+        updates['PL'] = pl
         if 'GQ' in fields:
-            sorted_pl=hl.sorted(pl.filter(lambda value:hl.is_defined(value)))
-            quality=hl.or_missing(hl.len(sorted_pl)>=2,sorted_pl[1]-sorted_pl[0])
-            updates['GQ']=hl.coalesce(quality,split.GQ)
-    return split.annotate_entries(**updates).drop('old_locus','old_alleles').key_rows_by('locus','alleles')
+            sorted_pl = hl.sorted(pl.filter(lambda value: hl.is_defined(value)))
+            quality = hl.or_missing(hl.len(sorted_pl) >= 2, sorted_pl[1] - sorted_pl[0])
+            updates['GQ'] = hl.coalesce(quality, split.GQ)
+    return (split.annotate_entries(**updates)
+            .drop('old_locus', 'old_alleles', prepared)
+            .key_rows_by('locus', 'alleles'))
 
 
 def parse_variant(value, reference_genome='default'):

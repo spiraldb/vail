@@ -1,5 +1,3 @@
-import json
-
 import pytest
 import vail as hl
 
@@ -76,15 +74,13 @@ def test_locus_table_and_interval_storage_roundtrip(tmp_path):
     path = tmp_path / 'loci'
     table.write(path)
     loaded = hl.read_table(path)
-    assert len(list(path.rglob('*.vortex'))) >= 2
     assert loaded.row.dtype == table.row.dtype
     assert loaded.key.dtype == table.key.dtype
     assert loaded.collect() == table.collect()
     assert hl.eval(loaded.anchor) == hl.Locus('chr1', 3, rg)
-    descriptors = [p for p in path.rglob('vail-*.json') if not p.name.startswith('vail-index-')]
-    assert len(descriptors) == 1
-    descriptor = json.loads(descriptors[0].read_text())
-    assert descriptor['semantics']['reference_genomes'][rg.name] == rg.to_wire()
+    assert loaded.point.dtype.reference_genome == rg
+    assert loaded.region.dtype.point_type.reference_genome == rg
+    assert hl.eval(loaded.anchor).reference_genome == rg
     selected = hl.read_table(path, _intervals=[hl.Interval(
         hl.Locus('chr2', 1, rg), hl.Locus('chr10', 2, rg), True, False, locus_type,
     )])

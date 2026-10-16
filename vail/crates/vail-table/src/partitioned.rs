@@ -50,7 +50,7 @@ pub(crate) fn limited_input(
 /// receiver stream supplies backpressure, error/panic propagation and aborts
 /// producers when an action is canceled. Each producer buffers two batches;
 /// a slow consumer never forces a whole partition or table into memory.
-fn ordered_partition_streams(
+pub(crate) fn ordered_partition_streams(
     parts: Vec<PhysicalPlan>,
     context: Arc<TaskContext>,
 ) -> futures::stream::BoxStream<'static, (usize, SendableRecordBatchStream)> {
@@ -85,6 +85,25 @@ fn ordered_partition_streams(
     .boxed()
 }
 
+/// A reusable native logical action. Each start binds scalar parameters with
+/// fresh action resources, then optimizes and compiles the selected data tree.
+/// This is separate from an already-bound physical `PreparedTable` snapshot.
+pub struct ActionTemplate {
+    logical: Arc<datafusion_expr::LogicalPlan>,
+    target_partitions: usize,
+}
+pub fn prepare_action(table: &TableRef) -> Result<ActionTemplate> {
+    Ok(ActionTemplate {
+        logical: Arc::new(crate::logical::lower(table)?),
+        target_partitions: crate::logical::max_partitions(table),
+    })
+}
+impl ActionTemplate {
+    pub async fn start_action(&self) -> Result<PhysicalPlan> {
+        crate::logical::physical_plan(self.logical.as_ref().clone(), self.target_partitions).await
+    }
+}
+
 pub struct PreparedTable {
     pub parts: Vec<PhysicalPlan>,
     pub counts: Vec<Option<usize>>,
@@ -98,6 +117,7 @@ pub(crate) fn reset_plan_states(plan: PhysicalPlan) -> datafusion_common::Result
     fn reset(
         plan: PhysicalPlan,
         memo: &mut std::collections::HashMap<usize, PhysicalPlan>,
+        replay_budgets: &mut crate::zip_snapshot::ResetBudgets,
     ) -> datafusion_common::Result<PhysicalPlan> {
         let id = Arc::as_ptr(&plan) as *const () as usize;
         if let Some(reset) = memo.get(&id) {
@@ -107,26 +127,30 @@ pub(crate) fn reset_plan_states(plan: PhysicalPlan) -> datafusion_common::Result
             .children()
             .into_iter()
             .cloned()
-            .map(|child| reset(child, memo))
+            .map(|child| reset(child, memo, replay_budgets))
             .collect::<datafusion_common::Result<Vec<_>>>()?;
         // Resetting changes execution state, not child schemas or ordering.
-        let fresh = plan
-            .replace_children(
-                children,
-                datafusion_physical_plan::ReplaceChildrenOptions::new(
-                    datafusion_physical_plan::ChildrenPropertiesMode::Keep,
-                ),
-            )?
-            .reset_state()?;
+        let fresh = plan.replace_children(
+            children,
+            datafusion_physical_plan::ReplaceChildrenOptions::new(
+                datafusion_physical_plan::ChildrenPropertiesMode::Keep,
+            ),
+        )?;
+        let fresh = if let Some(owner) = crate::zip_snapshot::fork_owner(&fresh, replay_budgets) {
+            owner
+        } else {
+            fresh.reset_state()?
+        };
         memo.insert(id, fresh.clone());
         Ok(fresh)
     }
-    // An optimized tree may contain distinct Arc copies of one declared
-    // consumer underneath its partition views. Validate and reunify those
-    // copies before assigning fresh identities, so this fork retains one
-    // complete producer DAG. Each call still has its own fresh reset map.
+    // Reunify optimizer copies before forking one producer per action.
     let plan = crate::rng_context::bind_consumers(plan)?;
-    reset(plan, &mut std::collections::HashMap::new())
+    reset(
+        plan,
+        &mut std::collections::HashMap::new(),
+        &mut crate::zip_snapshot::ResetBudgets::default(),
+    )
 }
 
 fn required_ordering(input: &PhysicalPlan) -> Option<OrderingRequirements> {
@@ -136,6 +160,12 @@ fn required_ordering(input: &PhysicalPlan) -> Option<OrderingRequirements> {
         .map(OrderingRequirements::from)
 }
 impl PreparedTable {
+    /// Fork an already-bound physical snapshot with fresh operator caches.
+    /// Configuration values stay bound; use ActionTemplate to rebind singleton
+    /// dependencies for a new query action.
+    pub fn start_action(&self) -> Result<PhysicalPlan> {
+        Ok(reset_plan_states(self.physical_plan())?)
+    }
     pub fn physical_plan(&self) -> PhysicalPlan {
         Arc::new(PartitionSetExec::with_tag(
             self.parts.clone(),
@@ -527,7 +557,7 @@ impl ExecutionPlan for ProtectedExec {
 /// partition views. Physical optimizer tree copies must share that producer's
 /// complete exchange DAG, not merely an inner random-expression boundary.
 pub(crate) fn partition_views(input: PhysicalPlan, count: usize) -> Vec<PhysicalPlan> {
-    let consumer: PhysicalPlan = Arc::new(crate::rng_context::ConsumerScopeExec::new(input));
+    let consumer = crate::rng_context::consumer(input);
     (0..count)
         .map(|index| Arc::new(PartitionViewExec::new(consumer.clone(), index)) as PhysicalPlan)
         .collect()
@@ -1282,6 +1312,13 @@ pub fn execute(table: &TableRef) -> BatchStream {
             }
         }
     }.boxed()
+}
+
+pub(crate) fn repeatable_node(plan: &PhysicalPlan) -> bool {
+    plan.as_ref().is::<PartitionViewExec>()
+        || plan.as_ref().is::<PartitionSetExec>()
+        || plan.as_ref().is::<OrderedConcatExec>()
+        || plan.as_ref().is::<ProtectedExec>()
 }
 
 #[cfg(test)]

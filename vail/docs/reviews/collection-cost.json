@@ -1,0 +1,247 @@
+{
+  "base_commit": "182c4185",
+  "comparison": "Old versus current Python collections/expression wrappers on the same current release native extension. Native grouping/grouped/lookup workloads are final-only, not old-native comparisons.",
+  "pre_scalar_fix_observations": {
+    "provenance": "Exploratory measurements before scalar restoration fix; native hash was not retained, so these are not a controlled old-native comparison.",
+    "cases": [
+      {
+        "entries": 10000,
+        "query_rows": 1000,
+        "action_seconds": 0.3558199170001899,
+        "peak_rss_bytes": 1250590720
+      },
+      {
+        "entries": 10000,
+        "query_rows": 10000,
+        "action_seconds": 4.668583791994024,
+        "peak_rss_bytes": 10106470400
+      }
+    ]
+  },
+  "native_sha256": "530a6998afbfe4a4660b94c723e0b46c2b5585c00428317673ea12b9aa634b09",
+  "child_source": "import json,time,resource\nimport vail as hl\nMODE=MODE_VALUE\nN=N_VALUE\nPARAM=PARAM_VALUE\nhl.reset_global_randomness()\nif MODE=='dag':\n t=time.perf_counter();x=hl.int32(1)\n for _ in range(N): x=x+x\n d=hl.dict(hl.array([hl.tuple([0,x]),hl.tuple([0,x+1])]))\n construction=time.perf_counter()-t\n assert d.dtype==hl.tdict(hl.tint32,hl.tint32)\n result={'construction_seconds':construction}\nelif MODE=='dag_action':\n x=hl.int32(1)\n for _ in range(N):x=x+x\n d=hl.dict(hl.array([hl.tuple([0,x]),hl.tuple([0,x+1])]))\n t=time.perf_counter();actual=hl.eval(d)\n assert actual=={0:2**N+1}\n result={'action_seconds':time.perf_counter()-t}\nelse:\n if MODE=='extrema':\n  table=hl.Table.parallelize([{'v':[float((i*104729)%N) for i in range(N)]}],schema=hl.tstruct(v=hl.tarray(hl.tfloat64)))\n  values=hl.set(table.v)\n  expression=hl.struct(lo=hl.min(values),hi=hl.max(values))\n elif MODE=='grouped':\n  table=hl.Table.parallelize([{'v':list(range(N))}],schema=hl.tstruct(v=hl.tarray(hl.tint32)))\n  expression=table.v.grouped(PARAM).length()\n elif MODE=='payload':\n  table=hl.Table.parallelize([{'v':[hl.Struct(k=i%64,payload=str(i)+'x'*PARAM) for i in range(N)]}],\n    schema=hl.tstruct(v=hl.tarray(hl.tstruct(k=hl.tint32,payload=hl.tstr))))\n  expression=hl.group_by(lambda x:x.k,table.v)\n elif MODE=='lookup':\n  table=hl.range_table(PARAM,2)\n  dictionary=hl.literal({i:i+1 for i in range(N)},hl.tdict(hl.tint32,hl.tint32))\n  expression=dictionary.get(table.idx,-1)\n t=time.perf_counter();actual=expression.collect();elapsed=time.perf_counter()-t\n if MODE=='extrema':assert actual==[hl.Struct(lo=0.,hi=float(N-1))]\n elif MODE=='grouped':assert actual==[(N+PARAM-1)//PARAM]\n elif MODE=='payload':assert sum(len(group) for group in actual[0].values())==N\n elif MODE=='lookup':assert actual==[i+1 if i<N else -1 for i in range(PARAM)]\n result={'action_seconds':elapsed}\nresult['peak_rss_bytes']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss\nprint(json.dumps(result))\n",
+  "timeout_seconds": 10,
+  "cases": [
+    {
+      "version": "base_python",
+      "mode": "dag",
+      "n": 8,
+      "parameter": 0,
+      "construction_seconds": 0.02623854100238532,
+      "peak_rss_bytes": 41222144
+    },
+    {
+      "version": "base_python",
+      "mode": "dag",
+      "n": 16,
+      "parameter": 0,
+      "construction_seconds": 0.12710900000092806,
+      "peak_rss_bytes": 41336832
+    },
+    {
+      "version": "base_python",
+      "mode": "dag",
+      "n": 24,
+      "parameter": 0,
+      "timeout_seconds": 10
+    },
+    {
+      "version": "base_python",
+      "mode": "extrema",
+      "n": 1000,
+      "parameter": 0,
+      "action_seconds": 0.004280834000383038,
+      "peak_rss_bytes": 131956736
+    },
+    {
+      "version": "base_python",
+      "mode": "extrema",
+      "n": 10000,
+      "parameter": 0,
+      "action_seconds": 0.00437791599688353,
+      "peak_rss_bytes": 134987776
+    },
+    {
+      "version": "base_python",
+      "mode": "extrema",
+      "n": 100000,
+      "parameter": 0,
+      "action_seconds": 0.008278499997686595,
+      "peak_rss_bytes": 142721024
+    },
+    {
+      "version": "current",
+      "mode": "dag",
+      "n": 8,
+      "parameter": 0,
+      "construction_seconds": 0.021176500005822163,
+      "peak_rss_bytes": 41009152
+    },
+    {
+      "version": "current",
+      "mode": "dag",
+      "n": 16,
+      "parameter": 0,
+      "construction_seconds": 0.021516375003557187,
+      "peak_rss_bytes": 41205760
+    },
+    {
+      "version": "current",
+      "mode": "dag",
+      "n": 24,
+      "parameter": 0,
+      "construction_seconds": 0.02116974999808008,
+      "peak_rss_bytes": 41926656
+    },
+    {
+      "version": "current",
+      "mode": "extrema",
+      "n": 1000,
+      "parameter": 0,
+      "action_seconds": 0.004008208998129703,
+      "peak_rss_bytes": 133627904
+    },
+    {
+      "version": "current",
+      "mode": "extrema",
+      "n": 10000,
+      "parameter": 0,
+      "action_seconds": 0.0041768340015551075,
+      "peak_rss_bytes": 135380992
+    },
+    {
+      "version": "current",
+      "mode": "extrema",
+      "n": 100000,
+      "parameter": 0,
+      "action_seconds": 0.005453874997328967,
+      "peak_rss_bytes": 141803520
+    },
+    {
+      "version": "current",
+      "mode": "dag_action",
+      "n": 8,
+      "parameter": 0,
+      "action_seconds": 0.163705792001565,
+      "peak_rss_bytes": 128712704
+    },
+    {
+      "version": "current",
+      "mode": "dag_action",
+      "n": 12,
+      "parameter": 0,
+      "action_seconds": 0.2993318750013714,
+      "peak_rss_bytes": 132874240
+    },
+    {
+      "version": "current",
+      "mode": "dag_action",
+      "n": 16,
+      "parameter": 0,
+      "action_seconds": 2.032195874999161,
+      "peak_rss_bytes": 189562880
+    },
+    {
+      "version": "current",
+      "mode": "grouped",
+      "n": 1000,
+      "parameter": 1,
+      "action_seconds": 0.0028559159982251003,
+      "peak_rss_bytes": 131153920
+    },
+    {
+      "version": "current",
+      "mode": "grouped",
+      "n": 1000,
+      "parameter": 64,
+      "action_seconds": 0.0028972919972147793,
+      "peak_rss_bytes": 132759552
+    },
+    {
+      "version": "current",
+      "mode": "grouped",
+      "n": 10000,
+      "parameter": 1,
+      "action_seconds": 0.0029186659958213568,
+      "peak_rss_bytes": 130777088
+    },
+    {
+      "version": "current",
+      "mode": "grouped",
+      "n": 10000,
+      "parameter": 64,
+      "action_seconds": 0.0028958749971934594,
+      "peak_rss_bytes": 131907584
+    },
+    {
+      "version": "current",
+      "mode": "grouped",
+      "n": 100000,
+      "parameter": 1,
+      "action_seconds": 0.0030678339971927926,
+      "peak_rss_bytes": 134529024
+    },
+    {
+      "version": "current",
+      "mode": "grouped",
+      "n": 100000,
+      "parameter": 64,
+      "action_seconds": 0.002967792002891656,
+      "peak_rss_bytes": 134070272
+    },
+    {
+      "version": "current",
+      "mode": "payload",
+      "n": 1000,
+      "parameter": 256,
+      "action_seconds": 0.004281542001990601,
+      "peak_rss_bytes": 134135808
+    },
+    {
+      "version": "current",
+      "mode": "payload",
+      "n": 4000,
+      "parameter": 256,
+      "action_seconds": 0.005866708001121879,
+      "peak_rss_bytes": 140476416
+    },
+    {
+      "version": "current",
+      "mode": "payload",
+      "n": 16000,
+      "parameter": 256,
+      "action_seconds": 0.013172040999052115,
+      "peak_rss_bytes": 168656896
+    },
+    {
+      "version": "current",
+      "mode": "lookup",
+      "n": 100,
+      "parameter": 1000,
+      "action_seconds": 0.0037487500012503006,
+      "peak_rss_bytes": 134922240
+    },
+    {
+      "version": "current",
+      "mode": "lookup",
+      "n": 10000,
+      "parameter": 1000,
+      "action_seconds": 0.007298791999346577,
+      "peak_rss_bytes": 137166848
+    },
+    {
+      "version": "current",
+      "mode": "lookup",
+      "n": 10000,
+      "parameter": 10000,
+      "action_seconds": 0.007836625001800712,
+      "peak_rss_bytes": 137478144
+    }
+  ],
+  "limitations": [
+    "Single bounded runs; peak RSS includes the Python runtime and input preparation.",
+    "DAG construction and action timings are distinct; generic lowering can still expand shared DAGs.",
+    "Array-column grouping shares element buffers. A scalar array with dynamic per-row sizes is broadcast by into_array(rows); no universal zero-copy claim.",
+    "Floating set sum/product retain existing sorted input order and SQL arithmetic."
+  ]
+}

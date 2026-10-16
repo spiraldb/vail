@@ -195,6 +195,25 @@ impl NativeType {
             _ => vec![],
         }
     }
+    /// Select one child without cloning unrelated subtrees.
+    fn child(&self, index: usize) -> PyResult<Self> {
+        let selected = match self.inner.as_ref() {
+            Type::Array { array }
+            | Type::Set { set: array }
+            | Type::Interval { interval: array } => (index == 0).then_some(array.as_ref()),
+            Type::Dict { dict } => match index {
+                0 => Some(&dict.0),
+                1 => Some(&dict.1),
+                _ => None,
+            },
+            Type::Tuple { tuple } => tuple.get(index),
+            Type::Struct { r#struct: fields } => fields.get(index).map(|(_, ty)| ty),
+            Type::Ndarray { ndarray } => (index == 0).then_some(&ndarray.0),
+            _ => None,
+        }
+        .ok_or_else(|| pyo3::exceptions::PyIndexError::new_err("type child index out of range"))?;
+        Ok(Self::new_type(selected.clone()))
+    }
     #[getter]
     fn field_names(&self) -> Vec<String> {
         match self.inner.as_ref() {
@@ -224,6 +243,9 @@ impl NativeType {
             Type::Locus { locus } => reference_object(py, locus),
             _ => Err(value_error("not a locus type")),
         }
+    }
+    fn can_cast_to(&self, target: &Self) -> bool {
+        self.inner.ensure_castable_to(&target.inner).is_ok()
     }
     fn __hash__(&self) -> isize {
         use std::hash::{Hash, Hasher};
@@ -329,6 +351,34 @@ pub(crate) struct NativeExpr {
     pub inner: Arc<Expr>,
 }
 impl NativeExpr {
+    fn literal_precedence(&self) -> bool {
+        fn visit(node: &Expr, memo: &mut std::collections::HashMap<*const Expr, bool>) -> bool {
+            let key = node as *const Expr;
+            if let Some(found) = memo.get(&key) {
+                return *found;
+            }
+            let found = match node {
+                Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => true,
+                Expr::Cast { value, .. } | Expr::Unary { value, .. } => visit(value, memo),
+                Expr::Binary { left, right, .. } => visit(left, memo) && visit(right, memo),
+                Expr::Array { elements, .. } | Expr::Tuple { elements } => {
+                    elements.iter().all(|v| visit(v, memo))
+                }
+                Expr::Struct { fields } => fields.iter().all(|(_, v)| visit(v, memo)),
+                _ => false,
+            };
+            memo.insert(key, found);
+            found
+        }
+        match self.inner.as_ref() {
+            Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => true,
+            Expr::Array { elements, .. } => {
+                let mut memo = std::collections::HashMap::new();
+                elements.iter().all(|v| visit(v, &mut memo))
+            }
+            _ => false,
+        }
+    }
     fn operation(&self) -> &'static str {
         match self.inner.as_ref() {
             Expr::MatrixField { .. } => "matrix_field",
@@ -344,6 +394,7 @@ impl NativeExpr {
             Expr::AggFilter { .. } => "agg_filter",
             Expr::AggExplode { .. } => "agg_explode",
             Expr::LambdaVariable { .. } => "lambda_variable",
+            Expr::Switch { .. } => "switch",
             Expr::NestedFunction { .. } => "nested_function",
             Expr::CollectionCast { .. } => "collection_cast",
             Expr::IntegerBinary { .. } => "integer_binary",
@@ -429,7 +480,11 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         "matrix_field" => Expr::MatrixField {
             axis: get(d, "axis")?.extract::<String>()?,
             name: get(d, "name")?.extract::<String>()?,
-            dtype: d.get_item("dtype").ok().map(|ty| native_type(&ty)).transpose()?,
+            dtype: d
+                .get_item("dtype")
+                .ok()
+                .map(|ty| native_type(&ty))
+                .transpose()?,
         },
         "matrix_scope" => Expr::MatrixScope {
             axis: get(d, "axis")?.extract::<String>()?,
@@ -439,7 +494,11 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         "matrix_column_position" => Expr::MatrixColumnPosition {},
         "table_lookup" => Expr::TableLookup {
             reference: get(d, "reference")?.extract::<String>()?,
-            dtype: d.get_item("dtype").ok().map(|ty| native_type(&ty)).transpose()?,
+            dtype: d
+                .get_item("dtype")
+                .ok()
+                .map(|ty| native_type(&ty))
+                .transpose()?,
             keys: expressions(&get(d, "keys")?)?,
             all_matches: if d.get_item("all_matches").is_ok() {
                 get(d, "all_matches")?.extract::<bool>()?
@@ -509,7 +568,11 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         },
         "lambda_variable" => Expr::LambdaVariable {
             name: get(d, "name")?.extract::<String>()?,
-            dtype: d.get_item("dtype").ok().map(|ty| native_type(&ty)).transpose()?,
+            dtype: d
+                .get_item("dtype")
+                .ok()
+                .map(|ty| native_type(&ty))
+                .transpose()?,
         },
         "nested_function" => Expr::NestedFunction {
             function: get(d, "function")?.extract::<String>()?,
@@ -662,6 +725,27 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
         "struct" => Expr::Struct {
             fields: fields(&get(d, "fields")?)?,
         },
+        "switch" => Expr::Switch {
+            value: expression_ref(&get(d, "value")?)?,
+            parameter: get(d, "parameter")?.extract()?,
+            cases: get(d, "cases")?
+                .try_iter()?
+                .map(|pair| {
+                    let pair = pair?;
+                    Ok((
+                        expression(&pair.get_item(0)?)?,
+                        expression(&pair.get_item(1)?)?,
+                    ))
+                })
+                .collect::<PyResult<Vec<_>>>()?,
+            default: expression_ref(&get(d, "default")?)?,
+            missing: d
+                .get_item("missing")
+                .ok()
+                .filter(|value| !value.is_none())
+                .map(|value| expression_ref(&value))
+                .transpose()?,
+        },
         "if_else" => Expr::IfElse {
             condition: expression_ref(&get(d, "condition")?)?,
             consequent: expression_ref(&get(d, "consequent")?)?,
@@ -759,40 +843,100 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
 
 #[pymethods]
 impl NativeExpr {
+    fn referenced_names(&self, scope: &str) -> Vec<String> {
+        let mut pending = vec![self.inner.as_ref()];
+        let mut seen = std::collections::HashSet::new();
+        let mut names = std::collections::BTreeSet::new();
+        while let Some(node) = pending.pop() {
+            if !seen.insert(node as *const Expr) {
+                continue;
+            }
+            match node {
+                Expr::Column { name } if scope == "column" => {
+                    names.insert(name.clone());
+                }
+                Expr::Global { name } if scope == "global" => {
+                    names.insert(name.clone());
+                }
+                _ => (),
+            }
+            node.visit_children(&mut |child| pending.push(child));
+        }
+        names.into_iter().collect()
+    }
+    fn literal_dict_precedence(&self) -> bool {
+        self.literal_precedence()
+    }
     #[new]
     fn new(value: &Bound<'_, PyAny>) -> PyResult<Self> {
         Ok(Self {
             inner: expression_ref(value)?,
         })
     }
-    fn infer_type(&self, columns: Vec<(String, PyRef<'_, NativeType>)>, globals: Vec<(String, PyRef<'_, NativeType>)>, variables: Vec<(String, PyRef<'_, NativeType>)>) -> PyResult<NativeType> {
-        let schema = |fields: Vec<(String, PyRef<'_, NativeType>)>| -> PyResult<arrow_schema::Schema> {
-            Ok(arrow_schema::Schema::new(fields.into_iter().map(|(name, ty)| Ok(arrow_schema::Field::new(name, ty.inner.to_arrow().map_err(value_error)?, true))).collect::<PyResult<Vec<_>>>()?))
-        };
-        let variables = variables.into_iter().map(|(name, ty)| (name, (*ty.inner).clone())).collect::<Vec<_>>();
-        Ok(NativeType::new_type(self.inner.dtype_with_lexical(&schema(columns)?, &schema(globals)?, &variables).map_err(value_error)?))
+    fn infer_type(
+        &self,
+        columns: Vec<(String, PyRef<'_, NativeType>)>,
+        globals: Vec<(String, PyRef<'_, NativeType>)>,
+        variables: Vec<(String, PyRef<'_, NativeType>)>,
+    ) -> PyResult<NativeType> {
+        let schema =
+            |fields: Vec<(String, PyRef<'_, NativeType>)>| -> PyResult<arrow_schema::Schema> {
+                Ok(arrow_schema::Schema::new(
+                    fields
+                        .into_iter()
+                        .map(|(name, ty)| {
+                            Ok(arrow_schema::Field::new(
+                                name,
+                                ty.inner.to_arrow().map_err(value_error)?,
+                                true,
+                            ))
+                        })
+                        .collect::<PyResult<Vec<_>>>()?,
+                ))
+            };
+        let variables = variables
+            .into_iter()
+            .map(|(name, ty)| (name, (*ty.inner).clone()))
+            .collect::<Vec<_>>();
+        Ok(NativeType::new_type(
+            self.inner
+                .dtype_with_lexical(&schema(columns)?, &schema(globals)?, &variables)
+                .map_err(value_error)?,
+        ))
     }
     #[pyo3(signature=(uid, parameter=None, replacement=None))]
-    fn bind_random_context(&self, uid: Vec<PyRef<'_, NativeExpr>>, parameter: Option<&str>, replacement: Option<PyRef<'_, NativeExpr>>) -> PyResult<Self> {
-        let uid = uid.iter().map(|value| value.inner.clone()).collect::<Vec<_>>();
+    fn bind_random_context(
+        &self,
+        uid: Vec<PyRef<'_, NativeExpr>>,
+        parameter: Option<&str>,
+        replacement: Option<PyRef<'_, NativeExpr>>,
+    ) -> PyResult<Self> {
+        let uid = uid
+            .iter()
+            .map(|value| value.inner.clone())
+            .collect::<Vec<_>>();
         let replacement = replacement.as_ref().map(|value| value.inner.clone());
         let replace = match (parameter, replacement.as_ref()) {
             (None, None) => None,
             (Some(name), Some(value)) => Some((name, value)),
-            _ => return Err(value_error("random callback substitution requires a parameter and value")),
+            _ => {
+                return Err(value_error(
+                    "random callback substitution requires a parameter and value",
+                ));
+            }
         };
-        Ok(Self { inner: vail_execution::randomness_binding::bind_context(&self.inner, &uid, replace).map_err(value_error)? })
+        Ok(Self {
+            inner: vail_execution::randomness_binding::bind_context(&self.inner, &uid, replace)
+                .map_err(value_error)?,
+        })
     }
     fn bind_random_rows(&self, row_uid: &NativeExpr, mode: &str) -> PyResult<Self> {
-        Ok(Self { inner: vail_execution::randomness_binding::bind_rows(&self.inner, row_uid.inner.clone(), mode).map_err(value_error)? })
+        Ok(Self {
+            inner: crate::random_binding::bind_rows(&self.inner, &row_uid.inner, mode)?,
+        })
     }
     fn is_row_indexed(&self) -> bool {
-        let mut indexed = false;
-        self.inner.visit_unique(&mut |node| {
-            indexed |= matches!(node, Expr::Column { .. })
-                || matches!(node, Expr::MatrixField { axis, .. } | Expr::MatrixScope { axis, .. } if axis != "global");
-        });
-        indexed
+        crate::random_binding::rows_referenced(&self.inner)
     }
     fn contains_random(&self) -> bool {
         let mut found = false;
@@ -810,7 +954,7 @@ impl NativeExpr {
             .extract::<PyRef<'_, crate::arrow_memory::NativeArrow>>()
             .is_ok()
         {
-            let batch = crate::arrow_memory::batch(value)?;
+            let batch = crate::arrow_memory::scalar(value)?;
             if batch.num_rows() != 1 || batch.num_columns() != 1 {
                 return Err(value_error("literal requires one Arrow value"));
             }
@@ -833,7 +977,7 @@ impl NativeExpr {
                 }
                 Type::Primitive(PrimitiveType::Str) => ScalarValue::Utf8(Some(value.extract()?)),
                 _ => {
-                    let batch = crate::arrow_memory::batch(value)?;
+                    let batch = crate::arrow_memory::scalar(value)?;
                     if batch.num_rows() != 1 || batch.num_columns() != 1 {
                         return Err(value_error("literal requires one typed Arrow value"));
                     }
@@ -905,6 +1049,75 @@ impl NativeExpr {
     fn __repr__(&self) -> String {
         format!("NativeExpr(op={})", self.operation())
     }
+    fn is_closed_scalar(&self) -> bool {
+        self.inner.is_closed_scalar()
+    }
+    fn references_rows(&self) -> bool {
+        crate::random_binding::rows_referenced(&self.inner)
+    }
+    fn mark_scan(&self) -> PyResult<Self> {
+        crate::scan_mark::mark(&self.inner)
+            .map(Self::from_expr)
+            .ok_or_else(|| value_error("scan requires at least one built-in aggregate"))
+    }
+    #[pyo3(signature=(function, allow_matrix_rows=false))]
+    fn validate_initializer(&self, function: &str, allow_matrix_rows: bool) -> PyResult<()> {
+        crate::collection_aggregate::validate_initializer(&self.inner, function, allow_matrix_rows)
+    }
+    fn collection_aggregate(
+        &self,
+        value: PyRef<'_, NativeExpr>,
+        parameter: &str,
+        element: PyRef<'_, NativeType>,
+        rows: PyRef<'_, NativeType>,
+        globals: PyRef<'_, NativeType>,
+        axes: Vec<(String, PyRef<'_, NativeType>)>,
+        lookups: Vec<(String, PyRef<'_, NativeType>)>,
+        lexical: Vec<(String, PyRef<'_, NativeType>)>,
+    ) -> PyResult<Self> {
+        let context = crate::collection_aggregate::Context {
+            rows: crate::collection_aggregate::schema(&rows.inner)?,
+            globals: crate::collection_aggregate::schema(&globals.inner)?,
+            axes: axes
+                .into_iter()
+                .map(|(name, ty)| (name, (*ty.inner).clone()))
+                .collect(),
+            lookups: lookups
+                .into_iter()
+                .map(|(name, ty)| (name, (*ty.inner).clone()))
+                .collect(),
+            lexical: lexical
+                .into_iter()
+                .map(|(name, ty)| (name, (*ty.inner).clone()))
+                .collect(),
+        };
+        Ok(Self {
+            inner: Arc::new(crate::collection_aggregate::rewrite(
+                value.inner.clone(),
+                &self.inner,
+                parameter,
+                (*element.inner).clone(),
+                &context,
+            )?),
+        })
+    }
+    fn replace_parameter(&self, name: &str, value: PyRef<'_, NativeExpr>) -> PyResult<Self> {
+        Ok(Self {
+            inner: crate::random_binding::replace_parameter(&self.inner, name, &value.inner)?,
+        })
+    }
+    fn input_global_names(&self) -> PyResult<Vec<String>> {
+        crate::input_binding::global_names(&self.inner)
+    }
+    fn bind_input_globals(&self, globals: Vec<(String, PyRef<'_, NativeExpr>)>) -> PyResult<Self> {
+        let globals = globals
+            .into_iter()
+            .map(|(name, value)| (name, value.inner.clone()))
+            .collect();
+        Ok(Self {
+            inner: crate::input_binding::bind(&self.inner, &globals)?,
+        })
+    }
     fn same_node_as(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.inner, &other.inner)
     }
@@ -913,7 +1126,9 @@ impl NativeExpr {
         match self.inner.as_ref() {
             Expr::MatrixField { axis, name, dtype } => {
                 d.set_item("op", "matrix_field")?;
-                if let Some(dtype) = dtype { d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?; }
+                if let Some(dtype) = dtype {
+                    d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?;
+                }
                 d.set_item("axis", axis.into_pyobject(py)?.into_any())?;
                 d.set_item("name", name.into_pyobject(py)?.into_any())?;
             }
@@ -946,7 +1161,9 @@ impl NativeExpr {
                 query_interval,
             } => {
                 d.set_item("op", "table_lookup")?;
-                if let Some(dtype) = dtype { d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?; }
+                if let Some(dtype) = dtype {
+                    d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?;
+                }
                 d.set_item("reference", reference.into_pyobject(py)?.into_any())?;
                 d.set_item(
                     "keys",
@@ -1295,11 +1512,33 @@ impl NativeExpr {
                     .into_any(),
                 )?;
             }
-            Expr::ArrayAggregateScan { function, value, predicate, options, dtype } => {
+            Expr::ArrayAggregateScan {
+                function,
+                value,
+                predicate,
+                options,
+                dtype,
+            } => {
                 d.set_item("op", "array_aggregate_scan")?;
                 d.set_item("function", function)?;
-                d.set_item("value", Py::new(py, NativeExpr { inner: value.clone() })?)?;
-                d.set_item("predicate", Py::new(py, NativeExpr { inner: predicate.clone() })?)?;
+                d.set_item(
+                    "value",
+                    Py::new(
+                        py,
+                        NativeExpr {
+                            inner: value.clone(),
+                        },
+                    )?,
+                )?;
+                d.set_item(
+                    "predicate",
+                    Py::new(
+                        py,
+                        NativeExpr {
+                            inner: predicate.clone(),
+                        },
+                    )?,
+                )?;
                 d.set_item("options", option_object(py, options)?)?;
                 d.set_item("dtype", Py::new(py, NativeType::new_type(dtype.clone()))?)?;
             }
@@ -1706,6 +1945,53 @@ impl NativeExpr {
             Expr::Struct { fields } => {
                 d.set_item("op", "struct")?;
                 d.set_item("fields", projection_view(py, fields)?.into_any())?;
+            }
+            Expr::Switch {
+                value,
+                parameter,
+                cases,
+                default,
+                missing,
+            } => {
+                d.set_item("op", "switch")?;
+                d.set_item("parameter", parameter)?;
+                for (name, node) in [("value", value), ("default", default)] {
+                    d.set_item(
+                        name,
+                        Py::new(
+                            py,
+                            NativeExpr {
+                                inner: node.clone(),
+                            },
+                        )?,
+                    )?;
+                }
+                if let Some(missing) = missing {
+                    d.set_item(
+                        "missing",
+                        Py::new(
+                            py,
+                            NativeExpr {
+                                inner: missing.clone(),
+                            },
+                        )?,
+                    )?;
+                } else {
+                    d.set_item("missing", py.None())?;
+                }
+                let pairs = cases
+                    .iter()
+                    .map(|(condition, result)| {
+                        PyList::new(
+                            py,
+                            [
+                                Py::new(py, NativeExpr::from_expr(condition.clone()))?,
+                                Py::new(py, NativeExpr::from_expr(result.clone()))?,
+                            ],
+                        )
+                    })
+                    .collect::<PyResult<Vec<_>>>()?;
+                d.set_item("cases", PyList::new(py, pairs)?)?;
             }
             Expr::IfElse {
                 condition,

@@ -70,6 +70,39 @@ pub enum Type {
 }
 
 impl Type {
+    /// Casts preserve logical shape and parameters. Primitive conversions and
+    /// recursively numeric array conversions use Arrow's checked cast kernels;
+    /// Call construction is the sole explicit structural conversion.
+    pub fn ensure_castable_to(&self, target: &Type) -> Result<(), ExprError> {
+        if self == target {
+            return Ok(());
+        }
+        let primitive = |ty: &Type| matches!(ty, Type::Primitive(p) if *p != PrimitiveType::Call);
+        let compatible = if primitive(self) && primitive(target) {
+            arrow_cast::can_cast_types(&self.to_arrow()?, &target.to_arrow()?)
+        } else if let (Type::Array { array: left }, Type::Array { array: right }) = (self, target) {
+            left.ensure_castable_to(right).is_ok()
+                && arrow_cast::can_cast_types(&self.to_arrow()?, &target.to_arrow()?)
+        } else if let (Type::Struct { r#struct: fields }, Type::Primitive(PrimitiveType::Call)) =
+            (self, target)
+        {
+            fields.len() == 2
+                && fields.iter().any(|(name, ty)| name == "__vail_call_alleles"
+                    && matches!(ty, Type::Array { array } if **array == Type::Primitive(PrimitiveType::Int32)))
+                && fields.iter().any(|(name, ty)| name == "__vail_call_phased"
+                    && *ty == Type::Primitive(PrimitiveType::Bool))
+        } else {
+            false
+        };
+        if compatible {
+            Ok(())
+        } else {
+            Err(ExprError::Invalid(format!(
+                "cannot cast {self:?} to {target:?}"
+            )))
+        }
+    }
+
     pub fn contains_unordered(&self) -> bool {
         match self {
             Self::Set { .. } | Self::Dict { .. } => true,
@@ -274,7 +307,7 @@ impl Type {
         ) {
             let logical =
                 serde_json::to_value(self).map_err(|e| ExprError::Invalid(e.to_string()))?;
-            Ok(vail_ordering::tag_type(dtype, &logical))
+            vail_ordering::tag_type(dtype, &logical).map_err(|e| ExprError::Invalid(e.to_string()))
         } else {
             Ok(dtype)
         }
@@ -330,12 +363,20 @@ impl Type {
             DataType::Utf8 | DataType::LargeUtf8 | DataType::Utf8View => {
                 Self::Primitive(PrimitiveType::Str)
             }
-            DataType::Struct(fields) => Self::Struct {
-                r#struct: fields
-                    .iter()
-                    .map(|f| Ok((f.name().clone(), Self::from_arrow(f.data_type())?)))
-                    .collect::<Result<_, ExprError>>()?,
-            },
+            DataType::Struct(fields) => {
+                let mut names = HashSet::with_capacity(fields.len());
+                if fields.iter().any(|field| !names.insert(field.name())) {
+                    return Err(ExprError::Invalid(
+                        "duplicate struct field in Arrow input".into(),
+                    ));
+                }
+                Self::Struct {
+                    r#struct: fields
+                        .iter()
+                        .map(|f| Ok((f.name().clone(), Self::from_arrow(f.data_type())?)))
+                        .collect::<Result<_, ExprError>>()?,
+                }
+            }
             DataType::List(field) => Self::Array {
                 array: Box::new(Self::from_arrow(field.data_type())?),
             },
@@ -574,6 +615,15 @@ pub enum Expr {
     Struct {
         fields: Vec<(String, Expr)>,
     },
+    /// Bind the selector once; Boolean conditions and result expressions use
+    /// the lexical parameter inside ordered, lazy branches.
+    Switch {
+        value: Arc<Expr>,
+        parameter: String,
+        cases: Vec<(Expr, Expr)>,
+        default: Arc<Expr>,
+        missing: Option<Arc<Expr>>,
+    },
     IfElse {
         condition: Arc<Expr>,
         consequent: Arc<Expr>,
@@ -705,6 +755,7 @@ struct CompilationMemo {
     physical: HashMap<(usize, usize), Arc<dyn PhysicalExpr>>,
     physical_schemas: HashMap<usize, Arc<Schema>>,
     generated: Vec<Arc<Expr>>,
+    scans: HashMap<*const Expr, bool>,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct CompilationBindings {
@@ -750,6 +801,89 @@ impl Expr {
             expr.for_each_child(&mut |child| walk(child, seen, f));
         }
         walk(self, &mut std::collections::HashSet::new(), f);
+    }
+    /// Free lexical parameters, summarized once per native DAG node.
+    pub fn free_parameters(&self) -> std::collections::HashSet<String> {
+        fn summarize(
+            node: &Expr,
+            memo: &mut std::collections::HashMap<*const Expr, std::collections::HashSet<String>>,
+        ) -> std::collections::HashSet<String> {
+            let key = node as *const Expr;
+            if let Some(names) = memo.get(&key) {
+                return names.clone();
+            }
+            let mut names = std::collections::HashSet::new();
+            if let Expr::LambdaVariable { name, .. } = node {
+                names.insert(name.clone());
+            }
+            let mut position = 0;
+            node.visit_children(&mut |child| {
+                let mut child_names = summarize(child, memo);
+                for binder in node.child_binders(position) {
+                    child_names.remove(binder);
+                }
+                position += 1;
+                names.extend(child_names);
+            });
+            memo.insert(key, names.clone());
+            names
+        }
+        summarize(self, &mut std::collections::HashMap::new())
+    }
+
+    /// Whether this expression can be evaluated in an independent singleton
+    /// global scope. Type hints do not establish lexical/source ownership.
+    pub fn is_closed_scalar(&self) -> bool {
+        if !self.free_parameters().is_empty() {
+            return false;
+        }
+        let mut closed = true;
+        self.visit_unique(&mut |node| {
+            closed &= !matches!(node,
+                Expr::Column { .. } | Expr::TableLookup { .. }
+                | Expr::MatrixField { .. } | Expr::MatrixScope { .. }
+                | Expr::MatrixNumCols { .. } | Expr::MatrixColumnPosition { .. }
+                | Expr::Aggregate { .. } | Expr::AggregateFold { .. }
+                | Expr::AggFilter { .. } | Expr::AggExplode { .. }
+                | Expr::AggGroupBy { .. } | Expr::AggArray { .. });
+        });
+        closed
+    }
+
+    /// Names introduced for a child edge, in the same order as for_each_child.
+    /// This is the shared lexical contract for native analyses and rewrites.
+    pub fn child_binders(&self, position: usize) -> Vec<&str> {
+        match self {
+            Self::ArrayMap { parameter, .. }
+            | Self::ArrayFilter { parameter, .. }
+            | Self::ArrayPredicate { parameter, .. }
+            | Self::AggArray { parameter, .. }
+            | Self::AggExplode { parameter, .. }
+                if position == 1 =>
+            {
+                vec![parameter]
+            }
+            Self::Switch { parameter, .. } if position > 0 => vec![parameter],
+            Self::ArrayFold {
+                accumulator,
+                parameter,
+                ..
+            } if position == 2 => vec![accumulator, parameter],
+            Self::AggregateFold {
+                state_parameter, ..
+            } if position == 1 => vec![state_parameter],
+            Self::AggregateFold {
+                left_parameter,
+                right_parameter,
+                ..
+            } if position == 2 => vec![left_parameter, right_parameter],
+            _ => vec![],
+        }
+    }
+
+    /// Visit immediate native children, excluding literal buffers.
+    pub fn visit_children<'a>(&'a self, f: &mut impl FnMut(&'a Expr)) {
+        self.for_each_child(f);
     }
     /// Borrow immediate typed children in their semantic order.
     pub fn for_each_child<'a>(&'a self, f: &mut impl FnMut(&'a Expr)) {
@@ -883,6 +1017,23 @@ impl Expr {
                     f(expr);
                 }
             }
+            Self::Switch {
+                value,
+                cases,
+                default,
+                missing,
+                ..
+            } => {
+                f(value);
+                for (condition, result) in cases {
+                    f(condition);
+                    f(result);
+                }
+                f(default);
+                if let Some(missing) = missing {
+                    f(missing);
+                }
+            }
             Self::IfElse {
                 condition,
                 consequent,
@@ -929,6 +1080,17 @@ impl Expr {
                 }
             }
         }
+    }
+
+    /// Map original borrowed children, retaining stable identity for DAG rewrites.
+    pub fn try_map_original_children<E>(
+        &self,
+        mut f: impl FnMut(&Expr) -> Result<Expr, E>,
+    ) -> Result<Expr, E> {
+        let mut children = Vec::new();
+        self.visit_children(&mut |child| children.push(child));
+        let mut children = children.into_iter();
+        self.try_map_children(|_| f(children.next().expect("typed child traversal order")))
     }
 
     /// Rewrite immediate typed children, excluding literal payloads and types.
@@ -1057,6 +1219,23 @@ impl Expr {
                     *expr = f(expr)?;
                 }
             }
+            Self::Switch {
+                value,
+                cases,
+                default,
+                missing,
+                ..
+            } => {
+                *value = Arc::new(f(value)?);
+                for (condition, result) in cases {
+                    *condition = f(condition)?;
+                    *result = f(result)?;
+                }
+                *default = Arc::new(f(default)?);
+                if let Some(missing) = missing {
+                    *missing = Arc::new(f(missing)?);
+                }
+            }
             Self::IfElse {
                 condition,
                 consequent,
@@ -1113,12 +1292,28 @@ impl Expr {
     }
 
     pub fn contains_scan(&self) -> bool {
-        let mut found = false;
-        self.visit_unique(&mut |node| {
-            found |= matches!(node, Self::Aggregate { options, .. }
-            if options.get("__vail_scan").and_then(Value::as_bool) == Some(true));
-        });
-        found
+        self.scan_presence(&mut std::collections::HashMap::new())
+    }
+    fn scan_presence(&self, memo: &mut std::collections::HashMap<*const Expr, bool>) -> bool {
+        let mut pending = vec![(self, false)];
+        while let Some((node, expanded)) = pending.pop() {
+            let key = node as *const Expr;
+            if memo.contains_key(&key) {
+                continue;
+            }
+            if matches!(node,Self::Aggregate { options,.. } if options.get("__vail_scan").and_then(Value::as_bool)==Some(true))
+            {
+                memo.insert(key, true);
+            } else if expanded {
+                let mut found = false;
+                node.for_each_child(&mut |child| found |= memo[&(child as *const Expr)]);
+                memo.insert(key, found);
+            } else {
+                pending.push((node, true));
+                node.for_each_child(&mut |child| pending.push((child, false)));
+            }
+        }
+        memo[&(self as *const Expr)]
     }
 
     pub fn dtype_with_lexical(
@@ -1164,7 +1359,9 @@ impl Expr {
         if let Some(dtype) = memo.types.get(&key) {
             return Ok(dtype.clone());
         }
-        let dtype = self.dtype_uncached(schema, globals, scope, memo, context)?;
+        let dtype = stacker::maybe_grow(512 * 1024, 2 * 1024 * 1024, || {
+            self.dtype_uncached(schema, globals, scope, memo, context)
+        })?;
         memo.types.insert(key, dtype.clone());
         Ok(dtype)
     }
@@ -1192,64 +1389,93 @@ impl Expr {
                 value,
                 options,
                 result_type,
-                ..
+                init,
             } if options.get("__vail_scan").and_then(Value::as_bool) == Some(true) => {
-                if function == "__scan_fold" {
-                    if let Some(value) = value {
-                        if let Self::AggregateFold { initial, .. } = value.as_ref() {
-                            return initial.dtype_scoped(schema, globals, scope, memo, context);
-                        }
+                let inferred = if function == "__scan_fold" {
+                    if !init.is_empty()
+                        || options
+                            .as_object()
+                            .is_none_or(|o| o.keys().any(|k| k != "__vail_scan"))
+                    {
+                        return Err(ExprError::Invalid(
+                            "invalid scan fold options/initializers".into(),
+                        ));
                     }
-                    return Err(ExprError::Invalid("scan fold requires fold IR".into()));
-                }
-                if let Some(dtype) = result_type {
-                    return Ok(dtype.clone());
-                }
-                let value_type = value
+                    let Some(Self::AggregateFold {
+                        initial,
+                        seq,
+                        combine,
+                        state_parameter,
+                        left_parameter,
+                        right_parameter,
+                    }) = value.as_deref()
+                    else {
+                        return Err(ExprError::Invalid("scan fold requires fold IR".into()));
+                    };
+                    let state = initial.dtype_in_scope(&Schema::empty(), globals, &[], memo)?;
+                    let mut sequence_scope = scope.to_vec();
+                    sequence_scope.push((state_parameter.clone(), state.clone(), 0));
+                    let combine_scope = vec![
+                        (left_parameter.clone(), state.clone(), 0),
+                        (right_parameter.clone(), state.clone(), 0),
+                    ];
+                    if seq.dtype_in_scope(schema, globals, &sequence_scope, memo)? != state
+                        || combine.dtype_in_scope(
+                            &Schema::empty(),
+                            globals,
+                            &combine_scope,
+                            memo,
+                        )? != state
+                    {
+                        return Err(ExprError::Invalid(
+                            "scan fold initial/update/combine types must agree".into(),
+                        ));
+                    }
+                    state
+                } else {
+                    let input = value
+                        .as_ref()
+                        .map(|v| v.dtype_in_scope(schema, globals, scope, memo))
+                        .transpose()?;
+                    let input =
+                        if options.get("__vail_exploded").and_then(Value::as_bool) == Some(true) {
+                            match input {
+                                Some(Type::Array { array }) => Some(*array),
+                                _ => {
+                                    return Err(ExprError::Invalid(
+                                        "exploded scan requires array input".into(),
+                                    ));
+                                }
+                            }
+                        } else {
+                            input
+                        };
+                    // Initializers are closed over globals, never row/scan state.
+                    let initializers = init
+                        .iter()
+                        .map(|(name, expr)| {
+                            Ok((
+                                name.clone(),
+                                expr.dtype_in_scope(&Schema::empty(), globals, &[], memo)?,
+                            ))
+                        })
+                        .collect::<Result<Vec<_>, ExprError>>()?;
+                    crate::aggregate_contract::result_type(
+                        function,
+                        input.as_ref(),
+                        options,
+                        &initializers,
+                    )?
+                };
+                if result_type
                     .as_ref()
-                    .map(|v| v.dtype_scoped(schema, globals, scope, memo, context))
-                    .transpose()?;
-                let i64_type = Type::Primitive(PrimitiveType::Int64);
-                let f64_type = Type::Primitive(PrimitiveType::Float64);
-                Ok(match function.as_str() {
-                    "count" | "count_where" => i64_type,
-                    "any" | "all" => Type::Primitive(PrimitiveType::Bool),
-                    "fraction" | "mean" | "stddev" => f64_type,
-                    "sum" | "product" => match value_type {
-                        Some(Type::Primitive(PrimitiveType::Float32 | PrimitiveType::Float64)) => {
-                            f64_type
-                        }
-                        _ => i64_type,
-                    },
-                    "collect" => {
-                        Type::Array {
-                            array: Box::new(value_type.ok_or_else(|| {
-                                ExprError::Invalid("collect requires input".into())
-                            })?),
-                        }
-                    }
-                    "take" => Type::Array {
-                        array: Box::new(
-                            value_type
-                                .ok_or_else(|| ExprError::Invalid("take requires input".into()))?,
-                        ),
-                    },
-                    "collect_as_set" => Type::Set {
-                        set: Box::new(value_type.ok_or_else(|| {
-                            ExprError::Invalid("collect_as_set requires input".into())
-                        })?),
-                    },
-                    "corr" => f64_type,
-                    "ndarray_sum" => value_type
-                        .ok_or_else(|| ExprError::Invalid("ndarray_sum requires input".into()))?,
-                    "min" | "max" => value_type
-                        .ok_or_else(|| ExprError::Invalid("aggregate requires input".into()))?,
-                    _ => {
-                        return Err(ExprError::Invalid(format!(
-                            "unsupported scan aggregate {function:?}"
-                        )));
-                    }
-                })
+                    .is_some_and(|annotation| *annotation != inferred)
+                {
+                    return Err(ExprError::Invalid(
+                        "scan result type annotation disagrees with aggregate result".into(),
+                    ));
+                }
+                Ok(inferred)
             }
             Self::AggExplode {
                 value,
@@ -1280,12 +1506,14 @@ impl Expr {
                     Ok(result)
                 }
             }
-            Self::AggGroupBy { key, body } if body.contains_scan() => Ok(Type::Dict {
-                dict: Box::new((
-                    key.dtype_scoped(schema, globals, scope, memo, context)?,
-                    body.dtype_scoped(schema, globals, scope, memo, context)?,
-                )),
-            }),
+            Self::AggGroupBy { key, body } if body.scan_presence(&mut memo.scans) => {
+                Ok(Type::Dict {
+                    dict: Box::new((
+                        key.dtype_scoped(schema, globals, scope, memo, context)?,
+                        body.dtype_scoped(schema, globals, scope, memo, context)?,
+                    )),
+                })
+            }
             Self::Aggregate { .. }
             | Self::AggExplode { .. }
             | Self::AggGroupBy { .. }
@@ -1328,7 +1556,7 @@ impl Expr {
                     (Some(bound), _) => Ok(bound.clone()),
                     (None, Some(declared)) => Ok(declared.clone()),
                     (None, None) => Err(ExprError::Invalid(format!(
-                        "unbound lambda variable {name:?}"
+                        "unbound lambda variable {name:?} in native type checking"
                     ))),
                 }
             }
@@ -1423,6 +1651,23 @@ impl Expr {
                     crate::randomness::validate(function, &types, dtype)?;
                     return Ok(dtype.clone());
                 }
+                if function == "coalesce" {
+                    let boolean = Type::Primitive(PrimitiveType::Bool);
+                    if dtype != &boolean || args.len() != 2 {
+                        return Err(ExprError::Invalid(
+                            "Boolean coalesce requires two Boolean arguments and Boolean output"
+                                .into(),
+                        ));
+                    }
+                    for arg in args {
+                        if arg.dtype_in_scope(schema, globals, scope, memo)? != boolean {
+                            return Err(ExprError::Invalid(
+                                "Boolean coalesce requires two Boolean arguments".into(),
+                            ));
+                        }
+                    }
+                    return Ok(boolean);
+                }
                 // Validate the declared result against DataFusion's own type inference.
                 let udf = nested_function(function)?;
                 let args = args
@@ -1446,13 +1691,16 @@ impl Expr {
                 let matrix_function = matches!(
                     function.as_str(),
                     "__vail_dict_lookup"
+                        | "__vail_index_values"
                         | "__vail_list_take"
                         | "__vail_list_take_groups"
                         | "__vail_dense_cells"
                         | "__vail_matrix_columns"
                         | "__vail_matrix_aligned"
                 );
-                let expected = if function == "array_sort" {
+                let expected = if function == "arrays_zip" {
+                    args.len()
+                } else if function == "array_sort" {
                     3
                 } else if function == "array_element"
                     || function == "arrays_zip"
@@ -1475,6 +1723,13 @@ impl Expr {
                 };
                 if args.len() != expected || !matches!(args.first(), Some(DataType::List(_))) {
                     return Err(ExprError::Invalid(format!("invalid {function} arguments")));
+                }
+                if function == "arrays_zip"
+                    && args.iter().any(|arg| !matches!(arg, DataType::List(_)))
+                {
+                    return Err(ExprError::Invalid(
+                        "arrays_zip requires array arguments".into(),
+                    ));
                 }
                 if function == "array_sort"
                     && (args[1] != DataType::Utf8 || args[2] != DataType::Utf8)
@@ -1682,12 +1937,21 @@ impl Expr {
                 })
             }
             Self::ArrayGrouped { value, size } => {
-                let Type::Array { array } =
-                    value.dtype_scoped(schema, globals, scope, memo, context)?
+                let Type::Array { array } = value.dtype_in_scope(schema, globals, scope, memo)?
                 else {
                     return Err(ExprError::Invalid("array_grouped requires array".into()));
                 };
-                let size_type = size.dtype_scoped(schema, globals, scope, memo, context)?;
+                let constant = match size.as_ref() {
+                    Self::Literal { value, .. } => value.as_i64(),
+                    Self::RuntimeLiteral {
+                        value: ScalarValue::Int32(value),
+                    } => value.map(i64::from),
+                    _ => None,
+                };
+                if constant.is_some_and(|n| n <= 0) {
+                    return Err(ExprError::Invalid("group size must be positive".into()));
+                }
+                let size_type = size.dtype_in_scope(schema, globals, scope, memo)?;
                 if size_type != Type::Primitive(PrimitiveType::Int32) {
                     return Err(ExprError::Invalid(format!(
                         "array_grouped size requires int32, got {size_type:?}"
@@ -1996,8 +2260,9 @@ impl Expr {
                 Ok(element)
             }
             Self::Cast { dtype, value } => {
-                value.dtype_scoped(schema, globals, scope, memo, context)?;
+                let source = value.dtype_in_scope(schema, globals, scope, memo)?;
                 dtype.to_arrow()?;
+                source.ensure_castable_to(dtype)?;
                 Ok(dtype.clone())
             }
             Self::GetField { value, name } => match value
@@ -2158,6 +2423,40 @@ impl Expr {
                         promote(&a, &b)
                     }
                 }
+            }
+            Self::Switch {
+                value,
+                parameter,
+                cases,
+                default,
+                missing,
+            } => {
+                let selector = value.dtype_in_scope(schema, globals, scope, memo)?;
+                if scope.iter().any(|(name, _, _)| name == parameter) {
+                    return Err(ExprError::Invalid(
+                        "duplicate switch parameter identity".into(),
+                    ));
+                }
+                let mut nested = scope.to_vec();
+                nested.push((parameter.clone(), selector, schema.fields().len()));
+                let output = default.dtype_in_scope(schema, globals, &nested, memo)?;
+                if let Some(missing) = missing {
+                    if missing.dtype_in_scope(schema, globals, &nested, memo)? != output {
+                        return Err(ExprError::Invalid(
+                            "switch missing/default types differ".into(),
+                        ));
+                    }
+                }
+                for (condition, result) in cases {
+                    ensure_bool(
+                        &condition.dtype_in_scope(schema, globals, &nested, memo)?,
+                        "switch condition",
+                    )?;
+                    if result.dtype_in_scope(schema, globals, &nested, memo)? != output {
+                        return Err(ExprError::Invalid("switch branch types differ".into()));
+                    }
+                }
+                Ok(output)
             }
             Self::IfElse {
                 condition,
@@ -3155,6 +3454,8 @@ enum HailKind {
     Numeric(BinaryOperator),
     ToString(Type),
     GetField(String),
+    CallConstruct,
+    CallAccess(crate::calls::CallAccessor),
     Struct(Vec<String>),
     Interval,
     // DF flatten ignores inner validity. Compact null lists before flattening.
@@ -3182,7 +3483,7 @@ struct HailPhysicalExpr {
 
 fn locus_eval(
     op: &str,
-    reference: &ReferenceDefinition,
+    _reference: &ReferenceDefinition,
     prepared: &PreparedReference,
     args: &[ArrayRef],
     dtype: &DataType,
@@ -3224,17 +3525,17 @@ fn locus_eval(
                             "global position cannot be negative".into(),
                         ));
                     }
-                    let (ordinal, position) = prepared.from_global(p).ok_or_else(|| {
+                    let (contig, position) = prepared.from_global(p).ok_or_else(|| {
                         ExprError::Invalid("global position exceeds reference length".into())
                     })?;
-                    (reference.contigs[ordinal].clone(), position)
+                    (contig.to_owned(), position)
                 }
             };
             let ordinal = prepared
                 .ordinal(&contig)
                 .ok_or_else(|| ExprError::Invalid(format!("unknown locus contig {contig:?}")))?;
             prepared
-                .validate_coordinate(reference, ordinal, &contig, position)
+                .validate_coordinate(ordinal, &contig, position)
                 .map_err(ExprError::Invalid)?;
             ordinals.push(Some(ordinal));
             contigs.push(Some(contig));
@@ -3264,9 +3565,11 @@ fn locus_eval(
             } else {
                 let c = down::<StringArray>(args[0].as_ref())?.value(i);
                 let p = down::<Int32Array>(args[1].as_ref())?.value(i);
-                out.push(Some(prepared.ordinal(c).is_some_and(|o| {
-                    prepared.validate_coordinate(reference, o, c, p).is_ok()
-                })));
+                out.push(Some(
+                    prepared
+                        .ordinal(c)
+                        .is_some_and(|o| prepared.validate_coordinate(o, c, p).is_ok()),
+                ));
             }
         }
         return Ok(Arc::new(BooleanArray::from(out)));
@@ -3288,18 +3591,20 @@ fn locus_eval(
                 ));
             }
             prepared
-                .validate_coordinate(
-                    reference,
-                    ordinals.value(i),
-                    contigs.value(i),
-                    positions.value(i),
-                )
+                .validate_coordinate(ordinals.value(i), contigs.value(i), positions.value(i))
                 .map_err(ExprError::Invalid)?;
         }
     }
     match op {
-        "contig" => Ok(Arc::new(contigs.clone())),
-        "position" => Ok(Arc::new(positions.clone())),
+        "contig" => Ok(Arc::new(StringArray::new(
+            contigs.offsets().clone(),
+            contigs.values().clone(),
+            NullBuffer::union(contigs.nulls(), st.nulls()),
+        ))),
+        "position" => Ok(Arc::new(Int32Array::new(
+            positions.values().clone(),
+            NullBuffer::union(positions.nulls(), st.nulls()),
+        ))),
         "global_position" => {
             let out = (0..len)
                 .map(|i| {
@@ -3307,12 +3612,7 @@ fn locus_eval(
                         None
                     } else {
                         let ordinal = ordinals.value(i) as usize;
-                        let base = if ordinal == 0 {
-                            0
-                        } else {
-                            prepared.cumulative_ends[ordinal - 1]
-                        };
-                        Some(base + i64::from(positions.value(i) - 1))
+                        prepared.global_position(ordinal, positions.value(i))
                     }
                 })
                 .collect::<Vec<_>>();
@@ -4038,6 +4338,27 @@ impl PhysicalExpr for HailPhysicalExpr {
     }
     fn evaluate(&self, batch: &RecordBatch) -> datafusion_common::Result<ColumnarValue> {
         let len = batch.num_rows();
+        if matches!(self.kind, HailKind::RestoreArrowType) {
+            // Descriptor restoration must retain scalar lists/records. Expanding
+            // a shared dictionary here defeats the lookup kernel's scalar index.
+            let value = self.args[0].evaluate(batch)?;
+            return crate::logical_expr::restore_arrow_value_type(value, &self.dtype);
+        }
+        if let HailKind::Random(function) = &self.kind {
+            if len == 0 {
+                return Ok(ColumnarValue::Array(arrow_array::new_empty_array(
+                    &self.dtype,
+                )));
+            }
+            let args = self
+                .args
+                .iter()
+                .map(|x| x.evaluate(batch))
+                .collect::<datafusion_common::Result<Vec<_>>>()?;
+            return crate::randomness::evaluate(function, &args, &self.dtype, len)
+                .map(ColumnarValue::Array)
+                .map_err(|e| datafusion_common::DataFusionError::Execution(e.to_string()));
+        }
         if len == 0 {
             return Ok(ColumnarValue::Array(arrow_array::new_empty_array(
                 &self.dtype,
@@ -4074,9 +4395,7 @@ impl PhysicalExpr for HailPhysicalExpr {
             .collect::<datafusion_common::Result<Vec<_>>>()?;
         let result = (|| -> Result<ArrayRef, ExprError> {
             match &self.kind {
-                HailKind::Random(function) => {
-                    crate::randomness::evaluate(function, &args, &self.dtype, len)
-                }
+                HailKind::Random(_) => unreachable!("random inputs retain scalar form above"),
                 HailKind::RestoreArrowType => Ok(args[0].clone()),
                 HailKind::Die => {
                     if len == 0 {
@@ -4103,6 +4422,8 @@ impl PhysicalExpr for HailPhysicalExpr {
                     columnar_numeric(*op, &args[0], &args[1], &t)
                 }
                 HailKind::ToString(input_type) => hail_to_string(&args[0], input_type),
+                HailKind::CallConstruct => crate::calls::construct(&args[0], &self.dtype),
+                HailKind::CallAccess(accessor) => crate::calls::access(&args[0], *accessor),
                 HailKind::GetField(name) => {
                     let parent = &args[0];
                     let st = parent
@@ -4243,6 +4564,19 @@ pub fn restore_physical_type(
     }
 }
 
+/// Normalize a checked logical expression's physical Arrow storage.
+/// Callers establish logical type agreement before requesting this conversion.
+pub fn cast_physical_storage(
+    value: Arc<dyn PhysicalExpr>,
+    schema: &Schema,
+    dtype: DataType,
+) -> datafusion_common::Result<Arc<dyn PhysicalExpr>> {
+    let value = cast(value, schema, dtype.clone())?;
+    // Some compiled struct expressions promise canonical child storage while
+    // their borrowed children retain alternate Arrow layouts at runtime.
+    Ok(custom(HailKind::RestoreArrowType, vec![value], dtype))
+}
+
 fn cast(
     value: Arc<dyn PhysicalExpr>,
     schema: &Schema,
@@ -4341,9 +4675,20 @@ pub(crate) fn string_function(
     let strings = Type::Array {
         array: Box::new(text.clone()),
     };
+    if name == "genomic_list_call_stats" {
+        return crate::advanced_genomic_aggregates::list_call_stats();
+    }
+    if matches!(name, "variant_min_rep" | "variant_entry") {
+        return crate::variant_kernels::function(name);
+    }
     Ok(match name {
+        "hwe_both_counts" => (
+            crate::hwe_counts::udf(true),
+            vec![int32.clone(); 3],
+            Type::from_arrow(&crate::hwe_counts::result_type(true))?,
+        ),
         "hardy_weinberg_counts" => (
-            crate::hwe_counts::udf(),
+            crate::hwe_counts::udf(false),
             vec![int32.clone(), int32.clone(), int32, boolean],
             Type::Array {
                 array: Box::new(Type::Primitive(PrimitiveType::Float64)),
@@ -4385,6 +4730,27 @@ pub(crate) fn string_function(
             crate::string_kernels::udf(name),
             vec![text],
             Type::Primitive(PrimitiveType::Float64),
+        ),
+        "unicode_slice" => (
+            crate::string_kernels::udf(name),
+            vec![
+                text.clone(),
+                int32.clone(),
+                int32.clone(),
+                int32.clone(),
+                int32,
+            ],
+            text,
+        ),
+        "unicode_translate" => (
+            crate::string_kernels::udf(name),
+            vec![
+                text.clone(),
+                Type::Dict {
+                    dict: Box::new((text.clone(), text.clone())),
+                },
+            ],
+            text,
         ),
         "strpos" => (unicode::strpos(), vec![text.clone(), text], int32),
         "substr" => (
@@ -4447,6 +4813,9 @@ pub(crate) fn nested_function(name: &str) -> Result<Arc<datafusion_expr::ScalarU
     use datafusion_functions_nested as nested;
     if let Some(function) = crate::list_aggregate::udf(name) {
         return Ok(function);
+    }
+    if name == "__vail_ndarray_from_array" {
+        return Ok(crate::ndarray::udf());
     }
     if let Some(function) = crate::matrix_transpose::udf(name) {
         return Ok(function);
@@ -4855,6 +5224,102 @@ fn interval_boundary_sequence(
     )?))
 }
 
+fn switch_capture_indices(
+    expr: &Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+) -> Vec<usize> {
+    let mut used = std::collections::BTreeSet::new();
+    expr.visit_unique(&mut |node| {
+        let index = match node {
+            Expr::Column { name } => schema.index_of(name).ok(),
+            Expr::Global { name } => match globals {
+                GlobalBinding::Columns(_, _) => schema.index_of(name).ok(),
+                _ => None,
+            },
+            Expr::ExternalGlobal { reference, .. } => match globals {
+                GlobalBinding::Columns(_, bindings) => bindings.get(reference).copied(),
+                _ => None,
+            },
+            Expr::LambdaVariable { name, .. } => scope
+                .iter()
+                .rev()
+                .find(|(parameter, _, _)| parameter == name)
+                .map(|(_, _, index)| *index),
+            _ => None,
+        };
+        if let Some(index) = index {
+            used.insert(index);
+        }
+    });
+    used.into_iter().collect()
+}
+
+fn switch_callback(
+    expr: &Expr,
+    schema: &Schema,
+    globals: GlobalBinding<'_>,
+    scope: &[(String, Type, usize)],
+    output: &DataType,
+    memo: &mut CompilationMemo,
+) -> Result<crate::conditionals::Callback, ExprError> {
+    let indices = switch_capture_indices(expr, schema, globals, scope);
+    let remap = indices
+        .iter()
+        .enumerate()
+        .map(|(new, old)| (*old, new))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    let compact = Arc::new(Schema::new(
+        indices
+            .iter()
+            .map(|&index| schema.field(index).clone())
+            .collect::<Vec<_>>(),
+    ));
+    let nested = scope
+        .iter()
+        .filter_map(|(name, ty, index)| remap.get(index).map(|&at| (name.clone(), ty.clone(), at)))
+        .collect::<Vec<_>>();
+    let bindings = match globals {
+        GlobalBinding::Columns(_, bindings) => bindings
+            .iter()
+            .filter_map(|(name, index)| remap.get(index).map(|&at| (name.clone(), at)))
+            .collect(),
+        _ => std::collections::BTreeMap::new(),
+    };
+    let globals = match globals {
+        GlobalBinding::Columns(schema, _) => GlobalBinding::Columns(schema, &bindings),
+        other => other,
+    };
+    let expr = cast(
+        lower_scoped(expr, &compact, globals, &nested, memo)?,
+        &compact,
+        output.clone(),
+    )?;
+    Ok(crate::conditionals::Callback {
+        expr,
+        indices,
+        schema: compact,
+    })
+}
+
+/// Both Boolean values are covered; a missing base selects only `missing`.
+/// Simple CASE owns the decision value so evaluating a null guard never repeats it.
+fn boolean_case(
+    base: Arc<dyn PhysicalExpr>,
+    yes: Arc<dyn PhysicalExpr>,
+    no: Arc<dyn PhysicalExpr>,
+    missing: Arc<dyn PhysicalExpr>,
+) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
+    let yes_test: Arc<dyn PhysicalExpr> = Arc::new(Literal::new(ScalarValue::Boolean(Some(true))));
+    let no_test: Arc<dyn PhysicalExpr> = Arc::new(Literal::new(ScalarValue::Boolean(Some(false))));
+    Ok(Arc::new(CaseExpr::try_new(
+        Some(base),
+        vec![(yes_test, yes), (no_test, no)],
+        Some(missing),
+    )?))
+}
+
 fn lower_uncached(
     expr: &Expr,
     schema: &Schema,
@@ -4888,15 +5353,27 @@ fn lower_uncached(
             ));
         }
         Expr::LambdaVariable { name, .. } => {
-            let (_, ty, index) = scope
-                .iter()
-                .rev()
-                .find(|(n, _, _)| n == name)
-                .ok_or_else(|| ExprError::Invalid(format!("unbound lambda variable {name:?}")))?;
+            let (_, ty, index) =
+                scope
+                    .iter()
+                    .rev()
+                    .find(|(n, _, _)| n == name)
+                    .ok_or_else(|| {
+                        ExprError::Invalid(format!(
+                            "unbound lambda variable {name:?} in physical lowering"
+                        ))
+                    })?;
             Arc::new(datafusion_physical_expr::expressions::LambdaVariable::new(
                 *index,
                 Arc::new(Field::new(name, ty.to_arrow()?, true)),
             ))
+        }
+        Expr::NestedFunction { function, args, .. } if function == "coalesce" => {
+            let base = lower_scoped(&args[0], schema, globals, scope, memo)?;
+            let fallback = lower_scoped(&args[1], schema, globals, scope, memo)?;
+            let yes = Arc::new(Literal::new(ScalarValue::Boolean(Some(true))));
+            let no = Arc::new(Literal::new(ScalarValue::Boolean(Some(false))));
+            boolean_case(base, yes, no, fallback)?
         }
         Expr::NestedFunction { function, args, .. } => {
             let args = args
@@ -5113,61 +5590,15 @@ fn lower_uncached(
             )?);
             cast(range, schema, dtype)?
         }
-        Expr::ArrayGrouped { value, size } => {
-            let input_type = value.dtype_scoped(schema, globals.schema(), scope, memo, context)?;
-            let Type::Array { .. } = input_type else {
-                unreachable!("typing validates array_grouped")
-            };
-            let mut parameter = "__vail_group_start".to_owned();
-            while scope.iter().any(|(name, _, _)| name == &parameter) {
-                parameter.push('_');
-            }
-            let variable = Expr::LambdaVariable {
-                name: parameter.clone(),
-                dtype: None,
-            };
-            let length = Expr::ArrayLength {
-                value: value.clone(),
-            };
-            let remaining = Expr::Binary {
-                operator: BinaryOperator::Sub,
-                left: Arc::new(length.clone()),
-                right: Arc::new(variable.clone()),
-            };
-            let capped_stop = Expr::IfElse {
-                condition: Arc::new(Expr::Binary {
-                    operator: BinaryOperator::Ge,
-                    left: size.clone(),
-                    right: Arc::new(remaining),
-                }),
-                consequent: Arc::new(length),
-                alternate: Arc::new(Expr::Binary {
-                    operator: BinaryOperator::Add,
-                    left: Arc::new(variable.clone()),
-                    right: size.clone(),
-                }),
-            };
-            let grouped = Expr::ArrayMap {
-                value: Arc::new(Expr::StreamRange {
-                    start: Arc::new(Expr::Literal {
-                        dtype: Type::Primitive(PrimitiveType::Int32),
-                        value: json!(0),
-                    }),
-                    stop: Arc::new(Expr::ArrayLength {
-                        value: value.clone(),
-                    }),
-                    step: size.clone(),
-                }),
-                parameter,
-                body: Arc::new(Expr::ArraySlice {
-                    value: value.clone(),
-                    start: Some(Arc::new(variable)),
-                    stop: Some(Arc::new(capped_stop)),
-                    step: None,
-                }),
-            };
-            lower_synthetic(grouped, schema, globals, scope, memo, context)?
-        }
+        Expr::ArrayGrouped { value, size } => Arc::new(ScalarFunctionExpr::try_new(
+            crate::collection_grouped::udf(),
+            vec![
+                lower_scoped(value, schema, globals, scope, memo)?,
+                lower_scoped(size, schema, globals, scope, memo)?,
+            ],
+            schema,
+            Arc::new(ConfigOptions::default()),
+        )?),
 
         Expr::ExternalGlobal { reference, dtype } => {
             let GlobalBinding::Columns(_, bindings) = globals else {
@@ -5211,29 +5642,24 @@ fn lower_uncached(
         Expr::Cast {
             dtype: Type::Primitive(PrimitiveType::Call),
             value,
-        } if matches!(value.dtype_scoped(schema, globals.schema(), scope, memo, context)?, Type::Struct { r#struct: fields } if fields.iter().any(|(name,_)| name=="__vail_call_alleles")) => {
-            lower_synthetic(
-                crate::calls::construct(value),
-                schema,
-                globals,
-                scope,
-                memo,
-                context,
-            )?
+        } if matches!(value.dtype_in_scope(schema,globals.schema(),scope, memo)?, Type::Struct { r#struct: fields } if fields.iter().any(|(name,_)| name=="__vail_call_alleles")) => {
+            custom(
+                HailKind::CallConstruct,
+                vec![lower_scoped(value, schema, globals, scope, memo)?],
+                dtype,
+            )
         }
         Expr::GetField { value, name }
-            if value.dtype_scoped(schema, globals.schema(), scope, memo, context)?
-                == Type::Primitive(PrimitiveType::Call)
-                && crate::calls::getter(value, name).is_some() =>
+            if value.dtype_in_scope(schema, globals.schema(), scope, memo)?
+                == Type::Primitive(PrimitiveType::Call) =>
         {
-            lower_synthetic(
-                crate::calls::getter(value, name).unwrap(),
-                schema,
-                globals,
-                scope,
-                memo,
-                context,
-            )?
+            let accessor = crate::calls::CallAccessor::for_field(name)
+                .ok_or_else(|| ExprError::Invalid(format!("invalid Call field {name:?}")))?;
+            custom(
+                HailKind::CallAccess(accessor),
+                vec![lower_scoped(value, schema, globals, scope, memo)?],
+                dtype,
+            )
         }
         Expr::Cast { dtype, value } => lower_cast(
             lower_cached(value, schema, globals, scope, memo, context)?,
@@ -5742,6 +6168,112 @@ fn lower_uncached(
             )?],
             dtype.clone(),
         ),
+        Expr::Switch {
+            value,
+            parameter,
+            cases,
+            default,
+            missing,
+        } => {
+            // Capture only fields used anywhere in this switch. In particular,
+            // a surrounding array's payload must not become an implicit capture
+            // merely because it occurs in the enclosing lambda's input schema.
+            let indices = switch_capture_indices(expr, schema, globals, scope);
+            let inputs = indices
+                .iter()
+                .map(|&index| {
+                    let field = schema.fields()[index].clone();
+                    if scope.iter().any(|(_, _, at)| *at == index) {
+                        Arc::new(datafusion_physical_expr::expressions::LambdaVariable::new(
+                            index, field,
+                        )) as Arc<dyn PhysicalExpr>
+                    } else {
+                        Arc::new(Column::new(field.name(), index)) as Arc<dyn PhysicalExpr>
+                    }
+                })
+                .collect();
+            let remap = indices
+                .iter()
+                .enumerate()
+                .map(|(new, old)| (*old, new))
+                .collect::<std::collections::BTreeMap<_, _>>();
+            let input_schema = Arc::new(Schema::new(
+                indices
+                    .iter()
+                    .map(|&index| schema.field(index).clone())
+                    .collect::<Vec<_>>(),
+            ));
+            let parent_scope = scope
+                .iter()
+                .filter_map(|(name, ty, index)| {
+                    remap.get(index).map(|&at| (name.clone(), ty.clone(), at))
+                })
+                .collect::<Vec<_>>();
+            let bindings = match globals {
+                GlobalBinding::Columns(_, bindings) => bindings
+                    .iter()
+                    .filter_map(|(name, index)| remap.get(index).map(|&at| (name.clone(), at)))
+                    .collect(),
+                _ => std::collections::BTreeMap::new(),
+            };
+            let globals = match globals {
+                GlobalBinding::Columns(schema, _) => GlobalBinding::Columns(schema, &bindings),
+                other => other,
+            };
+            let schema = input_schema.as_ref();
+            let scope = parent_scope.as_slice();
+            let selector_type = value.dtype_in_scope(schema, globals.schema(), scope, memo)?;
+            // Canonicalize storage once for the bound column. Utf8 views may
+            // materialize here; comparisons never repeat that conversion.
+            let selector = cast(
+                lower_scoped(value, schema, globals, scope, memo)?,
+                schema,
+                selector_type.to_arrow()?,
+            )?;
+            let mut fields = schema.fields().to_vec();
+            fields.push(Arc::new(Field::new(
+                parameter,
+                selector_type.to_arrow()?,
+                true,
+            )));
+            let bound_schema = Arc::new(Schema::new(fields));
+            let mut nested = scope.to_vec();
+            nested.push((parameter.clone(), selector_type, schema.fields().len()));
+            let cases = cases
+                .iter()
+                .map(|(condition, result)| {
+                    Ok((
+                        switch_callback(
+                            condition,
+                            &bound_schema,
+                            globals,
+                            &nested,
+                            &DataType::Boolean,
+                            memo,
+                        )?,
+                        switch_callback(result, &bound_schema, globals, &nested, &dtype, memo)?,
+                    ))
+                })
+                .collect::<Result<Vec<_>, ExprError>>()?;
+            let default = switch_callback(default, &bound_schema, globals, &nested, &dtype, memo)?;
+            let missing = missing
+                .as_ref()
+                .map(|missing| {
+                    switch_callback(missing, &bound_schema, globals, &nested, &dtype, memo)
+                })
+                .transpose()?;
+            Arc::new(crate::conditionals::ScopedSwitch {
+                inputs,
+                value: selector,
+                cases,
+                default,
+                missing,
+                input_schema,
+                bound_schema,
+                dtype,
+            })
+        }
+
         Expr::IfElse {
             condition,
             consequent,
@@ -6223,9 +6755,9 @@ mod tests {
             missing: vec![],
             expected_fields: 3,
         };
-        let comma_physical = lower(&comma, &batch.schema()).unwrap();
-        let pipe_physical = lower(&pipe, &batch.schema()).unwrap();
-        assert!(comma_physical.as_ref() != pipe_physical.as_ref());
+        let comma_result = project_batch(&batch, &[("fields".into(), comma)]).unwrap();
+        assert_eq!(comma_result.num_rows(), 2);
+        assert!(project_batch(&batch, &[("fields".into(), pipe)]).is_err());
     }
 
     fn eval_string(value_type: Type, value: Value) -> Option<String> {

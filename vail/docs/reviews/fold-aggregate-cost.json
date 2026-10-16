@@ -1,0 +1,373 @@
+{
+  "base_commit": "9967d961",
+  "baseline_native_sha256": "daa1d37e2cc267a24cd6afdb856bbc76770c0ea6ae1fd7d4815a3a1239a04422",
+  "current_native_sha256": "22112636296ef1774e82dd11dbdb961e00c4184fcf3786906aef79c025d5372b",
+  "method": "20 fresh subprocess cases against independent complete baseline Python/native package; 10s per-case cap. Each process warms eval(0) before construction; records constructed event before action so timeouts retain construction evidence. macOS RSS bytes includes runtime/preparation/output localization. One run per case.",
+  "limitations": [
+    "Native rewrite/type summaries and prepared dependencies optimize construction, not all subsequent native typing/lowering; depth20 actions exceed 10s cap in both versions",
+    "Seeded random-dependent filter zip retains historical whole-array indexed capture cost for compatibility",
+    "Fold state/unused-capture measurements show modest/mixed changes; no universal end-to-end memory or latency improvement claimed",
+    "Borrowed one-row state may retain the backing Arrow batch; callbacks that construct changed state allocate their output",
+    "Scalar localization of wide final state remains allocated; input relations can still materialize unused columns before fold adapter"
+  ],
+  "cases": [
+    {
+      "mode": "state",
+      "n": 32,
+      "width": 8192,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.0001404169961460866
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.005218708000029437,
+          "peak_rss_bytes": 135069696,
+          "check": 8192
+        }
+      ]
+    },
+    {
+      "mode": "state",
+      "n": 32,
+      "width": 8192,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.0001622079944354482
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.00852662500255974,
+          "peak_rss_bytes": 134283264,
+          "check": 8192
+        }
+      ]
+    },
+    {
+      "mode": "state",
+      "n": 512,
+      "width": 8192,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00012775000504916534
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.0055838749976828694,
+          "peak_rss_bytes": 134250496,
+          "check": 8192
+        }
+      ]
+    },
+    {
+      "mode": "state",
+      "n": 512,
+      "width": 8192,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00013958399358671159
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.004885417001787573,
+          "peak_rss_bytes": 134447104,
+          "check": 8192
+        }
+      ]
+    },
+    {
+      "mode": "state",
+      "n": 512,
+      "width": 65536,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00013187500007916242
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.01675824999983888,
+          "peak_rss_bytes": 140263424,
+          "check": 65536
+        }
+      ]
+    },
+    {
+      "mode": "state",
+      "n": 512,
+      "width": 65536,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00014075000217417255
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.01564716699795099,
+          "peak_rss_bytes": 138723328,
+          "check": 65536
+        }
+      ]
+    },
+    {
+      "mode": "capture",
+      "n": 128,
+      "width": 4096,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00011037500371458009
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.006321457993180957,
+          "peak_rss_bytes": 136626176,
+          "check": 8128
+        }
+      ]
+    },
+    {
+      "mode": "capture",
+      "n": 128,
+      "width": 4096,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00013633300113724545
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.006037042003299575,
+          "peak_rss_bytes": 135397376,
+          "check": 8128
+        }
+      ]
+    },
+    {
+      "mode": "capture",
+      "n": 1024,
+      "width": 4096,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.0001042079966282472
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.007597207993967459,
+          "peak_rss_bytes": 150470656,
+          "check": 523776
+        }
+      ]
+    },
+    {
+      "mode": "capture",
+      "n": 1024,
+      "width": 4096,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00012066699855495244
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.006934166005521547,
+          "peak_rss_bytes": 151371776,
+          "check": 523776
+        }
+      ]
+    },
+    {
+      "mode": "capture",
+      "n": 8192,
+      "width": 4096,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00010441699851071462
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.018175500001234468,
+          "peak_rss_bytes": 268402688,
+          "check": 33550336
+        }
+      ]
+    },
+    {
+      "mode": "capture",
+      "n": 8192,
+      "width": 4096,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.00012549999519251287
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.015318000005208887,
+          "peak_rss_bytes": 268189696,
+          "check": 33550336
+        }
+      ]
+    },
+    {
+      "mode": "dag",
+      "n": 12,
+      "width": 0,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.013362624995352235
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.042582708003465086,
+          "peak_rss_bytes": 133742592,
+          "check": 12288
+        }
+      ]
+    },
+    {
+      "mode": "dag",
+      "n": 12,
+      "width": 0,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.0004387500011944212
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.04673758300486952,
+          "peak_rss_bytes": 130891776,
+          "check": 12288
+        }
+      ]
+    },
+    {
+      "mode": "dag",
+      "n": 16,
+      "width": 0,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.21716983299847925
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.8713678330022958,
+          "peak_rss_bytes": 220184576,
+          "check": 196608
+        }
+      ]
+    },
+    {
+      "mode": "dag",
+      "n": 16,
+      "width": 0,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.0004728339990833774
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.9378304999991087,
+          "peak_rss_bytes": 194363392,
+          "check": 196608
+        }
+      ]
+    },
+    {
+      "mode": "dag",
+      "n": 20,
+      "width": 0,
+      "version": "baseline",
+      "timeout_seconds": 10,
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 3.5251828330001445
+        }
+      ]
+    },
+    {
+      "mode": "dag",
+      "n": 20,
+      "width": 0,
+      "version": "current",
+      "timeout_seconds": 10,
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.0005257079974398948
+        }
+      ]
+    },
+    {
+      "mode": "random_filter",
+      "n": 4,
+      "width": 0,
+      "version": "baseline",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.0009930000014719553
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.0023176250033429824,
+          "peak_rss_bytes": 133447680,
+          "check": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "random_filter",
+      "n": 4,
+      "width": 0,
+      "version": "current",
+      "events": [
+        {
+          "phase": "constructed",
+          "construction_seconds": 0.0005549160050577484
+        },
+        {
+          "phase": "executed",
+          "execution_seconds": 0.0016236250012298115,
+          "peak_rss_bytes": 130793472,
+          "check": [
+            2,
+            3,
+            4
+          ]
+        }
+      ]
+    }
+  ]
+}

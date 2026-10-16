@@ -10,6 +10,8 @@ datafusion = "=55.0.0"
 datafusion-session = "=55.0.0"
 async-trait = "0.1"
 tokio.workspace = true
+arrow-ipc.workspace = true
+tempfile = "3"
 arrow-cast = "=59.2.0"
 arrow-ord = "=59.2.0"
 arrow-buffer.workspace = true
@@ -38,7 +40,6 @@ object_store = "0.13.2"
 bytes = "1"
 tokio-util = { version = "0.7", features = ["codec", "io"] }
 memchr = "2"
-tempfile = "3"
 serde_json.workspace = true
 thiserror.workspace = true
 vail-execution = { path = "../vail-execution" }

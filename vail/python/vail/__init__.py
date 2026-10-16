@@ -15,7 +15,7 @@ from collections.abc import Mapping, Sequence
 import os
 import re
 
-from ._native import NativeSession
+from ._native import NativeExpr, NativeSession
 from .expressions import (
     Expression,
     ExpressionException,
@@ -87,7 +87,7 @@ from .reference_genome import (ReferenceGenome, Locus, GRCh37, GRCh38, get_refer
                                default_reference, reference_genomes, resolve_reference)
 from . import agg
 from . import scan
-from .text import import_lines, import_table, read_csv, read_json
+from .text import import_lines, import_table, read_csv, read_json, split_line
 from .lookups import index as _index_table, resolve as _resolve_lookups
 from .collections import set_ as set, dict_ as dict, empty_set, empty_array, empty_dict, length as len
 from .strings import delimit, reverse_complement, hamming, entropy, reversed_ as reversed, unsupported as _unsupported_string
@@ -100,7 +100,8 @@ parse_float = parse_float64
 format = _unsupported_string('Java printf formatting')
 json = _unsupported_string('Hail typed JSON serialization')
 parse_json = _unsupported_string('Hail typed JSON parsing')
-from .streams import StreamExpression, stream_range as _stream_range
+from .streams import StreamExpression, stream_range
+_stream_range = stream_range
 
 
 def range(start, stop=None, step=1):
@@ -260,9 +261,18 @@ class Table:
     def __delattr__(self, name):
         raise TypeError("Table is immutable")
 
-    def _unlocalize_entries(self, entries_field_name, cols_field_name, col_key):
+    def unlocalize_entries(self, entries_field_name, cols_field_name, col_key):
+        """Build a MatrixTable from entry arrays and a global column array.
+
+        Validate column records and per-row alignment lazily during execution.
+        Missing entry structs represent filtered entries.
+        """
         from .matrixtable import unlocalize_entries
         return unlocalize_entries(self, entries_field_name, cols_field_name, col_key)
+
+    def _unlocalize_entries(self, entries_field_name, cols_field_name, col_key, *, _aligned=False):
+        from .matrixtable import unlocalize_entries
+        return unlocalize_entries(self, entries_field_name, cols_field_name, col_key, _aligned=_aligned)
 
     def to_matrix_table(self, row_key, col_key, row_fields=(), col_fields=(), n_partitions=None):
         from .matrixtable import to_matrix_table
@@ -357,17 +367,25 @@ class Table:
         return table
 
     @classmethod
-    def _generate(cls, contexts, globals, partitions, rowfn):
-        """Generate rows lazily from partition contexts and singleton globals."""
-        contexts, globals = as_expr(contexts), as_expr(globals)
-        if not isinstance(contexts.dtype, tarray) or not isinstance(globals.dtype, tstruct):
-            raise TypeError("_generate requires array contexts and struct globals")
-        _validate_n(partitions, "partitions", positive=True)
-        singleton = range_table(0).annotate_globals(**{n: globals[n] for n in globals.dtype})
-        bound_globals = singleton.index_globals()
-        rows = contexts.flatmap(lambda context: as_expr(rowfn(context, bound_globals)))
-        return cls.parallelize(rows, n_partitions=partitions,
-                               globals={n: bound_globals[n] for n in globals.dtype})
+    def _generate_rows(cls, n, partitions, batch_size, globals, rowfn):
+        """Stream generated rows with explicitly supplied random context words.
+
+        rowfn receives the indexed source and returns (row, context_words).
+        The words completely determine row RNG identity; normal projection
+        must not prepend an additional row ordinal.
+        """
+        from .randomness import bind_context
+        native = _native_session().range_table(n, partitions, batch_size)
+        source = cls(native.with_keys([]), tstruct(idx=tint32)).annotate_globals(**globals)
+        row, context = rowfn(source)
+        bound = bind_context(row.to_ir(), [word.to_ir() for word in context])
+        row = Expression(row.dtype, source, _IR(bound, row._global_refs, row._lookup_refs,
+                                               row_indexed=True))
+        expressions = [row[name] for name in row.dtype]
+        native = source._native.project(
+            _native_projection([[name, expr.to_ir()] for name, expr in builtins.zip(row.dtype, expressions)]),
+            _global_bindings(expressions))
+        return cls(native, row.dtype)
 
     @classmethod
     def _parallelize_expression(cls, rows, schema, key, n_partitions, globals):
@@ -427,12 +445,15 @@ class Table:
 
     @property
     def globals(self):
-        return _StructExpression({name: self._global_field(name) for name in self._global_schema}, self)
+        return _StructExpression({name: _Field(self, name, dtype, scope="global")
+                                  for name, dtype in self._global_schema.items()}, self)
 
     def _global_field(self, name):
-        if name not in self._global_schema:
-            raise ValueError(f"global field {name!r} is not present")
-        return _Field(self, name, self._global_schema[name], scope="global")
+        try:
+            dtype = self._global_schema[name]
+        except KeyError:
+            raise ValueError(f"global field {name!r} is not present") from None
+        return _Field(self, name, dtype, scope="global")
 
     def index_globals(self):
         """Return a lazy, unindexed reference to this table's globals."""
@@ -452,7 +473,9 @@ class Table:
 
     def annotate_globals(self, **named_exprs):
         expressions = {name: as_expr(value) for name, value in named_exprs.items()}
-        fields = [(name, expressions.pop(name, self._global_field(name))) for name in self._global_schema]
+        fields = [(name, expressions.pop(name) if name in expressions else
+                   _Field(self, name, dtype, scope="global"))
+                  for name, dtype in self._global_schema.items()]
         return self._project_globals(fields + list(expressions.items()))
 
     def select_globals(self, *exprs, **named_exprs):
@@ -470,7 +493,9 @@ class Table:
         referenced = builtins.set()
         for expr in expressions.values():
             referenced.update(_referenced_columns(expr.to_ir(), "global"))
-        fields = [(name, expressions.pop(name, self._global_field(name))) for name in self._global_schema
+        fields = [(name, expressions.pop(name) if name in expressions else
+                   _Field(self, name, dtype, scope="global"))
+                  for name, dtype in self._global_schema.items()
                   if name not in referenced or name in expressions]
         return self._project_globals(fields + list(expressions.items()))
 
@@ -668,14 +693,8 @@ class Table:
         renamed_global_names = {mapping.get(name, name) for name in self._global_schema}
         if renamed_row_names & renamed_global_names:
             raise ValueError("renamed row and global fields must have distinct names")
-        source = self._native.key_by([]) if self._keys else self._native
-        unkeyed = Table(source, self._schema, ())
-        row = unkeyed._project([(mapping.get(name, name), unkeyed[name]) for name in self._schema], keys=())
-        if keys:
-            row = Table(row._native.key_by(keys), row._schema, keys)
-        return row._project_globals(
-            [(mapping.get(name, name), row[name]) for name in row._global_schema]
-        )
+        native = self._native.rename_fields(builtins.dict(mapping))
+        return Table(native, _schema_from_native(native), keys)
 
     def flatten(self):
         """Project nested row structs to dotted top-level names and remove keys."""
@@ -973,7 +992,7 @@ class Table:
             index = 0
             while candidate in occupied:
                 index += 1
-                if index > 100:
+                if _mangle is not None and index > 100:
                     raise RecursionError(f"cannot deduplicate {name!r} after 100 attempts")
                 candidate = mangle(name, index)
                 if not isinstance(candidate, builtins.str) or not candidate:
@@ -981,6 +1000,17 @@ class Table:
             occupied.add(candidate)
             if candidate != name:
                 renames[name] = candidate
+        # Matched right keys disappear from the result. Move a colliding key
+        # to a temporary input name so its preferred payload name stays free.
+        used = occupied | builtins.set(right._schema) | builtins.set(right._global_schema)
+        targets = builtins.set(renames.values())
+        for i, name in builtins.enumerate(right._keys[:join_key]):
+            if name in targets:
+                temporary = f"__vail_join_matched_key_{i}"
+                while temporary in used:
+                    temporary += '_'
+                used.add(temporary)
+                renames[name] = temporary
         if renames:
             right = right.rename(renames)
 
@@ -1073,6 +1103,16 @@ class Table:
         from .arrow import decode_rows
         return decode_rows(self._native.collect_arrow(), self._schema)
 
+    def to_arrow(self):
+        """Execute to a PyArrow table retaining native Arrow buffers and type metadata.
+
+        Imports and unmodified projections share value buffers. Operations that
+        compute or reorder values may allocate their own output buffers. The
+        returned table owns its data independently of this Vail table.
+        """
+        from .arrow import read_arrow
+        return read_arrow(self._native.collect_arrow())[1]
+
     @classmethod
     def from_pandas(cls, df, key=()):
         """Build a lazy Arrow source from a pandas DataFrame, excluding its index."""
@@ -1082,7 +1122,7 @@ class Table:
             raise TypeError("df must be a pandas.DataFrame")
         if not df.columns.is_unique or builtins.any(not isinstance(name, builtins.str) for name in df.columns):
             raise ValueError("DataFrame columns must be unique strings")
-        from .arrow import arrow_type, _physical
+        from .arrow import arrow_type, _physical_converter
         columns = []
         for name in df.columns:
             series = df[name]
@@ -1115,7 +1155,8 @@ class Table:
                         ty = _infer_type(values)
                 except NotImplementedError as exc:
                     raise ExpressionException("cannot impute array elements with incompatible types") from exc
-                columns.append(pa.array([_physical(value, ty) for value in values], type=arrow_type(ty)))
+                convert = _physical_converter(ty)
+                columns.append(pa.array([convert(value) for value in values], type=arrow_type(ty)))
             else:
                 columns.append(pa.Array.from_pandas(series))
         if columns:
@@ -1128,7 +1169,7 @@ class Table:
         """Execute through Arrow and convert to Hail-compatible pandas dtypes."""
         import pandas as pd
         import pyarrow as pa
-        from .arrow import read_arrow, _logical
+        from .arrow import read_arrow, _logical_converter
         if type(flatten) is not builtins.bool:
             raise TypeError("flatten must be a bool")
         if types is not None and not isinstance(types, Mapping):
@@ -1150,7 +1191,8 @@ class Table:
         overrides = {} if types is None else types
         for name, ty in table._schema.items():
             if ty not in (tint32, tint64, tfloat32, tfloat64, tbool, tstr):
-                frame[name] = pd.Series([_logical(value, ty) for value in arrow_table[name].to_pylist()], dtype=object)
+                convert = _logical_converter(ty)
+                frame[name] = pd.Series([convert(value) for value in arrow_table[name].to_pylist()], dtype=object)
             requested = overrides.get(name)
             if requested is None:
                 requested = next((value for key, value in overrides.items() if key == ty), None)
@@ -1309,35 +1351,36 @@ class Table:
         })
         return Table(native, schema, self._keys)
 
-    def _map_partitions(self, f):
-        """Build a lazy transformation over each table partition's row stream."""
+    def map_partitions(self, f):
+        """Lazily transform each partition, retaining its partition membership.
+
+        Identity, filters, and direct key-forwarding maps retain the table key.
+        Other callbacks return an unkeyed table; use ``key_by`` explicitly to
+        establish ordering after changing keys or rearranging rows.
+        """
         if not callable(f):
-            raise TypeError("Table._map_partitions requires a callable")
+            raise TypeError("Table.map_partitions requires a callable")
         from uuid import uuid4
 
         rows_name = "__vail_partition_rows_" + uuid4().hex
         rows = Expression(tarray(self._schema), self, {"op": "column", "name": rows_name})._to_stream()
         result = f(rows)
         if not isinstance(result, StreamExpression):
-            raise TypeError("Table._map_partitions callback must return a stream expression")
+            raise TypeError("Table.map_partitions callback must return a stream expression")
         body = result.to_array()
         if not isinstance(body.dtype, tarray) or not isinstance(body.dtype.element_type, tstruct):
-            raise TypeError("Table._map_partitions callback must return a stream of structs")
+            raise TypeError("Table.map_partitions callback must return a stream of structs")
         if body.source is not None and body.source is not self:
             raise ExpressionException("expression source mismatch: partition stream belongs to a different Table")
-        result_schema = body.dtype.element_type
-        for key in self._keys:
-            if key not in result_schema:
-                raise ValueError("Table._map_partitions must preserve key fields")
-            if result_schema[key] != self._schema[key]:
-                raise ValueError(f"Table._map_partitions must preserve key field type for {key!r}")
         native = self._native.map_partitions(
             rows_name, _native_expression(body.to_ir()), _global_bindings([body])
         )
         schema = tstruct(**{
             name: type_from_wire(dtype) for name, dtype in native.schema()
         })
-        return Table(native, schema, self._keys)
+        return Table(native, schema, _keys_from_native(native))
+
+    _map_partitions = map_partitions
 
 
 def range_table(n, n_partitions=None):
@@ -1353,20 +1396,29 @@ from . import utils  # noqa: E402
 
 
 def _referenced_columns(node, scope="column"):
-    if isinstance(node, IR_NODE_TYPES):
-        # Literal payloads are user data, even if they contain keys named op/name.
-        if node.get("op") == "literal":
-            return builtins.set()
-        result = {node["name"]} if node.get("op") == scope else builtins.set()
-        for value in node.values():
-            result.update(_referenced_columns(value, scope))
-        return result
-    if isinstance(node, list):
-        result = builtins.set()
-        for value in node:
-            result.update(_referenced_columns(value, scope))
-        return result
-    return builtins.set()
+    result = builtins.set()
+    seen = builtins.set()
+    pending = [node]
+    while pending:
+        value = pending.pop()
+        if isinstance(value, NativeExpr):
+            if id(value) in seen:
+                continue
+            seen.add(id(value))
+            result.update(value.referenced_names(scope))
+        elif isinstance(value, (dict, list)):
+            if id(value) in seen:
+                continue
+            seen.add(id(value))
+            if isinstance(value, dict):
+                if value.get("op") == "literal":
+                    continue
+                if value.get("op") == scope:
+                    result.add(value["name"])
+                pending.extend(value.values())
+            else:
+                pending.extend(value)
+    return result
 
 
 def _validate_aggregate_ir(node):
@@ -1959,7 +2011,6 @@ def eval_typed(expression):
 
 from . import nd
 
-_stream_range = _stream_range
 
 int = int32
 float = float64

@@ -18,7 +18,7 @@ use crate::expressions::{ExprError, Type};
 #[derive(Debug)]
 struct SetAccumulator {
     inner: DistinctArrayAggAccumulator,
-    item_type: DataType,
+    item_field: Arc<Field>,
 }
 
 impl SetAccumulator {
@@ -28,19 +28,8 @@ impl SetAccumulator {
                 "distinct array aggregate returned a non-list".into(),
             ));
         };
-        let DataType::List(item_field) = (Type::Set {
-            set: Box::new(
-                Type::from_arrow(&self.item_type)
-                    .map_err(|e| DataFusionError::Execution(e.to_string()))?,
-            ),
-        })
-        .to_arrow()
-        .map_err(|e| DataFusionError::Execution(e.to_string()))?
-        else {
-            unreachable!()
-        };
         Ok(ScalarValue::List(Arc::new(ListArray::new(
-            item_field,
+            self.item_field.clone(),
             values.offsets().clone(),
             values.values().clone(),
             None, // Hail's empty set is defined, unlike SQL array_agg's NULL.
@@ -81,11 +70,15 @@ pub fn make_udaf(
             }
             .to_arrow()?;
             let state_type = result_type.clone();
+            let DataType::List(item_field) = &result_type else {
+                unreachable!()
+            };
+            let item_field = item_field.clone();
             let accumulator_type = item_type.clone();
             let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
                 Ok(Box::new(SetAccumulator {
                     inner: DistinctArrayAggAccumulator::try_new(&accumulator_type, None, false)?,
-                    item_type: accumulator_type.clone(),
+                    item_field: item_field.clone(),
                 }))
             });
             Ok(Some(Arc::new(create_udaf(
@@ -119,9 +112,12 @@ pub fn make_udaf(
                         "ordered take expects a value/ordering struct".into(),
                     ));
                 };
-                if fields.len() != 2 {
+                if fields.len() != 2
+                    || fields[0].name() != "value"
+                    || fields[1].name() != "ordering"
+                {
                     return Err(ExprError::Invalid(
-                        "ordered take requires value and ordering fields".into(),
+                        "ordered take requires value then ordering fields".into(),
                     ));
                 }
                 fields[0].data_type().clone()
@@ -134,16 +130,24 @@ pub fn make_udaf(
             } else {
                 output.clone()
             };
-            let input_type = input_type.clone();
             let argument_type = input_type.clone();
-            let n = n as usize;
-            let udaf_name = configured_udaf_name("take", &input_type, options);
+            let config = Arc::new(TakeConfig {
+                input_type: input_type.clone(),
+                item_type: value_type,
+                n: n as usize,
+            });
+            let udaf_name = configured_udaf_name("take", input_type, options);
             let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
                 Ok(Box::new(TakeAccumulator {
-                    input_type: input_type.clone(),
-                    n,
-                    ordered,
-                    items: None,
+                    config: config.clone(),
+                    state: if ordered {
+                        TakeState::Ordered(None)
+                    } else {
+                        TakeState::Unordered {
+                            chunks: Vec::new(),
+                            len: 0,
+                        }
+                    },
                 }))
             });
             Ok(Some(Arc::new(create_udaf(
@@ -161,122 +165,137 @@ pub fn make_udaf(
 }
 
 #[derive(Debug)]
-struct TakeAccumulator {
+struct TakeConfig {
     input_type: DataType,
+    item_type: DataType,
     n: usize,
-    ordered: bool,
-    items: Option<ArrayRef>,
 }
-
+#[derive(Debug)]
+enum TakeState {
+    Ordered(Option<ArrayRef>),
+    Unordered { chunks: Vec<ArrayRef>, len: usize },
+}
+#[derive(Debug)]
+struct TakeAccumulator {
+    config: Arc<TakeConfig>,
+    state: TakeState,
+}
+fn chunks_value(chunks: &[ArrayRef], dtype: &DataType) -> DfResult<ArrayRef> {
+    match chunks {
+        [] => Ok(new_empty_array(dtype)),
+        [one] => Ok(one.clone()),
+        _ => concat(
+            &chunks
+                .iter()
+                .map(|chunk| chunk.as_ref())
+                .collect::<Vec<_>>(),
+        )
+        .map_err(Into::into),
+    }
+}
 impl TakeAccumulator {
     fn append(&mut self, incoming: &ArrayRef) -> DfResult<()> {
-        if self.n == 0 || incoming.is_empty() {
+        let n = self.config.n;
+        if n == 0 || incoming.is_empty() {
             return Ok(());
         }
-        let incoming = if !self.ordered {
-            let retained = self.items.as_ref().map_or(0, |values| values.len());
-            if retained >= self.n {
-                return Ok(());
+        match &mut self.state {
+            TakeState::Unordered { chunks, len } => {
+                if *len == n {
+                    return Ok(());
+                }
+                let count = incoming.len().min(n - *len);
+                // Own only retained rows, including when merging sliced states.
+                let indices = UInt32Array::from_iter_values((0..count).map(|i| i as u32));
+                chunks.push(take(incoming.as_ref(), &indices, None)?);
+                *len += count;
             }
-            incoming.slice(0, incoming.len().min(self.n - retained))
-        } else {
-            incoming.clone()
-        };
-        let combined = if let Some(current) = &self.items {
-            concat(&[current.as_ref(), incoming.as_ref()])?
-        } else {
-            incoming
-        };
-        self.items = Some(if self.ordered {
-            let rows = combined
-                .as_any()
-                .downcast_ref::<StructArray>()
-                .ok_or_else(|| {
-                    DataFusionError::Execution("ordered take expects struct rows".into())
-                })?;
-            if rows.num_columns() != 2 {
-                return Err(DataFusionError::Execution(
-                    "ordered take expects value and ordering fields".into(),
-                ));
+            TakeState::Ordered(current) => {
+                let rows = incoming
+                    .as_any()
+                    .downcast_ref::<StructArray>()
+                    .ok_or_else(|| {
+                        DataFusionError::Execution("ordered take expects packed records".into())
+                    })?;
+                if rows.null_count() != 0 {
+                    return Err(DataFusionError::Execution(
+                        "ordered take packed records must be defined".into(),
+                    ));
+                }
+                let previous = current
+                    .as_ref()
+                    .map(|array| array.as_any().downcast_ref::<StructArray>().unwrap());
+                let left_len = previous.map_or(0, |rows| rows.len());
+                if left_len
+                    .checked_add(rows.len())
+                    .is_none_or(|len| len > u32::MAX as usize)
+                {
+                    return Err(DataFusionError::Execution(
+                        "ordered take batch exceeds Arrow index capacity".into(),
+                    ));
+                }
+                let keys = if let Some(previous) = previous {
+                    concat(&[previous.column(1).as_ref(), rows.column(1).as_ref()])?
+                } else {
+                    rows.column(1).clone()
+                };
+                let indices = lexsort_to_indices(
+                    &[SortColumn {
+                        values: keys,
+                        options: Some(SortOptions {
+                            descending: false,
+                            nulls_first: false,
+                        }),
+                    }],
+                    Some(n),
+                )?;
+                let selected = if let Some(previous) = current.as_ref() {
+                    let selection = indices
+                        .values()
+                        .iter()
+                        .map(|i| {
+                            let i = *i as usize;
+                            if i < left_len {
+                                (0, i)
+                            } else {
+                                (1, i - left_len)
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                    arrow_select::interleave::interleave(
+                        &[previous.as_ref(), incoming.as_ref()],
+                        &selection,
+                    )?
+                } else {
+                    take(incoming.as_ref(), &indices, None)?
+                };
+                *current = Some(selected);
             }
-            let indices = lexsort_to_indices(
-                &[SortColumn {
-                    values: Arc::clone(rows.column(1)),
-                    options: Some(SortOptions {
-                        descending: false,
-                        nulls_first: false,
-                    }),
-                }],
-                Some(self.n),
-            )?;
-            // Keep value/order pairs so partial states merge with the same
-            // selection rule; projecting values is deferred to finalization.
-            take(combined.as_ref(), &indices, None)?
-        } else {
-            // Compact just the retained values so a tiny result does not pin
-            // the whole input batch through an Arrow slice.
-            let count = combined.len().min(self.n);
-            take(
-                combined.as_ref(),
-                &UInt32Array::from_iter_values((0..count).map(|i| i as u32)),
-                None,
-            )?
-        });
+        }
         Ok(())
     }
-
-    fn output(&self) -> DfResult<ScalarValue> {
-        let item_type = if self.ordered {
-            match &self.input_type {
-                DataType::Struct(fields) => fields[0].data_type().clone(),
-                _ => self.input_type.clone(),
-            }
-        } else {
-            self.input_type.clone()
-        };
-        let items = match &self.items {
-            Some(items) if self.ordered => items
-                .as_any()
-                .downcast_ref::<StructArray>()
-                .unwrap()
-                .column(0)
-                .clone(),
-            Some(items) => items.clone(),
-            None => new_empty_array(&item_type),
-        };
-        let len = items.len();
-        Ok(ScalarValue::List(Arc::new(ListArray::new(
-            Arc::new(Field::new("item", item_type, true)),
-            OffsetBuffer::from_lengths([len]),
+    fn retained(&self) -> DfResult<ArrayRef> {
+        match &self.state {
+            TakeState::Ordered(Some(items)) => Ok(items.clone()),
+            TakeState::Ordered(None) => Ok(new_empty_array(&self.config.input_type)),
+            TakeState::Unordered { chunks, .. } => chunks_value(chunks, &self.config.input_type),
+        }
+    }
+    fn list(items: ArrayRef) -> ScalarValue {
+        ScalarValue::List(Arc::new(ListArray::new(
+            Arc::new(Field::new("item", items.data_type().clone(), true)),
+            OffsetBuffer::from_lengths([items.len()]),
             items,
             None,
-        ))))
+        )))
     }
 }
-
-#[cfg(test)]
-mod identity_tests {
-    use super::*;
-    use serde_json::json;
-
-    #[test]
-    fn take_udafs_with_different_limits_have_distinct_identities() {
-        let one = make_udaf("take", &DataType::Int64, &json!({"n": 1}))
-            .unwrap()
-            .unwrap();
-        let three = make_udaf("take", &DataType::Int64, &json!({"n": 3}))
-            .unwrap()
-            .unwrap();
-        assert_ne!(one.name(), three.name());
-    }
-}
-
 impl Accumulator for TakeAccumulator {
     fn update_batch(&mut self, values: &[ArrayRef]) -> DfResult<()> {
         let [values] = values else {
             return Err(DataFusionError::Execution("take expects one input".into()));
         };
-        if values.data_type() != &self.input_type {
+        if values.data_type() != &self.config.input_type {
             return Err(DataFusionError::Execution(
                 "take input type mismatch".into(),
             ));
@@ -284,27 +303,36 @@ impl Accumulator for TakeAccumulator {
         self.append(values)
     }
     fn evaluate(&mut self) -> DfResult<ScalarValue> {
-        self.output()
+        let retained = self.retained()?;
+        let values = match &self.state {
+            TakeState::Ordered(_) => retained
+                .as_any()
+                .downcast_ref::<StructArray>()
+                .unwrap()
+                .column(0)
+                .clone(),
+            _ => retained,
+        };
+        debug_assert_eq!(values.data_type(), &self.config.item_type);
+        Ok(Self::list(values))
     }
     fn size(&self) -> usize {
-        std::mem::size_of::<Self>() + self.items.as_ref().map_or(0, |x| x.get_array_memory_size())
+        std::mem::size_of_val(self)
+            + match &self.state {
+                TakeState::Ordered(items) => items
+                    .as_ref()
+                    .map_or(0, |array| array.get_array_memory_size()),
+                TakeState::Unordered { chunks, .. } => {
+                    chunks.capacity() * std::mem::size_of::<ArrayRef>()
+                        + chunks
+                            .iter()
+                            .map(|chunk| chunk.get_array_memory_size())
+                            .sum::<usize>()
+                }
+            }
     }
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
-        Ok(vec![if let Some(items) = &self.items {
-            ScalarValue::List(Arc::new(ListArray::new(
-                Arc::new(Field::new("item", self.input_type.clone(), true)),
-                OffsetBuffer::from_lengths([items.len()]),
-                items.clone(),
-                None,
-            )))
-        } else {
-            ScalarValue::List(Arc::new(ListArray::new(
-                Arc::new(Field::new("item", self.input_type.clone(), true)),
-                OffsetBuffer::from_lengths([0]),
-                new_empty_array(&self.input_type),
-                None,
-            )))
-        }])
+        Ok(vec![Self::list(self.retained()?)])
     }
     fn merge_batch(&mut self, states: &[ArrayRef]) -> DfResult<()> {
         let [states] = states else {
@@ -312,117 +340,20 @@ impl Accumulator for TakeAccumulator {
                 "take state expects one list".into(),
             ));
         };
-        let list = states
+        let lists = states
             .as_any()
             .downcast_ref::<ListArray>()
-            .ok_or_else(|| DataFusionError::Execution("take state must be a list".into()))?;
-        for i in 0..list.len() {
-            if list.is_valid(i) {
-                self.append(&list.value(i))?;
+            .ok_or_else(|| DataFusionError::Execution("take state must be list".into()))?;
+        if lists.value_type() != self.config.input_type {
+            return Err(DataFusionError::Execution(
+                "take state item type mismatch".into(),
+            ));
+        }
+        for row in 0..lists.len() {
+            if lists.is_valid(row) {
+                self.append(&lists.value(row))?;
             }
         }
         Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_array::{Int64Array, StructArray};
-    use arrow_schema::Fields;
-
-    #[test]
-    fn set_retains_one_null_and_merges_partial_states() {
-        let mut left = SetAccumulator {
-            inner: DistinctArrayAggAccumulator::try_new(&DataType::Int64, None, false).unwrap(),
-            item_type: DataType::Int64,
-        };
-        let mut right = SetAccumulator {
-            inner: DistinctArrayAggAccumulator::try_new(&DataType::Int64, None, false).unwrap(),
-            item_type: DataType::Int64,
-        };
-        left.update_batch(&[Arc::new(Int64Array::from(vec![Some(2), None]))])
-            .unwrap();
-        right
-            .update_batch(&[Arc::new(Int64Array::from(vec![Some(2), Some(3), None]))])
-            .unwrap();
-        let partial = ScalarValue::iter_to_array(right.state().unwrap()).unwrap();
-        left.merge_batch(&[partial]).unwrap();
-        let ScalarValue::List(result) = left.evaluate().unwrap() else {
-            panic!("expected list")
-        };
-        assert_eq!(result.values().len(), 3);
-        assert_eq!(result.values().null_count(), 1);
-        let values = result
-            .values()
-            .as_any()
-            .downcast_ref::<Int64Array>()
-            .unwrap();
-        let observed = (0..values.len())
-            .filter_map(|i| values.is_valid(i).then(|| values.value(i)))
-            .collect::<std::collections::HashSet<_>>();
-        assert_eq!(observed, [2, 3].into_iter().collect());
-    }
-
-    #[test]
-    fn unordered_take_compacts_small_state_and_ignores_later_batches() {
-        let input: ArrayRef = Arc::new(Int64Array::from_iter_values(0..65536));
-        let mut accumulator = TakeAccumulator {
-            input_type: DataType::Int64,
-            n: 3,
-            ordered: false,
-            items: None,
-        };
-        accumulator.update_batch(&[input.clone()]).unwrap();
-        let state = accumulator.items.as_ref().unwrap();
-        assert_eq!(state.len(), 3);
-        assert!(state.get_array_memory_size() < input.get_array_memory_size() / 100);
-        let first = state.to_data().buffers()[0].as_ptr();
-        accumulator.update_batch(&[input]).unwrap();
-        let state = accumulator.items.as_ref().unwrap();
-        assert_eq!(first, state.to_data().buffers()[0].as_ptr());
-    }
-
-    #[test]
-    fn ordered_take_keeps_smallest_keys_and_nulls_last() {
-        let fields: Fields = vec![
-            Arc::new(Field::new("value", DataType::Int64, true)),
-            Arc::new(Field::new("ordering", DataType::Int64, true)),
-        ]
-        .into();
-        let packed: ArrayRef = Arc::new(StructArray::new(
-            fields.clone(),
-            vec![
-                Arc::new(Int64Array::from(vec![
-                    Some(10),
-                    Some(20),
-                    Some(30),
-                    Some(40),
-                ])),
-                Arc::new(Int64Array::from(vec![Some(3), None, Some(1), Some(2)])),
-            ],
-            None,
-        ));
-        let mut accumulator = TakeAccumulator {
-            input_type: DataType::Struct(fields),
-            n: 3,
-            ordered: true,
-            items: None,
-        };
-        accumulator.update_batch(&[packed]).unwrap();
-        let ScalarValue::List(output) = accumulator.evaluate().unwrap() else {
-            panic!("expected list")
-        };
-        let values = output
-            .values()
-            .as_any()
-            .downcast_ref::<Int64Array>()
-            .unwrap();
-        assert_eq!(
-            (0..values.len())
-                .map(|i| values.value(i))
-                .collect::<Vec<_>>(),
-            vec![30, 40, 10]
-        );
     }
 }

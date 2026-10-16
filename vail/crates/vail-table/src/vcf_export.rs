@@ -1,340 +1,433 @@
-//! Bounded VCF sink: rows stay in Arrow and are consumed once, batch by batch.
-use crate::{PartitionEvent, Result, TableError, TableRef};
+//! Bounded local VCF serialization. Bind schema positions once, Arrow views once
+//! per batch, and reuse a single record buffer. Python owns header validation.
+use crate::{Result, TableError, TableRef};
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, ListArray, StringArray,
-    StructArray,
+    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, LargeStringArray,
+    ListArray, StringArray, StringViewArray, StructArray,
 };
+use arrow_schema::{DataType, Schema};
 use futures::TryStreamExt;
-use std::io::{BufWriter, Write};
-use vail_execution::expressions::{PrimitiveType, Type};
+use std::{
+    fmt::Write as _,
+    io::{BufWriter, Write},
+    sync::Arc,
+};
+use vail_execution::expressions::{PrimitiveType as P, Type};
 
-fn invalid(message: impl Into<String>) -> TableError {
+fn bad(message: impl Into<String>) -> TableError {
     TableError::Invalid(message.into())
 }
-fn io(error: std::io::Error) -> TableError {
-    TableError::Storage(error.into())
+fn down<T: Array + 'static>(a: &dyn Array) -> Result<&T> {
+    a.as_any()
+        .downcast_ref()
+        .ok_or_else(|| bad("VCF Arrow storage disagrees with its type"))
 }
-fn checked(value: &str) -> Result<&str> {
+
+enum Values<'a> {
+    Text(&'a StringArray),
+    Large(&'a LargeStringArray),
+    View(&'a StringViewArray),
+    I32(&'a Int32Array),
+    F32(&'a Float32Array),
+    F64(&'a Float64Array),
+    Bool(&'a BooleanArray),
+    List(&'a ListArray, Box<Values<'a>>),
+    Call(&'a StructArray, &'a Int32Array),
+}
+impl<'a> Values<'a> {
+    fn bind(dtype: &Type, a: &'a dyn Array) -> Result<Self> {
+        Ok(match dtype {
+            Type::Primitive(P::Str) => match a.data_type() {
+                DataType::Utf8 => Self::Text(down(a)?),
+                DataType::LargeUtf8 => Self::Large(down(a)?),
+                DataType::Utf8View => Self::View(down(a)?),
+                _ => return Err(bad("VCF string storage")),
+            },
+            Type::Primitive(P::Int32) => Self::I32(down(a)?),
+            Type::Primitive(P::Float32) => Self::F32(down(a)?),
+            Type::Primitive(P::Float64) => Self::F64(down(a)?),
+            Type::Primitive(P::Bool) => Self::Bool(down(a)?),
+            Type::Primitive(P::Call) => {
+                let a: &StructArray = down(a)?;
+                let words = a
+                    .column_by_name("__vail_call_word")
+                    .ok_or_else(|| bad("VCF Call lacks word"))?;
+                Self::Call(a, down(words.as_ref())?)
+            }
+            Type::Array { array } | Type::Set { set: array } => {
+                let list: &ListArray = down(a)?;
+                Self::List(list, Box::new(Self::bind(array, list.values().as_ref())?))
+            }
+            _ => return Err(bad("unsupported VCF field type")),
+        })
+    }
+    fn array(&self) -> &dyn Array {
+        match self {
+            Self::Text(a) => *a,
+            Self::Large(a) => *a,
+            Self::View(a) => *a,
+            Self::I32(a) => *a,
+            Self::F32(a) => *a,
+            Self::F64(a) => *a,
+            Self::Bool(a) => *a,
+            Self::List(a, _) => *a,
+            Self::Call(a, _) => *a,
+        }
+    }
+    fn append(&self, row: usize, separator: char, out: &mut String) -> Result<()> {
+        if self.array().is_null(row) {
+            out.push_str(if matches!(self, Self::Call(..)) {
+                "./."
+            } else {
+                "."
+            });
+            return Ok(());
+        }
+        match self {
+            Self::Text(a) => text(a.value(row), separator, out)?,
+            Self::Large(a) => text(a.value(row), separator, out)?,
+            Self::View(a) => text(a.value(row), separator, out)?,
+            Self::I32(a) => {
+                write!(out, "{:?}", a.value(row)).unwrap();
+            }
+            Self::F32(a) => {
+                write!(out, "{:?}", a.value(row)).unwrap();
+            }
+            Self::F64(a) => {
+                write!(out, "{:?}", a.value(row)).unwrap();
+            }
+            Self::Bool(a) => out.push_str(if a.value(row) { "true" } else { "false" }),
+            Self::Call(_, words) => {
+                if words.is_null(row) {
+                    return Err(bad("present VCF Call has missing word"));
+                }
+                let (alleles, phased) =
+                    vail_execution::calls::unpack(words.value(row)).map_err(bad)?;
+                if alleles.is_empty() {
+                    out.push('.');
+                }
+                for (i, a) in alleles.iter().enumerate() {
+                    if i > 0 {
+                        out.push(if phased { '|' } else { '/' });
+                    }
+                    write!(out, "{a}").unwrap();
+                }
+            }
+            Self::List(a, values) => {
+                let start = a.value_offsets()[row] as usize;
+                let end = a.value_offsets()[row + 1] as usize;
+                if start == end {
+                    out.push('.');
+                }
+                for i in start..end {
+                    if i > start {
+                        out.push(',');
+                    }
+                    values.append(i, separator, out)?;
+                }
+            }
+        }
+        Ok(())
+    }
+}
+fn text(value: &str, separator: char, out: &mut String) -> Result<()> {
     if value.contains(['\t', '\r', '\n']) {
-        return Err(invalid("VCF values must not contain tabs or newlines"));
+        return Err(bad("VCF values cannot contain tabs or newlines"));
     }
-    Ok(value)
-}
-fn structure(array: &ArrayRef) -> Result<&StructArray> {
-    array
-        .as_any()
-        .downcast_ref()
-        .ok_or_else(|| invalid("VCF expected struct storage"))
-}
-fn list(array: &ArrayRef) -> Result<&ListArray> {
-    array
-        .as_any()
-        .downcast_ref()
-        .ok_or_else(|| invalid("VCF expected array storage"))
-}
-fn field<'a>(array: &'a StructArray, name: &str) -> Result<&'a ArrayRef> {
-    array
-        .column_by_name(name)
-        .ok_or_else(|| invalid(format!("VCF field {name:?} is missing")))
-}
-fn text(array: &ArrayRef, row: usize, dtype: &Type) -> Result<String> {
-    if array.is_null(row) {
-        return Ok(if *dtype == Type::Primitive(PrimitiveType::Call) {
-            "./."
-        } else {
-            "."
-        }
-        .into());
+    if value.is_empty()
+        || (separator != '\0' && value.contains(separator))
+        || (separator != '\0' && value.contains(','))
+    {
+        return Err(bad(
+            "VCF values contain an empty string or reserved delimiter",
+        ));
     }
-    let result = match dtype {
-        Type::Array { array: element } => {
-            let values = list(array)?.value(row);
-            let pieces = (0..values.len())
-                .map(|i| text(&values, i, element))
-                .collect::<Result<Vec<_>>>()?;
-            if pieces.is_empty() {
-                ".".into()
-            } else {
-                pieces.join(",")
-            }
-        }
-        Type::Primitive(PrimitiveType::Call) => {
-            let word = field(structure(array)?, "__vail_call_word")?
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .ok_or_else(|| invalid("invalid Call storage"))?
-                .value(row);
-            let (alleles, phased) = vail_execution::calls::unpack(word).map_err(invalid)?;
-            if alleles.is_empty() {
-                ".".into()
-            } else {
-                alleles
-                    .iter()
-                    .map(ToString::to_string)
-                    .collect::<Vec<_>>()
-                    .join(if phased { "|" } else { "/" })
-            }
-        }
-        Type::Primitive(PrimitiveType::Str) => array
-            .as_any()
-            .downcast_ref::<StringArray>()
-            .ok_or_else(|| invalid("invalid string storage"))?
-            .value(row)
-            .to_owned(),
-        Type::Primitive(PrimitiveType::Int32) => array
-            .as_any()
-            .downcast_ref::<Int32Array>()
-            .unwrap()
-            .value(row)
-            .to_string(),
-        Type::Primitive(PrimitiveType::Float32) => float_text(
-            array
-                .as_any()
-                .downcast_ref::<Float32Array>()
-                .unwrap()
-                .value(row) as f64,
-        ),
-        Type::Primitive(PrimitiveType::Float64) => float_text(
-            array
-                .as_any()
-                .downcast_ref::<Float64Array>()
-                .unwrap()
-                .value(row),
-        ),
-        _ => return Err(invalid(format!("unsupported VCF value type {dtype:?}"))),
-    };
-    checked(&result)?;
-    Ok(result)
+    out.push_str(value);
+    Ok(())
 }
-fn float_text(value: f64) -> String {
-    if value.is_nan() {
-        "nan".into()
-    } else if value == f64::INFINITY {
-        "inf".into()
-    } else if value == f64::NEG_INFINITY {
-        "-inf".into()
-    } else {
-        let value = value.to_string();
-        if value.contains(['.', 'e', 'E']) {
-            value
-        } else {
-            format!("{value}.0")
-        }
+struct Field {
+    name: String,
+    index: usize,
+    dtype: Type,
+}
+impl Field {
+    fn new(schema: &Schema, name: &str) -> Result<Self> {
+        Self::at(schema, schema.index_of(name)?)
+    }
+    fn at(schema: &Schema, index: usize) -> Result<Self> {
+        Ok(Self {
+            name: schema.field(index).name().clone(),
+            index,
+            dtype: Type::from_arrow(schema.field(index).data_type())?,
+        })
+    }
+    fn bind<'a>(&self, columns: &'a [ArrayRef]) -> Result<Values<'a>> {
+        Values::bind(&self.dtype, columns[self.index].as_ref())
     }
 }
 
-/// Publish only a completely written file. A failed upstream batch or formatter
-/// leaves an existing destination untouched and removes the temporary sibling.
 pub async fn export(
     table: TableRef,
     path: &str,
-    header: &[String],
+    headers: &[String],
     entries_name: &str,
     entry_names: &[String],
     sample_count: usize,
 ) -> Result<()> {
+    let schema = table.schema();
+    let allele = Field::new(schema, "alleles")?;
+    let entries = Field::new(schema, entries_name)?;
+    let locus_index = schema.index_of("locus")?;
+    let DataType::Struct(locus_fields) = schema.field(locus_index).data_type() else {
+        return Err(bad("VCF requires locus struct"));
+    };
+    let locus_schema = Schema::new(locus_fields.clone());
+    let tagged = locus_schema.index_of("__vail_locus_contig").is_ok();
+    let contig = Field::new(
+        &locus_schema,
+        if tagged {
+            "__vail_locus_contig"
+        } else {
+            "contig"
+        },
+    )?;
+    let position = Field::new(
+        &locus_schema,
+        if tagged {
+            "__vail_locus_position"
+        } else {
+            "position"
+        },
+    )?;
+    let optional = |name: &str| {
+        if schema.index_of(name).is_ok() {
+            Field::new(schema, name).map(Some)
+        } else {
+            Ok(None)
+        }
+    };
+    let (rsid, qual, filters) = (optional("rsid")?, optional("qual")?, optional("filters")?);
+    let info_index = schema.index_of("info").ok();
+    let info_fields = if let Some(index) = info_index {
+        let DataType::Struct(fields) = schema.field(index).data_type() else {
+            return Err(bad("VCF info must be struct"));
+        };
+        let s = Schema::new(fields.clone());
+        fields
+            .iter()
+            .enumerate()
+            .map(|(index, _)| Field::at(&s, index))
+            .collect::<Result<Vec<_>>>()?
+    } else {
+        Vec::new()
+    };
+    let DataType::List(entry_field) = schema.field(entries.index).data_type() else {
+        return Err(bad("VCF entries must be array"));
+    };
+    let DataType::Struct(entry_fields) = entry_field.data_type() else {
+        return Err(bad("VCF entries must be structs"));
+    };
+    let entry_schema = Schema::new(entry_fields.clone());
+    let entry_positions = entry_fields
+        .iter()
+        .enumerate()
+        .map(|(i, f)| (f.name().as_str(), i))
+        .collect::<std::collections::HashMap<_, _>>();
+    let fields = entry_names
+        .iter()
+        .map(|name| {
+            let name = name.as_str();
+            Field::at(
+                &entry_schema,
+                *entry_positions
+                    .get(name)
+                    .ok_or_else(|| bad("unknown VCF entry field"))?,
+            )
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let format = fields
+        .iter()
+        .map(|f| f.name.as_str())
+        .collect::<Vec<_>>()
+        .join(":");
+    let plan = crate::partitioned::prepare(table.clone()).await?.ordered();
+    let mut batches = plan.execute(0, Arc::new(datafusion_execution::TaskContext::default()))?;
     let destination = std::path::Path::new(path);
     let parent = destination
         .parent()
         .filter(|p| !p.as_os_str().is_empty())
         .unwrap_or_else(|| std::path::Path::new("."));
-    let mut output = tempfile::NamedTempFile::new_in(parent).map_err(io)?;
-    {
-        let mut writer = BufWriter::new(output.as_file_mut());
-        for line in header {
-            writeln!(writer, "{line}").map_err(io)?;
-        }
-        write_batches(
-            &mut writer,
-            table.execute(),
-            entries_name,
-            entry_names,
-            sample_count,
-        )
-        .await?;
-        writer.flush().map_err(io)?;
+    let mut output = tempfile::NamedTempFile::new_in(parent).map_err(|e| bad(e.to_string()))?;
+    let mut writer = BufWriter::new(output.as_file_mut());
+    for header in headers {
+        writeln!(writer, "{}", header).map_err(|e| bad(e.to_string()))?;
     }
-    output.persist(destination).map_err(|e| io(e.error))?;
-    Ok(())
-}
-
-async fn write_batches(
-    writer: &mut impl Write,
-    mut batches: crate::BatchStream,
-    entries_name: &str,
-    entry_names: &[String],
-    sample_count: usize,
-) -> Result<()> {
-    let format_text = if entry_names.is_empty() {
-        ".".to_owned()
-    } else {
-        entry_names.join(":")
-    };
-    while let Some(event) = batches.try_next().await? {
-        let PartitionEvent::Batch(batch) = event else {
-            continue;
+    let mut line = String::new();
+    while let Some(batch) = batches.try_next().await? {
+        let loci: &StructArray = down(batch.column(locus_index).as_ref())?;
+        let contigs = contig.bind(loci.columns())?;
+        let positions = position.bind(loci.columns())?;
+        let alleles = allele.bind(batch.columns())?;
+        let Values::List(allele_lists, allele_values) = &alleles else {
+            return Err(bad("VCF alleles must be array"));
         };
-        let rows = StructArray::from(batch);
-        let loci = structure(field(&rows, "locus")?)?;
-        let contigs = loci
-            .column_by_name("__vail_locus_contig")
-            .or_else(|| loci.column_by_name("contig"))
-            .ok_or_else(|| invalid("invalid locus contig storage"))?;
-        let positions = loci
-            .column_by_name("__vail_locus_position")
-            .or_else(|| loci.column_by_name("position"))
-            .ok_or_else(|| invalid("invalid locus position storage"))?;
-        let alleles = list(field(&rows, "alleles")?)?;
-        let entries = list(field(&rows, entries_name)?)?;
-        let arrow_schema::DataType::Struct(entry_fields) = entries.value_type() else {
-            return Err(invalid("VCF entries must be structs"));
-        };
-        let cells = structure(entries.values())?;
-        let entry_indices: std::collections::HashMap<_, _> = entry_fields
+        let entries_array: &ListArray = down(batch.column(entries.index).as_ref())?;
+        let entry_values: &StructArray = down(entries_array.values().as_ref())?;
+        let entry_views = fields
             .iter()
-            .enumerate()
-            .map(|(index, field)| (field.name().as_str(), index))
-            .collect();
-        let entry_types = entry_names
-            .iter()
-            .map(|name| {
-                let index = *entry_indices
-                    .get(name.as_str())
-                    .ok_or_else(|| invalid(format!("missing FORMAT field {name}")))?;
-                Ok((cells.column(index), Type::from_arrow(entry_fields[index].data_type())?))
-            })
+            .map(|f| f.bind(entry_values.columns()))
             .collect::<Result<Vec<_>>>()?;
-        let infos = rows.column_by_name("info").map(structure).transpose()?;
-        let info_types = infos
-            .map(|info| {
-                info.fields()
-                    .iter().zip(info.columns())
-                    .map(|(f, array)| Ok((f.name(), array, Type::from_arrow(f.data_type())?)))
-                    .collect::<Result<Vec<_>>>()
-            })
-            .transpose()?
-            .unwrap_or_default();
-        let optional = |name: &str| -> Result<Option<(&ArrayRef, Type)>> {
-            rows.column_by_name(name)
-                .map(|array| Ok((array, Type::from_arrow(array.data_type())?)))
-                .transpose()
-        };
-        let rsids = optional("rsid")?;
-        let qualities = optional("qual")?;
-        let filters = rows.column_by_name("filters").map(list).transpose()?;
-        for row in 0..rows.len() {
-            if loci.is_null(row) || alleles.is_null(row) {
-                return Err(invalid("VCF locus and alleles must be defined"));
+        let info_array = info_index
+            .map(|i| down::<StructArray>(batch.column(i).as_ref()))
+            .transpose()?;
+        let info_views = info_fields
+            .iter()
+            .map(|f| f.bind(info_array.unwrap().columns()))
+            .collect::<Result<Vec<_>>>()?;
+        let rsids = rsid.as_ref().map(|f| f.bind(batch.columns())).transpose()?;
+        let quals = qual.as_ref().map(|f| f.bind(batch.columns())).transpose()?;
+        let filter_views = filters
+            .as_ref()
+            .map(|f| f.bind(batch.columns()))
+            .transpose()?;
+        for row in 0..batch.num_rows() {
+            line.clear();
+            if loci.is_null(row)
+                || contigs.array().is_null(row)
+                || positions.array().is_null(row)
+                || allele_lists.is_null(row)
+                || allele_lists.value_length(row) < 1
+            {
+                return Err(bad(
+                    "VCF requires a defined locus and nonempty allele array",
+                ));
             }
-            let allele_values = alleles.value(row);
-            if allele_values.is_empty() {
-                return Err(invalid("VCF requires at least a reference allele"));
-            }
-            let strings = allele_values
-                .as_any()
-                .downcast_ref::<StringArray>()
-                .ok_or_else(|| invalid("VCF alleles must be strings"))?;
-            let mut fixed = vec![
-                text(contigs, row, &Type::Primitive(PrimitiveType::Str))?,
-                text(positions, row, &Type::Primitive(PrimitiveType::Int32))?,
-            ];
-            let optional = |binding: &Option<(&ArrayRef, Type)>| -> Result<String> {
-                binding.as_ref()
-                    .map(|(array, dtype)| text(array, row, dtype))
-                    .unwrap_or_else(|| Ok(".".into()))
-            };
-            let rsid = optional(&rsids)?;
-            fixed.push(if rsid.is_empty() { ".".into() } else { rsid });
-            fixed.push(checked(strings.value(0))?.into());
-            fixed.push(if strings.len() == 1 {
-                ".".into()
+            contigs.append(row, '\0', &mut line)?;
+            line.push('\t');
+            positions.append(row, '\0', &mut line)?;
+            line.push('\t');
+            if let Some(rsids) = &rsids {
+                rsids.append(row, '\0', &mut line)?;
             } else {
-                (1..strings.len())
-                    .map(|i| checked(strings.value(i)))
-                    .collect::<Result<Vec<_>>>()?
-                    .join(",")
-            });
-            fixed.push(optional(&qualities)?);
-            let rendered_filters = match filters {
-                None => ".".into(),
-                Some(a) if a.is_null(row) => ".".into(),
-                Some(a) => {
-                    let values = a.value(row);
-                    let values = values
-                        .as_any()
-                        .downcast_ref::<StringArray>()
-                        .ok_or_else(|| invalid("VCF filters must be strings"))?;
-                    let mut names = (0..values.len())
-                        .map(|i| checked(values.value(i)))
-                        .collect::<Result<Vec<_>>>()?;
-                    names.sort();
-                    if names.is_empty() {
-                        "PASS".into()
-                    } else {
-                        names.join(";")
+                line.push('.');
+            }
+            line.push('\t');
+            let start = allele_lists.value_offsets()[row] as usize;
+            let end = allele_lists.value_offsets()[row + 1] as usize;
+            for a in start..end {
+                if allele_values.array().is_null(a) {
+                    return Err(bad("VCF alleles must be defined"));
+                }
+            }
+            allele_values.append(start, ',', &mut line)?;
+            line.push('\t');
+            if end == start + 1 {
+                line.push('.');
+            }
+            for a in start + 1..end {
+                if a > start + 1 {
+                    line.push(',');
+                }
+                allele_values.append(a, ',', &mut line)?;
+            }
+            line.push('\t');
+            if let Some(quals) = &quals {
+                quals.append(row, '\0', &mut line)?;
+            } else {
+                line.push('.');
+            }
+            line.push('\t');
+            match &filter_views {
+                Some(Values::List(a, child)) if !a.is_null(row) => {
+                    let start = a.value_offsets()[row] as usize;
+                    let end = a.value_offsets()[row + 1] as usize;
+                    if start == end {
+                        line.push_str("PASS");
+                    }
+                    // FILTER is a set. Canonical order keeps output stable
+                    // regardless of its physical Arrow element order.
+                    let mut names = Vec::with_capacity(end - start);
+                    for i in start..end {
+                        let mut name = String::new();
+                        child.append(i, ';', &mut name)?;
+                        names.push(name);
+                    }
+                    names.sort_unstable();
+                    for (i, name) in names.iter().enumerate() {
+                        if i > 0 {
+                            line.push(';');
+                        }
+                        line.push_str(name);
                     }
                 }
-            };
-            fixed.push(rendered_filters);
-            let mut info_values = Vec::new();
-            if let Some(info) = infos {
-                if !info.is_null(row) {
-                    for (name, values, dtype) in &info_types {
-                        if values.is_null(row) {
+                _ => line.push('.'),
+            }
+            line.push('\t');
+            let info_start = line.len();
+            if info_array.is_some_and(|a| !a.is_null(row)) {
+                for (field, view) in info_fields.iter().zip(&info_views) {
+                    if view.array().is_null(row) {
+                        continue;
+                    }
+                    if let Values::Bool(flags) = view {
+                        if !flags.value(row) {
                             continue;
                         }
-                        if *dtype == Type::Primitive(PrimitiveType::Bool) {
-                            if values
-                                .as_any()
-                                .downcast_ref::<BooleanArray>()
-                                .unwrap()
-                                .value(row)
-                            {
-                                info_values.push((*name).clone());
-                            }
+                    }
+                    if line.len() > info_start {
+                        line.push(';');
+                    }
+                    line.push_str(&field.name);
+                    if !matches!(view, Values::Bool(_)) {
+                        line.push('=');
+                        view.append(row, ';', &mut line)?;
+                    }
+                }
+            }
+            if line.len() == info_start {
+                line.push('.');
+            }
+            if sample_count > 0 {
+                if entries_array.is_null(row)
+                    || entries_array.value_length(row) as usize != sample_count
+                {
+                    return Err(bad("VCF entry count differs from sample header"));
+                }
+                line.push('\t');
+                line.push_str(if format.is_empty() { "." } else { &format });
+                let start = entries_array.value_offsets()[row] as usize;
+                for cell in start..start + sample_count {
+                    line.push('\t');
+                    if fields.is_empty() {
+                        line.push('.');
+                        continue;
+                    }
+                    for (i, view) in entry_views.iter().enumerate() {
+                        if i > 0 {
+                            line.push(':');
+                        }
+                        if entry_values.is_null(cell) {
+                            line.push_str(if matches!(view, Values::Call(..)) {
+                                "./."
+                            } else {
+                                "."
+                            });
                         } else {
-                            info_values.push(format!("{name}={}", text(values, row, dtype)?));
+                            view.append(cell, ':', &mut line)?;
                         }
                     }
                 }
             }
-            fixed.push(if info_values.is_empty() {
-                ".".into()
-            } else {
-                info_values.join(";")
-            });
-            if sample_count != 0 {
-                let start = entries.value_offsets()[row] as usize;
-                let end = entries.value_offsets()[row + 1] as usize;
-                if end - start != sample_count {
-                    return Err(invalid("VCF entry count does not match sample count"));
-                }
-                fixed.push(format_text.clone());
-                for sample in start..end {
-                    let values = entry_types
-                        .iter()
-                        .map(|(values, dtype)| {
-                            if cells.is_null(sample) {
-                                Ok(if *dtype == Type::Primitive(PrimitiveType::Call) {
-                                    "./."
-                                } else {
-                                    "."
-                                }
-                                .into())
-                            } else {
-                                text(values, sample, dtype)
-                            }
-                        })
-                        .collect::<Result<Vec<_>>>()?;
-                    fixed.push(if values.is_empty() {
-                        ".".into()
-                    } else {
-                        values.join(":")
-                    });
-                }
-            }
-            writeln!(writer, "{}", fixed.join("\t")).map_err(io)?;
+            line.push('\n');
+            writer
+                .write_all(line.as_bytes())
+                .map_err(|e| bad(e.to_string()))?;
         }
     }
+    writer.flush().map_err(|e| bad(e.to_string()))?;
+    drop(writer);
+    output
+        .persist(destination)
+        .map_err(|e| bad(e.error.to_string()))?;
     Ok(())
 }

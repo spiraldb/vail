@@ -1,7 +1,8 @@
 """Supplement pytest collection blockers with isolated original-body attempts.
 
 Hail imports and backend decorators are adapted to the explicit Vail test
-backend. Assertions and parametrize values are unchanged. Missing
+backend. Behavioral assertions and parametrize values are retained. Documented
+Hail structural IR assertions are omitted before their arguments execute. Missing
 setup names are blockers, never passes. No Hail implementation is executed.
 """
 import argparse
@@ -21,7 +22,7 @@ import traceback
 from types import SimpleNamespace
 from upstream_paths import doctest_data_dir, resource_path, FixtureModule
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from upstream_backend import VailTestBackend, test_timeout, backend_api, adapt_class_configuration
+from upstream_backend import VailTestBackend, test_timeout, backend_api, adapt_class_configuration, adapt_structural_ir_assertions
 
 
 def worker(source, name, output, suite):
@@ -37,8 +38,10 @@ def worker(source, name, output, suite):
     from timeit import default_timer as timer
     from upstream_matrix_cases import BackendDependency
     tree = ast.parse(source.read_text())
+    tree, structural_assertions = adapt_structural_ir_assertions(tree, source.relative_to(suite))
     report = dict(module=str(source.relative_to(suite)), name=name, variants=[], setup_errors=[],
                   execution_mode='isolated_original_body',
+                  structural_ir_assertions=structural_assertions,
                   source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
                   backend=hl.current_backend().name,
                   backend_capabilities=sorted(hl.current_backend().capabilities))

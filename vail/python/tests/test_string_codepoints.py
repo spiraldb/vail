@@ -97,3 +97,51 @@ def test_unicode_ordering_and_storage_use_codepoint_order(tmp_path):
     assert hl.eval(hl.literal('\ue000') < '😀') is True
     table.write(tmp_path / 'unicode-keys')
     assert hl.read_table(tmp_path / 'unicode-keys').s.collect() == sorted(values)
+
+
+@pytest.mark.parametrize('selection', [slice(None,None,-2),slice(-7,7,2),slice(7,-7,-2),
+                                      slice(None,-4,-1),slice(2,None,-1),slice(-4,None,-1),
+                                      slice(None,None,2**31-1),slice(None,None,-2**31)])
+def test_strided_unicode_slices_visit_codepoints_with_python_bounds(selection):
+    values=['','a','😀ab中e\u0301','\x00👩\u200d💻xyz']
+    table=hl.Table.parallelize([{'s':s} for s in values])
+    assert table.select(piece=table.s[selection]).piece.collect()==[s[selection] for s in values]
+    assert hl.eval(hl.missing(hl.tstr)[selection]) is None
+    assert hl.eval(hl.literal('abc')[::hl.missing(hl.tint32)]) is None
+
+
+def test_dynamic_translation_validates_keys_only_for_selected_defined_inputs():
+    schema=hl.tstruct(s=hl.tstr,m=hl.tdict(hl.tstr,hl.tstr),keep=hl.tbool)
+    for key in [None,'','ab']:
+        invalid=hl.Table.parallelize([{'s':'a😀','m':{key:'X'},'keep':False}],schema=schema)
+        value=invalid.s.translate(invalid.m)
+        with pytest.raises(RuntimeError,match='one Unicode codepoint'):
+            invalid.select(value=value).collect()
+        assert invalid.select(value=hl.if_else(invalid.keep,value,'safe')).value.collect()==['safe']
+        assert invalid.select(value=hl.if_else(hl.missing(hl.tbool),value,'safe')).value.collect()==[None]
+        filtered=invalid.filter(invalid.keep)
+        assert filtered.select(value=filtered.s.translate(filtered.m)).collect()==[]
+    table=hl.Table.parallelize([
+        {'s':'a😀b','m':{'a':'XY','😀':'','b':None},'keep':True},
+        {'s':'a','m':None,'keep':True},
+        {'s':None,'m':{None:'bad'},'keep':True},
+    ],schema=schema)
+    assert table.s.translate(table.m).collect()==['XYnull',None,None]
+
+
+@pytest.mark.parametrize('operation',['split','first_match','matches','replace'])
+@pytest.mark.parametrize('constant',[False,True])
+def test_invalid_regex_patterns_respect_filters_and_conditional_branches(operation,constant):
+    table=hl.Table.parallelize([{'s':'a😀','pattern':'[','keep':False}])
+    def build(source):
+        text,pattern=(hl.literal('a😀'),hl.literal('[')) if constant else (source.s,source.pattern)
+        return {'split':lambda:text.split(pattern), 'first_match':lambda:text.first_match_in(pattern),
+                'matches':lambda:text.matches(pattern),'replace':lambda:text.replace(pattern,'X')}[operation]()
+    value=build(table)
+    with pytest.raises(RuntimeError,match='regex|regular expression'):
+        table.select(value=value).collect()
+    assert table.select(value=value).filter(False).collect()==[]
+    filtered=table.filter(table.keep)
+    assert filtered.select(value=build(filtered)).collect()==[]
+    assert table.select(value=hl.if_else(table.keep,value,hl.missing(value.dtype))).value.collect()==[None]
+    assert table.select(value=hl.if_else(hl.missing(hl.tbool),value,hl.missing(value.dtype))).value.collect()==[None]

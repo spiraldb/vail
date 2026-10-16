@@ -1,19 +1,18 @@
-"""Construct lazy, unindexed table inputs with Arrow-backed literal bindings."""
+"""Construct lazy, unindexed table inputs with native literal ownership."""
 
-from .expressions import IR_NODE_TYPES
 from collections.abc import Mapping
 
-from .expressions import (Expression, ExpressionException, _IR, _external_globals,
+from .expressions import (Expression, ExpressionException, _IR,
                           array, cast, struct, tuple_)
-from .types import (decode_value, infer_type, tarray, tdict, tset, tstruct, ttuple,
-                    type_from_wire, unify_types)
+from .types import (infer_type, tarray, tdict, tset, tstruct, ttuple,
+                    unify_types)
 
 
 def contains_expression(value):
     if isinstance(value, Expression):
         return True
     if isinstance(value, Mapping):
-        return any(contains_expression(item) for item in value.values())
+        return any(contains_expression(key) or contains_expression(item) for key, item in value.items())
     if isinstance(value, (list, tuple, set, frozenset)):
         return any(contains_expression(item) for item in value)
     return False
@@ -48,12 +47,12 @@ def infer_input_type(values):
 
 
 def arrow_literal(value, dtype):
-    from . import _native_session, _check_value
-    from .arrow import rows_to_arrow
+    from . import _check_value
+    from .expressions import literal
     _check_value(value, dtype, 'value')
-    schema = tstruct(value=dtype)
-    native = _native_session().scalar_arrow(rows_to_arrow([{'value': value}], schema))
-    return _external_globals(native, schema)['value']
+    # Native literals own scalar/Arrow storage directly. Literal leaves are not
+    # singleton globals tables, so mixed inputs have no per-leaf dependencies.
+    return literal(value, dtype)
 
 
 def input_expression(value, dtype):
@@ -84,32 +83,24 @@ def input_expression(value, dtype):
 
 
 def bind_input(expression):
-    """Lift literal data and table globals into Arrow-backed native references."""
-    from . import _ir_has_aggregate
+    """Validate an unindexed native DAG and bind referenced table globals."""
     ir = expression.to_ir()
-    if _ir_has_aggregate(ir):
-        raise ExpressionException("parallelize requires an evaluated or lazy scalar aggregate result")
+    try:
+        names = ir.input_global_names()
+    except ValueError as error:
+        raise ExpressionException(str(error)) from None
     if expression._row_indexed or expression._lookup_refs:
         raise ExpressionException("parallelize requires unindexed expressions; row fields are not allowed")
     references = dict(expression._global_refs)
-    source_globals = expression.source.index_globals() if expression.source is not None else None
-
-    def visit(node):
-        if isinstance(node, IR_NODE_TYPES):
-            if node.get('op') == 'literal':
-                return node
-            if node.get('op') == 'global':
-                if source_globals is None:
-                    raise ExpressionException("unbound input global field")
-                bound = source_globals[node['name']]
-                references.update(bound._global_refs)
-                return bound.to_ir()
-            if node.get('op') == 'column':
-                raise ExpressionException("parallelize requires unindexed expressions")
-            return {name: visit(value) for name, value in node.items()}
-        if isinstance(node, list):
-            return [visit(value) for value in node]
-        return node
-
-    result = visit(ir)
-    return Expression(expression.dtype, None, _IR(result, references))
+    replacements = []
+    if names:
+        if expression.source is None:
+            raise ExpressionException("unbound input global field")
+        # Project before boxing: unused global definitions must stay lazy.
+        source_globals = expression.source.select_globals(*names).index_globals()
+        for name in names:
+            bound = source_globals[name]
+            references.update(bound._global_refs)
+            replacements.append((name, bound.to_ir()))
+    result = ir.bind_input_globals(replacements)
+    return Expression(expression.dtype, None, _IR(result, references, row_indexed=False))

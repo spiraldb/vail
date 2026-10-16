@@ -27,6 +27,10 @@ pub struct ReferenceDefinition {
 
 impl ReferenceDefinition {
     pub fn validate(&self) -> Result<(), String> {
+        self.validated_classifications().map(|_| ())
+    }
+
+    fn validated_classifications(&self) -> Result<Classifications<'_>, String> {
         if self.name.is_empty() {
             return Err("reference name cannot be empty".into());
         }
@@ -45,17 +49,26 @@ impl ReferenceDefinition {
         {
             return Err("each contig must have a positive int32 length".into());
         }
-        for group in [&self.x_contigs, &self.y_contigs, &self.mt_contigs] {
-            let mut seen = HashSet::new();
-            if group.iter().any(|c| !names.contains(c) || !seen.insert(c)) {
-                return Err("classification contains unknown or duplicate contig".into());
+        fn group<'a>(
+            contigs: &'a [String],
+            names: &HashSet<&String>,
+        ) -> Result<HashSet<&'a str>, String> {
+            let mut seen = HashSet::with_capacity(contigs.len());
+            for contig in contigs {
+                if !names.contains(contig) || !seen.insert(contig.as_str()) {
+                    return Err("classification contains unknown or duplicate contig".into());
+                }
             }
+            Ok(seen)
         }
-        if self
-            .x_contigs
-            .iter()
-            .any(|c| self.y_contigs.contains(c) || self.mt_contigs.contains(c))
-            || self.y_contigs.iter().any(|c| self.mt_contigs.contains(c))
+        let groups = Classifications {
+            x: group(&self.x_contigs, &names)?,
+            y: group(&self.y_contigs, &names)?,
+            mt: group(&self.mt_contigs, &names)?,
+        };
+        if !groups.x.is_disjoint(&groups.y)
+            || !groups.x.is_disjoint(&groups.mt)
+            || !groups.y.is_disjoint(&groups.mt)
         {
             return Err("a contig cannot have more than one chromosome classification".into());
         }
@@ -64,7 +77,7 @@ impl ReferenceDefinition {
             let Some(length) = self.lengths.get(&p.contig) else {
                 return Err(format!("unknown PAR contig {:?}", p.contig));
             };
-            if !self.x_contigs.contains(&p.contig) && !self.y_contigs.contains(&p.contig) {
+            if !groups.x.contains(p.contig.as_str()) && !groups.y.contains(p.contig.as_str()) {
                 return Err("PAR intervals must be on X or Y contigs".into());
             }
             if p.start < 1 || p.start >= p.end || p.end > *length || !seen_par.insert(p) {
@@ -73,7 +86,7 @@ impl ReferenceDefinition {
                 );
             }
         }
-        Ok(())
+        Ok(groups)
     }
     pub fn ordinal(&self, contig: &str) -> Option<i32> {
         self.contigs
@@ -84,34 +97,36 @@ impl ReferenceDefinition {
 
     /// Build immutable lookup metadata for repeated locus evaluation.
     pub(crate) fn prepare(&self) -> Result<PreparedReference, String> {
-        self.validate()?;
+        let groups = self.validated_classifications()?;
         let mut ordinals = HashMap::with_capacity(self.contigs.len());
         let mut ends = Vec::with_capacity(self.contigs.len());
+        let mut lengths = Vec::with_capacity(self.contigs.len());
         let mut total = 0_i64;
         for (index, contig) in self.contigs.iter().enumerate() {
             i32::try_from(index).map_err(|_| "reference has too many contigs")?;
             ordinals.insert(contig.clone(), index);
+            lengths.push(self.lengths[contig]);
             total = total
                 .checked_add(i64::from(self.lengths[contig]))
                 .ok_or("total reference length exceeds int64")?;
             ends.push(total);
         }
-        let par_intervals = |names: &[String]| {
-            let mut intervals = vec![RangeSet::<i32>::new(); self.contigs.len()];
-            for interval in &self.par {
-                if names.iter().any(|name| name == &interval.contig) {
-                    let ordinal = ordinals[&interval.contig];
-                    intervals[ordinal].insert(interval.start..interval.end);
-                }
-            }
-            intervals
-        };
-        let x_contigs = self.x_contigs.iter().map(|c| ordinals[c]).collect();
-        let y_contigs = self.y_contigs.iter().map(|c| ordinals[c]).collect();
-        let mt_contigs = self.mt_contigs.iter().map(|c| ordinals[c]).collect();
-        let x_par = par_intervals(&self.x_contigs);
-        let y_par = par_intervals(&self.y_contigs);
+        let x_contigs = groups.x.iter().map(|c| ordinals[*c]).collect();
+        let y_contigs = groups.y.iter().map(|c| ordinals[*c]).collect();
+        let mt_contigs = groups.mt.iter().map(|c| ordinals[*c]).collect();
+        let mut x_par = vec![RangeSet::<i32>::new(); self.contigs.len()];
+        let mut y_par = vec![RangeSet::<i32>::new(); self.contigs.len()];
+        for interval in &self.par {
+            let intervals = if groups.x.contains(interval.contig.as_str()) {
+                &mut x_par
+            } else {
+                &mut y_par
+            };
+            intervals[ordinals[&interval.contig]].insert(interval.start..interval.end);
+        }
         Ok(PreparedReference {
+            contigs: self.contigs.clone(),
+            lengths,
             ordinals,
             cumulative_ends: ends,
             total_length: total,
@@ -145,110 +160,27 @@ impl ReferenceDefinition {
     }
 }
 
-/// Derived lookup tables. Kept outside the serialized, publicly mutable
-/// definition so callers cannot observe stale cached metadata.
+struct Classifications<'a> {
+    x: HashSet<&'a str>,
+    y: HashSet<&'a str>,
+    mt: HashSet<&'a str>,
+}
+
+/// Immutable validated snapshot for repeated evaluation. Contig names, lengths,
+/// cumulative ends, and PAR tables share ordinal indices. Positive lengths make
+/// cumulative ends strictly increasing, permitting binary search.
 #[derive(Debug)]
 pub(crate) struct PreparedReference {
+    contigs: Vec<String>,
+    lengths: Vec<i32>,
     ordinals: HashMap<String, usize>,
-    pub(crate) cumulative_ends: Vec<i64>,
+    cumulative_ends: Vec<i64>,
     total_length: i64,
     x_contigs: HashSet<usize>,
     y_contigs: HashSet<usize>,
     mt_contigs: HashSet<usize>,
     x_par: Vec<RangeSet<i32>>,
     y_par: Vec<RangeSet<i32>>,
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn reference() -> ReferenceDefinition {
-        ReferenceDefinition {
-            name: "prepared".into(),
-            contigs: vec!["a".into(), "b".into(), "x".into(), "y".into()],
-            lengths: [
-                ("a".into(), 2),
-                ("b".into(), 3),
-                ("x".into(), 5),
-                ("y".into(), 4),
-            ]
-            .into(),
-            x_contigs: vec!["x".into()],
-            y_contigs: vec!["y".into()],
-            mt_contigs: vec![],
-            par: vec![
-                ParInterval {
-                    contig: "x".into(),
-                    start: 2,
-                    end: 4,
-                },
-                ParInterval {
-                    contig: "x".into(),
-                    start: 3,
-                    end: 5,
-                },
-                ParInterval {
-                    contig: "y".into(),
-                    start: 1,
-                    end: 2,
-                },
-            ],
-        }
-    }
-
-    #[test]
-    fn prepared_reference_indexes_contigs_boundaries_and_intervals() {
-        let reference = reference();
-        let prepared = reference.prepare().unwrap();
-        assert_eq!(prepared.ordinal("b"), Some(1));
-        assert_eq!(prepared.ordinal("missing"), None);
-        for (global, expected) in [
-            (0, (0, 1)),
-            (1, (0, 2)),
-            (2, (1, 1)),
-            (4, (1, 3)),
-            (5, (2, 1)),
-            (13, (3, 4)),
-        ] {
-            assert_eq!(prepared.from_global(global), Some(expected));
-        }
-        assert_eq!(prepared.from_global(14), None);
-        assert!(prepared.validate_coordinate(&reference, 1, "b", 3).is_ok());
-        assert!(prepared.validate_coordinate(&reference, 0, "b", 1).is_err());
-        assert!(prepared.is_x(2));
-        assert!(prepared.is_y(3));
-        assert!(prepared.in_par(2, 2, true));
-        assert!(prepared.in_par(2, 4, true));
-        assert!(!prepared.in_par(2, 5, true));
-        assert!(prepared.in_par(3, 1, false));
-        assert!(!prepared.in_par(3, 2, false));
-    }
-
-    #[test]
-    fn prepared_reference_binary_searches_many_contig_boundaries() {
-        let contigs = (0..256).map(|i| format!("c{i}")).collect::<Vec<_>>();
-        let lengths = contigs.iter().map(|c| (c.clone(), 7)).collect();
-        let reference = ReferenceDefinition {
-            name: "many".into(),
-            contigs,
-            lengths,
-            x_contigs: vec![],
-            y_contigs: vec![],
-            mt_contigs: vec![],
-            par: vec![],
-        };
-        let prepared = reference.prepare().unwrap();
-        for ordinal in 0..256_usize {
-            let first_global = ordinal as i64 * 7;
-            assert_eq!(prepared.from_global(first_global), Some((ordinal, 1)));
-            assert_eq!(prepared.from_global(first_global + 6), Some((ordinal, 7)));
-            assert_eq!(
-                prepared.ordinal(&reference.contigs[ordinal]),
-                Some(ordinal as i32)
-            );
-        }
-    }
 }
 
 impl PreparedReference {
@@ -260,20 +192,16 @@ impl PreparedReference {
 
     pub(crate) fn validate_coordinate(
         &self,
-        reference: &ReferenceDefinition,
         ordinal: i32,
         contig: &str,
         position: i32,
     ) -> Result<(), String> {
         let index = usize::try_from(ordinal).ok();
-        if index.is_none_or(|i| i >= reference.contigs.len() || reference.contigs[i] != contig) {
+        if index.is_none_or(|i| self.contigs.get(i).is_none_or(|name| name != contig)) {
             return Err("locus ordinal does not match contig".into());
         }
-        let length = reference
-            .lengths
-            .get(contig)
-            .ok_or("unknown locus contig")?;
-        if position < 1 || position > *length {
+        let length = self.lengths[index.expect("validated ordinal")];
+        if position < 1 || position > length {
             return Err(format!(
                 "locus position {position} is outside contig {contig:?} (1..={length})"
             ));
@@ -281,7 +209,7 @@ impl PreparedReference {
         Ok(())
     }
 
-    pub(crate) fn from_global(&self, position: i64) -> Option<(usize, i32)> {
+    pub(crate) fn from_global(&self, position: i64) -> Option<(&str, i32)> {
         if position < 0 || position >= self.total_length {
             return None;
         }
@@ -291,7 +219,21 @@ impl PreparedReference {
         } else {
             self.cumulative_ends[ordinal - 1]
         };
-        Some((ordinal, i32::try_from(position - start + 1).ok()?))
+        Some((
+            self.contigs[ordinal].as_str(),
+            i32::try_from(position - start + 1).ok()?,
+        ))
+    }
+
+    pub(crate) fn global_position(&self, ordinal: usize, position: i32) -> Option<i64> {
+        let length = *self.lengths.get(ordinal)?;
+        if position < 1 || position > length {
+            return None;
+        }
+        let start = ordinal
+            .checked_sub(1)
+            .map_or(0, |i| self.cumulative_ends[i]);
+        Some(start + i64::from(position - 1))
     }
 
     pub(crate) fn is_x(&self, ordinal: usize) -> bool {

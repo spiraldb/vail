@@ -1,39 +1,20 @@
 """Scalar table aggregation expressions."""
 from __future__ import annotations
 
-from .expressions import IR_NODE_TYPES
-
-import builtins
 from uuid import uuid4
 
 from .expressions import Expression, _merge_sources, as_expr, cast, is_missing
-from .types import tarray, tbool, tfloat32, tfloat64, tint32, tint64, tset, tstruct
+from .types import tarray, tbool, tfloat32, tfloat64, tint32, tint64, tset
 
 
 def _validate_initializer(expr, function):
     """Ensure an aggregate initializer is independent of rows and aggregation state."""
-    def contains_row_scope(node, bound=frozenset()):
-        if isinstance(node, IR_NODE_TYPES):
-            if node.get("op") == "literal":
-                return False
-            op = node.get("op")
-            if op in ("column", "aggregate", "aggregate_fold", "agg_filter",
-                      "agg_explode", "agg_group_by", "agg_array"):
-                return True
-            if op == "lambda_variable":
-                return node.get("name") not in bound
-            if op in ("array_map", "array_filter"):
-                binding = node.get("parameter")
-                body_key = "body" if op == "array_map" else "predicate"
-                return (contains_row_scope(node.get("value"), bound)
-                        or contains_row_scope(node.get(body_key), bound | {binding}))
-            return builtins.any(contains_row_scope(child, bound) for child in node.values())
-        if isinstance(node, list):
-            return builtins.any(contains_row_scope(child, bound) for child in node)
-        return False
-
-    if contains_row_scope(expr.to_ir()):
+    # Matrix row aggregation owns a fixed row while reducing its entries.
+    # Its initializer scope is checked again by the selected matrix operation.
+    matrix_rows = expr.source is not None and hasattr(expr.source, "_mir")
+    if expr._row_indexed and not matrix_rows:
         raise TypeError(f"{function} initialization expressions cannot depend on rows or aggregations")
+    expr._native_expr.validate_initializer(function, allow_matrix_rows=matrix_rows)
 
 
 def _aggregate(function, value=None, result_type=None, *, options=None, init=None):
@@ -140,7 +121,7 @@ def stats(expr):
     value64 = cast(value, tfloat64)
     n = count_where(~is_missing(value))
     total = sum(value64)
-    average = total / n
+    average = mean(value)
     return as_expr({
         "mean": average,
         "stdev": _aggregate("stddev_pop", value64, tfloat64),

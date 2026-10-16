@@ -1,0 +1,127 @@
+{
+  "workload": "benchmarks/check_conditional_cost.py;16 rows of8192 Unicode codepoints, hamming selector or missing_false predicate,16/64/256 branches; include construction/planning/execution and verify values. benchmarks/check_switch_cost.py cheaper arithmetic selector workload on100 rows.",
+  "baseline_native_sha256": "6618b78b20696635b2d8b8eb7db466241fecda593e79ec3b35745ae5c8b4b562",
+  "limitations": "Sequential sizes and workloads within process; initialization/shared machine load; cumulative RSS high-water, not isolated operator throughput.",
+  "baseline_expensive": [
+    {
+      "workload": "switch",
+      "branches": 16,
+      "seconds": 0.01656274999913876,
+      "max_rss_bytes": 136265728
+    },
+    {
+      "workload": "switch",
+      "branches": 64,
+      "seconds": 0.30058570800247253,
+      "max_rss_bytes": 164642816
+    },
+    {
+      "workload": "switch",
+      "branches": 256,
+      "seconds": 15.967407916999946,
+      "max_rss_bytes": 314048512
+    },
+    {
+      "workload": "case_missing_false",
+      "branches": 16,
+      "seconds": 0.03368695900280727,
+      "max_rss_bytes": 314048512
+    },
+    {
+      "workload": "case_missing_false",
+      "branches": 64,
+      "seconds": 0.65618941700086,
+      "max_rss_bytes": 314048512
+    },
+    {
+      "workload": "case_missing_false",
+      "branches": 256,
+      "seconds": 34.83041299999968,
+      "max_rss_bytes": 479232000
+    }
+  ],
+  "baseline_arithmetic": [
+    {
+      "branches": 16,
+      "rows": 100,
+      "seconds": 0.16729737499917974,
+      "max_rss_bytes": 131989504
+    },
+    {
+      "branches": 64,
+      "rows": 100,
+      "seconds": 0.03340037499947357,
+      "max_rss_bytes": 133218304
+    },
+    {
+      "branches": 256,
+      "rows": 100,
+      "seconds": 0.3627864590016543,
+      "max_rss_bytes": 137150464
+    }
+  ],
+  "indexed_native_sha256": "fd76f587c87eab79ee8a979293238144f693c177fc7583d19a7dee67e5f64ecf",
+  "indexed_arithmetic": [
+    {
+      "branches": 16,
+      "rows": 100,
+      "seconds": 0.1532934999995632,
+      "max_rss_bytes": 130449408
+    },
+    {
+      "branches": 64,
+      "rows": 100,
+      "seconds": 0.0036743329983437434,
+      "max_rss_bytes": 130990080
+    },
+    {
+      "branches": 256,
+      "rows": 100,
+      "seconds": 0.00697404100355925,
+      "max_rss_bytes": 132186112
+    }
+  ],
+  "indexed_expensive": [
+    {
+      "workload": "switch",
+      "branches": 16,
+      "seconds": 0.003380750000360422,
+      "max_rss_bytes": 131825664
+    },
+    {
+      "workload": "switch",
+      "branches": 64,
+      "seconds": 0.003056667002965696,
+      "max_rss_bytes": 132431872
+    },
+    {
+      "workload": "switch",
+      "branches": 256,
+      "seconds": 0.007127500000933651,
+      "max_rss_bytes": 134152192
+    },
+    {
+      "workload": "case_missing_false",
+      "branches": 16,
+      "seconds": 0.009536582998407539,
+      "max_rss_bytes": 137183232
+    },
+    {
+      "workload": "case_missing_false",
+      "branches": 64,
+      "seconds": 0.042761750002682675,
+      "max_rss_bytes": 144719872
+    },
+    {
+      "workload": "case_missing_false",
+      "branches": 256,
+      "seconds": 0.3581387919984991,
+      "max_rss_bytes": 174391296
+    }
+  ],
+  "validation": [
+    "72 Python conditional/row/codepoint/numeric-aggregate tests passed against final rebuilt native, including array RNG-result context, matrix result branches, nested scopes/types and public Arrow identity sharing",
+    "4 public Rust conditional tests passed including invalid signatures, lazy errors, missingness and Utf8/LargeUtf8/Utf8View selector and result storage",
+    "17 existing Rust expression tests passed before flat-switch replacement; final public conditional tests cover replacement"
+  ]
+}

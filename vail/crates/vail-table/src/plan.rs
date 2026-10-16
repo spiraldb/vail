@@ -108,9 +108,10 @@ enum Source {
     Range {
         n: usize,
         partitions: usize,
+        batch_size: std::num::NonZeroUsize,
     },
     Parallelize {
-        rows: RecordBatch,
+        rows: crate::arrow_batches::ArrowBatches,
         partitions: usize,
     },
     Globals(Arc<LocalRead>),
@@ -216,12 +217,12 @@ impl ExecutionPlan for SourceExec {
                             }
                         }
                     }
-                    Source::Range { n, partitions } => {
+                    Source::Range { n, partitions, batch_size } => {
                         let mut start = 0;
                         for p in 0..partitions {
                             let end = start + n / partitions + usize::from(p < n % partitions);
-                            for offset in (start..end).step_by(65536) {
-                                let array = Int32Array::from_iter_values((offset..end.min(offset + 65536)).map(|i| i as i32));
+                            for offset in (start..end).step_by(batch_size.get()) {
+                                let array = Int32Array::from_iter_values((offset..end.min(offset.saturating_add(batch_size.get()))).map(|i| i as i32));
                                 let batch = RecordBatch::try_new(row_schema.clone(), vec![Arc::new(array)])?;
                                 yield tag(batch, p, schema.clone())?;
                             }
@@ -230,15 +231,18 @@ impl ExecutionPlan for SourceExec {
                     }
                     Source::Parallelize { rows, partitions } => {
                         for p in 0..partitions {
-                            let start = rows.num_rows()*p/partitions;
-                            let end = rows.num_rows()*(p+1)/partitions;
-                            for offset in (start..end).step_by(65536) {
-                                yield tag(rows.slice(offset, (end-offset).min(65536)), p, schema.clone())?;
+                            let bounds=rows.partition_bounds(p,partitions);
+                            let window=rows.slice(bounds.start,bounds.len());
+                            for batch in window.batches() {
+                                for offset in (0..batch.num_rows()).step_by(65536) {
+                                    yield tag(batch.slice(offset,(batch.num_rows()-offset).min(65536)),p,schema.clone())?;
+                                }
                             }
                         }
                     }
                     Source::Globals(source) => {
                         let batch = vail_storage::globals::read(&source.semantics.globals).map_err(external)?;
+                        vail_storage::globals::validate_agreement(batch.schema_ref(),&row_schema).map_err(external)?;
                         yield normalize(&batch, row_schema).map_err(external)?;
                     }
                 }
@@ -421,22 +425,26 @@ pub(crate) fn source_partition_projected_with_nested_paths(
     }
     let source = match table.node() {
         TableNode::Read { source } => Source::ReadPartition(source.clone(), part),
-        TableNode::Range { n, n_partitions } => {
+        TableNode::Range {
+            n,
+            n_partitions,
+            batch_size,
+        } => {
             let start = n / n_partitions * part + part.min(n % n_partitions);
             let end = start + n / n_partitions + usize::from(part < n % n_partitions);
             // Use a shared Arrow-free range context for this exact partition.
             return Ok(Arc::new(RangePartitionExec {
                 start,
                 end,
+                batch_size: *batch_size,
                 cache: source_properties(schema, &["idx".into()])?,
                 row_schema,
             }));
         }
         TableNode::Parallelize { rows, n_partitions } => {
-            let start = rows.num_rows() * part / n_partitions;
-            let end = rows.num_rows() * (part + 1) / n_partitions;
+            let bounds = rows.partition_bounds(part, *n_partitions);
             Source::Parallelize {
-                rows: rows.slice(start, end - start),
+                rows: rows.slice(bounds.start, bounds.len()),
                 partitions: 1,
             }
         }
@@ -457,7 +465,12 @@ pub(crate) fn range_partition_clipped(
     lower: usize,
     upper: usize,
 ) -> Result<PhysicalPlan> {
-    let TableNode::Range { n, n_partitions } = table.node() else {
+    let TableNode::Range {
+        n,
+        n_partitions,
+        batch_size,
+    } = table.node()
+    else {
         return Err(TableError::Invalid("not a range source".into()));
     };
     if *n_partitions == 0 || part >= *n_partitions {
@@ -473,6 +486,7 @@ pub(crate) fn range_partition_clipped(
     Ok(Arc::new(RangePartitionExec {
         start,
         end,
+        batch_size: *batch_size,
         cache: source_properties(schema, table.keys())?,
         row_schema,
     }))
@@ -481,6 +495,7 @@ pub(crate) fn range_partition_clipped(
 struct RangePartitionExec {
     start: usize,
     end: usize,
+    batch_size: std::num::NonZeroUsize,
     cache: Arc<PlanProperties>,
     row_schema: SchemaRef,
 }
@@ -524,11 +539,12 @@ impl ExecutionPlan for RangePartitionExec {
         }
         let (start, end, schema, row_schema) =
             (self.start, self.end, self.schema(), self.row_schema.clone());
+        let batch_size = self.batch_size;
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
-                for offset in (start..end).step_by(65536) {
-                    let batch=RecordBatch::try_new(row_schema.clone(),vec![Arc::new(Int32Array::from_iter_values((offset..end.min(offset+65536)).map(|i|i as i32)))])?;
+                for offset in (start..end).step_by(batch_size.get()) {
+                    let batch=RecordBatch::try_new(row_schema.clone(),vec![Arc::new(Int32Array::from_iter_values((offset..end.min(offset.saturating_add(batch_size.get()))).map(|i|i as i32)))])?;
                     yield tag(batch,0,schema.clone())?;
                 }
             },
@@ -1344,4 +1360,9 @@ pub async fn physical_with_context(
 /// Compile a complete table action with Vail's default action resources.
 pub async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
     crate::logical::physical(table).await
+}
+pub(crate) fn repeatable_node(plan: &PhysicalPlan) -> bool {
+    plan.as_ref().is::<SourceExec>()
+        || plan.as_ref().is::<RangePartitionExec>()
+        || plan.as_ref().is::<UnaryExec>()
 }

@@ -11,7 +11,6 @@ use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
 use kll_rs::KllDoubleSketch;
 use nalgebra::{DMatrix, DVector};
-use ndhistogram::{Hist1D, Histogram, axis::Uniform, ndhistogram};
 use statrs::distribution::{ContinuousCDF, FisherSnedecor, StudentsT};
 
 use crate::aggregate_identity::configured_udaf_name;
@@ -82,6 +81,42 @@ fn read_f64(a: &dyn Array, row: usize) -> DfResult<f64> {
     })
 }
 
+/// Arithmetic on a validated finite interval, including spans that overflow.
+#[derive(Clone, Copy, Debug)]
+struct FiniteRange {
+    start: f64,
+    end: f64,
+}
+impl FiniteRange {
+    fn fraction(self, value: f64) -> f64 {
+        let span = self.end - self.start;
+        if span.is_finite() {
+            (value - self.start) / span
+        } else {
+            (value * 0.5 - self.start * 0.5) / (self.end * 0.5 - self.start * 0.5)
+        }
+    }
+    fn interpolate(self, t: f64) -> f64 {
+        if t == 0. {
+            return self.start;
+        }
+        if t == 1. {
+            return self.end;
+        }
+        let span = self.end - self.start;
+        if span.is_finite() {
+            self.start + span * t
+        } else {
+            self.start * (1. - t) + self.end * t
+        }
+    }
+}
+#[derive(Debug)]
+struct HistogramConfig {
+    range: FiniteRange,
+    bins: usize,
+    edges: Arc<Float64Array>,
+}
 fn histogram(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, ExprError> {
     if !numeric(t) {
         return Err(invalid(format!("hist requires numeric input, got {t:?}")));
@@ -99,149 +134,163 @@ fn histogram(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, E
     if !start.is_finite() || !end.is_finite() || start >= end {
         return Err(invalid("hist requires finite start < end"));
     }
-    let out = DataType::Struct(
+    let range = FiniteRange { start, end };
+    let edges = (0..=bins)
+        .map(|i| range.interpolate(i as f64 / bins as f64))
+        .collect::<Vec<_>>();
+    if edges.iter().any(|edge| !edge.is_finite()) || edges.windows(2).any(|pair| pair[0] >= pair[1])
+    {
+        return Err(invalid("hist bin edges cannot be represented distinctly"));
+    }
+    let config = Arc::new(HistogramConfig {
+        range,
+        bins,
+        edges: Arc::new(Float64Array::from(edges)),
+    });
+    let list = |ty| DataType::List(Arc::new(Field::new("item", ty, true)));
+    let output = DataType::Struct(
         vec![
-            Arc::new(Field::new(
-                "bin_edges",
-                DataType::List(Arc::new(Field::new("item", DataType::Float64, true))),
-                true,
-            )),
-            Arc::new(Field::new(
-                "bin_freq",
-                DataType::List(Arc::new(Field::new("item", DataType::Int64, true))),
-                true,
-            )),
+            Arc::new(Field::new("bin_edges", list(DataType::Float64), true)),
+            Arc::new(Field::new("bin_freq", list(DataType::Int64), true)),
             Arc::new(Field::new("n_smaller", DataType::Int64, true)),
             Arc::new(Field::new("n_larger", DataType::Int64, true)),
         ]
         .into(),
     );
-    let st = vec![DataType::Int64; bins + 2];
-    let axis = Uniform::new(bins, start, end).map_err(|e| invalid(format!("hist axis: {e}")))?;
     let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
         Ok(Box::new(HistAccumulator {
-            start,
-            end,
-            bins,
-            hist: ndhistogram!(axis.clone(); i64),
+            config: config.clone(),
+            counts: vec![0; bins + 2],
         }))
     });
-    let udaf_name = configured_udaf_name("hist", t, o);
     Ok(Arc::new(create_udaf(
-        &udaf_name,
+        &configured_udaf_name("hist", t, o),
         vec![t.clone()],
-        Arc::new(out),
+        Arc::new(output),
         Volatility::Immutable,
         factory,
-        Arc::new(st),
+        Arc::new(vec![list(DataType::Int64)]),
     )))
 }
-
 #[derive(Debug)]
 struct HistAccumulator {
-    start: f64,
-    end: f64,
-    bins: usize,
-    hist: Hist1D<Uniform<f64>, i64>,
+    config: Arc<HistogramConfig>,
+    counts: Vec<i64>,
 }
-impl HistAccumulator {
-    fn result(&self) -> DfResult<ScalarValue> {
-        let edges: ArrayRef = Arc::new(Float64Array::from(
-            (0..=self.bins)
-                .map(|i| self.start + (self.end - self.start) * i as f64 / self.bins as f64)
-                .collect::<Vec<_>>(),
-        ));
-        let freqs: ArrayRef = Arc::new(Int64Array::from(
-            (1..=self.bins)
-                .map(|i| *self.hist.value_at_index(i).unwrap())
-                .collect::<Vec<_>>(),
-        ));
-        let list_edges = ScalarValue::List(Arc::new(ListArray::new(
-            Arc::new(Field::new("item", DataType::Float64, true)),
-            OffsetBuffer::from_lengths([edges.len()]),
-            edges,
-            None,
-        )));
-        let list_freq = ScalarValue::List(Arc::new(ListArray::new(
-            Arc::new(Field::new("item", DataType::Int64, true)),
-            OffsetBuffer::from_lengths([freqs.len()]),
-            freqs,
-            None,
-        )));
-        struct_scalar(
-            vec![
-                Arc::new(Field::new(
-                    "bin_edges",
-                    list_edges.data_type().clone(),
-                    true,
-                )),
-                Arc::new(Field::new("bin_freq", list_freq.data_type().clone(), true)),
-                Arc::new(Field::new("n_smaller", DataType::Int64, true)),
-                Arc::new(Field::new("n_larger", DataType::Int64, true)),
-            ],
-            vec![
-                list_edges,
-                list_freq,
-                ScalarValue::Int64(Some(*self.hist.value_at_index(0).unwrap())),
-                ScalarValue::Int64(Some(*self.hist.value_at_index(self.bins + 1).unwrap())),
-            ],
-        )
-    }
+fn numeric_list(values: ArrayRef) -> ScalarValue {
+    ScalarValue::List(Arc::new(ListArray::new(
+        Arc::new(Field::new("item", values.data_type().clone(), true)),
+        OffsetBuffer::from_lengths([values.len()]),
+        values,
+        None,
+    )))
 }
 impl Accumulator for HistAccumulator {
-    fn update_batch(&mut self, v: &[ArrayRef]) -> DfResult<()> {
-        let [a] = v else {
+    fn update_batch(&mut self, values: &[ArrayRef]) -> DfResult<()> {
+        let [input] = values else {
             return Err(DataFusionError::Execution("hist expects one input".into()));
         };
-        for i in 0..a.len() {
-            if a.is_null(i) {
+        let cast = arrow_cast::cast(input, &DataType::Float64)?;
+        let values = cast.as_any().downcast_ref::<Float64Array>().unwrap();
+        let config = &self.config;
+        for row in 0..values.len() {
+            if values.is_null(row) {
                 continue;
             }
-            let x = read_f64(a.as_ref(), i)?;
-            if x.is_nan() {
+            let value = values.value(row);
+            if value.is_nan() {
                 continue;
             }
-            // Hail includes the right endpoint in the final bin. Uniform
-            // axes use [start,end), so adapt that one boundary only.
-            let count = if x == self.end {
-                self.hist.value_at_index_mut(self.bins)
+            let index = if value < config.range.start {
+                0
+            } else if value > config.range.end {
+                config.bins + 1
+            } else if value == config.range.end {
+                config.bins
             } else {
-                self.hist.value_mut(&x)
-            }
-            .ok_or_else(|| DataFusionError::Execution("hist axis rejected value".into()))?;
-            *count = count.wrapping_add(1);
+                let candidate = ((config.range.fraction(value) * config.bins as f64).floor()
+                    as usize)
+                    .min(config.bins - 1);
+                let bin = if value >= config.edges.value(candidate)
+                    && value < config.edges.value(candidate + 1)
+                {
+                    candidate
+                } else {
+                    config
+                        .edges
+                        .values()
+                        .partition_point(|edge| *edge <= value)
+                        .saturating_sub(1)
+                        .min(config.bins - 1)
+                };
+                bin + 1
+            };
+            self.counts[index] = self.counts[index].wrapping_add(1);
         }
         Ok(())
     }
     fn evaluate(&mut self) -> DfResult<ScalarValue> {
-        self.result()
+        let edges = numeric_list(self.config.edges.clone());
+        let counts = numeric_list(Arc::new(Int64Array::from(
+            self.counts[1..=self.config.bins].to_vec(),
+        )));
+        struct_scalar(
+            vec![
+                Arc::new(Field::new("bin_edges", edges.data_type(), true)),
+                Arc::new(Field::new("bin_freq", counts.data_type(), true)),
+                Arc::new(Field::new("n_smaller", DataType::Int64, true)),
+                Arc::new(Field::new("n_larger", DataType::Int64, true)),
+            ],
+            vec![
+                edges,
+                counts,
+                ScalarValue::Int64(Some(self.counts[0])),
+                ScalarValue::Int64(Some(self.counts[self.config.bins + 1])),
+            ],
+        )
     }
     fn size(&self) -> usize {
-        std::mem::size_of_val(self) + (self.bins + 2) * 8
+        std::mem::size_of_val(self)
+            + self.counts.capacity() * 8
+            + self.config.edges.get_array_memory_size()
     }
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
-        Ok(self
-            .hist
-            .values()
-            .map(|n| ScalarValue::Int64(Some(*n)))
-            .collect())
+        Ok(vec![numeric_list(Arc::new(Int64Array::from(
+            self.counts.clone(),
+        )))])
     }
     fn merge_batch(&mut self, states: &[ArrayRef]) -> DfResult<()> {
-        if states.len() != self.bins + 2 {
+        let [state] = states else {
             return Err(DataFusionError::Execution(
                 "hist state shape mismatch".into(),
             ));
-        }
-        for (i, a) in states.iter().enumerate() {
-            let s = a
-                .as_any()
-                .downcast_ref::<Int64Array>()
-                .ok_or_else(|| DataFusionError::Execution("hist state must be int64".into()))?;
-            for r in 0..s.len() {
-                if s.is_valid(r) {
-                    let count = self.hist.value_at_index_mut(i).unwrap();
-                    *count = count.wrapping_add(s.value(r));
+        };
+        let lists = state
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| DataFusionError::Execution("hist state must be int64 list".into()))?;
+        let values = lists
+            .values()
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| DataFusionError::Execution("hist counts must be int64".into()))?;
+        for row in 0..lists.len() {
+            if lists.is_null(row) {
+                continue;
+            }
+            let start = lists.value_offsets()[row] as usize;
+            if lists.value_length(row) as usize != self.counts.len() {
+                return Err(DataFusionError::Execution(
+                    "hist state width mismatch".into(),
+                ));
+            }
+            for (i, count) in self.counts.iter_mut().enumerate() {
+                if values.is_null(start + i) {
+                    return Err(DataFusionError::Execution(
+                        "hist counts must be defined".into(),
+                    ));
                 }
+                *count = count.wrapping_add(values.value(start + i));
             }
         }
         Ok(())
@@ -528,6 +577,16 @@ impl Accumulator for CorrAccumulator {
         };
         let x = arrow_cast::cast(x.as_ref(), &DataType::Float64)?;
         let y = arrow_cast::cast(y.as_ref(), &DataType::Float64)?;
+        let x = if s.null_count() > 0 {
+            arrow_array::make_array(
+                x.to_data()
+                    .into_builder()
+                    .nulls(arrow_buffer::NullBuffer::union(x.nulls(), s.nulls()))
+                    .build()?,
+            )
+        } else {
+            x
+        };
         self.inner.update_batch(&[x, y])
     }
     fn evaluate(&mut self) -> DfResult<ScalarValue> {
@@ -596,6 +655,7 @@ fn tuple_item_type() -> DataType {
         dtype,
         &serde_json::json!({"tuple": ["float64", "float64", {"array": "str"}]}),
     )
+    .expect("the fixed downsample tuple has a nonempty struct carrier")
 }
 fn downsample_type() -> DataType {
     DataType::List(Arc::new(Field::new("item", tuple_item_type(), true)))
@@ -635,7 +695,13 @@ fn downsample(
         Arc::new(output),
         Volatility::Immutable,
         factory,
-        Arc::new(vec![state]),
+        Arc::new(vec![
+            state,
+            DataType::Float64,
+            DataType::Float64,
+            DataType::Float64,
+            DataType::Float64,
+        ]),
     )))
 }
 #[derive(Debug)]
@@ -652,41 +718,72 @@ impl DownsampleAccumulator {
             bounds: None,
         }
     }
-    fn cell(&self, x: f64, y: f64, b: (f64, f64, f64, f64)) -> (i32, i32) {
-        let (l, r, bottom, top) = b;
-        let bx = if r == l {
-            0
-        } else {
-            (((x - l) / (r - l)) * self.divisions as f64).floor() as i32
-        };
-        let by = if top == bottom {
-            0
-        } else {
-            (((y - bottom) / (top - bottom)) * self.divisions as f64).floor() as i32
-        };
-        (
-            bx.clamp(0, self.divisions as i32 - 1),
-            by.clamp(0, self.divisions as i32 - 1),
-        )
-    }
-    fn insert(&mut self, p: DownsamplePoint) {
-        let bounds = match self.bounds {
-            None => {
-                self.bounds = Some((p.x, p.x, p.y, p.y));
-                self.bounds.unwrap()
+    fn cell(&self, x: f64, y: f64, bounds: (f64, f64, f64, f64)) -> (i32, i32) {
+        let axis = |value, start, end| {
+            if start == end {
+                0
+            } else {
+                ((FiniteRange { start, end }.fraction(value) * self.divisions as f64).floor()
+                    as i32)
+                    .clamp(0, self.divisions as i32 - 1)
             }
-            Some((l, r, b, t)) => (l.min(p.x), r.max(p.x), b.min(p.y), t.max(p.y)),
+        };
+        (axis(x, bounds.0, bounds.1), axis(y, bounds.2, bounds.3))
+    }
+    fn expand_axis(mut start: f64, mut end: f64, value: f64) -> (f64, f64) {
+        if start == end {
+            return (start.min(value), end.max(value));
+        }
+        while value < start || value > end {
+            let span = end - start;
+            if !span.is_finite() {
+                return (-f64::MAX, f64::MAX);
+            }
+            if value < start {
+                start = (start - span).max(-f64::MAX);
+            } else {
+                end = (end + span).min(f64::MAX);
+            }
+        }
+        (start, end)
+    }
+    fn include_bounds(&mut self, x: f64, y: f64) {
+        let bounds = match self.bounds {
+            None => (x, x, y, y),
+            Some((l, r, b, t)) => {
+                let (l, r) = Self::expand_axis(l, r, x);
+                let (b, t) = Self::expand_axis(b, t, y);
+                (l, r, b, t)
+            }
         };
         if self.bounds != Some(bounds) {
-            let old = std::mem::take(&mut self.points);
             self.bounds = Some(bounds);
+            let old = std::mem::take(&mut self.points);
             for point in old.into_values() {
                 let cell = self.cell(point.x, point.y, bounds);
                 self.points.entry(cell).or_insert(point);
             }
         }
-        let cell = self.cell(p.x, p.y, bounds);
-        self.points.entry(cell).or_insert(p);
+    }
+    fn insert_lazy(
+        &mut self,
+        x: f64,
+        y: f64,
+        label: impl FnOnce() -> DfResult<ScalarValue>,
+    ) -> DfResult<()> {
+        self.include_bounds(x, y);
+        let cell = self.cell(x, y, self.bounds.unwrap());
+        if !self.points.contains_key(&cell) {
+            self.points.insert(
+                cell,
+                DownsamplePoint {
+                    x,
+                    y,
+                    label: label()?,
+                },
+            );
+        }
+        Ok(())
     }
     fn empty_label() -> DfResult<ScalarValue> {
         let ty = DataType::List(Arc::new(Field::new("item", DataType::Utf8, true)));
@@ -725,40 +822,24 @@ impl DownsampleAccumulator {
     fn result(&self) -> DfResult<ScalarValue> {
         Self::list_value(self.points.values().cloned())
     }
-    fn insert_row(&mut self, s: &StructArray, row: usize) -> DfResult<()> {
-        let cols = s.columns();
-        if cols[0].is_null(row) || cols[1].is_null(row) {
-            return Ok(());
-        }
-        let x = read_f64(cols[0].as_ref(), row)?;
-        let y = read_f64(cols[1].as_ref(), row)?;
-        if !x.is_finite() || !y.is_finite() {
-            return Ok(());
-        }
-        let label = if cols.len() == 2 {
-            Self::empty_label()?
-        } else if cols[2].data_type() == &DataType::Utf8 {
-            let v = ScalarValue::try_from_array(&cols[2], row)?;
-            match v {
-                ScalarValue::Utf8(Some(s)) => {
-                    let a: ArrayRef =
-                        Arc::new(arrow_array::StringArray::from(vec![Some(s.as_str())]));
-                    ScalarValue::List(Arc::new(ListArray::new(
-                        Arc::new(Field::new("item", DataType::Utf8, true)),
-                        OffsetBuffer::from_lengths([1]),
-                        a,
-                        None,
-                    )))
-                }
-                ScalarValue::Utf8(None) => Self::empty_label()?,
-                _ => Self::empty_label()?,
+    fn add_rows(
+        &mut self,
+        rows: &StructArray,
+        xs: &Float64Array,
+        ys: &Float64Array,
+        label: impl Fn(usize) -> DfResult<ScalarValue>,
+    ) -> DfResult<()> {
+        for row in 0..rows.len() {
+            if rows.is_null(row) || xs.is_null(row) || ys.is_null(row) {
+                continue;
             }
-        } else if cols[2].is_null(row) {
-            Self::empty_label()?
-        } else {
-            ScalarValue::try_from_array(&cols[2], row)?
-        };
-        self.insert(DownsamplePoint { x, y, label });
+            let x = xs.value(row);
+            let y = ys.value(row);
+            if !x.is_finite() || !y.is_finite() {
+                continue;
+            }
+            self.insert_lazy(x, y, || label(row))?;
+        }
         Ok(())
     }
 }
@@ -773,10 +854,35 @@ impl Accumulator for DownsampleAccumulator {
             .as_any()
             .downcast_ref::<StructArray>()
             .ok_or_else(|| DataFusionError::Execution("downsample expects struct values".into()))?;
-        for row in 0..s.len() {
-            self.insert_row(s, row)?;
+        let x = arrow_cast::cast(&s.columns()[0], &DataType::Float64)?;
+        let y = arrow_cast::cast(&s.columns()[1], &DataType::Float64)?;
+        let xs = x.as_any().downcast_ref::<Float64Array>().unwrap();
+        let ys = y.as_any().downcast_ref::<Float64Array>().unwrap();
+        match s.columns().get(2) {
+            None => self.add_rows(s, xs, ys, |_| Self::empty_label()),
+            Some(labels) if labels.data_type() == &DataType::Utf8 => {
+                let labels = labels
+                    .as_any()
+                    .downcast_ref::<arrow_array::StringArray>()
+                    .unwrap();
+                self.add_rows(s, xs, ys, |row| {
+                    if labels.is_null(row) {
+                        Self::empty_label()
+                    } else {
+                        Ok(numeric_list(Arc::new(arrow_array::StringArray::from(
+                            vec![labels.value(row)],
+                        ))))
+                    }
+                })
+            }
+            Some(labels) => self.add_rows(s, xs, ys, |row| {
+                if labels.is_null(row) {
+                    Self::empty_label()
+                } else {
+                    ScalarValue::try_from_array(labels, row)
+                }
+            }),
         }
-        Ok(())
     }
     fn evaluate(&mut self) -> DfResult<ScalarValue> {
         self.result()
@@ -784,36 +890,112 @@ impl Accumulator for DownsampleAccumulator {
     fn size(&self) -> usize {
         std::mem::size_of_val(self)
             + self.points.len() * std::mem::size_of::<((i32, i32), DownsamplePoint)>()
+            + self
+                .points
+                .values()
+                .map(|point| point.label.size())
+                .sum::<usize>()
     }
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
-        Ok(vec![self.result()?])
+        let mut state = vec![self.result()?];
+        let bounds = self.bounds.map(|(l, r, b, t)| [l, r, b, t]);
+        state.extend((0..4).map(|i| ScalarValue::Float64(bounds.map(|values| values[i]))));
+        Ok(state)
     }
-    fn merge_batch(&mut self, v: &[ArrayRef]) -> DfResult<()> {
-        let [a] = v else {
+    fn merge_batch(&mut self, states: &[ArrayRef]) -> DfResult<()> {
+        let [points, l, r, b, t] = states else {
             return Err(DataFusionError::Execution(
-                "downsample state expects one list".into(),
+                "downsample state requires points and bounds".into(),
             ));
         };
-        let lists = a
+        let lists = points
             .as_any()
             .downcast_ref::<ListArray>()
-            .ok_or_else(|| DataFusionError::Execution("downsample state must be a list".into()))?;
+            .ok_or_else(|| DataFusionError::Execution("downsample state must be list".into()))?;
+        let bound_columns = [l, r, b, t];
+        let bounds = bound_columns
+            .iter()
+            .map(|array| {
+                array
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Execution("downsample bounds must be float64".into())
+                    })
+            })
+            .collect::<DfResult<Vec<_>>>()?;
+        if bounds.iter().any(|array| array.len() != lists.len()) {
+            return Err(DataFusionError::Execution(
+                "downsample state row counts differ".into(),
+            ));
+        }
+        let tuples = lists
+            .values()
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| DataFusionError::Execution("downsample points must be tuples".into()))?;
+        let x = tuples
+            .column(0)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("downsample x state must be float64".into())
+            })?;
+        let y = tuples
+            .column(1)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("downsample y state must be float64".into())
+            })?;
         for row in 0..lists.len() {
             if lists.is_null(row) {
                 continue;
             }
-            let ss = lists.value(row);
-            let tuples = ss.as_any().downcast_ref::<StructArray>().ok_or_else(|| {
-                DataFusionError::Execution("downsample list item must be tuple struct".into())
-            })?;
-            for i in 0..tuples.len() {
-                let c = tuples.columns();
-                let p = DownsamplePoint {
-                    x: read_f64(c[0].as_ref(), i)?,
-                    y: read_f64(c[1].as_ref(), i)?,
-                    label: ScalarValue::try_from_array(&c[2], i)?,
-                };
-                self.insert(p);
+            if bounds.iter().all(|values| values.is_null(row)) && lists.value_length(row) == 0 {
+                continue;
+            }
+            if bounds
+                .iter()
+                .any(|values| values.is_null(row) || !values.value(row).is_finite())
+            {
+                return Err(DataFusionError::Execution(
+                    "downsample state bounds must be finite".into(),
+                ));
+            }
+            let (l, r, b, t) = (
+                bounds[0].value(row),
+                bounds[1].value(row),
+                bounds[2].value(row),
+                bounds[3].value(row),
+            );
+            if l > r || b > t {
+                return Err(DataFusionError::Execution(
+                    "downsample state bounds are reversed".into(),
+                ));
+            }
+            self.include_bounds(l, b);
+            self.include_bounds(r, t);
+            let start = lists.value_offsets()[row] as usize;
+            let end = lists.value_offsets()[row + 1] as usize;
+            for i in start..end {
+                if tuples.is_null(i)
+                    || x.is_null(i)
+                    || y.is_null(i)
+                    || !x.value(i).is_finite()
+                    || !y.value(i).is_finite()
+                    || x.value(i) < l
+                    || x.value(i) > r
+                    || y.value(i) < b
+                    || y.value(i) > t
+                {
+                    return Err(DataFusionError::Execution(
+                        "downsample state point lies outside bounds".into(),
+                    ));
+                }
+                self.insert_lazy(x.value(i), y.value(i), || {
+                    ScalarValue::try_from_array(tuples.column(2), i)
+                })?;
             }
         }
         Ok(())
@@ -853,11 +1035,12 @@ fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, Expr
     if *fields[0].data_type() != DataType::Float64 {
         return Err(invalid("linreg y must be float64"));
     }
-    let state = vec![DataType::Int64]
-        .into_iter()
-        .chain((0..p * p + p + 1).map(|_| DataType::Float64))
-        .chain([DataType::Boolean])
-        .collect::<Vec<_>>();
+    let state = vec![
+        DataType::Int64,
+        DataType::List(Arc::new(Field::new("item", DataType::Float64, true))),
+        DataType::List(Arc::new(Field::new("item", DataType::Float64, true))),
+        DataType::Boolean,
+    ];
     let result = linreg_type();
     let factory: datafusion_expr::AccumulatorFactoryFunction =
         Arc::new(move |_| Ok(Box::new(LinregAccumulator::new(p, nested, weighted))));
@@ -903,10 +1086,13 @@ struct LinregAccumulator {
     nested: usize,
     weighted: bool,
     n: i64,
-    xtx: Vec<f64>,
-    xty: Vec<f64>,
-    yty: f64,
-    has_negative_weight: bool,
+    // Upper triangular QR factor of the augmented weighted [X | y].
+    qr: Vec<f64>,
+    work: Vec<f64>,
+    // Column shear relative to x[0], retained across partial QR merges.
+    origins: Vec<f64>,
+    origin_set: bool,
+    invalid_numeric: bool,
 }
 impl LinregAccumulator {
     fn new(p: usize, nested: usize, weighted: bool) -> Self {
@@ -915,10 +1101,35 @@ impl LinregAccumulator {
             nested,
             weighted,
             n: 0,
-            xtx: vec![0.; p * p],
-            xty: vec![0.; p],
-            yty: 0.,
-            has_negative_weight: false,
+            qr: vec![0.; (p + 1) * (p + 1)],
+            work: vec![0.; p + 1],
+            origins: vec![0.; p + 1],
+            origin_set: false,
+            invalid_numeric: false,
+        }
+    }
+    fn append_work(&mut self) {
+        let d = self.p + 1;
+        for j in 0..d {
+            let a = self.qr[j * d + j];
+            let b = self.work[j];
+            if b == 0. {
+                continue;
+            }
+            let norm = a.hypot(b);
+            if !norm.is_finite() {
+                self.invalid_numeric = true;
+                return;
+            }
+            let c = a / norm;
+            let sine = b / norm;
+            self.qr[j * d + j] = norm;
+            for k in j + 1..d {
+                let old = self.qr[j * d + k];
+                let value = self.work[k];
+                self.qr[j * d + k] = c * old + sine * value;
+                self.work[k] = c * value - sine * old;
+            }
         }
     }
     fn result(&self) -> DfResult<ScalarValue> {
@@ -943,7 +1154,7 @@ impl LinregAccumulator {
         };
         let mut values = missing();
         if self.n as usize > self.p {
-            if self.has_negative_weight {
+            if self.invalid_numeric {
                 let nan = || vec![f64::NAN; self.p];
                 values = vec![
                     list(nan()),
@@ -957,54 +1168,85 @@ impl LinregAccumulator {
                     ScalarValue::Float64(Some(f64::NAN)),
                 ];
             } else {
-                let a = DMatrix::from_row_slice(self.p, self.p, &self.xtx);
-                let inverse = a.clone().try_inverse();
-                let nested_inverse = if self.nested == 0 {
-                    None
-                } else if self.nested == self.p {
-                    inverse.clone()
-                } else {
-                    a.view((0, 0), (self.nested, self.nested))
-                        .into_owned()
-                        .try_inverse()
-                };
-                if let Some(inv) = inverse {
-                    if self.nested == 0 || nested_inverse.is_some() {
-                        let xy = DVector::from_column_slice(&self.xty);
-                        let beta = &inv * &xy;
-                        let rss = self.yty - beta.dot(&xy);
+                let d = self.p + 1;
+                let r = DMatrix::from_fn(self.p, self.p, |i, j| self.qr[i * d + j]);
+                // Compare each diagonal to its own column norm, rather than
+                // the magnitude of unrelated translated/scaled predictors.
+                let full_rank = (0..self.p).all(|j| {
+                    let norm = (0..=j).map(|i| r[(i, j)]).fold(0f64, f64::hypot);
+                    r[(j, j)].abs() > f64::EPSILON * self.p as f64 * norm
+                });
+                if full_rank {
+                    let xy = DVector::from_iterator(
+                        self.p,
+                        (0..self.p).map(|i| self.qr[i * d + self.p]),
+                    );
+                    if let Some(mut beta) = r.solve_upper_triangular(&xy) {
+                        let residual = self.qr[self.p * d + self.p];
                         let df = (self.n as usize - self.p) as f64;
-                        let sig2 = rss / df;
-                        let se = (0..self.p)
-                            .map(|i| (sig2 * inv[(i, i)]).sqrt())
-                            .collect::<Vec<_>>();
+                        let sigma = residual / df.sqrt();
+                        beta[0] += self.origins[self.p];
+                        for j in 1..self.p {
+                            beta[0] = (-self.origins[j]).mul_add(beta[j], beta[0]);
+                        }
+                        let transpose = r.transpose();
+                        let mut se = Vec::with_capacity(self.p);
+                        for i in 0..self.p {
+                            let mut basis = DVector::zeros(self.p);
+                            basis[i] = 1.;
+                            if i == 0 {
+                                for j in 1..self.p {
+                                    basis[j] = -self.origins[j];
+                                }
+                            }
+                            let Some(column) = transpose.solve_lower_triangular(&basis) else {
+                                return Err(DataFusionError::Execution(
+                                    "linreg triangular covariance solve failed".into(),
+                                ));
+                            };
+                            se.push(
+                                column
+                                    .iter()
+                                    .map(|value| sigma * value)
+                                    .fold(0f64, f64::hypot),
+                            );
+                        }
                         let t = (0..self.p).map(|i| beta[i] / se[i]).collect::<Vec<_>>();
+                        let student = StudentsT::new(0., 1., df).ok();
                         let pvals = t
                             .iter()
                             .map(|x| {
                                 if x.is_nan() {
-                                    return f64::NAN;
+                                    f64::NAN
+                                } else {
+                                    student
+                                        .as_ref()
+                                        .map(|dist| 2. * dist.sf(x.abs()))
+                                        .unwrap_or(f64::NAN)
                                 }
-                                StudentsT::new(0., 1., df)
-                                    .map(|d| 2. * d.sf(x.abs()))
-                                    .unwrap_or(f64::NAN)
                             })
                             .collect::<Vec<_>>();
-                        let rss0 = if self.nested == 0 {
-                            self.yty
-                        } else {
-                            let xy0 = DVector::from_column_slice(&self.xty[..self.nested]);
-                            self.yty - xy0.dot(&(nested_inverse.unwrap() * xy0.clone()))
+                        let response = |i| {
+                            if i == 0 {
+                                self.origins[self.p].mul_add(self.qr[0], self.qr[self.p])
+                            } else {
+                                self.qr[i * d + self.p]
+                            }
                         };
+                        let null_residual =
+                            (self.nested..=self.p).map(response).fold(0f64, f64::hypot);
+                        let explained = (self.nested..self.p).map(response).fold(0f64, f64::hypot);
                         let d0 = (self.p - self.nested) as f64;
-                        let r2 = 1. - rss / rss0;
+                        let ratio = residual / null_residual;
+                        let r2 = 1. - ratio * ratio;
                         let adjusted = 1. - (1. - r2) * (self.n as f64 - self.nested as f64) / df;
-                        let f = (rss0 - rss) * df / (rss * d0);
+                        let explained_ratio = explained / residual;
+                        let f = explained_ratio * explained_ratio * df / d0;
                         let model_p = if f.is_nan() {
                             f64::NAN
                         } else {
                             FisherSnedecor::new(d0, df)
-                                .map(|d| d.sf(f))
+                                .map(|dist| dist.sf(f))
                                 .unwrap_or(f64::NAN)
                         };
                         values = vec![
@@ -1012,7 +1254,7 @@ impl LinregAccumulator {
                             list(se),
                             list(t),
                             list(pvals),
-                            ScalarValue::Float64(Some(sig2.sqrt())),
+                            ScalarValue::Float64(Some(sigma)),
                             ScalarValue::Float64(Some(r2)),
                             ScalarValue::Float64(Some(adjusted)),
                             ScalarValue::Float64(Some(f)),
@@ -1027,26 +1269,36 @@ impl LinregAccumulator {
     }
 }
 impl Accumulator for LinregAccumulator {
-    fn update_batch(&mut self, v: &[ArrayRef]) -> DfResult<()> {
-        let [a] = v else {
+    fn update_batch(&mut self, values: &[ArrayRef]) -> DfResult<()> {
+        let [input] = values else {
             return Err(DataFusionError::Execution(
                 "linreg expects one struct input".into(),
             ));
         };
-        let s = a
+        let rows = input
             .as_any()
             .downcast_ref::<StructArray>()
             .ok_or_else(|| DataFusionError::Execution("linreg expects struct values".into()))?;
-        let cols = s.columns();
-        let ys = cols[0]
+        let columns = rows.columns();
+        let ys = columns[0]
             .as_any()
             .downcast_ref::<Float64Array>()
             .ok_or_else(|| DataFusionError::Execution("linreg y must be float64".into()))?;
-        let xs_list = cols[1].as_any().downcast_ref::<ListArray>();
-        let xs_scalar = cols[1].as_any().downcast_ref::<Float64Array>();
+        let lists = columns[1].as_any().downcast_ref::<ListArray>();
+        let scalar = columns[1].as_any().downcast_ref::<Float64Array>();
+        let children = lists
+            .map(|list| {
+                list.values()
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Execution("linreg predictors must be float64".into())
+                    })
+            })
+            .transpose()?;
         let weights = if self.weighted {
             Some(
-                cols[2]
+                columns[2]
                     .as_any()
                     .downcast_ref::<Float64Array>()
                     .ok_or_else(|| {
@@ -1056,45 +1308,60 @@ impl Accumulator for LinregAccumulator {
         } else {
             None
         };
-        for r in 0..a.len() {
-            if ys.is_null(r) || cols[1].is_null(r) {
+        for row in 0..rows.len() {
+            if rows.is_null(row)
+                || ys.is_null(row)
+                || columns[1].is_null(row)
+                || weights.is_some_and(|w| w.is_null(row))
+            {
                 continue;
             }
-            let x: Vec<f64> = if let Some(l) = xs_list {
-                let ar = l.value(r);
-                let f = ar.as_any().downcast_ref::<Float64Array>().unwrap();
-                if f.null_count() > 0 || f.len() != self.p {
+            let x = if let (Some(lists), Some(children)) = (lists, children) {
+                let start = lists.value_offsets()[row] as usize;
+                let end = lists.value_offsets()[row + 1] as usize;
+                if end - start != self.p || (start..end).any(|i| children.is_null(i)) {
                     continue;
                 }
-                f.values().to_vec()
-            } else if let Some(f) = xs_scalar {
-                vec![f.value(r)]
+                &children.values()[start..end]
+            } else if let Some(scalar) = scalar {
+                std::slice::from_ref(&scalar.values()[row])
             } else {
                 continue;
             };
             if x.len() != self.p {
                 continue;
             }
-            let w = if let Some(w) = weights {
-                if w.is_null(r) {
-                    continue;
-                }
-                w.value(r)
-            } else {
-                1.
-            };
-            let y = ys.value(r);
-            if w < 0. {
-                self.has_negative_weight = true;
-            }
-            for i in 0..self.p {
-                self.xty[i] += w * x[i] * y;
-                for j in 0..self.p {
-                    self.xtx[i * self.p + j] += w * x[i] * x[j];
-                }
-            }
-            self.yty += w * y * y;
+            let weight = weights.map_or(1., |values| values.value(row));
+            let y = ys.value(row);
             self.n += 1;
+            if weight < 0.
+                || !weight.is_finite()
+                || !y.is_finite()
+                || x.iter().any(|x| !x.is_finite())
+            {
+                self.invalid_numeric = true;
+                continue;
+            }
+            if !self.origin_set && x[0] != 0. {
+                for j in 1..self.p {
+                    let origin = x[j] / x[0];
+                    self.origins[j] = if origin.is_finite() { origin } else { 0. };
+                }
+                let origin = y / x[0];
+                self.origins[self.p] = if origin.is_finite() { origin } else { 0. };
+                self.origin_set = true;
+            }
+            let scale = weight.sqrt();
+            self.work[0] = scale * x[0];
+            for j in 1..self.p {
+                self.work[j] = scale * (-self.origins[j]).mul_add(x[0], x[j]);
+            }
+            self.work[self.p] = scale * (-self.origins[self.p]).mul_add(x[0], y);
+            if self.work.iter().any(|value| !value.is_finite()) {
+                self.invalid_numeric = true;
+                continue;
+            }
+            self.append_work();
         }
         Ok(())
     }
@@ -1102,51 +1369,128 @@ impl Accumulator for LinregAccumulator {
         self.result()
     }
     fn size(&self) -> usize {
-        std::mem::size_of_val(self) + (self.xtx.capacity() + self.xty.capacity()) * 8
+        std::mem::size_of_val(self)
+            + (self.qr.capacity() + self.work.capacity() + self.origins.capacity()) * 8
     }
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
-        let mut s = vec![ScalarValue::Int64(Some(self.n))];
-        s.extend(
-            self.xtx
-                .iter()
-                .chain(&self.xty)
-                .chain([&self.yty])
-                .map(|x| ScalarValue::Float64(Some(*x))),
-        );
-        s.push(ScalarValue::Boolean(Some(self.has_negative_weight)));
-        Ok(s)
+        Ok(vec![
+            ScalarValue::Int64(Some(self.n)),
+            numeric_list(Arc::new(Float64Array::from(self.qr.clone()))),
+            if self.origin_set {
+                numeric_list(Arc::new(Float64Array::from(self.origins.clone())))
+            } else {
+                ScalarValue::List(Arc::new(ListArray::new_null(
+                    Arc::new(Field::new("item", DataType::Float64, true)),
+                    1,
+                )))
+            },
+            ScalarValue::Boolean(Some(self.invalid_numeric)),
+        ])
     }
-    fn merge_batch(&mut self, v: &[ArrayRef]) -> DfResult<()> {
-        if v.len() != self.xtx.len() + self.xty.len() + 3 {
+    fn merge_batch(&mut self, states: &[ArrayRef]) -> DfResult<()> {
+        let [n, qr, origins, invalid] = states else {
             return Err(DataFusionError::Execution(
                 "linreg state shape mismatch".into(),
             ));
+        };
+        let counts = n
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| DataFusionError::Execution("linreg count state must be int64".into()))?;
+        let factors = qr
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| DataFusionError::Execution("linreg QR state must be list".into()))?;
+        let values = factors
+            .values()
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| DataFusionError::Execution("linreg QR values must be float64".into()))?;
+        let origins = origins
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| DataFusionError::Execution("linreg origin state must be list".into()))?;
+        let origin_values = origins
+            .values()
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| DataFusionError::Execution("linreg origins must be float64".into()))?;
+        let invalid = invalid
+            .as_any()
+            .downcast_ref::<arrow_array::BooleanArray>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("linreg invalid-input state must be bool".into())
+            })?;
+        if factors.len() != counts.len()
+            || invalid.len() != counts.len()
+            || origins.len() != counts.len()
+        {
+            return Err(DataFusionError::Execution(
+                "linreg state row counts differ".into(),
+            ));
         }
-        let n = v[0].as_any().downcast_ref::<Int64Array>().unwrap();
-        for r in 0..n.len() {
-            if n.is_valid(r) {
-                self.n += n.value(r);
+        let d = self.p + 1;
+        for row in 0..counts.len() {
+            if counts.is_null(row) {
+                continue;
             }
-            let neg = v
-                .last()
-                .unwrap()
-                .as_any()
-                .downcast_ref::<arrow_array::BooleanArray>()
-                .ok_or_else(|| {
-                    DataFusionError::Execution("linreg negative-weight state must be bool".into())
-                })?;
-            self.has_negative_weight |= neg.value(r);
-            for (i, a) in v[1..v.len() - 1].iter().enumerate() {
-                let f = a.as_any().downcast_ref::<Float64Array>().unwrap();
-                if f.is_valid(r) {
-                    if i < self.xtx.len() {
-                        self.xtx[i] += f.value(r);
-                    } else if i < self.xtx.len() + self.xty.len() {
-                        self.xty[i - self.xtx.len()] += f.value(r);
-                    } else {
-                        self.yty += f.value(r);
+            if factors.is_null(row)
+                || invalid.is_null(row)
+                || factors.value_length(row) as usize != d * d
+            {
+                return Err(DataFusionError::Execution(
+                    "linreg QR state dimensions differ".into(),
+                ));
+            }
+            let start = factors.value_offsets()[row] as usize;
+            if (start..start + d * d).any(|i| values.is_null(i)) {
+                return Err(DataFusionError::Execution(
+                    "linreg QR state must be defined".into(),
+                ));
+            }
+            let partial_origins = if origins.is_null(row) {
+                None
+            } else {
+                let start = origins.value_offsets()[row] as usize;
+                if origins.value_length(row) as usize != d
+                    || (start..start + d)
+                        .any(|i| origin_values.is_null(i) || !origin_values.value(i).is_finite())
+                {
+                    return Err(DataFusionError::Execution(
+                        "linreg origin state dimensions/values differ".into(),
+                    ));
+                }
+                Some(&origin_values.values()[start..start + d])
+            };
+            if !self.origin_set {
+                if let Some(origins) = partial_origins {
+                    self.origins.copy_from_slice(origins);
+                    self.origin_set = true;
+                }
+            }
+            if counts.value(row) < 0 {
+                return Err(DataFusionError::Execution(
+                    "linreg count state must be nonnegative".into(),
+                ));
+            }
+            self.n += counts.value(row);
+            self.invalid_numeric |= invalid.value(row);
+            for i in 0..d {
+                self.work.fill(0.);
+                self.work[i..d]
+                    .copy_from_slice(&values.values()[start + i * d + i..start + (i + 1) * d]);
+                if self.work[0] != 0. {
+                    for j in 1..d {
+                        let delta =
+                            partial_origins.map_or(0., |origins| origins[j]) - self.origins[j];
+                        self.work[j] = delta.mul_add(self.work[0], self.work[j]);
                     }
                 }
+                if self.work.iter().any(|value| !value.is_finite()) {
+                    self.invalid_numeric = true;
+                    continue;
+                }
+                self.append_work();
             }
         }
         Ok(())

@@ -23,23 +23,28 @@ use datafusion_physical_plan::sorts::sort::SortExec;
 use datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeExec;
 use thiserror::Error;
 
+pub mod aggregate_contract;
 mod aggregate_identity;
-mod kernel_identity;
-mod expression_effects;
-mod expression_identity;
 pub mod aggregates;
-mod array_fold;
 pub mod array_aggregate_scan;
+mod array_fold;
+pub mod array_length_aggregate;
 pub mod calls;
 pub mod collect_aggregate;
+mod conditionals;
 pub mod csv_line;
-mod string_kernels;
+mod expression_effects;
+mod expression_identity;
 pub mod expressions;
+mod kernel_identity;
 pub mod logical_expr;
 mod matrix_arrays;
+mod moments;
+mod ndarray;
 pub mod reference;
 pub mod scan_scopes;
 pub mod scan_state;
+mod string_kernels;
 
 #[derive(Debug, Error)]
 pub enum OrderError {
@@ -542,13 +547,13 @@ mod tests {
 pub mod advanced_collection_aggregates;
 pub mod advanced_genomic_aggregates;
 pub mod advanced_numeric_aggregates;
-pub mod array_length_aggregate;
 pub mod array_aggregate;
-pub mod reducer;
 mod list_aggregate;
+pub mod reducer;
 
 pub mod fold_aggregate;
 
+mod collection_grouped;
 mod collection_groups;
 
 mod collection_lookup;
@@ -564,3 +569,4 @@ mod hwe_counts;
 pub fn supports_list_reducer(function: &str) -> bool {
     list_aggregate::arity(function).is_some()
 }
+mod variant_kernels;

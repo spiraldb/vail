@@ -1,12 +1,16 @@
 //! Immutable, typed TableIR. Construction checks types and shares child nodes;
 //! actions lower expression IR and pull Arrow batches through the graph.
 mod action_parameters;
-mod diagnostics;
 pub mod aggregation;
+pub mod arrow_batches;
+mod diagnostics;
+use arrow_batches::ArrowBatches;
 pub mod comparison;
+mod conditional_globals;
 pub mod globals;
 mod interval_read;
 mod join_interval;
+mod join_key;
 mod joins;
 pub mod line_source;
 mod logical;
@@ -25,11 +29,15 @@ pub mod partitioned;
 mod partitioning;
 pub mod plan;
 mod provider;
+mod range_lookup;
+mod scan_ordinal;
 mod text_export;
-pub mod vcf_export;
 pub mod text_schema;
+pub mod vcf_export;
 mod vcf_source;
+mod zip_dedup;
 mod zip_join;
+mod zip_snapshot;
 use globals::{GlobalBindings, GlobalsIR, GlobalsRef, referenced_bindings};
 
 /// Maximum concurrently executing Table partitions for the embedded backend.
@@ -204,7 +212,7 @@ pub enum TableNode {
         options_json: Value,
     },
     Parallelize {
-        rows: RecordBatch,
+        rows: ArrowBatches,
         n_partitions: usize,
     },
     /// Lazy expression source: the array expression is evaluated at action
@@ -217,6 +225,7 @@ pub enum TableNode {
     Range {
         n: usize,
         n_partitions: usize,
+        batch_size: std::num::NonZeroUsize,
     },
     MapGlobals {
         child: TableRef,
@@ -733,9 +742,19 @@ impl TableIR {
     /// Owning Arrow buffers here is allowed: these are the input context, not an
     /// executed table. Partitioning/slicing happens only when an action polls it.
     pub fn parallelize(rows: RecordBatch, n_partitions: usize) -> Result<TableRef> {
+        Self::parallelize_batches(rows.schema(), vec![rows], n_partitions)
+    }
+
+    /// Retain a schema-aligned batch sequence without concatenating value buffers.
+    pub fn parallelize_batches(
+        schema: SchemaRef,
+        batches: Vec<RecordBatch>,
+        n_partitions: usize,
+    ) -> Result<TableRef> {
         if n_partitions == 0 {
             return Err(TableError::Invalid("n_partitions must be positive".into()));
         }
+        let rows = ArrowBatches::new(schema, batches)?;
         Ok(Self::new(
             rows.schema(),
             vec![],
@@ -799,6 +818,12 @@ impl TableIR {
         ))
     }
     pub fn range(n: usize, n_partitions: usize) -> Result<TableRef> {
+        Self::range_batched(n, n_partitions, 65536)
+    }
+    /// Stream at most batch_size indices per batch, including clipped scans.
+    pub fn range_batched(n: usize, n_partitions: usize, batch_size: usize) -> Result<TableRef> {
+        let batch_size = std::num::NonZeroUsize::new(batch_size)
+            .ok_or_else(|| TableError::Invalid("range batch size must be positive".into()))?;
         if n_partitions == 0 || n > i32::MAX as usize {
             return Err(TableError::Invalid(
                 "range requires positive partitions and n <= 2**31 - 1".into(),
@@ -811,6 +836,7 @@ impl TableIR {
             TableNode::Range {
                 n,
                 n_partitions: n.min(n_partitions).max(1),
+                batch_size,
             },
         ))
     }
@@ -1144,15 +1170,6 @@ impl TableIR {
             ));
         };
         let schema = Arc::new(Schema::new(fields));
-        for key in &self.keys {
-            if schema.field_with_name(key)?.data_type()
-                != self.schema.field_with_name(key)?.data_type()
-            {
-                return Err(TableError::Invalid(
-                    "Table._map_partitions must preserve key fields and types".into(),
-                ));
-            }
-        }
         for field in schema.fields() {
             if self.globals.schema().index_of(field.name()).is_ok() {
                 return Err(TableError::Invalid(
@@ -1160,9 +1177,16 @@ impl TableIR {
                 ));
             }
         }
+        // A partition callback preserves membership, but may change keys or
+        // reorder rows. Retain key metadata only for a proven forward traversal.
+        let keys = if crate::partition_map::preserves_keys(&body, &rows_name, &self.keys) {
+            self.keys.clone()
+        } else {
+            vec![]
+        };
         Ok(Self::new(
             schema,
-            self.keys.clone(),
+            keys,
             self.globals.clone(),
             TableNode::MapPartitions {
                 child: self.clone(),
@@ -1235,6 +1259,34 @@ impl TableIR {
         ))
     }
     pub fn head(self: &Arc<Self>, n: usize) -> TableRef {
+        // Projection and global attachment preserve row order/cardinality.
+        // Scan expressions consume only the preceding prefix, so truncating
+        // their input preserves every retained value and RNG ordinal. Keep
+        // the original globals/bindings: their captures may require all rows.
+        let pushed = match self.node() {
+            _ if n == 0 => None,
+            TableNode::MapRows {
+                child,
+                fields,
+                bindings,
+            } => Some(TableNode::MapRows {
+                child: child.head(n),
+                fields: fields.clone(),
+                bindings: bindings.clone(),
+            }),
+            TableNode::MapGlobals { child } => Some(TableNode::MapGlobals {
+                child: child.head(n),
+            }),
+            _ => None,
+        };
+        if let Some(node) = pushed {
+            return Self::new(
+                self.schema.clone(),
+                self.keys.clone(),
+                self.globals.clone(),
+                node,
+            );
+        }
         Self::new(
             self.schema.clone(),
             self.keys.clone(),
@@ -1401,9 +1453,14 @@ impl TableIR {
             keys.iter().chain(fields.iter()).map(|(_, expr)| expr),
             bindings,
         )?;
-        let input = crate::logical::lower(self)?;
+        let mut context = crate::logical::LoweringContext::default();
+        let input = crate::logical::lower_for_expressions_in_context(
+            self,
+            keys.iter().chain(fields.iter()).map(|(_, expr)| expr),
+            &mut context,
+        )?;
         let plan = crate::logical_aggregation::lower_grouped_fields(
-            self, input, &keys, &fields, &bindings,
+            self, input, &keys, &fields, &bindings, &mut context,
         )?;
         let schema = Arc::new(plan.schema().as_arrow().clone());
         if !keys.is_empty() {
@@ -1415,12 +1472,16 @@ impl TableIR {
             )?
             .physical_ordering(&schema)?;
         }
+        let prepared_child = crate::nested_projection::prepare_vcf_for(
+            self,
+            keys.iter().chain(fields.iter()).map(|(_, expr)| expr),
+        );
         Ok(Self::new(
             schema,
             keys.iter().map(|(name, _)| name.clone()).collect(),
             self.globals.clone(),
             TableNode::Aggregate {
-                child: self.clone(),
+                child: prepared_child,
                 keys,
                 fields,
                 bindings,
@@ -1513,7 +1574,9 @@ impl TableIR {
             } => {
                 json!({"node":"TableParallelizeExpression", "expression":expression, "n_partitions":n_partitions})
             }
-            TableNode::Range { n, n_partitions } => {
+            TableNode::Range {
+                n, n_partitions, ..
+            } => {
                 json!({"node":"TableRange", "n":n, "n_partitions":n_partitions})
             }
             TableNode::MapGlobals { child } => {
@@ -1594,14 +1657,13 @@ impl TableIR {
             TableNode::TextRead { .. } => None,
             TableNode::Parallelize { rows, n_partitions } => Some(
                 (0..*n_partitions)
-                    .map(|p| {
-                        rows.num_rows() * (p + 1) / n_partitions
-                            - rows.num_rows() * p / n_partitions
-                    })
+                    .map(|p| rows.partition_bounds(p, *n_partitions).len())
                     .collect(),
             ),
             TableNode::Expression { .. } => None,
-            TableNode::Range { n, n_partitions } => Some(
+            TableNode::Range {
+                n, n_partitions, ..
+            } => Some(
                 (0..*n_partitions)
                     .map(|p| n / n_partitions + usize::from(p < n % n_partitions))
                     .collect(),
@@ -1670,9 +1732,11 @@ impl TableIR {
                     Some(vec![child.known_count()?])
                 }
             }
-            TableNode::Head { child, n } | TableNode::Tail { child, n } => {
-                Some(vec![if *n == 0 { 0 } else { child.known_count()?.min(*n) }])
-            }
+            TableNode::Head { child, n } | TableNode::Tail { child, n } => Some(vec![if *n == 0 {
+                0
+            } else {
+                child.known_count()?.min(*n)
+            }]),
         }
     }
     pub fn known_count(&self) -> Option<usize> {
@@ -1793,7 +1857,11 @@ impl TableIR {
                 }
             }
             TableNode::KeyBy { child, keys } => {
-                if keys.is_empty() { child.known_n_partitions() } else { Some(1) }
+                if keys.is_empty() {
+                    child.known_n_partitions()
+                } else {
+                    Some(1)
+                }
             }
             TableNode::Head { .. } | TableNode::Tail { .. } => Some(1),
         }
@@ -1810,7 +1878,10 @@ impl TableIR {
                 .enable_all()
                 .build()
                 .map_err(|e| TableError::Execution(e.to_string()))?;
-            let plan = runtime.block_on(logical::diagnostic(logical::lower(&table)?, logical::max_partitions(&table)))?;
+            let plan = runtime.block_on(logical::diagnostic(
+                logical::lower(&table)?,
+                logical::max_partitions(&table),
+            ))?;
             Ok(datafusion_physical_plan::displayable(plan.as_ref())
                 .indent(true)
                 .to_string())

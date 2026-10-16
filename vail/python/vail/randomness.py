@@ -143,8 +143,16 @@ def rand_beta(a, b, lower=None, upper=None, seed=None):
 def _array(a, dtype):
     a = as_expr(a)
     if not isinstance(a.dtype, tarray):
-        raise TypeError("parameter must be an array")
-    return a.map(lambda x: _int(x, dtype) if dtype == tint32 else _float(x))
+        raise TypeError('parameter must be an array')
+    if a.dtype.element_type == dtype:
+        return a
+    from .types import tfloat32
+    if dtype == tint32 or a.dtype.element_type not in (tint32, tint64, tfloat32, tfloat64):
+        raise TypeError('random distribution array elements have invalid type')
+    # Arrow can cast a numeric list in one operation, preserving a scalar list
+    # as one shared argument rather than expanding a callback across rows.
+    return Expression(tarray(dtype), a.source, {
+        'op': 'cast', 'dtype': type_to_wire(tarray(dtype)), 'value': a.to_ir()})
 
 
 def rand_cat(prob, seed=None):
@@ -176,20 +184,9 @@ def rand_multi_hyper(colors, nsample, seed=None):
 
 def rand_norm2d(mean=None, cov=None, seed=None):
     """Sample a bivariate normal with covariance [variance_x, covariance, variance_y]."""
-    from . import range, array
-
     mean = _array([0, 0] if mean is None else mean, tfloat64)
     cov = _array([1, 0, 1] if cov is None else cov, tfloat64)
-    x = range(2).map(lambda _: rand_norm(seed=seed))
-    root = cov[0] ** 0.5
-    return array(
-        [
-            mean[0] + root * x[0],
-            mean[1]
-            + cov[1] / root * x[0]
-            + ((cov[2] - cov[1] * cov[1] / cov[0]) ** 0.5) * x[1],
-        ]
-    )
+    return _call('norm2d', tarray(tfloat64), [mean, cov], seed)
 
 
 def shuffle(a, seed=None):
@@ -201,21 +198,11 @@ def shuffle(a, seed=None):
 
 
 def _is_random(node):
-    return (
-        isinstance(node, IR_NODE_TYPES)
-        and node.get("op") == "nested_function"
-        and node.get("function", "").startswith("random_")
-    )
+    return node.get("op") == "nested_function" and node.get("function", "").startswith("random_")
 
 
 def contains(node):
-    if isinstance(node, NativeExpr):
-        return node.contains_random()
-    if isinstance(node, IR_NODE_TYPES):
-        return _is_random(node) or (
-            node.get("op") != "literal" and any(contains(v) for v in node.values())
-        )
-    return isinstance(node, list) and any(contains(v) for v in node)
+    return NativeExpr(node).contains_random()
 
 
 def bind_context(node, uid, *, parameter=None, replacement=None):
@@ -257,39 +244,37 @@ def resolve(native, expressions, mode="row"):
     native = native.project(_native_projection(fields))
     uid = {"op": "column", "name": name}
     modes = [mode] * len(expressions) if isinstance(mode, str) else mode
-    output = []
-    for expression, scope in zip(expressions, modes):
-        rewritten = bind_rows(expression.to_ir(), uid, scope)
-        output.append(Expression(
-            expression.dtype, expression.source,
-            _IR(rewritten, expression._global_refs, expression._lookup_refs,
-                row_indexed=rewritten.is_row_indexed()),
-            selection_name=expression._selection_name,
-            top_level_name=expression._top_level_name,
-        ))
-    return native, output
+    return native, [
+        Expression(
+            e.dtype,
+            e.source,
+            _IR((bound := bind_rows(e.to_ir(), uid, scope)), e._global_refs, e._lookup_refs,
+                row_indexed=bound.references_rows(), lexical_types=e._lexical_types),
+            selection_name=e._selection_name,
+            top_level_name=e._top_level_name,
+        )
+        for e, scope in zip(expressions, modes)
+    ]
 
 
 def index_callback(collection, parameter, body):
-    """Use positions, including for repeated equal elements, as dynamic UIDs."""
+    """Attach positions once while retaining collection value buffers."""
     if not contains(body.to_ir()):
         return collection, body
-    from .streams import stream_range
-
-    from .collection_functions import zip
-    indexed = zip(stream_range(collection.length()).to_array(), collection)
-    variable = {"op": "lambda_variable", "name": parameter}
-    index = {
-        "op": "cast",
-        "dtype": "int64",
-        "value": {"op": "get_field", "value": variable, "name": "__vail_tuple_0"},
-    }
-    value = {"op": "get_field", "value": variable, "name": "__vail_tuple_1"}
-
+    from .collections import _cast, to_array, _function
+    from .types import tset, tdict, tstruct, ttuple
+    if isinstance(collection.dtype, tset):
+        collection = to_array(collection)
+    elif isinstance(collection.dtype, tdict):
+        collection = _cast(collection, tarray(tstruct(
+            key=collection.dtype.key_type, value=collection.dtype.value_type)))
+    pair_type = ttuple(tint32, collection.dtype.element_type)
+    indexed = _function('__vail_index_values', [collection], tarray(pair_type))
+    variable = {'op': 'lambda_variable', 'name': parameter}
+    index = {'op': 'cast', 'dtype': 'int64', 'value': {
+        'op': 'get_field', 'value': variable, 'name': '__vail_tuple_0'}}
+    value = {'op': 'get_field', 'value': variable, 'name': '__vail_tuple_1'}
     ir = body.to_ir()
-    return indexed, Expression(
-        body.dtype,
-        body.source,
-        _IR(bind_context(ir, [index], parameter=parameter, replacement=value),
-            ir.references, ir.lookups, row_indexed=ir.row_indexed),
-    )
+    bound = bind_context(ir, [index], parameter=parameter, replacement=value)
+    return indexed, Expression(body.dtype, body.source, _IR(
+        bound, ir.references, ir.lookups, row_indexed=body._row_indexed, lexical_types=body._lexical_types))

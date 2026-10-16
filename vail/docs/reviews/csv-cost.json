@@ -1,0 +1,99 @@
+{
+  "workload": "benchmarks/check_csv_cost.py; public header discovery/dedup at64/256/1024 repeated names and public split_line at64rows*256fields with16/256/4096 missing markers, result verification included",
+  "baseline_native_sha256": "76d235ad2cc2222e1e6477def6202a029da9b9ecb9e8ed928aa1cbe72d5d88f3",
+  "limitations": "Sequential workloads within a fresh process; first includes initialization. Shared machine load; cumulative RSS high-water, not isolated throughput.",
+  "baseline": [
+    {
+      "workload": "header",
+      "fields": 64,
+      "seconds": 0.1602582919986162,
+      "max_rss_bytes": 128483328
+    },
+    {
+      "workload": "header",
+      "fields": 256,
+      "seconds": 0.00973083300050348,
+      "max_rss_bytes": 129564672
+    },
+    {
+      "workload": "header",
+      "fields": 1024,
+      "seconds": 0.06566104100056691,
+      "max_rss_bytes": 135004160
+    },
+    {
+      "workload": "markers",
+      "markers": 16,
+      "rows": 64,
+      "fields": 256,
+      "seconds": 0.003991667002992472,
+      "max_rss_bytes": 140050432
+    },
+    {
+      "workload": "markers",
+      "markers": 256,
+      "rows": 64,
+      "fields": 256,
+      "seconds": 0.004988916000002064,
+      "max_rss_bytes": 140214272
+    },
+    {
+      "workload": "markers",
+      "markers": 4096,
+      "rows": 64,
+      "fields": 256,
+      "seconds": 0.026145166000787867,
+      "max_rss_bytes": 140574720
+    }
+  ],
+  "indexed_native_sha256": "6618b78b20696635b2d8b8eb7db466241fecda593e79ec3b35745ae5c8b4b562",
+  "indexed": [
+    {
+      "workload": "header",
+      "fields": 64,
+      "seconds": 0.1581581249993178,
+      "max_rss_bytes": 128466944
+    },
+    {
+      "workload": "header",
+      "fields": 256,
+      "seconds": 0.007639874998858431,
+      "max_rss_bytes": 129875968
+    },
+    {
+      "workload": "header",
+      "fields": 1024,
+      "seconds": 0.025831999999354593,
+      "max_rss_bytes": 135528448
+    },
+    {
+      "workload": "markers",
+      "markers": 16,
+      "rows": 64,
+      "fields": 256,
+      "seconds": 0.003494374999718275,
+      "max_rss_bytes": 140410880
+    },
+    {
+      "workload": "markers",
+      "markers": 256,
+      "rows": 64,
+      "fields": 256,
+      "seconds": 0.002913416999945184,
+      "max_rss_bytes": 140541952
+    },
+    {
+      "workload": "markers",
+      "markers": 4096,
+      "rows": 64,
+      "fields": 256,
+      "seconds": 0.005690415997378295,
+      "max_rss_bytes": 140902400
+    }
+  ],
+  "validation": [
+    "62 Python text/codepoint tests passed against rebuilt native",
+    "3 public Rust CSV integration tests passed",
+    "existing Rust expression CSV projection test passed"
+  ]
+}

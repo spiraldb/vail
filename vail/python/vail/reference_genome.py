@@ -5,6 +5,7 @@ only the immutable coordinate system used to type and compare loci.
 """
 from __future__ import annotations
 
+from bisect import bisect_right
 from collections.abc import Mapping
 from dataclasses import dataclass
 import json
@@ -21,6 +22,31 @@ def _names(values, label):
     return result
 
 
+@dataclass(frozen=True)
+class _ParCoverage:
+    """Union of validated half-open ranges, sorted, disjoint, and nonadjacent.
+
+    Starts and ends are aligned tuples. Only from_ranges constructs the index;
+    the original declared PAR order is preserved separately for public exports.
+    """
+    starts: tuple[int, ...]
+    ends: tuple[int, ...]
+
+    @classmethod
+    def from_ranges(cls, ranges):
+        merged = []
+        for start, end in sorted(ranges):
+            if merged and start <= merged[-1][1]:
+                merged[-1] = (merged[-1][0], max(merged[-1][1], end))
+            else:
+                merged.append((start, end))
+        return cls(tuple(s for s, _ in merged), tuple(e for _, e in merged))
+
+    def contains(self, position):
+        index = bisect_right(self.starts, position) - 1
+        return index >= 0 and position < self.ends[index]
+
+
 @dataclass(frozen=True, eq=False)
 class Locus:
     contig: str
@@ -31,10 +57,14 @@ class Locus:
         object.__setattr__(self, "reference_genome", resolve_reference(self.reference_genome))
         if isinstance(self.contig, int):
             object.__setattr__(self, "contig", str(self.contig))
-        if not isinstance(self.contig, str) or self.contig not in self.reference_genome.lengths:
+        if not isinstance(self.contig, str):
             raise ValueError(f"contig {self.contig!r} is not in reference genome {self.reference_genome.name}")
-        if type(self.position) is not int or not 1 <= self.position <= self.reference_genome.lengths[self.contig]:
-            raise ValueError(f"position must be between 1 and {self.reference_genome.lengths[self.contig]} on {self.contig}")
+        try:
+            length = self.reference_genome.contig_length(self.contig)
+        except KeyError:
+            raise ValueError(f"contig {self.contig!r} is not in reference genome {self.reference_genome.name}") from None
+        if type(self.position) is not int or not 1 <= self.position <= length:
+            raise ValueError(f"position must be between 1 and {length} on {self.contig}")
 
     def __repr__(self):
         return f"Locus(contig={self.contig!r}, position={self.position}, reference_genome={self.reference_genome.name})"
@@ -45,8 +75,8 @@ class Locus:
         if not isinstance(other, Locus): return NotImplemented
         if self.reference_genome != other.reference_genome:
             raise TypeError("loci can only be compared when their reference genomes are equal")
-        left = (self.reference_genome.contigs.index(self.contig), self.position)
-        right = (other.reference_genome.contigs.index(other.contig), other.position)
+        left = (self.contig_idx, self.position)
+        right = (other.contig_idx, other.position)
         return op(left, right)
 
     def __eq__(self, other):
@@ -70,15 +100,15 @@ class Locus:
     def __hash__(self): return hash((self.reference_genome, self.contig, self.position))
 
     @property
-    def contig_idx(self): return self.reference_genome.contigs.index(self.contig)
+    def contig_idx(self): return self.reference_genome.contig_index(self.contig)
     @property
-    def is_x(self): return self.contig in self.reference_genome.x_contigs
+    def is_x(self): return self.reference_genome.is_x_contig(self.contig)
     @property
-    def is_y(self): return self.contig in self.reference_genome.y_contigs
+    def is_y(self): return self.reference_genome.is_y_contig(self.contig)
     @property
-    def is_mitochondrial(self): return self.contig in self.reference_genome.mt_contigs
+    def is_mitochondrial(self): return self.reference_genome.is_mt_contig(self.contig)
     @property
-    def in_par(self): return any(c == self.contig and s <= self.position < e for c, s, e in self.reference_genome._par)
+    def in_par(self): return self.reference_genome.in_par(self.contig, self.position)
 
     def _sequence_unavailable(self, *_args, **_kwargs):
         raise NotImplementedError("sequence operations require a FASTA-backed reference genome")
@@ -91,7 +121,8 @@ class Locus:
 
 class ReferenceGenome:
     """An immutable coordinate definition, registered by its unique name."""
-    __slots__ = ("_name", "_contigs", "_lengths", "_x", "_y", "_mt", "_par", "_hash", "_sealed")
+    __slots__ = ("_name", "_contigs", "_lengths", "_x", "_y", "_mt", "_par", "_hash", "_sealed",
+                 "_ordinals", "_x_set", "_y_set", "_mt_set", "_par_coverage", "_definition")
 
     def __init__(self, name, contigs, lengths, x_contigs=(), y_contigs=(), mt_contigs=(), par=()):
         if not isinstance(name, str) or not name:
@@ -107,10 +138,12 @@ class ReferenceGenome:
         groups = [_names(v, label) for v, label in ((x_contigs, "x_contigs"), (y_contigs, "y_contigs"), (mt_contigs, "mt_contigs"))]
         if any(c not in lengths for group in groups for c in group):
             raise ValueError("sex chromosome and mitochondrial contigs must be declared")
-        if set(groups[0]) & set(groups[1]) or set(groups[0]) & set(groups[2]) or set(groups[1]) & set(groups[2]):
+        group_sets = tuple(frozenset(group) for group in groups)
+        if group_sets[0] & group_sets[1] or group_sets[0] & group_sets[2] or group_sets[1] & group_sets[2]:
             raise ValueError("a contig cannot have more than one chromosome classification")
+        sex_contigs = group_sets[0] | group_sets[1]
         par_values = []
-        par_references = []
+        par_references = {}
         for interval in par:
             if isinstance(interval, Mapping):
                 c, start, end = interval["contig"], interval["start"], interval["end"]
@@ -123,21 +156,18 @@ class ReferenceGenome:
                 if interval.includes_start is not True or interval.includes_end is not False:
                     raise ValueError("PAR intervals must be half-open [start, end)")
                 c, start, end = start_locus.contig, start_locus.position, end_locus.position
-                par_references.extend((start_locus.reference_genome, end_locus.reference_genome))
+                for reference in (start_locus.reference_genome, end_locus.reference_genome):
+                    par_references[id(reference)] = reference
             else:
                 c, start, end = interval
-            if c not in lengths or c not in groups[0] + groups[1] or type(start) is not int or type(end) is not int or not 1 <= start < end <= lengths[c]:
+            if c not in lengths or c not in sex_contigs or type(start) is not int or type(end) is not int or not 1 <= start < end <= lengths[c]:
                 raise ValueError(f"invalid PAR interval {(c, start, end)!r}")
             par_values.append((c, start, end))
         if len(set(par_values)) != len(par_values):
             raise ValueError("PAR intervals must be unique")
-        expected_par = [{"contig": c, "start": s, "end": e} for c, s, e in par_values]
-        for reference in par_references:
-            definition = reference.to_wire()
-            if (definition["name"] != name or definition["contigs"] != list(contigs)
-                    or definition["lengths"] != lengths or definition["x_contigs"] != list(groups[0])
-                    or definition["y_contigs"] != list(groups[1]) or definition["mt_contigs"] != list(groups[2])
-                    or definition["par"] != expected_par):
+        definition = (name, contigs, tuple(lengths.items()), *groups, tuple(par_values))
+        for reference in par_references.values():
+            if reference._definition != definition:
                 raise ValueError("PAR interval endpoints must use this reference genome coordinate definition")
         object.__setattr__(self, "_name", name)
         object.__setattr__(self, "_contigs", contigs)
@@ -146,10 +176,24 @@ class ReferenceGenome:
         object.__setattr__(self, "_y", groups[1])
         object.__setattr__(self, "_mt", groups[2])
         object.__setattr__(self, "_par", tuple(par_values))
-        object.__setattr__(self, "_hash", hash((name, contigs, tuple(lengths.items()), *groups, tuple(par_values))))
         existing = _registry.get(name)
-        if existing is not None and existing != self:
-            raise ValueError(f"reference genome {name!r} is already registered with a different coordinate definition")
+        if existing is not None:
+            if existing._definition != definition:
+                raise ValueError(f"reference genome {name!r} is already registered with a different coordinate definition")
+            # Share only after comparing the complete definition, never its hash.
+            definition = existing._definition
+        object.__setattr__(self, "_definition", definition)
+        object.__setattr__(self, "_hash", hash(definition))
+        object.__setattr__(self, "_ordinals", MappingProxyType({c: i for i, c in enumerate(contigs)}))
+        object.__setattr__(self, "_x_set", group_sets[0])
+        object.__setattr__(self, "_y_set", group_sets[1])
+        object.__setattr__(self, "_mt_set", group_sets[2])
+        ranges = {}
+        for contig, start, end in par_values:
+            ranges.setdefault(contig, []).append((start, end))
+        object.__setattr__(self, "_par_coverage", MappingProxyType({
+            contig: _ParCoverage.from_ranges(values) for contig, values in ranges.items()
+        }))
         _registry[name] = self
         object.__setattr__(self, "_sealed", True)
 
@@ -173,18 +217,31 @@ class ReferenceGenome:
     @property
     def par(self):
         from .types import Interval, tlocus
-        return [Interval(Locus(c, start, self), Locus(c, end, self), True, False, tlocus(self))
+        if not self._par:
+            return []
+        point_type = tlocus(self)
+        return [Interval(Locus(c, start, self), Locus(c, end, self), True, False, point_type)
                 for c, start, end in self._par]
 
     def contig_length(self, contig):
         try: return self._lengths[contig]
         except KeyError: raise KeyError(f"Contig {contig!r} is not in reference genome {self.name}.") from None
 
+    def contig_index(self, contig):
+        """Return the zero-based rank in declared contig order; reject unknown names."""
+        return self._ordinals[contig]
+
     def locus(self, contig, position): return Locus(contig, position, self)
-    def is_x_contig(self, contig): return contig in self._x
-    def is_y_contig(self, contig): return contig in self._y
-    def is_mt_contig(self, contig): return contig in self._mt
-    def is_autosomal(self, contig): return contig not in self._x and contig not in self._y and contig not in self._mt
+    def is_x_contig(self, contig): return contig in self._x_set
+    def is_y_contig(self, contig): return contig in self._y_set
+    def is_mt_contig(self, contig): return contig in self._mt_set
+    def is_autosomal(self, contig):
+        return contig not in self._x_set and contig not in self._y_set and contig not in self._mt_set
+
+    def in_par(self, contig, position):
+        """Test membership in the half-open PAR union for this contig."""
+        coverage = self._par_coverage.get(contig)
+        return coverage is not None and coverage.contains(position)
 
     def to_wire(self):
         return {"name": self.name, "contigs": list(self.contigs), "lengths": self.lengths,
@@ -226,7 +283,9 @@ class ReferenceGenome:
         return cls(**definition)
 
     def __eq__(self, other):
-        return isinstance(other, ReferenceGenome) and self.to_wire() == other.to_wire()
+        return isinstance(other, ReferenceGenome) and (
+            self is other or self._definition is other._definition or self._definition == other._definition
+        )
     def __hash__(self): return self._hash
     def __str__(self): return self.name
     def __repr__(self): return f"ReferenceGenome({self.name!r})"

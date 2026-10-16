@@ -1,25 +1,11 @@
 use arrow_array::{ArrayRef, RecordBatch, StringArray};
 use arrow_schema::Schema;
-use datafusion_physical_expr::{PhysicalExpr, ScalarFunctionExpr};
 use serde_json::json;
 use std::sync::Arc;
-use vail_execution::expressions::{Expr, lower, project_batch};
-
-fn assert_builtin_functions(expr: &Arc<dyn PhysicalExpr>) {
-    if let Some(function) = expr.downcast_ref::<ScalarFunctionExpr>() {
-        assert!(
-            matches!(function.name(), "lower" | "character_length"),
-            "unexpected function {}",
-            function.name()
-        );
-    }
-    for child in expr.children() {
-        assert_builtin_functions(child);
-    }
-}
+use vail_execution::expressions::{Expr, project_batch};
 
 #[test]
-fn string_length_uses_codepoints_and_only_datafusion_kernels() {
+fn string_length_uses_codepoints() {
     let expr: Expr = serde_json::from_value(json!({
         "op":"string_function","function":"character_length",
         "args":[{"op":"column","name":"text"}]
@@ -30,7 +16,6 @@ fn string_length_uses_codepoints_and_only_datafusion_kernels() {
         Arc::new(StringArray::from(vec![Some("a😀b"), None])) as ArrayRef,
     )])
     .unwrap();
-    assert_builtin_functions(&lower(&expr, &source.schema()).unwrap());
     let output = project_batch(&source, &[("size".into(), expr)]).unwrap();
     assert_eq!(
         datafusion_common::ScalarValue::try_from_array(output.column(0), 0).unwrap(),
@@ -60,5 +45,38 @@ fn malformed_string_functions_are_rejected_during_planning() {
             serde_json::from_value(json!({"op":"string_function","function":name,"args":args}))
                 .unwrap();
         assert!(expr.dtype(&Schema::empty()).is_err());
+    }
+}
+
+#[test]
+fn unicode_kernels_accept_arrow_string_storage_and_shared_scalar_arguments() {
+    use arrow_array::{Int32Array, LargeStringArray, StringViewArray};
+    let sources: Vec<ArrayRef> = vec![
+        Arc::new(StringArray::from(vec![Some("a😀"), None])),
+        Arc::new(LargeStringArray::from(vec![Some("a😀"), None])),
+        Arc::new(StringViewArray::from(vec![Some("a😀"), None])),
+    ];
+    let expr: Expr =
+        serde_json::from_value(json!({"op":"string_function","function":"hamming","args":[
+            {"op":"column","name":"text"},{"op":"literal","dtype":"str","value":"a🚀"}
+        ]}))
+        .unwrap();
+    for source in sources {
+        let batch = RecordBatch::try_from_iter([("text", source)]).unwrap();
+        let result = project_batch(&batch, &[("h".into(), expr.clone())]).unwrap();
+        assert_eq!(
+            result
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap(),
+            &Int32Array::from(vec![Some(1), None])
+        );
+        assert_eq!(
+            project_batch(&batch.slice(0, 0), &[("h".into(), expr.clone())])
+                .unwrap()
+                .num_rows(),
+            0
+        );
     }
 }

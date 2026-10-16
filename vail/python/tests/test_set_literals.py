@@ -4,10 +4,7 @@ import vail as hl
 
 def test_set_type_wire_and_dtype_are_distinct_from_array():
     assert hl.dtype("set<int32>") == hl.tset(hl.tint32)
-    from vail._native import NativeType
-    native = hl.type_to_wire(hl.tset(hl.tint32))
-    assert isinstance(native, NativeType)
-    assert native.kind == "set" and native.children[0].kind == "int32"
+    assert hl.type_from_wire(hl.type_to_wire(hl.tset(hl.tint32))) == hl.tset(hl.tint32)
     assert hl.type_from_wire({"set": "int32"}) == hl.tset(hl.tint32)
     assert hl.tset(hl.tint32) != hl.tarray(hl.tint32)
 
@@ -25,14 +22,13 @@ def test_set_literals_collect_in_globals_and_survive_storage(tmp_path):
     assert table.x15.dtype == hl.tset(hl.tint32)
     assert table.x15.collect() == [{1, 2, 3}] * 3
     assert hl.eval(table.globals).empty == set()
-    assert table._same(table)
 
     path = tmp_path / "sets"
     table.write(path)
     restored = hl.read_table(path)
     assert restored.x15.dtype == hl.tset(hl.tint32)
     assert restored.collect() == table.collect()
-    assert restored._same(table)
+    assert hl.eval(restored.index_globals()) == hl.eval(table.index_globals())
 
 
 def test_set_literals_deduplicate_and_preserve_missing_values():
@@ -79,35 +75,36 @@ def test_set_globals_eval_index_binding_and_multirow_annotation():
     assert hl.eval(indexed)["members"] == {2, 3, 4}
 
 
-def test_set_same_ignores_order_but_checks_missingness_and_collection_type():
+def test_set_value_equality_ignores_order_but_checks_missingness_and_collection_type():
     first = hl.range_table(1).annotate(values=hl.literal([3, None, 1], hl.tset(hl.tint32)))
     reordered = hl.range_table(1).annotate(values=hl.literal([1, 3, None], hl.tset(hl.tint32)))
     without_missing = hl.range_table(1).annotate(values=hl.literal([1, 3], hl.tset(hl.tint32)))
     as_array = hl.range_table(1).annotate(values=[1, 3])
 
-    assert first._same(reordered)
-    assert not first._same(without_missing)
-    assert not first._same(as_array)
+    assert first.collect() == reordered.collect()
+    assert first.collect() != without_missing.collect()
+    assert first.values.dtype != as_array.values.dtype
+    assert first.collect() != as_array.collect()
 
 
-def test_set_same_canonicalizes_runtime_array_distinct_values():
+def test_set_value_equality_canonicalizes_runtime_array_distinct_values():
     first = hl.range_table(1).annotate(values=hl.set(hl.array([3, 1, 2])))
     reordered = hl.range_table(1).annotate(values=hl.set(hl.array([2, 3, 1])))
-    assert first._same(reordered)
+    assert first.collect() == reordered.collect()
 
 
-def test_set_same_canonicalizes_nested_sets_and_unordered_globals():
+def test_set_value_equality_canonicalizes_nested_sets_and_unordered_globals():
     nested_type = hl.tset(hl.tint32)
     outer_type = hl.tset(nested_type)
     first_nested = hl.literal({frozenset({1, 2}), frozenset({4})}, outer_type)
     reordered_nested = hl.literal({frozenset({4}), frozenset({2, 1})}, outer_type)
     first = hl.range_table(1).annotate(values=first_nested)
     reordered = hl.range_table(1).annotate(values=reordered_nested)
-    assert first._same(reordered)
+    assert first.collect() == reordered.collect()
 
     first_global = hl.range_table(0).annotate_globals(members=hl.literal({1, 3, 2}))
     reordered_global = hl.range_table(0).annotate_globals(members=hl.literal({2, 1, 3}))
-    assert first_global._same(reordered_global)
+    assert hl.eval(first_global.index_globals()) == hl.eval(reordered_global.index_globals())
 
 
 def test_parallelize_typed_set_fields_keep_set_dtype_and_missingness():

@@ -12,7 +12,7 @@ _TYPES = {
     'regexp_like': tbool, 'strpos': tint32, 'substr': tstr, 'translate': tstr,
     'replace': tstr, 'string_to_array': tarray(tstr), 'array_to_string': tstr,
     'regexp_replace': tstr, 'regex_split': tarray(tstr), 'first_match_in': tarray(tstr),
-    'hamming': tint32, 'entropy': tfloat64,
+    'hamming': tint32, 'entropy': tfloat64, 'unicode_slice': tstr, 'unicode_translate': tstr,
 }
 
 
@@ -96,9 +96,12 @@ def slice_(value, selection):
 
 def _slice_bound(value, selection):
     if selection.step is not None:
-        from .streams import stream_range
-        positions = stream_range(length(value)).to_array()[selection]
-        return join(literal(''), positions.map(lambda i: _call('substr', value, cast(i, tint64) + literal(1, tint64), literal(1, tint64))))
+        bounds = [literal(0, tint32) if bound is None else as_expr(bound)
+                  for bound in (selection.start, selection.stop, selection.step)]
+        if any(bound.dtype != tint32 for bound in bounds):
+            raise TypeError('string slice bounds must be int32')
+        flags = int(selection.start is not None) | (int(selection.stop is not None) << 1)
+        return _call('unicode_slice', value, *bounds, literal(flags, tint32))
     if selection.start is selection.stop is None:
         return value
     size = cast(length(value), tint64)
@@ -192,14 +195,7 @@ def translate(value, mapping):
 
 
 def _translate_dynamic(value, mapping):
-    from .streams import stream_range
-    def translate_bound(text, translations):
-        characters = stream_range(length(text)).to_array().map(lambda i: index(text, i))
-        result = join(literal(''), characters.map(lambda c: translations.get(c, c)))
-        return case().when(is_missing(text) | is_missing(translations), missing(tstr)).when(
-            translations.keys().all(lambda key: length(key) == 1), result
-        ).or_error('translate mapping keys must be one Unicode codepoint')
-    return bind(translate_bound, value, mapping)
+    return _call('unicode_translate', value, mapping)
 
 
 def join(value, collection):

@@ -1,0 +1,456 @@
+{
+  "base_commit": "c45ab95e",
+  "baseline_native_sha256": "43c1c6c90d861762aae8e93ed7c6f9c3af3ff80fd250a3473ba9bf7bcb5ed1be",
+  "current_native_sha256": "da41c0dd628511d39ad02feab647aab3cc7e58aebe7b951b087ea824a6aaeb93",
+  "method": "36fresh-subprocess cases:18paired independent original baseline/current packages.8globalDAG/wide and4sharedscan-wrapper constructors perversion;6supportedactions(discarded invalidglobals,scalarDAGeval,wideglobalseval). Graph/baseglobals construction outside timer; timed public projection/field-view construction with verified dtype, or supported action including its public expression preparation with verified values. macOS RSS bytes includes runtime/planning/localization. All runs sequential after final build/test gates; single runs,15s caps (none hit). Raw harness construction_seconds is normalized here to elapsed_seconds with explicit measurement labels.",
+  "contracts": [
+    "Globals schemas require ordered unique nonempty field names and supported logical types; descriptor/Arrow frame agreement is checked before write publication and before representation-only read normalization. Compatible Arrow string storage and logical metadata are retained.",
+    "Singleton IPC footer must advertise exactly one record batch before decoding its payload; decoded globals must have exactly one row. Legacy checksum fields remain ignored under the current contract.",
+    "Reference and scan-presence discovery use original borrowed node identities and skip literal payloads. Bound declarations retain exact type validation.",
+    "One type-validation call memoizes successful types by original node, exact row/global schema context and complete lexical binding(name,type,index) context. Temporary closed frames intern by semantic equality, not reused stack addresses.",
+    "Stack growth guards uncached recursive type-checker entry on ordinary worker stacks; depth20shared scan-wrapper regression passes unchanged.",
+    "Empty global projection discards previous dependencies in logical and legacy lowering; repeated demanded reads remain lazy and fresh across actions/errors/overwrites."
+  ],
+  "limitations": [
+    "Constructor/DAG discovery/type-validation improvements do not imply arbitrary expression execution is linear; action cases are measured separately.",
+    "Single-run timings are noisy; no universal throughput or memory bound is claimed.",
+    "Final Python gate excludes six cases requiring the absent external Hail checkout plus the exact pre-existing nested-list Vortex writer case; dependency implementation is excluded.",
+    "An initial final Rust linking attempt exhausted disk space. Only redundant generated test binaries under this workspace target/debug/deps were removed; final gate rerun uses2buildjobs. This is an infrastructure retry, not a passing test run.",
+    "Scalar DAG eval remains tree-costly:depth12 baseline0.714s/current0.759s in this run; constructor/reference/type-checker memoization does not remove execution-planner expansion. This report claims constructor/discovery/validation improvement only, and retains action timings separately."
+  ],
+  "excluded_tests": [
+    "python/tests/test_agg_inventory.py::test_every_public_hail_aggregator_is_exported",
+    "python/tests/test_agg_inventory.py::test_public_parameter_names_match_hail",
+    "python/tests/test_bind.py::test_upstream_scalar_bind[test_bind_multiple]",
+    "python/tests/test_bind.py::test_upstream_scalar_bind[test_bind_placement]",
+    "python/tests/test_bind.py::test_upstream_scalar_bind[test_rbind_multiple]",
+    "python/tests/test_bind.py::test_upstream_scalar_bind[test_rbind_placement]",
+    "python/tests/test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]"
+  ],
+  "cases": [
+    {
+      "version": "baseline",
+      "mode": "dag",
+      "size": 8,
+      "peak_rss_bytes": 124289024,
+      "check": {
+        "field": "value",
+        "type": "int32"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.001958875000127591
+    },
+    {
+      "version": "baseline",
+      "mode": "dag",
+      "size": 12,
+      "peak_rss_bytes": 124715008,
+      "check": {
+        "field": "value",
+        "type": "int32"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.01091291599732358
+    },
+    {
+      "version": "baseline",
+      "mode": "dag",
+      "size": 16,
+      "peak_rss_bytes": 156827648,
+      "check": {
+        "field": "value",
+        "type": "int32"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.18131883400201332
+    },
+    {
+      "version": "baseline",
+      "mode": "dag",
+      "size": 20,
+      "peak_rss_bytes": 630161408,
+      "check": {
+        "field": "value",
+        "type": "int32"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 2.846211083000526
+    },
+    {
+      "version": "baseline",
+      "mode": "wide",
+      "size": 64,
+      "peak_rss_bytes": 124289024,
+      "check": {
+        "fields": 65
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.0013245829904917628
+    },
+    {
+      "version": "baseline",
+      "mode": "wide",
+      "size": 512,
+      "peak_rss_bytes": 125370368,
+      "check": {
+        "fields": 513
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.010928959003649652
+    },
+    {
+      "version": "baseline",
+      "mode": "wide",
+      "size": 2048,
+      "peak_rss_bytes": 129351680,
+      "check": {
+        "fields": 2049
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.05496266701084096
+    },
+    {
+      "version": "baseline",
+      "mode": "wide",
+      "size": 4096,
+      "peak_rss_bytes": 142327808,
+      "check": {
+        "fields": 4097
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.15044737499556504
+    },
+    {
+      "version": "baseline",
+      "mode": "discard",
+      "size": 64,
+      "peak_rss_bytes": 125632512,
+      "check": {
+        "fields": 0
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.010728708002716303
+    },
+    {
+      "version": "baseline",
+      "mode": "discard",
+      "size": 512,
+      "peak_rss_bytes": 126074880,
+      "check": {
+        "fields": 0
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.007011583002167754
+    },
+    {
+      "version": "baseline",
+      "mode": "action",
+      "size": 8,
+      "peak_rss_bytes": 128778240,
+      "check": {
+        "value": 256
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.04225604199746158
+    },
+    {
+      "version": "baseline",
+      "mode": "action",
+      "size": 12,
+      "peak_rss_bytes": 138166272,
+      "check": {
+        "value": 4096
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.7142182910029078
+    },
+    {
+      "version": "baseline",
+      "mode": "wide_action",
+      "size": 64,
+      "peak_rss_bytes": 124567552,
+      "check": {
+        "fields": 64,
+        "sum": 2016
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.00392458398710005
+    },
+    {
+      "version": "baseline",
+      "mode": "wide_action",
+      "size": 512,
+      "peak_rss_bytes": 126976000,
+      "check": {
+        "fields": 512,
+        "sum": 130816
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.02236612500564661
+    },
+    {
+      "version": "baseline",
+      "mode": "scan",
+      "size": 8,
+      "peak_rss_bytes": 124534784,
+      "check": {
+        "field": "prefix",
+        "type": "int64"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.00020237499848008156
+    },
+    {
+      "version": "baseline",
+      "mode": "scan",
+      "size": 12,
+      "peak_rss_bytes": 123879424,
+      "check": {
+        "field": "prefix",
+        "type": "int64"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.0005163750029169023
+    },
+    {
+      "version": "baseline",
+      "mode": "scan",
+      "size": 16,
+      "peak_rss_bytes": 123371520,
+      "check": {
+        "field": "prefix",
+        "type": "int64"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.0062952080043032765
+    },
+    {
+      "version": "baseline",
+      "mode": "scan",
+      "size": 20,
+      "peak_rss_bytes": 123584512,
+      "check": {
+        "field": "prefix",
+        "type": "int64"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.09699429200554732
+    },
+    {
+      "version": "current",
+      "mode": "dag",
+      "size": 8,
+      "peak_rss_bytes": 123568128,
+      "check": {
+        "field": "value",
+        "type": "int32"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 3.591699351090938e-05
+    },
+    {
+      "version": "current",
+      "mode": "dag",
+      "size": 12,
+      "peak_rss_bytes": 124223488,
+      "check": {
+        "field": "value",
+        "type": "int32"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 4.149999585933983e-05
+    },
+    {
+      "version": "current",
+      "mode": "dag",
+      "size": 16,
+      "peak_rss_bytes": 123322368,
+      "check": {
+        "field": "value",
+        "type": "int32"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 3.9457998354919255e-05
+    },
+    {
+      "version": "current",
+      "mode": "dag",
+      "size": 20,
+      "peak_rss_bytes": 123387904,
+      "check": {
+        "field": "value",
+        "type": "int32"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 4.545800038613379e-05
+    },
+    {
+      "version": "current",
+      "mode": "wide",
+      "size": 64,
+      "peak_rss_bytes": 123273216,
+      "check": {
+        "fields": 65
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.0011405419936636463
+    },
+    {
+      "version": "current",
+      "mode": "wide",
+      "size": 512,
+      "peak_rss_bytes": 124223488,
+      "check": {
+        "fields": 513
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.008167291001882404
+    },
+    {
+      "version": "current",
+      "mode": "wide",
+      "size": 2048,
+      "peak_rss_bytes": 129236992,
+      "check": {
+        "fields": 2049
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.04117799999949057
+    },
+    {
+      "version": "current",
+      "mode": "wide",
+      "size": 4096,
+      "peak_rss_bytes": 137527296,
+      "check": {
+        "fields": 4097
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.07984237499476876
+    },
+    {
+      "version": "current",
+      "mode": "discard",
+      "size": 64,
+      "peak_rss_bytes": 125173760,
+      "check": {
+        "fields": 0
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.0015187910030363128
+    },
+    {
+      "version": "current",
+      "mode": "discard",
+      "size": 512,
+      "peak_rss_bytes": 126156800,
+      "check": {
+        "fields": 0
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.005433792000985704
+    },
+    {
+      "version": "current",
+      "mode": "action",
+      "size": 8,
+      "peak_rss_bytes": 128221184,
+      "check": {
+        "value": 256
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.03453783399891108
+    },
+    {
+      "version": "current",
+      "mode": "action",
+      "size": 12,
+      "peak_rss_bytes": 138985472,
+      "check": {
+        "value": 4096
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.7590241249999963
+    },
+    {
+      "version": "current",
+      "mode": "wide_action",
+      "size": 64,
+      "peak_rss_bytes": 125108224,
+      "check": {
+        "fields": 64,
+        "sum": 2016
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.0027993749972665682
+    },
+    {
+      "version": "current",
+      "mode": "wide_action",
+      "size": 512,
+      "peak_rss_bytes": 126402560,
+      "check": {
+        "fields": 512,
+        "sum": 130816
+      },
+      "measurement": "action",
+      "elapsed_seconds": 0.0206745830073487
+    },
+    {
+      "version": "current",
+      "mode": "scan",
+      "size": 8,
+      "peak_rss_bytes": 124829696,
+      "check": {
+        "field": "prefix",
+        "type": "int64"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.00012820800475310534
+    },
+    {
+      "version": "current",
+      "mode": "scan",
+      "size": 12,
+      "peak_rss_bytes": 123600896,
+      "check": {
+        "field": "prefix",
+        "type": "int64"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.00014224999176803976
+    },
+    {
+      "version": "current",
+      "mode": "scan",
+      "size": 16,
+      "peak_rss_bytes": 123174912,
+      "check": {
+        "field": "prefix",
+        "type": "int64"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.00014083398855291307
+    },
+    {
+      "version": "current",
+      "mode": "scan",
+      "size": 20,
+      "peak_rss_bytes": 123240448,
+      "check": {
+        "field": "prefix",
+        "type": "int64"
+      },
+      "measurement": "constructor",
+      "elapsed_seconds": 0.00014945800649002194
+    }
+  ],
+  "reproduction_script": "import json,os,subprocess,sys\nroot='/Users/danielking/.codex/worktrees/412f/vail/vail';version=sys.argv[1];path='/tmp/vail-globals-baseline' if version=='baseline' else root+'/python';cases=[]\nfor mode,size in [('dag',8),('dag',12),('dag',16),('dag',20),('wide',64),('wide',512),('wide',2048),('wide',4096),('discard',64),('discard',512),('action',8),('action',12),('wide_action',64),('wide_action',512),('scan',8),('scan',12),('scan',16),('scan',20)]:\n code=f'''import vail as h,time,resource,json\nh.eval(0);mode={mode!r};size={size}\nif mode=='scan':\n t=h.range_table(0);value=h.scan.sum(t.idx)\n for _ in range(size):value=value+value\n start=time.perf_counter();result=t.annotate(prefix=h.scan.filter(True,value));elapsed=time.perf_counter()-start;assert result.prefix.dtype==h.tint64;check={{'field':'prefix','type':'int64'}}\nelif mode in ('dag','action'):\n source=h.range_table(0).annotate_globals(g=1);g=source.index_globals().g\n for _ in range(size):g=g+g\n t=h.range_table(0)\n if mode=='dag':\n  start=time.perf_counter();result=t.annotate_globals(value=g);elapsed=time.perf_counter()-start;assert result.globals.dtype==h.tstruct(value=h.tint32);check={{'field':'value','type':'int32'}}\n else:\n  result=t.annotate_globals(value=g);start=time.perf_counter();answer=h.eval(result.value);elapsed=time.perf_counter()-start;assert answer==2**size;check={{'value':answer}}\nelse:\n t=h.range_table(0).annotate_globals(**{{'g'+str(i):i for i in range(size)}})\n start=time.perf_counter()\n if mode=='wide':result=t.annotate_globals(new=1);fields=result.globals;elapsed=time.perf_counter()-start;assert len(fields.dtype)==size+1;check={{'fields':len(fields.dtype)}}\n elif mode=='wide_action':\n  result=h.eval(t.globals);elapsed=time.perf_counter()-start;assert len(result)==size and sum(result.values())==size*(size-1)//2;check={{'fields':len(result),'sum':sum(result.values())}}\n else:\n  bad=t.annotate_globals(bad=h.array([1])[5]);result=bad.select_globals();r=h.eval(result.index_globals());elapsed=time.perf_counter()-start;assert r==h.Struct();check={{'fields':0}}\nprint(json.dumps(dict(construction_seconds=elapsed,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,check=check)))'''\n try:\n  r=subprocess.run([root+'/.venv/bin/python','-c',code],cwd='/tmp',env=dict(os.environ,PYTHONPATH=path),capture_output=True,text=True,timeout=15)\n  result=json.loads(r.stdout) if not r.returncode else dict(error=r.stderr[-1500:])\n except subprocess.TimeoutExpired:result=dict(timeout_seconds=15)\n cases.append(dict(version=version,mode=mode,size=size,**result))\nprint(json.dumps(cases,indent=2))\n",
+  "validation": {
+    "python": "317passed,7exactdocumentedexclusions",
+    "rust": "186passed:complete cargo test -j2 -p vail-execution -p vail-table -p vail-ordering;includes depth20normalworkerstack/mixedlexical/closedinitializer regressions",
+    "storage": "43passed:cargo test -j2 -p vail-storage --lib --test globals --test roundtrip --test streaming_write;dependencycomparison audit excluded",
+    "resource": "All36constructor/action cases passed their public output/type checks",
+    "native_sha256": "da41c0dd628511d39ad02feab647aab3cc7e58aebe7b951b087ea824a6aaeb93"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "workload": "benchmarks/check_arrow_runtime_cost.py; public Arrow import of8 batches totaling2m int32 rows, validate count; oversized real Arrow scalar reader with two singleton batches followed by four4m-row batches sharing one Arrow value buffer",
+  "measurement": "Final state only; no baseline captured. Sequential workloads, cumulative RSS high-water, shared machine load. Final script streams native binary hashing to avoid including a full binary read allocation; initial measurement used a full read.",
+  "initial_measurement": {
+    "native_sha256": "d2a602f5cea8c86ffa68fff7bb5b89c23cace08d5c9ce8983ce425214963310b",
+    "multibatch_import": {
+      "rows": 2000000,
+      "batches": 8,
+      "seconds": 0.0017015419980452862,
+      "max_rss_bytes": 313982976
+    },
+    "oversized_scalar_import": {
+      "seconds": 2.3791999410605058e-05,
+      "max_rss_bytes": 330170368
+    }
+  },
+  "native_sha256": "76d235ad2cc2222e1e6477def6202a029da9b9ecb9e8ed928aa1cbe72d5d88f3",
+  "multibatch_import": {
+    "rows": 2000000,
+    "batches": 8,
+    "seconds": 0.000981959001364885,
+    "max_rss_bytes": 119209984
+  },
+  "oversized_scalar_import": {
+    "seconds": 2.1457999537233263e-05,
+    "max_rss_bytes": 135397376
+  },
+  "validation": [
+    "67 public Python memory/expression/row/Arrow/table tests passed against final rebuilt native",
+    "7 Rust ir integration tests passed including huge zero-column cardinality and multi-batch schema/order cases",
+    "public single-partition multi-batch imported/exported buffers preserve identity;1/2/7partition row ordering, source drop and repeated export lifetimes checked"
+  ]
+}

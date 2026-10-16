@@ -38,7 +38,7 @@ def counter(expr, *, weight=None):
 
 def take(expr, n, ordering=None):
     value = as_expr(expr)
-    if not isinstance(n, int) or n < 0:
+    if type(n) is not int or n < 0:
         raise ValueError("take n must be a non-negative integer")
     options = {"n": n, "ordered": ordering is not None}
     packed = value

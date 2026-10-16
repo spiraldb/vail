@@ -54,3 +54,14 @@ def test_case_matches_hail_numeric_branch_promotion_and_rejects_nested_coercion(
     assert hl.eval(hl.case().when(True, True).default(3)) == 1
     with pytest.raises(TypeError, match='same type'):
         hl.case().when(True, hl.struct(x=1)).default(hl.struct(x=hl.int64(2)))
+
+
+def test_missing_false_predicates_preserve_seeded_context_and_lazy_values():
+    table=hl.range_table(64,n_partitions=3).annotate_globals(fallback=3)
+    predicate=hl.rand_bool(.5,seed=99)
+    actual=hl.if_else(predicate,True,False,missing_false=True)
+    rows=table.select(actual=actual,expected=predicate).collect()
+    assert [row.actual for row in rows]==[row.expected for row in rows]
+    value=(hl.case(missing_false=True).when(hl.missing(hl.tbool),hl.int32('invalid'))
+           .when(table.idx>=0,table.fallback).or_error('unused'))
+    assert value.collect()==[3]*64

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from .expressions import IR_NODE_TYPES
+from ._native import NativeExpr
 
 from .expressions import Expression, as_expr
 from .types import tarray, tint32
@@ -89,30 +90,33 @@ class StreamExpression:
         callback sees scalar snapshots, never a captured array of prior states.
         """
         from uuid import uuid4
-        from .expressions import Expression, _IR, bind, cast, if_else, literal, missing, struct
-        from .types import tint64, tbool, tstruct, type_from_wire
+        from .expressions import Expression, _IR, _merge_sources, bind, cast, if_else, literal, missing, struct
+        from .types import tint64, tbool, tstruct, ttuple, type_from_wire
         from .randomness import _is_random
 
+        if not callable(f):
+            raise TypeError("stream.aggregate_scan requires a callable")
         parameter, position_name = uuid4().hex, uuid4().hex
         variable = Expression(self.dtype.element_type, self.source,
                               {"op": "lambda_variable", "name": parameter})
         result = as_expr(f(variable))
         position = Expression(tint32, self.source,
                               {"op": "lambda_variable", "name": position_name})
+        source = _merge_sources(self.source, result.source)
+        lexical_types = dict(self._array._lexical_types) | dict(result._lexical_types)
+        lexical_types[position_name] = tint32
+        local_names = {parameter, position_name}
         refs = dict(self._array._global_refs) | dict(result._global_refs)
         lookups = dict(self._array._lookup_refs) | dict(result._lookup_refs)
 
-        def raw(node, dtype):
-            return Expression(dtype, result.source, _IR(node, refs, lookups))
+        def raw(node, dtype, *, variables=None):
+            return Expression(dtype, source, _IR(
+                node, refs, lookups,
+                row_indexed=self._array._row_indexed or result._row_indexed,
+                lexical_types=lexical_types if variables is None else variables))
 
         def substitute(node, replacement):
-            if isinstance(node, list):
-                return [substitute(child, replacement) for child in node]
-            if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-                return node
-            if node.get("op") == "lambda_variable" and node["name"] == parameter:
-                return replacement
-            return {key: substitute(child, replacement) for key, child in node.items()}
+            return NativeExpr(node).replace_parameter(parameter, NativeExpr(replacement))
 
         def with_input(items):
             scans = []
@@ -148,15 +152,23 @@ class StreamExpression:
                     else:
                         # The native expression reports its declared aggregate
                         # input type through the typed callback expression.
-                        source_schema = getattr(self.source, "_schema", {})
-                        global_schema = getattr(self.source, "_global_schema", {})
+                        source_schema = getattr(source, "_schema", {})
+                        global_schema = getattr(source, "_global_schema", {})
                         columns = [(name, dtype._native_type) for name, dtype in source_schema.items()]
                         globals = [(name, dtype._native_type) for name, dtype in global_schema.items()]
 
-                        input_type = node["value"].infer_type(columns, globals, [(parameter, items.dtype.element_type._native_type)])
+                        variables = dict(lexical_types)
+                        variables[parameter] = items.dtype.element_type
+                        input_type = node["value"].infer_type(
+                            columns, globals, [(name, ty._native_type) for name, ty in variables.items()])
                         argument = raw(node["value"], type_from_wire(input_type))
-                    def prepare(item):
+                    def prepare(indexed_item, limit):
+                        item = indexed_item[1]
                         selected = raw(substitute(predicate.to_ir(), item.to_ir()), tbool)
+                        # The final input contributes to no exclusive prefix.
+                        # Guard its predicate as well as its reducer argument.
+                        selected = if_else(indexed_item[0] < limit,
+                                           selected, False, missing_false=True)
                         item_argument = raw(substitute(argument.to_ir(), item.to_ir()), argument.dtype)
                         return bind(lambda flag: struct(
                             selected=flag,
@@ -171,11 +183,21 @@ class StreamExpression:
 
                     # Bind the selected flag once per input, then retain the
                     # prepared array once for both reducer inputs.
-                    scan = bind(reduce, items.map(prepare))
+                    from .collections import _function
+                    indexed = _function("__vail_index_values", [items],
+                                        tarray(ttuple(tint32, items.dtype.element_type)))
+                    # Bind only the scalar bound outside the element map.
+                    # Capturing items.length() inside it would retain the whole
+                    # input list as a per-element callback capture.
+                    scan = bind(lambda limit: bind(
+                        reduce, indexed.map(lambda item: prepare(item, limit))),
+                        items.length() - 1)
                     scans.append(scan)
                     name = uuid4().hex
                     placeholder = Expression(dtype, result.source,
                                              {"op": "lambda_variable", "name": name})
+                    lexical_types[name] = dtype
+                    local_names.add(name)
                     placeholders.append(name)
                     return placeholder.to_ir()
                 rewritten = {key: walk(child, predicates) for key, child in node.items()}
@@ -204,21 +226,23 @@ class StreamExpression:
                 current = current["1"]
             replacements[parameter] = current.to_ir()
 
-            def replace(node):
-                if isinstance(node, list):
-                    return [replace(child) for child in node]
-                if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-                    return node
-                if node.get("op") == "lambda_variable" and node["name"] in replacements:
-                    return replacements[node["name"]]
-                return {key: replace(child) for key, child in node.items()}
+            # Native lexical substitution respects shadowing in nested binders
+            # and preserves sharing in the expression DAG.
+            body = NativeExpr(body)
+            for name, replacement in replacements.items():
+                body = body.replace_parameter(name, NativeExpr(replacement))
+            variables = {name: ty for name, ty in lexical_types.items()
+                         if name not in local_names}
 
             # Zip aligns already computed state snapshots with current inputs.
             # No callback captures/indexes a growing array of prior states.
             return raw({"op": "array_map", "value": packed.to_ir(),
-                        "parameter": output_name, "body": replace(body)}, tarray(result.dtype))
+                        "parameter": output_name, "body": body}, tarray(result.dtype),
+                       variables=variables)
 
         return StreamExpression(bind(with_input, self._array))
+
+    aggregate_scan = _aggregate_scan
 
     def grouped(self, n):
         size = as_expr(n)
@@ -237,7 +261,7 @@ def stream_range(start, stop=None, step=1):
         start = 0
     start, stop, step = as_expr(start), as_expr(stop), as_expr(step)
     if start.dtype != tint32 or stop.dtype != tint32 or step.dtype != tint32:
-        raise TypeError("_stream_range start, stop, and step must have int32 type")
+        raise TypeError("stream_range start, stop, and step must have int32 type")
     from .expressions import _merge_sources
 
     source = _merge_sources(_merge_sources(start.source, stop.source), step.source)

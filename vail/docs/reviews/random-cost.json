@@ -1,0 +1,272 @@
+{
+  "base_commit": "1c5f2972",
+  "native_sha256": "487b3fbf6afd74622fa1d5b6eb48add419f11cee17359adf52a4a7827e32f775",
+  "method": "Fresh processes,20-second per-case cap. Public constructors/actions and result checks, warmup/source setup excluded from construction/action timings. Python binding baseline reloads old randomness.py against same rebuilt native runtime; it is not an old-native kernel comparison. Category/ndarray/shuffle/Dirichlet/hypergeometric cases are final-only bounded evidence. PeakRSS includes entire process/runtime/inputs; constructed timings retained for action-timeout cases.",
+  "baseline": [
+    {
+      "mode": "dag",
+      "size": 8,
+      "construction_seconds": 0.004371083996375091,
+      "action_seconds": 0.07433220899838489,
+      "max_rss_bytes": 139313152,
+      "completed": true
+    },
+    {
+      "mode": "dag",
+      "size": 12,
+      "construction_seconds": 0.0756526249970193,
+      "action_seconds": 1.6271579999956884,
+      "max_rss_bytes": 210124800,
+      "completed": true
+    },
+    {
+      "mode": "dag",
+      "size": 16,
+      "construction_seconds": 1.3360005420036032,
+      "timeout_seconds": 20,
+      "completed": false
+    },
+    {
+      "mode": "callback",
+      "size": 64,
+      "construction_seconds": 0.00036712500150315464,
+      "action_seconds": 0.001122459005273413,
+      "max_rss_bytes": 127467520,
+      "completed": true
+    },
+    {
+      "mode": "callback",
+      "size": 512,
+      "construction_seconds": 0.00036166700010653585,
+      "action_seconds": 0.001512124996224884,
+      "max_rss_bytes": 128057344,
+      "completed": true
+    },
+    {
+      "mode": "callback",
+      "size": 2048,
+      "construction_seconds": 0.0003592919965740293,
+      "action_seconds": 0.0036788329962291755,
+      "max_rss_bytes": 144408576,
+      "completed": true
+    }
+  ],
+  "final": [
+    {
+      "mode": "dag",
+      "size": 8,
+      "construction_seconds": 0.0004565839990391396,
+      "action_seconds": 0.07754262499656761,
+      "max_rss_bytes": 136003584,
+      "completed": true
+    },
+    {
+      "mode": "dag",
+      "size": 12,
+      "construction_seconds": 0.002185375000408385,
+      "action_seconds": 1.7178797919987119,
+      "max_rss_bytes": 183435264,
+      "completed": true
+    },
+    {
+      "mode": "dag",
+      "size": 16,
+      "construction_seconds": 0.030764499999349937,
+      "timeout_seconds": 20,
+      "completed": false
+    },
+    {
+      "mode": "callback",
+      "size": 64,
+      "construction_seconds": 0.000313000004098285,
+      "action_seconds": 0.0010094160024891607,
+      "max_rss_bytes": 126746624,
+      "completed": true
+    },
+    {
+      "mode": "callback",
+      "size": 512,
+      "construction_seconds": 0.0002880000029108487,
+      "action_seconds": 0.001299083000048995,
+      "max_rss_bytes": 126058496,
+      "completed": true
+    },
+    {
+      "mode": "callback",
+      "size": 2048,
+      "construction_seconds": 0.0003236249976907857,
+      "action_seconds": 0.002501082999515347,
+      "max_rss_bytes": 128401408,
+      "completed": true
+    },
+    {
+      "mode": "callback",
+      "size": 8192,
+      "construction_seconds": 0.000283875000604894,
+      "action_seconds": 0.006354582998028491,
+      "max_rss_bytes": 130793472,
+      "completed": true
+    },
+    {
+      "mode": "cat_shared",
+      "size": 16,
+      "construction_seconds": 0.00042183299956377596,
+      "action_seconds": 0.0031132919975789264,
+      "max_rss_bytes": 134430720,
+      "completed": true
+    },
+    {
+      "mode": "cat_shared",
+      "size": 256,
+      "construction_seconds": 0.0005207909998716787,
+      "action_seconds": 0.003285166996647604,
+      "max_rss_bytes": 135069696,
+      "completed": true
+    },
+    {
+      "mode": "cat_shared",
+      "size": 4096,
+      "construction_seconds": 0.0024059580027824268,
+      "action_seconds": 0.005439374996058177,
+      "max_rss_bytes": 135413760,
+      "completed": true
+    },
+    {
+      "mode": "cat_rows",
+      "size": 16,
+      "construction_seconds": 0.0005607500061159953,
+      "action_seconds": 0.0034622499952092767,
+      "max_rss_bytes": 134987776,
+      "completed": true
+    },
+    {
+      "mode": "cat_rows",
+      "size": 256,
+      "construction_seconds": 0.0007803749977028929,
+      "action_seconds": 0.0047311660018749535,
+      "max_rss_bytes": 142245888,
+      "completed": true
+    },
+    {
+      "mode": "cat_rows",
+      "size": 4096,
+      "construction_seconds": 0.00453216699679615,
+      "action_seconds": 0.025455125003645662,
+      "max_rss_bytes": 247103488,
+      "completed": true
+    },
+    {
+      "mode": "shuffle",
+      "size": 4096,
+      "construction_seconds": 0.00010320799628971145,
+      "action_seconds": 0.0012839589981012978,
+      "max_rss_bytes": 125157376,
+      "completed": true
+    },
+    {
+      "mode": "shuffle",
+      "size": 65536,
+      "construction_seconds": 0.00011124999582534656,
+      "action_seconds": 0.01003583300189348,
+      "max_rss_bytes": 130285568,
+      "completed": true
+    },
+    {
+      "mode": "shuffle",
+      "size": 262144,
+      "construction_seconds": 0.00010316699626855552,
+      "action_seconds": 0.04182908299844712,
+      "max_rss_bytes": 150781952,
+      "completed": true
+    },
+    {
+      "mode": "ndarray",
+      "size": 32,
+      "construction_seconds": 0.00014545900194207206,
+      "action_seconds": 0.0009532919939374551,
+      "max_rss_bytes": 125157376,
+      "completed": true
+    },
+    {
+      "mode": "ndarray",
+      "size": 256,
+      "construction_seconds": 0.00014391700096894056,
+      "action_seconds": 0.0069332919956650585,
+      "max_rss_bytes": 128548864,
+      "completed": true
+    },
+    {
+      "mode": "ndarray",
+      "size": 512,
+      "construction_seconds": 0.00014312499843072146,
+      "action_seconds": 0.025437750002311077,
+      "max_rss_bytes": 144097280,
+      "completed": true
+    },
+    {
+      "mode": "dirichlet",
+      "size": 16,
+      "construction_seconds": 0.0001772090035956353,
+      "action_seconds": 0.0007726249968982302,
+      "max_rss_bytes": 124846080,
+      "completed": true
+    },
+    {
+      "mode": "dirichlet",
+      "size": 256,
+      "construction_seconds": 0.0010158329969272017,
+      "action_seconds": 0.0010505829995963722,
+      "max_rss_bytes": 126107648,
+      "completed": true
+    },
+    {
+      "mode": "dirichlet",
+      "size": 4096,
+      "construction_seconds": 0.01625400000193622,
+      "action_seconds": 0.004590832999383565,
+      "max_rss_bytes": 131776512,
+      "completed": true
+    },
+    {
+      "mode": "hyper_boundary",
+      "size": 1000,
+      "construction_seconds": 9.466700430493802e-05,
+      "action_seconds": 0.0006848749981145374,
+      "max_rss_bytes": 124796928,
+      "completed": true
+    },
+    {
+      "mode": "hyper_boundary",
+      "size": 2000000000,
+      "construction_seconds": 9.55420036916621e-05,
+      "action_seconds": 0.0006905830014147796,
+      "max_rss_bytes": 124059648,
+      "completed": true
+    },
+    {
+      "mode": "multi_hyper",
+      "size": 100,
+      "construction_seconds": 0.00014037499931873754,
+      "action_seconds": 0.0007902919969637878,
+      "max_rss_bytes": 126681088,
+      "completed": true
+    },
+    {
+      "mode": "multi_hyper",
+      "size": 10000,
+      "construction_seconds": 0.00013174999912735075,
+      "action_seconds": 0.000963999998930376,
+      "max_rss_bytes": 125976576,
+      "completed": true
+    }
+  ],
+  "limits": [
+    "Shared-DAG binding construction improves; generic type/physical/logical lowering still expands deep shared graphs. Both depth16 actions hit20-second caps. No action-speedup or linear total-construction/compilation claim.",
+    "Categorical validation and total are shared for scalar weights; selection deliberately remains the original linear subtractive scan for seeded floating-point compatibility. Per-row weights require per-row validation.",
+    "Nondegenerate hypergeometric sampling retains sample-count work to preserve seeded streams. Only isolated direct or all-remaining-deterministic outcomes skip draws.",
+    "Callback indexing retains underlying value buffers and constructs visible-window ordinal/offset buffers. Final downstream casts may canonicalize alternate string storage.",
+    "Random list/ndarray outputs still have per-owning-row Arrow containers; element payloads use typed buffers and shuffle uses one batched Arrow take.",
+    "Dirichlet preserves ordinary raw values/draws. Overflow and all-underflow use same-draw normalization fallbacks; empty/all-zero vectors are invalid.",
+    "One known patched Vortex nested-list writer test was excluded per user instruction; no dependency code reviewed or changed."
+  ]
+}

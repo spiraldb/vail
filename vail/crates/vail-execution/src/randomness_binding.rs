@@ -19,34 +19,6 @@ struct Rewrite<'a> {
     memo: HashMap<(usize, Scope), Arc<Expr>>,
 }
 
-fn binders(expr: &Expr, position: usize) -> Vec<&str> {
-    match expr {
-        Expr::ArrayMap { parameter, .. }
-        | Expr::ArrayFilter { parameter, .. }
-        | Expr::ArrayPredicate { parameter, .. }
-        | Expr::AggArray { parameter, .. }
-        | Expr::AggExplode { parameter, .. }
-            if position == 1 =>
-        {
-            vec![parameter]
-        }
-        Expr::ArrayFold {
-            accumulator,
-            parameter,
-            ..
-        } if position == 2 => vec![accumulator, parameter],
-        Expr::AggregateFold {
-            state_parameter, ..
-        } if position == 1 => vec![state_parameter],
-        Expr::AggregateFold {
-            left_parameter,
-            right_parameter,
-            ..
-        } if position == 2 => vec![left_parameter, right_parameter],
-        _ => vec![],
-    }
-}
-
 fn depends(
     expr: &Expr,
     parameters: BTreeSet<String>,
@@ -60,7 +32,7 @@ fn depends(
     let mut position = 0;
     expr.for_each_child(&mut |child| {
         let mut parameters = parameters.clone();
-        for name in binders(expr, position) {
+        for name in expr.child_binders(position) {
             parameters.remove(name);
         }
         found |= depends(child, parameters, memo);
@@ -74,7 +46,7 @@ fn minimum(value: Arc<Expr>) -> Expr {
     Expr::Aggregate {
         function: "min".into(),
         value: Some(value),
-        options: serde_json::Value::Null,
+        options: serde_json::json!({}),
         result_type: Some(Type::Primitive(PrimitiveType::Int64)),
         init: vec![],
     }
@@ -102,10 +74,10 @@ impl Rewrite<'_> {
             let (position, child) = children.next().expect("native child order");
             let mut nested = scope.clone();
             if let Some((parameter, _)) = self.replacement {
-                nested.shadowed |= binders(expr, position).contains(&parameter);
+                nested.shadowed |= expr.child_binders(position).contains(&parameter);
             }
             if self.mode.is_some() {
-                for name in binders(expr, position) {
+                for name in expr.child_binders(position) {
                     nested.result_parameters.remove(name);
                 }
                 nested.inside = match expr {

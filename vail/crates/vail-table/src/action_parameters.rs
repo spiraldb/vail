@@ -9,7 +9,8 @@ use futures::{FutureExt, future::BoxFuture};
 use std::{collections::HashMap, sync::Arc};
 
 pub(crate) struct ActionParameters {
-    values: HashMap<(bool, u64), RecordBatch>,
+    values: HashMap<(u8, u64), RecordBatch>,
+    lowering: crate::logical::LoweringContext,
     pub(crate) context: Arc<TaskContext>,
     pub(crate) state: datafusion::execution::SessionState,
 }
@@ -20,6 +21,7 @@ impl ActionParameters {
     ) -> Self {
         Self {
             values: HashMap::new(),
+            lowering: crate::logical::LoweringContext::default(),
             context,
             state,
         }
@@ -27,7 +29,7 @@ impl ActionParameters {
 }
 
 fn singleton<'a>(
-    key: (bool, u64),
+    key: (u8, u64),
     initializer: LogicalPlan,
     bindings: &'a mut ActionParameters,
 ) -> BoxFuture<'a, Result<RecordBatch>> {
@@ -96,14 +98,62 @@ fn resolve_changed<'a>(
             if let Some(node) = extension
                 .node
                 .as_any()
+                .downcast_ref::<crate::conditional_globals::ConditionalNode>()
+            {
+                use arrow_array::{Array, BooleanArray};
+                let condition =
+                    singleton((2, node.identities[0]), node.inputs[0].clone(), bindings).await?;
+                let condition = condition
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<BooleanArray>()
+                    .ok_or_else(|| {
+                        TableError::Invalid("conditional globals condition is not Boolean".into())
+                    })?;
+                let schema = Arc::new(node.schema.as_arrow().clone());
+                let batch = if condition.is_null(0) {
+                    RecordBatch::try_new(
+                        schema.clone(),
+                        schema
+                            .fields()
+                            .iter()
+                            .map(|f| arrow_array::new_null_array(f.data_type(), 1))
+                            .collect(),
+                    )?
+                } else {
+                    let branch = if condition.value(0) { 1 } else { 2 };
+                    let selected = singleton(
+                        (2, node.identities[branch]),
+                        node.inputs[branch].clone(),
+                        bindings,
+                    )
+                    .await?;
+                    RecordBatch::try_new(schema, selected.columns().to_vec())?
+                };
+                let literal = crate::globals::GlobalsIR::arrow_literal(batch)?;
+                let resolved = Some(Arc::new(crate::logical_globals::lower_in_context(
+                    &literal,
+                    &mut bindings.lowering,
+                )?));
+                memo.insert(key, resolved.clone());
+                return Ok(resolved);
+            }
+            if let Some(node) = extension
+                .node
+                .as_any()
                 .downcast_ref::<crate::logical_aggregate_init::InitNode>()
             {
-                let batch = singleton((false, node.id), node.inputs[1].clone(), bindings).await?;
+                let batch = singleton((0, node.id), node.inputs[1].clone(), bindings).await?;
                 let child = resolve_changed(&node.inputs[0], bindings, memo)
                     .await?
                     .map(Arc::unwrap_or_clone)
                     .unwrap_or_else(|| node.inputs[0].clone());
-                let resolved = crate::logical_aggregate_init::bind(node, &batch, child)?;
+                let resolved = crate::logical_aggregate_init::bind(
+                    node,
+                    &batch,
+                    child,
+                    &mut bindings.lowering,
+                )?;
                 let resolved = Some(Arc::new(resolve(resolved, bindings).await?));
                 memo.insert(key, resolved.clone());
                 return Ok(resolved);
@@ -113,7 +163,7 @@ fn resolve_changed<'a>(
                 .as_any()
                 .downcast_ref::<crate::logical_scan::ScanInitializationNode>()
             {
-                let batch = singleton((true, node.id), node.initializer.clone(), bindings).await?;
+                let batch = singleton((1, node.id), node.initializer.clone(), bindings).await?;
                 let input = resolve_changed(&node.input, bindings, memo)
                     .await?
                     .map(Arc::unwrap_or_clone)
@@ -256,4 +306,7 @@ impl datafusion_physical_plan::ExecutionPlan for ActionContextExec {
     ) -> datafusion_common::Result<datafusion_physical_plan::SendableRecordBatchStream> {
         self.input.execute(partition, self.context.clone())
     }
+}
+pub(crate) fn repeatable_node(plan: &crate::plan::PhysicalPlan) -> bool {
+    plan.as_ref().is::<ActionContextExec>()
 }

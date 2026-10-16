@@ -1,5 +1,9 @@
+mod collection_aggregate;
+mod input_binding;
 mod ir_view;
 mod native_ir;
+mod random_binding;
+mod scan_mark;
 use native_ir::{NativeExpr, NativeType};
 mod arrow_memory;
 use arrow_array::RecordBatchReader;
@@ -156,17 +160,44 @@ impl NativeSession {
         })
     }
 
-    /// Retain one Arrow row as native scalar globals using the C Stream protocol.
-    fn scalar_arrow(&self, data: &Bound<'_, PyAny>) -> PyResult<NativeGlobals> {
-        let reader = arrow_memory::import(data)?;
-        let schema = reader.schema();
-        let batches = reader.collect::<Result<Vec<_>, _>>().map_err(value_error)?;
-        let batch = arrow_select::concat::concat_batches(&schema, &batches).map_err(value_error)?;
-        if batch.num_rows() != 1 {
+    /// Retain separate lazy scalar dependencies behind a conditional boundary.
+    #[pyo3(signature = (condition, consequent, alternate, references=None))]
+    fn conditional_globals(
+        &self,
+        condition: &NativeExpr,
+        consequent: &NativeExpr,
+        alternate: &NativeExpr,
+        references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
+    ) -> PyResult<NativeGlobals> {
+        if ![condition, consequent, alternate]
+            .iter()
+            .all(|value| value.inner.is_closed_scalar())
+        {
             return Err(value_error(
-                "scalar Arrow input must contain exactly one row",
+                "conditional globals require closed scalar expressions",
             ));
         }
+        let bindings = global_bindings(references)?;
+        let base = vail_table::globals::GlobalsIR::empty();
+        let make = |value: &NativeExpr| {
+            base.map_bound(
+                vec![("value".into(), value.inner.as_ref().clone())],
+                bindings.clone(),
+            )
+            .map_err(table_error)
+        };
+        Ok(NativeGlobals {
+            ir: vail_table::globals::GlobalsIR::conditional(
+                make(condition)?,
+                make(consequent)?,
+                make(alternate)?,
+            )
+            .map_err(table_error)?,
+        })
+    }
+    /// Retain one Arrow row as native scalar globals using the C Stream protocol.
+    fn scalar_arrow(&self, data: &Bound<'_, PyAny>) -> PyResult<NativeGlobals> {
+        let batch = arrow_memory::scalar(data)?;
         Ok(NativeGlobals {
             ir: vail_table::globals::GlobalsIR::arrow_literal(batch).map_err(table_error)?,
         })
@@ -248,8 +279,8 @@ impl NativeSession {
             Type::from_arrow(field.data_type()).map_err(value_error)?;
         }
         let batches = reader.collect::<Result<Vec<_>, _>>().map_err(value_error)?;
-        let batch = arrow_select::concat::concat_batches(&schema, &batches).map_err(value_error)?;
-        let ir = TableIR::parallelize(batch, n_partitions).map_err(table_error)?;
+        let ir =
+            TableIR::parallelize_batches(schema, batches, n_partitions).map_err(table_error)?;
         Ok(NativeTable {
             runtime: self.runtime.clone(),
             ir,
@@ -273,8 +304,14 @@ impl NativeSession {
         })
     }
 
-    fn range_table(&self, n: usize, n_partitions: usize) -> PyResult<NativeTable> {
-        let ir = TableIR::range(n, n_partitions).map_err(table_error)?;
+    #[pyo3(signature = (n, n_partitions, batch_size=65536))]
+    fn range_table(
+        &self,
+        n: usize,
+        n_partitions: usize,
+        batch_size: usize,
+    ) -> PyResult<NativeTable> {
+        let ir = TableIR::range_batched(n, n_partitions, batch_size).map_err(table_error)?;
         Ok(NativeTable {
             runtime: self.runtime.clone(),
             ir,
@@ -334,6 +371,15 @@ impl NativeTable {
         self.ir.keys().to_vec()
     }
 
+    fn query_prefix(&self, count: usize, key: String, payload: String) -> PyResult<Self> {
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self
+                .ir
+                .query_prefix(count, key, payload)
+                .map_err(table_error)?,
+        })
+    }
     #[pyo3(signature = (other, keys, field, all_matches=false, references=None, query_interval=false))]
     fn lookup(
         &self,
@@ -361,6 +407,12 @@ impl NativeTable {
         })
     }
 
+    fn rename_fields(&self, mapping: std::collections::BTreeMap<String, String>) -> PyResult<Self> {
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self.ir.rename_fields(&mapping).map_err(table_error)?,
+        })
+    }
     fn join(&self, other: &NativeTable, how: &str, join_key: usize) -> PyResult<Self> {
         let kind = match how {
             "inner" => TableJoinKind::Inner,
@@ -570,8 +622,26 @@ impl NativeTable {
         py.detach(|| self.runtime.block_on(self.ir.write(&path, overwrite)))
             .map_err(table_error)
     }
-    fn export_vcf(&self, py: Python<'_>, path: String, header: Vec<String>, entries_name: String, entry_names: Vec<String>, sample_count: usize) -> PyResult<()> {
-        py.detach(|| self.runtime.block_on(vail_table::vcf_export::export(self.ir.clone(), &path, &header, &entries_name, &entry_names, sample_count))).map_err(table_error)
+    fn export_vcf(
+        &self,
+        py: Python<'_>,
+        path: String,
+        header: Vec<String>,
+        entries_name: String,
+        entry_names: Vec<String>,
+        sample_count: usize,
+    ) -> PyResult<()> {
+        py.detach(|| {
+            self.runtime.block_on(vail_table::vcf_export::export(
+                self.ir.clone(),
+                &path,
+                &header,
+                &entries_name,
+                &entry_names,
+                sample_count,
+            ))
+        })
+        .map_err(table_error)
     }
     fn export_text(
         &self,

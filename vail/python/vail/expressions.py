@@ -97,10 +97,11 @@ def as_expr(value):
 
 class _IR(NativeExpr):
     """Native IR handle with Python owners for captured dataset dependencies."""
-    def __new__(cls, value, references, lookups=None, row_indexed=None):
+    def __new__(cls, value, references, lookups=None, row_indexed=None, lexical_types=None):
         return super().__new__(cls, value)
 
-    def __init__(self, value, references, lookups=None, row_indexed=None):
+    def __init__(self, value, references, lookups=None, row_indexed=None, lexical_types=None):
+        self.lexical_types = _lexical_types_of(value) if lexical_types is None else dict(lexical_types)
         if row_indexed is None:
             self.references = _references(value) | dict(references)
             self.lookups = _lookup_references(value) | dict(lookups or {})
@@ -117,6 +118,36 @@ class _IR(NativeExpr):
 
 
 IR_NODE_TYPES = (dict, NativeExpr)
+
+
+def _lexical_types_of(ir):
+    if isinstance(ir, _IR):
+        return dict(ir.lexical_types)
+    if isinstance(ir, dict):
+        op = ir.get('op')
+        if op == 'literal':
+            return {}
+        bound = {}
+        if op in ('array_map', 'array_filter', 'array_predicate', 'agg_array', 'agg_explode'):
+            bound['predicate' if op in ('array_filter', 'array_predicate') else 'body'] = {ir.get('parameter')}
+        elif op == 'array_fold':
+            bound['body'] = {ir.get('parameter'), ir.get('accumulator')}
+        elif op == 'aggregate_fold':
+            bound['seq'] = {ir.get('state_parameter')}
+            bound['combine'] = {ir.get('left_parameter'), ir.get('right_parameter')}
+        elif op == 'switch':
+            bound = {name: {ir.get('parameter')} for name in ('cases', 'default', 'missing')}
+        result = {}
+        for name, value in ir.items():
+            result.update({key: ty for key, ty in _lexical_types_of(value).items()
+                           if key not in bound.get(name, ())})
+        return result
+    if isinstance(ir, (list, tuple)):
+        result = {}
+        for value in ir:
+            result.update(_lexical_types_of(value))
+        return result
+    return {}
 
 
 def _row_indexed(ir):
@@ -178,7 +209,7 @@ def _external_globals(native, dtype):
 
 
 class Expression:
-    __slots__ = ("dtype", "source", "_native_expr", "_selection_name", "_top_level_name", "_global_refs", "_lookup_refs", "_row_indexed")
+    __slots__ = ("dtype", "source", "_native_expr", "_lexical_types", "_selection_name", "_top_level_name", "_global_refs", "_lookup_refs", "_row_indexed")
 
     def __new__(cls, *args, **kwargs):
         if cls is Expression:
@@ -195,6 +226,10 @@ class Expression:
         object.__setattr__(self, "_global_refs", MappingProxyType(_references(ir)))
         object.__setattr__(self, "_lookup_refs", MappingProxyType(_lookup_references(ir)))
         object.__setattr__(self, "_row_indexed", _row_indexed(ir) if row_indexed is None else row_indexed)
+        lexical_types = _lexical_types_of(ir)
+        if isinstance(ir, dict) and ir.get('op') == 'lambda_variable':
+            lexical_types[ir['name']] = dtype
+        object.__setattr__(self, '_lexical_types', MappingProxyType(lexical_types))
         object.__setattr__(self, "dtype", dtype)
         object.__setattr__(self, "source", source)
         if isinstance(ir, IR_NODE_TYPES) and ir.get("op") in ("lambda_variable", "matrix_field", "table_lookup"):
@@ -218,7 +253,7 @@ class Expression:
     @property
     def _ir(self):
         # Return another immutable handle sharing the existing native expression node.
-        return _IR(self._native_expr, self._global_refs, self._lookup_refs, self._row_indexed)
+        return _IR(self._native_expr, self._global_refs, self._lookup_refs, self._row_indexed, self._lexical_types)
 
     def to_ir(self):
         return self._ir
@@ -396,6 +431,8 @@ class Expression:
         return Expression(tbool, self.source, {"op": "unary", "operator": "not", "value": self.to_ir()})
 
     def __getitem__(self, name):
+        if self.dtype == tcall:
+            return self.alleles[name]
         if self.dtype == tstr:
             from .strings import slice_, index
             return slice_(self, name) if isinstance(name, slice) else index(self, name)
@@ -503,6 +540,8 @@ class Expression:
         """Split an array expression into consecutive fixed-size groups."""
         if not isinstance(self.dtype, tarray):
             raise TypeError("grouped requires an array expression")
+        if type(group_size) is int and group_size <= 0:
+            raise ValueError("group size must be positive")
         size = as_expr(group_size)
         if size.dtype != tint32:
             raise TypeError("group size must have int32 type")
@@ -590,7 +629,12 @@ class Expression:
             indexed, predicate = index_callback(self, parameter, predicate)
             filtered = Expression(indexed.dtype, _merge_sources(self.source, predicate.source),
                                  {"op": "array_filter", "value": indexed.to_ir(), "parameter": parameter, "predicate": predicate.to_ir()})
-            return filtered.map(lambda pair: pair[1])
+            result = filtered.map(lambda pair: pair[1])
+            # Filtering a unique collection cannot introduce duplicates.
+            if isinstance(self.dtype, (tset, tdict)):
+                from .collections import _cast
+                result = _cast(result, self.dtype)
+            return result
         return Expression(self.dtype, _merge_sources(self.source, predicate.source),
                           {"op": "array_filter", "value": self.to_ir(),
                            "parameter": parameter, "predicate": predicate.to_ir()})
@@ -656,6 +700,10 @@ class Expression:
                     {"op": "get_field", "value": self.to_ir(), "name": field},
                     self._global_refs, self._lookup_refs,
                 ))
+            if name == "alleles":
+                return call_field("__vail_call_alleles", tarray(tint32))
+            if name == "ploidy":
+                return self.alleles.length()
             if name == "phased":
                 return call_field("__vail_call_phased", tbool)
             if name == "n_alt_alleles":
@@ -934,6 +982,11 @@ def literal(value, dtype=None):
     elif not _valid_type(dtype):
         raise TypeError(f"literal dtype must be a Vail type, found {dtype!r}")
     native_type = type_to_wire(dtype)
+    if value is not None and isinstance(dtype, tndarray):
+        import numpy as np
+        if isinstance(value, np.ndarray):
+            from .arrow import ndarray_literal_arrow
+            return Expression(dtype, None, NativeExpr.literal(native_type, ndarray_literal_arrow(value, dtype)))
     if value is not None and not isinstance(dtype, _PrimitiveType) or dtype == tcall and value is not None:
         from .arrow import rows_to_arrow
         value = rows_to_arrow([{"value": value}], tstruct(value=dtype))
@@ -1079,7 +1132,8 @@ def if_else(condition, consequent, alternate, missing_false=False):
     if condition.dtype != tbool:
         raise TypeError("if_else condition must have bool type")
     if missing_false:
-        condition = if_else(is_missing(condition), False, condition)
+        from .collections import _function
+        condition = _function('coalesce', [condition, literal(False)], tbool)
     consequent = as_expr(consequent)
     alternate = as_expr(alternate)
     result_type = unify_types(consequent.dtype, alternate.dtype)
@@ -1087,6 +1141,29 @@ def if_else(condition, consequent, alternate, missing_false=False):
         raise TypeError(f"if_else branches have incompatible types: {consequent.dtype} and {alternate.dtype}")
     source = _merge_sources(condition.source, consequent.source)
     source = _merge_sources(source, alternate.source)
+    values = (condition, consequent, alternate)
+    if (any(value._global_refs for value in values)
+        and not any(value._row_indexed for value in values)
+        and all(value._native_expr.is_closed_scalar() for value in values)
+        and not any(value.to_ir().contains_random() for value in values)):
+
+        from .inputs import bind_input
+        from .matrixtable import MatrixTable
+        from . import _native_session
+        prepared = []
+        for value in (condition, consequent, alternate):
+            if isinstance(value.source, MatrixTable):
+                value = value.source._lower(value, value.source.globals_table())
+            prepared.append(bind_input(value))
+        for index in (1, 2):
+            value = prepared[index]
+            if value.dtype != result_type:
+                prepared[index] = Expression(result_type, None, {
+                    'op':'cast', 'dtype':type_to_wire(result_type), 'value':value.to_ir()})
+        native = _native_session().conditional_globals(
+            *(value.to_ir() for value in prepared), references=_global_bindings(prepared))
+        value = _external_globals(native, tstruct(value=result_type))['value']
+        return Expression(result_type, source, value.to_ir())
     return Expression(
         result_type,
         source,
@@ -1129,9 +1206,8 @@ class CaseBuilder:
     def _finish(self, default):
         result = cast(default, self._ret_type)
         for condition, then in reversed(self._cases):
-            if self._missing_false:
-                condition = if_else(is_missing(condition), False, condition)
-            result = if_else(condition, cast(then, self._ret_type), result)
+            result = if_else(condition, cast(then, self._ret_type), result,
+                             missing_false=self._missing_false)
         return result
 
     def default(self, then):
@@ -1282,8 +1358,7 @@ def _check_comparable(left, right, operator):
 
 
 def _cast_compatible(source, target):
-    primitive = (tint32, tint64, tfloat32, tfloat64, tbool, tstr)
-    return source in primitive and target in primitive or source == target
+    return type_to_wire(source).can_cast_to(type_to_wire(target))
 
 
 # Hail-shaped typed casts.
@@ -1309,14 +1384,9 @@ def call(*alleles, phased=False):
     if any(a.dtype != tint32 for a in alleles):
         raise TypeError("call alleles must be int32")
     values = array(alleles)
-    if len(alleles) == 2 and not phased:
-        values = array([array_min(values), array_max(values)])
     packed = struct(__vail_call_alleles=values, __vail_call_phased=phased)
     result = Expression(tcall, packed.source, {"op": "cast", "dtype": "call", "value": packed.to_ir()})
-    missing_allele = is_missing(alleles[0])
-    for allele in alleles[1:]:
-        missing_allele = missing_allele | is_missing(allele)
-    return if_else(missing_allele, missing(tcall), result)
+    return result
 
 
 def locus(contig, pos, reference_genome="default"):

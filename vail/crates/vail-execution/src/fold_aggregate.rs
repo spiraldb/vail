@@ -5,12 +5,37 @@ use std::sync::Arc;
 use arrow_array::{Array, ArrayRef, RecordBatch, StructArray};
 use arrow_schema::{DataType, Field, Schema, SchemaRef};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF};
+use datafusion_expr::{Accumulator, AggregateUDF, ColumnarValue};
 use datafusion_physical_expr::PhysicalExpr;
+
+fn one_row(value: ColumnarValue) -> DfResult<ArrayRef> {
+    let array: ArrayRef = match value {
+        ColumnarValue::Array(array) => array,
+        ColumnarValue::Scalar(ScalarValue::List(array)) => array,
+        ColumnarValue::Scalar(ScalarValue::LargeList(array)) => array,
+        ColumnarValue::Scalar(ScalarValue::FixedSizeList(array)) => array,
+        ColumnarValue::Scalar(ScalarValue::Struct(array)) => array,
+        value => value.into_array(1)?,
+    };
+    if array.len() != 1 {
+        return Err(DataFusionError::Execution(
+            "fold state must contain one row".into(),
+        ));
+    }
+    Ok(array)
+}
+fn normalize(array: &ArrayRef, dtype: &DataType) -> DfResult<ArrayRef> {
+    if vail_ordering::same_layout(array.data_type(), dtype) {
+        crate::logical_expr::restore_arrow_array_type(array, dtype)
+    } else {
+        let cast = arrow_cast::cast(array, dtype)?;
+        crate::logical_expr::restore_arrow_array_type(&cast, dtype)
+    }
+}
 
 #[derive(Debug)]
 struct FoldAccumulator {
-    state: ScalarValue,
+    state: ArrayRef,
     has_state: bool,
     input_schema: SchemaRef,
     seq_schema: SchemaRef,
@@ -20,26 +45,28 @@ struct FoldAccumulator {
 }
 
 impl FoldAccumulator {
-    fn evaluate_one(expr: &Arc<dyn PhysicalExpr>, batch: &RecordBatch) -> DfResult<ScalarValue> {
-        let value = expr.evaluate(batch)?.into_array(1)?;
-        crate::expressions::scalar_at(&value, 0)
-            .map_err(|error| DataFusionError::Execution(error.to_string()))
+    fn evaluate_one(
+        &self,
+        expr: &Arc<dyn PhysicalExpr>,
+        batch: &RecordBatch,
+    ) -> DfResult<ArrayRef> {
+        let array = one_row(expr.evaluate(batch)?)?;
+        normalize(&array, self.state.data_type())
     }
 
-    fn sequence(&mut self, row_columns: &[ArrayRef]) -> DfResult<()> {
-        let mut columns = Vec::with_capacity(row_columns.len() + 1);
-        columns.push(self.state.to_array_of_size(1)?);
-        columns.extend(row_columns.iter().map(|column| column.slice(0, 1)));
+    fn sequence(&mut self, rows: &StructArray, row: usize) -> DfResult<()> {
+        let mut columns = Vec::with_capacity(rows.num_columns() + 1);
+        columns.push(self.state.clone());
+        columns.extend(rows.columns().iter().map(|column| column.slice(row, 1)));
         let batch = RecordBatch::try_new(Arc::clone(&self.seq_schema), columns)?;
-        self.state = Self::evaluate_one(&self.seq, &batch)?;
+        self.state = self.evaluate_one(&self.seq, &batch)?;
         self.has_state = true;
         Ok(())
     }
 
-    fn combine_states(&self, left: ScalarValue, right: ScalarValue) -> DfResult<ScalarValue> {
-        let columns = vec![left.to_array_of_size(1)?, right.to_array_of_size(1)?];
-        let batch = RecordBatch::try_new(Arc::clone(&self.combine_schema), columns)?;
-        Self::evaluate_one(&self.combine, &batch)
+    fn combine_states(&self, left: ArrayRef, right: ArrayRef) -> DfResult<ArrayRef> {
+        let batch = RecordBatch::try_new(Arc::clone(&self.combine_schema), vec![left, right])?;
+        self.evaluate_one(&self.combine, &batch)
     }
 
     fn update_packed(&mut self, values: &ArrayRef) -> DfResult<()> {
@@ -49,20 +76,18 @@ impl FoldAccumulator {
             .ok_or_else(|| {
                 DataFusionError::Execution("fold input must be a packed struct".into())
             })?;
-        if rows.num_columns() != self.input_schema.fields().len() {
-            return Err(DataFusionError::Execution(format!(
-                "fold packed struct has {} fields; expected {}",
-                rows.num_columns(),
-                self.input_schema.fields().len()
-            )));
+        if rows.null_count() != 0 {
+            return Err(DataFusionError::Execution(
+                "fold packed records must be defined".into(),
+            ));
+        }
+        if rows.fields() != self.input_schema.fields() {
+            return Err(DataFusionError::Execution(
+                "fold packed struct schema mismatch".into(),
+            ));
         }
         for row in 0..rows.len() {
-            let row_columns = rows
-                .columns()
-                .iter()
-                .map(|column| column.slice(row, 1))
-                .collect::<Vec<_>>();
-            self.sequence(&row_columns)?;
+            self.sequence(rows, row)?;
         }
         Ok(())
     }
@@ -79,15 +104,16 @@ impl Accumulator for FoldAccumulator {
     }
 
     fn evaluate(&mut self) -> DfResult<ScalarValue> {
-        Ok(self.state.clone())
+        crate::expressions::scalar_at(&self.state, 0)
+            .map_err(|e| DataFusionError::Execution(e.to_string()))
     }
 
     fn size(&self) -> usize {
-        std::mem::size_of::<Self>() + self.state.size()
+        std::mem::size_of::<Self>() + self.state.get_array_memory_size()
     }
 
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
-        Ok(vec![self.state.clone()])
+        Ok(vec![self.evaluate()?])
     }
 
     fn merge_batch(&mut self, states: &[ArrayRef]) -> DfResult<()> {
@@ -97,8 +123,7 @@ impl Accumulator for FoldAccumulator {
             ));
         };
         for row in 0..states.len() {
-            let partial = crate::expressions::scalar_at(states, row)
-                .map_err(|error| DataFusionError::Execution(error.to_string()))?;
+            let partial = normalize(&states.slice(row, 1), self.state.data_type())?;
             // A final accumulator starts with the same initializer as a
             // partial one. Adopt the first partial rather than adding that
             // initializer a second time (it need not be a combine identity).
@@ -126,6 +151,7 @@ struct ProgramIdentity {
     schema: SchemaRef,
     globals: SchemaRef,
     bindings: std::collections::BTreeMap<String, usize>,
+    storage: Option<DataType>,
 }
 impl FoldProgram {
     pub fn lower(
@@ -140,11 +166,25 @@ impl FoldProgram {
                 schema: Arc::new(schema.clone()),
                 globals: Arc::new(globals.clone()),
                 bindings: bindings.clone(),
+                storage: None,
             },
             physical: crate::expressions::lower_with_bindings(
                 expression, schema, globals, bindings,
             )?,
         })
+    }
+    pub fn lower_with_state_type(
+        expression: &crate::expressions::Expr,
+        schema: &Schema,
+        globals: &Schema,
+        bindings: &std::collections::BTreeMap<String, usize>,
+        storage: &DataType,
+    ) -> Result<Self, crate::expressions::ExprError> {
+        let mut program = Self::lower(expression, schema, globals, bindings)?;
+        program.physical =
+            crate::expressions::cast_physical_storage(program.physical, schema, storage.clone())?;
+        program.identity.storage = Some(storage.clone());
+        Ok(program)
     }
     pub fn output_type(&self) -> DfResult<DataType> {
         self.physical.data_type(&self.identity.schema)
@@ -160,7 +200,7 @@ pub fn fold_udaf(
     state_type: DataType,
     sequence: FoldProgram,
     combine: FoldProgram,
-) -> AggregateUDF {
+) -> DfResult<AggregateUDF> {
     let mut seq_fields = vec![Arc::new(Field::new("state", state_type.clone(), true))];
     seq_fields.extend(input_schema.fields().iter().cloned());
     let seq_schema = Arc::new(Schema::new(seq_fields));
@@ -168,8 +208,16 @@ pub fn fold_udaf(
         Field::new("left", state_type.clone(), true),
         Field::new("right", state_type.clone(), true),
     ]));
+    if initial.data_type() != state_type
+        || sequence.output_type()? != state_type
+        || combine.output_type()? != state_type
+    {
+        return Err(DataFusionError::Plan(
+            "fold initial/state/sequence/combine types must agree".into(),
+        ));
+    }
     let packed_type = DataType::Struct(input_schema.fields().clone());
-    let factory_initial = initial.clone();
+    let factory_initial = one_row(ColumnarValue::Scalar(initial.clone()))?;
     let factory_input_schema = Arc::clone(&input_schema);
     let factory_seq_schema = Arc::clone(&seq_schema);
     let factory_combine_schema = Arc::clone(&combine_schema);
@@ -187,12 +235,14 @@ pub fn fold_udaf(
             combine: Arc::clone(&factory_combine),
         }))
     });
-    Arc::unwrap_or_clone(crate::kernel_identity::aggregate_named(
-        "fold",
-        identity,
-        vec![packed_type],
-        state_type.clone(),
-        vec![state_type],
-        factory,
+    Ok(Arc::unwrap_or_clone(
+        crate::kernel_identity::aggregate_named(
+            "fold",
+            identity,
+            vec![packed_type],
+            state_type.clone(),
+            vec![state_type],
+            factory,
+        ),
     ))
 }

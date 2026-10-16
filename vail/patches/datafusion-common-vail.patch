@@ -1,0 +1,23 @@
+--- a/src/scalar/mod.rs
++++ b/src/scalar/mod.rs
+@@ -5040,11 +5040,15 @@
+                     .iter()
+                     .map(|c| ScalarValue::compact_view_buffers(Arc::clone(c)))
+                     .collect();
+-                Arc::new(StructArray::new(
+-                    s.fields().clone(),
+-                    columns,
+-                    s.nulls().cloned(),
+-                ))
++                if s.fields().is_empty() {
++                    Arc::new(StructArray::new_empty_fields(s.len(), s.nulls().cloned()))
++                } else {
++                    Arc::new(StructArray::new(
++                        s.fields().clone(),
++                        columns,
++                        s.nulls().cloned(),
++                    ))
++                }
+             }
+             DataType::List(field) => gc_list!(field, i32, ListArray),
+             DataType::LargeList(field) => gc_list!(field, i64, LargeListArray),
