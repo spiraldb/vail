@@ -111,3 +111,72 @@ async fn prepared_scan_actions_reread_configuration_after_success_and_failure() 
         assert_eq!(values, vec![(0, 7), (1, 8), (2, 9), (3, 10)]);
     }
 }
+
+#[tokio::test]
+async fn wide_scan_projections_preserve_distinct_arguments_and_shared_aliases() {
+    for generic in [false, true] {
+        let mut fields = vec![("idx".into(), Expr::Column { name: "idx".into() })];
+        for offset in 0..64 {
+            let scan = Expr::Aggregate {
+                function: "sum".into(),
+                value: Some(Arc::new(binary(
+                    BinaryOperator::Add,
+                    Expr::Column { name: "idx".into() },
+                    integer(offset),
+                ))),
+                options: serde_json::json!({"__vail_scan": true}),
+                result_type: None,
+                init: vec![],
+            };
+            fields.push((format!("sum_{offset}"), scan.clone()));
+            if offset % 8 == 0 {
+                fields.push((format!("shared_{offset}"), scan));
+            }
+        }
+        if generic {
+            // A different reducer exercises the general configured-state path.
+            fields.push((
+                "minimum".into(),
+                Expr::Aggregate {
+                    function: "min".into(),
+                    value: Some(Arc::new(Expr::Column { name: "idx".into() })),
+                    options: serde_json::json!({"__vail_scan": true}),
+                    result_type: None,
+                    init: vec![],
+                },
+            ));
+        }
+        let table = TableIR::range(9, 4).unwrap().map_rows(fields).unwrap();
+        let batches = table.collect_partitions().await.unwrap();
+        let mut seen = Vec::new();
+        for batch in batches.into_iter().flatten() {
+            let indices = batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap();
+            for row in 0..batch.num_rows() {
+                let index = i64::from(indices.value(row));
+                seen.push(index);
+                for (column, field) in batch.schema().fields().iter().enumerate() {
+                    let name = field.name();
+                    let Some(offset) = name
+                        .strip_prefix("sum_")
+                        .or_else(|| name.strip_prefix("shared_"))
+                    else {
+                        continue;
+                    };
+                    let offset = offset.parse::<i64>().unwrap();
+                    let values = batch
+                        .column(column)
+                        .as_any()
+                        .downcast_ref::<arrow_array::Int64Array>()
+                        .unwrap();
+                    assert_eq!(values.value(row), index * (index - 1) / 2 + offset * index);
+                }
+            }
+        }
+        seen.sort_unstable();
+        assert_eq!(seen, (0..9).collect::<Vec<_>>());
+    }
+}

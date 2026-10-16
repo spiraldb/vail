@@ -152,3 +152,137 @@ def run():
     exec(compile(tree, '<rebound structural helper>', 'exec'), scope)
     with pytest.raises(NameError, match='ir'):
         scope['run']()
+
+
+@pytest.mark.parametrize('binding,error', [
+    ('''try:
+    raise RuntimeError('handler')
+except RuntimeError as assert_contains_node:
+    pass''', UnboundLocalError),
+    ('''match lambda a, b: 1 / 0:
+    case assert_contains_node:
+        pass''', ZeroDivisionError),
+    ('''match [1]:
+    case [*assert_contains_node]:
+        pass''', TypeError),
+    ('''match {'value': 1}:
+    case {**assert_contains_node}:
+        pass''', TypeError),
+    ('del assert_contains_node', UnboundLocalError),
+    ('unrelated = lambda value=(assert_contains_node := lambda a, b: 1 / 0): None', ZeroDivisionError),
+    ('''def unrelated(value=(assert_contains_node := lambda a, b: 1 / 0)):
+    pass''', ZeroDivisionError),
+    ('''class Unrelated((assert_contains_node := lambda a, b: 1 / 0) and object):
+    pass''', ZeroDivisionError),
+])
+def test_structural_helper_capture_and_unbinding_preserve_runtime_errors(adapter, binding, error):
+    import textwrap
+    source = '''
+def run():
+    def assert_contains_node(expr, node):
+        assert expr._ir.base_search(lambda x: isinstance(x, node))
+''' + textwrap.indent(binding, '    ') + '\n    assert_contains_node(1, 2)\n'
+    tree, manifest = adapter.adapt_structural_ir_assertions(ast.parse(source), 'capture.py')
+    assert manifest == []
+    scope = {}
+    exec(compile(tree, '<captured or unbound helper>', 'exec'), scope)
+    with pytest.raises(error):
+        scope['run']()
+
+
+def test_structural_helper_late_wildcard_import_preserves_argument_evaluation(adapter):
+    source = """
+def assert_contains_node(expr, node):
+    assert expr._ir.base_search(lambda x: isinstance(x, node))
+from math import *
+assert_contains_node(7, ir.NA)
+"""
+    tree, manifest = adapter.adapt_structural_ir_assertions(ast.parse(source), 'wildcard.py')
+    assert manifest == []
+    with pytest.raises(NameError, match='ir'):
+        exec(compile(tree, '<wildcard after helper>', 'exec'), {})
+
+
+def test_structural_helper_call_before_definition_preserves_unbound_error(adapter):
+    source = """
+def run():
+    assert_contains_node(1, 2)
+    def assert_contains_node(expr, node):
+        assert expr._ir.base_search(lambda x: isinstance(x, node))
+"""
+    tree, manifest = adapter.adapt_structural_ir_assertions(ast.parse(source), 'early.py')
+    assert manifest == []
+    scope = {}
+    exec(compile(tree, '<helper not yet defined>', 'exec'), scope)
+    with pytest.raises(UnboundLocalError):
+        scope['run']()
+
+
+@pytest.mark.parametrize('reverse', [False, True])
+def test_upstream_pytest_fixture_resets_default_randomness_between_tests(adapter, tmp_path, reverse):
+    import json
+    import os
+    import subprocess
+    import sys
+    adapter.reset_test_randomness()
+    expected = hl.eval(hl.rand_int64())
+    suite = tmp_path / 'test' / 'hail'
+    suite.mkdir(parents=True)
+    (suite / 'helpers.py').write_text('')
+    (suite / 'conftest.py').write_text('''import pytest
+@pytest.fixture(autouse=True)
+def reset_global_randomness():
+    Env.reset_global_randomness()
+''')
+    tests = [f'''def test_{name}():
+    assert hl.eval(hl.rand_int64()) == {expected!r}
+    for _ in range({count}):
+        hl.eval(hl.rand_int64())
+''' for name, count in [('first', 13), ('second', 29)]]
+    (suite / 'test_rng.py').write_text('import hail as hl\n' + '\n'.join(tests[::-1] if reverse else tests))
+    output = tmp_path / 'results'
+    runner = Path(__file__).with_name('full_hail_pytest.py')
+    result = subprocess.run([sys.executable, str(runner), '--source', str(suite),
+                             '--output', str(output), '--module', 'test_rng.py',
+                             '--module-timeout', '30', '--per-test-timeout', '10'],
+                            env=dict(os.environ), capture_output=True, text=True, timeout=60)
+    assert result.returncode == 0, result.stdout + result.stderr
+    modules = json.loads((output / 'modules.json').read_text())
+    assert modules[0].get('exit_code') == 0, (output / 'test_rng.py.log').read_text()
+    events = [json.loads(line) for line in (output / 'test_rng.py.jsonl').read_text().splitlines()]
+    calls = [event for event in events if event['kind'] == 'test' and event['when'] == 'call']
+    assert len(calls) == 2 and all(event['outcome'] == 'passed' for event in calls)
+    fixture = json.loads((output / 'fixture-adaptations.json').read_text())['randomness_reset']
+    assert fixture['replacement'] == 'vail.reset_global_randomness'
+    assert fixture['scope'] == 'function' and fixture['autouse'] is True
+    assert fixture['upstream_fixture'] == 'conftest.py::reset_global_randomness'
+
+
+def test_original_body_runner_resets_default_randomness_between_parameter_variants(adapter, tmp_path):
+    import json
+    adapter.reset_test_randomness()
+    expected = hl.eval(hl.rand_int64())
+    suite = tmp_path / 'test' / 'hail'
+    suite.mkdir(parents=True)
+    (suite / 'helpers.py').write_text('')
+    (suite / 'conftest.py').write_text('''import pytest
+@pytest.fixture(autouse=True)
+def reset_global_randomness():
+    Env.reset_global_randomness()
+''')
+    source = suite / 'test_rng.py'
+    source.write_text(f'''import pytest
+@pytest.mark.parametrize('draw_count', [3, 7])
+def test_variants(draw_count):
+    assert hl.eval(hl.rand_int64()) == {expected!r}
+    for _ in range(draw_count):
+        hl.eval(hl.rand_int64())
+''')
+    bodies = importlib.import_module('full_hail_bodies')
+    output = tmp_path / 'body.json'
+    bodies.worker(source, 'test_variants', output, suite)
+    report = json.loads(output.read_text())
+    assert report['status'] == 'passed', report
+    assert len(report['variants']) == 2
+    assert all(variant['status'] == 'passed' for variant in report['variants'])
+    assert report['randomness_fixture']['replacement'] == 'vail.reset_global_randomness'

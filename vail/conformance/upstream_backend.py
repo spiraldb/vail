@@ -145,14 +145,16 @@ def adapt_structural_ir_assertions(tree, module):
 
     class StructuralCalls(ast.NodeTransformer):
         enabled = False
+        helper_line = 0
 
         def visit_scope(self, node):
-            previous = self.enabled
+            previous = self.enabled, self.helper_line
             declarations = [child for child in node.body
                             if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef))
                             and child.name == 'assert_contains_node']
             if declarations:
                 self.enabled = len(declarations) == 1 and structural_helper(declarations[0])
+                self.helper_line = declarations[0].lineno
 
             class Rebinding(ast.NodeVisitor):
                 found = False
@@ -167,11 +169,49 @@ def adapt_structural_ir_assertions(tree, module):
                         self.found = True
 
                 def visit_ImportFrom(self, child):
+                    # A wildcard import after the proven declaration can
+                    # replace its binding without a Name(Store) node.
                     if any((alias.asname or alias.name) == 'assert_contains_node'
+                           or (alias.name == '*' and (not declarations
+                               or child.lineno > declarations[0].lineno))
                            for alias in child.names):
                         self.found = True
 
+                def visit_ExceptHandler(self, child):
+                    # Python also deletes this binding when the handler exits.
+                    if child.name == 'assert_contains_node':
+                        self.found = True
+                    self.generic_visit(child)
+
+                def visit_MatchAs(self, child):
+                    if child.name == 'assert_contains_node':
+                        self.found = True
+                    self.generic_visit(child)
+
+                def visit_MatchStar(self, child):
+                    if child.name == 'assert_contains_node':
+                        self.found = True
+
+                def visit_MatchMapping(self, child):
+                    if child.rest == 'assert_contains_node':
+                        self.found = True
+                    self.generic_visit(child)
+
                 def visit_FunctionDef(self, child):
+                    # Defaults/decorators execute in the enclosing scope;
+                    # their assignment expressions can replace its helper.
+                    for value in [*child.decorator_list, *child.args.defaults,
+                                  *(v for v in child.args.kw_defaults if v is not None)]:
+                        self.visit(value)
+                    annotations = [argument.annotation for argument in
+                                   [*child.args.posonlyargs, *child.args.args,
+                                    *child.args.kwonlyargs]
+                                   if argument.annotation is not None]
+                    annotations += [argument.annotation for argument in
+                                    [child.args.vararg, child.args.kwarg]
+                                    if argument is not None and argument.annotation is not None]
+                    for value in [*annotations, *([child.returns] if child.returns else [])]:
+                        self.visit(value)
                     # Function bodies have their own lexical binding checks.
                     if child.name == 'assert_contains_node' and child not in declarations:
                         self.found = True
@@ -179,6 +219,9 @@ def adapt_structural_ir_assertions(tree, module):
                 visit_AsyncFunctionDef = visit_FunctionDef
 
                 def visit_ClassDef(self, child):
+                    for value in [*child.decorator_list, *child.bases,
+                                  *(keyword.value for keyword in child.keywords)]:
+                        self.visit(value)
                     if child.name == 'assert_contains_node':
                         self.found = True
 
@@ -189,7 +232,10 @@ def adapt_structural_ir_assertions(tree, module):
                 visit_Nonlocal = visit_Global
 
                 def visit_Lambda(self, child):
-                    pass
+                    # Lambda defaults, unlike their bodies, execute here.
+                    for value in [*child.args.defaults,
+                                  *(v for v in child.args.kw_defaults if v is not None)]:
+                        self.visit(value)
 
             rebinding = Rebinding()
             for child in node.body:
@@ -203,10 +249,13 @@ def adapt_structural_ir_assertions(tree, module):
                     bound_names.add(node.args.kwarg.arg)
                 if 'assert_contains_node' in bound_names:
                     rebinding.found = True
+            if any(getattr(parameter, 'name', None) == 'assert_contains_node'
+                   for parameter in getattr(node, 'type_params', ())):
+                rebinding.found = True
             if rebinding.found:
                 self.enabled = False
             self.generic_visit(node)
-            self.enabled = previous
+            self.enabled, self.helper_line = previous
             return node
 
         visit_Module = visit_scope
@@ -216,7 +265,8 @@ def adapt_structural_ir_assertions(tree, module):
 
         def visit_Expr(self, node):
             call = node.value
-            if (self.enabled and isinstance(call, ast.Call)
+            if (self.enabled and node.lineno > self.helper_line
+                    and isinstance(call, ast.Call)
                     and isinstance(call.func, ast.Name)
                     and call.func.id == 'assert_contains_node'
                     and len(call.args) == 2 and not call.keywords
@@ -229,3 +279,9 @@ def adapt_structural_ir_assertions(tree, module):
             return self.generic_visit(node)
 
     return ast.fix_missing_locations(StructuralCalls().visit(tree)), removed
+
+
+def reset_test_randomness():
+    """Preserve upstream's function-autouse seed reset through Vail's public API."""
+    import vail as hl
+    hl.reset_global_randomness()

@@ -22,7 +22,7 @@ import traceback
 from types import SimpleNamespace
 from upstream_paths import doctest_data_dir, resource_path, FixtureModule
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from upstream_backend import VailTestBackend, test_timeout, backend_api, adapt_class_configuration, adapt_structural_ir_assertions
+from upstream_backend import VailTestBackend, test_timeout, backend_api, adapt_class_configuration, adapt_structural_ir_assertions, reset_test_randomness
 
 
 def worker(source, name, output, suite):
@@ -42,6 +42,9 @@ def worker(source, name, output, suite):
     report = dict(module=str(source.relative_to(suite)), name=name, variants=[], setup_errors=[],
                   execution_mode='isolated_original_body',
                   structural_ir_assertions=structural_assertions,
+                  randomness_fixture=dict(replacement='vail.reset_global_randomness',
+                                          scope='each parameter variant',
+                                          timing='before requested fixtures and test body'),
                   source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
                   backend=hl.current_backend().name,
                   backend_capabilities=sorted(hl.current_backend().capabilities))
@@ -132,6 +135,13 @@ def worker(source, name, output, suite):
                            for d in node.decorator_list):
                     continue
                 if node.name.startswith('init_hail'):
+                    continue
+                if (node.name == 'reset_global_randomness'
+                        and ast.dump(ast.Module(body=node.body, type_ignores=[]))
+                        == ast.dump(ast.parse('Env.reset_global_randomness()'))):
+                    scope[node.name] = reset_test_randomness
+                    report.setdefault('fixture_adapters', []).append(
+                        'Upstream function-autouse randomness reset uses public vail.reset_global_randomness')
                     continue
                 try:
                     compile_node(node, fixture_source)
@@ -240,6 +250,7 @@ def worker(source, name, output, suite):
             phase = 'fixture'
             outcome = dict(status='passed', parameters={k: repr(v)[:300] for k,v in params.items()})
             try:
+                reset_test_randomness()
                 kwargs = {key: value for key, value in params.items() if not key.startswith('__fixture_param_')}
                 for key, parameter in inspect.signature(target).parameters.items():
                     if key not in kwargs and parameter.default is inspect.Parameter.empty:

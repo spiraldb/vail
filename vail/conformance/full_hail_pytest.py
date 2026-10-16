@@ -92,6 +92,10 @@ def pytest_runtest_logreport(report):
 
 CONFTEST = '''
 import pytest
+@pytest.fixture(autouse=True)
+def reset_global_randomness():
+    from upstream_backend import reset_test_randomness
+    reset_test_randomness()
 @pytest.fixture(scope='session', autouse=True)
 def vail_sample_snapshots(tmp_path_factory):
     import os
@@ -174,6 +178,20 @@ def main():
     exclusions = [dict(module=str(p.relative_to(source)), reason=exclusion_reason(p.relative_to(source)))
                   for p in sorted(source.rglob('test_*.py')) if exclusion_reason(p.relative_to(source))]
     (output / 'scope-exclusions.json').write_text(json.dumps(exclusions, indent=2) + '\n')
+    original_conftest = source / 'conftest.py'
+    reset_definition = None
+    if original_conftest.exists():
+        reset_definition = next((node for node in ast.parse(original_conftest.read_text()).body
+                                 if isinstance(node, ast.FunctionDef)
+                                 and node.name == 'reset_global_randomness'), None)
+    fixture_manifest = dict(randomness_reset=dict(
+        replacement='vail.reset_global_randomness', scope='function', autouse=True,
+        timing='pytest autouse fixture before each test',
+        upstream_fixture='conftest.py::reset_global_randomness' if reset_definition else None,
+        upstream_line=reset_definition.lineno if reset_definition else None,
+        upstream_conftest_sha256=hashlib.sha256(original_conftest.read_bytes()).hexdigest()
+        if original_conftest.exists() else None))
+    (output / 'fixture-adaptations.json').write_text(json.dumps(fixture_manifest, indent=2) + '\n')
     files = [p for p in sorted(source.rglob('test_*.py'))
              if not exclusion_reason(p.relative_to(source))
              if args.include_backend or 'backend' not in p.relative_to(source).parts]

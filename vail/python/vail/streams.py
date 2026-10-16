@@ -83,11 +83,14 @@ class StreamExpression:
 
         return aggregate(self._array, f)
 
-    def _aggregate_scan(self, f):
-        """Emit exclusive reducer results using one native state per reducer.
+    def aggregate_scan(self, f):
+        """Emit each callback result using the preceding elements' scan state.
 
-        Bind the input and zip completed scans outside the output map. The
-        callback sees scalar snapshots, never a captured array of prior states.
+        The callback receives the current element and may use ``hl.scan``
+        reducers. The first element sees each reducer's initial state; the
+        current element is included starting at the following output position.
+        Missing input arrays produce missing arrays, and empty inputs produce
+        empty outputs.
         """
         from uuid import uuid4
         from .expressions import Expression, _IR, _merge_sources, bind, cast, if_else, literal, missing, struct
@@ -242,7 +245,7 @@ class StreamExpression:
 
         return StreamExpression(bind(with_input, self._array))
 
-    aggregate_scan = _aggregate_scan
+    _aggregate_scan = aggregate_scan
 
     def grouped(self, n):
         size = as_expr(n)
@@ -255,7 +258,11 @@ class StreamExpression:
 
 
 def stream_range(start, stop=None, step=1):
-    """Build a lazy int32 range stream, matching Hail's ``_stream_range``."""
+    """Build a lazy int32 stream from start (inclusive) to stop (exclusive).
+
+    With one argument, start is zero. Step must be nonzero and may be negative.
+    Use ``to_array()`` to obtain an array expression.
+    """
     if stop is None:
         stop = start
         start = 0

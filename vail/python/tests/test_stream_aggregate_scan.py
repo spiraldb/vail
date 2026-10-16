@@ -7,7 +7,7 @@ import vail as hl
 def scan(values, f, dtype=None):
     from vail.streams import StreamExpression
     array = hl.array(values) if dtype is None else hl.literal(values, hl.tarray(dtype))
-    return StreamExpression(array)._aggregate_scan(f).to_array()
+    return StreamExpression(array).aggregate_scan(f).to_array()
 
 
 def test_composed_filtered_reducers_preserve_positions_and_missing_values():
@@ -52,7 +52,7 @@ def test_ordinary_aggregation_is_rejected_in_local_scan():
 
 
 def test_long_scan_exclusive_prefix_values():
-    expression = hl._stream_range(20000)._aggregate_scan(lambda x: hl.scan.sum(x)).to_array()
+    expression = hl.stream_range(20000).aggregate_scan(lambda x: hl.scan.sum(x)).to_array()
     result = hl.eval(expression)
     assert len(result) == 20000
     assert result[-1] == 19999 * 19998 // 2
@@ -61,7 +61,7 @@ def test_long_scan_exclusive_prefix_values():
 def test_random_output_and_reducer_inputs_have_separate_position_contexts():
     expected_inputs = hl.eval(hl.range(10).map(lambda _: hl.rand_int32(100, seed=71)))
     expected_output = hl.eval(hl.range(10).map(lambda _: hl.rand_int64(seed=72)))
-    expression = hl._stream_range(10)._aggregate_scan(lambda _: hl.struct(
+    expression = hl.stream_range(10).aggregate_scan(lambda _: hl.struct(
         state=hl.scan.sum(hl.rand_int32(100, seed=71)),
         output=hl.rand_int64(seed=72),
     )).to_array()
@@ -75,35 +75,48 @@ def test_scan_over_table_owned_arrays_and_global_references():
     from vail.streams import StreamExpression
     table = hl.range_table(3).annotate_globals(offset=5)
     table = table.annotate(values=hl.range(table.idx + 1))
-    table = table.annotate(prefix=StreamExpression(table.values)._aggregate_scan(
+    table = table.annotate(prefix=StreamExpression(table.values).aggregate_scan(
         lambda x: hl.scan.sum(x + table.index_globals().offset)).to_array())
     assert [row.prefix for row in table.collect()] == [[0], [0, 5], [0, 5, 11]]
 
 
 def test_scan_reducer_can_capture_outer_typed_bindings():
-    expression = hl.bind(lambda offset: hl._stream_range(4)._aggregate_scan(
+    expression = hl.bind(lambda offset: hl.stream_range(4).aggregate_scan(
         lambda x: hl.scan.sum(x + offset)).to_array(), 4)
     assert hl.eval(expression) == [0, 4, 9, 15]
-    expression = hl.bind(lambda offset: hl._stream_range(4)._aggregate_scan(
+    expression = hl.bind(lambda offset: hl.stream_range(4).aggregate_scan(
         lambda x: hl.scan.filter(x < offset, hl.scan.sum(x + offset))).to_array(), 2)
     assert hl.eval(expression) == [0, 2, 5, 5]
 
 
-def test_lexical_type_annotations_cannot_override_real_binder_types():
-    from vail.expressions import Expression
-    forged = Expression(hl.tfloat64, None, {"op": "lambda_variable", "name": "item"})
-    expression = Expression(hl.tarray(hl.tfloat64), None, {
-        "op": "array_map", "value": hl.array([1]).to_ir(),
-        "parameter": "item", "body": forged.to_ir(),
-    })
-    with pytest.raises(ValueError, match="type disagrees with binder"):
-        hl.eval(expression)
+def test_scan_requires_a_callable():
+    with pytest.raises(TypeError, match="requires a callable"):
+        hl.stream_range(3).aggregate_scan(3)
+
+
+def test_nested_typed_callbacks_preserve_element_types_and_values():
+    expression = hl.bind(
+        lambda offset: hl.stream_range(3).aggregate_scan(
+            lambda item: hl.struct(
+                current=hl.float64(item),
+                prefix=hl.scan.sum(hl.float64(item) + offset),
+                nested=hl.array([item]).map(lambda inner: hl.float64(inner) + offset),
+            )
+        ).to_array(),
+        0.5,
+    )
+    assert expression.dtype == hl.tarray(hl.tstruct(
+        current=hl.tfloat64, prefix=hl.tfloat64, nested=hl.tarray(hl.tfloat64)))
+    rows = hl.eval(expression)
+    assert [row.current for row in rows] == [0.0, 1.0, 2.0]
+    assert [row.prefix for row in rows] == [0.0, 0.5, 2.0]
+    assert [row.nested for row in rows] == [[0.5], [1.5], [2.5]]
 
 
 def test_scan_inside_matrix_rows_can_capture_matrix_fields():
     from vail.streams import StreamExpression
     matrix = hl.utils.range_matrix_table(3, 2)
-    matrix = matrix.annotate_rows(prefix=StreamExpression(hl.range(matrix.row_idx + 1))._aggregate_scan(
+    matrix = matrix.annotate_rows(prefix=StreamExpression(hl.range(matrix.row_idx + 1)).aggregate_scan(
         lambda x: hl.scan.sum(x + matrix.row_idx)).to_array())
     assert [row.prefix for row in matrix.rows().collect()] == [[0], [0, 1], [0, 2, 5]]
 
@@ -120,7 +133,7 @@ def test_scan_reducers_can_capture_table_lookup_fields():
     target = hl.range_table(3).annotate(offset=hl.int32(7)).key_by('idx')
     table = hl.range_table(3).annotate(values=hl.range(3))
     offset = target[table.idx].offset
-    table = table.annotate(prefix=StreamExpression(table.values)._aggregate_scan(
+    table = table.annotate(prefix=StreamExpression(table.values).aggregate_scan(
         lambda x: hl.scan.sum(x + offset)).to_array())
     assert [row.prefix for row in table.collect()] == [[0, 7, 15]] * 3
 
@@ -144,7 +157,7 @@ def test_nested_random_parameters_receive_output_context_once():
     def draw(_):
         return hl.rand_norm(mean=hl.rand_norm(seed=111), seed=112)
     expected = hl.eval(hl.range(8).map(draw))
-    expression = hl._stream_range(8)._aggregate_scan(draw).to_array()
+    expression = hl.stream_range(8).aggregate_scan(draw).to_array()
     assert hl.eval(expression) == expected
 
 

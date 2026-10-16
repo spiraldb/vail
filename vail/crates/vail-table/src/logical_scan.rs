@@ -366,7 +366,7 @@ fn lower_native_prefix(
     let mut local_names = Vec::with_capacity(nodes.len());
     let mut total_aggregates = Vec::with_capacity(nodes.len());
     let mut total_names = Vec::with_capacity(nodes.len());
-    let mut shared_windows: Vec<(Expr, String, String)> = Vec::new();
+    let mut shared_windows: HashMap<Expr, (String, String)> = HashMap::new();
     for (i, (kind, value)) in kinds.iter().enumerate() {
         // A row count is the sum of one per input row; the same native sum
         // kernel handles its exclusive local prefix and partition total.
@@ -408,17 +408,14 @@ fn lower_native_prefix(
         local_window.params.order_by = vec![datafusion_expr::col(&ordinal_name).sort(true, true)];
         local_window.params.window_frame = frame();
         let expression = Expr::WindowFunction(Box::new(local_window));
-        if let Some((_, local_name, total_name)) = shared_windows
-            .iter()
-            .find(|(existing, _, _)| existing == &expression)
-        {
+        if let Some((local_name, total_name)) = shared_windows.get(&expression) {
             local_names.push(local_name.clone());
             total_names.push(total_name.clone());
         } else {
             let total_name = unique(&mut used, &format!("__scan_native_total_{i}"));
             local_windows.push(expression.clone().alias(&local_name));
             total_aggregates.push(udf.call(vec![arg]).alias(&total_name));
-            shared_windows.push((expression, local_name.clone(), total_name.clone()));
+            shared_windows.insert(expression, (local_name.clone(), total_name.clone()));
             local_names.push(local_name);
             total_names.push(total_name);
         }
@@ -666,7 +663,8 @@ pub(crate) fn lower(
     let mut local_windows = Vec::with_capacity(leaves.len());
     // Equal windows share one reducer state, partition summary and carry.
     // This also keeps full WindowFunction nodes out of scalar CSE projections.
-    let mut shared_windows: Vec<(Expr, String, String, String, Option<String>)> = Vec::new();
+    let mut shared_windows: HashMap<Expr, (String, String, String, Option<String>)> =
+        HashMap::new();
     for leaf in &mut leaves {
         let arg = vail_execution::logical_expr::lower_logical_with_bindings(
             &leaf.argument,
@@ -709,22 +707,21 @@ pub(crate) fn lower(
             ));
         }
         let expression = Expr::WindowFunction(Box::new(window));
-        if let Some((_, local, total, carry, validation)) = shared_windows
-            .iter()
-            .find(|(existing, _, _, _, _)| existing == &expression)
-        {
+        if let Some((local, total, carry, validation)) = shared_windows.get(&expression) {
             leaf.local = local.clone();
             leaf.total = total.clone();
             leaf.carry = carry.clone();
             leaf.validation = validation.clone();
         } else {
-            shared_windows.push((
+            shared_windows.insert(
                 expression.clone(),
-                leaf.local.clone(),
-                leaf.total.clone(),
-                leaf.carry.clone(),
-                leaf.validation.clone(),
-            ));
+                (
+                    leaf.local.clone(),
+                    leaf.total.clone(),
+                    leaf.carry.clone(),
+                    leaf.validation.clone(),
+                ),
+            );
             local_windows.push(expression.alias(&leaf.local));
         }
     }
