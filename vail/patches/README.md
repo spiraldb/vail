@@ -68,3 +68,35 @@ conversion and file boundaries, without asserting physical chunk counts. Public
 storage regressions cover one- and multi-field structs, independent nested
 validity, empty structs, colliding user names, sliced Arrow validity buffers,
 multiple input batches, and key filters.
+
+# Arrow nested struct slice offsets
+
+`arrow-data/` contains the published Apache Arrow `arrow-data` 59.2.0 crate
+source, retaining its Apache-2.0 license and NOTICE. Packaging-only `Cargo.lock`
+and `Cargo.toml.orig` are omitted. `arrow-data-vail.patch` backports exactly the
+struct branch of `ArrayData::slice` from published `arrow-data` 60.0.0; the
+workspace remains on Arrow 59.2.0 throughout.
+
+A struct has no value buffers of its own. Slicing its children and retaining the
+same offset on the parent caused nested `StructArray::from(ArrayData)` to apply
+the offset twice. This panicked while importing valid sliced PyArrow nested
+structs through the Arrow C Stream, before table partitioning or storage. The
+backport sends the cumulative parent offset to the children and resets the
+struct's offset to zero. Its already-offset null buffer is sliced only by the
+new relative offset. All data and validity buffers remain shared.
+
+The published 59.2.0 crate archive SHA-256 is
+`723fe4aeed7604e00b9883a465af4ff0a0e6c44c03e41a68c3d1cbc403e0e44d`.
+The published 60.0.0 archive SHA-256 is
+`5aa06d5e22786c4966ffc4d2f171d0cb65d95f6bdea108a14e8c335e9faa437f`;
+its `src/data.rs` SHA-256 is
+`c99bc27bc5bfadf36ab38773d1a12f0039ee8d0818bde6f856163e7dd2144093`.
+The cached source was checked byte-for-byte against that archive. Neither
+archive contains `.cargo_vcs_info.json`; provenance is the versioned published
+crate contents rather than an inferred Git commit.
+
+Native public API regressions compare nested `ArrayData` slices, repeated and
+empty slices, and C Data imports with nonzero parent and independent child
+buffer offsets against concrete Arrow array slices. The public PyArrow C Stream
+storage test remains unchanged: its input passes PyArrow full validation and a
+PyArrow C Stream export/import round trip.
