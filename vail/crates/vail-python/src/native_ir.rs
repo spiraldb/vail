@@ -1064,10 +1064,10 @@ impl NativeExpr {
                 continue;
             }
             match node {
-                Expr::MatrixField { axis, name } if axis == "entry" => {
+                Expr::MatrixField { axis, name, .. } if axis == "entry" => {
                     entries.insert(name.clone());
                 }
-                Expr::MatrixField { axis, name } if axis == "col" => {
+                Expr::MatrixField { axis, name, .. } if axis == "col" => {
                     columns.insert(name.clone());
                 }
                 Expr::MatrixColumnPosition {} => position = true,

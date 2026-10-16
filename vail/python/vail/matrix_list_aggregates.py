@@ -17,7 +17,8 @@ def reduce_row_predicate(matrix, expr, base):
     reductions can instead apply entry presence inside the primitive projection,
     leaving DataFusion to map the predicate and reduce the resulting list.
     """
-    from . import if_else, literal, struct, sum as array_sum
+    from . import if_else, literal, missing, struct
+    from .collections import _function
     from .types import tfloat64
     from .matrixtable import _CELLS, _COL, _PRESENT, _VALUE, _zip_arrays
 
@@ -55,28 +56,22 @@ def reduce_row_predicate(matrix, expr, base):
         def project(item):
             cell = item["1"]
             value = matrix._lower_cell(predicate, base, cell, item["2"])
-            value = ~value if function == "all" else value
-            selected = if_else(value, literal(1, tint64), literal(0, tint64), missing_false=True)
-            return if_else(cell[_PRESENT], selected, literal(0, tint64))
+            return if_else(cell[_PRESENT], value, missing(tbool))
 
     else:
         items = cells
 
         def project(cell):
             value = matrix._lower_cell(predicate, base, cell, struct())
-            value = ~value if function == "all" else value
-            selected = if_else(value, literal(1, tint64), literal(0, tint64), missing_false=True)
-            return if_else(cell[_PRESENT], selected, literal(0, tint64))
+            return if_else(cell[_PRESENT], value, missing(tbool))
 
-    count = array_sum(items.map(project))
-    if function == "any":
-        return count > 0
-    if function == "all":
-        return count == 0
+    values = items.map(project)
     if function == "fraction":
-        present = array_sum(base[_CELLS].map(lambda cell: cast(cell[_PRESENT], tint64)))
+        count = _function("__vail_list_reduce_count_where", [values], tint64)
+        present = _function("__vail_list_reduce_count_where",
+                            [base[_CELLS].map(lambda cell: cell[_PRESENT])], tint64)
         return if_else(present > 0, count / present, literal(float("nan"), tfloat64))
-    return count
+    return _function("__vail_list_reduce_" + function, [values], expr.dtype)
 
 
 def reduce_list(
