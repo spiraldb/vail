@@ -27,11 +27,7 @@ impl Call {
     }
     /// Validate physical fields, including zero padding and unphased order.
     pub fn from_fields(first: u16, second: u16, ploidy: u8, phased: bool) -> Result<Self, String> {
-        if ploidy > 2
-            || (ploidy == 0 && first != 0)
-            || (ploidy < 2 && second != 0)
-            || (ploidy == 2 && !phased && first > second)
-        {
+        if !Self::fields_are_valid(first, second, ploidy, phased) {
             return Err("invalid Call ploidy, padding, or allele order".into());
         }
         Ok(Self {
@@ -39,6 +35,13 @@ impl Call {
             ploidy,
             phased,
         })
+    }
+    /// Check canonical physical fields without allocating or constructing a Call.
+    pub fn fields_are_valid(first: u16, second: u16, ploidy: u8, phased: bool) -> bool {
+        (ploidy <= 2)
+            & ((ploidy != 0) | (first == 0))
+            & ((ploidy >= 2) | (second == 0))
+            & ((ploidy != 2) | phased | (first <= second))
     }
     pub fn alleles(&self) -> &[u16] {
         &self.alleles[..usize::from(self.ploidy)]
