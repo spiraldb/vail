@@ -1,0 +1,1343 @@
+{
+  "profile": "rebased-profile.json.gz",
+  "sidecar": "rebased-profile.json.syms.json",
+  "sample_interval_ms": 2.0,
+  "threads": [
+    {
+      "name": "tokio-rt-worker",
+      "samples": 12780,
+      "duration_ms": 38273.429167,
+      "stack_contains": {
+        "datafusion_join": 12765,
+        "arrow": 12765,
+        "datafusion_execution": 12765
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "_platform_memmove",
+          "samples": 1276,
+          "percent": 9.98
+        },
+        {
+          "name": "arrow_arith::arity::try_binary::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, vail_execution::expressions::columnar_numeric::{closure#1}, arrow_array::types::Int64Type>",
+          "samples": 803,
+          "percent": 6.28
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#1}",
+          "samples": 731,
+          "percent": 5.72
+        },
+        {
+          "name": "madvise",
+          "samples": 635,
+          "percent": 4.97
+        },
+        {
+          "name": "__bzero",
+          "samples": 627,
+          "percent": 4.91
+        },
+        {
+          "name": "arrow_select::merge::merge_n::<datafusion_physical_expr::expressions::case::PartialResultIndex>",
+          "samples": 558,
+          "percent": 4.37
+        },
+        {
+          "name": "arrow_ord::cmp::apply_op::<&arrow_array::array::boolean_array::BooleanArray, <&arrow_array::array::boolean_array::BooleanArray as arrow_ord::cmp::ArrayOrd>::is_eq>",
+          "samples": 552,
+          "percent": 4.32
+        },
+        {
+          "name": "pow",
+          "samples": 461,
+          "percent": 3.61
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 389,
+          "percent": 3.04
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 366,
+          "percent": 2.86
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::from_value",
+          "samples": 346,
+          "percent": 2.71
+        },
+        {
+          "name": "<arrow_buffer::builder::boolean::BooleanBufferBuilder>::append_packed_range",
+          "samples": 312,
+          "percent": 2.44
+        },
+        {
+          "name": "arrow_buffer::util::bit_util::apply_bitwise_binary_op::<<arrow_buffer::builder::boolean::BooleanBufferBuilder>::append_packed_range::{closure#0}, &[u8]>",
+          "samples": 276,
+          "percent": 2.16
+        },
+        {
+          "name": "arrow_buffer::util::bit_util::byte_aligned_bitwise_bin_op_helper::<<arrow_buffer::builder::boolean::BooleanBufferBuilder>::append_packed_range::{closure#0}, &[u8]>",
+          "samples": 242,
+          "percent": 1.89
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Float64Type, arrow_array::types::Int64Type>::{closure#0}, arrow_array::types::Int64Type, arrow_schema::error::ArrowError>",
+          "samples": 240,
+          "percent": 1.88
+        },
+        {
+          "name": "<vail_execution::calls::CallRows>::get",
+          "samples": 202,
+          "percent": 1.58
+        },
+        {
+          "name": "arrow_data::transform::utils::try_extend_offsets::<i32>",
+          "samples": 198,
+          "percent": 1.55
+        },
+        {
+          "name": "datafusion_functions_nested::make_array::make_array_inner",
+          "samples": 188,
+          "percent": 1.47
+        },
+        {
+          "name": "vail_ordering::call::pack",
+          "samples": 179,
+          "percent": 1.4
+        },
+        {
+          "name": "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<i32>>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_utf8<i32>::{closure#0}>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::scan::Scan<_, _, _> as core::iter::traits::iterator::Iterator>::try_fold::scan<core::result::Result<(usize, usize), arrow_schema::error::ArrowError>, usize, core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, (), core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_utf8<i32>::{closure#0}>::{closure#1}, core::iter::traits::iterator::Iterator::try_for_each::call<core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_utf8<i32>::{closure#0}>::{closure#2}>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::result::Result<(), arrow_schema::error::ArrowError>>>",
+          "samples": 176,
+          "percent": 1.38
+        },
+        {
+          "name": "arrow_buffer::util::bit_mask::set_bits",
+          "samples": 167,
+          "percent": 1.31
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::unary::<arrow_arith::numeric::integer_op<arrow_array::types::Int64Type>::{closure#2}, arrow_array::types::Int64Type>",
+          "samples": 160,
+          "percent": 1.25
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::unary::<arrow_arith::numeric::integer_op<arrow_array::types::Int64Type>::{closure#22}, arrow_array::types::Int64Type>",
+          "samples": 148,
+          "percent": 1.16
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u32>>::from_iter::<core::ops::range::Range<u32>>",
+          "samples": 145,
+          "percent": 1.13
+        },
+        {
+          "name": "arrow_data::transform::structure::build_extend::{closure#0}",
+          "samples": 142,
+          "percent": 1.11
+        },
+        {
+          "name": "vail_execution::expressions::array_index_rows",
+          "samples": 137,
+          "percent": 1.07
+        },
+        {
+          "name": "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<i32>>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::scan::Scan<_, _, _> as core::iter::traits::iterator::Iterator>::try_fold::scan<core::result::Result<(usize, usize), arrow_schema::error::ArrowError>, usize, core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, (), core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#1}, core::iter::traits::iterator::Iterator::try_for_each::call<core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#2}>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::result::Result<(), arrow_schema::error::ArrowError>>>",
+          "samples": 135,
+          "percent": 1.06
+        },
+        {
+          "name": "<alloc::vec::Vec<u64> as alloc::vec::spec_extend::SpecExtend<u64, core::iter::adapters::map::Map<core::ops::range::Range<usize>, arrow_ord::cmp::collect_bool<arrow_ord::cmp::apply_op<&arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericBinaryType<i32>>, <&arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericBinaryType<i32>> as arrow_ord::cmp::ArrayOrd>::is_eq>::{closure#2}>::{closure#0}>>>::spec_extend",
+          "samples": 134,
+          "percent": 1.05
+        },
+        {
+          "name": "<arrow_buffer::util::bit_iterator::BitSliceIterator as core::iter::traits::iterator::Iterator>::next",
+          "samples": 128,
+          "percent": 1.0
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::ResultBuilder>::add_partial_result",
+          "samples": 127,
+          "percent": 0.99
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, vail_execution::expressions::columnar_numeric::{closure#1}, arrow_array::types::Int64Type>",
+          "samples": 122,
+          "percent": 0.95
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int32Type, arrow_array::types::Int64Type>::{closure#0}, arrow_array::types::Int64Type, arrow_schema::error::ArrowError>",
+          "samples": 121,
+          "percent": 0.95
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::unary::<arrow_arith::numeric::float_op<arrow_array::types::Float64Type>::{closure#19}, arrow_array::types::Float64Type>",
+          "samples": 116,
+          "percent": 0.91
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 115,
+          "percent": 0.9
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::try_unary::<datafusion_functions::utils::calculate_binary_math_cast<arrow_array::types::Float64Type, arrow_array::types::Float64Type, arrow_array::types::Float64Type, datafusion_functions::math::power::float64_power_checked>::{closure#1}, arrow_array::types::Float64Type, arrow_schema::error::ArrowError>",
+          "samples": 114,
+          "percent": 0.89
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::unary::<arrow_arith::numeric::float_op<arrow_array::types::Float64Type>::{closure#9}, arrow_array::types::Float64Type>",
+          "samples": 112,
+          "percent": 0.88
+        },
+        {
+          "name": "<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<arrow_select::take::take_bits<arrow_array::types::UInt32Type>::{closure#2}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<arrow_select::take::take_bits<arrow_array::types::UInt32Type>::{closure#2}>::{closure#0}>>::{closure#0}>::{closure#0}>",
+          "samples": 109,
+          "percent": 0.85
+        },
+        {
+          "name": "0x69b7f94",
+          "samples": 106,
+          "percent": 0.83
+        },
+        {
+          "name": "vail_ordering::call::decode",
+          "samples": 101,
+          "percent": 0.79
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Float64Type>::{closure#0}, arrow_array::types::Float64Type, arrow_schema::error::ArrowError>",
+          "samples": 101,
+          "percent": 0.79
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6090,
+      "duration_ms": 38273.429167,
+      "stack_contains": {
+        "datafusion_join": 6068,
+        "arrow": 6067,
+        "datafusion_execution": 6068,
+        "datafusion_window": 2
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "_platform_memmove",
+          "samples": 536,
+          "percent": 8.8
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#1}",
+          "samples": 466,
+          "percent": 7.65
+        },
+        {
+          "name": "arrow_arith::arity::try_binary::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, vail_execution::expressions::columnar_numeric::{closure#1}, arrow_array::types::Int64Type>",
+          "samples": 449,
+          "percent": 7.37
+        },
+        {
+          "name": "madvise",
+          "samples": 336,
+          "percent": 5.52
+        },
+        {
+          "name": "__bzero",
+          "samples": 320,
+          "percent": 5.25
+        },
+        {
+          "name": "arrow_ord::cmp::apply_op::<&arrow_array::array::boolean_array::BooleanArray, <&arrow_array::array::boolean_array::BooleanArray as arrow_ord::cmp::ArrayOrd>::is_eq>",
+          "samples": 309,
+          "percent": 5.07
+        },
+        {
+          "name": "pow",
+          "samples": 303,
+          "percent": 4.98
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 192,
+          "percent": 3.15
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::from_value",
+          "samples": 177,
+          "percent": 2.91
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 148,
+          "percent": 2.43
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Float64Type, arrow_array::types::Int64Type>::{closure#0}, arrow_array::types::Int64Type, arrow_schema::error::ArrowError>",
+          "samples": 143,
+          "percent": 2.35
+        },
+        {
+          "name": "arrow_select::merge::merge_n::<datafusion_physical_expr::expressions::case::PartialResultIndex>",
+          "samples": 136,
+          "percent": 2.23
+        },
+        {
+          "name": "arrow_buffer::util::bit_mask::set_bits",
+          "samples": 114,
+          "percent": 1.87
+        },
+        {
+          "name": "arrow_data::transform::utils::try_extend_offsets::<i32>",
+          "samples": 112,
+          "percent": 1.84
+        },
+        {
+          "name": "<vail_execution::calls::CallRows>::get",
+          "samples": 98,
+          "percent": 1.61
+        },
+        {
+          "name": "datafusion_functions_nested::make_array::make_array_inner",
+          "samples": 97,
+          "percent": 1.59
+        },
+        {
+          "name": "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<i32>>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_utf8<i32>::{closure#0}>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::scan::Scan<_, _, _> as core::iter::traits::iterator::Iterator>::try_fold::scan<core::result::Result<(usize, usize), arrow_schema::error::ArrowError>, usize, core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, (), core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_utf8<i32>::{closure#0}>::{closure#1}, core::iter::traits::iterator::Iterator::try_for_each::call<core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_utf8<i32>::{closure#0}>::{closure#2}>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::result::Result<(), arrow_schema::error::ArrowError>>>",
+          "samples": 90,
+          "percent": 1.48
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::unary::<arrow_arith::numeric::integer_op<arrow_array::types::Int64Type>::{closure#2}, arrow_array::types::Int64Type>",
+          "samples": 87,
+          "percent": 1.43
+        },
+        {
+          "name": "vail_ordering::call::pack",
+          "samples": 85,
+          "percent": 1.4
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u32>>::from_iter::<core::ops::range::Range<u32>>",
+          "samples": 78,
+          "percent": 1.28
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::unary::<arrow_arith::numeric::integer_op<arrow_array::types::Int64Type>::{closure#22}, arrow_array::types::Int64Type>",
+          "samples": 75,
+          "percent": 1.23
+        },
+        {
+          "name": "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::slice::iter::Iter<i32>>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::scan::Scan<_, _, _> as core::iter::traits::iterator::Iterator>::try_fold::scan<core::result::Result<(usize, usize), arrow_schema::error::ArrowError>, usize, core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, (), core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#1}, core::iter::traits::iterator::Iterator::try_for_each::call<core::result::Result<(usize, core::ops::range::Range<usize>), arrow_schema::error::ArrowError>, core::result::Result<(), arrow_schema::error::ArrowError>, <arrow_data::data::ArrayData>::validate_each_offset<i32, <arrow_data::data::ArrayData>::validate_offsets_full<i32>::{closure#0}>::{closure#2}>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::result::Result<(), arrow_schema::error::ArrowError>>>",
+          "samples": 73,
+          "percent": 1.2
+        },
+        {
+          "name": "vail_execution::expressions::array_index_rows",
+          "samples": 71,
+          "percent": 1.17
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::ResultBuilder>::add_partial_result",
+          "samples": 70,
+          "percent": 1.15
+        },
+        {
+          "name": "<alloc::vec::Vec<u64> as alloc::vec::spec_extend::SpecExtend<u64, core::iter::adapters::map::Map<core::ops::range::Range<usize>, arrow_ord::cmp::collect_bool<arrow_ord::cmp::apply_op<&arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericBinaryType<i32>>, <&arrow_array::array::byte_array::GenericByteArray<arrow_array::types::GenericBinaryType<i32>> as arrow_ord::cmp::ArrayOrd>::is_eq>::{closure#2}>::{closure#0}>>>::spec_extend",
+          "samples": 70,
+          "percent": 1.15
+        },
+        {
+          "name": "arrow_buffer::util::bit_util::byte_aligned_bitwise_bin_op_helper::<<arrow_buffer::builder::boolean::BooleanBufferBuilder>::append_packed_range::{closure#0}, &[u8]>",
+          "samples": 67,
+          "percent": 1.1
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::unary::<arrow_arith::numeric::float_op<arrow_array::types::Float64Type>::{closure#19}, arrow_array::types::Float64Type>",
+          "samples": 67,
+          "percent": 1.1
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>, vail_execution::expressions::columnar_numeric::{closure#1}, arrow_array::types::Int64Type>",
+          "samples": 66,
+          "percent": 1.08
+        },
+        {
+          "name": "arrow_data::transform::structure::build_extend::{closure#0}",
+          "samples": 65,
+          "percent": 1.07
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int32Type, arrow_array::types::Int64Type>::{closure#0}, arrow_array::types::Int64Type, arrow_schema::error::ArrowError>",
+          "samples": 63,
+          "percent": 1.03
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::unary::<arrow_arith::numeric::float_op<arrow_array::types::Float64Type>::{closure#9}, arrow_array::types::Float64Type>",
+          "samples": 63,
+          "percent": 1.03
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 58,
+          "percent": 0.95
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Float64Type>::{closure#0}, arrow_array::types::Float64Type, arrow_schema::error::ArrowError>",
+          "samples": 57,
+          "percent": 0.94
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type>>::try_unary::<datafusion_functions::utils::calculate_binary_math_cast<arrow_array::types::Float64Type, arrow_array::types::Float64Type, arrow_array::types::Float64Type, datafusion_functions::math::power::float64_power_checked>::{closure#1}, arrow_array::types::Float64Type, arrow_schema::error::ArrowError>",
+          "samples": 55,
+          "percent": 0.9
+        },
+        {
+          "name": "vail_ordering::call::decode",
+          "samples": 54,
+          "percent": 0.89
+        },
+        {
+          "name": "<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<arrow_select::take::take_bits<arrow_array::types::UInt32Type>::{closure#2}>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<u64, <alloc::vec::Vec<u64>>::extend_trusted<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <arrow_buffer::buffer::mutable::MutableBuffer>::collect_bool<arrow_select::take::take_bits<arrow_array::types::UInt32Type>::{closure#2}>::{closure#0}>>::{closure#0}>::{closure#0}>",
+          "samples": 53,
+          "percent": 0.87
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#0}",
+          "samples": 52,
+          "percent": 0.85
+        },
+        {
+          "name": "arrow_buffer::util::bit_util::apply_bitwise_binary_op::<<arrow_buffer::builder::boolean::BooleanBufferBuilder>::append_packed_range::{closure#0}, &[u8]>",
+          "samples": 50,
+          "percent": 0.82
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 49,
+          "percent": 0.8
+        },
+        {
+          "name": "0x69b7f94",
+          "samples": 47,
+          "percent": 0.77
+        }
+      ]
+    },
+    {
+      "name": "Thread <5276815>",
+      "samples": 790,
+      "duration_ms": 38263.819667,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 716,
+          "percent": 90.63
+        },
+        {
+          "name": "_PyEval_EvalFrameDefault",
+          "samples": 15,
+          "percent": 1.9
+        },
+        {
+          "name": "_PyObject_Malloc",
+          "samples": 6,
+          "percent": 0.76
+        },
+        {
+          "name": "_PyObject_Free",
+          "samples": 5,
+          "percent": 0.63
+        },
+        {
+          "name": "PyUnicode_FromFormatV",
+          "samples": 5,
+          "percent": 0.63
+        },
+        {
+          "name": "method_get",
+          "samples": 3,
+          "percent": 0.38
+        },
+        {
+          "name": "PyObject_GenericGetAttr",
+          "samples": 3,
+          "percent": 0.38
+        },
+        {
+          "name": "BaseException_new",
+          "samples": 2,
+          "percent": 0.25
+        },
+        {
+          "name": "free",
+          "samples": 2,
+          "percent": 0.25
+        },
+        {
+          "name": "__proc_info",
+          "samples": 2,
+          "percent": 0.25
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 2,
+          "percent": 0.25
+        },
+        {
+          "name": "_PyTuple_FromArraySteal",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_PyFunction_Vectorcall",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "vgetargs1_impl.llvm.16209033123662442850",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_platform_strchr",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "method_vectorcall.llvm.3317310209989689631",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "PyType_GenericAlloc",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_PyUnicodeWriter_PrepareInternal",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "szone_try_free_default",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "write",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "pthread_cond_destroy",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_platform_strlen",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "PyObject_CallOneArg",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "PyObject_GC_Del",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "tuplegetter_descr_get",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "meth_dealloc",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "method_vectorcall_VARARGS_KEYWORDS.llvm.8353035897684409210",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_PyFrame_ClearExceptCode",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "list_dealloc",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "PyUnicode_DecodeUTF8Stateful",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "pthread_mutex_destroy",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "lock_acquire_parse_args",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "tupledealloc",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_Py_dg_dtoa",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "type_call",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "member_set",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_PyArg_ParseTupleAndKeywords_SizeT",
+          "samples": 1,
+          "percent": 0.13
+        },
+        {
+          "name": "_tlv_get_addr",
+          "samples": 1,
+          "percent": 0.13
+        }
+      ]
+    },
+    {
+      "name": "python",
+      "samples": 253,
+      "duration_ms": 38448.584167,
+      "stack_contains": {
+        "arrow": 112,
+        "logical_optimizer": 6,
+        "datafusion_window": 1,
+        "datafusion_execution": 15,
+        "physical_optimizer": 10
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "sha256_block_armv8",
+          "samples": 31,
+          "percent": 12.25
+        },
+        {
+          "name": "_PyEval_EvalFrameDefault",
+          "samples": 24,
+          "percent": 9.49
+        },
+        {
+          "name": "gc_collect_main.llvm.6325940347975832991",
+          "samples": 7,
+          "percent": 2.77
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 7,
+          "percent": 2.77
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 7,
+          "percent": 2.77
+        },
+        {
+          "name": "__open",
+          "samples": 6,
+          "percent": 2.37
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 2.37
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 5,
+          "percent": 1.98
+        },
+        {
+          "name": "_PyObject_Malloc",
+          "samples": 5,
+          "percent": 1.98
+        },
+        {
+          "name": "dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)",
+          "samples": 5,
+          "percent": 1.98
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 5,
+          "percent": 1.98
+        },
+        {
+          "name": "type_new",
+          "samples": 4,
+          "percent": 1.58
+        },
+        {
+          "name": "deduce_unreachable",
+          "samples": 4,
+          "percent": 1.58
+        },
+        {
+          "name": "sre_ucs1_match",
+          "samples": 4,
+          "percent": 1.58
+        },
+        {
+          "name": "_PyCode_Quicken",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "r_object.llvm.9845490566179339274",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "read",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "lsl::Allocator::AllocationMetadata::pool(bool) const",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "_tlv_get_addr",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "free_tiny",
+          "samples": 3,
+          "percent": 1.19
+        },
+        {
+          "name": "__mmap",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "set_update_internal.llvm.971890845530149457",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "tupletraverse",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "dyld4::Loader::hasExportedSymbol(Diagnostics&, dyld4::RuntimeState&, char const*, dyld4::Loader::ExportedSymbolMode, dyld4::Loader::ResolverMode, dyld4::Loader::ResolvedSymbol*, dyld3::Array<dyld4::Loader const*>*) const",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "lsl::Vector<char>::reserve(unsigned long long)",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "lsl::CRC32cSW::checksum(unsigned int, std::__1::span<std::byte, (unsigned long)18446744073709551615>)",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "PyDict_GetItemWithError",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "visit_decref",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "<alloc::collections::btree::map::BTreeMap<alloc::string::String, i32>>::insert",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "_szone_free",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "func_traverse",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "_PyObject_Free",
+          "samples": 2,
+          "percent": 0.79
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 1,
+          "percent": 0.4
+        },
+        {
+          "name": "meth_traverse",
+          "samples": 1,
+          "percent": 0.4
+        },
+        {
+          "name": "OPENSSL_LH_insert",
+          "samples": 1,
+          "percent": 0.4
+        },
+        {
+          "name": "0x3b978",
+          "samples": 1,
+          "percent": 0.4
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 20,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 20,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 15,
+      "duration_ms": 38275.807792,
+      "stack_contains": {
+        "datafusion_join": 1,
+        "arrow": 2,
+        "datafusion_execution": 2
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 11,
+          "percent": 73.33
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 6.67
+        },
+        {
+          "name": "__open",
+          "samples": 1,
+          "percent": 6.67
+        },
+        {
+          "name": "<vail_execution::randomness::Rng>::direct_uniform",
+          "samples": 1,
+          "percent": 6.67
+        },
+        {
+          "name": "<vortex_array::array::typed::ArrayData<vortex_alp::alp::array::ALP> as vortex_array::array::DynArrayData>::reduce_parent",
+          "samples": 1,
+          "percent": 6.67
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 12,
+      "duration_ms": 38275.807792,
+      "stack_contains": {
+        "datafusion_sort": 1,
+        "arrow": 1,
+        "datafusion_execution": 1
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 9,
+          "percent": 75.0
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 8.33
+        },
+        {
+          "name": "<alloc::collections::btree::map::entry::VacantEntry<alloc::string::String, serde_json::value::Value>>::insert_entry",
+          "samples": 1,
+          "percent": 8.33
+        },
+        {
+          "name": "arrow_select::take::take_bytes::<arrow_array::types::GenericStringType<i32>, arrow_array::types::UInt32Type>",
+          "samples": 1,
+          "percent": 8.33
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 11,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 11,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 10,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 10,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 8,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 7,
+          "percent": 87.5
+        },
+        {
+          "name": "__psynch_mutexdrop",
+          "samples": 1,
+          "percent": 12.5
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 85.71
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 14.29
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 85.71
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 14.29
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 4,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 4,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 3,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 66.67
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 33.33
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 3,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 66.67
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 33.33
+        }
+      ]
+    },
+    {
+      "name": "Thread <5276848>",
+      "samples": 3,
+      "duration_ms": 38229.096625,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__workq_kernreturn",
+          "samples": 2,
+          "percent": 66.67
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 1,
+          "percent": 33.33
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "kevent",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38275.807792,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 2,
+      "duration_ms": 38273.429167,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    },
+    {
+      "name": "Thread <5276849>",
+      "samples": 2,
+      "duration_ms": 5093.733417,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__workq_kernreturn",
+          "samples": 2,
+          "percent": 100.0
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "package": "/private/tmp/vail-sex-specific-qc/vail/python/vail/__init__.py",
+  "native_sha256": "7ecb7cfbac3eb783db21991097c4dffa0bc89b471d143f77517a17da717d4394",
+  "upstream_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+  "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-sex-specific-qc/file-aligned-fixture.mt",
+  "status": "completed",
+  "elapsed_seconds": 15.150029875003383,
+  "cpu_seconds": 41.996538,
+  "peak_rss_bytes": 19881295872,
+  "phases": [
+    {
+      "method": "read_matrix_table",
+      "start_seconds": 0.0001068339915946126,
+      "elapsed_seconds": 0.0048334580060327426
+    },
+    {
+      "method": "annotate_cols",
+      "start_seconds": 0.02829366699734237,
+      "elapsed_seconds": 0.0015452920051757246
+    },
+    {
+      "method": "aggregate_cols",
+      "start_seconds": 0.03000170899031218,
+      "elapsed_seconds": 0.18752237501030322
+    },
+    {
+      "method": "annotate_rows",
+      "start_seconds": 0.22055758399073966,
+      "elapsed_seconds": 0.02289287500025239
+    },
+    {
+      "method": "annotate_rows",
+      "start_seconds": 0.24467033399560023,
+      "elapsed_seconds": 0.009910166001645848
+    },
+    {
+      "method": "_force_count",
+      "start_seconds": 0.2569142499996815,
+      "elapsed_seconds": 14.892994583991822,
+      "rows": 24885
+    }
+  ]
+}

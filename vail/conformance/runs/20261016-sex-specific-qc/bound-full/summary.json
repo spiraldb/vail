@@ -1,0 +1,43 @@
+{
+  "package": "/private/tmp/vail-sex-specific-qc/vail/python/vail/__init__.py",
+  "native_sha256": "dd7e7b5fc77b802c5308f14a676099a23c46d539ee5fea69012a69582ef08cdb",
+  "upstream_sha256": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+  "fixture": "/Users/danielking/projects/vail/vail/conformance/runs/20261015-nested-matrix-profile/data/profile25_mt.mt",
+  "status": "completed",
+  "elapsed_seconds": 40.76329520900617,
+  "cpu_seconds": 40.490426,
+  "peak_rss_bytes": 8670543872,
+  "phases": [
+    {
+      "method": "read_matrix_table",
+      "start_seconds": 0.00012054199760314077,
+      "elapsed_seconds": 0.004398375007440336
+    },
+    {
+      "method": "annotate_cols",
+      "start_seconds": 0.02995320899935905,
+      "elapsed_seconds": 0.001775541008100845
+    },
+    {
+      "method": "aggregate_cols",
+      "start_seconds": 0.03191162500297651,
+      "elapsed_seconds": 0.20999616700282786
+    },
+    {
+      "method": "annotate_rows",
+      "start_seconds": 0.24523087500710972,
+      "elapsed_seconds": 0.02353187499102205
+    },
+    {
+      "method": "annotate_rows",
+      "start_seconds": 0.27042070899915416,
+      "elapsed_seconds": 0.007658582995645702
+    },
+    {
+      "method": "_force_count",
+      "start_seconds": 0.2803129999956582,
+      "elapsed_seconds": 40.48288404200866,
+      "rows": 24885
+    }
+  ]
+}
