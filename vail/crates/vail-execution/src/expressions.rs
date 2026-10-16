@@ -1351,6 +1351,7 @@ impl Expr {
                 let matrix_function = matches!(
                     function.as_str(),
                     "__vail_dict_lookup"
+                        | "__vail_index_values"
                         | "__vail_list_take"
                         | "__vail_list_take_groups"
                         | "__vail_dense_cells"
@@ -3958,6 +3959,11 @@ impl PhysicalExpr for HailPhysicalExpr {
     }
     fn evaluate(&self, batch: &RecordBatch) -> datafusion_common::Result<ColumnarValue> {
         let len = batch.num_rows();
+        if let HailKind::Random(function)=&self.kind {
+            if len==0 {return Ok(ColumnarValue::Array(arrow_array::new_empty_array(&self.dtype)));}
+            let args=self.args.iter().map(|x|x.evaluate(batch)).collect::<datafusion_common::Result<Vec<_>>>()?;
+            return crate::randomness::evaluate(function,&args,&self.dtype,len).map(ColumnarValue::Array).map_err(|e|datafusion_common::DataFusionError::Execution(e.to_string()));
+        }
         let args = self
             .args
             .iter()
@@ -3965,9 +3971,7 @@ impl PhysicalExpr for HailPhysicalExpr {
             .collect::<datafusion_common::Result<Vec<_>>>()?;
         let result = (|| -> Result<ArrayRef, ExprError> {
             match &self.kind {
-                HailKind::Random(function) => {
-                    crate::randomness::evaluate(function, &args, &self.dtype, len)
-                }
+                HailKind::Random(_) => unreachable!("random inputs retain scalar form above"),
                 HailKind::RestoreArrowType => Ok(args[0].clone()),
                 HailKind::Die => {
                     if len == 0 {

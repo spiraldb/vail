@@ -5,11 +5,7 @@ Each call captures a static UID; consumers bind dynamic row and element UIDs.
 
 from .expressions import _native_expression, _native_expressions, _native_projection
 
-from .expressions import IR_NODE_TYPES
-
 import itertools
-import json
-from uuid import uuid4
 from .expressions import Expression, _IR, as_expr, cast, literal, _merge_sources
 from .types import tint32, tint64, tfloat64, tbool, tarray, tndarray, type_to_wire
 
@@ -145,8 +141,16 @@ def rand_beta(a, b, lower=None, upper=None, seed=None):
 def _array(a, dtype):
     a = as_expr(a)
     if not isinstance(a.dtype, tarray):
-        raise TypeError("parameter must be an array")
-    return a.map(lambda x: _int(x, dtype) if dtype == tint32 else _float(x))
+        raise TypeError('parameter must be an array')
+    if a.dtype.element_type == dtype:
+        return a
+    from .types import tfloat32
+    if dtype == tint32 or a.dtype.element_type not in (tint32, tint64, tfloat32, tfloat64):
+        raise TypeError('random distribution array elements have invalid type')
+    # Arrow can cast a numeric list in one operation, preserving a scalar list
+    # as one shared argument rather than expanding a callback across rows.
+    return Expression(tarray(dtype), a.source, {
+        'op': 'cast', 'dtype': type_to_wire(tarray(dtype)), 'value': a.to_ir()})
 
 
 def rand_cat(prob, seed=None):
@@ -178,20 +182,9 @@ def rand_multi_hyper(colors, nsample, seed=None):
 
 def rand_norm2d(mean=None, cov=None, seed=None):
     """Sample a bivariate normal with covariance [variance_x, covariance, variance_y]."""
-    from . import range, array
-
     mean = _array([0, 0] if mean is None else mean, tfloat64)
     cov = _array([1, 0, 1] if cov is None else cov, tfloat64)
-    x = range(2).map(lambda _: rand_norm(seed=seed))
-    root = cov[0] ** 0.5
-    return array(
-        [
-            mean[0] + root * x[0],
-            mean[1]
-            + cov[1] / root * x[0]
-            + ((cov[2] - cov[1] * cov[1] / cov[0]) ** 0.5) * x[1],
-        ]
-    )
+    return _call('norm2d', tarray(tfloat64), [mean, cov], seed)
 
 
 def shuffle(a, seed=None):
@@ -202,109 +195,16 @@ def shuffle(a, seed=None):
     return _call("shuffle", a.dtype, [a], seed)
 
 
-def _is_random(node):
-    return (
-        isinstance(node, IR_NODE_TYPES)
-        and node.get("op") == "nested_function"
-        and node.get("function", "").startswith("random_")
-    )
-
-
 def contains(node):
-    if isinstance(node, IR_NODE_TYPES):
-        return _is_random(node) or (
-            node.get("op") != "literal" and any(contains(v) for v in node.values())
-        )
-    return isinstance(node, list) and any(contains(v) for v in node)
+    return _native_expression(node).contains_random()
 
 
 def bind_context(node, uid):
-    """Prepend an enclosing lexical context to an expression callback."""
-    if isinstance(node, list):
-        return [bind_context(v, uid) for v in node]
-    if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-        return node
-    result = {k: bind_context(v, uid) for k, v in node.items()}
-    if _is_random(node):
-        result["args"][2]["elements"] = uid + result["args"][2]["elements"]
-    return result
+    return _native_expression(node).bind_random_context(_native_expressions(uid))
 
 
-def bind_rows(node, row_uid, mode, inside=None, result_parameters=frozenset()):
-    """Distinguish reducer inputs from scalar results in aggregate scopes."""
-    if inside is None:
-        inside = mode == "row"
-    if isinstance(node, list):
-        return [bind_rows(v, row_uid, mode, inside, result_parameters) for v in node]
-    if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-        return node
-    op = node.get("op")
-    scopes = {}
-    if op == "aggregate":
-        scopes = {"value": True, "init": False}
-    elif op == "aggregate_fold":
-        scopes = {"initial": False, "seq": True, "combine": False}
-    elif op == "agg_filter":
-        scopes = {"predicate": True, "body": False}
-    elif op in ("agg_explode", "agg_array"):
-        scopes = {"value": True, "body": False}
-    elif op == "agg_group_by":
-        scopes = {"key": True, "body": False}
-    result = {
-        k: bind_rows(
-            v,
-            row_uid,
-            mode,
-            scopes.get(k, inside),
-            result_parameters | {node["parameter"]}
-            if k == "body" and op == "agg_array"
-            else result_parameters,
-        )
-        for k, v in node.items()
-    }
-    if _is_random(node):
-        uid = (
-            [row_uid]
-            if inside
-            else (
-                [
-                    {
-                        "op": "aggregate",
-                        "function": "min",
-                        "value": row_uid,
-                        "options": {"__vail_result_type": "int64"},
-                    }
-                ]
-                if mode == "group"
-                else []
-            )
-        )
-        words = result["args"][2]["elements"]
-
-        def depends(value):
-            if isinstance(value, list):
-                return any(depends(v) for v in value)
-            if not isinstance(value, IR_NODE_TYPES) or value.get("op") == "literal":
-                return False
-            return (
-                value.get("op") == "lambda_variable"
-                and value["name"] in result_parameters
-            ) or any(depends(v) for v in value.values())
-
-        if not inside and mode == "group":
-            words = [
-                {
-                    "op": "aggregate",
-                    "function": "min",
-                    "value": word,
-                    "options": {"__vail_result_type": "int64"},
-                }
-                if depends(word)
-                else word
-                for word in words
-            ]
-        result["args"][2]["elements"] = uid + words
-    return result
+def bind_rows(node, row_uid, mode):
+    return _native_expression(node).bind_random_rows(_native_expression(row_uid), mode)
 
 
 def resolve(native, expressions, mode="row"):
@@ -337,7 +237,8 @@ def resolve(native, expressions, mode="row"):
         Expression(
             e.dtype,
             e.source,
-            _IR(bind_rows(e.to_ir(), uid, scope), e._global_refs, e._lookup_refs),
+            _IR((bound := bind_rows(e.to_ir(), uid, scope)), e._global_refs, e._lookup_refs,
+                row_indexed=bound.references_rows()),
             selection_name=e._selection_name,
             top_level_name=e._top_level_name,
         )
@@ -346,47 +247,24 @@ def resolve(native, expressions, mode="row"):
 
 
 def index_callback(collection, parameter, body):
-    """Use positions, including for repeated equal elements, as dynamic UIDs."""
+    """Attach positions once while retaining collection value buffers."""
     if not contains(body.to_ir()):
         return collection, body
-    from .expressions import tuple_
-    from .streams import stream_range
-
-    position_name = uuid4().hex
-    position = Expression(
-        tint32, collection.source, {"op": "lambda_variable", "name": position_name}
-    )
-    pair = tuple_([position, collection[position]])
-    indexed = Expression(
-        tarray(pair.dtype),
-        collection.source,
-        {
-            "op": "array_map",
-            "value": stream_range(collection.length()).to_array().to_ir(),
-            "parameter": position_name,
-            "body": pair.to_ir(),
-        },
-    )
-    variable = {"op": "lambda_variable", "name": parameter}
-    index = {
-        "op": "cast",
-        "dtype": "int64",
-        "value": {"op": "get_field", "value": variable, "name": "__vail_tuple_0"},
-    }
-    value = {"op": "get_field", "value": variable, "name": "__vail_tuple_1"}
-
-    def replace(node):
-        if isinstance(node, list):
-            return [replace(v) for v in node]
-        if not isinstance(node, IR_NODE_TYPES) or node.get("op") == "literal":
-            return node
-        if node.get("op") == "lambda_variable" and node.get("name") == parameter:
-            return value
-        return {k: replace(v) for k, v in node.items()}
-
+    from .collections import _cast, to_array, _function
+    from .types import tset, tdict, tstruct, ttuple
+    if isinstance(collection.dtype, tset):
+        collection = to_array(collection)
+    elif isinstance(collection.dtype, tdict):
+        collection = _cast(collection, tarray(tstruct(
+            key=collection.dtype.key_type, value=collection.dtype.value_type)))
+    pair_type = ttuple(tint32, collection.dtype.element_type)
+    indexed = _function('__vail_index_values', [collection], tarray(pair_type))
+    variable = {'op': 'lambda_variable', 'name': parameter}
+    index = {'op': 'cast', 'dtype': 'int64', 'value': {
+        'op': 'get_field', 'value': variable, 'name': '__vail_tuple_0'}}
+    value = {'op': 'get_field', 'value': variable, 'name': '__vail_tuple_1'}
     ir = body.to_ir()
-    return indexed, Expression(
-        body.dtype,
-        body.source,
-        _IR(bind_context(replace(ir), [index]), ir.references, ir.lookups),
-    )
+    replaced = _native_expression(ir).replace_parameter(parameter, _native_expression(value))
+    bound = bind_context(replaced, [index])
+    return indexed, Expression(body.dtype, body.source, _IR(
+        bound, ir.references, ir.lookups, row_indexed=body._row_indexed))

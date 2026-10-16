@@ -23,14 +23,14 @@ TYPE_DESCRIPTOR = b"vail.type"
 
 
 def same_arrow_layout(left, right):
-    """Validate buffers and names, allowing Arrow's large-offset variants."""
+    """Validate buffers and names, allowing supported Arrow string and large-offset variants."""
     pa = _pa()
     if pa.types.is_struct(left) and pa.types.is_struct(right):
         return left.num_fields == right.num_fields and all(
             a.name == b.name and same_arrow_layout(a.type, b.type) for a, b in zip(left, right))
     if (pa.types.is_list(left) or pa.types.is_large_list(left)) and pa.types.is_list(right):
         return same_arrow_layout(left.value_type, right.value_type)
-    if pa.types.is_large_string(left) and pa.types.is_string(right):
+    if (pa.types.is_large_string(left) or pa.types.is_string_view(left)) and pa.types.is_string(right):
         return True
     return left.equals(right)
 

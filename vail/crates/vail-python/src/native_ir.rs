@@ -897,6 +897,17 @@ impl NativeExpr {
         }
         visit(&self.inner, &mut std::collections::HashSet::new())
     }
+    fn references_rows(&self) -> bool {crate::random_binding::rows_referenced(&self.inner)}
+    fn bind_random_rows(&self,row: PyRef<'_,NativeExpr>,mode: &str) -> PyResult<Self> {
+        Ok(Self{inner:Arc::new(crate::random_binding::bind_rows(&self.inner,&row.inner,mode)?)})
+    }
+    fn bind_random_context(&self,uid: Vec<PyRef<'_,NativeExpr>>) -> PyResult<Self> {
+        let uid=uid.into_iter().map(|v|v.inner.clone()).collect::<Vec<_>>();
+        Ok(Self{inner:Arc::new(crate::random_binding::context(&self.inner,&uid)?)})
+    }
+    fn replace_parameter(&self,name: &str,value: PyRef<'_,NativeExpr>) -> PyResult<Self> {
+        Ok(Self{inner:Arc::new(crate::random_binding::replace_parameter(&self.inner,name,&value.inner)?)})
+    }
     fn input_global_names(&self) -> PyResult<Vec<String>> {
         crate::input_binding::global_names(&self.inner)
     }

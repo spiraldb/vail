@@ -20,6 +20,7 @@ const CID: &str = "__vail_matrix_col_id";
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 enum Operation {
+    IndexValues,
     Take,
     TakeGroups,
     DenseCells,
@@ -35,6 +36,7 @@ struct MatrixArray {
 
 pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
     let operation = match name {
+        "__vail_index_values" => Operation::IndexValues,
         "__vail_list_take" => Operation::Take,
         "__vail_list_take_groups" => Operation::TakeGroups,
         "__vail_dense_cells" => Operation::DenseCells,
@@ -42,7 +44,7 @@ pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
         "__vail_matrix_aligned" => Operation::Aligned,
         _ => return None,
     };
-    let arity = if operation == Operation::Columns {
+    let arity = if matches!(operation, Operation::Columns | Operation::IndexValues) {
         1
     } else {
         2
@@ -346,9 +348,49 @@ fn aligned(cells: &ListArray, columns: &ListArray) -> Result<ArrayRef> {
     Ok(Arc::new(BooleanArray::from(vec![true; cells.len()])))
 }
 
+fn index_values(values: &ListArray, dtype: &DataType) -> Result<ArrayRef> {
+    let DataType::List(item) = dtype else {
+        return exec_err!("indexed values require array output");
+    };
+    let DataType::Struct(fields) = item.data_type() else {
+        return exec_err!("indexed values require tuple output");
+    };
+    let first = values.value_offsets()[0] as usize;
+    let last = values.value_offsets()[values.len()] as usize;
+    let child = values.values().slice(first, last - first);
+    let mut indices = vec![0; last - first];
+    for row in 0..values.len() {
+        let start = values.value_offsets()[row] as usize - first;
+        let end = values.value_offsets()[row + 1] as usize - first;
+        for (index, slot) in indices[start..end].iter_mut().enumerate() {
+            *slot = i32::try_from(index).map_err(|_| {
+                datafusion_common::exec_datafusion_err!("collection exceeds int32 index capacity")
+            })?;
+        }
+    }
+    let pairs = StructArray::try_new(
+        fields.clone(),
+        vec![Arc::new(Int32Array::from(indices)), child],
+        None,
+    )?;
+    Ok(Arc::new(ListArray::try_new(
+        item.clone(),
+        OffsetBuffer::new(arrow_buffer::ScalarBuffer::from(
+            values
+                .value_offsets()
+                .iter()
+                .map(|v| *v - first as i32)
+                .collect::<Vec<_>>(),
+        )),
+        Arc::new(pairs),
+        values.nulls().cloned(),
+    )?))
+}
+
 impl ScalarUDFImpl for MatrixArray {
     fn name(&self) -> &str {
         match self.operation {
+            Operation::IndexValues => "__vail_index_values",
             Operation::Take => "__vail_list_take",
             Operation::TakeGroups => "__vail_list_take_groups",
             Operation::DenseCells => "__vail_dense_cells",
@@ -364,6 +406,40 @@ impl ScalarUDFImpl for MatrixArray {
             return plan_err!("{} requires lists", self.name());
         }
         match self.operation {
+            Operation::IndexValues => {
+                let DataType::List(item) = &args[0] else {
+                    unreachable!()
+                };
+                let pair = crate::expressions::Type::Tuple {
+                    tuple: vec![
+                        crate::expressions::Type::Primitive(
+                            crate::expressions::PrimitiveType::Int32,
+                        ),
+                        crate::expressions::Type::from_arrow(item.data_type())
+                            .map_err(|e| datafusion_common::DataFusionError::Plan(e.to_string()))?,
+                    ],
+                };
+                Ok(DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    vail_ordering::tag_type(
+                        DataType::Struct(
+                            vec![
+                                Arc::new(arrow_schema::Field::new(
+                                    "__vail_tuple_0",
+                                    DataType::Int32,
+                                    true,
+                                )),
+                                Arc::new(item.as_ref().clone().with_name("__vail_tuple_1")),
+                            ]
+                            .into(),
+                        ),
+                        &serde_json::to_value(pair)
+                            .map_err(|e| datafusion_common::DataFusionError::Plan(e.to_string()))?,
+                    )
+                    .map_err(|e| datafusion_common::DataFusionError::Plan(e.to_string()))?,
+                    true,
+                ))))
+            }
             Operation::Take => {
                 if !matches!(args.get(1), Some(DataType::List(field)) if field.data_type()==&DataType::Int32)
                 {
@@ -420,6 +496,7 @@ impl ScalarUDFImpl for MatrixArray {
             .collect::<Result<Vec<_>>>()?;
         let first = list(&arrays[0])?;
         let result = match self.operation {
+            Operation::IndexValues => index_values(first, &args.return_type())?,
             Operation::Take => gather(first, list(&arrays[1])?)?,
             Operation::TakeGroups => gather_groups(first, list(&arrays[1])?)?,
             Operation::DenseCells => dense_cells(

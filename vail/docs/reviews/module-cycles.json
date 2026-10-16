@@ -346,6 +346,34 @@
       ],
       "reports": [
         "vail/docs/reviews/vcf-cost.json"
+      ],
+      "merged_commit": "1c5f2972"
+    },
+    {
+      "module": "Vail random expressions, context binding, indexed callbacks and native distributions",
+      "reviewed_base": "1c5f2972",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "normalize set/dict callback iteration and attach ordinal tuples over shared value buffers",
+        "move DAG discovery/context/row/lexical parameter rewrites to memoized borrowed-child native code with scope keys",
+        "preserve alternate Arrow string child descriptors and accept supported string-view imports",
+        "retain shared scalar parameters and checked borrowed numeric/UID slices; dispatch distributions before row loops with typed output buffers",
+        "read exact Int64 dimensions, interpolate extreme finite uniform ranges safely, scale PSD covariance arithmetic",
+        "preserve multivariate hypergeometric seeded draw consumption while isolating deterministic direct/full-result shortcuts",
+        "share categorical scalar validation/total while preserving subtractive seeded selection arithmetic",
+        "normalize extreme Dirichlet gamma draws using same-draw scaled/log fallback and reject empty/all-zero concentrations",
+        "replace private/unavailable upstream RNG assertions with public scalar/row/collection/group/partition/numeric goldens and errors",
+        "lift aggregate-array result UID words from both total and grouped input scopes"
+      ],
+      "validation": [
+        "163 public Python tests passed;1 known dependency-only Vortex nested-list writer case deselected",
+        "75 Rust execution/string/variant tests passed"
+      ],
+      "excluded_tests": [
+        "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: known excluded patched Vortex ListLayoutStrategy empty nested-list writer panic"
+      ],
+      "reports": [
+        "vail/docs/reviews/random-cost.json"
       ]
     }
   ],
@@ -471,6 +499,7 @@
     "vail/crates/vail-table/src/range_lookup.rs",
     "vail/crates/vail-table/src/conditional_globals.rs",
     "vail/crates/vail-execution/src/variant_kernels.rs",
-    "vail/crates/vail-table/src/vcf_export.rs"
+    "vail/crates/vail-table/src/vcf_export.rs",
+    "vail/crates/vail-python/src/random_binding.rs"
   ]
 }
