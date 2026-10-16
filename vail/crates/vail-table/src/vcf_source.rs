@@ -21,6 +21,7 @@ pub struct VcfSource {
     batch_size: usize,
     metrics: ExecutionPlanMetricsSet,
     projection: Option<datafusion_physical_expr::projection::ProjectionExprs>,
+    decode_paths: Option<Vec<vail_vcf::DecodePath>>,
 }
 impl VcfSource {
     pub fn new(schema: SchemaRef, value: &serde_json::Value) -> Result<Self> {
@@ -35,6 +36,11 @@ impl VcfSource {
             batch_size: 8192,
             metrics: ExecutionPlanMetricsSet::new(),
             projection: None,
+            decode_paths: value
+                .get("decode_paths")
+                .map(|v| serde_json::from_value(v.clone()))
+                .transpose()
+                .map_err(|e| DataFusionError::Execution(e.to_string()))?,
         })
     }
 }
@@ -119,14 +125,6 @@ impl FileOpener for VcfOpener {
             tokio::task::spawn_blocking(move || {
                 let run = || -> vail_vcf::Result<()> {
                     let mut reader = vail_vcf::open(&path)?;
-                    let samples = if source.options.drop_samples {
-                        0
-                    } else {
-                        source.header.samples.len()
-                    };
-                    let batch_rows = source.batch_size.min((65536 / samples.max(1)).max(1));
-                    let mut parser = vail_vcf::Parser::new(source.header, source.options)?;
-                    let mut batch = parser.batch()?;
                     let indices = source.projection.as_ref().map(|p| {
                         p.expr_iter()
                             .map(|expr| {
@@ -137,6 +135,44 @@ impl FileOpener for VcfOpener {
                             .collect::<Vec<_>>()
                     });
                     let count_only = indices.as_ref().is_some_and(Vec::is_empty);
+                    let mut parser = vail_vcf::Parser::new(source.header, source.options)?;
+                    let paths = source.decode_paths.unwrap_or_else(|| {
+                        vec![
+                            vail_vcf::DecodePath {
+                                fields: vec!["__vail_matrix_row".into()],
+                                shape: false,
+                            },
+                            vail_vcf::DecodePath {
+                                fields: vec!["__vail_matrix_cells".into()],
+                                shape: false,
+                            },
+                        ]
+                    });
+                    let paths = paths
+                        .into_iter()
+                        .filter(|path| {
+                            indices.as_ref().is_none_or(|indices| {
+                                path.fields.first().is_some_and(|root| {
+                                    indices.contains(&if root == "__vail_matrix_row" {
+                                        0
+                                    } else {
+                                        1
+                                    })
+                                })
+                            })
+                        })
+                        .collect();
+                    parser = parser.with_projection(paths);
+                    let samples = if parser.reads_samples() {
+                        parser.header().samples.len()
+                    } else {
+                        0
+                    };
+                    let width = 6
+                        + parser.header().info.len()
+                        + samples.saturating_mul(parser.header().format.len().max(1));
+                    let batch_rows = source.batch_size.min((65536 / width.max(1)).max(1));
+                    let mut batch = parser.batch()?;
                     let finish = |batch: &mut vail_vcf::Batch| -> vail_vcf::Result<RecordBatch> {
                         if count_only {
                             let rows = batch.rows;

@@ -599,6 +599,10 @@ impl NativeTable {
         py.detach(|| self.runtime.block_on(self.ir.write(&path, overwrite)))
             .map_err(table_error)
     }
+    fn export_vcf(&self, py: Python<'_>, path: String, options: &Bound<'_, PyAny>) -> PyResult<()> {
+        let options=native_ir::option_value(options)?;
+        py.detach(||self.runtime.block_on(self.ir.export_vcf(&path,&options))).map_err(table_error)
+    }
     fn export_text(
         &self,
         py: Python<'_>,

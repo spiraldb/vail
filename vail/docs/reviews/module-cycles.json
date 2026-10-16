@@ -322,6 +322,30 @@
       ],
       "reports": [
         "vail/docs/reviews/qc-cost.json"
+      ],
+      "merged_commit": "e3445ab9"
+    },
+    {
+      "module": "Vail VCF import/parser/source/export and direct projection/Call adapters",
+      "reviewed_base": "e3445ab9",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "derive sample headers and entry arrays from the same physical column order",
+        "replace full Python matrix collection with bounded native Arrow serialization and prepared field renderers",
+        "decode only demanded row/INFO/FORMAT fields; retain sort/filter/array-shape and aggregate runtime dependencies",
+        "prepare dependency analysis once per action with memoized original nodes and lexical scopes",
+        "represent shape/nullness independently from legal field names",
+        "bound shared FORMAT plans, index header duplicate membership, make prepared Parser configuration immutable",
+        "use a checked stack-backed Call view and one-time schema field indexes in the writer",
+        "replace private cache/packed-storage/helper assertions and private matrix comparison tests with public values/errors/roundtrips"
+      ],
+      "validation": [
+        "64 public Python tests passed (VCF/split/QC/Matrix sum/matrix-row query)",
+        "24 public Rust table integration tests passed (IR/text/physical partitions/DataFusion plans)",
+        "4 Rust ordering tests passed; VCF library and both example targets compiled/passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/vcf-cost.json"
       ]
     }
   ],
@@ -446,6 +470,7 @@
     "vail/crates/vail-python/src/input_binding.rs",
     "vail/crates/vail-table/src/range_lookup.rs",
     "vail/crates/vail-table/src/conditional_globals.rs",
-    "vail/crates/vail-execution/src/variant_kernels.rs"
+    "vail/crates/vail-execution/src/variant_kernels.rs",
+    "vail/crates/vail-table/src/vcf_export.rs"
   ]
 }

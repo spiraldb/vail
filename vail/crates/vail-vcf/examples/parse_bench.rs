@@ -37,8 +37,7 @@ fn main() {
         }
         let seconds = started.elapsed().as_secs_f64();
         println!(
-            "{path}: rows={rows} samples={samples} formats={} decoded_bytes={bytes} seconds={seconds:.6} MiB_s={:.1} cells_s={:.0}",
-            parser.cached_formats(),
+            "{path}: rows={rows} samples={samples} decoded_bytes={bytes} seconds={seconds:.6} MiB_s={:.1} cells_s={:.0}",
             bytes as f64 / 1048576.0 / seconds,
             (rows * samples) as f64 / seconds
         );

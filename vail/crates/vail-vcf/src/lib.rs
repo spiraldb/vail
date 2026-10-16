@@ -152,6 +152,7 @@ pub fn read_header(path: &str, options: &Options) -> Result<Header> {
             .collect(),
     };
     let mut first = true;
+    let mut field_names = HashSet::new();
     loop {
         line.clear();
         if reader.read_line(&mut line).map_err(|e| e.to_string())? == 0 {
@@ -213,7 +214,7 @@ pub fn read_header(path: &str, options: &Options) -> Result<Header> {
                         } else {
                             &mut header.format
                         };
-                        if fields.iter().any(|f| f.name == name) {
+                        if !field_names.insert((group.to_owned(), name.clone())) {
                             return Err(format!("duplicate VCF {group} field {name}"));
                         }
                         fields.push(spec);
@@ -346,12 +347,14 @@ impl Header {
 struct Sink {
     dtype: Type,
     builder: Box<dyn ArrayBuilder>,
+    skipped: usize,
 }
 impl Sink {
     fn new(dtype: Type) -> Result<Self> {
         Ok(Self {
             builder: make_builder(&dtype.to_arrow().map_err(|e| e.to_string())?, 1024),
             dtype,
+            skipped: 0,
         })
     }
     /// Dispatch once per FORMAT field, then parse the whole sample stripe.
@@ -478,8 +481,16 @@ impl Sink {
         }
         Ok(())
     }
+    fn skip(&mut self, n: usize) {
+        self.skipped += n;
+    }
     fn finish(&mut self) -> ArrayRef {
-        self.builder.finish()
+        if self.skipped > 0 {
+            let n = std::mem::take(&mut self.skipped);
+            arrow_array::new_null_array(&self.dtype.to_arrow().expect("validated sink type"), n)
+        } else {
+            self.builder.finish()
+        }
     }
 }
 fn missing_element(required: bool, context: &str) -> Result<()> {
@@ -561,17 +572,98 @@ impl FormatPlan {
     }
 }
 
+/// A value-field path, or an independent request for its shape/nullness.
+/// Shape is separate from field names, so every legal user name is representable.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DecodePath {
+    pub fields: Vec<String>,
+    pub shape: bool,
+}
+struct DecodeProjection {
+    rsid: bool,
+    qual: bool,
+    filters: bool,
+    info: Vec<bool>,
+    format: Vec<bool>,
+    samples: bool,
+}
+impl DecodeProjection {
+    fn all(header: &Header) -> Self {
+        Self {
+            rsid: true,
+            qual: true,
+            filters: true,
+            info: vec![true; header.info.len()],
+            format: vec![true; header.format.len()],
+            samples: true,
+        }
+    }
+    fn from_paths(header: &Header, paths: &[DecodePath]) -> Self {
+        let (mut row_all, mut info_all, mut format_all, mut samples) = (false, false, false, false);
+        let (mut fixed, mut info, mut format) = (HashSet::new(), HashSet::new(), HashSet::new());
+        for requested in paths {
+            let path = &requested.fields;
+            match path.first().map(String::as_str) {
+                Some("__vail_matrix_row") => {
+                    if path.len() == 1 {
+                        row_all |= !requested.shape;
+                    } else {
+                        fixed.insert(path[1].as_str());
+                        if path[1] == "info" {
+                            if path.len() == 2 {
+                                info_all |= !requested.shape;
+                            } else {
+                                info.insert(path[2].as_str());
+                            }
+                        }
+                    }
+                }
+                Some("__vail_matrix_cells") => {
+                    samples = true;
+                    if !requested.shape
+                        && (path.len() == 1
+                            || (path.get(1).is_some_and(|v| v == "value") && path.len() == 2))
+                    {
+                        format_all = true;
+                    } else if path.get(1).is_some_and(|v| v == "value") {
+                        if let Some(name) = path.get(2) {
+                            format.insert(name.as_str());
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        Self {
+            rsid: row_all || fixed.contains("rsid"),
+            qual: row_all || fixed.contains("qual"),
+            filters: row_all || fixed.contains("filters"),
+            info: header
+                .info
+                .iter()
+                .map(|f| row_all || info_all || info.contains(f.name.as_str()))
+                .collect(),
+            format: header
+                .format
+                .iter()
+                .map(|f| format_all || format.contains(f.name.as_str()))
+                .collect(),
+            samples,
+        }
+    }
+}
 pub struct Parser {
-    pub header: Header,
-    pub options: Options,
-    pub schema: SchemaRef,
-    plans: HashMap<String, FormatPlan>,
+    header: Header,
+    options: Options,
+    schema: SchemaRef,
+    plans: HashMap<String, Arc<FormatPlan>>,
     last_format: String,
-    last_plan: Option<FormatPlan>,
+    last_plan: Option<Arc<FormatPlan>>,
     filter: Option<regex::Regex>,
     replace: Option<(regex::Regex, String)>,
     ordinal: HashMap<String, i32>,
     tokens: Vec<(usize, usize)>,
+    projection: DecodeProjection,
 }
 impl Parser {
     /// COUNT needs only record validity and locus inclusion, not INFO/FORMAT.
@@ -644,6 +736,7 @@ impl Parser {
                     .collect()
             })
             .unwrap_or_default();
+        let projection = DecodeProjection::all(&header);
         Ok(Self {
             header,
             options,
@@ -655,7 +748,21 @@ impl Parser {
             replace,
             ordinal,
             tokens: Vec::new(),
+            projection,
         })
+    }
+    /// Decoding keeps the declared schema; unrequested values are typed nulls.
+    /// Paths start at `__vail_matrix_row` or `__vail_matrix_cells`; nested
+    /// `info` and `value` paths name requested INFO/FORMAT fields. The
+    /// independent `shape` flag needs array cardinality/nullness only. Configure
+    /// projection before creating batches: every Batch belongs to this Parser
+    /// configuration and must only be appended/finished with that configuration.
+    pub fn with_projection(mut self, paths: Vec<DecodePath>) -> Self {
+        self.projection = DecodeProjection::from_paths(&self.header, &paths);
+        self
+    }
+    pub fn reads_samples(&self) -> bool {
+        !self.options.drop_samples && self.projection.samples
     }
     pub fn batch(&self) -> Result<Batch> {
         Batch::new(self)
@@ -728,17 +835,17 @@ impl Parser {
             }
         }
         batch.alleles.append(true);
-        if fixed[2] == "." {
+        if !self.projection.rsid || fixed[2] == "." {
             batch.rsids.append_null();
         } else {
             batch.rsids.append_value(fixed[2]);
         }
-        if fixed[5] == "." {
+        if !self.projection.qual || fixed[5] == "." {
             batch.quals.append_null();
         } else {
             batch.quals.append_value(parse_number::<f64>(fixed[5])?);
         }
-        if fixed[6] == "." {
+        if !self.projection.filters || fixed[6] == "." {
             batch.filters.append(false);
         } else {
             if fixed[6] != "PASS" {
@@ -751,7 +858,12 @@ impl Parser {
             }
             batch.filters.append(true);
         }
-        let info: HashMap<_, _> = fixed[7]
+        let info_text = if self.projection.info.iter().any(|&v| v) {
+            fixed[7]
+        } else {
+            "."
+        };
+        let info: HashMap<_, _> = info_text
             .split(';')
             .filter(|s| *s != ".")
             .map(|item| {
@@ -760,7 +872,17 @@ impl Parser {
                     .unwrap_or((item, None))
             })
             .collect();
-        for (spec, sink) in self.header.info.iter().zip(&mut batch.info) {
+        for ((spec, sink), &wanted) in self
+            .header
+            .info
+            .iter()
+            .zip(&mut batch.info)
+            .zip(&self.projection.info)
+        {
+            if !wanted {
+                sink.skip(1);
+                continue;
+            }
             let token = if spec.kind == "Flag" {
                 if info
                     .get(spec.name.as_str())
@@ -782,7 +904,7 @@ impl Parser {
                 "INFO",
             )?;
         }
-        if !self.options.drop_samples {
+        if self.reads_samples() {
             let samples = self.header.samples.len();
             if samples > 0 {
                 if fixed.len() != 9 {
@@ -793,7 +915,12 @@ impl Parser {
                     let plan = if let Some(plan) = self.plans.get(format) {
                         plan.clone()
                     } else {
-                        let plan = FormatPlan::new(format, &self.header)?;
+                        let plan = Arc::new(FormatPlan::new(format, &self.header)?);
+                        // Bound retained layouts even for adversarial files. The
+                        // current plan is independently shared, so eviction is safe.
+                        if self.plans.len() >= 128 {
+                            self.plans.clear();
+                        }
                         self.plans.insert(format.to_string(), plan.clone());
                         plan
                     };
@@ -841,7 +968,16 @@ impl Parser {
                 if count != samples {
                     return Err(format!("expected {samples} samples, found {count}"));
                 }
-                for (sink, position) in batch.entries.iter_mut().zip(&plan.fields) {
+                for ((sink, position), &wanted) in batch
+                    .entries
+                    .iter_mut()
+                    .zip(&plan.fields)
+                    .zip(&self.projection.format)
+                {
+                    if !wanted {
+                        sink.skip(samples);
+                        continue;
+                    }
                     let tokens = (0..samples).map(|sample| {
                         let Some(field) = position else {
                             return ".";
@@ -861,8 +997,14 @@ impl Parser {
         batch.rows += 1;
         Ok(true)
     }
-    pub fn cached_formats(&self) -> usize {
-        self.plans.len()
+    pub fn header(&self) -> &Header {
+        &self.header
+    }
+    pub fn options(&self) -> &Options {
+        &self.options
+    }
+    pub fn schema(&self) -> &SchemaRef {
+        &self.schema
     }
 }
 
@@ -885,7 +1027,7 @@ impl Batch {
         Ok(Self {
             rows: 0,
             schema: parser.schema.clone(),
-            samples: if parser.options.drop_samples {
+            samples: if !parser.reads_samples() {
                 0
             } else {
                 parser.header.samples.len()
@@ -1013,109 +1155,4 @@ fn struct_array(
     Ok(Arc::new(
         StructArray::try_new_with_length(fields, arrays, None, len).map_err(|e| e.to_string())?,
     ))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    fn header() -> Header {
-        Header {
-            samples: vec!["a".into(), "b".into()],
-            info: Vec::new(),
-            format: vec![
-                FieldSpec {
-                    name: "GT".into(),
-                    number: "1".into(),
-                    kind: "String".into(),
-                    dtype: primitive(P::Call),
-                },
-                FieldSpec {
-                    name: "DP".into(),
-                    number: "1".into(),
-                    kind: "Integer".into(),
-                    dtype: primitive(P::Int32),
-                },
-            ],
-            metadata: BTreeMap::new(),
-        }
-    }
-    #[test]
-    fn changing_format_missing_trailing_and_phased_calls() {
-        let mut parser = Parser::new(header(), Options::default()).unwrap();
-        let mut batch = parser.batch().unwrap();
-        parser
-            .append(&mut batch, "1\t1\t.\tA\tC\t.\tPASS\t.\tGT:DP\t1|0:9\t.")
-            .unwrap();
-        parser
-            .append(&mut batch, "1\t2\t.\tG\t.\t12\t.\t.\tDP:GT\t-1:1\t.:0/1")
-            .unwrap();
-        parser
-            .append(&mut batch, "1\t3\t.\tT\tA\t.\tPASS\t.\tGT:DP\t0/0:4\t0/1:5")
-            .unwrap();
-        assert_eq!(parser.cached_formats(), 2);
-        let out = batch.finish().unwrap();
-        assert_eq!(out.num_rows(), 3);
-        let cells = out.column(1).as_any().downcast_ref::<ListArray>().unwrap();
-        assert_eq!(cells.value_offsets(), &[0, 2, 4, 6]);
-        let cells = cells
-            .values()
-            .as_any()
-            .downcast_ref::<StructArray>()
-            .unwrap();
-        let entries = cells
-            .column(2)
-            .as_any()
-            .downcast_ref::<StructArray>()
-            .unwrap();
-        let depth = entries
-            .column(1)
-            .as_any()
-            .downcast_ref::<arrow_array::Int32Array>()
-            .unwrap();
-        assert_eq!(
-            depth.iter().collect::<Vec<_>>(),
-            vec![Some(9), None, Some(-1), None, Some(4), Some(5)]
-        );
-        let calls = entries
-            .column(0)
-            .as_any()
-            .downcast_ref::<StructArray>()
-            .unwrap();
-        assert!(calls.is_null(1));
-        let words = calls
-            .column(0)
-            .as_any()
-            .downcast_ref::<arrow_array::Int32Array>()
-            .unwrap();
-        assert!(vail_execution::calls::unpack(words.value(0)).unwrap().1);
-    }
-    #[test]
-    fn drop_samples_and_empty_structs_preserve_row_lengths() {
-        let options = Options {
-            drop_samples: true,
-            ..Options::default()
-        };
-        let mut parser = Parser::new(header(), options).unwrap();
-        let mut batch = parser.batch().unwrap();
-        parser
-            .append(&mut batch, "1\t1\t.\tA\tC\t.\tPASS\t.")
-            .unwrap();
-        let out = batch.finish().unwrap();
-        assert_eq!(out.num_rows(), 1);
-        assert_eq!(
-            out.column(1)
-                .as_any()
-                .downcast_ref::<ListArray>()
-                .unwrap()
-                .value_length(0),
-            0
-        );
-    }
-    #[test]
-    fn quoted_header_attributes() {
-        let values =
-            attributes(r#"ID=X,Description="a, \"quote\" and \\backslash",Number=1,Type=String"#)
-                .unwrap();
-        assert_eq!(values["Description"], "a, \"quote\" and \\backslash");
-    }
 }

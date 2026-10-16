@@ -70,7 +70,7 @@ pub(crate) fn lower(globals: &GlobalsRef) -> Result<LogicalPlan> {
             expression,
             bindings,
         } => {
-            let input = crate::logical::lower(table)?;
+            let input = crate::logical::lower_for_expressions(table, std::iter::once(expression))?;
             if let Some(plan) = crate::logical_aggregation::lower_logical_total(
                 table,
                 expression,

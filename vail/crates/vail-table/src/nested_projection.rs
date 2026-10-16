@@ -12,7 +12,7 @@ struct ArrayRoot {
     source: String,
 }
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 struct Dependencies {
     paths: BTreeMap<String, BTreeSet<Vec<String>>>,
     full: BTreeSet<String>,
@@ -357,4 +357,373 @@ mod tests {
             ]
         );
     }
+}
+
+// VCF-specific backward dependencies preserve lexical callback scopes and array
+// shape. Planning runs once at an action boundary, memoized by original node,
+// requested path, and an owning scope id. The source keeps its declared schema.
+use vail_vcf::DecodePath;
+#[derive(Default, Clone)]
+struct VcfNeeds {
+    full: BTreeSet<String>,
+    paths: BTreeMap<String, BTreeSet<Vec<String>>>,
+    shapes: BTreeMap<String, BTreeSet<Vec<String>>>,
+}
+struct Scope<'a> {
+    name: String,
+    value: &'a Expr,
+    parent: usize,
+}
+#[derive(Default)]
+struct VcfDependencies<'a> {
+    scopes: Vec<Scope<'a>>,
+    scope_ids: HashMap<(usize, usize), usize>,
+    memo: HashMap<(usize, Vec<String>, usize, bool), VcfNeeds>,
+    structs: HashMap<usize, HashMap<&'a str, &'a Expr>>,
+}
+fn merge_deps(into: &mut VcfNeeds, other: VcfNeeds) {
+    into.full.extend(other.full);
+    for (root, paths) in other.shapes {
+        into.shapes.entry(root).or_default().extend(paths);
+    }
+    for (root, paths) in other.paths {
+        into.paths.entry(root).or_default().extend(paths);
+    }
+}
+impl<'a> VcfDependencies<'a> {
+    fn scope(&mut self, node: &'a Expr, name: &str, value: &'a Expr, parent: usize) -> usize {
+        let key = (node as *const Expr as usize, parent);
+        if let Some(&id) = self.scope_ids.get(&key) {
+            return id;
+        }
+        let id = self.scopes.len() + 1;
+        self.scopes.push(Scope {
+            name: name.into(),
+            value,
+            parent,
+        });
+        self.scope_ids.insert(key, id);
+        id
+    }
+    fn collect(&mut self, expr: &'a Expr, tail: &[String], scope: usize) -> VcfNeeds {
+        self.request(expr, tail, scope, false)
+    }
+    fn request(&mut self, expr: &'a Expr, tail: &[String], scope: usize, shape: bool) -> VcfNeeds {
+        let key = (expr as *const Expr as usize, tail.to_vec(), scope, shape);
+        if let Some(result) = self.memo.get(&key) {
+            return result.clone();
+        }
+        let mut result = VcfNeeds::default();
+        match expr {
+            Expr::Column { name } => {
+                if shape {
+                    let mut path = vec![name.clone()];
+                    path.extend_from_slice(tail);
+                    result.shapes.entry(name.clone()).or_default().insert(path);
+                } else if tail.is_empty() {
+                    result.full.insert(name.clone());
+                } else {
+                    let mut path = vec![name.clone()];
+                    path.extend_from_slice(tail);
+                    result.paths.entry(name.clone()).or_default().insert(path);
+                }
+            }
+            Expr::LambdaVariable { name } => {
+                let mut current = scope;
+                while current > 0 {
+                    let binding = &self.scopes[current - 1];
+                    if &binding.name == name {
+                        let value = binding.value;
+                        let parent = binding.parent;
+                        result = self.request(value, tail, parent, shape);
+                        break;
+                    }
+                    current = binding.parent;
+                }
+            }
+            Expr::GetField { value, name } => {
+                let mut path = vec![name.clone()];
+                path.extend_from_slice(tail);
+                result = self.request(value, &path, scope, shape);
+            }
+            Expr::Struct { fields } => {
+                if tail.is_empty() && !shape {
+                    for (_, value) in fields {
+                        merge_deps(&mut result, self.collect(value, &[], scope));
+                    }
+                } else if !tail.is_empty() {
+                    let fields = self
+                        .structs
+                        .entry(expr as *const Expr as usize)
+                        .or_insert_with(|| {
+                            fields
+                                .iter()
+                                .map(|(name, value)| (name.as_str(), value))
+                                .collect()
+                        });
+                    if let Some(&value) = fields.get(tail[0].as_str()) {
+                        result = self.request(value, &tail[1..], scope, shape);
+                    }
+                }
+            }
+            Expr::ArrayMap {
+                value,
+                parameter,
+                body,
+            } => {
+                merge_deps(&mut result, self.request(value, &[], scope, true));
+                if (!shape || !tail.is_empty()) {
+                    let nested = self.scope(expr, parameter, value, scope);
+                    merge_deps(&mut result, self.request(body, tail, nested, shape));
+                }
+            }
+            Expr::ArrayFilter {
+                value,
+                parameter,
+                predicate,
+            } => {
+                let nested = self.scope(expr, parameter, value, scope);
+                merge_deps(&mut result, self.collect(predicate, &[], nested));
+                merge_deps(&mut result, self.request(value, tail, scope, shape));
+            }
+            Expr::ArrayIndex { value, index } => {
+                merge_deps(&mut result, self.collect(index, &[], scope));
+                merge_deps(&mut result, self.request(value, &[], scope, true));
+                merge_deps(&mut result, self.request(value, tail, scope, shape));
+            }
+            Expr::IfElse {
+                condition,
+                consequent,
+                alternate,
+            } => {
+                merge_deps(&mut result, self.collect(condition, &[], scope));
+                merge_deps(&mut result, self.request(consequent, tail, scope, shape));
+                merge_deps(&mut result, self.request(alternate, tail, scope, shape));
+            }
+            Expr::Array { elements, .. } => {
+                if (!shape || !tail.is_empty()) {
+                    for element in elements {
+                        merge_deps(&mut result, self.request(element, tail, scope, shape));
+                    }
+                }
+            }
+            Expr::NestedFunction { function, args, .. } if function == "arrays_zip" => {
+                for arg in args {
+                    merge_deps(&mut result, self.request(arg, &[], scope, true));
+                }
+                if (!shape || !tail.is_empty()) {
+                    if let Some(index) = tail
+                        .first()
+                        .and_then(|v| v.parse::<usize>().ok())
+                        .and_then(|v| v.checked_sub(1))
+                        .filter(|&i| i < args.len())
+                    {
+                        merge_deps(
+                            &mut result,
+                            self.request(&args[index], &tail[1..], scope, shape),
+                        );
+                    } else {
+                        for arg in args {
+                            merge_deps(&mut result, self.collect(arg, &[], scope));
+                        }
+                    }
+                }
+            }
+            Expr::Literal { .. }
+            | Expr::RuntimeLiteral { .. }
+            | Expr::ExternalGlobal { .. }
+            | Expr::Global { .. } => {}
+            _ => {
+                // Unknown binders/operations need all their inputs. Visiting
+                // original children avoids expanding shared expression DAGs.
+                let mut children = Vec::new();
+                expr.visit_children(&mut |child| children.push(child));
+                for child in children {
+                    merge_deps(&mut result, self.collect(child, &[], scope));
+                }
+            }
+        }
+        self.memo.insert(key, result.clone());
+        result
+    }
+}
+fn all_paths(deps: VcfNeeds) -> Vec<DecodePath> {
+    let mut result = deps
+        .full
+        .iter()
+        .map(|root| DecodePath {
+            fields: vec![root.clone()],
+            shape: false,
+        })
+        .collect::<Vec<_>>();
+    for (root, paths) in deps.paths {
+        if !deps.full.contains(&root) {
+            result.extend(paths.into_iter().map(|fields| DecodePath {
+                fields,
+                shape: false,
+            }));
+        }
+    }
+    for (root, paths) in deps.shapes {
+        if !deps.full.contains(&root) {
+            result.extend(paths.into_iter().map(|fields| DecodePath {
+                fields,
+                shape: true,
+            }));
+        }
+    }
+    result
+}
+fn vcf_source(table: &crate::TableRef) -> bool {
+    use crate::TableNode;
+    let mut source = table;
+    loop {
+        match source.node() {
+            TableNode::MapRows { child, .. }
+            | TableNode::KeyBy { child, .. }
+            | TableNode::Filter { child, .. }
+            | TableNode::MapGlobals { child }
+            | TableNode::OrderBy { child, .. }
+            | TableNode::Explode { child, .. }
+            | TableNode::Head { child, .. }
+            | TableNode::Tail { child, .. } => source = child,
+            TableNode::TextRead { format, .. } => return format == "vcf",
+            _ => return false,
+        }
+    }
+}
+pub(crate) fn prepare_vcf(table: &crate::TableRef) -> crate::TableRef {
+    if !vcf_source(table) {
+        return table.clone();
+    }
+    narrow_vcf_paths(
+        table,
+        table
+            .schema()
+            .fields()
+            .iter()
+            .map(|f| DecodePath {
+                fields: vec![f.name().clone()],
+                shape: false,
+            })
+            .collect(),
+        &mut VcfDependencies::default(),
+    )
+}
+pub(crate) fn prepare_vcf_for<'a>(
+    table: &'a crate::TableRef,
+    expressions: impl Iterator<Item = &'a Expr>,
+) -> crate::TableRef {
+    if !vcf_source(table) {
+        return table.clone();
+    }
+    let mut analyzer = VcfDependencies::default();
+    let mut deps = VcfNeeds::default();
+    for expression in expressions {
+        merge_deps(&mut deps, analyzer.collect(expression, &[], 0));
+    }
+    narrow_vcf_paths(table, all_paths(deps), &mut analyzer)
+}
+fn narrow_vcf_paths<'a>(
+    table: &'a crate::TableRef,
+    mut paths: Vec<DecodePath>,
+    analyzer: &mut VcfDependencies<'a>,
+) -> crate::TableRef {
+    use crate::TableNode;
+    let node = match table.node() {
+        TableNode::TextRead {
+            paths: files,
+            format,
+            options_json,
+        } if format == "vcf" => {
+            let mut options = options_json.clone();
+            options["decode_paths"] = serde_json::json!(paths);
+            TableNode::TextRead {
+                paths: files.clone(),
+                format: format.clone(),
+                options_json: options,
+            }
+        }
+        TableNode::MapRows {
+            child,
+            fields,
+            bindings,
+        } => {
+            let positions = fields
+                .iter()
+                .map(|(name, expr)| (name, expr))
+                .collect::<HashMap<_, _>>();
+            let mut deps = VcfNeeds::default();
+            for path in paths {
+                if let Some(expr) = path.fields.first().and_then(|name| positions.get(name)) {
+                    merge_deps(
+                        &mut deps,
+                        analyzer.request(expr, &path.fields[1..], 0, path.shape),
+                    );
+                }
+            }
+            TableNode::MapRows {
+                child: narrow_vcf_paths(child, all_paths(deps), analyzer),
+                fields: fields.clone(),
+                bindings: bindings.clone(),
+            }
+        }
+        TableNode::KeyBy { child, keys } => {
+            paths.extend(keys.iter().map(|key| DecodePath {
+                fields: vec![key.clone()],
+                shape: false,
+            }));
+            TableNode::KeyBy {
+                child: narrow_vcf_paths(child, paths, analyzer),
+                keys: keys.clone(),
+            }
+        }
+        TableNode::OrderBy { child, keys } => {
+            paths.extend(keys.iter().map(|(key, _)| DecodePath {
+                fields: vec![key.clone()],
+                shape: false,
+            }));
+            TableNode::OrderBy {
+                child: narrow_vcf_paths(child, paths, analyzer),
+                keys: keys.clone(),
+            }
+        }
+        TableNode::Filter {
+            child,
+            predicate,
+            keep,
+            bindings,
+        } => {
+            paths.extend(all_paths(analyzer.collect(predicate, &[], 0)));
+            TableNode::Filter {
+                child: narrow_vcf_paths(child, paths, analyzer),
+                predicate: predicate.clone(),
+                keep: *keep,
+                bindings: bindings.clone(),
+            }
+        }
+        TableNode::Explode { child, path } => {
+            paths.push(DecodePath {
+                fields: path.clone(),
+                shape: true,
+            });
+            TableNode::Explode {
+                child: narrow_vcf_paths(child, paths, analyzer),
+                path: path.clone(),
+            }
+        }
+        TableNode::Head { child, n } => TableNode::Head {
+            child: narrow_vcf_paths(child, paths, analyzer),
+            n: *n,
+        },
+        TableNode::Tail { child, n } => TableNode::Tail {
+            child: narrow_vcf_paths(child, paths, analyzer),
+            n: *n,
+        },
+        TableNode::MapGlobals { child } => TableNode::MapGlobals {
+            child: narrow_vcf_paths(child, paths, analyzer),
+        },
+        _ => return table.clone(),
+    };
+    table.replacing_node(node)
 }

@@ -326,7 +326,10 @@ fn children(table: &TableRef) -> Vec<TableRef> {
 
 fn extension(table: &TableRef) -> Result<LogicalPlan> {
     let row_children = children(table);
-    let mut inputs = row_children.iter().map(lower).collect::<Result<Vec<_>>>()?;
+    let mut inputs = row_children
+        .iter()
+        .map(lower_inner)
+        .collect::<Result<Vec<_>>>()?;
     let row_input_count = inputs.len();
     let mut child_global_inputs = Vec::with_capacity(row_children.len());
     for child in &row_children {
@@ -410,7 +413,7 @@ fn table_has_scan(table: &TableRef) -> bool {
 fn lower_scan_tail(table: &TableRef, child: &TableRef, n: usize) -> Result<LogicalPlan> {
     use datafusion_expr::{Operator, WindowFunctionDefinition, expr::WindowFunction};
 
-    let input = ordered(lower(child)?);
+    let input = ordered(lower_inner(child)?);
     let used = input
         .schema()
         .fields()
@@ -758,6 +761,19 @@ fn lower_rng_uids(
 }
 
 pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
+    let table = crate::nested_projection::prepare_vcf(table);
+    lower_inner(&table)
+}
+
+pub(crate) fn lower_for_expressions<'a>(
+    table: &'a TableRef,
+    expressions: impl Iterator<Item = &'a vail_execution::expressions::Expr>,
+) -> Result<LogicalPlan> {
+    let table = crate::nested_projection::prepare_vcf_for(table, expressions);
+    lower_inner(&table)
+}
+
+fn lower_inner(table: &TableRef) -> Result<LogicalPlan> {
     match table.node() {
         TableNode::Read { .. }
         | TableNode::IntervalRead { .. }
@@ -771,13 +787,13 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                     .build()?,
             )
         }
-        TableNode::MapGlobals { child } => lower(child),
+        TableNode::MapGlobals { child } => lower_inner(child),
         // Vail union concatenates observable execution partitions. Native SQL
         // Union permits branch interleaving and repartitioning; the extension
         // keeps each optimized child partition as an independent output.
         TableNode::Union { .. } => extension(table),
         TableNode::Explode { child, path } if path.len() == 1 => {
-            let input = lower(child)?;
+            let input = lower_inner(child)?;
             Ok(LogicalPlanBuilder::from(input)
                 .unnest_column_with_options(
                     datafusion_common::Column::new_unqualified(&path[0]),
@@ -787,7 +803,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                 .build()?)
         }
         TableNode::Aggregate { child, keys, .. } => {
-            let input = lower(child)?;
+            let input = lower_inner(child)?;
             match crate::logical_aggregation::lower_logical_grouped(table, input)? {
                 Some(plan) => {
                     let plan = if keys.is_empty() {
@@ -840,7 +856,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             let lowered_child = if matches!(child.node(), TableNode::Read { .. }) {
                 let paths = crate::nested_projection::map_rows_paths(fields);
                 if paths.is_empty() {
-                    lower(child)?
+                    lower_inner(child)?
                 } else {
                     let provider =
                         crate::provider::provider_with_nested_projection_paths(child, paths)?;
@@ -848,7 +864,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
                         .build()?
                 }
             } else {
-                lower(child)?
+                lower_inner(child)?
             };
             let input = crate::logical_globals::bind_globals(lowered_child, child)?;
             let (input, indices) = crate::logical_globals::bind_external(input, bindings)?;
@@ -914,7 +930,7 @@ pub(crate) fn lower(table: &TableRef) -> Result<LogicalPlan> {
             keep,
             bindings,
         } => {
-            let input = crate::logical_globals::bind_globals(lower(child)?, child)?;
+            let input = crate::logical_globals::bind_globals(lower_inner(child)?, child)?;
             let (input, indices) = crate::logical_globals::bind_external(input, bindings)?;
             match lower_logical_with_bindings(
                 predicate,
@@ -1102,7 +1118,7 @@ pub(crate) async fn count(table: &TableRef) -> Result<usize> {
     let aggregate = datafusion_functions_aggregate::count::count_udaf()
         .call(vec![datafusion_expr::lit(1i32)])
         .alias("count");
-    let logical = LogicalPlanBuilder::from(lower(input)?)
+    let logical = LogicalPlanBuilder::from(lower_for_expressions(input, std::iter::empty())?)
         .aggregate(Vec::<Expr>::new(), vec![aggregate])?
         .build()?;
     let physical = physical_plan(logical, max_partitions(table)).await?;

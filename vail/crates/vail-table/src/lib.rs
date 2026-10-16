@@ -32,6 +32,7 @@ mod provider;
 mod range_lookup;
 mod text_export;
 pub mod text_schema;
+mod vcf_export;
 mod vcf_source;
 mod zip_join;
 use globals::{GlobalBindings, GlobalsIR, GlobalsRef, referenced_bindings};
@@ -1413,7 +1414,10 @@ impl TableIR {
             keys.iter().chain(fields.iter()).map(|(_, expr)| expr),
             bindings,
         )?;
-        let input = crate::logical::lower(self)?;
+        let input = crate::logical::lower_for_expressions(
+            self,
+            keys.iter().chain(fields.iter()).map(|(_, expr)| expr),
+        )?;
         let plan = crate::logical_aggregation::lower_grouped_fields(
             self, input, &keys, &fields, &bindings,
         )?;
@@ -1427,12 +1431,16 @@ impl TableIR {
             )?
             .physical_ordering(&schema)?;
         }
+        let prepared_child = crate::nested_projection::prepare_vcf_for(
+            self,
+            keys.iter().chain(fields.iter()).map(|(_, expr)| expr),
+        );
         Ok(Self::new(
             schema,
             keys.iter().map(|(name, _)| name.clone()).collect(),
             self.globals.clone(),
             TableNode::Aggregate {
-                child: self.clone(),
+                child: prepared_child,
                 keys,
                 fields,
                 bindings,
@@ -1892,6 +1900,10 @@ impl TableIR {
     pub async fn write(self: &Arc<Self>, path: &str, overwrite: bool) -> Result<()> {
         self.write_with_options(path, overwrite, WriteOptions::default())
             .await
+    }
+
+    pub async fn export_vcf(self: &Arc<Self>, path: &str, options: &Value) -> Result<()> {
+        crate::vcf_export::export(self.clone(), path, options).await
     }
 
     pub async fn export_text(

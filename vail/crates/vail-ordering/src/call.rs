@@ -24,25 +24,48 @@ pub fn pack(alleles: &[i32], phased: bool) -> Result<i32, String> {
     }
     Ok((((repr as u32) << 3) | ((alleles.len() as u32) << 1) | u32::from(phased)) as i32)
 }
-pub fn unpack(word: i32) -> Result<(Vec<i32>, bool), String> {
+/// Checked stack-backed packed Call view for hot serializers/adapters.
+pub struct DecodedCall {
+    alleles: [i32; 2],
+    ploidy: usize,
+    phased: bool,
+}
+impl DecodedCall {
+    pub fn alleles(&self) -> &[i32] {
+        &self.alleles[..self.ploidy]
+    }
+    pub fn phased(&self) -> bool {
+        self.phased
+    }
+}
+pub fn decode(word: i32) -> Result<DecodedCall, String> {
     let bits = word as u32;
     let phased = bits & 1 != 0;
-    let ploidy = (bits >> 1) & 3;
+    let ploidy = ((bits >> 1) & 3) as usize;
     let repr = i64::from(bits >> 3);
     let alleles = match ploidy {
-        0 if repr == 0 => vec![],
-        1 => vec![repr as i32],
+        0 if repr == 0 => [0, 0],
+        1 => [repr as i32, 0],
         2 => {
             let k = ((8 * repr + 1).isqrt() - 1) / 2;
             let j = repr - k * (k + 1) / 2;
-            vec![j as i32, (if phased { k - j } else { k }) as i32]
+            [j as i32, (if phased { k - j } else { k }) as i32]
         }
         _ => return Err("invalid packed Call ploidy or allele representation".into()),
     };
-    if pack(&alleles, phased)? != word {
+    let call = DecodedCall {
+        alleles,
+        ploidy,
+        phased,
+    };
+    if pack(call.alleles(), phased)? != word {
         return Err("invalid packed Call".into());
     }
-    Ok((alleles, phased))
+    Ok(call)
+}
+pub fn unpack(word: i32) -> Result<(Vec<i32>, bool), String> {
+    let call = decode(word)?;
+    Ok((call.alleles().to_vec(), call.phased()))
 }
 
 #[cfg(test)]
@@ -63,6 +86,9 @@ mod tests {
             (vec![(1 << 29) - 1], false, -6),
         ] {
             assert_eq!(pack(&alleles, phased).unwrap(), expected);
+            let decoded=decode(expected).unwrap();
+            assert_eq!(decoded.alleles(),alleles.as_slice());
+            assert_eq!(decoded.phased(),phased);
             assert_eq!(unpack(expected).unwrap(), (alleles, phased));
         }
         for phased in [false, true] {

@@ -1,0 +1,275 @@
+{
+  "base_commit": "e3445ab9",
+  "native_sha256": "abdb7ae9b41be2e6bfe447a3a3f357d41ee3e3323a29b9cfb23eb68ba0a0e890",
+  "method": "Fresh subprocesses,20-second cap each. Full public export actions and import/aggregate actions, with result values checked. Input/runtime setup excluded; exporter verification streams output. Baseline loads original e3445ab9 Python exporter against the rebuilt runtime, so measures exporter implementation rather than an old-native reader comparison. Reader/cache/depth cases are final-only bounded evidence. PeakRSS is entire process including runtime/input construction.",
+  "baseline": [
+    {
+      "mode": "export",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0,
+      "action_seconds": 0.758964124994236,
+      "max_rss_bytes": 143572992
+    },
+    {
+      "mode": "export",
+      "rows": 4096,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0,
+      "action_seconds": 5.631065625006158,
+      "max_rss_bytes": 172572672
+    },
+    {
+      "mode": "export",
+      "rows": 512,
+      "samples": 64,
+      "width": 16,
+      "layouts": 1,
+      "depth": 1,
+      "timeout_seconds": 20
+    },
+    {
+      "mode": "export",
+      "rows": 4096,
+      "samples": 64,
+      "width": 16,
+      "layouts": 1,
+      "depth": 1,
+      "timeout_seconds": 20
+    }
+  ],
+  "final": [
+    {
+      "mode": "export",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0,
+      "action_seconds": 0.05843925000226591,
+      "max_rss_bytes": 140591104
+    },
+    {
+      "mode": "export",
+      "rows": 4096,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0,
+      "action_seconds": 0.0595211659965571,
+      "max_rss_bytes": 140050432
+    },
+    {
+      "mode": "export",
+      "rows": 512,
+      "samples": 64,
+      "width": 16,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0,
+      "action_seconds": 0.07636137499503093,
+      "max_rss_bytes": 143048704
+    },
+    {
+      "mode": "export",
+      "rows": 4096,
+      "samples": 64,
+      "width": 16,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0,
+      "action_seconds": 0.14538641699618893,
+      "max_rss_bytes": 178962432
+    },
+    {
+      "mode": "rows",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.004328625000198372,
+      "action_seconds": 0.02229537499806611,
+      "max_rss_bytes": 139051008
+    },
+    {
+      "mode": "rows",
+      "rows": 4096,
+      "samples": 128,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.005629416002193466,
+      "action_seconds": 0.02467449999676319,
+      "max_rss_bytes": 140148736
+    },
+    {
+      "mode": "rows",
+      "rows": 1024,
+      "samples": 64,
+      "width": 8,
+      "layouts": 256,
+      "depth": 1,
+      "construction_seconds": 0.004849042001296766,
+      "action_seconds": 0.023245459000463597,
+      "max_rss_bytes": 139558912
+    },
+    {
+      "mode": "rows",
+      "rows": 4096,
+      "samples": 64,
+      "width": 16,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.005165499998838641,
+      "action_seconds": 0.02621016700140899,
+      "max_rss_bytes": 139558912
+    },
+    {
+      "mode": "DP",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.003419749999011401,
+      "action_seconds": 0.01201362499705283,
+      "max_rss_bytes": 137494528
+    },
+    {
+      "mode": "DP",
+      "rows": 4096,
+      "samples": 128,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.004369708003650885,
+      "action_seconds": 0.027398541998991277,
+      "max_rss_bytes": 164495360
+    },
+    {
+      "mode": "DP",
+      "rows": 1024,
+      "samples": 64,
+      "width": 8,
+      "layouts": 256,
+      "depth": 1,
+      "construction_seconds": 0.0039029159961501136,
+      "action_seconds": 0.017030749993864447,
+      "max_rss_bytes": 148635648
+    },
+    {
+      "mode": "DP",
+      "rows": 4096,
+      "samples": 64,
+      "width": 16,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.00399745799950324,
+      "action_seconds": 0.049619999997958075,
+      "max_rss_bytes": 203177984
+    },
+    {
+      "mode": "all",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.003228124995075632,
+      "action_seconds": 0.01788841700181365,
+      "max_rss_bytes": 141459456
+    },
+    {
+      "mode": "all",
+      "rows": 4096,
+      "samples": 128,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.004694874995038845,
+      "action_seconds": 0.09441625000181375,
+      "max_rss_bytes": 187301888
+    },
+    {
+      "mode": "all",
+      "rows": 1024,
+      "samples": 64,
+      "width": 8,
+      "layouts": 256,
+      "depth": 1,
+      "construction_seconds": 0.004240917005517986,
+      "action_seconds": 0.0345871250028722,
+      "max_rss_bytes": 153223168
+    },
+    {
+      "mode": "all",
+      "rows": 4096,
+      "samples": 64,
+      "width": 16,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.004837833002966363,
+      "action_seconds": 0.13465174999873852,
+      "max_rss_bytes": 230146048
+    },
+    {
+      "mode": "depth",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 1,
+      "construction_seconds": 0.004915999998047482,
+      "action_seconds": 0.023258041001099627,
+      "max_rss_bytes": 139231232
+    },
+    {
+      "mode": "depth",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 16,
+      "construction_seconds": 0.01213587499660207,
+      "action_seconds": 0.03943329100002302,
+      "max_rss_bytes": 140689408
+    },
+    {
+      "mode": "depth",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 64,
+      "construction_seconds": 0.035860957999830134,
+      "action_seconds": 0.10029058300278848,
+      "max_rss_bytes": 144359424
+    },
+    {
+      "mode": "depth",
+      "rows": 512,
+      "samples": 8,
+      "width": 2,
+      "layouts": 1,
+      "depth": 256,
+      "construction_seconds": 0.1325149580006837,
+      "action_seconds": 0.6646498330010218,
+      "max_rss_bytes": 156712960
+    }
+  ],
+  "limits": [
+    "Writer retains sample header metadata proportional to column count, one input batch and one reusable record buffer; native execution may sort/materialize/spill according to its own action plan. No constant total RSS claim.",
+    "Parser retains at most128 shared FORMAT plans plus its current plan, token scratch proportional to the largest record, and bounded output batches. Unrequested fields keep the declared Arrow schema with typed null placeholders. Batch budget includes declared fields, including placeholder buffers.",
+    "Projection pass memoizes original expression nodes, paths and owning lexical scopes, and traverses supported unary chains once. Unknown table operations remain conservative boundaries; no universal source pruning claim.",
+    "Full action timings at growing projection depth include existing Vail/DataFusion planning/optimization costs; they do not establish linear total planning complexity. No dependency implementations changed."
+  ]
+}
