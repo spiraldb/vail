@@ -394,6 +394,9 @@ impl NativeTable {
         })
     }
 
+    fn rename_fields(&self, mapping: std::collections::BTreeMap<String,String>) -> PyResult<Self> {
+        Ok(Self { runtime: self.runtime.clone(), ir: self.ir.rename_fields(&mapping).map_err(table_error)? })
+    }
     fn join(&self, other: &NativeTable, how: &str, join_key: usize) -> PyResult<Self> {
         let kind = match how {
             "inner" => TableJoinKind::Inner,

@@ -198,6 +198,7 @@ struct VailNode {
     table: TableRef,
     inputs: Vec<LogicalPlan>,
     row_input_count: usize,
+    row_input_indices: Vec<usize>,
     child_global_inputs: Vec<Option<usize>>,
     output_global_input: Option<usize>,
     binding_names: Vec<String>,
@@ -326,21 +327,35 @@ fn children(table: &TableRef) -> Vec<TableRef> {
 
 fn extension(table: &TableRef) -> Result<LogicalPlan> {
     let row_children = children(table);
-    let mut inputs = row_children
-        .iter()
-        .map(lower_inner)
-        .collect::<Result<Vec<_>>>()?;
+    // A zip can consume the same immutable source in several slots. Lower
+    // it once: duplicating logical trees expands nested zip DAGs exponentially
+    // before the physical source owner can share their execution.
+    let share_zip = matches!(table.node(), TableNode::MultiWayZipJoin { .. });
+    let mut unique = std::collections::HashMap::new();
+    let mut inputs = Vec::new();
+    let mut row_input_indices = Vec::with_capacity(row_children.len());
+    for child in &row_children {
+        let id = Arc::as_ptr(child) as usize;
+        if share_zip && let Some(index) = unique.get(&id) {
+            row_input_indices.push(*index);
+            continue;
+        }
+        let index = inputs.len();
+        inputs.push(lower_inner(child)?);
+        row_input_indices.push(index);
+        unique.insert(id, index);
+    }
     let row_input_count = inputs.len();
     let mut child_global_inputs = Vec::with_capacity(row_children.len());
     for child in &row_children {
-        if matches!(child.globals().node(), crate::globals::Node::Empty) {
+        if child.globals().schema().fields().is_empty() {
             child_global_inputs.push(None);
         } else {
             child_global_inputs.push(Some(inputs.len()));
             inputs.push(crate::logical_globals::lower(child.globals())?);
         }
     }
-    let output_global_input = if matches!(table.globals().node(), crate::globals::Node::Empty) {
+    let output_global_input = if table.globals().schema().fields().is_empty() {
         None
     } else {
         let index = inputs.len();
@@ -368,6 +383,7 @@ fn extension(table: &TableRef) -> Result<LogicalPlan> {
             table: table.clone(),
             inputs,
             row_input_count,
+            row_input_indices,
             child_global_inputs,
             output_global_input,
             binding_names,
@@ -400,14 +416,20 @@ fn is_scan(expr: &vail_execution::expressions::Expr) -> bool {
 }
 
 fn table_has_scan(table: &TableRef) -> bool {
-    (match table.node() {
-        TableNode::MapRows { fields, .. } => fields.iter().any(|(_, expr)| {
-            let mut found = false;
-            expr.visit(&mut |node| found |= is_scan(node));
-            found
-        }),
-        _ => false,
-    }) || children(table).iter().any(table_has_scan)
+    let mut seen=HashSet::new();
+    let mut pending=vec![table.clone()];
+    while let Some(table)=pending.pop() {
+        if !seen.insert(Arc::as_ptr(&table) as usize) { continue; }
+        if let TableNode::MapRows { fields, .. }=table.node() {
+            for (_,expr) in fields {
+                let mut found=false;
+                expr.visit(&mut |node|found |= is_scan(node));
+                if found { return true; }
+            }
+        }
+        pending.extend(children(&table));
+    }
+    false
 }
 
 fn lower_scan_tail(table: &TableRef, child: &TableRef, n: usize) -> Result<LogicalPlan> {
@@ -964,13 +986,15 @@ pub(crate) async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
 }
 
 pub(crate) fn max_partitions(table: &TableRef) -> usize {
-    children(table)
-        .iter()
-        .map(max_partitions)
-        .chain(table.known_n_partitions())
-        .max()
-        .unwrap_or(1)
-        .max(1)
+    let mut seen=HashSet::new();
+    let mut pending=vec![table.clone()];
+    let mut maximum=1;
+    while let Some(table)=pending.pop() {
+        if !seen.insert(Arc::as_ptr(&table) as usize) { continue; }
+        maximum=maximum.max(table.known_n_partitions().unwrap_or(1));
+        pending.extend(children(&table));
+    }
+    maximum
 }
 
 pub(crate) async fn physical_plan(
@@ -1269,18 +1293,24 @@ impl ExtensionPlanner for VailExtensionPlanner {
             })
             .collect::<datafusion_common::Result<Vec<_>>>()?;
         let children = children(&node.table);
+        // Equal immutable source identity in one zip action has one prepared
+        // owner, including its bound globals; no digest proves equality.
+        let share_zip=matches!(node.table.node(),TableNode::MultiWayZipJoin{..});
+        let mut prepared_zip=std::collections::HashMap::<usize,TableRef>::new();
         let prepared = children
             .iter()
-            .zip(&physical_inputs[..node.row_input_count])
             .enumerate()
-            .map(|(i, (child, physical))| {
+            .map(|(i, child)| {
+                let physical = &physical_inputs[node.row_input_indices[i]];
+                let id=Arc::as_ptr(child) as usize;
+                if share_zip {if let Some(prepared)=prepared_zip.get(&id){return prepared.clone();}}
                 let n = physical
                     .properties()
                     .output_partitioning()
                     .partition_count();
                 let partition_counts = child.partition_rows().filter(|counts| counts.len() == n);
                 let count = partition_counts.as_ref().map(|counts| counts.iter().sum());
-                TableIR::prepared(child, physical.clone(), count, n)
+                let prepared=TableIR::prepared(child, physical.clone(), count, n)
                     .replacing_node(TableNode::Prepared {
                         rows: physical.clone(),
                         count,
@@ -1293,7 +1323,9 @@ impl ExtensionPlanner for VailExtensionPlanner {
                                 crate::globals::GlobalsIR::prepared(physical_inputs[index].clone())
                             })
                             .unwrap_or_else(|| child.globals().clone()),
-                    )
+                    );
+                if share_zip{prepared_zip.insert(id,prepared.clone());}
+                prepared
             })
             .collect::<Vec<_>>();
         let mut table = replace_children(&node.table, prepared)

@@ -12,6 +12,7 @@ mod initialized_aggregate;
 mod initialized_scan;
 mod interval_read;
 mod join_interval;
+mod join_key;
 mod joins;
 pub mod line_source;
 mod logical;
@@ -36,6 +37,8 @@ pub mod text_schema;
 mod vcf_export;
 mod vcf_source;
 mod zip_join;
+mod zip_snapshot;
+mod zip_dedup;
 use globals::{GlobalBindings, GlobalsIR, GlobalsRef, referenced_bindings};
 
 /// Maximum concurrently executing Table partitions for the embedded backend.

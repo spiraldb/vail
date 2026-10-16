@@ -46,6 +46,9 @@ pub(crate) fn lower(globals: &GlobalsRef) -> Result<LogicalPlan> {
             fields,
             bindings,
         } => {
+            // Selecting no globals has no dependency on the former environment.
+            // Avoid expanding discarded zip-global DAGs before optimization.
+            if fields.is_empty() { return Ok(LogicalPlanBuilder::empty(true).build()?); }
             let input = lower(child)?;
             let (input, indices) = bind_external(input, bindings)?;
             let expressions =

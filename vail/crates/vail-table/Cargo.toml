@@ -10,6 +10,8 @@ datafusion = "=55.0.0"
 datafusion-session = "=55.0.0"
 async-trait = "0.1"
 tokio.workspace = true
+arrow-ipc.workspace = true
+tempfile = "3"
 arrow-cast = "=59.2.0"
 arrow-ord = "=59.2.0"
 arrow-buffer.workspace = true
@@ -47,5 +49,4 @@ vail-vcf = { path = "../vail-vcf" }
 
 [dev-dependencies]
 tokio.workspace = true
-tempfile = "3"
 uuid.workspace = true

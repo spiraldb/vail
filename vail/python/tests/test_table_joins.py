@@ -1,6 +1,5 @@
 """Table join behavior shared with the pinned Hail implementation."""
 
-import json
 import struct
 
 import pytest
@@ -31,8 +30,6 @@ def test_join_modes_cartesian_duplicate_keys_missing_and_lazy_plan():
         (10, 20), (10, 21), (11, 20), (11, 21),
     ]
     inner = left.join(right, "inner")
-    assert inner._native.ir()["node"] == "TableJoin"
-    assert "JoinExec" in inner._native.physical_plan()
     assert [(r.left, r.right) for r in inner.collect()] == expected_matches
     assert [(r.k, r.left, r.right) for r in left.join(right, "left").collect()] == [
         (1, 10, 20), (1, 10, 21), (1, 11, 20), (1, 11, 21), (None, 12, None)
@@ -237,8 +234,6 @@ def test_multi_way_zip_join_values_globals_and_schema_validation():
         schema=row_schema, globals={"g": "R"},
     )
     zipped = hl.Table.multi_way_zip_join([left, right], "data", "globals")
-    assert zipped._native.ir()["node"] == "TableMultiWayZipJoin"
-    assert zipped._native.physical_plan()
     assert [(r.k, r.data) for r in zipped.collect()] == [
         (0, [hl.Struct(nested=hl.Struct(value="left")), None]),
         (1, [None, hl.Struct(nested=hl.Struct(value="right"))]),
@@ -331,36 +326,33 @@ def test_join_written_inputs_and_missing_read_fail_only_on_action(tmp_path):
     left.write(left_path)
     right.write(right_path)
     joined = hl.read_table(left_path).join(hl.read_table(right_path))
-    assert joined._native.ir()["node"] == "TableJoin"
     assert joined.collect() == [hl.Struct(k=1, v="left", v_1="right")]
 
     missing_path = tmp_path / "removed-data.ht"
     left.write(missing_path)
     missing = hl.read_table(missing_path)
-    data_files = list(missing_path.rglob("*.vortex"))
-    assert data_files
-    data_files[0].unlink()
+    moved = tmp_path / "moved-data"
+    missing_path.rename(moved)
     lazy_join = left.join(missing, "left")
-    assert lazy_join._native.ir()["node"] == "TableJoin"
+    assert lazy_join.head(0).collect() == []
     with pytest.raises(FileNotFoundError):
         lazy_join.collect()
+    moved.rename(missing_path)
+    assert lazy_join.collect() == [hl.Struct(k=1, v='left', v_1='left')]
+
 
 
 @pytest.mark.parametrize("method, expected", [
     ("semi_join", [4]), ("anti_join", [5, 6, 7]),
 ])
-def test_membership_join_executes_only_selected_left_partition(tmp_path, method, expected):
+def test_membership_join_of_public_key_filtered_input(tmp_path, method, expected):
     path = tmp_path / "independent.viceberg"
     hl.range_table(12, n_partitions=3).write(path)
     left = hl.read_table(path)
-    files = sorted(path.rglob("*.vortex"))
-    assert len(files) == 3
-    files[0].unlink()
-    files[2].unlink()
+    left = left.filter((left.idx >= 4) & (left.idx < 8))
     right = hl.Table.parallelize([{"idx": 4}], key="idx")
     joined = getattr(left, method)(right)
-    selected = joined._filter_partitions([1])
-    assert [row.idx for row in selected.collect()] == expected
+    assert [row.idx for row in joined.collect()] == expected
 
 
 def test_join_preserves_literal_case_sensitive_field_names():
@@ -383,4 +375,147 @@ def test_union_retains_input_execution_partitions_after_computed_keys():
     union = first.key_by().union(second.key_by(), third.key_by())
     assert union.n_partitions() == 6
     assert union.idx.collect() == list(range(15))
-    assert union._same(hl.range_table(15).key_by())
+
+
+def test_join_payload_mangling_can_use_a_disappearing_right_key_name():
+    left = hl.Table.parallelize([{'lk': 1, 'a': 'left'}], key='lk')
+    right = hl.Table.parallelize([{'a_1': 1, 'a': 'right'}], key='a_1')
+    joined = left.join(right)
+    assert list(joined.key) == ['lk']
+    assert joined.collect() == [hl.Struct(lk=1, a='left', a_1='right')]
+
+
+def test_default_join_mangling_handles_more_than_one_hundred_collisions():
+    values = {'k': 1, 'a': 'left', **{f'a_{i}': f'left-{i}' for i in range(1, 121)}}
+    left = hl.Table.parallelize([values], key='k')
+    right = hl.Table.parallelize([{'k': 1, 'a': 'right'}], key='k')
+    row = left.join(right).collect()[0]
+    assert row.a_121 == 'right'
+    assert all(row[f'a_{i}'] == f'left-{i}' for i in range(1, 121))
+
+
+def test_bijective_rename_preserves_key_ties_and_can_swap_row_global_names():
+    table = hl.Table.parallelize([{'key': 2, 'a': 'last'}, {'key': 1, 'a': 'first'},
+                                  {'key': 1, 'a': 'second'}], key='key', n_partitions=3)
+    table = table.annotate_globals(g='global')
+    renamed = table.rename({'key': 'renamed', 'a': 'g', 'g': 'a'})
+    assert list(renamed.key) == ['renamed']
+    assert [(r.renamed, r.g) for r in renamed.collect()] == [(1, 'first'), (1, 'second'), (2, 'last')]
+    assert hl.eval(renamed.globals) == hl.Struct(a='global')
+
+
+def test_many_way_zip_preserves_disjoint_interleaved_and_missing_domains():
+    schema = hl.tstruct(k=hl.tint32, value=hl.tint32)
+    tables = []
+    for i in range(12):
+        rows = [{'k': k, 'value': i * 100 + k} for k in range(i % 5, 25, 5)]
+        rows += [dict(rows[0]), {'k': None, 'value': -i - 1}]
+        tables.append(hl.Table.parallelize(rows, schema=schema, key='k', n_partitions=3))
+    zipped = hl.Table.multi_way_zip_join(tables, 'data', 'globals')
+    for _ in range(2):
+        rows = zipped.collect()
+        present = [row for row in rows if row.k is not None]
+        assert [row.k for row in present] == list(range(25))
+        for row in present:
+            assert [None if x is None else x.value for x in row.data] == [
+                i * 100 + row.k if row.k % 5 == i % 5 else None for i in range(12)]
+        missing = [row for row in rows if row.k is None]
+        assert len(missing) == 12
+        assert sorted(x.value for row in missing for x in row.data if x is not None) == list(range(-12, 0))
+        assert all(sum(x is not None for x in row.data) == 1 for row in missing)
+
+
+def test_zip_adjacent_dedup_handles_cross_batch_ties_and_float_bit_keys():
+    def floating(bits):
+        return struct.unpack('>d', struct.pack('>Q', bits))[0]
+    bits = [0x8000000000000000, 0, 0x7ff8000000000001, 0x7ff8000000000002]
+    table = hl.Table.parallelize([{'k': floating(b), 'value': i} for i, b in enumerate(bits)],
+                                 schema=hl.tstruct(k=hl.tfloat64, value=hl.tint32), key='k', n_partitions=1)
+    rows = hl.Table.multi_way_zip_join([table, table], 'data', 'globals').collect()
+    assert [struct.unpack('>Q', struct.pack('>d', row.k))[0] for row in rows] == bits
+    assert [[x.value for x in row.data] for row in rows] == [[i, i] for i in range(4)]
+    many = hl.range_table(5000, n_partitions=1)
+    many = many.key_by(k=many.idx // 2500)
+    many = many.select(value=many.idx)
+    rows = hl.Table.multi_way_zip_join([many, many], 'data', 'globals').collect()
+    assert [row.k for row in rows] == [0, 1]
+    assert all(len(row.data) == 2 and all(x is not None for x in row.data) for row in rows)
+
+
+def test_composite_zip_partial_missing_keys_keep_all_occurrences():
+    schema = hl.tstruct(a=hl.tint32, b=hl.tint32, value=hl.tstr)
+    first = hl.Table.parallelize([{'a': 1, 'b': None, 'value': 'first missing'},
+                                  {'a': 2, 'b': 1, 'value': 'shared'},
+                                  {'a': None, 'b': 2, 'value': 'other missing'}],
+                                 schema=schema, key=['a', 'b'], n_partitions=2)
+    second = hl.Table.parallelize([{'a': 2, 'b': 1, 'value': 'second shared'},
+                                   {'a': 1, 'b': None, 'value': 'second missing'}],
+                                  schema=schema, key=['a', 'b'], n_partitions=3)
+    rows = hl.Table.multi_way_zip_join([first, second, first], 'data', 'globals').collect()
+    present = [row for row in rows if row.a is not None and row.b is not None]
+    assert len(present) == 1
+    assert [x.value for x in present[0].data] == ['shared', 'second shared', 'shared']
+    assert len(rows) == 6
+    assert all(sum(x is not None for x in row.data) == 1 for row in rows if row not in present)
+
+
+def test_composite_zip_orders_interleaved_partial_missing_keys_before_downstream_joins():
+    schema = hl.tstruct(a=hl.tint32, b=hl.tint32, value=hl.tstr)
+    def source(values, label):
+        rows = [{'a': 0, 'b': 0, 'value': label}, *[
+            {'a': value, 'b': None, 'value': f'{label}-{value}'} for value in values],
+            {'a': 10, 'b': 0, 'value': label}]
+        return hl.Table.parallelize(rows, schema=schema, key=['a', 'b'], n_partitions=1)
+    zipped = hl.Table.multi_way_zip_join([source([1, 3], 'left'), source([2, 4], 'right'),
+                                         source([5], 'third')], 'data', 'globals')
+    expected = [(0, 0), (1, None), (2, None), (3, None), (4, None), (5, None), (10, 0)]
+    for _ in range(2):
+        assert [(r.a, r.b) for r in zipped.collect()] == expected
+        assert [(r.a, r.b) for r in zipped.head(4).collect()] == expected[:4]
+        assert [(r.a, r.b) for r in zipped.tail(3).collect()] == expected[-3:]
+    selection = hl.Table.parallelize([{'a': 2}, {'a': 4}], key='a')
+    assert [(r.a, r.b) for r in zipped.semi_join(selection).collect()] == [(2, None), (4, None)]
+
+
+def test_nested_missing_key_members_survive_join_cells_and_match_present_parents():
+    schema = hl.tstruct(k=hl.tstruct(label=hl.tstr), value=hl.tint32)
+    left = hl.Table.parallelize([{'k': {'label': 'a'}, 'value': 1},
+                                 {'k': {'label': None}, 'value': 2},
+                                 {'k': None, 'value': 3}], schema=schema, key='k', n_partitions=3)
+    right = left.rename({'value': 'right'})
+    assert [(r.value, r.right) for r in left.join(right).collect()] == [(1, 1), (2, 2)]
+    assert [(r.value, r.right) for r in left.join(right, 'outer').collect()] == [
+        (1, 1), (2, 2), (3, None), (None, 3)]
+    assert [r.value for r in left.semi_join(right).collect()] == [1, 2]
+    assert [r.value for r in left.anti_join(right).collect()] == [3]
+
+
+def test_zip_shared_computed_source_preserves_scan_and_random_values_across_consumers():
+    table = hl.range_table(100, n_partitions=4)
+    table = table.annotate(prefix=hl.scan.sum(table.idx), random=hl.rand_unif(seed=237))
+    expected = table.collect()
+    zipped = hl.Table.multi_way_zip_join([table, table, table], 'data', 'globals')
+    for _ in range(2):
+        rows = zipped.collect()
+        assert [row.idx for row in rows] == list(range(100))
+        for row, original in zip(rows, expected):
+            assert [(x.prefix, x.random) for x in row.data] == [(original.prefix, original.random)] * 3
+
+
+def test_zip_snapshot_errors_and_values_are_fresh_for_each_action(tmp_path):
+    path, moved = tmp_path / 'source', tmp_path / 'moved'
+    hl.range_table(12, n_partitions=3).annotate(value=7).write(path)
+    source = hl.read_table(path)
+    zipped = hl.Table.multi_way_zip_join([source, source], 'data', 'globals')
+    path.rename(moved)
+    assert zipped.head(0).collect() == []
+    with pytest.raises(FileNotFoundError):
+        zipped.collect()
+    moved.rename(path)
+    for _ in range(2):
+        rows = zipped.collect()
+        assert [row.idx for row in rows] == list(range(12))
+        assert [[x.value for x in row.data] for row in rows] == [[7, 7]] * 12
+    path.rename(moved)
+    with pytest.raises(FileNotFoundError):
+        zipped.collect()

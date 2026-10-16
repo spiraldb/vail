@@ -140,6 +140,7 @@ pub fn supports(data_type: &DataType) -> bool {
         | DataType::Float64
         | DataType::Utf8
         | DataType::LargeUtf8
+        | DataType::Utf8View
         | DataType::Binary => true,
         DataType::Struct(fields) => fields.iter().all(|f| supports(f.data_type())),
         DataType::List(field) => supports(field.data_type()),

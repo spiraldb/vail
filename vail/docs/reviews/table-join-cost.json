@@ -1,0 +1,803 @@
+{
+  "base_commit": "3567ec80",
+  "baseline_native_sha256": "ac69b07b19f7af4cbe08e471f7ce47dd1ff7e2f0e332f6ca510536b8f5a55e9f",
+  "current_native_sha256": "43c1c6c90d861762aae8e93ed7c6f9c3af3ff80fd250a3473ba9bf7bcb5ed1be",
+  "method": "50 fresh subprocess cases (25paired original baseline/current):8basic,8replay/nesting,4single-partition wide spill/first-result,5asymmetric annotated/stored demand cases per version. Independent original baseline/current packages; warm eval(0), supported public actions with output verification; macOS RSS bytes includes runtime/planning/localization. Final paired suite ran sequentially after complete build/test gates. Single runs;20s basic/15sreplay/30swide-demand caps retained. Spill filesystem sampling every5ms is a lower bound on peak bytes; temporary-directory cleanup observed both after action GC and process exit.",
+  "resource_contract": [
+    "Exact immutable child identity shares logical preparation and action-owned source replay; no hash proves source equivalence.",
+    "Bounds discovery and payload consumers use the same initial action owner. Explicit prepared start_action resets hidden producers and cell caches for fresh reads/errors.",
+    "Replay advances one batch on demand. All source/cell caches in one zip share an8MiB retained Arrow-memory budget; excess batches spill to action-owned IPC temporary files. Engine operators and active batches/localized results have separate memory requirements. Nested zip levels own separate budgets.",
+    "One producer advance/spill/commit task survives consumer cancellation; other consumers wait for its committed batch or error. Retained streams/files drop with action ownership; tests cover cancelled-reader resume and fresh success/failure/recovery.",
+    "Composite canonical input order is established once, present-key domain merges use LEFT joins preserving certified native order, and actual reconstructed output tuple/tie order is sorted explicitly. No fabricated FULL coalesced-key ordering witness."
+  ],
+  "limitations": [
+    "Single-run timings are noisy and do not establish a universal speedup or streaming bound for final sort/output/aggregate operators.",
+    "Final scoped clean gate excludes exactly the two independently reproduced original-baseline failures below and two external Hail inventory checks. The earlier broad run was317passed,2failed,2deselected.",
+    "Dependency implementation was excluded; only Vail-owned code changed.",
+    "Replay/sorting introduces overhead in some smaller computed/wide multi-partition cases; final report preserves those regressions alongside nested/many-input improvements. No universal speedup claim."
+  ],
+  "pre_existing_failures": [
+    {
+      "test_id": "python/tests/test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip",
+      "observed": "keyed._same(read_table(path)) returns False after computed interval-key roundtrip",
+      "baseline": "Same failure independently reproduced against original ac69b07 package; Vail storage/equality cycle pending."
+    },
+    {
+      "test_id": "python/tests/test_globals.py::test_globals_reads_are_lazy_snapshot_pinned_and_checksummed",
+      "observed": "corrupt globals file raises OSError Invalid argument rather than expected ValueError checksum",
+      "baseline": "Same failure independently reproduced against original ac69b07 package; Vail globals/storage cycle pending."
+    }
+  ],
+  "cases": [
+    {
+      "suite": "basic",
+      "mode": "equal_head",
+      "n": 4096,
+      "partitions": 4,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.0051593749958556145,
+      "peak_rss_bytes": 131416064,
+      "check": {
+        "idx": 0,
+        "value": 7
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "equal_head",
+      "n": 4096,
+      "partitions": 32,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.030837374994007405,
+      "peak_rss_bytes": 136445952,
+      "check": {
+        "idx": 0,
+        "value": 7
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "equal_head",
+      "n": 4096,
+      "partitions": 128,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.2455714169991552,
+      "peak_rss_bytes": 160497664,
+      "check": {
+        "idx": 0,
+        "value": 7
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "equal_full",
+      "n": 10000,
+      "partitions": 16,
+      "width": 64,
+      "version": "baseline",
+      "execution_seconds": 0.033012790998327546,
+      "peak_rss_bytes": 153255936,
+      "check": {
+        "count": 10000,
+        "total": 49995000,
+        "payload": 50625000
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "membership",
+      "n": 10000,
+      "partitions": 64,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.031549750005069654,
+      "peak_rss_bytes": 140361728,
+      "check": {
+        "count": 10000,
+        "total": 49995000,
+        "payload": 49995000
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "zip",
+      "n": 512,
+      "partitions": 4,
+      "width": 2,
+      "version": "baseline",
+      "execution_seconds": 0.01049254200188443,
+      "peak_rss_bytes": 135462912,
+      "check": {
+        "idx": 0,
+        "inputs": 2
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "zip",
+      "n": 512,
+      "partitions": 4,
+      "width": 8,
+      "version": "baseline",
+      "execution_seconds": 0.042187957995338365,
+      "peak_rss_bytes": 141967360,
+      "check": {
+        "idx": 0,
+        "inputs": 8
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "zip",
+      "n": 512,
+      "partitions": 4,
+      "width": 32,
+      "version": "baseline",
+      "timeout_seconds": 20
+    },
+    {
+      "suite": "basic",
+      "mode": "equal_head",
+      "n": 4096,
+      "partitions": 4,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.004132375004701316,
+      "peak_rss_bytes": 130596864,
+      "check": {
+        "idx": 0,
+        "value": 7
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "equal_head",
+      "n": 4096,
+      "partitions": 32,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.030669583000417333,
+      "peak_rss_bytes": 138870784,
+      "check": {
+        "idx": 0,
+        "value": 7
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "equal_head",
+      "n": 4096,
+      "partitions": 128,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.24675604199728696,
+      "peak_rss_bytes": 161136640,
+      "check": {
+        "idx": 0,
+        "value": 7
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "equal_full",
+      "n": 10000,
+      "partitions": 16,
+      "width": 64,
+      "version": "current",
+      "execution_seconds": 0.02396374999807449,
+      "peak_rss_bytes": 152371200,
+      "check": {
+        "count": 10000,
+        "total": 49995000,
+        "payload": 50625000
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "membership",
+      "n": 10000,
+      "partitions": 64,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.03231029100425076,
+      "peak_rss_bytes": 141213696,
+      "check": {
+        "count": 10000,
+        "total": 49995000,
+        "payload": 49995000
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "zip",
+      "n": 512,
+      "partitions": 4,
+      "width": 2,
+      "version": "current",
+      "execution_seconds": 0.010500707998289727,
+      "peak_rss_bytes": 135004160,
+      "check": {
+        "idx": 0,
+        "inputs": 2
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "zip",
+      "n": 512,
+      "partitions": 4,
+      "width": 8,
+      "version": "current",
+      "execution_seconds": 0.04686716700234683,
+      "peak_rss_bytes": 147308544,
+      "check": {
+        "idx": 0,
+        "inputs": 8
+      }
+    },
+    {
+      "suite": "basic",
+      "mode": "zip",
+      "n": 512,
+      "partitions": 4,
+      "width": 32,
+      "version": "current",
+      "execution_seconds": 0.44868220900389133,
+      "peak_rss_bytes": 260685824,
+      "check": {
+        "idx": 0,
+        "inputs": 32
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "computed",
+      "n": 2048,
+      "partitions": 4,
+      "size": 128,
+      "version": "baseline",
+      "execution_seconds": 0.054139457999554,
+      "peak_rss_bytes": 180043776,
+      "check": {
+        "count": 2048,
+        "total": 401725063168.0,
+        "same": true
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "wide",
+      "n": 4096,
+      "partitions": 16,
+      "size": 256,
+      "version": "baseline",
+      "execution_seconds": 0.15458475000195904,
+      "peak_rss_bytes": 207814656,
+      "check": {
+        "count": 4096,
+        "total": 9431040,
+        "same": true
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "nested",
+      "n": 128,
+      "partitions": 2,
+      "size": 2,
+      "version": "baseline",
+      "execution_seconds": 0.0709312500039232,
+      "peak_rss_bytes": 146604032,
+      "check": {
+        "count": 128,
+        "total": 32512
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "nested",
+      "n": 128,
+      "partitions": 2,
+      "size": 4,
+      "version": "baseline",
+      "timeout_seconds": 15
+    },
+    {
+      "suite": "replay",
+      "mode": "nested",
+      "n": 128,
+      "partitions": 2,
+      "size": 6,
+      "version": "baseline",
+      "timeout_seconds": 15
+    },
+    {
+      "suite": "replay",
+      "mode": "nested",
+      "n": 128,
+      "partitions": 2,
+      "size": 8,
+      "version": "baseline",
+      "timeout_seconds": 15
+    },
+    {
+      "suite": "replay",
+      "mode": "stateful",
+      "n": 256,
+      "partitions": 4,
+      "size": 0,
+      "version": "baseline",
+      "execution_seconds": 0.07806612499553012,
+      "peak_rss_bytes": 160497664,
+      "check": {
+        "count": 256,
+        "total": 2763520,
+        "same": true
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "keyless",
+      "n": 10000,
+      "partitions": 4,
+      "size": 256,
+      "version": "baseline",
+      "execution_seconds": 0.019397667005250696,
+      "peak_rss_bytes": 348438528,
+      "check": {
+        "count": 1,
+        "width": 256
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "computed",
+      "n": 2048,
+      "partitions": 4,
+      "size": 128,
+      "version": "current",
+      "execution_seconds": 0.08558670899947174,
+      "peak_rss_bytes": 159203328,
+      "check": {
+        "count": 2048,
+        "total": 401725063168.0,
+        "same": true
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "wide",
+      "n": 4096,
+      "partitions": 16,
+      "size": 256,
+      "version": "current",
+      "execution_seconds": 0.2892087919972255,
+      "peak_rss_bytes": 219545600,
+      "check": {
+        "count": 4096,
+        "total": 9431040,
+        "same": true
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "nested",
+      "n": 128,
+      "partitions": 2,
+      "size": 2,
+      "version": "current",
+      "execution_seconds": 0.05361929199716542,
+      "peak_rss_bytes": 144490496,
+      "check": {
+        "count": 128,
+        "total": 32512
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "nested",
+      "n": 128,
+      "partitions": 2,
+      "size": 4,
+      "version": "current",
+      "execution_seconds": 0.14568433399836067,
+      "peak_rss_bytes": 158187520,
+      "check": {
+        "count": 128,
+        "total": 130048
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "nested",
+      "n": 128,
+      "partitions": 2,
+      "size": 6,
+      "version": "current",
+      "execution_seconds": 0.30034545899980003,
+      "peak_rss_bytes": 180142080,
+      "check": {
+        "count": 128,
+        "total": 520192
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "nested",
+      "n": 128,
+      "partitions": 2,
+      "size": 8,
+      "version": "current",
+      "execution_seconds": 0.5144220410002163,
+      "peak_rss_bytes": 211795968,
+      "check": {
+        "count": 128,
+        "total": 2080768
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "stateful",
+      "n": 256,
+      "partitions": 4,
+      "size": 0,
+      "version": "current",
+      "execution_seconds": 0.095778082999459,
+      "peak_rss_bytes": 156925952,
+      "check": {
+        "count": 256,
+        "total": 2763520,
+        "same": true
+      }
+    },
+    {
+      "suite": "replay",
+      "mode": "keyless",
+      "n": 10000,
+      "partitions": 4,
+      "size": 256,
+      "version": "current",
+      "execution_seconds": 0.01033766600448871,
+      "peak_rss_bytes": 167755776,
+      "check": {
+        "count": 1,
+        "width": 256
+      }
+    },
+    {
+      "suite": "spill",
+      "version": "baseline",
+      "n": 4096,
+      "width": 256,
+      "partitions": 1,
+      "action": "head",
+      "peak_tempfile_bytes": 0,
+      "remaining_tempfile_bytes_after_exit": 0,
+      "execution_seconds": 0.008197750001272652,
+      "peak_rss_bytes": 159105024,
+      "tempfile_bytes_after_action_gc": 0,
+      "check": {
+        "count": 1,
+        "width": 256
+      }
+    },
+    {
+      "suite": "spill",
+      "version": "baseline",
+      "n": 16384,
+      "width": 256,
+      "partitions": 1,
+      "action": "head",
+      "peak_tempfile_bytes": 0,
+      "remaining_tempfile_bytes_after_exit": 0,
+      "execution_seconds": 0.014642750000348315,
+      "peak_rss_bytes": 184565760,
+      "tempfile_bytes_after_action_gc": 0,
+      "check": {
+        "count": 1,
+        "width": 256
+      }
+    },
+    {
+      "suite": "spill",
+      "version": "baseline",
+      "n": 4096,
+      "width": 256,
+      "partitions": 1,
+      "action": "full",
+      "peak_tempfile_bytes": 0,
+      "remaining_tempfile_bytes_after_exit": 0,
+      "execution_seconds": 0.044952917000046,
+      "peak_rss_bytes": 226361344,
+      "tempfile_bytes_after_action_gc": 0,
+      "check": {
+        "count": 4096,
+        "total": 9431040,
+        "same": true
+      }
+    },
+    {
+      "suite": "spill",
+      "version": "baseline",
+      "n": 16384,
+      "width": 256,
+      "partitions": 1,
+      "action": "full",
+      "peak_tempfile_bytes": 0,
+      "remaining_tempfile_bytes_after_exit": 0,
+      "execution_seconds": 0.17288449999614386,
+      "peak_rss_bytes": 418545664,
+      "tempfile_bytes_after_action_gc": 0,
+      "check": {
+        "count": 16384,
+        "total": 138387456,
+        "same": true
+      }
+    },
+    {
+      "suite": "spill",
+      "version": "current",
+      "n": 4096,
+      "width": 256,
+      "partitions": 1,
+      "action": "head",
+      "peak_tempfile_bytes": 0,
+      "remaining_tempfile_bytes_after_exit": 0,
+      "execution_seconds": 0.006972167000640184,
+      "peak_rss_bytes": 147668992,
+      "tempfile_bytes_after_action_gc": 0,
+      "check": {
+        "count": 1,
+        "width": 256
+      }
+    },
+    {
+      "suite": "spill",
+      "version": "current",
+      "n": 16384,
+      "width": 256,
+      "partitions": 1,
+      "action": "head",
+      "peak_tempfile_bytes": 660224,
+      "remaining_tempfile_bytes_after_exit": 0,
+      "execution_seconds": 0.016283874996588565,
+      "peak_rss_bytes": 203882496,
+      "tempfile_bytes_after_action_gc": 0,
+      "check": {
+        "count": 1,
+        "width": 256
+      }
+    },
+    {
+      "suite": "spill",
+      "version": "current",
+      "n": 4096,
+      "width": 256,
+      "partitions": 1,
+      "action": "full",
+      "peak_tempfile_bytes": 4391410,
+      "remaining_tempfile_bytes_after_exit": 0,
+      "execution_seconds": 0.029407291003735736,
+      "peak_rss_bytes": 208175104,
+      "tempfile_bytes_after_action_gc": 0,
+      "check": {
+        "count": 4096,
+        "total": 9431040,
+        "same": true
+      }
+    },
+    {
+      "suite": "spill",
+      "version": "current",
+      "n": 16384,
+      "width": 256,
+      "partitions": 1,
+      "action": "full",
+      "peak_tempfile_bytes": 35139684,
+      "remaining_tempfile_bytes_after_exit": 0,
+      "execution_seconds": 0.07224579200556036,
+      "peak_rss_bytes": 318144512,
+      "tempfile_bytes_after_action_gc": 0,
+      "check": {
+        "count": 16384,
+        "total": 138387456,
+        "same": true
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "baseline",
+      "mode": "annotated",
+      "n": 2048,
+      "left_partitions": 128,
+      "right_partitions": 4,
+      "execution_seconds": 0.36992966599791544,
+      "peak_rss_bytes": 259538944,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "baseline",
+      "mode": "annotated",
+      "n": 2048,
+      "left_partitions": 4,
+      "right_partitions": 128,
+      "execution_seconds": 13.445151209001779,
+      "peak_rss_bytes": 1632059392,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "baseline",
+      "mode": "annotated",
+      "n": 8192,
+      "left_partitions": 128,
+      "right_partitions": 4,
+      "execution_seconds": 0.37547662499855505,
+      "peak_rss_bytes": 259883008,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "baseline",
+      "mode": "read",
+      "n": 2048,
+      "left_partitions": 128,
+      "right_partitions": 4,
+      "execution_seconds": 0.09462904199608602,
+      "peak_rss_bytes": 194117632,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "baseline",
+      "mode": "read",
+      "n": 8192,
+      "left_partitions": 128,
+      "right_partitions": 4,
+      "execution_seconds": 0.09367562500119675,
+      "peak_rss_bytes": 200425472,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "current",
+      "mode": "annotated",
+      "n": 2048,
+      "left_partitions": 128,
+      "right_partitions": 4,
+      "execution_seconds": 0.3715383339949767,
+      "peak_rss_bytes": 259817472,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "current",
+      "mode": "annotated",
+      "n": 2048,
+      "left_partitions": 4,
+      "right_partitions": 128,
+      "execution_seconds": 3.102884959000221,
+      "peak_rss_bytes": 1630470144,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "current",
+      "mode": "annotated",
+      "n": 8192,
+      "left_partitions": 128,
+      "right_partitions": 4,
+      "execution_seconds": 0.3947737920025247,
+      "peak_rss_bytes": 265502720,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "current",
+      "mode": "read",
+      "n": 2048,
+      "left_partitions": 128,
+      "right_partitions": 4,
+      "execution_seconds": 0.09596133299783105,
+      "peak_rss_bytes": 199835648,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    },
+    {
+      "suite": "demand",
+      "version": "current",
+      "mode": "read",
+      "n": 8192,
+      "left_partitions": 128,
+      "right_partitions": 4,
+      "execution_seconds": 0.09880149999662535,
+      "peak_rss_bytes": 203522048,
+      "check": {
+        "count": 1,
+        "idx": 0,
+        "width": 16
+      }
+    }
+  ],
+  "reproduction_scripts": {
+    "measure_table_join": "import json,os,subprocess,sys\nroot='/Users/danielking/.codex/worktrees/412f/vail/vail';version=sys.argv[1];path='/tmp/vail-table-join-baseline' if version=='baseline' else root+'/python'\ncases=[]\nfor mode,n,parts,width in [('equal_head',4096,4,0),('equal_head',4096,32,0),('equal_head',4096,128,0),('equal_full',10000,16,64),('membership',10000,64,0),('zip',512,4,2),('zip',512,4,8),('zip',512,4,32)]:\n code=f'''import vail as h,time,resource,json\nmode={mode!r};n={n};parts={parts};width={width};h.eval(0)\nif mode=='zip':\n tables=[h.range_table(n,parts).annotate(value=i) for i in range(width)];joined=h.Table.multi_way_zip_join(tables,'data','globals')\n start=time.perf_counter();rows=joined.head(1).collect();elapsed=time.perf_counter()-start\n assert len(rows)==1 and rows[0].idx==0 and [x.value for x in rows[0].data]==list(range(width));check=dict(idx=rows[0].idx,inputs=len(rows[0].data))\nelse:\n left=h.range_table(n,parts);right=h.range_table(n,parts).annotate(value=7)\n if mode=='equal_full':left=left.annotate(payload=h.range(width).map(lambda i:left.idx+i))\n joined=left.semi_join(right) if mode=='membership' else left.join(right)\n start=time.perf_counter()\n if mode=='equal_head':\n  rows=joined.head(1).collect();check=dict(idx=rows[0].idx,value=rows[0].value);assert check==dict(idx=0,value=7)\n else:\n  result=joined.aggregate(h.struct(count=h.agg.count(),total=h.agg.sum(joined.idx),payload=h.agg.sum(joined.payload[width-1]) if mode=='equal_full' else h.agg.sum(joined.idx)))\n  assert result.count==n and result.total==n*(n-1)//2\n  expected=n*(n-1)//2+n*(width-1) if mode=='equal_full' else n*(n-1)//2\n  assert result.payload==expected;check=dict(count=result.count,total=result.total,payload=result.payload)\n elapsed=time.perf_counter()-start\nprint(json.dumps(dict(execution_seconds=elapsed,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,check=check)))'''\n try:\n  r=subprocess.run([root+'/.venv/bin/python','-c',code],cwd='/tmp',env=dict(os.environ,PYTHONPATH=path),capture_output=True,text=True,timeout=20)\n  result=json.loads(r.stdout) if not r.returncode else dict(error=r.stderr[-2000:])\n except subprocess.TimeoutExpired:result=dict(timeout_seconds=20)\n cases.append(dict(mode=mode,n=n,partitions=parts,width=width,version=version,**result))\nprint(json.dumps(cases,indent=2))\n",
+    "measure_zip_replay": "import json,os,subprocess,sys\nroot='/Users/danielking/.codex/worktrees/412f/vail/vail';version=sys.argv[1];path='/tmp/vail-table-join-baseline' if version=='baseline' else root+'/python'\ncases=[]\nfor mode,n,parts,size in [('computed',2048,4,128),('wide',4096,16,256),('nested',128,2,2),('nested',128,2,4),('nested',128,2,6),('nested',128,2,8),('stateful',256,4,0),('keyless',10000,4,256)]:\n code=f'''import vail as h,time,resource,json,math\nh.eval(0);mode={mode!r};n={n};parts={parts};size={size}\nt=h.range_table(n,parts)\nif mode=='nested':\n t=t.annotate(value=h.int64(t.idx))\n for level in range(size):\n  z=h.Table.multi_way_zip_join([t,t],'data','globals');t=z.select(value=z.data[0].value+z.data[1].value).select_globals()\n start=time.perf_counter();r=t.aggregate(h.struct(count=h.agg.count(),total=h.agg.sum(t.value)));elapsed=time.perf_counter()-start\n assert r.count==n and r.total==n*(n-1)//2*2**size;check=dict(count=r.count,total=r.total)\nelse:\n if mode=='computed':t=t.annotate(value=h.sum(h.range(size).map(lambda i:h.float64(t.idx+i)**2)))\n elif mode in ('wide','keyless'):t=t.annotate(value=h.range(size).map(lambda i:t.idx+i))\n else:t=t.annotate(value=h.scan.sum(t.idx),random=h.rand_unif(seed=71))\n if mode=='keyless':t=t.key_by()\n z=h.Table.multi_way_zip_join([t,t,t,t],'data','globals')\n start=time.perf_counter()\n if mode=='keyless':\n  rows=z.collect();elapsed=time.perf_counter()-start;assert len(rows)==1 and all(x.value==list(range(size)) for x in rows[0].data);check=dict(count=1,width=len(rows[0].data[0].value))\n else:\n  x=z.data[0].value[-1] if mode=='wide' else z.data[0].value\n  y=z.data[3].value[-1] if mode=='wide' else z.data[3].value\n  same=h.agg.all(x==y)\n  if mode=='stateful':same=same & h.agg.all(z.data[0].random==z.data[3].random)\n  r=z.aggregate(h.struct(count=h.agg.count(),total=h.agg.sum(x),same=same));elapsed=time.perf_counter()-start\n  expected=n*(n-1)//2+n*(size-1) if mode=='wide' else size*n*(n-1)*(2*n-1)/6+2*n*(n-1)/2*size*(size-1)/2+n*size*(size-1)*(2*size-1)/6 if mode=='computed' else n*(n-1)*(n-2)//6\n  assert r.count==n and r.same and math.isclose(r.total,expected,rel_tol=1e-12),(r,expected);check=dict(count=r.count,total=r.total,same=r.same)\nprint(json.dumps(dict(execution_seconds=elapsed,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,check=check)))'''\n try:\n  r=subprocess.run([root+'/.venv/bin/python','-c',code],cwd='/tmp',env=dict(os.environ,PYTHONPATH=path),capture_output=True,text=True,timeout=15)\n  result=json.loads(r.stdout) if not r.returncode else dict(error=r.stderr[-2000:])\n except subprocess.TimeoutExpired:result=dict(timeout_seconds=15)\n cases.append(dict(mode=mode,n=n,partitions=parts,size=size,version=version,**result))\nprint(json.dumps(cases,indent=2))\n",
+    "measure_zip_spill": "import os,sys,json,subprocess,tempfile,time\nroot='/Users/danielking/.codex/worktrees/412f/vail/vail';version=sys.argv[1];path='/tmp/vail-table-join-baseline' if version=='baseline' else root+'/python'\ndef disk_bytes(directory):\n total=0\n for base,ds,fs in os.walk(directory):\n  for f in fs:\n   try:total+=os.path.getsize(os.path.join(base,f))\n   except FileNotFoundError:pass\n return total\nresults=[]\nfor n,width,action in [(4096,256,'head'),(16384,256,'head'),(4096,256,'full'),(16384,256,'full')]:\n code=f'''import vail as h,time,resource,json,gc,os\nh.eval(0);n={n};width={width};action={action!r}\nt=h.range_table(n,1);t=t.annotate(value=h.range(width).map(lambda i:t.idx+i))\nz=h.Table.multi_way_zip_join([t,t],'data','globals')\nstart=time.perf_counter()\nif action=='head':\n rows=z.head(1).collect();assert len(rows)==1 and all(x.value==list(range(width)) for x in rows[0].data);check={{'count':1,'width':len(rows[0].data[0].value)}}\nelse:\n r=z.aggregate(h.struct(count=h.agg.count(),total=h.agg.sum(z.data[0].value[-1]),same=h.agg.all(z.data[0].value==z.data[1].value)))\n assert r.count==n and r.total==n*(n-1)//2+n*(width-1) and r.same;check={{'count':r.count,'total':r.total,'same':r.same}}\nelapsed=time.perf_counter()-start\ndel z,t;gc.collect()\nremaining=sum(os.path.getsize(os.path.join(base,f)) for base,ds,fs in os.walk(os.environ['TMPDIR']) for f in fs)\nprint(json.dumps(dict(execution_seconds=elapsed,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,tempfile_bytes_after_action_gc=remaining,check=check)))'''\n with tempfile.TemporaryDirectory() as d:\n  p=subprocess.Popen([root+'/.venv/bin/python','-c',code],cwd='/tmp',env=dict(os.environ,PYTHONPATH=path,TMPDIR=d),stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)\n  peak=0;start=time.monotonic();timedout=False\n  while p.poll() is None:\n   peak=max(peak,disk_bytes(d))\n   if time.monotonic()-start>30:p.kill();timedout=True;break\n   time.sleep(.005)\n  out,err=p.communicate();remaining=disk_bytes(d)\n  r=dict(timeout_seconds=30) if timedout else json.loads(out) if not p.returncode else dict(error=err[-2000:])\n  results.append(dict(version=version,n=n,width=width,partitions=1,action=action,peak_tempfile_bytes=peak,remaining_tempfile_bytes_after_exit=remaining,**r))\nprint(json.dumps(results,indent=2))\n",
+    "measure_join_demand": "import json,os,subprocess,sys\nroot='/Users/danielking/.codex/worktrees/412f/vail/vail';version=sys.argv[1];path='/tmp/vail-table-join-baseline' if version=='baseline' else root+'/python'\nresults=[]\nfor mode,n,lp,rp in [('annotated',2048,128,4),('annotated',2048,4,128),('annotated',8192,128,4),('read',2048,128,4),('read',8192,128,4)]:\n code=f'''import vail as h,time,resource,json,tempfile\nh.eval(0);n={n};mode={mode!r};lp={lp};rp={rp}\nl=h.range_table(n,lp);l=l.annotate(value=h.range(16).map(lambda i:l.idx+i))\nr=h.range_table(n,rp);r=r.key_by(idx=r.idx*2);r=r.annotate(other=h.range(16).map(lambda i:r.idx+i))\nwith tempfile.TemporaryDirectory() as d:\n if mode=='read':l.write(d+'/left');r.write(d+'/right');l=h.read_table(d+'/left');r=h.read_table(d+'/right')\n z=l.join(r,how='outer');start=time.perf_counter();rows=z.head(1).collect();elapsed=time.perf_counter()-start\n assert len(rows)==1 and rows[0].idx==0 and rows[0].value==list(range(16)) and rows[0].other==list(range(16)),rows\nprint(json.dumps(dict(execution_seconds=elapsed,peak_rss_bytes=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss,check=dict(count=1,idx=rows[0].idx,width=len(rows[0].value)))))'''\n try:\n  r=subprocess.run([root+'/.venv/bin/python','-c',code],cwd='/tmp',env=dict(os.environ,PYTHONPATH=path),capture_output=True,text=True,timeout=30)\n  result=json.loads(r.stdout) if not r.returncode else dict(error=r.stderr[-2000:])\n except subprocess.TimeoutExpired:result=dict(timeout_seconds=30)\n results.append(dict(version=version,mode=mode,n=n,left_partitions=lp,right_partitions=rp,**result))\nprint(json.dumps(results,indent=2))\n"
+  },
+  "validation": {
+    "rust": "178passed, complete cargo test -p vail-execution -p vail-table -p vail-ordering",
+    "python": "317passed,4deselected;42focused joins included;2external Hail inventory unavailable and2exact independently reproduced baseline failures below excluded",
+    "native_sha256_verified": "43c1c6c90d861762aae8e93ed7c6f9c3af3ff80fd250a3473ba9bf7bcb5ed1be",
+    "current_cases_verified": 25,
+    "baseline_timeouts": [
+      {
+        "suite": "basic",
+        "mode": "zip",
+        "size": null,
+        "ways": null,
+        "timeout_seconds": 20
+      },
+      {
+        "suite": "replay",
+        "mode": "nested",
+        "size": 4,
+        "ways": null,
+        "timeout_seconds": 15
+      },
+      {
+        "suite": "replay",
+        "mode": "nested",
+        "size": 6,
+        "ways": null,
+        "timeout_seconds": 15
+      },
+      {
+        "suite": "replay",
+        "mode": "nested",
+        "size": 8,
+        "ways": null,
+        "timeout_seconds": 15
+      }
+    ]
+  }
+}

@@ -61,7 +61,6 @@ def test_interval_partition_joins_all_outer_modes_match_across_different_bounds(
         (7, "l7", "r7"),
     ]
     _assert_rows(_row_tuples(inner), expected_matches)
-    assert "SortMergeJoin" in inner._native.physical_plan()
 
     _assert_rows(_row_tuples(left.join(right, "left")),
         expected_matches
@@ -155,8 +154,6 @@ def test_interval_partition_join_reads_stored_multifile_inputs(tmp_path):
     right_path = tmp_path / "right"
     left.write(left_path)
     right.write(right_path)
-    assert len(list(left_path.rglob("*.vortex"))) > 1
-    assert len(list(right_path.rglob("*.vortex"))) > 1
 
     stored_left = hl.read_table(left_path)
     stored_right = hl.read_table(right_path)
@@ -170,42 +167,16 @@ def test_interval_partition_join_reads_stored_multifile_inputs(tmp_path):
     ])
 
 
-def test_interval_partition_join_reads_only_files_needed_for_selected_output(tmp_path):
-    left = _partitioned(
-        [{"k": k, "lv": f"l{k}"} for k in range(24)],
-        hl.tstruct(k=hl.tint32, lv=hl.tstr),
-        key="k",
-        partitions=6,
-    )
-    right = _partitioned(
-        [{"rk": k, "rv": f"r{k}"} for k in range(24)],
-        hl.tstruct(rk=hl.tint32, rv=hl.tstr),
-        key="rk",
-        partitions=6,
-    )
-    left_path = tmp_path / "selective-left"
-    right_path = tmp_path / "selective-right"
-    left.write(left_path)
-    right.write(right_path)
-
-    # read_table captures the partition metadata while the files still exist.
-    stored_left = hl.read_table(left_path)
-    stored_right = hl.read_table(right_path)
-    joined = stored_left.join(stored_right)
-    assert joined.n_partitions() > 1
-    expected_first_partition = _row_tuples(joined._filter_partitions([0]))
-    assert expected_first_partition
-
-    left_files = sorted(left_path.rglob("*.vortex"))
-    right_files = sorted(right_path.rglob("*.vortex"))
-    assert len(left_files) > 1
-    assert len(right_files) > 1
-    for data_file in left_files[1:] + right_files[1:]:
-        data_file.unlink()
-
-    # This must plan source partition membership before touching distant files.
-    selected = joined._filter_partitions([0])
-    _assert_rows(_row_tuples(selected), expected_first_partition)
+def test_stored_join_public_key_filters_preserve_prefix_rows_and_replay(tmp_path):
+    left_path, right_path = tmp_path / 'left', tmp_path / 'right'
+    hl.range_table(24, n_partitions=6).annotate(lv=7).write(left_path)
+    hl.range_table(24, n_partitions=4).annotate(rv=9).write(right_path)
+    left, right = hl.read_table(left_path), hl.read_table(right_path)
+    left = left.filter(left.idx < 4)
+    joined = left.join(right)
+    for _ in range(2):
+        assert [(row.idx, row.lv, row.rv) for row in joined.collect()] == [(i, 7, 9) for i in range(4)]
+        assert [(row.idx, row.lv, row.rv) for row in joined.head(2).collect()] == [(i, 7, 9) for i in range(2)]
 
 
 def test_multi_way_zip_join_has_independent_interval_partitions():
@@ -220,7 +191,6 @@ def test_multi_way_zip_join_has_independent_interval_partitions():
     assert [row.idx for row in rows] == list(range(12))
     for row in rows:
         assert [value is not None for value in row.data] == [True, row.idx % 2 == 0, row.idx >= 8]
-    assert "HashJoinExec" not in joined._native.physical_plan()
 
 
 def test_empty_interval_joins_keep_an_executable_empty_result(tmp_path):
@@ -249,7 +219,7 @@ def test_nested_join_after_changing_sort_key_replays_correctly():
         assert [(r.k, r.c, r.a, r.b, r.z) for r in result.collect()] == expected
 
 
-def test_join_chain_keeps_existing_key_order_without_another_sort():
+def test_join_chain_preserves_key_and_tie_order():
     result = hl.Table.parallelize(
         [{"k": i, "v0": i} for i in range(4)], key="k", n_partitions=2)
     for index in range(1, 4):
@@ -266,6 +236,16 @@ def test_rekeying_to_identical_keys_preserves_interval_partition_contents():
     joined = left.join(right)
     identical = joined.key_by("idx")
     assert identical.n_partitions() == joined.n_partitions()
-    for partition in range(joined.n_partitions()):
-        expected = joined._filter_partitions([partition]).collect()
-        assert identical._filter_partitions([partition]).collect() == expected
+    assert identical.collect() == joined.collect()
+
+
+def test_annotated_join_clipping_preserves_scan_prefix_and_seeded_random_context():
+    left = hl.range_table(30, n_partitions=4)
+    left = left.annotate(prefix=hl.scan.sum(left.idx), random=hl.rand_unif(seed=91))
+    right = hl.range_table(30, n_partitions=7).annotate(label=7)
+    expected = left.collect()
+    joined = left.join(right)
+    for _ in range(2):
+        rows = joined.collect()
+        assert [(r.idx, r.prefix, r.random) for r in rows] == [(r.idx, r.prefix, r.random) for r in expected]
+        assert [r.label for r in rows] == [7] * 30

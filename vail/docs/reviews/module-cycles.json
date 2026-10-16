@@ -670,7 +670,33 @@
         "vail/docs/reviews/scan-cost.json"
       ],
       "native_sha256": "ac69b07b19f7af4cbe08e471f7ce47dd1ff7e2f0e332f6ca510536b8f5a55e9f",
-      "review": "Reviewer final source/test/report acceptance including resource follow-up; reviewer ran no builds/tests."
+      "review": "Reviewer final source/test/report acceptance including resource follow-up; reviewer ran no builds/tests.",
+      "merged_commit": "3567ec80"
+    },
+    {
+      "module": "Vail equality/membership/multi-way zip joins, interval routing and atomic rename callers",
+      "reviewed_base": "3567ec80",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "normalize logically equal Arrow key storage at Vail join boundary, including nested strings and native Utf8View admission",
+        "atomic bijective rename preserves key order; handle payload suffix collisions with disappearing right keys and unbounded default suffix search",
+        "prepare Read row offsets once, clip demand through checked key-preserving context-free projections, share bounds producer reset across partitions",
+        "typed lexicographic cell predicates retain nested missing keys and native comparator semantics without SQL three-valued loss",
+        "adjacent canonical-key dedup, fixed present-key domain with native LEFT merge ordering, flat output key selection and explicit actual tuple/tie sort",
+        "share exact repeated child identity through logical preparation and action replay; share bounds/payload owner; prune discarded empty globals; memoize DAG metadata walks",
+        "batch-at-a-time shared replay with8MiB retained-memory budget, IPC spill/cleanup, cancellation-independent advancement/commit, hidden-DAG fresh action reset",
+        "replace private plan/IR/partition/storage-topology assertions with public values/errors/laziness/native mixed-key storage and prepare-once replay tests"
+      ],
+      "validation": [
+        "317public Python tests passed;4deselected:2unavailable external Hail inventory checks and2exact original-baseline storage/global failures documented in cost report",
+        "178Rust tests passed:complete cargo test -p vail-execution -p vail-table -p vail-ordering, including public mixed physical key storage and wide same-action cancellation/fresh prepared replay",
+        "50idle fresh-subprocess resource cases against independent baseline/current packages;all25current public outputs verified;4baseline timeouts retained;shared replay spill and cleanup observed"
+      ],
+      "reports": [
+        "vail/docs/reviews/table-join-cost.json"
+      ],
+      "native_sha256": "43c1c6c90d861762aae8e93ed7c6f9c3af3ff80fd250a3473ba9bf7bcb5ed1be",
+      "review": "Reviewer final source/test/50-case report acceptance, no outstanding scoped findings; reviewer ran no builds/tests."
     }
   ],
   "source_inventory": [
@@ -731,6 +757,7 @@
     "vail/crates/vail-table/src/initialized_scan.rs",
     "vail/crates/vail-table/src/interval_read.rs",
     "vail/crates/vail-table/src/join_interval.rs",
+    "vail/crates/vail-table/src/join_key.rs",
     "vail/crates/vail-table/src/joins.rs",
     "vail/crates/vail-table/src/lib.rs",
     "vail/crates/vail-table/src/line_source.rs",
@@ -757,7 +784,9 @@
     "vail/crates/vail-table/src/text_schema.rs",
     "vail/crates/vail-table/src/vcf_export.rs",
     "vail/crates/vail-table/src/vcf_source.rs",
+    "vail/crates/vail-table/src/zip_dedup.rs",
     "vail/crates/vail-table/src/zip_join.rs",
+    "vail/crates/vail-table/src/zip_snapshot.rs",
     "vail/crates/vail-table/tests/scan_replay.rs",
     "vail/crates/vail-vcf/src/lib.rs",
     "vail/python/tests/test_core_aggregate_kernels.py",

@@ -51,7 +51,7 @@ pub(crate) fn limited_input(
 /// receiver stream supplies backpressure, error/panic propagation and aborts
 /// producers when an action is canceled. Each producer buffers two batches;
 /// a slow consumer never forces a whole partition or table into memory.
-fn ordered_partition_streams(
+pub(crate) fn ordered_partition_streams(
     parts: Vec<PhysicalPlan>,
     context: Arc<TaskContext>,
 ) -> futures::stream::BoxStream<'static, (usize, SendableRecordBatchStream)> {
@@ -96,6 +96,9 @@ pub struct PreparedTable {
 /// DataFusion's tree reset expands such shared inputs into independent trees.
 /// Each call uses its own cache, so distinct interval evaluations stay independent.
 pub(crate) fn reset_plan_states(plan: PhysicalPlan) -> datafusion_common::Result<PhysicalPlan> {
+    reset_plan_states_replacing(plan,&[])
+}
+pub(crate) fn reset_plan_states_replacing(plan:PhysicalPlan,replacements:&[(PhysicalPlan,PhysicalPlan)])->datafusion_common::Result<PhysicalPlan>{
     fn reset(
         plan: PhysicalPlan,
         memo: &mut std::collections::HashMap<usize, PhysicalPlan>,
@@ -122,7 +125,13 @@ pub(crate) fn reset_plan_states(plan: PhysicalPlan) -> datafusion_common::Result
         memo.insert(id, fresh.clone());
         Ok(fresh)
     }
-    reset(plan, &mut std::collections::HashMap::new())
+    for (old,new) in replacements {
+        if old.schema()!=new.schema() || old.properties().output_partitioning().partition_count()!=new.properties().output_partitioning().partition_count() {
+            return Err(DataFusionError::Plan("action reset replacement changes schema or partition count".into()));
+        }
+    }
+    let mut memo=replacements.iter().map(|(old,new)|(Arc::as_ptr(old) as *const () as usize,new.clone())).collect();
+    reset(plan, &mut memo)
 }
 
 fn required_ordering(input: &PhysicalPlan) -> Option<OrderingRequirements> {

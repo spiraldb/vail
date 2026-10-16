@@ -686,14 +686,8 @@ class Table:
         renamed_global_names = {mapping.get(name, name) for name in self._global_schema}
         if renamed_row_names & renamed_global_names:
             raise ValueError("renamed row and global fields must have distinct names")
-        source = self._native.key_by([]) if self._keys else self._native
-        unkeyed = Table(source, self._schema, ())
-        row = unkeyed._project([(mapping.get(name, name), unkeyed[name]) for name in self._schema], keys=())
-        if keys:
-            row = Table(row._native.key_by(keys), row._schema, keys)
-        return row._project_globals(
-            [(mapping.get(name, name), row[name]) for name in row._global_schema]
-        )
+        native = self._native.rename_fields(builtins.dict(mapping))
+        return Table(native, _schema_from_native(native), keys)
 
     def flatten(self):
         """Project nested row structs to dotted top-level names and remove keys."""
@@ -991,7 +985,7 @@ class Table:
             index = 0
             while candidate in occupied:
                 index += 1
-                if index > 100:
+                if _mangle is not None and index > 100:
                     raise RecursionError(f"cannot deduplicate {name!r} after 100 attempts")
                 candidate = mangle(name, index)
                 if not isinstance(candidate, builtins.str) or not candidate:
@@ -999,6 +993,17 @@ class Table:
             occupied.add(candidate)
             if candidate != name:
                 renames[name] = candidate
+        # Matched right keys disappear from the result. Move a colliding key
+        # to a temporary input name so its preferred payload name stays free.
+        used = occupied | builtins.set(right._schema) | builtins.set(right._global_schema)
+        targets = builtins.set(renames.values())
+        for i, name in builtins.enumerate(right._keys[:join_key]):
+            if name in targets:
+                temporary = f"__vail_join_matched_key_{i}"
+                while temporary in used:
+                    temporary += '_'
+                used.add(temporary)
+                renames[name] = temporary
         if renames:
             right = right.rename(renames)
 
