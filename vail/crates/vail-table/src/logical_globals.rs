@@ -83,7 +83,7 @@ pub(crate) fn lower(globals: &GlobalsRef) -> Result<LogicalPlan> {
                 "missing logical aggregate plan".into(),
             ))
         }
-        Node::Read(_) | Node::Prepared(_) => extension(globals, vec![]),
+        Node::Read(_) | Node::Prepared(_) | Node::Conditional { .. } => extension(globals, vec![]),
     }
 }
 
@@ -235,7 +235,9 @@ impl ExtensionPlanner for GlobalsExtensionPlanner {
         };
         let build = || -> Result<PhysicalPlan> {
             match node.globals.node() {
-                Node::Read(_) | Node::Prepared(_) => node.globals.lower(),
+                Node::Read(_) | Node::Prepared(_) | Node::Conditional { .. } => {
+                    node.globals.lower()
+                }
                 _ => Err(crate::TableError::Invalid(
                     "unexpected globals logical extension".into(),
                 )),

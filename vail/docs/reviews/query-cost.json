@@ -1,0 +1,269 @@
+{
+  "reviewed_base": "66107e63",
+  "baseline_native_sha256": "e68027134ed583e535ac41b47406cf6b67d18dc6353c1d2e5bb5672940951d40",
+  "final_native_sha256": "cc7a29d735906f08d3c3861cf464cb21f1120c464a675445eba186da539119cf",
+  "baseline": [
+    {
+      "mode": "range",
+      "right_rows": 4096,
+      "left_queries": 16,
+      "construction_seconds": 0.002137333998689428,
+      "action_seconds": 0.06486283300182549,
+      "max_rss_bytes": 162889728
+    },
+    {
+      "mode": "range",
+      "right_rows": 4096,
+      "left_queries": 256,
+      "construction_seconds": 0.0019704170044860803,
+      "action_seconds": 0.07508770800632192,
+      "max_rss_bytes": 162643968
+    },
+    {
+      "mode": "range",
+      "right_rows": 16384,
+      "left_queries": 256,
+      "construction_seconds": 0.0021509159996639937,
+      "action_seconds": 0.10895570900174789,
+      "max_rss_bytes": 178929664
+    },
+    {
+      "mode": "range",
+      "right_rows": 16384,
+      "left_queries": 1024,
+      "construction_seconds": 0.002210333004768472,
+      "action_seconds": 0.28743866700096987,
+      "max_rss_bytes": 179585024
+    },
+    {
+      "mode": "point",
+      "right_rows": 4096,
+      "left_queries": 16,
+      "construction_seconds": 0.0017529169999761507,
+      "action_seconds": 0.04765437499736436,
+      "max_rss_bytes": 191004672
+    },
+    {
+      "mode": "point",
+      "right_rows": 4096,
+      "left_queries": 256,
+      "construction_seconds": 0.0017175409957417287,
+      "action_seconds": 0.048809166000864934,
+      "max_rss_bytes": 189743104
+    },
+    {
+      "mode": "point",
+      "right_rows": 16384,
+      "left_queries": 256,
+      "construction_seconds": 0.001728000002913177,
+      "action_seconds": 0.18298720799793955,
+      "max_rss_bytes": 294453248
+    },
+    {
+      "mode": "point",
+      "right_rows": 16384,
+      "left_queries": 1024,
+      "construction_seconds": 0.0017834999962360598,
+      "action_seconds": 0.17672708299505757,
+      "max_rss_bytes": 297975808
+    }
+  ],
+  "final": [
+    {
+      "mode": "range",
+      "right_rows": 4096,
+      "left_queries": 16,
+      "left_partitions": 4,
+      "construction_seconds": 0.001944666997587774,
+      "action_seconds": 0.005622875003609806,
+      "max_rss_bytes": 150798336
+    },
+    {
+      "mode": "range",
+      "right_rows": 4096,
+      "left_queries": 256,
+      "left_partitions": 4,
+      "construction_seconds": 0.001995874998101499,
+      "action_seconds": 0.005439291002403479,
+      "max_rss_bytes": 149291008
+    },
+    {
+      "mode": "range",
+      "right_rows": 16384,
+      "left_queries": 256,
+      "left_partitions": 4,
+      "construction_seconds": 0.0018790829999488778,
+      "action_seconds": 0.0057586250040913,
+      "max_rss_bytes": 150306816
+    },
+    {
+      "mode": "range",
+      "right_rows": 16384,
+      "left_queries": 1024,
+      "left_partitions": 4,
+      "construction_seconds": 0.0018796250005834736,
+      "action_seconds": 0.0055447080012527294,
+      "max_rss_bytes": 150159360
+    },
+    {
+      "mode": "point",
+      "right_rows": 4096,
+      "left_queries": 16,
+      "left_partitions": 4,
+      "construction_seconds": 0.001625666998734232,
+      "action_seconds": 0.03826912499789614,
+      "max_rss_bytes": 185827328
+    },
+    {
+      "mode": "point",
+      "right_rows": 4096,
+      "left_queries": 256,
+      "left_partitions": 4,
+      "construction_seconds": 0.001504416999523528,
+      "action_seconds": 0.04135849999875063,
+      "max_rss_bytes": 185384960
+    },
+    {
+      "mode": "point",
+      "right_rows": 16384,
+      "left_queries": 256,
+      "left_partitions": 4,
+      "construction_seconds": 0.0015398750038002618,
+      "action_seconds": 0.17194387500057928,
+      "max_rss_bytes": 281444352
+    },
+    {
+      "mode": "point",
+      "right_rows": 16384,
+      "left_queries": 1024,
+      "left_partitions": 4,
+      "construction_seconds": 0.0015900829966994934,
+      "action_seconds": 0.1770650830003433,
+      "max_rss_bytes": 281362432
+    },
+    {
+      "mode": "range",
+      "right_rows": 65536,
+      "left_queries": 256,
+      "left_partitions": 1,
+      "construction_seconds": 0.0018828340034815483,
+      "action_seconds": 0.005628375001833774,
+      "max_rss_bytes": 154714112
+    },
+    {
+      "mode": "range",
+      "right_rows": 65536,
+      "left_queries": 256,
+      "left_partitions": 4,
+      "construction_seconds": 0.0019392920003156178,
+      "action_seconds": 0.006416999996872619,
+      "max_rss_bytes": 155435008
+    },
+    {
+      "mode": "range",
+      "right_rows": 65536,
+      "left_queries": 256,
+      "left_partitions": 16,
+      "construction_seconds": 0.0019921249986509793,
+      "action_seconds": 0.013192375001381151,
+      "max_rss_bytes": 154828800
+    },
+    {
+      "mode": "range",
+      "right_rows": 65536,
+      "left_queries": 256,
+      "left_partitions": 64,
+      "construction_seconds": 0.0019436669972492382,
+      "action_seconds": 0.03830316699895775,
+      "max_rss_bytes": 159563776
+    },
+    {
+      "mode": "literal",
+      "right_rows": 4096,
+      "left_queries": 1,
+      "left_partitions": 1,
+      "construction_seconds": 0.0019298750048619695,
+      "action_seconds": 0.018068083001708146,
+      "max_rss_bytes": 148422656
+    },
+    {
+      "mode": "literal",
+      "right_rows": 16384,
+      "left_queries": 1,
+      "left_partitions": 1,
+      "construction_seconds": 0.0019709580010385253,
+      "action_seconds": 0.01990625000325963,
+      "max_rss_bytes": 149864448
+    },
+    {
+      "mode": "literal",
+      "right_rows": 65536,
+      "left_queries": 1,
+      "left_partitions": 1,
+      "construction_seconds": 0.0020069579986738972,
+      "action_seconds": 0.02350141700298991,
+      "max_rss_bytes": 151961600
+    },
+    {
+      "mode": "scalar_direct",
+      "right_rows": 4096,
+      "left_queries": 1,
+      "left_partitions": 1,
+      "construction_seconds": 0.0024138750013662502,
+      "action_seconds": 0.06354916599957505,
+      "max_rss_bytes": 153485312
+    },
+    {
+      "mode": "scalar_direct",
+      "right_rows": 65536,
+      "left_queries": 1,
+      "left_partitions": 1,
+      "construction_seconds": 0.0024671659994055517,
+      "action_seconds": 0.06722254099440761,
+      "max_rss_bytes": 152600576
+    },
+    {
+      "mode": "scalar_reused",
+      "right_rows": 4096,
+      "left_queries": 1,
+      "left_partitions": 1,
+      "construction_seconds": 0.004198500006168615,
+      "action_seconds": 0.07410904100106563,
+      "max_rss_bytes": 151994368
+    },
+    {
+      "mode": "scalar_reused",
+      "right_rows": 65536,
+      "left_queries": 1,
+      "left_partitions": 1,
+      "construction_seconds": 0.002762042000540532,
+      "action_seconds": 0.07718374999967637,
+      "max_rss_bytes": 154501120
+    }
+  ],
+  "workloads": {
+    "range": "Each left query selects exactly one point [idx%R,idx%R+1); output count equals left query count. Stored right has4partitions.",
+    "point": "Existing all-matches equality lookup, same right/left sizes as range.",
+    "left_partition_scaling": "Right65536rows/4partitions, left256queries over1/4/16/64partitions; same matched-output size.",
+    "literal": "Established literal query point1 over stored rights4096/16384/65536rows; no private storage-index inspection.",
+    "scalar_direct_and_reused": "A full-range scalar query returns Rmatching rows; time hl.eval(len(q)) versus hl.eval(len(if_else(len(q)>0,q,empty))). Query payload is not localized to Python. No invocation counters."
+  },
+  "validation": [
+    "146 public Python tests passed across query/table-matrix lookup, case/switch, expression input and stream suites.",
+    "Rust conditional globals constructor test covers nonnullable branches with true/false/missing selector and nullable output schema.",
+    "Rust prefix projection test uses explicitly ordered public Arrow input with3nonempty partitions and confirms identical membership/order after packing unchanged key prefix.",
+    "Nested missing tuple/array/struct keys and bounds agree with public interval.contains for all4 inclusion combinations; original source match order is retained.",
+    "Reused query selector/result, nested conditionals, projected sibling globals, coalesce and changing text-source selectors verify scalar dependency semantics and action freshness."
+  ],
+  "limitations": [
+    "Each workload runs in a fresh process with20second cap after runtime/source construction. RSS is macOS process peak including runtime/input data; timings are machine observations, not isolated operator throughput.",
+    "Final resource run occurred after builds ended; final-only left-partition/literal workloads have no baseline comparison.",
+    "Index construction scans/retains right Arrow batches once per action; canonical keys and row positions are materialized, payload buffers are retained rather than concatenated. Matched payload gathering scales with actual output size.",
+    "Increasing partition counts adds left-plan/stream overhead; measurements plus the shared physical owner contract support reuse without an invocation-counter assertion.",
+    "The query-prefix projection removes a redundant sort, but equality lookup remains dominated by its existing grouping/join path. No material equality-lookup speedup is claimed.",
+    "Literal-bound results/resource observations preserve the supported pruning path; no exact fragment-read count or private storage representation is asserted.",
+    "Selected-only captured dependencies are scheduled at the closed unindexed scalar conditional boundary. Indexed/free lexical/aggregate/RNG expressions retain their existing evaluator/cardinality/context paths; no general per-row conditional-dependency scheduler is claimed.",
+    "Index ordering uses the existing interval comparison representation, distinct from table-key order for nested missing values. Positions are stably sorted once if needed; matching ranges then restore source order using output-sized sorting (O(M log M) fallback), not a claimed universally linear output cost.",
+    "One conditional execute owns an exact-identity cache of successful atomic Aggregate/Conditional results; owning references prevent address reuse. Ordinary Map/Read captures remain logical for projection, and only needed source globals are boxed. No cache survives that action."
+  ]
+}

@@ -30,3 +30,12 @@ def test_matrix_query_duplicate_keys_and_no_columns(tmp_path):
     assert hl.eval(hl.query_matrix_table_rows(path, 0, 'e')) == [
         hl.Struct(row_idx=0, k=0, e=[]), hl.Struct(row_idx=2, k=0, e=[])
     ]
+
+
+def test_queries_inside_matrix_row_scope(tmp_path):
+    path = str(tmp_path/'right')
+    hl.range_table(5).write(path)
+    matrix = hl.range_matrix_table(3,0)
+    matrix = matrix.annotate_rows(matches=hl.query_table(path,hl.interval(matrix.row_idx,matrix.row_idx+2)))
+    assert [row.matches for row in matrix.rows().collect()] == [
+        [hl.Struct(idx=i),hl.Struct(idx=i+1)] for i in range(3)]

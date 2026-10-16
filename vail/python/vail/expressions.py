@@ -1084,6 +1084,34 @@ def if_else(condition, consequent, alternate, missing_false=False):
         raise TypeError(f"if_else branches have incompatible types: {consequent.dtype} and {alternate.dtype}")
     source = _merge_sources(condition.source, consequent.source)
     source = _merge_sources(source, alternate.source)
+    values = (condition, consequent, alternate)
+    if (any(value._global_refs for value in values)
+        and not any(value._row_indexed for value in values)
+        and not any(value.to_ir().contains_random() for value in values)):
+
+        from .inputs import bind_input
+        from .matrixtable import MatrixTable
+        from . import _native_session
+        prepared = []
+        try:
+            for value in (condition, consequent, alternate):
+                if isinstance(value.source, MatrixTable):
+                    value = value.source._lower(value, value.source.globals_table())
+                prepared.append(bind_input(value))
+            for index in (1, 2):
+                value = prepared[index]
+                if value.dtype != result_type:
+                    prepared[index] = Expression(result_type, None, {
+                        'op':'cast', 'dtype':type_to_wire(result_type), 'value':value.to_ir()})
+            native = _native_session().conditional_globals(
+                *(value.to_ir() for value in prepared), references=_global_bindings(prepared))
+        except ValueError:
+            # Free lexical variables and aggregate scopes belong to the
+            # enclosing expression evaluator, rather than a scalar relation.
+            pass
+        else:
+            value = _external_globals(native, tstruct(value=result_type))['value']
+            return Expression(result_type, source, value.to_ir())
     return Expression(
         result_type,
         source,

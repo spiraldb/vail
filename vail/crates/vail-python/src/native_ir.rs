@@ -878,6 +878,25 @@ impl NativeExpr {
     fn __repr__(&self) -> String {
         format!("NativeExpr({:?})", self.inner)
     }
+    fn contains_random(&self) -> bool {
+        fn visit(node: &Expr, seen: &mut std::collections::HashSet<*const Expr>) -> bool {
+            if !seen.insert(node as *const Expr) {
+                return false;
+            }
+            if matches!(node, Expr::NestedFunction { function, .. } if function.starts_with("random_"))
+            {
+                return true;
+            }
+            let mut found = false;
+            node.visit_children(&mut |child| {
+                if !found {
+                    found = visit(child, seen);
+                }
+            });
+            found
+        }
+        visit(&self.inner, &mut std::collections::HashSet::new())
+    }
     fn input_global_names(&self) -> PyResult<Vec<String>> {
         crate::input_binding::global_names(&self.inner)
     }

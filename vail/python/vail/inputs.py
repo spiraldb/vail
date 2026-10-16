@@ -96,7 +96,8 @@ def bind_input(expression):
     if names:
         if expression.source is None:
             raise ExpressionException("unbound input global field")
-        source_globals = expression.source.index_globals()
+        # Project before boxing: unused global definitions must stay lazy.
+        source_globals = expression.source.select_globals(*names).index_globals()
         for name in names:
             bound = source_globals[name]
             references.update(bound._global_refs)

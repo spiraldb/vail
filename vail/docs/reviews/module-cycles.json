@@ -257,6 +257,31 @@
       ],
       "reports": [
         "vail/docs/reviews/display-cost.json"
+      ],
+      "merged_commit": "66107e63"
+    },
+    {
+      "module": "Vail lazy table/matrix-row query adapters and range lookup",
+      "reviewed_base": "66107e63",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "replace storage-internal pruning fixture with public lazy-source results and bounded resources",
+        "defer computed scalar query arguments; decode only established literal constructors for constant pruning",
+        "carry proven unchanged prefix order through a checked native projection without redundant sort",
+        "share immutable typed binary range index across left batches/partitions and reset owner once per action",
+        "retain right payload batches and interleave only matches instead of concatenating all payloads",
+        "schedule selected-only scalar captured query dependencies with validated nullable singleton conditional relation",
+        "put cheap dependency/scope guards before memoized native RNG discovery",
+        "reuse the existing containment comparison transform for nested missing keys/bounds, preserving source order when comparison orders differ",
+        "share captured scalar query results between selector and chosen branch within one conditional action",
+        "project only needed source globals before record capture to preserve sibling-field laziness"
+      ],
+      "validation": [
+        "146 public Python tests passed",
+        "11 public Rust conditional-globals/IR integration tests passed"
+      ],
+      "reports": [
+        "vail/docs/reviews/query-cost.json"
       ]
     }
   ],
@@ -378,6 +403,8 @@
     "vail/python/vail/vcf_export.py",
     "vail/crates/vail-table/src/arrow_batches.rs",
     "vail/crates/vail-execution/src/conditionals.rs",
-    "vail/crates/vail-python/src/input_binding.rs"
+    "vail/crates/vail-python/src/input_binding.rs",
+    "vail/crates/vail-table/src/range_lookup.rs",
+    "vail/crates/vail-table/src/conditional_globals.rs"
   ]
 }

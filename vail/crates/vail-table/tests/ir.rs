@@ -314,3 +314,65 @@ async fn keyed_partition_identity_map_filter_remain_bounded_by_head() {
     assert_eq!(mapped.keys(), &["idx"]);
     assert_eq!(mapped.head(1).count().await.unwrap(), 1);
 }
+
+#[tokio::test]
+async fn query_prefix_retains_duplicate_prefixes_across_original_partitions() {
+    // The arrays themselves prove (a,idx) is ordered; declare that known
+    // ordering while retaining the public parallelize partition boundaries.
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("a", DataType::Int32, false),
+        Field::new("idx", DataType::Int32, false),
+    ]));
+    let batch = RecordBatch::try_new(
+        schema,
+        vec![
+            Arc::new(Int32Array::from(vec![0; 9])),
+            Arc::new(Int32Array::from_iter_values(0..9)),
+        ],
+    )
+    .unwrap();
+    let source = TableIR::parallelize(batch, 3)
+        .unwrap()
+        .with_keys(vec!["a".into(), "idx".into()])
+        .unwrap();
+    let original = source.collect_partitions().await.unwrap();
+    let counts = original
+        .iter()
+        .map(|batches| batches.iter().map(RecordBatch::num_rows).sum::<usize>())
+        .collect::<Vec<_>>();
+    assert_eq!(counts, vec![3, 3, 3]);
+    let packed = source
+        .query_prefix(1, "query".into(), "payload".into())
+        .unwrap();
+    assert_eq!(packed.keys(), &["query"]);
+    let parts = packed.collect_partitions().await.unwrap();
+    assert_eq!(
+        parts
+            .iter()
+            .map(|batches| batches.iter().map(RecordBatch::num_rows).sum::<usize>())
+            .collect::<Vec<_>>(),
+        counts
+    );
+    let values = parts
+        .iter()
+        .flatten()
+        .flat_map(|batch| {
+            let payload = batch
+                .column(1)
+                .as_any()
+                .downcast_ref::<arrow_array::StructArray>()
+                .unwrap();
+            payload
+                .column_by_name("idx")
+                .unwrap()
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .to_vec()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(values, (0..9).collect::<Vec<_>>());
+    assert!(source.query_prefix(0, "q".into(), "p".into()).is_err());
+    assert!(source.query_prefix(3, "q".into(), "p".into()).is_err());
+}

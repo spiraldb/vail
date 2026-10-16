@@ -157,6 +157,33 @@ impl NativeSession {
         })
     }
 
+    /// Retain separate lazy scalar dependencies behind a conditional boundary.
+    #[pyo3(signature = (condition, consequent, alternate, references=None))]
+    fn conditional_globals(
+        &self,
+        condition: &NativeExpr,
+        consequent: &NativeExpr,
+        alternate: &NativeExpr,
+        references: Option<Vec<(String, PyRef<'_, NativeGlobals>)>>,
+    ) -> PyResult<NativeGlobals> {
+        let bindings = global_bindings(references)?;
+        let base = vail_table::globals::GlobalsIR::empty();
+        let make = |value: &NativeExpr| {
+            base.map_bound(
+                vec![("value".into(), value.inner.as_ref().clone())],
+                bindings.clone(),
+            )
+            .map_err(table_error)
+        };
+        Ok(NativeGlobals {
+            ir: vail_table::globals::GlobalsIR::conditional(
+                make(condition)?,
+                make(consequent)?,
+                make(alternate)?,
+            )
+            .map_err(table_error)?,
+        })
+    }
     /// Retain one Arrow row as native scalar globals using the C Stream protocol.
     fn scalar_arrow(&self, data: &Bound<'_, PyAny>) -> PyResult<NativeGlobals> {
         let batch = arrow_memory::scalar(data)?;
@@ -327,6 +354,15 @@ impl NativeTable {
         self.ir.keys().to_vec()
     }
 
+    fn query_prefix(&self, count: usize, key: String, payload: String) -> PyResult<Self> {
+        Ok(Self {
+            runtime: self.runtime.clone(),
+            ir: self
+                .ir
+                .query_prefix(count, key, payload)
+                .map_err(table_error)?,
+        })
+    }
     #[pyo3(signature = (other, keys, field, all_matches=false, references=None, query_interval=false))]
     fn lookup(
         &self,

@@ -851,6 +851,17 @@ pub(crate) async fn prepare(
         )
     };
 
+    let range_index = if query_interval_mode && all_matches {
+        Some(crate::range_lookup::RangeLookupExec::indexed_right(
+            right_reduced.clone(),
+            &right_key,
+            &right_payload,
+            &output_schema,
+            field,
+        )?)
+    } else {
+        None
+    };
     let mut parts = Vec::with_capacity(left_prepared.parts.len());
     for left_rows in left_prepared.parts {
         let (left_projected, left_key, left_ordinal, left_values, _left_marker) = keyed_input(
@@ -862,6 +873,20 @@ pub(crate) async fn prepare(
             None,
             interval_mode || query_interval_mode,
         )?;
+        if query_interval_mode && all_matches {
+            parts.push(crate::range_lookup::RangeLookupExec::new(
+                left_projected,
+                range_index
+                    .as_ref()
+                    .ok_or_else(|| TableError::Invalid("missing query range index".into()))?
+                    .clone(),
+                &left_key,
+                &left_values,
+                output_schema.clone(),
+                field,
+            )?);
+            continue;
+        }
         parts.push(join_partition(
             left_projected,
             right_reduced.clone(),
@@ -886,4 +911,46 @@ pub(crate) async fn prepare(
         counts: left_prepared.counts,
         schema: output_schema,
     })
+}
+
+impl crate::TableIR {
+    /// Pack an unchanged leading key prefix without sorting or moving rows.
+    /// The key is a present Struct of original key columns in original order,
+    /// so lexicographic nulls-last key order is preserved by construction.
+    pub fn query_prefix(
+        self: &Arc<Self>,
+        count: usize,
+        key: String,
+        payload: String,
+    ) -> Result<TableRef> {
+        if count == 0 || count > self.keys().len() || key == payload {
+            return Err(TableError::Invalid(
+                "invalid query key prefix projection".into(),
+            ));
+        }
+        let prefix = Expr::Struct {
+            fields: self.keys()[..count]
+                .iter()
+                .map(|name| (name.clone(), Expr::Column { name: name.clone() }))
+                .collect(),
+        };
+        let row = Expr::Struct {
+            fields: self
+                .schema()
+                .fields()
+                .iter()
+                .map(|field| {
+                    (
+                        field.name().clone(),
+                        Expr::Column {
+                            name: field.name().clone(),
+                        },
+                    )
+                })
+                .collect(),
+        };
+        self.key_by(vec![])?
+            .map_rows(vec![(key.clone(), prefix), (payload, row)])?
+            .with_keys(vec![key])
+    }
 }

@@ -53,6 +53,11 @@ pub fn referenced_bindings<'a>(
 #[derive(Debug)]
 pub(crate) enum Node {
     Empty,
+    Conditional {
+        condition: GlobalsRef,
+        consequent: GlobalsRef,
+        alternate: GlobalsRef,
+    },
     Prepared(crate::plan::PhysicalPlan),
     ArrowLiteral(RecordBatch),
     Aggregate {
@@ -134,6 +139,44 @@ impl GlobalsIR {
         }))
     }
 
+    /// Select one validated singleton relation only after evaluating its Boolean
+    /// selector. Unused branch dependencies are neither bound nor executed.
+    pub fn conditional(
+        condition: GlobalsRef,
+        consequent: GlobalsRef,
+        alternate: GlobalsRef,
+    ) -> Result<GlobalsRef> {
+        if condition.schema.fields().len() != 1
+            || condition.schema.field(0).data_type() != &arrow_schema::DataType::Boolean
+            || consequent.schema.fields().len() != 1
+            || alternate.schema.fields().len() != 1
+        {
+            return Err(TableError::Invalid(
+                "conditional globals schema mismatch".into(),
+            ));
+        }
+        let field = consequent.schema.field(0).clone().with_nullable(true);
+        if field != alternate.schema.field(0).clone().with_nullable(true)
+            || consequent.schema.metadata() != alternate.schema.metadata()
+        {
+            return Err(TableError::Invalid(
+                "conditional globals branch types differ".into(),
+            ));
+        }
+        let schema = Arc::new(Schema::new_with_metadata(
+            vec![field],
+            consequent.schema.metadata().clone(),
+        ));
+        Ok(Arc::new(Self {
+            schema,
+            node: Node::Conditional {
+                condition,
+                consequent,
+                alternate,
+            },
+        }))
+    }
+
     pub fn physical_plan(self: &Arc<Self>) -> Result<String> {
         let globals = self.clone();
         std::thread::spawn(move || {
@@ -198,6 +241,13 @@ impl GlobalsIR {
             Node::Aggregate {
                 table, expression, ..
             } => json!({"node":"TableAggregate", "table":table.explain(), "expression":expression}),
+            Node::Conditional {
+                condition,
+                consequent,
+                alternate,
+            } => {
+                json!({"node":"GlobalsConditional", "condition":condition.explain(), "consequent":consequent.explain(), "alternate":alternate.explain()})
+            }
             Node::Prepared(_) => json!({"node":"GlobalsPrepared"}),
             Node::Empty => json!({"node":"GlobalsLiteral", "fields":[]}),
             Node::ArrowLiteral(batch) => {
@@ -233,6 +283,16 @@ impl GlobalsIR {
                 crate::logical_globals::lower(self)?,
                 crate::logical::max_partitions(table),
             )?,
+            Node::Conditional {
+                condition,
+                consequent,
+                alternate,
+            } => crate::conditional_globals::ConditionalGlobalsExec::new(
+                condition.clone(),
+                consequent.clone(),
+                alternate.clone(),
+                self.schema.clone(),
+            ),
             Node::Prepared(plan) => plan.clone(),
             Node::Empty => {
                 let batch = vail_storage::globals::empty()?;

@@ -1,8 +1,8 @@
 """Lazy keyed table queries used inside scalar and row expressions."""
 from __future__ import annotations
 
-from .expressions import Expression, ExpressionException, as_expr, if_else, is_missing, missing, struct
-from .types import Interval, tarray, tinterval, tstruct
+from .expressions import Expression, ExpressionException, _IR, as_expr, if_else, is_missing, missing, struct
+from .types import Interval, Struct, tarray, tbool, tinterval, tstruct, ttuple
 
 
 def _normalize_point(point, key_names, key_types):
@@ -15,11 +15,14 @@ def _normalize_point(point, key_names, key_types):
             raise ValueError("query point value cannot be an empty struct")
         if size > len(key_names):
             raise ValueError(f"query point type has {size} field(s), but key only has {len(key_names)} field(s)")
-        values = [point[name] for name in point.dtype]
+        fields = tuple(point.dtype.items())
+        values = [Expression(ty, point.source, _IR(
+            {'op':'get_field', 'value':point.to_ir(), 'name':name},
+            point._global_refs, point._lookup_refs, point._row_indexed)) for name,ty in fields]
         for index, (value, key_type) in enumerate(zip(values, key_types)):
             if value.dtype != key_type:
                 raise ValueError(
-                    f"mismatch at key field {index} ({list(point.dtype)[index]!r}): "
+                    f"mismatch at key field {index} ({fields[index][0]!r}): "
                     f"query type is {value.dtype}, key type is {key_type}"
                 )
     else:
@@ -33,8 +36,8 @@ def _normalize_point(point, key_names, key_types):
 def query_table(path, point_or_interval):
     """Return full matching rows as an expression array.
 
-    Unindexed queries use interval filtering so read-source fragment pruning can
-    use their constant bounds. Row-indexed queries lower through the native
+    Established literal bounds use interval filtering and fragment pruning.
+    Computed scalar inputs remain deferred singleton dependencies. Row-indexed queries lower through the native
     all-matches lookup node; dynamic interval queries currently read the right
     provider partitions because their bounds vary by left row.
     """
@@ -67,14 +70,60 @@ def query_matrix_table_rows(path, point_or_interval, entries_name='entries_array
     return _query_rows(matrix.localize_entries(entries_name), point_or_interval)
 
 
+_NOT_CONSTANT = object()
+
+
+def _constant_value(node, dtype):
+    """Read owned literals/constructors, never execute an expression or source."""
+    op = node.get('op')
+    if op == 'literal':
+        from ._native import NativeArrow
+        from .arrow import decode_rows
+        value = node['value']
+        if isinstance(value, NativeArrow):
+            return decode_rows(value, tstruct(value=dtype))[0].value
+        from .types import decode_value
+        return decode_value(value, dtype)
+    if op == 'struct' and isinstance(dtype, tstruct):
+        fields = dict(dtype.items())
+        values = {name: _constant_value(value, fields[name]) for name, value in node['fields']}
+        return _NOT_CONSTANT if any(value is _NOT_CONSTANT for value in values.values()) else Struct(**values)
+    if op in ('tuple', 'array') and isinstance(dtype, (ttuple, tarray)):
+        nodes = node['elements']
+        types = dtype.types if isinstance(dtype, ttuple) else (dtype.element_type,) * len(nodes)
+        values = [_constant_value(value, ty) for value, ty in zip(nodes, types)]
+        if any(value is _NOT_CONSTANT for value in values):
+            return _NOT_CONSTANT
+        return tuple(values) if isinstance(dtype, ttuple) else values
+    if op == 'interval' and isinstance(dtype, tinterval):
+        values = [_constant_value(node[name], ty) for name, ty in (
+            ('start', dtype.point_type), ('end', dtype.point_type),
+            ('includes_start', tbool), ('includes_end', tbool))]
+        if any(value is _NOT_CONSTANT for value in values):
+            return _NOT_CONSTANT
+        if values[2] is None or values[3] is None:
+            return None
+        return Interval(*values, dtype.point_type)
+    return _NOT_CONSTANT
+
+
+def _constant_point(value, dtype, key_names, key_types, count):
+    if dtype == key_types[0]:
+        return Struct(**{key_names[0]: value})
+    names = tuple(dtype)
+    return Struct(**{key: None if value is None else value[name]
+                     for key, name in zip(key_names[:count], names)})
+
+
 def _query_rows(table, point_or_interval):
-    from . import eval, filter_intervals
+    from . import filter_intervals
 
     query = as_expr(point_or_interval)
     if not table._keys:
         raise ValueError("cannot query unkeyed table")
     key_names = list(table._keys)
-    key_types = [table._schema[name] for name in key_names]
+    schema_fields = dict(table._schema.items())
+    key_types = [schema_fields[name] for name in key_names]
     range_query = isinstance(query.dtype, tinterval) and query.dtype != key_types[0]
 
     if range_query:
@@ -93,29 +142,42 @@ def _query_rows(table, point_or_interval):
 
     result_type = tarray(table._schema)
     if not query._row_indexed:
-        value = eval(query_key)
+        value = _constant_value(query.to_ir(), query.dtype)
+        if value is _NOT_CONSTANT:
+            # A computed scalar is a lazy singleton dependency. The row query
+            # path evaluates it once at the action, preserving lazy source IO.
+            from . import Table
+            from .matrixtable import MatrixTable
+            if isinstance(query.source, MatrixTable):
+                query = query.source._lower(query, query.source.globals_table())
+            left = Table.parallelize([struct(argument=query)])
+            result = left.annotate(matches=_query_rows(table, left.argument))
+            return result.matches.collect(_localize=False)[0]
         if range_query:
             if value is None:
                 return missing(result_type)
-            interval_value = Interval(value.start, value.end, value.includes_start,
+            point_type = query.dtype.point_type
+            start_value = _constant_point(value.start, point_type, key_names, key_types, count)
+            end_value = _constant_point(value.end, point_type, key_names, key_types, count)
+            interval_value = Interval(start_value, end_value, value.includes_start,
                                       value.includes_end, query_key.dtype.point_type)
         else:
-            point_type = query_key.dtype
-            interval_value = Interval(value, value, True, True, point_type)
+            point = _constant_point(value, query.dtype, key_names, key_types, count)
+            interval_value = Interval(point, point, True, True, query_key.dtype)
         return filter_intervals(table, [interval_value]).collect(_localize=False)
 
     if query.source is None:
         raise ExpressionException("row-indexed query must belong to a Table")
     packed_name = "__vail_query_key"
     payload_name = "__vail_query_payload"
-    while packed_name in table._schema:
+    occupied = set(table._schema) | set(table._global_schema)
+    while packed_name in occupied:
         packed_name += "_"
-    while payload_name in table._schema or payload_name == packed_name:
+    while payload_name in occupied or payload_name == packed_name:
         payload_name += "_"
-    right = table.annotate(**{payload_name: table.row})
-    packed_key = struct(**{name: right[name] for name in key_names[:count]})
-    right = right.key_by(**{packed_name: packed_key})
-    right = right.select(**{payload_name: right[payload_name]})
+    from . import Table, _schema_from_native, _keys_from_native
+    native = table._native.query_prefix(count, packed_name, payload_name)
+    right = Table(native, _schema_from_native(native), _keys_from_native(native))
     indexed = right.index(query_key, all_matches=True, query_interval=range_query)
     result = indexed.map(lambda item: item[payload_name])
     return if_else(is_missing(query), missing(result_type), result) if range_query else result
