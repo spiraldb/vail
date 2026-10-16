@@ -145,3 +145,13 @@ def array_sum(expr):
 
 def approx_cdf(expr, k=100, *, _raw=False):
     return _agg.approx_cdf(expr, k=k, _raw=_raw)
+
+
+def _prev_nonnull(expr):
+    """The last defined value strictly before the current row."""
+    from . import if_else, is_defined, missing
+    from .expressions import as_expr
+    value = as_expr(expr)
+    return fold(missing(value.dtype),
+                lambda previous: if_else(is_defined(value), value, previous),
+                lambda left, right: if_else(is_defined(right), right, left))

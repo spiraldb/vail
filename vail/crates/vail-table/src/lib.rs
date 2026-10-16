@@ -31,6 +31,7 @@ pub mod plan;
 mod provider;
 mod range_lookup;
 mod scan_ordinal;
+mod streaming_prev;
 mod text_export;
 pub mod text_schema;
 pub mod vcf_export;

@@ -607,6 +607,31 @@ pub(crate) fn lower(
     {
         return Ok(None); // The existing serial lowering reports the unsupported initializer.
     }
+    // A canonical previous-defined fold is a gather over row indices, not a
+    // scalar aggregate window. Keep input expressions visible to DataFusion.
+    if nodes.iter().all(|(node, filter)| filter.is_none() && crate::streaming_prev::argument(node).is_some()) {
+        let mut used = input.schema().fields().iter().map(|f| f.name().clone())
+            .chain(fields.iter().map(|(name,_)| name.clone())).collect::<HashSet<_>>();
+        let mut arguments = Vec::new();
+        let mut replacements = Vec::new();
+        for (i,(node,_)) in nodes.iter().enumerate() {
+            let argument = crate::streaming_prev::argument(node).unwrap();
+            let expression = vail_execution::logical_expr::lower_logical_with_bindings(
+                argument, input.schema(), child.globals().schema(), bindings)?;
+            let argument_name = unique(&mut used, &format!("__scan_previous_argument_{i}"));
+            let output_name = unique(&mut used, &format!("__scan_previous_value_{i}"));
+            arguments.push((expression, argument_name, output_name.clone()));
+            replacements.push((node.clone(), output_name));
+        }
+        let completed = crate::streaming_prev::logical(input, arguments)?;
+        let mut output = fields.iter().map(|(name,expr)| {
+            let expr = replace_native_scans(expr, &replacements)?;
+            Ok(vail_execution::logical_expr::lower_logical_with_bindings(
+                &expr, completed.schema(), child.globals().schema(), bindings)?.alias(name))
+        }).collect::<Result<Vec<_>>>()?;
+        output.push(column(&completed, child.globals().schema().fields().len() + child.schema().fields().len()));
+        return Ok(Some(LogicalPlanBuilder::from(completed).project(output)?.build()?));
+    }
     let part_index = child.globals().schema().fields().len() + child.schema().fields().len();
     if let Some(plan) = lower_native_prefix(
         table,

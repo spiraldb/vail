@@ -1387,6 +1387,9 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 crate::partitioned::ProtectedRangeRepartitionExec::new(input.clone(), ranges)?,
             )));
         }
+        if let Some(node) = node.as_any().downcast_ref::<crate::streaming_prev::Previous>() {
+            return Ok(Some(node.physical(physical_inputs[0].clone(), physical_inputs[1].clone())?));
+        }
         if let Some(node) = node
             .as_any()
             .downcast_ref::<crate::scan_ordinal::SourceOrdinal>()
