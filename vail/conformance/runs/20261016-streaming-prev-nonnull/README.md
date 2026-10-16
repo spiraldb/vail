@@ -5,10 +5,10 @@
 | Run | Elapsed seconds | Count action seconds | CPU seconds | Peak RSS GiB |
 |---|---:|---:|---:|---:|
 | Historical window package | 31.87 | 31.85 | unavailable | unavailable |
-| Final 1 | 4.916 | 4.895 | 13.251 | 1.168 |
-| Final 2 | 5.134 | 5.113 | 13.272 | 1.198 |
-| Final 3 | 5.222 | 5.201 | 13.001 | 1.253 |
-| Final, separately profiled | 4.747 | 4.723 | 12.426 | 1.164 |
+| Final 1 | 5.318 | 5.297 | 14.013 | 1.301 |
+| Final 2 | 4.716 | 4.695 | 13.496 | 1.294 |
+| Final 3 | 5.134 | 5.113 | 13.422 | 1.023 |
+| Final, separately profiled | 5.285 | 5.262 | 13.935 | 1.167 |
 
 The historical GCP Hail measurement is **3.927s / 24.32 CPU-seconds / 1.041GiB** on a 32-vCPU n2-standard-32. That is a different host, not a paired comparison with these laptop runs. Hail was not rerun.
 
@@ -41,10 +41,10 @@ Hotspot summaries are committed. Samply profiles and resolved symbol sidecars re
 
 ## Validation and provenance
 
-- **81 Python tests pass:** new public previous-defined cases plus the existing scan, stream aggregate scan and arbitrary fold suites. Covers nested structs/arrays, missing and all-missing values, empty structs/partitions, long missing runs across batches, key-order fallback, non-null fold identity, state-dependent noncanonical fold, repeated actions, current-row finishing expressions, 1,100 partitions and public `head` demand before future bad casts.
+- **84 Python tests pass:** new public previous-defined cases plus the existing scan, stream aggregate scan and arbitrary fold suites. Covers nested structs/arrays, missing and all-missing values, empty structs/partitions, long missing runs across batches, key-order fallback, non-null fold identity, state-dependent noncanonical fold, repeated actions, current-row finishing expressions, 1,100 partitions, bound globals, native write/read and public `head` demand before future bad casts.
 - **2 native public integration tests pass:** TableIR/prepared-action execution after timed reader cancellation, late then earlier output partition demand, fresh action reset; nested `StringViewArray` backed by a 16MiB value returns canonical UTF8 prefix storage with less than 16KiB attached buffers. The timed cancellation test does not assert that initialization was interrupted on every scheduler run; it asserts correct observable retry results whether the first request completed or was interrupted. The output buffer test proves observable canonical compactness; carry retention is additionally supported by the inspected canonicalization/ownership code.
 - No mocks, per-row data serialization or private operator counters. Data remains Arrow. JSON summaries are metrics/control metadata.
-- Production source: `761c9f71fbf894e1cc289751da33b95f7094520f`, based on main `0cbeba43bb3f822f16044a3ee3f4f1acc44ed267`. Final native SHA256 `4b4a19898a29a228e45fb1890512d95422fe67a768856c1e25ea05d2520801f0`.
+- Production source: `dbf3e9f8d3f25dc6345430a5cbefcb57f82c2dd5` (public test additions at `4a775885e1841829a39dcf6be458365d98677364`), based on main `0cbeba43bb3f822f16044a3ee3f4f1acc44ed267`. Final native SHA256 `83a0b3ad91b4224cc13e00435d3bd89e75e3f5fc3a971311c458371837f23aa5`.
 - Exact upstream source SHA256 `a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d`.
 - Fresh baseline native SHA256 `7ecb7cfbac3eb783db21991097c4dffa0bc89b471d143f77517a17da717d4394`, the prior main build, plus Python-only canonical helper. Historical window native SHA256 `63e0bde72dcebf2afa91da75857aa06b6a8861109aaa7e7cb1f728f63ff10158`; its runner reported source revision a965c01 plus the then-uncommitted window recognition fix, so the native hash/package is its precise identity. Historical summary included verbatim.
 - Apple M3 Max, 14 logical/physical cores, 96GiB RAM. Fresh processes; no overlapping builds or benchmarks during timing. Process CPU/RSS sampled at 10Hz. Separate Samply profile at 500Hz; its timing is not included in the three-run median.

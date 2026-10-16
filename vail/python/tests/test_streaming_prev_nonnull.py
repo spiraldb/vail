@@ -119,7 +119,7 @@ def test_previous_after_reasserting_an_existing_nonempty_key():
     assert [row.previous for row in rows] == [None] + list(range(11))
 
 
-def test_previous_binds_globals_once_per_action():
+def test_previous_uses_bound_globals():
     table = hl.range_table(9, n_partitions=3).annotate_globals(offset=7)
     rows = table.annotate(previous=hl.scan.prev_nonnull(hl.struct(v=table.idx + table.offset))).collect()
     assert [None if row.previous is None else row.previous.v for row in rows] == [None] + list(range(7, 15))
