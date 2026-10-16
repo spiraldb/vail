@@ -72,6 +72,19 @@ fn nested_c_data_imports_apply_parent_and_child_offsets_once() {
             .nulls(original.nulls().map(|nulls| nulls.slice(offset, length)))
             .build()
             .unwrap();
+        // Exercise ArrayData slicing when the incoming parent already has an offset.
+        for relative in 0..=length {
+            let sliced = raw.slice(relative, length - relative);
+            sliced.validate_full().unwrap();
+            assert_eq!(
+                StructArray::from(sliced.clone()),
+                original.slice(offset + relative, length - relative),
+                "offset parent {offset}:{length}, relative slice {relative}"
+            );
+            let empty = sliced.slice(length - relative, 0);
+            empty.validate_full().unwrap();
+            assert_eq!(StructArray::from(empty), original.slice(offset + length, 0));
+        }
         let (array, schema) = to_ffi(&raw).unwrap();
         // SAFETY: Both values were exported above; ownership transfers to the importer.
         let imported = unsafe { from_ffi(array, &schema) }.unwrap();

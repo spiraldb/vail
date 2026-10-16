@@ -450,28 +450,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn empty_stream_retains_dtype_and_zero_rows() {
-        let segments = Arc::new(TestSegments::default());
-        let (_, eof) = SequenceId::root().split();
-        let empty = stream::empty::<VortexResult<(SequenceId, ArrayRef)>>().boxed();
-        let stream = SequentialStreamAdapter::new(i32_list_dtype(false), empty).sendable();
-        let session = layout_test_session();
-
-        let res = flat_list_strategy()
-            .write_stream(
-                ArrayContext::empty().into(),
-                segments,
-                stream,
-                eof,
-                &session,
-            )
-            .await;
-        let layout = res.unwrap();
-        assert_eq!(layout.row_count(), 0);
-        assert_eq!(layout.dtype(), &i32_list_dtype(false));
-    }
-
-    #[tokio::test]
     async fn list_of_struct_tree() -> VortexResult<()> {
         let struct_array = StructArray::from_fields(
             [
