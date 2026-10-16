@@ -15,7 +15,7 @@ from collections.abc import Mapping, Sequence
 import os
 import re
 
-from ._native import NativeSession
+from ._native import NativeExpr, NativeSession
 from .expressions import (
     Expression,
     ExpressionException,
@@ -445,12 +445,15 @@ class Table:
 
     @property
     def globals(self):
-        return _StructExpression({name: self._global_field(name) for name in self._global_schema}, self)
+        return _StructExpression({name: _Field(self, name, dtype, scope="global")
+                                  for name, dtype in self._global_schema.items()}, self)
 
     def _global_field(self, name):
-        if name not in self._global_schema:
-            raise ValueError(f"global field {name!r} is not present")
-        return _Field(self, name, self._global_schema[name], scope="global")
+        try:
+            dtype = self._global_schema[name]
+        except KeyError:
+            raise ValueError(f"global field {name!r} is not present") from None
+        return _Field(self, name, dtype, scope="global")
 
     def index_globals(self):
         """Return a lazy, unindexed reference to this table's globals."""
@@ -470,7 +473,9 @@ class Table:
 
     def annotate_globals(self, **named_exprs):
         expressions = {name: as_expr(value) for name, value in named_exprs.items()}
-        fields = [(name, expressions.pop(name, self._global_field(name))) for name in self._global_schema]
+        fields = [(name, expressions.pop(name) if name in expressions else
+                   _Field(self, name, dtype, scope="global"))
+                  for name, dtype in self._global_schema.items()]
         return self._project_globals(fields + list(expressions.items()))
 
     def select_globals(self, *exprs, **named_exprs):
@@ -488,7 +493,9 @@ class Table:
         referenced = builtins.set()
         for expr in expressions.values():
             referenced.update(_referenced_columns(expr.to_ir(), "global"))
-        fields = [(name, expressions.pop(name, self._global_field(name))) for name in self._global_schema
+        fields = [(name, expressions.pop(name) if name in expressions else
+                   _Field(self, name, dtype, scope="global"))
+                  for name, dtype in self._global_schema.items()
                   if name not in referenced or name in expressions]
         return self._project_globals(fields + list(expressions.items()))
 
@@ -1389,20 +1396,29 @@ from . import utils  # noqa: E402
 
 
 def _referenced_columns(node, scope="column"):
-    if isinstance(node, IR_NODE_TYPES):
-        # Literal payloads are user data, even if they contain keys named op/name.
-        if node.get("op") == "literal":
-            return builtins.set()
-        result = {node["name"]} if node.get("op") == scope else builtins.set()
-        for value in node.values():
-            result.update(_referenced_columns(value, scope))
-        return result
-    if isinstance(node, list):
-        result = builtins.set()
-        for value in node:
-            result.update(_referenced_columns(value, scope))
-        return result
-    return builtins.set()
+    result = builtins.set()
+    seen = builtins.set()
+    pending = [node]
+    while pending:
+        value = pending.pop()
+        if isinstance(value, NativeExpr):
+            if id(value) in seen:
+                continue
+            seen.add(id(value))
+            result.update(value.referenced_names(scope))
+        elif isinstance(value, (dict, list)):
+            if id(value) in seen:
+                continue
+            seen.add(id(value))
+            if isinstance(value, dict):
+                if value.get("op") == "literal":
+                    continue
+                if value.get("op") == scope:
+                    result.add(value["name"])
+                pending.extend(value.values())
+            else:
+                pending.extend(value)
+    return result
 
 
 def _validate_aggregate_ir(node):

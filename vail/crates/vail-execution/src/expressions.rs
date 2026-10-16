@@ -715,6 +715,25 @@ fn field_type(fields: &[(String, Type)], name: &str) -> Result<Type, ExprError> 
         .map(|(_, t)| t.clone())
         .ok_or_else(|| ExprError::Invalid(format!("struct field {name:?} is absent")))
 }
+// A validation call owns its original expression DAG and root frames. Only
+// successful types are memoized, with complete lexical/schema context equality.
+// Temporary closed-row frames are interned by value, never by stack address.
+struct TypeFrames<'a> { root: &'a Schema, other: Vec<Schema> }
+impl TypeFrames<'_> {
+    fn id(&mut self, schema: &Schema) -> usize {
+        if std::ptr::eq(schema,self.root) { return 0; }
+        if schema==self.root { return 0; }
+        if let Some(index)=self.other.iter().position(|known|known==schema) { return index+1; }
+        self.other.push(schema.clone());
+        self.other.len()
+    }
+}
+struct TypeMemo<'a> {
+    rows: TypeFrames<'a>, globals: TypeFrames<'a>,
+    types: std::collections::HashMap<(*const Expr,usize,usize,Vec<(String,Type,usize)>),Type>,
+    scans: std::collections::HashMap<*const Expr,bool>,
+}
+
 impl Expr {
     /// Visit typed expression nodes, never literal payloads or type metadata.
     pub fn visit(&self, f: &mut impl FnMut(&Expr)) {
@@ -1118,12 +1137,25 @@ impl Expr {
     }
 
     pub fn contains_scan(&self) -> bool {
-        let mut found = false;
-        self.visit(&mut |node| {
-            found |= matches!(node, Self::Aggregate { options, .. }
-            if options.get("__vail_scan").and_then(Value::as_bool) == Some(true));
-        });
-        found
+        self.scan_presence(&mut std::collections::HashMap::new())
+    }
+    fn scan_presence(&self,memo:&mut std::collections::HashMap<*const Expr,bool>) -> bool {
+        let mut pending=vec![(self,false)];
+        while let Some((node,expanded))=pending.pop() {
+            let key=node as *const Expr;
+            if memo.contains_key(&key) { continue; }
+            if matches!(node,Self::Aggregate { options,.. } if options.get("__vail_scan").and_then(Value::as_bool)==Some(true)) {
+                memo.insert(key,true);
+            } else if expanded {
+                let mut found=false;
+                node.visit_children(&mut |child|found |= memo[&(child as *const Expr)]);
+                memo.insert(key,found);
+            } else {
+                pending.push((node,true));
+                node.visit_children(&mut |child|pending.push((child,false)));
+            }
+        }
+        memo[&(self as *const Expr)]
     }
 
     pub fn dtype_with_lexical(
@@ -1153,6 +1185,31 @@ impl Expr {
         globals: &Schema,
         scope: &[(String, Type, usize)],
     ) -> Result<Type, ExprError> {
+        self.dtype_cached(schema,globals,scope,&mut TypeMemo {
+            rows: TypeFrames { root:schema,other:Vec::new() },
+            globals: TypeFrames { root:globals,other:Vec::new() },
+            types: std::collections::HashMap::new(),
+            scans: std::collections::HashMap::new(),
+        })
+    }
+    fn dtype_cached(
+        &self, schema: &Schema, globals: &Schema, scope: &[(String,Type,usize)],
+        memo: &mut TypeMemo<'_>,
+    ) -> Result<Type,ExprError> {
+        let key=(self as *const Expr,memo.rows.id(schema),memo.globals.id(globals),scope.to_vec());
+        if let Some(dtype)=memo.types.get(&key) { return Ok(dtype.clone()); }
+        // The complete checker has a large debug stack frame. Keep recursive
+        // validation safe on ordinary Rust worker stacks as well as Python's
+        // main thread, without changing the per-call memo or lexical context.
+        let dtype=stacker::maybe_grow(512*1024,2*1024*1024,
+            ||self.dtype_uncached(schema,globals,scope,memo))?;
+        memo.types.insert(key,dtype.clone());
+        Ok(dtype)
+    }
+    fn dtype_uncached(
+        &self, schema: &Schema, globals: &Schema, scope: &[(String,Type,usize)],
+        memo: &mut TypeMemo<'_>,
+    ) -> Result<Type,ExprError> {
         match self {
             Self::MatrixScope { .. }
             | Self::TableLookup { .. }
@@ -1170,18 +1227,18 @@ impl Expr {
                     let Some(Self::AggregateFold { initial, seq, combine, state_parameter, left_parameter, right_parameter }) = value.as_deref() else {
                         return Err(ExprError::Invalid("scan fold requires fold IR".into()));
                     };
-                    let state = initial.dtype_scoped(&Schema::empty(), globals, &[])?;
+                    let state = initial.dtype_cached(&Schema::empty(), globals, &[], memo)?;
                     let mut sequence_scope = scope.to_vec();
                     sequence_scope.push((state_parameter.clone(), state.clone(), 0));
                     let combine_scope = vec![(left_parameter.clone(),state.clone(),0),
                                              (right_parameter.clone(),state.clone(),0)];
-                    if seq.dtype_scoped(schema, globals, &sequence_scope)? != state
-                        || combine.dtype_scoped(&Schema::empty(), globals, &combine_scope)? != state {
+                    if seq.dtype_cached(schema, globals, &sequence_scope, memo)? != state
+                        || combine.dtype_cached(&Schema::empty(), globals, &combine_scope, memo)? != state {
                         return Err(ExprError::Invalid("scan fold initial/update/combine types must agree".into()));
                     }
                     state
                 } else {
-                    let input = value.as_ref().map(|v| v.dtype_scoped(schema,globals,scope)).transpose()?;
+                    let input = value.as_ref().map(|v| v.dtype_cached(schema,globals,scope, memo)).transpose()?;
                     let input = if options.get("__vail_exploded").and_then(Value::as_bool) == Some(true) {
                         match input {
                             Some(Type::Array { array }) => Some(*array),
@@ -1190,7 +1247,7 @@ impl Expr {
                     } else { input };
                     // Initializers are closed over globals, never row/scan state.
                     let initializers = init.iter().map(|(name, expr)|
-                        Ok((name.clone(),expr.dtype_scoped(&Schema::empty(),globals,&[])?)))
+                        Ok((name.clone(),expr.dtype_cached(&Schema::empty(),globals,&[], memo)?)))
                         .collect::<Result<Vec<_>,ExprError>>()?;
                     crate::aggregate_contract::result_type(function,input.as_ref(),options,&initializers)?
                 };
@@ -1208,8 +1265,8 @@ impl Expr {
                 value,
                 parameter,
                 body,
-            } if body.contains_scan() => {
-                let element = match value.dtype_scoped(schema, globals, scope)? {
+            } if body.scan_presence(&mut memo.scans) => {
+                let element = match value.dtype_cached(schema, globals, scope, memo)? {
                     Type::Array { array } | Type::Set { set: array } => *array,
                     _ => {
                         return Err(ExprError::Invalid(
@@ -1219,7 +1276,7 @@ impl Expr {
                 };
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), element, 0));
-                let result = body.dtype_scoped(schema, globals, &nested)?;
+                let result = body.dtype_cached(schema, globals, &nested, memo)?;
                 if matches!(self, Self::AggArray { .. }) {
                     Ok(Type::Array {
                         array: Box::new(result),
@@ -1228,10 +1285,10 @@ impl Expr {
                     Ok(result)
                 }
             }
-            Self::AggGroupBy { key, body } if body.contains_scan() => Ok(Type::Dict {
+            Self::AggGroupBy { key, body } if body.scan_presence(&mut memo.scans) => Ok(Type::Dict {
                 dict: Box::new((
-                    key.dtype_scoped(schema, globals, scope)?,
-                    body.dtype_scoped(schema, globals, scope)?,
+                    key.dtype_cached(schema, globals, scope, memo)?,
+                    body.dtype_cached(schema, globals, scope, memo)?,
                 )),
             }),
             Self::Aggregate { .. }
@@ -1242,20 +1299,15 @@ impl Expr {
                 "aggregation expressions require Table.aggregate and cannot be nested".into(),
             )),
             Self::AggFilter { predicate, body } => {
-                let mut scan_filter = false;
-                body.visit(&mut |node| {
-                    scan_filter |= matches!(node, Self::Aggregate { options, .. }
-                        if options.get("__vail_scan").and_then(Value::as_bool) == Some(true));
-                });
-                if scan_filter {
-                    if predicate.dtype_scoped(schema, globals, scope)?
+                if body.scan_presence(&mut memo.scans) {
+                    if predicate.dtype_cached(schema, globals, scope, memo)?
                         != Type::Primitive(PrimitiveType::Bool)
                     {
                         return Err(ExprError::Invalid(
                             "scan.filter predicate must be Boolean".into(),
                         ));
                     }
-                    body.dtype_scoped(schema, globals, scope)
+                    body.dtype_cached(schema, globals, scope, memo)
                 } else {
                     Err(ExprError::Invalid(
                         "aggregation expressions require Table.aggregate and cannot be nested"
@@ -1275,8 +1327,8 @@ impl Expr {
                 right,
             } => {
                 let int64 = Type::Primitive(PrimitiveType::Int64);
-                if left.dtype_scoped(schema, globals, scope)? != int64
-                    || right.dtype_scoped(schema, globals, scope)? != int64
+                if left.dtype_cached(schema, globals, scope, memo)? != int64
+                    || right.dtype_cached(schema, globals, scope, memo)? != int64
                 {
                     return Err(ExprError::Invalid(
                         "integer binary requires int64 arguments".into(),
@@ -1300,7 +1352,7 @@ impl Expr {
                     )));
                 }
                 for (arg, expected) in args.iter().zip(expected) {
-                    if arg.dtype_scoped(schema, globals, scope)? != expected {
+                    if arg.dtype_cached(schema, globals, scope, memo)? != expected {
                         return Err(ExprError::Invalid(format!(
                             "{function} argument type mismatch"
                         )));
@@ -1311,7 +1363,7 @@ impl Expr {
             Self::Tuple { elements } => Ok(Type::Tuple {
                 tuple: elements
                     .iter()
-                    .map(|element| element.dtype_scoped(schema, globals, scope))
+                    .map(|element| element.dtype_cached(schema, globals, scope, memo))
                     .collect::<Result<Vec<_>, ExprError>>()?,
             }),
             Self::NestedFunction {
@@ -1322,7 +1374,7 @@ impl Expr {
                 if let Some(function) = function.strip_prefix("random_") {
                     let types = args
                         .iter()
-                        .map(|arg| arg.dtype_scoped(schema, globals, scope))
+                        .map(|arg| arg.dtype_cached(schema, globals, scope, memo))
                         .collect::<Result<Vec<_>, _>>()?;
                     crate::randomness::validate(function, &types, dtype)?;
                     return Ok(dtype.clone());
@@ -1336,7 +1388,7 @@ impl Expr {
                         ));
                     }
                     for arg in args {
-                        if arg.dtype_scoped(schema, globals, scope)? != boolean {
+                        if arg.dtype_cached(schema, globals, scope, memo)? != boolean {
                             return Err(ExprError::Invalid(
                                 "Boolean coalesce requires two Boolean arguments".into(),
                             ));
@@ -1348,7 +1400,7 @@ impl Expr {
                 let udf = nested_function(function)?;
                 let args = args
                     .iter()
-                    .map(|arg| arg.dtype_scoped(schema, globals, scope)?.to_arrow())
+                    .map(|arg| arg.dtype_cached(schema, globals, scope, memo)?.to_arrow())
                     .collect::<Result<Vec<_>, ExprError>>()?;
                 let matrix_function = matches!(
                     function.as_str(),
@@ -1438,7 +1490,7 @@ impl Expr {
                 Ok(dtype.clone())
             }
             Self::CollectionCast { value, dtype } => {
-                let input = value.dtype_scoped(schema, globals, scope)?.to_arrow()?;
+                let input = value.dtype_cached(schema, globals, scope, memo)?.to_arrow()?;
                 let output = dtype.to_arrow()?;
                 if !matches!(input, DataType::List(_))
                     || !matches!(output, DataType::List(_))
@@ -1458,10 +1510,10 @@ impl Expr {
                 body,
                 scan,
             } => {
-                let Type::Array { array } = value.dtype_scoped(schema, globals, scope)? else {
+                let Type::Array { array } = value.dtype_cached(schema, globals, scope, memo)? else {
                     return Err(ExprError::Invalid("fold requires an array".into()));
                 };
-                let output = zero.dtype_scoped(schema, globals, scope)?;
+                let output = zero.dtype_cached(schema, globals, scope, memo)?;
                 if accumulator == parameter
                     || scope
                         .iter()
@@ -1474,7 +1526,7 @@ impl Expr {
                 let mut nested = scope.to_vec();
                 nested.push((accumulator.clone(), output.clone(), schema.fields().len()));
                 nested.push((parameter.clone(), *array, schema.fields().len() + 1));
-                if body.dtype_scoped(schema, globals, &nested)? != output {
+                if body.dtype_cached(schema, globals, &nested, memo)? != output {
                     return Err(ExprError::Invalid(
                         "fold callback type must equal initial value type".into(),
                     ));
@@ -1492,7 +1544,7 @@ impl Expr {
                 parameter,
                 body,
             } => {
-                let input_type = value.dtype_scoped(schema, globals, scope)?;
+                let input_type = value.dtype_cached(schema, globals, scope, memo)?;
                 let array = match input_type {
                     Type::Array { array } | Type::Set { set: array } => *array,
                     Type::Dict { dict } => Type::Struct {
@@ -1512,7 +1564,7 @@ impl Expr {
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), array, schema.fields().len()));
                 Ok(Type::Array {
-                    array: Box::new(body.dtype_scoped(schema, globals, &nested)?),
+                    array: Box::new(body.dtype_cached(schema, globals, &nested, memo)?),
                 })
             }
             Self::ArrayPredicate {
@@ -1521,7 +1573,7 @@ impl Expr {
                 predicate,
                 first,
             } => {
-                let element = match value.dtype_scoped(schema, globals, scope)? {
+                let element = match value.dtype_cached(schema, globals, scope, memo)? {
                     Type::Array { array } | Type::Set { set: array } => *array,
                     _ => {
                         return Err(ExprError::Invalid(
@@ -1536,7 +1588,7 @@ impl Expr {
                 }
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), element.clone(), schema.fields().len()));
-                if predicate.dtype_scoped(schema, globals, &nested)?
+                if predicate.dtype_cached(schema, globals, &nested, memo)?
                     != Type::Primitive(PrimitiveType::Bool)
                 {
                     return Err(ExprError::Invalid(
@@ -1554,7 +1606,7 @@ impl Expr {
                 parameter,
                 predicate,
             } => {
-                let array = match value.dtype_scoped(schema, globals, scope)? {
+                let array = match value.dtype_cached(schema, globals, scope, memo)? {
                     Type::Array { array } | Type::Set { set: array } => array,
                     Type::Dict { dict } => Box::new(Type::Struct {
                         r#struct: vec![("key".into(), dict.0), ("value".into(), dict.1)],
@@ -1568,18 +1620,18 @@ impl Expr {
                 }
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), *array, schema.fields().len()));
-                let predicate_type = predicate.dtype_scoped(schema, globals, &nested)?;
+                let predicate_type = predicate.dtype_cached(schema, globals, &nested, memo)?;
                 if predicate_type != Type::Primitive(PrimitiveType::Bool) {
                     return Err(ExprError::Invalid(format!(
                         "array filter predicate requires bool, got {predicate_type:?}"
                     )));
                 }
-                Ok(value.dtype_scoped(schema, globals, scope)?)
+                Ok(value.dtype_cached(schema, globals, scope, memo)?)
             }
             Self::StreamRange { start, stop, step } => {
                 let int32 = Type::Primitive(PrimitiveType::Int32);
                 for (label, argument) in [("start", start), ("stop", stop), ("step", step)] {
-                    let actual = argument.dtype_scoped(schema, globals, scope)?;
+                    let actual = argument.dtype_cached(schema, globals, scope, memo)?;
                     if actual != int32 {
                         return Err(ExprError::Invalid(format!(
                             "stream_range {label} requires int32, got {actual:?}"
@@ -1591,7 +1643,7 @@ impl Expr {
                 })
             }
             Self::ArrayGrouped { value, size } => {
-                let Type::Array { array } = value.dtype_scoped(schema, globals, scope)? else {
+                let Type::Array { array } = value.dtype_cached(schema, globals, scope, memo)? else {
                     return Err(ExprError::Invalid("array_grouped requires array".into()));
                 };
                 let constant = match size.as_ref() {
@@ -1602,7 +1654,7 @@ impl Expr {
                 if constant.is_some_and(|n| n <= 0) {
                     return Err(ExprError::Invalid("group size must be positive".into()));
                 }
-                let size_type = size.dtype_scoped(schema, globals, scope)?;
+                let size_type = size.dtype_cached(schema, globals, scope, memo)?;
                 if size_type != Type::Primitive(PrimitiveType::Int32) {
                     return Err(ExprError::Invalid(format!(
                         "array_grouped size requires int32, got {size_type:?}"
@@ -1632,7 +1684,7 @@ impl Expr {
                 Ok(dtype.clone())
             }
             Self::ToString { value } => {
-                value.dtype_scoped(schema, globals, scope)?;
+                value.dtype_cached(schema, globals, scope, memo)?;
                 Ok(Type::Primitive(PrimitiveType::Str))
             }
             Self::Locus {
@@ -1641,9 +1693,9 @@ impl Expr {
                 position,
             } => {
                 reference.validate().map_err(ExprError::Invalid)?;
-                if contig.dtype_scoped(schema, globals, scope)?
+                if contig.dtype_cached(schema, globals, scope, memo)?
                     != Type::Primitive(PrimitiveType::Str)
-                    || position.dtype_scoped(schema, globals, scope)?
+                    || position.dtype_cached(schema, globals, scope, memo)?
                         != Type::Primitive(PrimitiveType::Int32)
                 {
                     return Err(ExprError::Invalid(
@@ -1660,9 +1712,9 @@ impl Expr {
                 position,
             } => {
                 reference.validate().map_err(ExprError::Invalid)?;
-                if contig.dtype_scoped(schema, globals, scope)?
+                if contig.dtype_cached(schema, globals, scope, memo)?
                     != Type::Primitive(PrimitiveType::Str)
-                    || position.dtype_scoped(schema, globals, scope)?
+                    || position.dtype_cached(schema, globals, scope, memo)?
                         != Type::Primitive(PrimitiveType::Int32)
                 {
                     return Err(ExprError::Invalid(
@@ -1676,7 +1728,7 @@ impl Expr {
                 position,
             } => {
                 reference.validate().map_err(ExprError::Invalid)?;
-                if position.dtype_scoped(schema, globals, scope)?
+                if position.dtype_cached(schema, globals, scope, memo)?
                     != Type::Primitive(PrimitiveType::Int64)
                 {
                     return Err(ExprError::Invalid("global position requires int64".into()));
@@ -1687,7 +1739,7 @@ impl Expr {
             }
             Self::ParseLocus { reference, value } => {
                 reference.validate().map_err(ExprError::Invalid)?;
-                if value.dtype_scoped(schema, globals, scope)?
+                if value.dtype_cached(schema, globals, scope, memo)?
                     != Type::Primitive(PrimitiveType::Str)
                 {
                     return Err(ExprError::Invalid("parse_locus requires string".into()));
@@ -1702,7 +1754,7 @@ impl Expr {
                 quote,
                 ..
             } => {
-                if value.dtype_scoped(schema, globals, scope)?
+                if value.dtype_cached(schema, globals, scope, memo)?
                     != Type::Primitive(PrimitiveType::Str)
                 {
                     return Err(ExprError::Invalid(
@@ -1736,7 +1788,7 @@ impl Expr {
                 })
             }
             Self::LocusOp { operation, value } => {
-                let Type::Locus { .. } = value.dtype_scoped(schema, globals, scope)? else {
+                let Type::Locus { .. } = value.dtype_cached(schema, globals, scope, memo)? else {
                     return Err(ExprError::Invalid(
                         "locus operation requires a locus".into(),
                     ));
@@ -1771,15 +1823,15 @@ impl Expr {
                 includes_start,
                 includes_end,
             } => {
-                let point = start.dtype_scoped(schema, globals, scope)?;
-                if point != end.dtype_scoped(schema, globals, scope)? {
+                let point = start.dtype_cached(schema, globals, scope, memo)?;
+                if point != end.dtype_cached(schema, globals, scope, memo)? {
                     return Err(ExprError::Invalid(
                         "interval endpoints must have the same type".into(),
                     ));
                 }
-                if includes_start.dtype_scoped(schema, globals, scope)?
+                if includes_start.dtype_cached(schema, globals, scope, memo)?
                     != Type::Primitive(PrimitiveType::Bool)
-                    || includes_end.dtype_scoped(schema, globals, scope)?
+                    || includes_end.dtype_cached(schema, globals, scope, memo)?
                         != Type::Primitive(PrimitiveType::Bool)
                 {
                     return Err(ExprError::Invalid(
@@ -1793,13 +1845,13 @@ impl Expr {
             Self::IntervalContains { interval, point } => {
                 let Type::Interval {
                     interval: point_type,
-                } = interval.dtype_scoped(schema, globals, scope)?
+                } = interval.dtype_cached(schema, globals, scope, memo)?
                 else {
                     return Err(ExprError::Invalid(
                         "interval_contains requires an interval".into(),
                     ));
                 };
-                if *point_type != point.dtype_scoped(schema, globals, scope)? {
+                if *point_type != point.dtype_cached(schema, globals, scope, memo)? {
                     return Err(ExprError::Invalid(
                         "interval_contains point type mismatch".into(),
                     ));
@@ -1807,9 +1859,9 @@ impl Expr {
                 Ok(Type::Primitive(PrimitiveType::Bool))
             }
             Self::IntervalOverlaps { left, right } => {
-                let left_type = left.dtype_scoped(schema, globals, scope)?;
+                let left_type = left.dtype_cached(schema, globals, scope, memo)?;
                 if !matches!(left_type, Type::Interval { .. })
-                    || left_type != right.dtype_scoped(schema, globals, scope)?
+                    || left_type != right.dtype_cached(schema, globals, scope, memo)?
                 {
                     return Err(ExprError::Invalid(
                         "interval_overlaps requires matching interval types".into(),
@@ -1823,7 +1875,7 @@ impl Expr {
             } => {
                 element_type.to_arrow()?;
                 for element in elements {
-                    let actual = element.dtype_scoped(schema, globals, scope)?;
+                    let actual = element.dtype_cached(schema, globals, scope, memo)?;
                     if actual != *element_type {
                         return Err(ExprError::Invalid(format!(
                             "array element has type {actual:?}, expected {element_type:?}"
@@ -1834,7 +1886,7 @@ impl Expr {
                     array: Box::new(element_type.clone()),
                 })
             }
-            Self::ArrayFlatten { value } => match value.dtype_scoped(schema, globals, scope)? {
+            Self::ArrayFlatten { value } => match value.dtype_cached(schema, globals, scope, memo)? {
                 Type::Array { array } if matches!(*array, Type::Array { .. }) => Ok(*array),
                 _ => Err(ExprError::Invalid(
                     "array flatten requires an array of arrays".into(),
@@ -1842,7 +1894,7 @@ impl Expr {
             },
             Self::ArrayLength { value } => {
                 if !matches!(
-                    value.dtype_scoped(schema, globals, scope)?,
+                    value.dtype_cached(schema, globals, scope, memo)?,
                     Type::Array { .. } | Type::Set { .. } | Type::Dict { .. }
                 ) {
                     return Err(ExprError::Invalid("length requires a collection".into()));
@@ -1850,7 +1902,7 @@ impl Expr {
                 Ok(Type::Primitive(PrimitiveType::Int32))
             }
             Self::ArrayIndex { value, index } => {
-                let element = match value.dtype_scoped(schema, globals, scope)? {
+                let element = match value.dtype_cached(schema, globals, scope, memo)? {
                     Type::Array { array } => *array,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -1858,7 +1910,7 @@ impl Expr {
                         )));
                     }
                 };
-                if index.dtype_scoped(schema, globals, scope)?
+                if index.dtype_cached(schema, globals, scope, memo)?
                     != Type::Primitive(PrimitiveType::Int32)
                 {
                     return Err(ExprError::Invalid("array index requires int32".into()));
@@ -1871,7 +1923,7 @@ impl Expr {
                 stop,
                 step,
             } => {
-                let array = match value.dtype_scoped(schema, globals, scope)? {
+                let array = match value.dtype_cached(schema, globals, scope, memo)? {
                     t @ Type::Array { .. } => t,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -1880,7 +1932,7 @@ impl Expr {
                     }
                 };
                 for endpoint in [start, stop, step].into_iter().flatten() {
-                    if endpoint.dtype_scoped(schema, globals, scope)?
+                    if endpoint.dtype_cached(schema, globals, scope, memo)?
                         != Type::Primitive(PrimitiveType::Int32)
                     {
                         return Err(ExprError::Invalid(
@@ -1891,7 +1943,7 @@ impl Expr {
                 Ok(array)
             }
             Self::ArrayReduce { value, .. } => {
-                let element = match value.dtype_scoped(schema, globals, scope)? {
+                let element = match value.dtype_cached(schema, globals, scope, memo)? {
                     Type::Array { array } => *array,
                     other => {
                         return Err(ExprError::Invalid(format!(
@@ -1907,12 +1959,12 @@ impl Expr {
                 Ok(element)
             }
             Self::Cast { dtype, value } => {
-                let source = value.dtype_scoped(schema, globals, scope)?;
+                let source = value.dtype_cached(schema, globals, scope, memo)?;
                 dtype.to_arrow()?;
                 source.ensure_castable_to(dtype)?;
                 Ok(dtype.clone())
             }
-            Self::GetField { value, name } => match value.dtype_scoped(schema, globals, scope)? {
+            Self::GetField { value, name } => match value.dtype_cached(schema, globals, scope, memo)? {
                 Type::Struct { r#struct: fields } => field_type(&fields, name),
                 Type::Tuple { tuple } => name
                     .strip_prefix("__vail_tuple_")
@@ -1960,12 +2012,12 @@ impl Expr {
                             "duplicate struct field {name:?}"
                         )));
                     }
-                    typed.push((name.clone(), expr.dtype_scoped(schema, globals, scope)?));
+                    typed.push((name.clone(), expr.dtype_cached(schema, globals, scope, memo)?));
                 }
                 Ok(Type::Struct { r#struct: typed })
             }
             Self::Die { message, dtype } => {
-                if message.dtype_scoped(schema, globals, scope)?
+                if message.dtype_cached(schema, globals, scope, memo)?
                     != Type::Primitive(PrimitiveType::Str)
                 {
                     return Err(ExprError::Invalid(
@@ -1976,11 +2028,11 @@ impl Expr {
                 Ok(dtype.clone())
             }
             Self::IsMissing { value } => {
-                value.dtype_scoped(schema, globals, scope)?;
+                value.dtype_cached(schema, globals, scope, memo)?;
                 Ok(Type::Primitive(PrimitiveType::Bool))
             }
             Self::Unary { operator, value } => {
-                let t = value.dtype_scoped(schema, globals, scope)?;
+                let t = value.dtype_cached(schema, globals, scope, memo)?;
                 match operator {
                     UnaryOperator::Not => ensure_bool(&t, "not")?,
                     _ if !numeric(&t) => {
@@ -1997,8 +2049,8 @@ impl Expr {
                 left,
                 right,
             } => {
-                let a = left.dtype_scoped(schema, globals, scope)?;
-                let b = right.dtype_scoped(schema, globals, scope)?;
+                let a = left.dtype_cached(schema, globals, scope, memo)?;
+                let b = right.dtype_cached(schema, globals, scope, memo)?;
                 if matches!(
                     operator,
                     BinaryOperator::Lt
@@ -2073,7 +2125,7 @@ impl Expr {
                 default,
                 missing,
             } => {
-                let selector = value.dtype_scoped(schema, globals, scope)?;
+                let selector = value.dtype_cached(schema, globals, scope, memo)?;
                 if scope.iter().any(|(name, _, _)| name == parameter) {
                     return Err(ExprError::Invalid(
                         "duplicate switch parameter identity".into(),
@@ -2081,9 +2133,9 @@ impl Expr {
                 }
                 let mut nested = scope.to_vec();
                 nested.push((parameter.clone(), selector, schema.fields().len()));
-                let output = default.dtype_scoped(schema, globals, &nested)?;
+                let output = default.dtype_cached(schema, globals, &nested, memo)?;
                 if let Some(missing) = missing {
-                    if missing.dtype_scoped(schema, globals, &nested)? != output {
+                    if missing.dtype_cached(schema, globals, &nested, memo)? != output {
                         return Err(ExprError::Invalid(
                             "switch missing/default types differ".into(),
                         ));
@@ -2091,10 +2143,10 @@ impl Expr {
                 }
                 for (condition, result) in cases {
                     ensure_bool(
-                        &condition.dtype_scoped(schema, globals, &nested)?,
+                        &condition.dtype_cached(schema, globals, &nested, memo)?,
                         "switch condition",
                     )?;
-                    if result.dtype_scoped(schema, globals, &nested)? != output {
+                    if result.dtype_cached(schema, globals, &nested, memo)? != output {
                         return Err(ExprError::Invalid("switch branch types differ".into()));
                     }
                 }
@@ -2106,11 +2158,11 @@ impl Expr {
                 alternate,
             } => {
                 ensure_bool(
-                    &condition.dtype_scoped(schema, globals, scope)?,
+                    &condition.dtype_cached(schema, globals, scope, memo)?,
                     "if_else condition",
                 )?;
-                let a = consequent.dtype_scoped(schema, globals, scope)?;
-                let b = alternate.dtype_scoped(schema, globals, scope)?;
+                let a = consequent.dtype_cached(schema, globals, scope, memo)?;
+                let b = alternate.dtype_cached(schema, globals, scope, memo)?;
                 if a == b { Ok(a) } else { promote(&a, &b) }
             }
         }

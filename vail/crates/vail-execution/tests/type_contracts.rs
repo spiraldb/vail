@@ -220,3 +220,169 @@ fn packed_numeric_arguments_match_executor_positions_and_scalar_regression_form(
         .is_err()
     );
 }
+
+#[test]
+fn shared_callback_nodes_are_checked_in_each_lexical_type_context() {
+    use vail_execution::expressions::UnaryOperator;
+    let variable = Arc::new(Expr::LambdaVariable { name: "v".into() });
+    let map = |dtype, value, body| Expr::ArrayMap {
+        value: Arc::new(Expr::Literal {
+            dtype: Type::Array {
+                array: Box::new(dtype),
+            },
+            value,
+        }),
+        parameter: "v".into(),
+        body,
+    };
+    let mixed = Expr::Struct {
+        fields: vec![
+            (
+                "ints".into(),
+                map(primitive(P::Int32), json!([1]), variable.clone()),
+            ),
+            (
+                "strings".into(),
+                map(primitive(P::Str), json!(["x"]), variable.clone()),
+            ),
+        ],
+    };
+    assert_eq!(
+        mixed.dtype(&Schema::empty()).unwrap(),
+        Type::Struct {
+            r#struct: vec![
+                (
+                    "ints".into(),
+                    Type::Array {
+                        array: Box::new(primitive(P::Int32))
+                    }
+                ),
+                (
+                    "strings".into(),
+                    Type::Array {
+                        array: Box::new(primitive(P::Str))
+                    }
+                )
+            ]
+        }
+    );
+    let numeric = Arc::new(Expr::Unary {
+        operator: UnaryOperator::Neg,
+        value: variable,
+    });
+    let invalid = Expr::Struct {
+        fields: vec![
+            (
+                "ints".into(),
+                map(primitive(P::Int32), json!([1]), numeric.clone()),
+            ),
+            (
+                "strings".into(),
+                map(primitive(P::Str), json!(["x"]), numeric),
+            ),
+        ],
+    };
+    assert!(invalid.dtype(&Schema::empty()).is_err());
+}
+#[test]
+fn shared_row_reference_cannot_escape_into_closed_scan_initializer() {
+    let column = Arc::new(Expr::Column { name: "x".into() });
+    let expression = Expr::Struct {
+        fields: vec![
+            (
+                "row".into(),
+                Expr::Unary {
+                    operator: vail_execution::expressions::UnaryOperator::Pos,
+                    value: column.clone(),
+                },
+            ),
+            (
+                "prefix".into(),
+                Expr::Aggregate {
+                    function: "__scan_fold".into(),
+                    value: Some(Arc::new(Expr::AggregateFold {
+                        initial: column,
+                        seq: Arc::new(Expr::LambdaVariable {
+                            name: "state".into(),
+                        }),
+                        combine: Arc::new(Expr::LambdaVariable {
+                            name: "left".into(),
+                        }),
+                        state_parameter: "state".into(),
+                        left_parameter: "left".into(),
+                        right_parameter: "right".into(),
+                    })),
+                    options: json!({"__vail_scan":true}),
+                    result_type: Some(primitive(P::Int32)),
+                    init: vec![],
+                },
+            ),
+        ],
+    };
+    assert!(
+        expression
+            .dtype(&Schema::new(vec![Field::new("x", DataType::Int32, false)]))
+            .is_err()
+    );
+}
+
+#[test]
+fn shared_scan_bodies_remain_valid_through_each_collection_wrapper() {
+    let mut body = Arc::new(scan("sum", Some(literal()), Some(primitive(P::Int64))));
+    for _ in 0..20 {
+        body = Arc::new(Expr::Binary {
+            operator: vail_execution::expressions::BinaryOperator::Add,
+            left: body.clone(),
+            right: body,
+        });
+    }
+    let input = Arc::new(Expr::Literal {
+        dtype: Type::Array {
+            array: Box::new(primitive(P::Int32)),
+        },
+        value: json!([1]),
+    });
+    let wrappers = [
+        (
+            Expr::AggFilter {
+                predicate: Arc::new(Expr::Literal {
+                    dtype: primitive(P::Bool),
+                    value: json!(true),
+                }),
+                body: body.clone(),
+            },
+            primitive(P::Int64),
+        ),
+        (
+            Expr::AggArray {
+                value: input.clone(),
+                parameter: "element".into(),
+                body: body.clone(),
+            },
+            Type::Array {
+                array: Box::new(primitive(P::Int64)),
+            },
+        ),
+        (
+            Expr::AggExplode {
+                value: input,
+                parameter: "element".into(),
+                body: body.clone(),
+            },
+            primitive(P::Int64),
+        ),
+        (
+            Expr::AggGroupBy {
+                key: Arc::new(literal()),
+                body,
+            },
+            Type::Dict {
+                dict: Box::new((primitive(P::Int32), primitive(P::Int64))),
+            },
+        ),
+    ];
+    for (expression, expected) in wrappers {
+        assert!(expression.contains_scan());
+        assert_eq!(expression.dtype(&Schema::empty()).unwrap(), expected);
+    }
+}

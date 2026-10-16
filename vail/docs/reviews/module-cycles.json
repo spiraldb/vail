@@ -696,7 +696,33 @@
         "vail/docs/reviews/table-join-cost.json"
       ],
       "native_sha256": "43c1c6c90d861762aae8e93ed7c6f9c3af3ff80fd250a3473ba9bf7bcb5ed1be",
-      "review": "Reviewer final source/test/50-case report acceptance, no outstanding scoped findings; reviewer ran no builds/tests."
+      "review": "Reviewer final source/test/50-case report acceptance, no outstanding scoped findings; reviewer ran no builds/tests.",
+      "merged_commit": "c45ab95e"
+    },
+    {
+      "module": "Vail singleton globals, captured bindings, schema/storage boundaries and scoped type validation",
+      "reviewed_base": "c45ab95e",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "discover referenced columns/globals over original borrowed DAG nodes and skip literal payloads; cache bound target types while checking each distinct declaration",
+        "construct wide globals from ordered schema snapshots and prepared field access, avoiding repeated frontend name searches",
+        "prune empty global maps consistently across logical and legacy lowering",
+        "validate ordered global field names and logical types before WriteGlobals publication and before read representation normalization; reject malformed literal/wire schemas while preserving compatible Arrow storage/metadata",
+        "reject IPC footer batch counts other than one before payload decoding and require exactly one global row",
+        "replace private plans/IR/native-wire/_same/storage-fragment/checksum tests with public actions, owned captured bindings, whole-path laziness, overwrite and fresh failure/recovery",
+        "memoize successful scalar type validation by original node, exact schema frames and full lexical type/index scope; avoid temporary-stack-address cache identity",
+        "summarize scan presence over borrowed original DAG nodes for all scan-wrapper guards; keep normal-worker-stack validation safe with guarded stack growth"
+      ],
+      "validation": [
+        "317public Python tests passed;7exactdocumentedexclusions:6require absentexternalHail and1knownexcluded nestedVortexwriter storagecase",
+        "186Rust tests passed:completeexecution/table/ordering gate;43selected VailStorage tests passed;finaljobs2rerun aftergeneratedbinarydiskcleanup",
+        "36idlefreshsubprocesscases18pairedagainstindependentpackages:allcurrentandbaselineconstructor/actionchecksverified; actioncosts retainedseparatelyfromconstructorimprovements"
+      ],
+      "reports": [
+        "vail/docs/reviews/globals-cost.json"
+      ],
+      "review": "Reviewer final source/test/36-case report acceptance; no outstanding scoped findings; reviewer ran no builds/tests.",
+      "native_sha256": "da41c0dd628511d39ad02feab647aab3cc7e58aebe7b951b087ea824a6aaeb93"
     }
   ],
   "source_inventory": [
@@ -747,6 +773,7 @@
     "vail/crates/vail-storage/src/globals.rs",
     "vail/crates/vail-storage/src/lib.rs",
     "vail/crates/vail-storage/src/local_table.rs",
+    "vail/crates/vail-storage/tests/globals.rs",
     "vail/crates/vail-table/src/aggregation.rs",
     "vail/crates/vail-table/src/arrow_batches.rs",
     "vail/crates/vail-table/src/comparison.rs",
@@ -787,6 +814,7 @@
     "vail/crates/vail-table/src/zip_dedup.rs",
     "vail/crates/vail-table/src/zip_join.rs",
     "vail/crates/vail-table/src/zip_snapshot.rs",
+    "vail/crates/vail-table/tests/globals.rs",
     "vail/crates/vail-table/tests/scan_replay.rs",
     "vail/crates/vail-vcf/src/lib.rs",
     "vail/python/tests/test_core_aggregate_kernels.py",

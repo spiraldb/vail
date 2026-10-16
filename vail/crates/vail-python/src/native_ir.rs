@@ -810,6 +810,21 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
 
 #[pymethods]
 impl NativeExpr {
+    fn referenced_names(&self, scope: &str) -> Vec<String> {
+        let mut pending=vec![self.inner.as_ref()];
+        let mut seen=std::collections::HashSet::new();
+        let mut names=std::collections::BTreeSet::new();
+        while let Some(node)=pending.pop() {
+            if !seen.insert(node as *const Expr) { continue; }
+            match node {
+                Expr::Column { name } if scope=="column" => {names.insert(name.clone());},
+                Expr::Global { name } if scope=="global" => {names.insert(name.clone());},
+                _=>(),
+            }
+            node.visit_children(&mut |child|pending.push(child));
+        }
+        names.into_iter().collect()
+    }
     fn literal_dict_precedence(&self) -> bool { self.literal_precedence() }
     #[new]
     fn new(value: &Bound<'_, PyAny>) -> PyResult<Self> {

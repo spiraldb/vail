@@ -243,6 +243,7 @@ impl ExecutionPlan for SourceExec {
                     }
                     Source::Globals(source) => {
                         let batch = vail_storage::globals::read(&source.semantics.globals).map_err(external)?;
+                        vail_storage::globals::validate_agreement(batch.schema_ref(),&row_schema).map_err(external)?;
                         yield normalize(&batch, row_schema).map_err(external)?;
                     }
                 }

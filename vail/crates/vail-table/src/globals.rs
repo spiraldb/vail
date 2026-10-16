@@ -2,7 +2,7 @@
 //! DataFusion ProjectionExec plans; row plans bind it with a singleton cross join.
 use crate::{Result, TableError};
 use arrow_array::RecordBatch;
-use arrow_schema::{Field, Schema, SchemaRef};
+use arrow_schema::{Schema, SchemaRef};
 use datafusion_datasource::memory::MemorySourceConfig;
 use datafusion_execution::TaskContext;
 use datafusion_physical_plan::{execution_plan::collect, projection::ProjectionExec};
@@ -26,26 +26,32 @@ pub fn referenced_bindings<'a>(
     expressions: impl IntoIterator<Item = &'a Expr>,
     bindings: GlobalBindings,
 ) -> Result<GlobalBindings> {
-    let mut references = Vec::new();
-    for expr in expressions {
-        expr.visit(&mut |node| {
-            if let Expr::ExternalGlobal { reference, dtype } = node {
-                references.push((reference.clone(), dtype.clone()));
-            }
-        });
-    }
+    let mut pending = expressions.into_iter().collect::<Vec<_>>();
+    let mut seen = std::collections::HashSet::new();
+    let mut actual_types = BTreeMap::new();
     let mut used = GlobalBindings::new();
-    for (reference, dtype) in references {
-        let target = bindings
-            .get(&reference)
-            .ok_or_else(|| TableError::Invalid("unbound external globals".into()))?;
-        let actual = Type::from_arrow(&arrow_schema::DataType::Struct(
-            target.schema().fields().clone(),
-        ))?;
-        if dtype != actual {
-            return Err(TableError::Invalid("external globals type mismatch".into()));
+    while let Some(expr) = pending.pop() {
+        if !seen.insert(expr as *const Expr) {
+            continue;
         }
-        used.insert(reference, target.clone());
+        if let Expr::ExternalGlobal { reference, dtype } = expr {
+            let target = bindings
+                .get(reference)
+                .ok_or_else(|| TableError::Invalid("unbound external globals".into()))?;
+            if !actual_types.contains_key(reference) {
+                actual_types.insert(
+                    reference,
+                    Type::from_arrow(&arrow_schema::DataType::Struct(
+                        target.schema().fields().clone(),
+                    ))?,
+                );
+            }
+            if actual_types.get(reference) != Some(dtype) {
+                return Err(TableError::Invalid("external globals type mismatch".into()));
+            }
+            used.insert(reference.clone(), target.clone());
+        }
+        expr.visit_children(&mut |child| pending.push(child));
     }
     Ok(used)
 }
@@ -79,23 +85,14 @@ pub struct GlobalsIR {
 }
 
 pub fn schema_from_wire(value: &Value) -> Result<SchemaRef> {
-    if *value == json!({}) {
-        return Ok(Arc::new(Schema::empty()));
-    }
-    let fields: Vec<(String, Type)> =
-        serde_json::from_value(value.clone()).map_err(StorageError::from)?;
-    Ok(Arc::new(Schema::new(
-        fields
-            .into_iter()
-            .map(|(name, ty)| Ok(Field::new(name, ty.to_arrow()?, true)))
-            .collect::<Result<Vec<_>>>()?,
-    )))
+    Ok(vail_storage::globals::schema_from_wire(value)?)
 }
 
 impl GlobalsIR {
     /// Retain one Arrow row as a literal globals value. Arrow IPC is the wire
     /// boundary; the native IR never serializes the contained values as JSON.
     pub fn arrow_literal(batch: RecordBatch) -> Result<GlobalsRef> {
+        vail_storage::globals::validate_schema(batch.schema_ref())?;
         if batch.num_rows() != 1 {
             return Err(TableError::Invalid(
                 "Arrow globals literal must contain exactly one row".into(),
@@ -307,6 +304,9 @@ impl GlobalsIR {
                 fields,
                 bindings,
             } => {
+                if fields.is_empty() {
+                    return Self::empty().lower();
+                }
                 let (input, indices) = crate::plan::bind_external(child.lower()?, bindings)?;
                 let expressions = fields
                     .iter()

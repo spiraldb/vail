@@ -223,6 +223,13 @@ async fn write_local_source_with_globals(
             "write buffer limits must be positive".into(),
         ));
     }
+    if let Some(globals)=&globals {
+        let expected=super::globals::schema_from_wire(&globals.logical_type)?;
+        super::globals::validate_agreement(globals.batch.schema_ref(),&expected)?;
+        if globals.batch.num_rows()!=1 {
+            return Err(StorageError::Invalid("globals must contain exactly one row".into()));
+        }
+    }
     let root = directory(path)?;
     let empty_row = schema.fields().is_empty();
     let physical = if empty_row {
