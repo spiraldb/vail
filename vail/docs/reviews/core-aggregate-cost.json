@@ -1,0 +1,311 @@
+{
+  "base_commit": "cba67728",
+  "baseline_native_sha256": "bc7622bca343ed0da8cf7adf222b200432e9813306d5e4018d54368afb95dc89",
+  "current_native_sha256": "c81e59f12905e820bc570f7df3a39d9ad09c9e67902f76feecf9aac6550b6211",
+  "method": "Fresh subprocesses with independent complete baseline Python/native package; warm eval(0), prepare lazy expressions, time public aggregate action, verify results. One run per case;30s cap; macOS peak RSS bytes includes runtime, preparation and localization. Constructor-only initializer cases explicitly identified separately.",
+  "limitations": [
+    "Single-run millisecond timings are noisy; no universal speedup claim.",
+    "Stable coordinate means incur modest measured latency cost;4096x1024 .01962s to .02184s with peakRSS354648064 to332349440bytes.",
+    "Baseline translated1M stats mean fails exact expected result; timing unavailable for this case; current result checked.",
+    "Population variance normalized M2 and count still use finite precision; no universal accuracy guarantee for all finite datasets.",
+    "Two Hail inventory tests require absent external hail checkout; excluded.",
+    "Perfect-fit scan prefix t-stat equality fails in both independent versions due near-zero residual; noisy equivalence fixture and separate exact-fit coefficient/residual check replace this ill-conditioned comparison."
+  ],
+  "cases": [
+    {
+      "mode": "coordinate",
+      "n": 512,
+      "width": 32,
+      "version": "baseline",
+      "execution_seconds": 0.006598125000891741,
+      "peak_rss_bytes": 143736832,
+      "check": {
+        "width": 32,
+        "first": 255.752688172043,
+        "last": 286.5505376344086
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 512,
+      "width": 32,
+      "version": "current",
+      "execution_seconds": 0.0025238340022042394,
+      "peak_rss_bytes": 133283840,
+      "check": {
+        "width": 32,
+        "first": 255.75268817204304,
+        "last": 286.55053763440856
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 4096,
+      "width": 32,
+      "version": "baseline",
+      "execution_seconds": 0.00273558399931062,
+      "peak_rss_bytes": 136183808,
+      "check": {
+        "width": 32,
+        "first": 2047.6502820306205,
+        "last": 2078.449905989793
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 4096,
+      "width": 32,
+      "version": "current",
+      "execution_seconds": 0.0028522919965325855,
+      "peak_rss_bytes": 135643136,
+      "check": {
+        "width": 32,
+        "first": 2047.6502820306205,
+        "last": 2078.4499059897935
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 512,
+      "width": 256,
+      "version": "baseline",
+      "execution_seconds": 0.0028647920044022612,
+      "peak_rss_bytes": 140869632,
+      "check": {
+        "width": 256,
+        "first": 255.752688172043,
+        "last": 510.40128755364805
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 512,
+      "width": 256,
+      "version": "current",
+      "execution_seconds": 0.002974084003653843,
+      "peak_rss_bytes": 139739136,
+      "check": {
+        "width": 256,
+        "first": 255.752688172043,
+        "last": 510.40128755364805
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 4096,
+      "width": 256,
+      "version": "baseline",
+      "execution_seconds": 0.006436582996684592,
+      "peak_rss_bytes": 188792832,
+      "check": {
+        "width": 256,
+        "first": 2047.6502820306205,
+        "last": 2302.300214822771
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 4096,
+      "width": 256,
+      "version": "current",
+      "execution_seconds": 0.006908458002726547,
+      "peak_rss_bytes": 181141504,
+      "check": {
+        "width": 256,
+        "first": 2047.6502820306205,
+        "last": 2302.300214822771
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 512,
+      "width": 1024,
+      "version": "baseline",
+      "execution_seconds": 0.004184167002676986,
+      "peak_rss_bytes": 154386432,
+      "check": {
+        "width": 1024,
+        "first": 255.752688172043,
+        "last": 1278.752688172043
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 512,
+      "width": 1024,
+      "version": "current",
+      "execution_seconds": 0.004456833994481713,
+      "peak_rss_bytes": 153059328,
+      "check": {
+        "width": 1024,
+        "first": 255.752688172043,
+        "last": 1278.752688172043
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 4096,
+      "width": 1024,
+      "version": "baseline",
+      "execution_seconds": 0.019619874998170417,
+      "peak_rss_bytes": 354648064,
+      "check": {
+        "width": 1024,
+        "first": 2047.6502820306205,
+        "last": 3070.6502820306205
+      }
+    },
+    {
+      "mode": "coordinate",
+      "n": 4096,
+      "width": 1024,
+      "version": "current",
+      "execution_seconds": 0.021838500004378147,
+      "peak_rss_bytes": 332349440,
+      "check": {
+        "width": 1024,
+        "first": 2047.6502820306205,
+        "last": 3070.6502820306205
+      }
+    },
+    {
+      "mode": "mean",
+      "n": 1000000,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.00527120799961267,
+      "peak_rss_bytes": 138559488,
+      "check": 499999.5
+    },
+    {
+      "mode": "mean",
+      "n": 1000000,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.0033075829996960238,
+      "peak_rss_bytes": 135872512,
+      "check": 499999.5
+    },
+    {
+      "mode": "stats",
+      "n": 1000000,
+      "width": 0,
+      "version": "baseline",
+      "error": "Traceback (most recent call last):\n  File \"<string>\", line 20, in <module>\n    assert value.mean==1e12+(n-1)/2\n           ^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+    },
+    {
+      "mode": "stats",
+      "n": 1000000,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.007807665999280289,
+      "peak_rss_bytes": 139886592,
+      "check": {
+        "mean": 1000000499999.5,
+        "stdev": 288675.1345946685
+      }
+    },
+    {
+      "mode": "sum",
+      "n": 1000000,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.005251084003248252,
+      "peak_rss_bytes": 137592832,
+      "check": 499999500000.0
+    },
+    {
+      "mode": "sum",
+      "n": 1000000,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.002597667000372894,
+      "peak_rss_bytes": 137297920,
+      "check": 499999500000.0
+    },
+    {
+      "mode": "product",
+      "n": 1000000,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.006198458002472762,
+      "peak_rss_bytes": 138739712,
+      "check": 1.0
+    },
+    {
+      "mode": "product",
+      "n": 1000000,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.0033897500034072436,
+      "peak_rss_bytes": 136445952,
+      "check": 1.0
+    },
+    {
+      "mode": "boolean",
+      "n": 1000000,
+      "width": 0,
+      "version": "baseline",
+      "execution_seconds": 0.014466541004367173,
+      "peak_rss_bytes": 138035200,
+      "check": {
+        "n": 500000,
+        "fraction": 0.5
+      }
+    },
+    {
+      "mode": "boolean",
+      "n": 1000000,
+      "width": 0,
+      "version": "current",
+      "execution_seconds": 0.004030750002129935,
+      "peak_rss_bytes": 137887744,
+      "check": {
+        "n": 500000,
+        "fraction": 0.5
+      }
+    },
+    {
+      "mode": "initializer",
+      "depth": 12,
+      "version": "baseline",
+      "construction_seconds": 0.004559584005619399,
+      "peak_rss_bytes": 126353408
+    },
+    {
+      "mode": "initializer",
+      "depth": 12,
+      "version": "current",
+      "construction_seconds": 0.00012387500464683399,
+      "peak_rss_bytes": 126468096
+    },
+    {
+      "mode": "initializer",
+      "depth": 16,
+      "version": "baseline",
+      "construction_seconds": 0.07192579100228613,
+      "peak_rss_bytes": 126238720
+    },
+    {
+      "mode": "initializer",
+      "depth": 16,
+      "version": "current",
+      "construction_seconds": 0.00013104100071359426,
+      "peak_rss_bytes": 126353408
+    },
+    {
+      "mode": "initializer",
+      "depth": 20,
+      "version": "baseline",
+      "construction_seconds": 1.1474894170023617,
+      "peak_rss_bytes": 126795776
+    },
+    {
+      "mode": "initializer",
+      "depth": 20,
+      "version": "current",
+      "construction_seconds": 0.00012891699589090422,
+      "peak_rss_bytes": 123617280
+    }
+  ]
+}

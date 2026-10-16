@@ -946,6 +946,19 @@ impl NativeExpr {
         let uid=uid.into_iter().map(|v|v.inner.clone()).collect::<Vec<_>>();
         Ok(Self{inner:Arc::new(crate::random_binding::context(&self.inner,&uid)?)})
     }
+    fn validate_initializer(&self, function: &str) -> PyResult<()> {
+        let mut seen=std::collections::HashSet::new();
+        fn invalid(node: &Expr, seen: &mut std::collections::HashSet<*const Expr>) -> bool {
+            if !seen.insert(node as *const Expr) {return false;}
+            if matches!(node,Expr::Column {..}|Expr::Aggregate {..}|Expr::AggregateFold {..}|Expr::AggFilter {..}|Expr::AggExplode {..}|Expr::AggGroupBy {..}|Expr::AggArray {..}|Expr::MatrixColumnPosition {})
+                ||matches!(node,Expr::MatrixField {axis,..}|Expr::MatrixScope {axis,..} if axis!="global") {return true;}
+            let mut yes=false;node.visit_children(&mut |child|yes|=invalid(child,seen));yes
+        }
+        if invalid(&self.inner,&mut seen)||!crate::collection_aggregate::free_parameters(&self.inner).is_empty() {
+            return Err(pyo3::exceptions::PyTypeError::new_err(format!("{function} initialization expressions cannot depend on rows or aggregations")));
+        }
+        Ok(())
+    }
     fn collection_aggregate(&self, value: PyRef<'_, NativeExpr>, parameter: &str,
         element: PyRef<'_, NativeType>, rows: PyRef<'_, NativeType>,
         globals: PyRef<'_, NativeType>, axes: Vec<(String, PyRef<'_, NativeType>)>,

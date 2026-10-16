@@ -61,20 +61,11 @@ def test_aggregate_initializers_keep_captured_external_globals_lazy():
     assert source.aggregate(hl.agg.hist(hl.float64(source.idx), start, end, bins)).bin_freq == [2, 2]
 
 
-def test_initializer_ir_keeps_globals_and_array_quantiles_lazy():
-    table = hl.range_table(2).annotate_globals(qs=[0.25, 0.75], start=0.0,
-                                               end=2.0, bins=2)
-    q_expr = hl.agg.approx_quantiles(table.idx, table.qs)
-    assert q_expr._ir["options"]["scalar"] is False
-    assert q_expr._ir["init"][0][0] == "quantiles"
-    assert q_expr._ir["init"][0][1]["op"] == "global"
-    h_expr = hl.agg.hist(table.idx, table.start, table.end, table.bins)
-    assert [name for name, _ in h_expr._ir["init"]] == ["start", "end", "bins"]
-    assert all(expr["op"] == "global" for _, expr in h_expr._ir["init"])
-    mapped_qs = table.qs.map(lambda q: q + 0.0)
-    mapped = hl.agg.approx_quantiles(table.idx, mapped_qs)
-    assert mapped._ir["init"][0][1]["op"] == "array_map"
-    assert table.aggregate(mapped) == [0, 1]
+def test_global_and_mapped_quantile_initializers_execute():
+    table = hl.range_table(2).annotate_globals(qs=[0.25, 0.75], start=0.0, end=2.0, bins=2)
+    assert table.aggregate(hl.agg.approx_quantiles(table.idx, table.qs)) == [0, 1]
+    assert table.aggregate(hl.agg.hist(table.idx, table.start, table.end, table.bins)).bin_freq == [1, 1]
+    assert table.aggregate(hl.agg.approx_quantiles(table.idx, table.qs.map(lambda q: q + 0.0))) == [0, 1]
 
 
 def test_missing_global_quantiles_and_allele_shape_follow_hail():
@@ -99,9 +90,7 @@ def test_row_dependent_initializers_are_rejected():
         hl.agg.fold(table.idx, lambda state: state + table.idx, lambda a, b: a + b)
 
 
-def test_initializer_validation_does_not_interpret_literal_payload_as_ir():
-    from vail.agg import _validate_initializer
-    from vail.expressions import Expression
-
-    literal = hl.literal(hl.Struct(op="column", name="payload"))
-    _validate_initializer(literal, "test")
+def test_initializer_literal_payload_resembling_ir_is_ordinary_data():
+    initial = hl.literal(hl.Struct(op='column', name='payload'))
+    table = hl.range_table(3)
+    assert table.aggregate(hl.agg.fold(initial, lambda state: state, lambda left, right: left)) == hl.Struct(op='column', name='payload')

@@ -114,7 +114,7 @@ fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<Aggr
             "sum" => datafusion_functions_aggregate::sum::sum_udaf(),
             "min" => datafusion_functions_aggregate::min_max::min_udaf(),
             "max" => datafusion_functions_aggregate::min_max::max_udaf(),
-            "mean" => datafusion_functions_aggregate::average::avg_udaf(),
+            "mean" => vail_execution::aggregates::aggregate_udf("mean",Some(input))?,
             "count" => datafusion_functions_aggregate::count::count_udaf(),
             "stddev_pop" => vail_execution::aggregates::aggregate_udf(function, Some(input))?,
             _ => {

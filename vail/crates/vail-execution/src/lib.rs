@@ -26,6 +26,7 @@ use thiserror::Error;
 mod aggregate_identity;
 pub mod aggregate_contract;
 pub mod aggregates;
+mod moments;
 mod array_fold;
 mod ndarray;
 pub mod calls;

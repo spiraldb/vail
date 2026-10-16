@@ -1,3 +1,4 @@
+import pytest
 import vail as hl
 
 
@@ -285,7 +286,7 @@ def _assert_scan_matches_prefix_aggregates(table, scan_make, aggregate_make):
 
 
 def test_scan_configuration_expressions_and_statistical_reducers():
-    table = hl.Table.parallelize([{"i": i, "x": float(i), "y": 2.0 * i + 1.0} for i in range(6)],
+    table = hl.Table.parallelize([{"i": i, "x": float(i), "y": 2.0 * i + 1.0 + [0.1, -0.2, 0.05, 0.15, -0.1, 0.2][i]} for i in range(6)],
                                 n_partitions=3).annotate_globals(lo=0.0, hi=6.0, bins=3, qs=[0.0, 0.5, 1.0])
     pairs = [
         (lambda t: hl.scan.hist(t.x, t.lo, t.hi, t.bins), lambda t: hl.agg.hist(t.x, t.lo, t.hi, t.bins)),
@@ -296,6 +297,15 @@ def test_scan_configuration_expressions_and_statistical_reducers():
     ]
     for scan, aggregate in pairs:
         _assert_scan_matches_prefix_aggregates(table, scan, aggregate)
+
+
+def test_scan_exact_linear_fit_preserves_coefficients_and_negligible_residual():
+    table = hl.range_table(6, n_partitions=3)
+    rows = table.annotate(fit=hl.scan.linreg(2. * table.idx + 1., [1., hl.float64(table.idx)])).collect()
+    for row in rows[3:]:
+        assert row.fit.beta == pytest.approx([1., 2.], abs=1e-12)
+        assert row.fit.multiple_standard_error == pytest.approx(0., abs=1e-12)
+        assert row.fit.multiple_r_squared == pytest.approx(1., abs=1e-12)
 
 
 def test_scan_genomic_reducers_reuse_aggregate_states():
