@@ -2,9 +2,7 @@
   "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
   "candidate_code": "de8ce11145ff7a7ce35b82fb9304925e864b018a",
   "main_parent": "dc51582fcb2413be6f14372ea8887a4cabc85f88",
-  "decision": "pending_exact_followup_review",
-  "final_runtime_acceptance": false,
-  "main_updated": false,
+  "decision": "approved_for_main_integration",
   "prior_review": {
     "candidate": "76cbbeb0cada9efc955254d9ce5eea0c3339f082",
     "decision": "request_changes",
@@ -123,5 +121,20 @@
     "Missing/collection-blocked upstream APIs are not passes",
     "Runtime CSE, scalar specialization, segment pruning, small matrix latency remain queued",
     "Separate QC allocation/batching followups excluded"
-  ]
+  ],
+  "reviewed_revision": "71a471e17dda5f7f246f8d69da6a27675b86f4f5",
+  "reviewed_source_revision": "de8ce11145ff7a7ce35b82fb9304925e864b018a",
+  "main_at_review": "dc51582fcb2413be6f14372ea8887a4cabc85f88",
+  "scoped_integration_approval": true,
+  "general_compatibility_or_performance_acceptance": false,
+  "final_review_disposition": {
+    "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+    "date": "2026-10-16",
+    "decision": "APPROVED for main integration of exact71a471e1 based on earlierb2 review plus follow-up",
+    "findings": "Both specialist reviews cleared full-expression scan HashMap equality/order, public stream outcomes, conservative helper binding guards, restored public reset/fixture caching and coherent corrected evidence. No remaining blocking findings.",
+    "baseline_boundary": "Exact-main paired BNM demonstrates pre-existing fixed-golden mismatch for pinned inputs; unresolved defect remains executable.",
+    "validation": "Native19:261 tests/41binaries; local20:1756pass2retained baseline storagefailures; final37harness; corrected fullupstream20 nonpasses/blockers explicit. Reviewer ran no builds/tests and made no edits.",
+    "scope": "Integration approval only; unresolved runtime CSE, tiny-query/performance and storage limits remain open.",
+    "authorized_child": "Reviewer explicitly permits documentation-only child recording this disposition then fast-forward main through it, provided no source/tests/harness/evidence changes. Material changes require new review."
+  }
 }

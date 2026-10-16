@@ -1,9 +1,11 @@
-# Required final integration review
+# Final integration review record
 
 Reviewer: `codex://threads/01a14128-21b8-7a53-b399-4ad8f9b31f4f`.
 Branch: `dk/architectural-shortcut-removal`. Production/follow-up code: `de8ce111`.
 Main parent: `dc51582fcb2413be6f14372ea8887a4cabc85f88`.
-Main is unchanged. The review request names the full committed candidate.
+Review approved exact `71a471e17dda5f7f246f8d69da6a27675b86f4f5` on 2026-10-16.
+Main at review was dc51582f. The reviewer authorized a documentation-only child
+recording this disposition and fast-forwarding main through that child.
 
 ## Architecture and material reconciliation
 
@@ -46,7 +48,7 @@ see `patches/datafusion-common-vail.patch`. No vendor-wide audit is claimed.
 Earlier source review at 76cbbeb0 cleared scalar capture/cardinality, scoped native
 RNG, predicate-once filtering and R2/R3/R4/R6/R8. Original private consumer topology
 and lifetime tests were replaced by public interleaved/independent/cancelled-action
-outcomes. The new material integration and follow-up still need exact final review.
+outcomes. The material integration and follow-up received exact final approval at 71a471e1.
 
 ## Final validation
 
@@ -93,3 +95,13 @@ Specifically randomness: 58 pass, two missing APIs (BlockMatrix.random/import_bg
 38 collection-blocked. All 44 matrix randomness behavioral tests pass. These are
 observations under the restored reset fixture, not inferred from historical runs.
 The phased-BNM fixed-golden assertion remains executable and failing.
+
+## Final disposition
+
+The required reviewer approved exact 71a471e1 after the b2f97e7e review and this
+follow-up. Both specialist passes cleared all remaining blocking findings.
+Approval covers integration, with the documented compatibility, performance and
+storage limits retained; it does not certify general upstream equivalence or
+latency/throughput acceptance. The reviewer ran no builds/tests and made no edits.
+The only subsequent change is this authorized documentation record; source, tests,
+harness and evidence remain exactly as reviewed. See `required-review.json`.
