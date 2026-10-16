@@ -1,0 +1,15 @@
+{
+  "python": "3.12.12 (main, Feb 12 2026, 00:42:34) [Clang 21.1.4 ]",
+  "package": "/private/tmp/vail-profile-after-package-20261015/vail/__init__.py",
+  "native_sha256": "63e0bde72dcebf2afa91da75857aa06b6a8861109aaa7e7cb1f728f63ff10158",
+  "source_revision": "a965c01bcefbfef978a46afa30cb5d6293408b7b",
+  "benchmark": "benchmark_table::test_table_scan_prev_non_null",
+  "rows": 100000000,
+  "partitions": 10,
+  "physical_plan": "InitializedScanExec\n  ProjectionExec: expr=[vail_semantic_kernel_hail_operation_1() as __scan_init_0]\n    PlaceholderRowExec\n",
+  "count": 100000000,
+  "construction_seconds": 0.021109749795868993,
+  "action_seconds": 31.84583158302121,
+  "elapsed_seconds": 31.866941332817078,
+  "status": "completed"
+}

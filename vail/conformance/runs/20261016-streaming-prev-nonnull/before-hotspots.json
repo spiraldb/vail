@@ -1,0 +1,5238 @@
+{
+  "profile": "before-profile.json.gz",
+  "sidecar": "before-profile.json.syms.json",
+  "sample_interval_ms": 2.0,
+  "threads": [
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7509,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 4185,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1590,
+          "percent": 21.17
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 505,
+          "percent": 6.73
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 488,
+          "percent": 6.5
+        },
+        {
+          "name": "free_tiny",
+          "samples": 458,
+          "percent": 6.1
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 410,
+          "percent": 5.46
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 359,
+          "percent": 4.78
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 293,
+          "percent": 3.9
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 273,
+          "percent": 3.64
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 232,
+          "percent": 3.09
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 227,
+          "percent": 3.02
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 188,
+          "percent": 2.5
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 187,
+          "percent": 2.49
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 186,
+          "percent": 2.48
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 167,
+          "percent": 2.22
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 106,
+          "percent": 1.41
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 94,
+          "percent": 1.25
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 94,
+          "percent": 1.25
+        },
+        {
+          "name": "_free",
+          "samples": 82,
+          "percent": 1.09
+        },
+        {
+          "name": "_szone_free",
+          "samples": 72,
+          "percent": 0.96
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 71,
+          "percent": 0.95
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 67,
+          "percent": 0.89
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 63,
+          "percent": 0.84
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 53,
+          "percent": 0.71
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 40,
+          "percent": 0.53
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 37,
+          "percent": 0.49
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 31,
+          "percent": 0.41
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "<alloc::sync::Arc<arrow_schema::field::Field> as core::slice::cmp::SlicePartialEq<alloc::sync::Arc<arrow_schema::field::Field>>>::equal_same_length",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 25,
+          "percent": 0.33
+        },
+        {
+          "name": "__rustc::__rust_no_alloc_shim_is_unstable_v2",
+          "samples": 23,
+          "percent": 0.31
+        },
+        {
+          "name": "__rustc::__rdl_alloc",
+          "samples": 22,
+          "percent": 0.29
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 21,
+          "percent": 0.28
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 4223,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1462,
+          "percent": 19.47
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 514,
+          "percent": 6.85
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 491,
+          "percent": 6.54
+        },
+        {
+          "name": "free_tiny",
+          "samples": 450,
+          "percent": 5.99
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 429,
+          "percent": 5.71
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 332,
+          "percent": 4.42
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 298,
+          "percent": 3.97
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 246,
+          "percent": 3.28
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 242,
+          "percent": 3.22
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 235,
+          "percent": 3.13
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 202,
+          "percent": 2.69
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 185,
+          "percent": 2.46
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 175,
+          "percent": 2.33
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 150,
+          "percent": 2.0
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 121,
+          "percent": 1.61
+        },
+        {
+          "name": "_szone_free",
+          "samples": 107,
+          "percent": 1.43
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 87,
+          "percent": 1.16
+        },
+        {
+          "name": "_free",
+          "samples": 77,
+          "percent": 1.03
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 73,
+          "percent": 0.97
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 64,
+          "percent": 0.85
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 64,
+          "percent": 0.85
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 63,
+          "percent": 0.84
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 58,
+          "percent": 0.77
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 54,
+          "percent": 0.72
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 45,
+          "percent": 0.6
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 41,
+          "percent": 0.55
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 40,
+          "percent": 0.53
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 40,
+          "percent": 0.53
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 40,
+          "percent": 0.53
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 32,
+          "percent": 0.43
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "0x69b7dd8",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 26,
+          "percent": 0.35
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 4229,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1494,
+          "percent": 19.9
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 518,
+          "percent": 6.9
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 466,
+          "percent": 6.21
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 463,
+          "percent": 6.17
+        },
+        {
+          "name": "free_tiny",
+          "samples": 453,
+          "percent": 6.03
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 358,
+          "percent": 4.77
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 319,
+          "percent": 4.25
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 257,
+          "percent": 3.42
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 254,
+          "percent": 3.38
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 253,
+          "percent": 3.37
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 191,
+          "percent": 2.54
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 176,
+          "percent": 2.34
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 175,
+          "percent": 2.33
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 164,
+          "percent": 2.18
+        },
+        {
+          "name": "_szone_free",
+          "samples": 101,
+          "percent": 1.35
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 94,
+          "percent": 1.25
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 84,
+          "percent": 1.12
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 66,
+          "percent": 0.88
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 65,
+          "percent": 0.87
+        },
+        {
+          "name": "_free",
+          "samples": 65,
+          "percent": 0.87
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 60,
+          "percent": 0.8
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 56,
+          "percent": 0.75
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 51,
+          "percent": 0.68
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 50,
+          "percent": 0.67
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 48,
+          "percent": 0.64
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 43,
+          "percent": 0.57
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 43,
+          "percent": 0.57
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 41,
+          "percent": 0.55
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 37,
+          "percent": 0.49
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 34,
+          "percent": 0.45
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 33,
+          "percent": 0.44
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 31,
+          "percent": 0.41
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 20,
+          "percent": 0.27
+        },
+        {
+          "name": "0x69b7dd8",
+          "samples": 20,
+          "percent": 0.27
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 4279,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1437,
+          "percent": 19.14
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 498,
+          "percent": 6.63
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 484,
+          "percent": 6.45
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 444,
+          "percent": 5.91
+        },
+        {
+          "name": "free_tiny",
+          "samples": 443,
+          "percent": 5.9
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 376,
+          "percent": 5.01
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 299,
+          "percent": 3.98
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 263,
+          "percent": 3.5
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 260,
+          "percent": 3.46
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 208,
+          "percent": 2.77
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 188,
+          "percent": 2.5
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 172,
+          "percent": 2.29
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 168,
+          "percent": 2.24
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 157,
+          "percent": 2.09
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 124,
+          "percent": 1.65
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 91,
+          "percent": 1.21
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 88,
+          "percent": 1.17
+        },
+        {
+          "name": "_szone_free",
+          "samples": 77,
+          "percent": 1.03
+        },
+        {
+          "name": "_free",
+          "samples": 75,
+          "percent": 1.0
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 67,
+          "percent": 0.89
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 66,
+          "percent": 0.88
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 64,
+          "percent": 0.85
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 54,
+          "percent": 0.72
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 52,
+          "percent": 0.69
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 47,
+          "percent": 0.63
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 46,
+          "percent": 0.61
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 46,
+          "percent": 0.61
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 45,
+          "percent": 0.6
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 41,
+          "percent": 0.55
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 32,
+          "percent": 0.43
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 32,
+          "percent": 0.43
+        },
+        {
+          "name": "<alloc::sync::Arc<arrow_schema::field::Field> as core::slice::cmp::SlicePartialEq<alloc::sync::Arc<arrow_schema::field::Field>>>::equal_same_length",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "__rustc::__rdl_alloc",
+          "samples": 27,
+          "percent": 0.36
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 4290,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1401,
+          "percent": 18.66
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 492,
+          "percent": 6.55
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 482,
+          "percent": 6.42
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 425,
+          "percent": 5.66
+        },
+        {
+          "name": "free_tiny",
+          "samples": 420,
+          "percent": 5.59
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 367,
+          "percent": 4.89
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 332,
+          "percent": 4.42
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 271,
+          "percent": 3.61
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 222,
+          "percent": 2.96
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 218,
+          "percent": 2.9
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 208,
+          "percent": 2.77
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 174,
+          "percent": 2.32
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 171,
+          "percent": 2.28
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 150,
+          "percent": 2.0
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 119,
+          "percent": 1.58
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 96,
+          "percent": 1.28
+        },
+        {
+          "name": "_szone_free",
+          "samples": 92,
+          "percent": 1.23
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 86,
+          "percent": 1.15
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 81,
+          "percent": 1.08
+        },
+        {
+          "name": "_free",
+          "samples": 80,
+          "percent": 1.07
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 68,
+          "percent": 0.91
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 62,
+          "percent": 0.83
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 57,
+          "percent": 0.76
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 54,
+          "percent": 0.72
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 49,
+          "percent": 0.65
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 49,
+          "percent": 0.65
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 46,
+          "percent": 0.61
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 43,
+          "percent": 0.57
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 40,
+          "percent": 0.53
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 39,
+          "percent": 0.52
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 34,
+          "percent": 0.45
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 31,
+          "percent": 0.41
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 29,
+          "percent": 0.39
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 29,
+          "percent": 0.39
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "__rustc::__rdl_alloc",
+          "samples": 24,
+          "percent": 0.32
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 4182,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1570,
+          "percent": 20.91
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 477,
+          "percent": 6.35
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 470,
+          "percent": 6.26
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 435,
+          "percent": 5.79
+        },
+        {
+          "name": "free_tiny",
+          "samples": 414,
+          "percent": 5.51
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 353,
+          "percent": 4.7
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 344,
+          "percent": 4.58
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 259,
+          "percent": 3.45
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 249,
+          "percent": 3.32
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 233,
+          "percent": 3.1
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 198,
+          "percent": 2.64
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 189,
+          "percent": 2.52
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 171,
+          "percent": 2.28
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 144,
+          "percent": 1.92
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 105,
+          "percent": 1.4
+        },
+        {
+          "name": "_szone_free",
+          "samples": 82,
+          "percent": 1.09
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 79,
+          "percent": 1.05
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 74,
+          "percent": 0.99
+        },
+        {
+          "name": "_free",
+          "samples": 71,
+          "percent": 0.95
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 67,
+          "percent": 0.89
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 67,
+          "percent": 0.89
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 63,
+          "percent": 0.84
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 47,
+          "percent": 0.63
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 45,
+          "percent": 0.6
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 39,
+          "percent": 0.52
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 37,
+          "percent": 0.49
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 34,
+          "percent": 0.45
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "<alloc::sync::Arc<arrow_schema::field::Field> as core::slice::cmp::SlicePartialEq<alloc::sync::Arc<arrow_schema::field::Field>>>::equal_same_length",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 25,
+          "percent": 0.33
+        },
+        {
+          "name": "tiny_memalign",
+          "samples": 23,
+          "percent": 0.31
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 4408,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1410,
+          "percent": 18.78
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 493,
+          "percent": 6.57
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 481,
+          "percent": 6.41
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 469,
+          "percent": 6.25
+        },
+        {
+          "name": "free_tiny",
+          "samples": 454,
+          "percent": 6.05
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 358,
+          "percent": 4.77
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 343,
+          "percent": 4.57
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 282,
+          "percent": 3.76
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 226,
+          "percent": 3.01
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 213,
+          "percent": 2.84
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 208,
+          "percent": 2.77
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 186,
+          "percent": 2.48
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 166,
+          "percent": 2.21
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 164,
+          "percent": 2.18
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 121,
+          "percent": 1.61
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 82,
+          "percent": 1.09
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 81,
+          "percent": 1.08
+        },
+        {
+          "name": "_szone_free",
+          "samples": 80,
+          "percent": 1.07
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 71,
+          "percent": 0.95
+        },
+        {
+          "name": "_free",
+          "samples": 70,
+          "percent": 0.93
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 70,
+          "percent": 0.93
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 58,
+          "percent": 0.77
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 56,
+          "percent": 0.75
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 51,
+          "percent": 0.68
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 45,
+          "percent": 0.6
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 43,
+          "percent": 0.57
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 41,
+          "percent": 0.55
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 38,
+          "percent": 0.51
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 37,
+          "percent": 0.49
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 33,
+          "percent": 0.44
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 31,
+          "percent": 0.41
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 31,
+          "percent": 0.41
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "arrow_ord::cmp::compare_op",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 24,
+          "percent": 0.32
+        },
+        {
+          "name": "tiny_memalign",
+          "samples": 24,
+          "percent": 0.32
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "arrow": 4167,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1567,
+          "percent": 20.87
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 517,
+          "percent": 6.89
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 474,
+          "percent": 6.31
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 440,
+          "percent": 5.86
+        },
+        {
+          "name": "free_tiny",
+          "samples": 429,
+          "percent": 5.71
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 320,
+          "percent": 4.26
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 313,
+          "percent": 4.17
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 263,
+          "percent": 3.5
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 246,
+          "percent": 3.28
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 235,
+          "percent": 3.13
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 222,
+          "percent": 2.96
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 202,
+          "percent": 2.69
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 161,
+          "percent": 2.14
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 142,
+          "percent": 1.89
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 109,
+          "percent": 1.45
+        },
+        {
+          "name": "_szone_free",
+          "samples": 99,
+          "percent": 1.32
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 91,
+          "percent": 1.21
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 83,
+          "percent": 1.11
+        },
+        {
+          "name": "_free",
+          "samples": 77,
+          "percent": 1.03
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 72,
+          "percent": 0.96
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 71,
+          "percent": 0.95
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 57,
+          "percent": 0.76
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 49,
+          "percent": 0.65
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 49,
+          "percent": 0.65
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 46,
+          "percent": 0.61
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 42,
+          "percent": 0.56
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 41,
+          "percent": 0.55
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 41,
+          "percent": 0.55
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 40,
+          "percent": 0.53
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 39,
+          "percent": 0.52
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 33,
+          "percent": 0.44
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 29,
+          "percent": 0.39
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "__rustc::__rdl_alloc",
+          "samples": 22,
+          "percent": 0.29
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 20,
+          "percent": 0.27
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "arrow": 4313,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1405,
+          "percent": 18.71
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 533,
+          "percent": 7.1
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 453,
+          "percent": 6.03
+        },
+        {
+          "name": "free_tiny",
+          "samples": 446,
+          "percent": 5.94
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 439,
+          "percent": 5.85
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 376,
+          "percent": 5.01
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 355,
+          "percent": 4.73
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 258,
+          "percent": 3.44
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 232,
+          "percent": 3.09
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 227,
+          "percent": 3.02
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 225,
+          "percent": 3.0
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 203,
+          "percent": 2.7
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 185,
+          "percent": 2.46
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 180,
+          "percent": 2.4
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 122,
+          "percent": 1.62
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 89,
+          "percent": 1.19
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 80,
+          "percent": 1.07
+        },
+        {
+          "name": "_szone_free",
+          "samples": 76,
+          "percent": 1.01
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 74,
+          "percent": 0.99
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 67,
+          "percent": 0.89
+        },
+        {
+          "name": "_free",
+          "samples": 66,
+          "percent": 0.88
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 65,
+          "percent": 0.87
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 64,
+          "percent": 0.85
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 41,
+          "percent": 0.55
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 40,
+          "percent": 0.53
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 38,
+          "percent": 0.51
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 32,
+          "percent": 0.43
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 32,
+          "percent": 0.43
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 31,
+          "percent": 0.41
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 29,
+          "percent": 0.39
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 27,
+          "percent": 0.36
+        },
+        {
+          "name": "<alloc::sync::Arc<arrow_schema::field::Field> as core::slice::cmp::SlicePartialEq<alloc::sync::Arc<arrow_schema::field::Field>>>::equal_same_length",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "tiny_memalign",
+          "samples": 21,
+          "percent": 0.28
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7508,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "arrow": 4210,
+        "datafusion_execution": 7506
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1492,
+          "percent": 19.87
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 524,
+          "percent": 6.98
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 498,
+          "percent": 6.63
+        },
+        {
+          "name": "free_tiny",
+          "samples": 467,
+          "percent": 6.22
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 406,
+          "percent": 5.41
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 390,
+          "percent": 5.19
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 381,
+          "percent": 5.07
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 266,
+          "percent": 3.54
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 255,
+          "percent": 3.4
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 229,
+          "percent": 3.05
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 227,
+          "percent": 3.02
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 196,
+          "percent": 2.61
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 146,
+          "percent": 1.94
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 138,
+          "percent": 1.84
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 103,
+          "percent": 1.37
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 92,
+          "percent": 1.23
+        },
+        {
+          "name": "_szone_free",
+          "samples": 86,
+          "percent": 1.15
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 76,
+          "percent": 1.01
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 70,
+          "percent": 0.93
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 68,
+          "percent": 0.91
+        },
+        {
+          "name": "_free",
+          "samples": 66,
+          "percent": 0.88
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 57,
+          "percent": 0.76
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 46,
+          "percent": 0.61
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 44,
+          "percent": 0.59
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 37,
+          "percent": 0.49
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 37,
+          "percent": 0.49
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 36,
+          "percent": 0.48
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 35,
+          "percent": 0.47
+        },
+        {
+          "name": "<alloc::sync::Arc<arrow_schema::field::Field> as core::slice::cmp::SlicePartialEq<alloc::sync::Arc<arrow_schema::field::Field>>>::equal_same_length",
+          "samples": 34,
+          "percent": 0.45
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 31,
+          "percent": 0.41
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 30,
+          "percent": 0.4
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 29,
+          "percent": 0.39
+        },
+        {
+          "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+          "samples": 29,
+          "percent": 0.39
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 28,
+          "percent": 0.37
+        },
+        {
+          "name": "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 26,
+          "percent": 0.35
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 24,
+          "percent": 0.32
+        },
+        {
+          "name": "0x69b7dd8",
+          "samples": 22,
+          "percent": 0.29
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseBody>::case_when_with_expr",
+          "samples": 21,
+          "percent": 0.28
+        },
+        {
+          "name": "__rustc::__rust_dealloc",
+          "samples": 20,
+          "percent": 0.27
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 19,
+          "percent": 0.25
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 7012,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 6935,
+        "datafusion_execution": 6940,
+        "datafusion_sort": 6373,
+        "datafusion_window": 6359,
+        "datafusion_join": 6359
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 837,
+          "percent": 11.94
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 608,
+          "percent": 8.67
+        },
+        {
+          "name": "free_tiny",
+          "samples": 580,
+          "percent": 8.27
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 376,
+          "percent": 5.36
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 357,
+          "percent": 5.09
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 348,
+          "percent": 4.96
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 284,
+          "percent": 4.05
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 283,
+          "percent": 4.04
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 282,
+          "percent": 4.02
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 267,
+          "percent": 3.81
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 217,
+          "percent": 3.09
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 128,
+          "percent": 1.83
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 127,
+          "percent": 1.81
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 126,
+          "percent": 1.8
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 111,
+          "percent": 1.58
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 107,
+          "percent": 1.53
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 99,
+          "percent": 1.41
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 98,
+          "percent": 1.4
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 87,
+          "percent": 1.24
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 82,
+          "percent": 1.17
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 80,
+          "percent": 1.14
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 73,
+          "percent": 1.04
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 72,
+          "percent": 1.03
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 71,
+          "percent": 1.01
+        },
+        {
+          "name": "_szone_free",
+          "samples": 49,
+          "percent": 0.7
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 48,
+          "percent": 0.68
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 43,
+          "percent": 0.61
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 41,
+          "percent": 0.58
+        },
+        {
+          "name": "_free",
+          "samples": 39,
+          "percent": 0.56
+        },
+        {
+          "name": "os_unfair_lock_lock_with_options",
+          "samples": 39,
+          "percent": 0.56
+        },
+        {
+          "name": "<arrow_array::array::struct_array::StructArray>::try_new_with_length",
+          "samples": 37,
+          "percent": 0.53
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 31,
+          "percent": 0.44
+        },
+        {
+          "name": "tiny_free_reattach_region",
+          "samples": 29,
+          "percent": 0.41
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 29,
+          "percent": 0.41
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 28,
+          "percent": 0.4
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 28,
+          "percent": 0.4
+        },
+        {
+          "name": "tiny_free_scan_madvise_free",
+          "samples": 26,
+          "percent": 0.37
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 26,
+          "percent": 0.37
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 24,
+          "percent": 0.34
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::array::struct_array::StructArray>",
+          "samples": 22,
+          "percent": 0.31
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6932,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "datafusion_sort": 6928,
+        "arrow": 6928,
+        "datafusion_execution": 6928,
+        "datafusion_window": 6916,
+        "datafusion_join": 6916
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 924,
+          "percent": 13.33
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 603,
+          "percent": 8.7
+        },
+        {
+          "name": "free_tiny",
+          "samples": 597,
+          "percent": 8.61
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 407,
+          "percent": 5.87
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 405,
+          "percent": 5.84
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 384,
+          "percent": 5.54
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 325,
+          "percent": 4.69
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 314,
+          "percent": 4.53
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 292,
+          "percent": 4.21
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 221,
+          "percent": 3.19
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 152,
+          "percent": 2.19
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 141,
+          "percent": 2.03
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 138,
+          "percent": 1.99
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 126,
+          "percent": 1.82
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 116,
+          "percent": 1.67
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 95,
+          "percent": 1.37
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 94,
+          "percent": 1.36
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 86,
+          "percent": 1.24
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 75,
+          "percent": 1.08
+        },
+        {
+          "name": "_szone_free",
+          "samples": 66,
+          "percent": 0.95
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 61,
+          "percent": 0.88
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 49,
+          "percent": 0.71
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 48,
+          "percent": 0.69
+        },
+        {
+          "name": "_free",
+          "samples": 48,
+          "percent": 0.69
+        },
+        {
+          "name": "os_unfair_lock_lock_with_options",
+          "samples": 45,
+          "percent": 0.65
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 36,
+          "percent": 0.52
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 35,
+          "percent": 0.5
+        },
+        {
+          "name": "<arrow_array::array::struct_array::StructArray>::try_new_with_length",
+          "samples": 34,
+          "percent": 0.49
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 33,
+          "percent": 0.48
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 31,
+          "percent": 0.45
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 29,
+          "percent": 0.42
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 29,
+          "percent": 0.42
+        },
+        {
+          "name": "tiny_free_reattach_region",
+          "samples": 28,
+          "percent": 0.4
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 26,
+          "percent": 0.38
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 25,
+          "percent": 0.36
+        },
+        {
+          "name": "tiny_free_scan_madvise_free",
+          "samples": 23,
+          "percent": 0.33
+        },
+        {
+          "name": "<datafusion_physical_plan::sorts::merge::SortPreservingMergeStream<datafusion_physical_plan::sorts::cursor::RowValues>>::update_loser_tree",
+          "samples": 22,
+          "percent": 0.32
+        },
+        {
+          "name": "<arrow_array::record_batch::RecordBatch>::try_new_impl",
+          "samples": 20,
+          "percent": 0.29
+        },
+        {
+          "name": "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+          "samples": 20,
+          "percent": 0.29
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::array::struct_array::StructArray>",
+          "samples": 18,
+          "percent": 0.26
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6672,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "arrow": 6545,
+        "datafusion_execution": 6552,
+        "datafusion_sort": 5988,
+        "datafusion_window": 5976,
+        "datafusion_join": 5976
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 806,
+          "percent": 12.08
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 604,
+          "percent": 9.05
+        },
+        {
+          "name": "free_tiny",
+          "samples": 547,
+          "percent": 8.2
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 343,
+          "percent": 5.14
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 337,
+          "percent": 5.05
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 293,
+          "percent": 4.39
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 293,
+          "percent": 4.39
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 273,
+          "percent": 4.09
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 271,
+          "percent": 4.06
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 262,
+          "percent": 3.93
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 206,
+          "percent": 3.09
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 129,
+          "percent": 1.93
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 126,
+          "percent": 1.89
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 120,
+          "percent": 1.8
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 106,
+          "percent": 1.59
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 106,
+          "percent": 1.59
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 101,
+          "percent": 1.51
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 100,
+          "percent": 1.5
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 95,
+          "percent": 1.42
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 87,
+          "percent": 1.3
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 69,
+          "percent": 1.03
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 68,
+          "percent": 1.02
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 66,
+          "percent": 0.99
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 53,
+          "percent": 0.79
+        },
+        {
+          "name": "_free",
+          "samples": 46,
+          "percent": 0.69
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 41,
+          "percent": 0.61
+        },
+        {
+          "name": "<arrow_array::array::struct_array::StructArray>::try_new_with_length",
+          "samples": 39,
+          "percent": 0.58
+        },
+        {
+          "name": "_szone_free",
+          "samples": 37,
+          "percent": 0.55
+        },
+        {
+          "name": "os_unfair_lock_lock_with_options",
+          "samples": 37,
+          "percent": 0.55
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 36,
+          "percent": 0.54
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 34,
+          "percent": 0.51
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 27,
+          "percent": 0.4
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 27,
+          "percent": 0.4
+        },
+        {
+          "name": "tiny_free_reattach_region",
+          "samples": 26,
+          "percent": 0.39
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 24,
+          "percent": 0.36
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 24,
+          "percent": 0.36
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 24,
+          "percent": 0.36
+        },
+        {
+          "name": "tiny_free_scan_madvise_free",
+          "samples": 24,
+          "percent": 0.36
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 22,
+          "percent": 0.33
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::array::struct_array::StructArray>",
+          "samples": 22,
+          "percent": 0.33
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 6040,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "datafusion_sort": 5881,
+        "arrow": 5880,
+        "datafusion_execution": 5882,
+        "datafusion_window": 5865,
+        "datafusion_join": 5865
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 777,
+          "percent": 12.86
+        },
+        {
+          "name": "free_tiny",
+          "samples": 535,
+          "percent": 8.86
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 531,
+          "percent": 8.79
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 372,
+          "percent": 6.16
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 321,
+          "percent": 5.31
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 302,
+          "percent": 5.0
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 265,
+          "percent": 4.39
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 261,
+          "percent": 4.32
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 254,
+          "percent": 4.21
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 170,
+          "percent": 2.81
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 158,
+          "percent": 2.62
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 128,
+          "percent": 2.12
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 125,
+          "percent": 2.07
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 118,
+          "percent": 1.95
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 114,
+          "percent": 1.89
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 95,
+          "percent": 1.57
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 94,
+          "percent": 1.56
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 88,
+          "percent": 1.46
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 67,
+          "percent": 1.11
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 64,
+          "percent": 1.06
+        },
+        {
+          "name": "_szone_free",
+          "samples": 53,
+          "percent": 0.88
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 42,
+          "percent": 0.7
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 41,
+          "percent": 0.68
+        },
+        {
+          "name": "_free",
+          "samples": 40,
+          "percent": 0.66
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 38,
+          "percent": 0.63
+        },
+        {
+          "name": "<arrow_array::array::struct_array::StructArray>::try_new_with_length",
+          "samples": 35,
+          "percent": 0.58
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::array::struct_array::StructArray>",
+          "samples": 32,
+          "percent": 0.53
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 31,
+          "percent": 0.51
+        },
+        {
+          "name": "tiny_free_reattach_region",
+          "samples": 28,
+          "percent": 0.46
+        },
+        {
+          "name": "os_unfair_lock_lock_with_options",
+          "samples": 27,
+          "percent": 0.45
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 26,
+          "percent": 0.43
+        },
+        {
+          "name": "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+          "samples": 24,
+          "percent": 0.4
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 24,
+          "percent": 0.4
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 22,
+          "percent": 0.36
+        },
+        {
+          "name": "tiny_free_scan_madvise_free",
+          "samples": 22,
+          "percent": 0.36
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 20,
+          "percent": 0.33
+        },
+        {
+          "name": "__rustc::__rdl_alloc",
+          "samples": 20,
+          "percent": 0.33
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::data_type",
+          "samples": 19,
+          "percent": 0.31
+        },
+        {
+          "name": "__rustc::__rust_dealloc",
+          "samples": 19,
+          "percent": 0.31
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 19,
+          "percent": 0.31
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 5415,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "datafusion_sort": 5090,
+        "arrow": 5089,
+        "datafusion_execution": 5090,
+        "datafusion_window": 5081,
+        "datafusion_join": 5081
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 641,
+          "percent": 11.84
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 498,
+          "percent": 9.2
+        },
+        {
+          "name": "free_tiny",
+          "samples": 443,
+          "percent": 8.18
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 323,
+          "percent": 5.96
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 297,
+          "percent": 5.48
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 291,
+          "percent": 5.37
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 251,
+          "percent": 4.64
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 227,
+          "percent": 4.19
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 221,
+          "percent": 4.08
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 194,
+          "percent": 3.58
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 183,
+          "percent": 3.38
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 103,
+          "percent": 1.9
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 92,
+          "percent": 1.7
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 91,
+          "percent": 1.68
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 84,
+          "percent": 1.55
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 82,
+          "percent": 1.51
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 80,
+          "percent": 1.48
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 79,
+          "percent": 1.46
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 68,
+          "percent": 1.26
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 68,
+          "percent": 1.26
+        },
+        {
+          "name": "_szone_free",
+          "samples": 55,
+          "percent": 1.02
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 36,
+          "percent": 0.66
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 34,
+          "percent": 0.63
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 34,
+          "percent": 0.63
+        },
+        {
+          "name": "_free",
+          "samples": 33,
+          "percent": 0.61
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 29,
+          "percent": 0.54
+        },
+        {
+          "name": "tiny_free_reattach_region",
+          "samples": 29,
+          "percent": 0.54
+        },
+        {
+          "name": "os_unfair_lock_lock_with_options",
+          "samples": 28,
+          "percent": 0.52
+        },
+        {
+          "name": "tiny_free_scan_madvise_free",
+          "samples": 27,
+          "percent": 0.5
+        },
+        {
+          "name": "<std::collections::hash::map::HashMap<alloc::string::String, alloc::string::String> as core::cmp::PartialEq>::eq",
+          "samples": 26,
+          "percent": 0.48
+        },
+        {
+          "name": "<arrow_schema::field::Field as core::cmp::PartialEq>::eq",
+          "samples": 25,
+          "percent": 0.46
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 25,
+          "percent": 0.46
+        },
+        {
+          "name": "<arrow_array::array::struct_array::StructArray>::try_new_with_length",
+          "samples": 24,
+          "percent": 0.44
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::array::struct_array::StructArray>",
+          "samples": 23,
+          "percent": 0.42
+        },
+        {
+          "name": "_tiny_check_and_zero_inline_meta_from_freelist",
+          "samples": 23,
+          "percent": 0.42
+        },
+        {
+          "name": "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+          "samples": 21,
+          "percent": 0.39
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 20,
+          "percent": 0.37
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 19,
+          "percent": 0.35
+        },
+        {
+          "name": "<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::map::map_try_fold<datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#5}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+          "samples": 18,
+          "percent": 0.33
+        },
+        {
+          "name": "tiny_free_detach_region",
+          "samples": 18,
+          "percent": 0.33
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 5368,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 4945,
+        "datafusion_execution": 4955,
+        "datafusion_sort": 4396,
+        "datafusion_window": 4382,
+        "datafusion_join": 4382
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 583,
+          "percent": 10.86
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 413,
+          "percent": 7.69
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 411,
+          "percent": 7.66
+        },
+        {
+          "name": "free_tiny",
+          "samples": 401,
+          "percent": 7.47
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 282,
+          "percent": 5.25
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 279,
+          "percent": 5.2
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 228,
+          "percent": 4.25
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_schema::datatype::DataType>",
+          "samples": 224,
+          "percent": 4.17
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 190,
+          "percent": 3.54
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 189,
+          "percent": 3.52
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::case::CaseExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 186,
+          "percent": 3.46
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 153,
+          "percent": 2.85
+        },
+        {
+          "name": "<vail_execution::expressions::CompiledPhysical>::field",
+          "samples": 100,
+          "percent": 1.86
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 85,
+          "percent": 1.58
+        },
+        {
+          "name": "<vail_execution::fold_aggregate::FoldAccumulator as datafusion_expr_common::accumulator::Accumulator>::update_batch",
+          "samples": 85,
+          "percent": 1.58
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::record_batch::RecordBatch>",
+          "samples": 84,
+          "percent": 1.56
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 78,
+          "percent": 1.45
+        },
+        {
+          "name": "tiny_free_list_remove_ptr",
+          "samples": 78,
+          "percent": 1.45
+        },
+        {
+          "name": "tiny_malloc_should_clear",
+          "samples": 71,
+          "percent": 1.32
+        },
+        {
+          "name": "<core::hash::sip::Hasher<core::hash::sip::Sip13Rounds> as core::hash::Hasher>::write",
+          "samples": 67,
+          "percent": 1.25
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 57,
+          "percent": 1.06
+        },
+        {
+          "name": "_platform_memcmp",
+          "samples": 56,
+          "percent": 1.04
+        },
+        {
+          "name": "_os_unfair_lock_lock_slow",
+          "samples": 50,
+          "percent": 0.93
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 49,
+          "percent": 0.91
+        },
+        {
+          "name": "_szone_free",
+          "samples": 49,
+          "percent": 0.91
+        },
+        {
+          "name": "_free",
+          "samples": 36,
+          "percent": 0.67
+        },
+        {
+          "name": "tiny_free_reattach_region",
+          "samples": 34,
+          "percent": 0.63
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::cmp::PartialEq>::eq",
+          "samples": 33,
+          "percent": 0.61
+        },
+        {
+          "name": "<arrow_schema::schema::Schema as core::hash::Hash>::hash::<std::hash::random::DefaultHasher>",
+          "samples": 28,
+          "percent": 0.52
+        },
+        {
+          "name": "madvise",
+          "samples": 25,
+          "percent": 0.47
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 25,
+          "percent": 0.47
+        },
+        {
+          "name": "rack_get_thread_index",
+          "samples": 22,
+          "percent": 0.41
+        },
+        {
+          "name": "vail_execution::logical_expr::restore_arrow_value_type",
+          "samples": 21,
+          "percent": 0.39
+        },
+        {
+          "name": "<arrow_array::array::struct_array::StructArray>::try_new_with_length",
+          "samples": 19,
+          "percent": 0.35
+        },
+        {
+          "name": "tiny_free_scan_madvise_free",
+          "samples": 19,
+          "percent": 0.35
+        },
+        {
+          "name": "get_tiny_previous_free_msize",
+          "samples": 18,
+          "percent": 0.34
+        },
+        {
+          "name": "szone_malloc_should_clear",
+          "samples": 18,
+          "percent": 0.34
+        },
+        {
+          "name": "__rustc::__rust_no_alloc_shim_is_unstable_v2",
+          "samples": 17,
+          "percent": 0.32
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::array::struct_array::StructArray>",
+          "samples": 17,
+          "percent": 0.32
+        },
+        {
+          "name": "os_unfair_lock_lock_with_options",
+          "samples": 16,
+          "percent": 0.3
+        }
+      ]
+    },
+    {
+      "name": "Thread <5290778>",
+      "samples": 700,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {},
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 656,
+          "percent": 93.71
+        },
+        {
+          "name": "write",
+          "samples": 16,
+          "percent": 2.29
+        },
+        {
+          "name": "_PyEval_EvalFrameDefault",
+          "samples": 9,
+          "percent": 1.29
+        },
+        {
+          "name": "do_mkvalue.llvm.5142170934370309091",
+          "samples": 2,
+          "percent": 0.29
+        },
+        {
+          "name": "PyUnicode_FromFormatV",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "_PyUnicode_FromASCII",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "_PyObject_Calloc",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "_Py_dg_dtoa",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "tp_new_wrapper",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "PyMember_GetOne",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "__proc_info",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "_io_TextIOWrapper_write",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "PyLong_AsDouble",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "PyBytes_FromStringAndSize",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "_PyObject_Free",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "slot_tp_new",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "bytes_buffer_getbuffer",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "frame_dealloc",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "member_set",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 1,
+          "percent": 0.14
+        },
+        {
+          "name": "float_dealloc",
+          "samples": 1,
+          "percent": 0.14
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 635,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "datafusion_sort": 13,
+        "arrow": 13,
+        "datafusion_execution": 13
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 622,
+          "percent": 97.95
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 8,
+          "percent": 1.26
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 2,
+          "percent": 0.31
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 1,
+          "percent": 0.16
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 1,
+          "percent": 0.16
+        },
+        {
+          "name": "0x69b7eec",
+          "samples": 1,
+          "percent": 0.16
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 595,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 585,
+        "datafusion_execution": 590,
+        "datafusion_sort": 12,
+        "datafusion_window": 3,
+        "datafusion_join": 3
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "mach_msg2_trap",
+          "samples": 286,
+          "percent": 48.07
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 86,
+          "percent": 14.45
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 80,
+          "percent": 13.45
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 63,
+          "percent": 10.59
+        },
+        {
+          "name": "__bzero",
+          "samples": 18,
+          "percent": 3.03
+        },
+        {
+          "name": "madvise",
+          "samples": 11,
+          "percent": 1.85
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 7,
+          "percent": 1.18
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 5,
+          "percent": 0.84
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 5,
+          "percent": 0.84
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 4,
+          "percent": 0.67
+        },
+        {
+          "name": "<datafusion_physical_plan::repartition::BatchPartitioner>::partition_iter",
+          "samples": 4,
+          "percent": 0.67
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 4,
+          "percent": 0.67
+        },
+        {
+          "name": "datafusion_functions_nested::range::reserve_range_capacity",
+          "samples": 3,
+          "percent": 0.5
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 3,
+          "percent": 0.5
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u64>>::from_iter::<core::ops::range::Range<u64>>",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#2}",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::from_value",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_schema::datatype::DataType as core::clone::Clone>::clone",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "_kernelrpc_mach_vm_map_trap",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_value",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "kevent",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_row::RowConverter>::append",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "arrow_row::fixed::encode_not_null::<u64>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<tokio::task::coop::RestoreOnPending as core::ops::drop::Drop>::drop",
+          "samples": 1,
+          "percent": 0.17
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 595,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 583,
+        "datafusion_execution": 590,
+        "datafusion_sort": 13
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "mach_msg2_trap",
+          "samples": 303,
+          "percent": 50.92
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 84,
+          "percent": 14.12
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 67,
+          "percent": 11.26
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 66,
+          "percent": 11.09
+        },
+        {
+          "name": "__bzero",
+          "samples": 14,
+          "percent": 2.35
+        },
+        {
+          "name": "madvise",
+          "samples": 7,
+          "percent": 1.18
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 7,
+          "percent": 1.18
+        },
+        {
+          "name": "<datafusion_physical_plan::repartition::BatchPartitioner>::partition_iter",
+          "samples": 7,
+          "percent": 1.18
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 5,
+          "percent": 0.84
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+          "samples": 5,
+          "percent": 0.84
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 5,
+          "percent": 0.84
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 4,
+          "percent": 0.67
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 4,
+          "percent": 0.67
+        },
+        {
+          "name": "datafusion_functions_nested::range::reserve_range_capacity",
+          "samples": 3,
+          "percent": 0.5
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u64>>::from_iter::<core::ops::range::Range<u64>>",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#2}",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "_free",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "medium_malloc_should_clear",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "__ulock_wake",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::with_capacities",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "tiny_free_list_add_ptr",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 1,
+          "percent": 0.17
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 594,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 575,
+        "datafusion_execution": 584,
+        "datafusion_sort": 14
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "mach_msg2_trap",
+          "samples": 262,
+          "percent": 44.11
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 95,
+          "percent": 15.99
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 92,
+          "percent": 15.49
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 58,
+          "percent": 9.76
+        },
+        {
+          "name": "__bzero",
+          "samples": 17,
+          "percent": 2.86
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 9,
+          "percent": 1.52
+        },
+        {
+          "name": "madvise",
+          "samples": 9,
+          "percent": 1.52
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 6,
+          "percent": 1.01
+        },
+        {
+          "name": "<datafusion_physical_plan::repartition::BatchPartitioner>::partition_iter",
+          "samples": 5,
+          "percent": 0.84
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 5,
+          "percent": 0.84
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+          "samples": 4,
+          "percent": 0.67
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 4,
+          "percent": 0.67
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_value",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<i32>>::from_iter::<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}::{closure#0}>>",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "datafusion_functions_nested::range::reserve_range_capacity",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#2}",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "tiny_malloc_from_free_list",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::from_value",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<alloc::vec::Vec<u32> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<u32, core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<usize>, arrow_ord::sort::lexsort_to_indices::{closure#3}>>>::from_iter",
+          "samples": 1,
+          "percent": 0.17
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 591,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "arrow": 579,
+        "datafusion_execution": 584,
+        "datafusion_sort": 12
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "mach_msg2_trap",
+          "samples": 284,
+          "percent": 48.05
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 94,
+          "percent": 15.91
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 74,
+          "percent": 12.52
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 59,
+          "percent": 9.98
+        },
+        {
+          "name": "__bzero",
+          "samples": 15,
+          "percent": 2.54
+        },
+        {
+          "name": "madvise",
+          "samples": 12,
+          "percent": 2.03
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 8,
+          "percent": 1.35
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 7,
+          "percent": 1.18
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 6,
+          "percent": 1.02
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 5,
+          "percent": 0.85
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 5,
+          "percent": 0.85
+        },
+        {
+          "name": "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+          "samples": 4,
+          "percent": 0.68
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<i32>>::from_iter::<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}::{closure#0}>>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_buffer::buffer::offset::OffsetBuffer<i32>>::new",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "datafusion_functions_nested::range::reserve_range_capacity",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u64>>::from_iter::<core::ops::range::Range<u64>>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "mach_absolute_time",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "medium_free_list_find_by_ptr",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::from_value",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int32Type, arrow_array::types::Int64Type>::{closure#0}, arrow_array::types::Int64Type, arrow_schema::error::ArrowError>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<datafusion_physical_plan::repartition::BatchPartitioner>::partition_iter",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#2}",
+          "samples": 1,
+          "percent": 0.17
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 590,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "arrow": 574,
+        "datafusion_execution": 579,
+        "datafusion_window": 1,
+        "datafusion_sort": 13,
+        "datafusion_join": 1
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "mach_msg2_trap",
+          "samples": 266,
+          "percent": 45.08
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 96,
+          "percent": 16.27
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 84,
+          "percent": 14.24
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 59,
+          "percent": 10.0
+        },
+        {
+          "name": "__bzero",
+          "samples": 14,
+          "percent": 2.37
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 9,
+          "percent": 1.53
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 8,
+          "percent": 1.36
+        },
+        {
+          "name": "madvise",
+          "samples": 7,
+          "percent": 1.19
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 7,
+          "percent": 1.19
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 4,
+          "percent": 0.68
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 4,
+          "percent": 0.68
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u64>>::from_iter::<core::ops::range::Range<u64>>",
+          "samples": 4,
+          "percent": 0.68
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#2}",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "<datafusion_physical_plan::repartition::BatchPartitioner>::partition_iter",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "arrow_ord::sort::lexsort_to_indices",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "kevent",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "medium_malloc_should_clear",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::from_value",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<i32>>::from_iter::<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}::{closure#0}>>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_value",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "0x69b7eec",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "core::ptr::drop_glue::<arrow_array::array::list_array::GenericListArray<i32>>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 1,
+          "percent": 0.17
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 587,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "arrow": 562,
+        "datafusion_execution": 566,
+        "datafusion_sort": 11
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "mach_msg2_trap",
+          "samples": 292,
+          "percent": 49.74
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 77,
+          "percent": 13.12
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 69,
+          "percent": 11.75
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 45,
+          "percent": 7.67
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 19,
+          "percent": 3.24
+        },
+        {
+          "name": "__bzero",
+          "samples": 17,
+          "percent": 2.9
+        },
+        {
+          "name": "madvise",
+          "samples": 12,
+          "percent": 2.04
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 7,
+          "percent": 1.19
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 6,
+          "percent": 1.02
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 6,
+          "percent": 1.02
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+          "samples": 5,
+          "percent": 0.85
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 4,
+          "percent": 0.68
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "datafusion_functions_nested::range::reserve_range_capacity",
+          "samples": 3,
+          "percent": 0.51
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u64>>::from_iter::<core::ops::range::Range<u64>>",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::from_value",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "0x69b7eec",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "kevent",
+          "samples": 2,
+          "percent": 0.34
+        },
+        {
+          "name": "_kernelrpc_mach_vm_map_trap",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "_szone_free",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "0x69b7ee8",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::scan_ordinal::SourceOrdinalExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}> as futures_core::stream::Stream>::poll_next",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<datafusion_physical_plan::repartition::BatchPartitioner>::partition_iter",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_buffer::buffer::offset::OffsetBuffer<i32>>::new",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<arrow_data::data::ArrayData as core::convert::From<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float32Type>>>::from",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "arrow_ord::sort::lexsort_to_indices",
+          "samples": 1,
+          "percent": 0.17
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 573,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "arrow": 565,
+        "datafusion_execution": 567,
+        "datafusion_sort": 12
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "mach_msg2_trap",
+          "samples": 281,
+          "percent": 49.04
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 84,
+          "percent": 14.66
+        },
+        {
+          "name": "<datafusion_functions_nested::range::Range as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+          "samples": 75,
+          "percent": 13.09
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int64Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int64Type, arrow_array::types::Int32Type>::{closure#0}, arrow_array::types::Int32Type, arrow_schema::error::ArrowError>",
+          "samples": 58,
+          "percent": 10.12
+        },
+        {
+          "name": "__bzero",
+          "samples": 15,
+          "percent": 2.62
+        },
+        {
+          "name": "madvise",
+          "samples": 11,
+          "percent": 1.92
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 10,
+          "percent": 1.75
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 1.05
+        },
+        {
+          "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+          "samples": 5,
+          "percent": 0.87
+        },
+        {
+          "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_value",
+          "samples": 4,
+          "percent": 0.7
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 4,
+          "percent": 0.7
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 4,
+          "percent": 0.7
+        },
+        {
+          "name": "datafusion_functions_nested::range::reserve_range_capacity",
+          "samples": 3,
+          "percent": 0.52
+        },
+        {
+          "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<u64>>::from_iter::<core::ops::range::Range<u64>>",
+          "samples": 3,
+          "percent": 0.52
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 2,
+          "percent": 0.35
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 2,
+          "percent": 0.35
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 2,
+          "percent": 0.35
+        },
+        {
+          "name": "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "tiny_free_no_lock",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "<datafusion_physical_plan::repartition::BatchPartitioner>::partition_iter",
+          "samples": 1,
+          "percent": 0.17
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 1,
+          "percent": 0.17
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 204,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "datafusion_execution": 14,
+        "datafusion_sort": 13,
+        "arrow": 12
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 190,
+          "percent": 93.14
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 4,
+          "percent": 1.96
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 3,
+          "percent": 1.47
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 0.49
+        },
+        {
+          "name": "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          "samples": 1,
+          "percent": 0.49
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 1,
+          "percent": 0.49
+        },
+        {
+          "name": "<arrow_data::data::ArrayDataBuilder>::buffers",
+          "samples": 1,
+          "percent": 0.49
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 1,
+          "percent": 0.49
+        },
+        {
+          "name": "0x69b7eec",
+          "samples": 1,
+          "percent": 0.49
+        },
+        {
+          "name": "arrow_array::array::make_array",
+          "samples": 1,
+          "percent": 0.49
+        }
+      ]
+    },
+    {
+      "name": "python",
+      "samples": 159,
+      "duration_ms": 36389.869625,
+      "stack_contains": {
+        "scan": 2,
+        "arrow": 2,
+        "logical_optimizer": 1,
+        "datafusion_execution": 2,
+        "physical_optimizer": 2
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "sha256_block_armv8",
+          "samples": 31,
+          "percent": 19.5
+        },
+        {
+          "name": "stat",
+          "samples": 15,
+          "percent": 9.43
+        },
+        {
+          "name": "read",
+          "samples": 10,
+          "percent": 6.29
+        },
+        {
+          "name": "__fcntl",
+          "samples": 8,
+          "percent": 5.03
+        },
+        {
+          "name": "_PyEval_EvalFrameDefault",
+          "samples": 7,
+          "percent": 4.4
+        },
+        {
+          "name": "__open",
+          "samples": 5,
+          "percent": 3.14
+        },
+        {
+          "name": "code_hash",
+          "samples": 4,
+          "percent": 2.52
+        },
+        {
+          "name": "invocation function for block in dyld4::Loader::applyFixupsGeneric(Diagnostics&, dyld4::RuntimeState&, unsigned long long, dyld3::Array<void const*> const&, dyld3::Array<void const*> const&, bool, dyld3::Array<dyld4::Loader::MissingFlatLazySymbol> const&) const",
+          "samples": 4,
+          "percent": 2.52
+        },
+        {
+          "name": "_platform_strlen",
+          "samples": 3,
+          "percent": 1.89
+        },
+        {
+          "name": "_PyCfg_OptimizeCodeUnit",
+          "samples": 3,
+          "percent": 1.89
+        },
+        {
+          "name": "_PyPegen_expect_token",
+          "samples": 3,
+          "percent": 1.89
+        },
+        {
+          "name": "_platform_memset",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "tok_get_normal_mode",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "fun_86147c",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "_PyPegen_fill_token",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "tupledealloc",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "_PyObject_Free",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "r_object.llvm.9845490566179339274",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 2,
+          "percent": 1.26
+        },
+        {
+          "name": "_PyCode_Quicken",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "cfg_builder_new_block",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "astfold_arguments",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "tupletraverse",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "ossl_method_store_new",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "dyld3::MachOLoaded::findClosestSymbol(unsigned long long, char const**, unsigned long long*) const",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "OPENSSL_LH_insert",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "array_modexec",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "mach_msg2_trap",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "sum_rule",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "build_indices_unicode",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "list_sort_impl.llvm.9493993125874956319",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "__mmap",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "strcmp",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "PyObject_GenericGetAttr",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "PyObject_GenericSetAttr",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "_PyDict_SetItem_Take2",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "list_dealloc",
+          "samples": 1,
+          "percent": 0.63
+        },
+        {
+          "name": "PySet_Contains",
+          "samples": 1,
+          "percent": 0.63
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 21,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "datafusion_execution": 13,
+        "datafusion_sort": 12,
+        "arrow": 12
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 8,
+          "percent": 38.1
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 3,
+          "percent": 14.29
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 3,
+          "percent": 14.29
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 3,
+          "percent": 14.29
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 1,
+          "percent": 4.76
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 21,
+      "duration_ms": 35039.622083999995,
+      "stack_contains": {
+        "datafusion_execution": 13,
+        "datafusion_sort": 12,
+        "arrow": 12,
+        "datafusion_window": 1,
+        "datafusion_join": 1
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 8,
+          "percent": 38.1
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 2,
+          "percent": 9.52
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 2,
+          "percent": 9.52
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 2,
+          "percent": 9.52
+        },
+        {
+          "name": "__psynch_mutexwait",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "<alloc::vec::Vec<i64> as alloc::vec::spec_from_iter::SpecFromIter<i64, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i64, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "arrow_row::fixed::encode_not_null::<u64>",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 1,
+          "percent": 4.76
+        },
+        {
+          "name": "_malloc_zone_malloc",
+          "samples": 1,
+          "percent": 4.76
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 19,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "datafusion_sort": 12,
+        "arrow": 12,
+        "datafusion_execution": 12
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "_platform_memmove",
+          "samples": 5,
+          "percent": 26.32
+        },
+        {
+          "name": "__psynch_cvwait",
+          "samples": 4,
+          "percent": 21.05
+        },
+        {
+          "name": "kevent",
+          "samples": 3,
+          "percent": 15.79
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 2,
+          "percent": 10.53
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#2}",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 1,
+          "percent": 5.26
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 19,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "datafusion_sort": 13,
+        "arrow": 12,
+        "datafusion_execution": 13
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 31.58
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 4,
+          "percent": 21.05
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 3,
+          "percent": 15.79
+        },
+        {
+          "name": "_kernelrpc_mach_vm_map_trap",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "arrow_select::take::take_impl::<arrow_array::types::UInt32Type>",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "0x69b7eec",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 1,
+          "percent": 5.26
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 19,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "datafusion_sort": 13,
+        "arrow": 13,
+        "datafusion_execution": 13
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 31.58
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 3,
+          "percent": 15.79
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 3,
+          "percent": 15.79
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 2,
+          "percent": 10.53
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "arrow_data::transform::build_extend_null_bits::{closure#2}",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "0x69b7eec",
+          "samples": 1,
+          "percent": 5.26
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 19,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "datafusion_window": 1,
+        "datafusion_sort": 13,
+        "datafusion_join": 1,
+        "arrow": 13,
+        "datafusion_execution": 13
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 31.58
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 3,
+          "percent": 15.79
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 3,
+          "percent": 15.79
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 2,
+          "percent": 10.53
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 2,
+          "percent": 10.53
+        },
+        {
+          "name": "free_tiny",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 1,
+          "percent": 5.26
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 1,
+          "percent": 5.26
+        }
+      ]
+    },
+    {
+      "name": "tokio-rt-worker",
+      "samples": 18,
+      "duration_ms": 35037.151125,
+      "stack_contains": {
+        "datafusion_sort": 12,
+        "arrow": 12,
+        "datafusion_execution": 12
+      },
+      "top_leaf_symbols": [
+        {
+          "name": "__psynch_cvwait",
+          "samples": 6,
+          "percent": 33.33
+        },
+        {
+          "name": "_platform_memmove",
+          "samples": 3,
+          "percent": 16.67
+        },
+        {
+          "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+          "samples": 2,
+          "percent": 11.11
+        },
+        {
+          "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+          "samples": 2,
+          "percent": 11.11
+        },
+        {
+          "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u32>, arrow_select::take::take_native<i32, arrow_array::types::UInt32Type>::{closure#2}>>>::from_iter",
+          "samples": 2,
+          "percent": 11.11
+        },
+        {
+          "name": "__ulock_wait2",
+          "samples": 1,
+          "percent": 5.56
+        },
+        {
+          "name": "core::slice::sort::unstable::ipnsort::<usize, <[usize]>::sort_unstable_by<arrow_ord::sort::sort_fixed_column<2>::{closure#0}>::{closure#0}>",
+          "samples": 1,
+          "percent": 5.56
+        },
+        {
+          "name": "arrow_ord::ord::compare_impl::<false, false, arrow_ord::ord::compare_primitive<arrow_array::types::UInt64Type>::{closure#0}>::{closure#0}",
+          "samples": 1,
+          "percent": 5.56
+        }
+      ]
+    }
+  ]
+}

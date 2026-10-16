@@ -1,0 +1,42 @@
+{
+  "module": "benchmark_table.py",
+  "name": "test_table_scan_prev_non_null",
+  "id": "benchmark_table::test_table_scan_prev_non_null",
+  "args": [],
+  "fixtures": [],
+  "parameters": [],
+  "arguments": {},
+  "fixture_parameters": {},
+  "upstream_marks": [],
+  "status": "passed",
+  "benchmark_seconds": 3.927347374999954,
+  "telemetry": {
+    "cpu_seconds": 24.320000000000004,
+    "average_cores": 6.192201399839145,
+    "peak_rss_gib": 1.04058837890625,
+    "sampling_hz": 10,
+    "counter_deltas": {
+      "user_time": 23.660000000000004,
+      "system_time": 0.66,
+      "instructions": null,
+      "cycles": null,
+      "diskio_bytesread": 0,
+      "diskio_byteswritten": 1236992
+    },
+    "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+    "directory": "/home/danielking/full-upstream-results/telemetry/hail/benchmark_table--test_table_scan_prev_non_null",
+    "hardware_counters": {
+      "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+      "path": "/home/danielking/full-upstream-results/telemetry/hail/benchmark_table--test_table_scan_prev_non_null/perf.csv",
+      "returncode": -2,
+      "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+    }
+  },
+  "worker_cleanup_forced": true,
+  "fixture_seconds": 5.337,
+  "elapsed_seconds": 14.328,
+  "source_commit": "a965c01bcefbfef978a46afa30cb5d6293408b7b",
+  "comparable": true,
+  "baseline_hardware": "same 32-vCPU Linux VM",
+  "telemetry_path": "/home/danielking/full-upstream-results/telemetry/hail/benchmark_table--test_table_scan_prev_non_null"
+}
