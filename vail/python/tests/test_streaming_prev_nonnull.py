@@ -117,3 +117,23 @@ def test_previous_after_reasserting_an_existing_nonempty_key():
     table = hl.range_table(12, n_partitions=3).key_by('idx')
     rows = table.annotate(previous=hl.scan.prev_nonnull(table.idx)).collect()
     assert [row.previous for row in rows] == [None] + list(range(11))
+
+
+def test_previous_binds_globals_once_per_action():
+    table = hl.range_table(9, n_partitions=3).annotate_globals(offset=7)
+    rows = table.annotate(previous=hl.scan.prev_nonnull(hl.struct(v=table.idx + table.offset))).collect()
+    assert [None if row.previous is None else row.previous.v for row in rows] == [None] + list(range(7, 15))
+
+
+def test_previous_over_native_read_partitions(tmp_path):
+    table = hl.range_table(19, n_partitions=5)
+    table = table.annotate(v=hl.or_missing(table.idx % 4 == 1,
+                                         hl.struct(i=table.idx, a=hl.range(table.idx % 3))))
+    path = str(tmp_path / 'previous.vt')
+    table.write(path)
+    restored = hl.read_table(path)
+    previous = None
+    for row in restored.annotate(previous=hl.scan.prev_nonnull(restored.v)).collect():
+        assert row.previous == previous
+        if row.v is not None:
+            previous = row.v
