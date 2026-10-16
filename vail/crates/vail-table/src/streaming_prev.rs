@@ -139,9 +139,7 @@ pub(crate) fn independent_source(table: &crate::TableRef) -> bool {
         TableNode::Filter {
             child, predicate, ..
         } => independent_source(child) && stable(predicate),
-        TableNode::KeyBy { child, keys } if keys.is_empty() || keys == child.keys() => {
-            independent_source(child)
-        }
+        TableNode::KeyBy { child, keys } if keys.is_empty() => independent_source(child),
         _ => false,
     }
 }

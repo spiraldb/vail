@@ -111,3 +111,9 @@ def test_many_partition_dependencies_and_late_partition_demand():
     table = hl.range_table(1100, n_partitions=1100)
     scanned = table.annotate(previous=hl.scan.prev_nonnull(table.idx))
     assert [row.previous for row in scanned.collect()] == [None] + list(range(1099))
+
+
+def test_previous_after_reasserting_an_existing_nonempty_key():
+    table = hl.range_table(12, n_partitions=3).key_by('idx')
+    rows = table.annotate(previous=hl.scan.prev_nonnull(table.idx)).collect()
+    assert [row.previous for row in rows] == [None] + list(range(11))
