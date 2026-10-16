@@ -41,6 +41,64 @@ pub(crate) fn map_rows_paths(fields: &[(String, Expr)]) -> Vec<Vec<String>> {
         .collect()
 }
 
+/// Indexed once per source root, so many projected siblings do not repeatedly
+/// parse the same metadata or linearly scan the same struct fields.
+#[derive(Default)]
+struct StorageFields(HashMap<String, StorageFields>);
+impl StorageFields {
+    fn from_type(ty: vail_execution::expressions::Type) -> Self {
+        use vail_execution::expressions::Type;
+        match ty {
+            Type::Array { array } => Self::from_type(*array),
+            Type::Struct { r#struct: fields } => Self(
+                fields
+                    .into_iter()
+                    .map(|(name, child)| (name, Self::from_type(child)))
+                    .collect(),
+            ),
+            _ => Self::default(),
+        }
+    }
+}
+
+/// Logical accessors below an opaque value (Call, interval, tuple, etc.) are
+/// operations, not physical storage field names. Preserve that whole value.
+pub(crate) fn map_rows_storage_paths(
+    fields: &[(String, Expr)],
+    schema: &arrow_schema::Schema,
+) -> Vec<Vec<String>> {
+    use vail_execution::expressions::Type;
+    let top_fields = schema
+        .fields()
+        .iter()
+        .map(|field| (field.name().as_str(), field.as_ref()))
+        .collect::<HashMap<_, _>>();
+    let mut roots = HashMap::new();
+    map_rows_paths(fields)
+        .into_iter()
+        .map(|path| {
+            let mut node: &StorageFields = roots.entry(path[0].clone()).or_insert_with(|| {
+                top_fields
+                    .get(path[0].as_str())
+                    .and_then(|field| Type::from_arrow(field.data_type()).ok())
+                    .map(StorageFields::from_type)
+                    .unwrap_or_default()
+            });
+            let mut prefix = vec![path[0].clone()];
+            for name in &path[1..] {
+                let Some(child) = node.0.get(name) else {
+                    break;
+                };
+                prefix.push(name.clone());
+                node = child;
+            }
+            prefix
+        })
+        .collect::<BTreeSet<_>>()
+        .into_iter()
+        .collect()
+}
+
 fn path_root<'a>(
     expression: &'a Expr,
     arrays: &HashMap<String, ArrayRoot>,

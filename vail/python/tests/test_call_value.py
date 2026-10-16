@@ -155,3 +155,41 @@ def test_packed_call_properties_preserve_missingness_of_sliced_parent(property):
         }[property]
     expected = [expected_for([1, 0]), None, expected_for([(1 << 29) - 1])]
     assert [row.value for row in result] == expected
+
+
+def test_packed_call_accessors_after_storage_projection(tmp_path):
+    calls = [None, hl.Call([]), hl.Call([0]), hl.Call([1]), hl.Call([0, 1]),
+             hl.Call([1, 0], True), hl.Call([30000, 30000])]
+    table = hl.Table.parallelize([{"c": call} for call in calls], schema=hl.tstruct(c=hl.tcall))
+    table.write(str(tmp_path / "calls"))
+    read = hl.read_table(str(tmp_path / "calls"))
+    # Each projection is a direct read: no intermediate annotation can mask bad
+    # storage hints by forcing the whole source column to be loaded.
+    for name in ["ploidy", "phased", "alleles", "n_alt_alleles", "is_haploid", "is_diploid",
+                 "is_hom_ref", "is_non_ref", "is_het", "is_het_ref", "is_het_non_ref", "is_hom_var"]:
+        def select(t):
+            value = getattr(t.c, name)
+            return t.select(value=value() if callable(value) else value).collect()
+        assert select(read) == select(table), name
+
+    mt = hl.range_matrix_table(2, 3)
+    mt = mt.annotate_entries(GT=hl.call(mt.row_idx, mt.col_idx))
+    mt.write(str(tmp_path / "matrix"))
+    stored = hl.read_matrix_table(str(tmp_path / "matrix"))
+    def result(matrix):
+        return matrix.annotate_rows(n=hl.agg.count_where(matrix.GT.is_het())).rows().collect()
+    assert result(stored) == result(mt)
+
+
+def test_stored_nested_call_accessors_and_literal_accessor_field_names(tmp_path):
+    schema = hl.tstruct(xs=hl.tarray(hl.tstruct(GT=hl.tcall)),
+                        s=hl.tstruct(__vail_call_is_het=hl.tbool))
+    table = hl.Table.parallelize([
+        {"xs": [{"GT": hl.Call([0, 1])}, None, {"GT": None}],
+         "s": {"__vail_call_is_het": True}},
+    ], schema=schema)
+    table.write(str(tmp_path / "nested"))
+    read = hl.read_table(str(tmp_path / "nested"))
+    assert read.select(values=read.xs.map(lambda item: item.GT.is_het()),
+                       real=read.s["__vail_call_is_het"]).collect() == [
+        hl.Struct(values=[True, None, None], real=True)]

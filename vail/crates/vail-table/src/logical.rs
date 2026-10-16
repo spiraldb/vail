@@ -960,7 +960,7 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
             bindings,
         } => {
             let lowered_child = if matches!(child.node(), TableNode::Read { .. }) {
-                let paths = crate::nested_projection::map_rows_paths(fields);
+                let paths = crate::nested_projection::map_rows_storage_paths(fields, child.schema());
                 if paths.is_empty() {
                     lower_inner(child, context)?
                 } else {
