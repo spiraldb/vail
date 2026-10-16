@@ -1,0 +1,271 @@
+{
+  "native_library_sha256": "2abcd90ae79d3c94f42c2d8205946a8c0ce9d731242754a5e01a4204bbace383",
+  "fixture_adaptations": {
+    "randomness_reset": {
+      "replacement": "vail.reset_global_randomness",
+      "scope": "function",
+      "autouse": true,
+      "timing": "pytest autouse fixture before each test",
+      "upstream_fixture": "conftest.py::reset_global_randomness",
+      "upstream_line": 103,
+      "upstream_conftest_sha256": "5302579021387f74f43ec9b353fddcbfa4dbcba3f1a12754a1c840772a97b017"
+    }
+  },
+  "failed_case_phases": {
+    "setup": 461,
+    "call": 751
+  },
+  "definition_categories": {
+    "missing_or_unsupported_api": 404,
+    "format_io_api": 66,
+    "passed": 453,
+    "collection_blocked": 398,
+    "execution_or_other_error": 12,
+    "expression_types_or_validation": 53,
+    "assertion_mismatch": 13,
+    "harness_or_fixture_setup_blocker": 2,
+    "intentional_partition_layout_difference": 13,
+    "genetics_or_other_high_level_api": 14,
+    "fixture_or_storage_format_blocker": 24,
+    "hail_backend_or_ir_dependency": 16
+  },
+  "areas": {
+    "experimental": {
+      "failed": 20,
+      "passed": 2,
+      "collection_blocked": 4
+    },
+    "expr": {
+      "passed": 148,
+      "failed": 181,
+      "collection_blocked": 26
+    },
+    "extract_intervals": {
+      "passed": 12,
+      "failed": 13
+    },
+    "genetics": {
+      "failed": 15,
+      "passed": 2,
+      "collection_blocked": 2
+    },
+    "ggplot": {
+      "collection_blocked": 10
+    },
+    "linalg": {
+      "failed": 79
+    },
+    "matrixtable": {
+      "collection_blocked": 3,
+      "failed": 37,
+      "passed": 198
+    },
+    "methods": {
+      "failed": 231,
+      "collection_blocked": 67,
+      "passed": 49
+    },
+    "plot": {
+      "collection_blocked": 12
+    },
+    "table": {
+      "passed": 3,
+      "collection_blocked": 211
+    },
+    "root API": {
+      "failed": 25,
+      "collection_blocked": 7,
+      "passed": 21
+    },
+    "utils": {
+      "collection_blocked": 14,
+      "failed": 10,
+      "passed": 18
+    },
+    "vds": {
+      "collection_blocked": 42,
+      "failed": 6
+    }
+  },
+  "completed_modules": 56,
+  "eligible_modules": 56,
+  "definitions": 1468,
+  "definition_statuses": {
+    "failed": 617,
+    "passed": 453,
+    "collection_blocked": 398
+  },
+  "parameter_cases": {
+    "failed": 1212,
+    "passed": 480
+  },
+  "failure_categories": {
+    "missing_or_unsupported_api": 890,
+    "format_io_api": 66,
+    "expression_types_or_validation": 55,
+    "assertion_mismatch": 13,
+    "execution_or_other_error": 12,
+    "harness_or_fixture_setup_blocker": 2,
+    "intentional_partition_layout_difference": 25,
+    "genetics_or_other_high_level_api": 20,
+    "fixture_or_storage_format_blocker": 24,
+    "hail_backend_or_ir_dependency": 105
+  },
+  "timeout_modules": [],
+  "randomness": {
+    "specifically_randomness": {
+      "definitions": {
+        "passed": 58,
+        "failed": 2,
+        "collection_blocked": 38
+      },
+      "parameter_cases": {
+        "passed": 58,
+        "failed": 2
+      }
+    },
+    "random_data_for_other_functionality": {
+      "definitions": {
+        "passed": 22,
+        "failed": 59,
+        "collection_blocked": 18
+      },
+      "parameter_cases": {
+        "failed": 61,
+        "passed": 22
+      }
+    }
+  },
+  "source_revision": "48ae4b1f11d870f6f3e8dec8dbba6ad917c21b1d",
+  "disposition": "final-corrected-per-test-randomness-reset-harness",
+  "analysis_notes": [
+    "Definitions and parameter cases are counted separately. Setup/call/teardown are deduplicated per node; any phase failure makes the case nonpassing.",
+    "Definition status combines parameter variants conservatively; an unexecuted variant prevents a complete definition pass.",
+    "Randomness roles reuse conformance/summarize_full_hail.py source-name/body classification; this is a heuristic, not a transitive fixture dependency analysis.",
+    "Categories describe the first observed blocker, not all defects. Terminal error diagnostics avoid incidental traceback function names being classified as randomness dependencies.",
+    "Explicit offending n_partitions assertions are recorded as intentional layout differences. Their later value assertions are not certified.",
+    "97 documented structural-IR assertion statements are omitted before argument evaluation. Behavioral assertions remain. Calls in collection-blocked modules are not executed.",
+    "Full raw logs remain at recorded local paths with hashes; compact records below preserve observed outcomes and first error diagnostics.",
+    "No historical broad regression delta is asserted across differing adapters, timeout reachability, or source revisions.",
+    "Pinned conftest.py function-autouse randomness reset is restored through public vail.reset_global_randomness; fixture-adaptations.json records upstream line103 and sourcehash. Historical17/18 omitted this fixture and are superseded for RNG conclusions; interrupted19 is discarded."
+  ],
+  "dedicated_randomness_module_definitions": {
+    "passed": 6
+  },
+  "slowest_completed_call_cases": [
+    {
+      "module": "expr/test_expr.py",
+      "nodeid": "test_expr.py::Tests::test_seeded_sampling",
+      "status": "passed",
+      "duration_seconds": 15.714204666990554
+    },
+    {
+      "module": "methods/test_impex.py",
+      "nodeid": "test_impex.py::VCFTests::test_import_vcf",
+      "status": "passed",
+      "duration_seconds": 12.843604207999306
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_filter_partitions",
+      "status": "passed",
+      "duration_seconds": 4.524562417005654
+    },
+    {
+      "module": "experimental/test_experimental.py",
+      "nodeid": "test_experimental.py::Tests::test_ld_score_regression_1",
+      "status": "failed",
+      "duration_seconds": 3.626248125001439
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_joins_with_key_structs",
+      "status": "passed",
+      "duration_seconds": 3.204057124996325
+    },
+    {
+      "module": "test_ir.py",
+      "nodeid": "test_ir.py::test_very_large_ir_deserializes",
+      "status": "passed",
+      "duration_seconds": 3.183968041004846
+    },
+    {
+      "module": "methods/test_impex.py",
+      "nodeid": "test_impex.py::VCFTests::test_vcf_parser_golden_master__sample_GRCh37",
+      "status": "passed",
+      "duration_seconds": 3.121666582999751
+    },
+    {
+      "module": "expr/test_expr.py",
+      "nodeid": "test_expr.py::Tests::test_initop_matrix_aggregate_cols_by_key_cols",
+      "status": "passed",
+      "duration_seconds": 2.117956083995523
+    },
+    {
+      "module": "methods/test_impex.py",
+      "nodeid": "test_impex.py::PLINKTests::test_import_plink_contig_recoding_w_reference",
+      "status": "failed",
+      "duration_seconds": 2.108946124993963
+    },
+    {
+      "module": "expr/test_expr.py",
+      "nodeid": "test_expr.py::Tests::test_initop_matrix_table",
+      "status": "passed",
+      "duration_seconds": 2.019351833005203
+    },
+    {
+      "module": "experimental/test_experimental.py",
+      "nodeid": "test_experimental.py::Tests::test_import_keyby_count_ldsc_lowered_shuffle",
+      "status": "passed",
+      "duration_seconds": 1.856185541008017
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::test_matrix_randomness_map_cols_with_agg_randomness",
+      "status": "passed",
+      "duration_seconds": 1.782964500001981
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_entry_join_missingness",
+      "status": "passed",
+      "duration_seconds": 1.5452134589868365
+    },
+    {
+      "module": "matrixtable/test_matrix_table.py",
+      "nodeid": "test_matrix_table.py::Tests::test_aggregate_entries",
+      "status": "passed",
+      "duration_seconds": 1.5019635839998955
+    },
+    {
+      "module": "expr/test_expr.py",
+      "nodeid": "test_expr.py::Tests::test_initop_matrix_aggregate_cols_by_key_entries",
+      "status": "passed",
+      "duration_seconds": 1.4146212909981841
+    }
+  ],
+  "final_code_revision": "de8ce11145ff7a7ce35b82fb9304925e864b018a",
+  "validation_applicability": {
+    "full_upstream20_harness_revision": "48ae4b1f11d870f6f3e8dec8dbba6ad917c21b1d",
+    "later_body_runner_only_fix": "Recognized autouse reset fixture is cached after manual reset so an explicit reset-fixture argument cannot reset again after another requested RNG fixture.",
+    "latest_focused_harness_validation": "37 passed in 8.59s; includes dependent RNG fixture plus explicit reset request and two pytest execution orders.",
+    "applicability": "Full upstream20 uses unchanged full_hail_pytest.py; subsequent body-runner/test-only cache fix is covered by the focused 37. Full Python20 loaded its conformance test module before that final body-only regression update. Production Python and native19 were unchanged by the cache follow-up.",
+    "final_source_snapshot": "Root-managed final source-hash snapshot covers final candidate; fullpytest used unchanged runner/production sources and latest focused37 covers body-only follow-up.",
+    "final_source_hash_snapshot": "../vail-shortcuts-final-source-hashes.json"
+  },
+  "randomness_reset_effect": {
+    "fixture": "Restored function-autouse reset via public vail.reset_global_randomness before each pytest test; original body runner resets each parameter variant before requested fixtures and caches the recognized reset fixture.",
+    "historical_runs": "17/18 lacked this upstream autouse fixture and are superseded for RNG conclusions; interrupted19 discarded.",
+    "observed_case_status_changes_vs18": 0,
+    "interpretation": "Matching case outcomes do not validate historical RNG sequence payloads. The reset corrects seed-counter contamination even though pass/fail totals are unchanged.",
+    "phased_bnm": "Fixed phased-genotype golden still differs after correct reset; exact archived dc51582f parent and candidate19 independently rebuilt outputs agree on all 25 allele pairs/replay, with first golden mismatch at index6. See ../phased-bnm-pair/comparison.json; baseline pair managed by root. This remains an unresolved compatibility defect, not an intentional divergence."
+  },
+  "remaining_specific_randomness_nonpasses": {
+    "unsupported_api_cases": [
+      "linalg/test_linalg.py::test_random_uniform (BlockMatrix.random)",
+      "methods/test_impex.py::BGENTests.test_randomness (import_bgen)"
+    ],
+    "collection_blocked_definitions": 38
+  },
+  "final_candidate": "de8ce11145ff7a7ce35b82fb9304925e864b018a"
+}

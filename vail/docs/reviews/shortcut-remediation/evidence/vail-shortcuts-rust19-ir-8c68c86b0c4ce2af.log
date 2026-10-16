@@ -1,0 +1,15 @@
+
+running 10 tests
+test constructors_typecheck_scalar_ir_without_execution ... ok
+test zero_column_input_partition_cardinality_does_not_overflow ... ok
+test range_is_lazy_and_head_stops_batch_generation ... ok
+test parallelize_preserves_requested_partitions_and_values ... ok
+test multibatch_inputs_keep_order_across_empty_batches_and_partitions ... ok
+test query_prefix_retains_duplicate_prefixes_across_original_partitions ... ok
+test branches_share_a_typed_child_and_execute_independently ... ok
+test partition_callbacks_preserve_membership_without_implicit_sorting ... ok
+test write_streams_transformed_rows_into_rolled_files ... ok
+test keyed_partition_identity_map_filter_remain_bounded_by_head ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 16.62s
+

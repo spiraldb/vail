@@ -1,8 +1,8 @@
 {
   "reviewer_thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
-  "candidate_code": "658f789a3f7b0a2118e8687dd82a95ffba0db3fc",
+  "candidate_code": "de8ce11145ff7a7ce35b82fb9304925e864b018a",
   "main_parent": "dc51582fcb2413be6f14372ea8887a4cabc85f88",
-  "decision": "pending_final_review",
+  "decision": "pending_exact_followup_review",
   "final_runtime_acceptance": false,
   "main_updated": false,
   "prior_review": {
@@ -10,90 +10,84 @@
     "decision": "request_changes",
     "disposition": "Source follow-up cleared scalar capture, scoped RNG, predicate-once fixes and R2/R3/R4/R6/R8. R7 public-behavior replacements required. Subsequent main reconciliation is outside this review."
   },
-  "findings": [
-    {
-      "id": "R1",
-      "priority": 1,
-      "issue": "Ordinary logical lowering expands shared native expression DAGs",
-      "owner": "kernel_effects",
-      "status": "depth64_actual_table_planning_passed_build7_runtime_CSE_separately_queued",
-      "runtime_evidence": "Actual depth64 table planning exceeded external30s deadline on build6; isolated Python randomness.contains and native globals referenced_bindings occurrence traversal."
-    },
-    {
-      "id": "R2",
-      "priority": 1,
-      "issue": "Sort/unkey metadata disagrees with physical partition layout",
-      "owner": "logical_planning",
-      "status": "source_review_addressed_at_76cbbeb0"
-    },
-    {
-      "id": "R3",
-      "priority": 2,
-      "issue": "Head/tail metadata disagrees with execution layout",
-      "owner": "logical_planning",
-      "status": "source_review_addressed_at_76cbbeb0"
-    },
-    {
-      "id": "R4",
-      "priority": 2,
-      "issue": "Consumer canonicalization enumerates physical DAG paths",
-      "owner": "logical_planning",
-      "status": "source_review_addressed_at_76cbbeb0"
-    },
-    {
-      "id": "R5",
-      "priority": 2,
-      "issue": "Nested scan filters evaluate excluded predicates and compute selection twice",
-      "owner": "stream_scan",
-      "status": "17_public_tests_passed_external_scaling_recorded"
-    },
-    {
-      "id": "R6",
-      "priority": 2,
-      "issue": "VCF sink repeatedly scans field names in sample loops",
-      "owner": "root",
-      "status": "source_review_addressed_at_76cbbeb0"
-    },
-    {
-      "id": "R7",
-      "priority": 2,
-      "issue": "New tests rely on private counters/identities/mocks instead of public behavior",
-      "owner": "all",
-      "status": "private RNG tests replaced with public independent/interleaved/cancelled-action outcomes; native17 passes; awaiting exact final source review"
-    },
-    {
-      "id": "R8",
-      "priority": 2,
-      "issue": "LocusOp Pure effect needs valid-coordinate ingestion proof",
-      "owner": "kernel_effects",
-      "status": "source_review_addressed_at_76cbbeb0"
-    }
-  ],
+  "b2f97e7e_review": {
+    "decision": "request_changes",
+    "cleared": "Inspected action/lowering/identity/RNG/shared scan integration and original public consumer replacements",
+    "findings": [
+      "Structural-helper shadowing/unbinding hole",
+      "Private forged stream IR tests/private stream API use",
+      "Quadratic full-expression shared-window Vec search",
+      "Need exact-main paired phased-BNM evidence",
+      "Missing upstream autouse randomness reset discovered during paired validation"
+    ]
+  },
+  "followup_disposition": {
+    "shadowing": "Conservative lexical guards with public real-error regressions;97omission spans unchanged",
+    "stream_api": "Documented public aggregate_scan/stream_range; public misuse andtypednestedvalues",
+    "scan_grouping": "HashMap<complete DF Expr, shared aliases> both paths; public64distinct+8alias regression;261native pass",
+    "bnm": "Fresh exact-main native and candidate output identical for pinned25pairs/replay; unresolved existing Hail golden mismatch; evidence/phased-bnm-pair",
+    "rng_fixture": "Function-autouse public reset before everypytesttest; pervariant original-body reset beforefixtures andcorrect caching;37latestfocusedtests pass"
+  },
   "coherent_validation": {
-    "native_build": 17,
-    "native_sha256": "8853c655d212de27bfc8f1894395a1860563a956243c49a248fb8fbf3a827416",
-    "code_revision": "d3b6b4df",
-    "binaries": 41,
-    "passed": 260,
-    "nonzero_exits": [],
-    "python": {
-      "passed": 1742,
+    "code_revision": "de8ce11145ff7a7ce35b82fb9304925e864b018a",
+    "native_build": 19,
+    "native_sha256": "2abcd90ae79d3c94f42c2d8205946a8c0ce9d731242754a5e01a4204bbace383",
+    "native_tests": {
+      "passed": 261,
+      "failed": 0,
+      "binaries": 41
+    },
+    "full_local20": {
+      "passed": 1756,
       "failed": 2,
       "skipped": 1,
       "subtests_passed": 19,
-      "seconds": 245.74,
-      "known_baseline_failures": [
-        "empty-list Vortex writing",
-        "present all-missing-child struct validity round trip"
+      "seconds": 238.72,
+      "failures": [
+        "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: Vortex empty-list chunk requirement",
+        "test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip: present all-missing-child struct validity round trip"
       ]
     },
-    "candidate_code": "658f789a",
-    "python_package": 18,
-    "package_provenance": "Exact native17 wheel with only merged call_expressions.py and expressions.py overlaid from658f789a; Rust unchanged; full Python source hashes included."
+    "latest_harness_tests": {
+      "passed": 37,
+      "failed": 0,
+      "seconds": 8.59,
+      "log": "vail-upstream-reset-fixture-tests-final.log"
+    },
+    "validation_boundary": "Native19 and all productionPython sources frozen for bothfull20runs. Fullupstream20 uses unchanged fullpytestcode48ae4b1f. FullPython20 loaded testmodule before de8ce111 original-body-only fixturecache regression edit; final37focused suite covers latestbodycachebehavior. No production or fullpytestrunner code changed afterlaunch.",
+    "upstream20": {
+      "modules": 56,
+      "definitions": {
+        "failed": 617,
+        "passed": 453,
+        "collection_blocked": 398
+      },
+      "parameter_cases": {
+        "failed": 1212,
+        "passed": 480
+      },
+      "timeout_modules": [],
+      "native_panics_observed": 0,
+      "specific_randomness": {
+        "definitions": {
+          "passed": 58,
+          "failed": 2,
+          "collection_blocked": 38
+        },
+        "parameter_cases": {
+          "passed": 58,
+          "failed": 2
+        }
+      },
+      "dedicated_randomness": {
+        "passed": 6
+      },
+      "evidence": "upstream20/summary.json"
+    },
+    "paired_bnm": "phased-bnm-pair/comparison.json",
+    "historical_evidence": "Upstream17/18 superseded after omittedpertestreset found;19 interrupted/discarded."
   },
-  "evidence": "evidence/",
-  "full_upstream": {
-    "evidence": "evidence/upstream18/summary.json",
+  "upstream20": {
     "modules": 56,
     "definitions": {
       "failed": 617,
@@ -105,6 +99,7 @@
       "passed": 480
     },
     "timeout_modules": [],
+    "native_panics_observed": 0,
     "specific_randomness": {
       "definitions": {
         "passed": 58,
@@ -119,55 +114,14 @@
     "dedicated_randomness": {
       "passed": 6
     },
-    "structural_ir_omissions": 97
+    "evidence": "upstream20/summary.json"
   },
+  "historical_upstream": "17/18 superseded missing RNGreset;19 interrupted/discarded; none treated asfinalacceptance",
   "limits": [
-    "Two pre-existing storage failures remain",
-    "Runtime DAG CSE, per-batch scalar specialization, segment pushdown and tiny matrix latency remain queued",
-    "Separate sex-QC and byte-aware batching work excluded",
-    "Vendor source read scope limited to documented patch/integration boundaries"
-  ],
-  "historical_validation": {
-    "native_build": 10,
-    "native_sha256": "4a7eee5356b152ef64d9ff439ef5f6aca7d74aa123cb39faf7294b1f65139269",
-    "source_hashes": "evidence/vail-shortcuts-build10-source-hashes.json",
-    "native_tests": {
-      "passed": 239,
-      "failed": 0,
-      "binaries": 20
-    },
-    "planner_matrix_scan_randomness_focus": {
-      "passed": 227,
-      "failed": 0
-    },
-    "full_python": {
-      "passed": 1343,
-      "failed": 2,
-      "skipped": 1,
-      "subtests_passed": 19,
-      "elapsed_seconds": 96.45
-    },
-    "known_baseline_storage_failures": [
-      "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: Vortex ListLayoutStrategy needs at least one chunk",
-      "test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip: present struct with all missing children reads back as missing struct"
-    ],
-    "new_remediation_failures": 0,
-    "main_review": "not_approved; exact76 source follow-up delivered; reconciled revision requires separate validation/review",
-    "post_validation_nonsemantic_changes": {
-      "change": "Removed extra final blank lines only",
-      "paths": [
-        "vail/crates/vail-execution/src/array_aggregate_scan.rs",
-        "vail/crates/vail-table/src/vcf_export.rs"
-      ]
-    },
-    "integration_base": "2c02020",
-    "main_advanced_independently_to": "6bce5077d98f61e49f0b7ec9241f855f493b54d3",
-    "future_main_merge": "Reconcile latest main and revalidate on development branch before required final review and merge."
-  },
-  "call_predicate_reconciliation": {
-    "main_revision": "dc51582fcb2413be6f14372ea8887a4cabc85f88",
-    "development_merge": "658f789a",
-    "scope": "Three Python files; separately reviewed Call predicates, clean merge; native17 Rust sources unchanged",
-    "validation": "Full local18:1742pass/2unchanged baseline failures; full upstream18 completed all56modules."
-  }
+    "Two pre-existing storage failures",
+    "Phased-BNM fixed-golden compatibility defect confirmed by paired baseline",
+    "Missing/collection-blocked upstream APIs are not passes",
+    "Runtime CSE, scalar specialization, segment pruning, small matrix latency remain queued",
+    "Separate QC allocation/batching followups excluded"
+  ]
 }

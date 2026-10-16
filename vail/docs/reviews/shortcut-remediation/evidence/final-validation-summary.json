@@ -1,22 +1,59 @@
 {
-  "native_build": 17,
-  "native_sha256": "8853c655d212de27bfc8f1894395a1860563a956243c49a248fb8fbf3a827416",
-  "code_revision": "d3b6b4df",
-  "binaries": 41,
-  "passed": 260,
-  "nonzero_exits": [],
-  "python": {
-    "passed": 1742,
+  "code_revision": "de8ce11145ff7a7ce35b82fb9304925e864b018a",
+  "native_build": 19,
+  "native_sha256": "2abcd90ae79d3c94f42c2d8205946a8c0ce9d731242754a5e01a4204bbace383",
+  "native_tests": {
+    "passed": 261,
+    "failed": 0,
+    "binaries": 41
+  },
+  "full_local20": {
+    "passed": 1756,
     "failed": 2,
     "skipped": 1,
     "subtests_passed": 19,
-    "seconds": 245.74,
-    "known_baseline_failures": [
-      "empty-list Vortex writing",
-      "present all-missing-child struct validity round trip"
+    "seconds": 238.72,
+    "failures": [
+      "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: Vortex empty-list chunk requirement",
+      "test_computed_keys_order.py::test_mixed_and_nested_keys_and_missing_values_round_trip: present all-missing-child struct validity round trip"
     ]
   },
-  "candidate_code": "658f789a",
-  "python_package": 18,
-  "package_provenance": "Exact native17 wheel with only merged call_expressions.py and expressions.py overlaid from658f789a; Rust unchanged; full Python source hashes included."
+  "latest_harness_tests": {
+    "passed": 37,
+    "failed": 0,
+    "seconds": 8.59,
+    "log": "vail-upstream-reset-fixture-tests-final.log"
+  },
+  "validation_boundary": "Native19 and all productionPython sources frozen for bothfull20runs. Fullupstream20 uses unchanged fullpytestcode48ae4b1f. FullPython20 loaded testmodule before de8ce111 original-body-only fixturecache regression edit; final37focused suite covers latestbodycachebehavior. No production or fullpytestrunner code changed afterlaunch.",
+  "upstream20": {
+    "modules": 56,
+    "definitions": {
+      "failed": 617,
+      "passed": 453,
+      "collection_blocked": 398
+    },
+    "parameter_cases": {
+      "failed": 1212,
+      "passed": 480
+    },
+    "timeout_modules": [],
+    "native_panics_observed": 0,
+    "specific_randomness": {
+      "definitions": {
+        "passed": 58,
+        "failed": 2,
+        "collection_blocked": 38
+      },
+      "parameter_cases": {
+        "passed": 58,
+        "failed": 2
+      }
+    },
+    "dedicated_randomness": {
+      "passed": 6
+    },
+    "evidence": "upstream20/summary.json"
+  },
+  "paired_bnm": "phased-bnm-pair/comparison.json",
+  "historical_evidence": "Upstream17/18 superseded after omittedpertestreset found;19 interrupted/discarded."
 }

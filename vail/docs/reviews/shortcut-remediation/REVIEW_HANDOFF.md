@@ -1,93 +1,95 @@
 # Required final integration review
 
 Reviewer: `codex://threads/01a14128-21b8-7a53-b399-4ad8f9b31f4f`.
-Branch: `dk/architectural-shortcut-removal`. Code revision: `658f789a`.
-Integration base: `6bce5077d98f61e49f0b7ec9241f855f493b54d3`.
-Main parent: `dc51582fcb2413be6f14372ea8887a4cabc85f88` (reviewed Python Call
-predicates merged cleanly; native17 Rust unchanged).
-Main has not been updated. The final review request names the complete committed
-candidate, including this evidence; earlier partial clearance does not approve it.
+Branch: `dk/architectural-shortcut-removal`. Production/follow-up code: `de8ce111`.
+Main parent: `dc51582fcb2413be6f14372ea8887a4cabc85f88`.
+Main is unchanged. The review request names the full committed candidate.
 
-The five remediations replace stream prefix rescans, Python matrix collection
-for VCF output, duplicated reducers, deferred physical compilation, and unstable
-kernel identities/effects. Logical lowering now shares an explicit action-local
-LoweringContext; runtime operators consume prepared inputs. Action templates
-bind scalar globals afresh for each action. Consumer replay is certified through
-known stateless wrappers only; exchange/unknown subtrees remain guarded.
-Cancellation releases shared production only after the last owner leaves.
+## Architecture and material reconciliation
 
-Earlier source review at `76cbbeb0` cleared scalar capture ownership/cardinality,
-scoped native RNG, predicate-once filtering, and R2/R3/R4/R6/R8. R7 requested public
-behavior tests. The new consumer tests check independent/interleaved actions,
-partial cancellation and later successful execution; private topology/Weak/counter
-assertions were removed. Material main-reconciliation changes require fresh review.
+The five fixes provide incremental shared-state stream scans, a bounded native
+VCF sink, configured reducers shared by table/list/matrix adapters, one logical
+planning tree with prepared physical inputs, and stable native IR identity/effects.
+Logical lowering shares an explicit retained action-local LoweringContext;
+scalar globals bind afresh per action. Singleton hoisting proves lexical closure.
+Consumer cancellation/replay is certified through known stateless wrappers,
+including join ordering; exchange and unknown outputs remain guarded.
 
-## Material reconciliation decisions
+Input-preserving zip/enumerate RNG, mathematical paired correlation, missing-aware
+agg.all and wholly missing CallStats AF at AN=0 follow the pinned upstream source
+cited in `merge-semantic-decisions.json`. Tests cover nested scope, repeated actions,
+truncation demand and error/missingness behavior. The maintained four-line
+DataFusion scalar-compaction patch preserves empty-struct cardinality/validity;
+see `patches/datafusion-common-vail.patch`. No vendor-wide audit is claimed.
 
-- Native free-parameter analysis proves singleton expressions closed before
-  globals hoisting; nested lexical callbacks remain in their binding scope.
-- Shared lowering memo fixes recursive duplicate planning in a tiny matrix
-  union/entries workflow. The regression completes, but still takes about 26 seconds;
-  this is not a broad latency acceptance claim.
-- Duplicate scan windows share declared state, summary and carry; scalar CSE
-  remains enabled. Stateful output itself is not guessed replayable.
-- CallStats empty AF is wholly missing, agg.all ignores missing, and zip/enumerate
-  preserve each input RNG stream without adding an output-index rebinding.
-  `merge-semantic-decisions.json` cites pinned upstream Hail source for these
-  decisions. Tests retain public values/types, independent correlation, nested
-  RNG, truncation demand, missingness and repeated-action checks.
-- The maintained DataFusion 55 patch preserves empty-struct cardinality/validity
-  during scalar compaction. Only four source lines differ from the published
-  crate; see `patches/datafusion-common-vail.patch`. Vendor source is not claimed
-  freshly audited. Native VCF batch formatter binds fields once and publishes
-  atomically without Python matrix collection.
-- Upstream adaptation omits only proven standalone structural-IR helper calls,
-  with lexical guards and a source-span manifest. Behavioral assertions remain.
-  Adapter tests verify unrelated/shadowed helpers and real failures still execute.
+## Review findings addressed after b2f97e7e
 
-## Coherent build 17 evidence
+- Both shared scan-window registries use HashMap keys containing the full unaliased
+  DataFusion expression and ordinary equality for collision resolution. Declaration
+  order is preserved. Public wide-scan regression covers 64 distinct arguments
+  and eight repeated aliases in native and general-state paths.
+- Stream tests use documented public stream_range/aggregate_scan APIs. The forged
+  private IR assertion was replaced with public misuse and nested typed results.
+- Structural-helper adaptation conservatively detects exception bindings, match
+  captures, deletion and other lexical rebinding. Public regressions require real
+  errors/behavior to remain executable. The pinned 97 omission spans are unchanged.
+- The original upstream autouse randomness reset is restored through public
+  reset_global_randomness before every test. Full pytest and original-body variants
+  preserve reset-before-fixtures behavior, including fixture caching. Tests execute
+  independent tests in both orders and parameter variants with dependent fixtures.
+- Fresh exact-main/candidate paired phased-BNM evidence establishes the existing
+  fixed-golden mismatch for identical public inputs/resets. Both native libraries
+  return the same 25 phased genotypes and repeat them exactly; both differ from
+  Hail at index 6. This remains an unresolved compatibility defect, not an intentional
+  break. See `evidence/phased-bnm-pair/` for full outputs, source hashes and build log.
 
-Native SHA256: `8853c655d212de27bfc8f1894395a1860563a956243c49a248fb8fbf3a827416`.
-Final package18 overlays only the two reviewed Python source files on the exact
-native17 wheel; all Rust source hashes remain unchanged. All 260 native tests pass across 41 binaries,
-including consumer replay/cancellation, scan replay, pruning and metadata.
-Full local Python plus conformance adapter suite: 1742 passed, 2 known baseline
-storage failures, 1 skipped, 19 passing subtests, 245.74 seconds under concurrent suite load.
-Failures remain empty-list Vortex writing and present all-missing-child struct
-validity on storage roundtrip. Tests were not weakened to hide them.
+Earlier source review at 76cbbeb0 cleared scalar capture/cardinality, scoped native
+RNG, predicate-once filtering and R2/R3/R4/R6/R8. Original private consumer topology
+and lifetime tests were replaced by public interleaved/independent/cancelled-action
+outcomes. The new material integration and follow-up still need exact final review.
 
-Stream sweep 1024→65536 elements: 5.5→60.9 ms, peak RSS 314→332 MB. Keyed head over
-2^31−1 source rows takes 2–3 ms; field sweep 65→1025 takes 9.7→126 ms. These are bounded
-workload observations, not a throughput guarantee for all operators. Historical
-candidate 10 VCF RSS measurements remain historical and are labelled as such.
-Final full-upstream results and scope are in `evidence/upstream18/`.
-Historical pre-Call results are separately retained in `evidence/upstream17/`.
+## Final validation
 
-## Limits and remaining queue
+Native19 SHA256: `2abcd90ae79d3c94f42c2d8205946a8c0ce9d731242754a5e01a4204bbace383`.
+All 261 native tests pass across 41 binaries. Full local20: 1756 passed, two known
+baseline storage failures, one skipped, 19 passing subtests (238.72 seconds under
+host load). Failures remain empty-list Vortex writing and loss of parent validity
+for a present struct with all missing children. They were not hidden or weakened.
+All 37 final adapter/harness tests pass, including the latest original-body-only
+fixture-cache follow-up. Full local20 collected before that isolated test edit;
+its final behavior is covered by the focused run. Production Python/native and the
+full upstream pytest runner were unchanged after full20 launch.
 
-`queue.md`, `findings.json`, `module-audit.json`, and `merge-execution-audit.json`
-record overlapping findings and actual read depth; 134 records are not 134 unique
-confirmed bugs. Open costs include runtime DAG CSE, per-batch mixed-scalar IR
-specialization, Arrow concatenation, segment-level pushdown, lookup/join costs,
-and slow tiny matrix workflows. Separate byte-aware batching and sex-QC work
-is not included. Existing storage failures are unresolved.
+Corrected full upstream20 results are recorded in `evidence/upstream20/` and
+`evidence/final-validation-summary.json`. Upstream17/18 are superseded historical
+observations because their root adapter omitted per-test randomness reset.
+Interrupted upstream19 is discarded. Their counts are not final acceptance.
 
-Intentional breaks remain UTF-8 codepoint strings and no exact Hail partition
-layout contract. Pruning/file avoidance and correct native physical distribution
-metadata remain required. Full upstream excludes typecheck-decorator and Hadoop /
-Hail FS tests, while expression type tests remain included.
+Stream19 sweep 1024→65536: 10.5→243 ms, peak RSS 317→338 MB under concurrent native
+compilation. Native17's historical lower-load sweep was 5.5→60.9 ms. These are
+bounded workload observations, not universal latency/throughput acceptance.
+Tiny matrix workflows remain slow; one earlier focused run took about 26 seconds.
 
-## Final upstream18 outcome
+## Scope and limits
 
-All 56 eligible modules completed, with no timeout or native panic observed.
-Of 1468 definitions: 453 passed, 617 failed/setup-blocked, 398 collection-blocked.
-Parameter cases: 480 passed, 1212 nonpassing. Dedicated randomness module: 6/6.
-Specifically randomness: 58 passed, 2 blocked by missing BlockMatrix.random and
-import_bgen, 38 collection-blocked. All 44 matrix randomness behavioral tests pass.
-These are observed passes, not a claim that collection-blocked tests pass.
-The first-blocker categories and raw-log hashes are in `evidence/upstream18/`.
+The audit and queue include overlapping findings and actual read-depth boundaries;
+134 records are not 134 unique confirmed bugs. Runtime DAG CSE, per-batch scalar
+IR specialization, Arrow concatenation, segment-level pushdown, lookup/join costs,
+and tiny-query latency remain open. Separate sex-QC allocation and byte-aware
+batching work is not included. Existing storage defects remain unresolved.
 
-The broader random-data classification also retains the known phased
-balding_nichols_model fixed-golden mismatch (phased behavior/repeatability tests
-are separate), partition-layout differences, and worker-error compatibility gaps.
-This merge does not claim complete upstream randomness compatibility.
+Intentional differences are UTF-8 codepoint strings and no exact Hail execution
+partition-layout contract. Real pruning/file avoidance and valid physical metadata
+remain required. Full upstream excludes typecheck-decorator and Hadoop/Hail FS
+cases; expression type tests remain. Collection/setup blockers, missing sampling
+APIs and the phased-BNM exact-seed defect do not count as passing randomness tests.
+
+## Corrected upstream20 outcome
+
+All 56 eligible modules completed: 453 definitions passed, 617 failed/setup-blocked,
+398 collection-blocked. Parameter cases: 480 passed, 1212 nonpassing. No timeout,
+native panic or unreached case was observed. Dedicated randomness: 6/6 pass.
+Specifically randomness: 58 pass, two missing APIs (BlockMatrix.random/import_bgen),
+38 collection-blocked. All 44 matrix randomness behavioral tests pass. These are
+observations under the restored reset fixture, not inferred from historical runs.
+The phased-BNM fixed-golden assertion remains executable and failing.

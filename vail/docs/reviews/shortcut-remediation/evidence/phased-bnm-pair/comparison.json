@@ -1,0 +1,19 @@
+{
+  "main_revision": "dc51582fcb2413be6f14372ea8887a4cabc85f88",
+  "candidate_code": "de8ce111",
+  "main_build": "fresh git archive exact tracked source;1335 native/Cargo input hashes captured beforebuild andverified unchangedafterbuild; no diagnostic accessor delta",
+  "native_hashes": {
+    "main": "1ae5325f44602a3a2e2e239b9f5f87439fb5d4ff4e19a78ba306a555229fb68a",
+    "candidate": "2abcd90ae79d3c94f42c2d8205946a8c0ce9d731242754a5e01a4204bbace383"
+  },
+  "probe": "public reset_global_randomness beforeeach of2models; no hl.init API; zero defaultglobalnonce from randomness.py source. global_seed0 inprobe metadata labels defaultnonce policy, not a set_global_seed call. Eachpackage in separateprocess.",
+  "hail_revision": "e10cc355bc8cd0de9c5f29d5182d31527898bae1",
+  "hail_source_sha256": "a1c6a2d4dc588cfca4f95d98341c6cbd0203bee03a4d6260a73bdce5b0b57be2",
+  "hail_golden_verified": "AST literal of assertListEqual secondargument, source function line1602",
+  "outputs_identical": true,
+  "both_repeatable": true,
+  "both_phased": true,
+  "both_match_hail_golden": false,
+  "first_difference_zero_based": 6,
+  "disposition": "Known upstream exact-seed compatibility defect confirmed in fresh exact-main baseline andcandidate foridentical standalonecontext. Rootcause unresolved; not intentionaldivergence. Earlier fullmodule first-pair diagnostics camefrommissingpertestreset andaresuperseded; correctedrun20 authoritative."
+}

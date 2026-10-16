@@ -246,5 +246,6 @@
     "random_data_first_assertion_mismatch": "methods/test_statgen.py::Tests.test_balding_nichols_model_phased fixed phased-genotype golden differs (known compatibility gap).",
     "random_data_intentional_partition_difference": "extract_intervals/test_key_prefix.py::test_GRCh38 exact partition count.",
     "random_data_exception_compatibility": "test_exceptions_from_workers_have_stack_traces.py: native RuntimeError for integer divide/modulo by zero, upstream worker error/stack-trace expectation."
-  }
+  },
+  "superseded_for_final_acceptance": "Runner omitted original upstream autouse reset_global_randomness fixture; these historical observed counts are not final corrected-harness acceptance. Seeded behavior can depend on prior tests. Corrected full run20 replaces them."
 }

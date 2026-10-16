@@ -11,11 +11,11 @@ been audited in this pass. Individual agents record findings with file/line evid
 
 | ID | Issue | Status / owner | Required architecture |
 | --- | --- | --- | --- |
-| S001 | Stream aggregate-scan recomputes every prefix | Implemented; native shared scan state and build17 integration pass; follow-up review pending | Shared accumulator state; no prefix rescans for bounded-state reducers; preserve RNG and nested scopes. |
+| S001 | Stream aggregate-scan recomputes every prefix | Implemented; native shared scan state and native19 integration pass; follow-up review pending | Shared accumulator state; no prefix rescans for bounded-state reducers; preserve RNG and nested scopes. |
 | S002 | VCF export collects the whole matrix into Python | Implemented; public file tests and isolated bounded-memory evidence pass; follow-up review pending | Native bounded batch sink with backpressure and error propagation; only header/sample metadata may be eager. |
-| S003 | Matrix/list reducers duplicate table algorithms | Shared factory and build17 integration pass; follow-up review pending | One configured reducer factory/state contract adapted to row-owned lists and scans; remove per-allele repeated call scans and duplicated numerical semantics. |
-| S004 | General legacy physical compiler and deferred planning bridges | Implemented and build17 validated; required follow-up review pending | One optimized logical tree; semantic extensions consume already-planned children; preserve ordering and RNG without exposing Hail partition identity as a required contract. |
-| S005 | Pure kernels get fresh identities and blanket Volatile flags | Implemented and build17 validated; required follow-up review pending | Stable native identities, accurate effects, and explicit metadata/RNG boundaries; prove folding/reuse is legal. |
+| S003 | Matrix/list reducers duplicate table algorithms | Shared factory and native19 integration pass; follow-up review pending | One configured reducer factory/state contract adapted to row-owned lists and scans; remove per-allele repeated call scans and duplicated numerical semantics. |
+| S004 | General legacy physical compiler and deferred planning bridges | Implemented and native19 validated; required follow-up review pending | One optimized logical tree; semantic extensions consume already-planned children; preserve ordering and RNG without exposing Hail partition identity as a required contract. |
+| S005 | Pure kernels get fresh identities and blanket Volatile flags | Implemented and native19 validated; required follow-up review pending | Stable native identities, accurate effects, and explicit metadata/RNG boundaries; prove folding/reuse is legal. |
 
 ## Prior review findings requiring current-code audit
 
@@ -53,7 +53,7 @@ including evidence, confirmed versus unmeasured status, and acceptance criteria.
 These are open work unless explicitly marked fixed and centrally validated.
 Partial audits remain partial in the module inventory.
 
-## Validated development candidate10
+## Validated development historical candidate10
 
 All five initial remediations are implemented. The final coherent candidate has
 239 native tests passing across 20 binaries and 227 focused planner/matrix/scan/
@@ -82,13 +82,13 @@ segment pushdown gaps, and the tiny matrix latency recorded in the findings.
 Main advanced independently to `6bce5077d98f61e49f0b7ec9241f855f493b54d3` during
 this work. These results apply to base `2c02020` plus this development branch.
 Reconcile the newer main and revalidate before any final merge approval. The
-only production edits after candidate10 validation remove two extra final blank
+only production edits after historical candidate10 validation remove two extra final blank
 lines; `required-review.json` lists them explicitly.
 
 ## Integration with newer main
 
 The pending development merge includes main `6bce5077`. Earlier module-audit
-coverage and candidate10 results do not certify these additions. Native execution
+coverage and historical candidate10 results do not certify these additions. Native execution
 merge details are in `merge-execution-audit.json`; fresh coherent runtime evidence
 and exact-revision source review are required before main is updated.
 

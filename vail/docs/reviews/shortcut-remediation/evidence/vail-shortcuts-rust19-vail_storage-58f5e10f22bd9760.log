@@ -1,0 +1,27 @@
+
+running 22 tests
+test local_table::tests::candidate_partition_ranges_skip_empty_partitions_and_deduplicate ... ok
+test fragment_index::tests::hail_filtered_boundaries_are_candidate_only ... ok
+test fragment_index::tests::same_start_sorts_point_run_before_wider_run_regardless_of_name ... ok
+test fragment_index::tests::rejects_interior_overlap_duplicate_identity_and_invalid_keys ... ok
+test fragment_index::tests::select_many_unions_sorted_intervals_with_one_candidate_sweep ... ok
+test fragment_index::tests::hail_indexed_read_boundary_shapes_retain_touching_duplicates ... ok
+test fragment_index::tests::select_many_preserves_unbounded_and_exclusive_boundary_semantics ... ok
+test fragment_index::tests::retired_hail_comparator_is_not_a_total_order_certificate ... ok
+test fragment_index::tests::empty_unbounded_and_reversed_queries ... ok
+test fragment_index::tests::compound_mixed_direction_missing_and_ascii_are_lexicographic ... ok
+test fragment_index::tests::missing_position_is_independent_of_descending_value_direction ... ok
+test local_table::tests::reference_definitions_are_collected_from_nested_rows_and_globals ... ok
+test storage_key_search_tests::descending_ranges_and_unsorted_rejection ... ok
+test storage_key_search_tests::certification_and_range_search_handle_duplicates_nulls_and_batch_edges ... ok
+test storage_key_search_tests::nested_list_key_uses_arrow_comparator ... ok
+test fragment_index::tests::typed_ipc_bounds_compare_as_arrow_values_and_validate_physical_type ... ok
+test storage_key_search_tests::nested_struct_key_uses_arrow_comparator ... ok
+test fragment_index::tests::certification_rejects_unordered_or_mismatched_logical_key_types ... ok
+test globals::tests::globals_roundtrip_without_checksum_and_ignores_legacy_checksum ... ok
+test local_table::tests::ordinal_partition_read_preserves_empty_partition_events ... ok
+test local_table::tests::certification_failure_preserves_published_snapshot_and_cleans_new_output ... ok
+test local_table::tests::ordinal_partition_reads_open_only_overlapping_duplicate_key_files ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
