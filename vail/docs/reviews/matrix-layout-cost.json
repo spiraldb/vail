@@ -1,0 +1,308 @@
+{
+  "base_commit": "70a599b4",
+  "baseline_native_sha256": "31dba8e794217bbf48d6714dbf205770be4fe48cca87e77bead026443960aa58",
+  "current_native_sha256": "daa1d37e2cc267a24cd6afdb856bbc76770c0ea6ae1fd7d4815a3a1239a04422",
+  "method": "26 fresh subprocess cases: 18 initial construction/count and 8 output-forcing localization, independent complete baseline Python/native package; 10s per-case cap. macOS peak RSS bytes includes runtime and preparation. One measurement per case; parts action head(1,1).count, alignment/gather count.",
+  "limitations": [
+    "Optimizes ordinary array-row cells/shared columns; symmetric scalar-cell alignment still broadcasts cells",
+    "Gather necessarily allocates emitted payload; transpose allocates per emitted context/value",
+    "Explicit nonempty from_parts inputs still construct per-cell Python records; empty-entry-schema branch avoids Python product expansion",
+    "Public count actions permit projection pruning; measurements establish only executed paths, not every kernel copy bound",
+    "Single runs and unrelated build/test work may affect timing; no universal latency claim",
+    "Output-forcing localization cases show only small/no memory change and mixed latency for alignment/gather; no measured universal improvement for these kernels. Large empty-entry construction is the demonstrated resource gain."
+  ],
+  "cases": [
+    {
+      "mode": "parts",
+      "n": 100,
+      "version": "baseline",
+      "construction_seconds": 0.3617041670004255,
+      "execution_seconds": 0.029823332995874807,
+      "peak_rss_bytes": 156418048,
+      "check": [
+        1,
+        1
+      ]
+    },
+    {
+      "mode": "parts",
+      "n": 100,
+      "version": "current",
+      "construction_seconds": 0.20381416699819965,
+      "execution_seconds": 0.015759499998239335,
+      "peak_rss_bytes": 138051584,
+      "check": [
+        1,
+        1
+      ]
+    },
+    {
+      "mode": "parts",
+      "n": 500,
+      "version": "baseline",
+      "construction_seconds": 3.3435166659983224,
+      "execution_seconds": 0.00742754199745832,
+      "peak_rss_bytes": 255442944,
+      "check": [
+        1,
+        1
+      ]
+    },
+    {
+      "mode": "parts",
+      "n": 500,
+      "version": "current",
+      "construction_seconds": 0.16220645800058264,
+      "execution_seconds": 0.007221040999866091,
+      "peak_rss_bytes": 134119424,
+      "check": [
+        1,
+        1
+      ]
+    },
+    {
+      "mode": "parts",
+      "n": 1000,
+      "version": "baseline",
+      "timeout_seconds": 10
+    },
+    {
+      "mode": "parts",
+      "n": 1000,
+      "version": "current",
+      "construction_seconds": 0.16645941699971445,
+      "execution_seconds": 0.007241416002216283,
+      "peak_rss_bytes": 134414336,
+      "check": [
+        1,
+        1
+      ]
+    },
+    {
+      "mode": "alignment",
+      "n": 16,
+      "version": "baseline",
+      "construction_seconds": 0.02060666699981084,
+      "execution_seconds": 0.011070040993217845,
+      "peak_rss_bytes": 69287936,
+      "check": [
+        16,
+        128
+      ]
+    },
+    {
+      "mode": "alignment",
+      "n": 16,
+      "version": "current",
+      "construction_seconds": 0.020920791001117323,
+      "execution_seconds": 0.010813375003635883,
+      "peak_rss_bytes": 69517312,
+      "check": [
+        16,
+        128
+      ]
+    },
+    {
+      "mode": "alignment",
+      "n": 128,
+      "version": "baseline",
+      "construction_seconds": 0.020844040998781566,
+      "execution_seconds": 0.012872292005340569,
+      "peak_rss_bytes": 92602368,
+      "check": [
+        128,
+        128
+      ]
+    },
+    {
+      "mode": "alignment",
+      "n": 128,
+      "version": "current",
+      "construction_seconds": 0.020390958998177666,
+      "execution_seconds": 0.013138540998625103,
+      "peak_rss_bytes": 91504640,
+      "check": [
+        128,
+        128
+      ]
+    },
+    {
+      "mode": "alignment",
+      "n": 512,
+      "version": "baseline",
+      "construction_seconds": 0.02045116600493202,
+      "execution_seconds": 0.01816658299503615,
+      "peak_rss_bytes": 144048128,
+      "check": [
+        512,
+        128
+      ]
+    },
+    {
+      "mode": "alignment",
+      "n": 512,
+      "version": "current",
+      "construction_seconds": 0.020690459001343697,
+      "execution_seconds": 0.018236291994981002,
+      "peak_rss_bytes": 143294464,
+      "check": [
+        512,
+        128
+      ]
+    },
+    {
+      "mode": "gather",
+      "n": 16,
+      "version": "baseline",
+      "construction_seconds": 0.15423891600221395,
+      "execution_seconds": 0.0038401249985327013,
+      "peak_rss_bytes": 133660672,
+      "check": [
+        16,
+        4
+      ]
+    },
+    {
+      "mode": "gather",
+      "n": 16,
+      "version": "current",
+      "construction_seconds": 0.15483470899926033,
+      "execution_seconds": 0.0038598749961238354,
+      "peak_rss_bytes": 133169152,
+      "check": [
+        16,
+        4
+      ]
+    },
+    {
+      "mode": "gather",
+      "n": 128,
+      "version": "baseline",
+      "construction_seconds": 0.15886108299309853,
+      "execution_seconds": 0.003849083004752174,
+      "peak_rss_bytes": 135708672,
+      "check": [
+        128,
+        4
+      ]
+    },
+    {
+      "mode": "gather",
+      "n": 128,
+      "version": "current",
+      "construction_seconds": 0.15345833400351694,
+      "execution_seconds": 0.0038625000015599653,
+      "peak_rss_bytes": 133365760,
+      "check": [
+        128,
+        4
+      ]
+    },
+    {
+      "mode": "gather",
+      "n": 1024,
+      "version": "baseline",
+      "construction_seconds": 0.15452329199615633,
+      "execution_seconds": 0.0042797080022864975,
+      "peak_rss_bytes": 134529024,
+      "check": [
+        1024,
+        4
+      ]
+    },
+    {
+      "mode": "gather",
+      "n": 1024,
+      "version": "current",
+      "construction_seconds": 0.15377116599847795,
+      "execution_seconds": 0.003855499999190215,
+      "peak_rss_bytes": 133791744,
+      "check": [
+        1024,
+        4
+      ]
+    }
+  ],
+  "output_forcing_cases": [
+    {
+      "action": "localize_entries(...).collect(); len(materialized_rows)",
+      "mode": "alignment",
+      "n": 128,
+      "version": "baseline",
+      "construction_seconds": 0.023134417002438568,
+      "execution_seconds": 0.16885091600124724,
+      "peak_rss_bytes": 166051840,
+      "check": 128
+    },
+    {
+      "action": "localize_entries(...).collect(); len(materialized_rows)",
+      "mode": "alignment",
+      "n": 128,
+      "version": "current",
+      "construction_seconds": 0.022082874995248858,
+      "execution_seconds": 0.16620958300336497,
+      "peak_rss_bytes": 168443904,
+      "check": 128
+    },
+    {
+      "action": "localize_entries(...).collect(); len(materialized_rows)",
+      "mode": "alignment",
+      "n": 512,
+      "version": "baseline",
+      "construction_seconds": 0.02261641699442407,
+      "execution_seconds": 0.2031619170011254,
+      "peak_rss_bytes": 247480320,
+      "check": 512
+    },
+    {
+      "action": "localize_entries(...).collect(); len(materialized_rows)",
+      "mode": "alignment",
+      "n": 512,
+      "version": "current",
+      "construction_seconds": 0.022161708999192342,
+      "execution_seconds": 0.21090812500187894,
+      "peak_rss_bytes": 243171328,
+      "check": 512
+    },
+    {
+      "action": "localize_entries(...).collect(); len(materialized_rows)",
+      "mode": "gather",
+      "n": 128,
+      "version": "baseline",
+      "construction_seconds": 0.1723706660050084,
+      "execution_seconds": 0.013306291999469977,
+      "peak_rss_bytes": 138772480,
+      "check": 128
+    },
+    {
+      "action": "localize_entries(...).collect(); len(materialized_rows)",
+      "mode": "gather",
+      "n": 128,
+      "version": "current",
+      "construction_seconds": 0.1599260829971172,
+      "execution_seconds": 0.013413082997431047,
+      "peak_rss_bytes": 138821632,
+      "check": 128
+    },
+    {
+      "action": "localize_entries(...).collect(); len(materialized_rows)",
+      "mode": "gather",
+      "n": 1024,
+      "version": "baseline",
+      "construction_seconds": 0.15954466700350167,
+      "execution_seconds": 0.021014540994656272,
+      "peak_rss_bytes": 152158208,
+      "check": 1024
+    },
+    {
+      "action": "localize_entries(...).collect(); len(materialized_rows)",
+      "mode": "gather",
+      "n": 1024,
+      "version": "current",
+      "construction_seconds": 0.16258054199715843,
+      "execution_seconds": 0.021767666999949142,
+      "peak_rss_bytes": 149323776,
+      "check": 1024
+    }
+  ]
+}

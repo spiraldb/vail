@@ -122,6 +122,7 @@ fn transpose(input: &ListArray) -> Result<ArrayRef> {
         let row_start = input.value_offsets()[row] as usize;
         let row_end = input.value_offsets()[row + 1] as usize;
         let mut width = None;
+        let mut defined = Vec::new();
         for record in row_start..row_end {
             if records.is_null(record) {
                 return exec_err!("matrix transpose records must not be missing");
@@ -129,6 +130,7 @@ fn transpose(input: &ListArray) -> Result<ArrayRef> {
             if arrays.is_null(record) {
                 continue;
             }
+            defined.push(record);
             let len = arrays.value_length(record) as usize;
             if let Some(previous) = width {
                 if previous != len {
@@ -145,10 +147,7 @@ fn transpose(input: &ListArray) -> Result<ArrayRef> {
             return exec_err!("matrix transpose output exceeds Arrow list capacity");
         }
         for position in 0..width {
-            for record in row_start..row_end {
-                if arrays.is_null(record) {
-                    continue;
-                }
+            for &record in &defined {
                 let value_index = arrays.value_offsets()[record] as usize + position;
                 context_indices.push(u32::try_from(record).map_err(|_| {
                     datafusion_common::exec_datafusion_err!(
@@ -234,187 +233,5 @@ impl ScalarUDFImpl for MatrixTranspose {
         } else {
             Ok(ColumnarValue::Array(result))
         }
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_array::{Int32Array, StringArray};
-
-    fn inputs(
-        context: ArrayRef,
-        context_field: Arc<Field>,
-        value_offsets: Vec<i32>,
-        value_values: ArrayRef,
-        value_nulls: Option<NullBuffer>,
-        row_offsets: Vec<i32>,
-        row_nulls: Option<NullBuffer>,
-    ) -> ListArray {
-        let values = Arc::new(
-            ListArray::try_new(
-                Arc::new(Field::new("item", value_values.data_type().clone(), true)),
-                OffsetBuffer::new(value_offsets.into()),
-                value_values,
-                value_nulls,
-            )
-            .unwrap(),
-        );
-        let records = Arc::new(
-            StructArray::try_new(
-                vec![
-                    Arc::new(Field::new(CONTEXT, context_field.data_type().clone(), true)),
-                    Arc::new(Field::new(VALUE, values.data_type().clone(), true)),
-                ]
-                .into(),
-                vec![context, values],
-                None,
-            )
-            .unwrap(),
-        );
-        ListArray::try_new(
-            Arc::new(Field::new("item", records.data_type().clone(), true)),
-            OffsetBuffer::new(row_offsets.into()),
-            records,
-            row_nulls,
-        )
-        .unwrap()
-    }
-
-    #[test]
-    fn transposes_values_and_contexts_once_per_position_with_sliced_offsets() {
-        let context = Arc::new(
-            StructArray::try_new(
-                vec![Arc::new(Field::new("marker", DataType::Int32, true))].into(),
-                vec![Arc::new(Int32Array::from(vec![10, 20, 30]))],
-                None,
-            )
-            .unwrap(),
-        );
-        let source = inputs(
-            context,
-            Arc::new(Field::new(
-                "context",
-                DataType::Struct(
-                    vec![Arc::new(Field::new("marker", DataType::Int32, true))].into(),
-                ),
-                true,
-            )),
-            vec![0, 2, 4, 6],
-            Arc::new(Int32Array::from(vec![1, 2, 3, 4, 5, 6])),
-            None,
-            vec![0, 2, 3],
-            None,
-        );
-        let out = transpose(&source.slice(1, 1)).unwrap();
-        let positions = list(&out).unwrap();
-        assert_eq!(positions.value_offsets(), &[0, 2]);
-        let items = list(positions.values()).unwrap();
-        assert_eq!(items.value_offsets(), &[0, 1, 2]);
-        let records = items
-            .values()
-            .as_any()
-            .downcast_ref::<StructArray>()
-            .unwrap();
-        assert_eq!(
-            records
-                .column_by_name(VALUE)
-                .unwrap()
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap()
-                .values(),
-            &[5, 6]
-        );
-        assert_eq!(
-            records
-                .column_by_name(CONTEXT)
-                .unwrap()
-                .as_any()
-                .downcast_ref::<StructArray>()
-                .unwrap()
-                .column_by_name("marker")
-                .unwrap()
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap()
-                .values(),
-            &[30, 30]
-        );
-    }
-
-    #[test]
-    fn skips_missing_arrays_and_supports_empty_context_structs() {
-        let context = Arc::new(StructArray::new_empty_fields(2, None));
-        let source = inputs(
-            context,
-            Arc::new(Field::new(
-                "context",
-                DataType::Struct(Vec::<Field>::new().into()),
-                true,
-            )),
-            vec![0, 2, 2],
-            Arc::new(Int32Array::from(vec![7, 8])),
-            Some(NullBuffer::from(vec![true, false])),
-            vec![0, 2],
-            None,
-        );
-        let out = transpose(&source).unwrap();
-        let positions = list(&out).unwrap();
-        assert_eq!(positions.value_offsets(), &[0, 2]);
-        let items = list(positions.values()).unwrap();
-        assert_eq!(items.value_offsets(), &[0, 1, 2]);
-        assert_eq!(items.values().len(), 2);
-
-        let all_missing = inputs(
-            Arc::new(StructArray::new_empty_fields(1, None)),
-            Arc::new(Field::new(
-                "context",
-                DataType::Struct(Vec::<Field>::new().into()),
-                true,
-            )),
-            vec![0, 0],
-            Arc::new(Int32Array::from(Vec::<i32>::new())),
-            Some(NullBuffer::from(vec![false])),
-            vec![0, 1],
-            None,
-        );
-        assert_eq!(
-            list(&transpose(&all_missing).unwrap())
-                .unwrap()
-                .value_offsets(),
-            &[0, 0]
-        );
-    }
-
-    #[test]
-    fn rejects_ragged_arrays_with_existing_error_shape() {
-        let context = Arc::new(
-            StructArray::try_new(
-                vec![Arc::new(Field::new("marker", DataType::Utf8, true))].into(),
-                vec![Arc::new(StringArray::from(vec!["a", "b"]))],
-                None,
-            )
-            .unwrap(),
-        );
-        let source = inputs(
-            context,
-            Arc::new(Field::new(
-                "context",
-                DataType::Struct(vec![Arc::new(Field::new("marker", DataType::Utf8, true))].into()),
-                true,
-            )),
-            vec![0, 2, 2],
-            Arc::new(Int32Array::from(vec![1, 2])),
-            None,
-            vec![0, 2],
-            None,
-        );
-        assert!(
-            transpose(&source)
-                .unwrap_err()
-                .to_string()
-                .contains("array_agg requires equal array lengths, found 2 and 0")
-        );
     }
 }

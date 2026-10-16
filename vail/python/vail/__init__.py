@@ -261,6 +261,15 @@ class Table:
     def __delattr__(self, name):
         raise TypeError("Table is immutable")
 
+    def unlocalize_entries(self, entries_field_name, cols_field_name, col_key):
+        """Build a MatrixTable from entry arrays and a global column array.
+
+        Validate column records and per-row alignment lazily during execution.
+        Missing entry structs represent filtered entries.
+        """
+        from .matrixtable import unlocalize_entries
+        return unlocalize_entries(self, entries_field_name, cols_field_name, col_key)
+
     def _unlocalize_entries(self, entries_field_name, cols_field_name, col_key, *, _aligned=False):
         from .matrixtable import unlocalize_entries
         return unlocalize_entries(self, entries_field_name, cols_field_name, col_key, _aligned=_aligned)

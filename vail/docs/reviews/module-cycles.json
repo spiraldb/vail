@@ -511,6 +511,37 @@
         "Single-process measurements include imports/preparation; no universal latency improvement claimed; full localization still boxes values",
         "BlockMatrix dimensions/product limited to int32 range; physical block_size explicitly unsupported"
       ],
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "70a599b4"
+    },
+    {
+      "module": "Vail Matrix layout gathering/alignment/transpose and construction/localization adapters",
+      "reviewed_base": "70a599b4",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "retain checked scalar list ownership for gathers/grouped gathers and gather emitted payload once",
+        "compare exact borrowed row-cell/column identities and presence without temporary Arrow take buffers; retain shared scalar columns",
+        "preserve typed empty-batch behavior without inspecting unused missing scalar list values",
+        "infer entry fields across all present cells with numeric promotion and explicit all-missing typed-input requirement",
+        "derive empty-entry-schema slots lazily from dimensions instead of building Python row-column product",
+        "prepare defined transpose record indices once before emitted-position iteration",
+        "replace private layout/IR/storage assertions and helper unit tests with public Matrix values/localization and public native Expr evaluation",
+        "expose checked public Table.unlocalize_entries without alignment bypass"
+      ],
+      "validation": [
+        "74 Rust execution tests passed (58 library +2 array methods +7 matrix layout +7 type contracts)",
+        "144 public Python Matrix layout/table/array_agg/entry_sum/query/simulation tests passed against final rebuilt native"
+      ],
+      "reports": [
+        "vail/docs/reviews/matrix-layout-cost.json"
+      ],
+      "native_sha256": "daa1d37e2cc267a24cd6afdb856bbc76770c0ea6ae1fd7d4815a3a1239a04422",
+      "limitations": [
+        "Symmetric scalar-cell alignment still broadcasts cells; ordinary row-cell/shared-column path optimized",
+        "Explicit nonempty entry input still constructs per-cell Python records",
+        "Gather/transpose allocate emitted payload/context",
+        "Count-based cost cases are projection-prunable and do not prove kernel copy bounds"
+      ],
       "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests."
     }
   ],
