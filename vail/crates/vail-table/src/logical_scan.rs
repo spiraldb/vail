@@ -609,7 +609,7 @@ pub(crate) fn lower(
     }
     // A canonical previous-defined fold is a gather over row indices, not a
     // scalar aggregate window. Keep input expressions visible to DataFusion.
-    if nodes.iter().all(|(node, filter)| filter.is_none() && crate::streaming_prev::argument(node).is_some()) {
+    if crate::streaming_prev::independent_source(child) && nodes.iter().all(|(node, filter)| filter.is_none() && crate::streaming_prev::argument(node).is_some()) {
         let mut used = input.schema().fields().iter().map(|f| f.name().clone())
             .chain(fields.iter().map(|(name,_)| name.clone())).collect::<HashSet<_>>();
         let mut arguments = Vec::new();
@@ -618,6 +618,8 @@ pub(crate) fn lower(
             let argument = crate::streaming_prev::argument(node).unwrap();
             let expression = vail_execution::logical_expr::lower_logical_with_bindings(
                 argument, input.schema(), child.globals().schema(), bindings)?;
+            let dtype = argument.dtype_with_globals(input.schema().as_arrow(), child.globals().schema())?.to_arrow()?;
+            let expression = vail_execution::logical_expr::restore_type(expression, dtype);
             let argument_name = unique(&mut used, &format!("__scan_previous_argument_{i}"));
             let output_name = unique(&mut used, &format!("__scan_previous_value_{i}"));
             arguments.push((expression, argument_name, output_name.clone()));

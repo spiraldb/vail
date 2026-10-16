@@ -14,6 +14,8 @@ use datafusion_physical_plan::{
     stream::RecordBatchStreamAdapter,
 };
 use futures::TryStreamExt;
+use futures::future::BoxFuture;
+use std::sync::atomic::AtomicBool;
 use std::{
     fmt,
     hash::{Hash, Hasher},
@@ -22,7 +24,7 @@ use std::{
         atomic::{AtomicU64, Ordering},
     },
 };
-use tokio::sync::OnceCell;
+use tokio::sync::{OnceCell, Semaphore};
 use vail_execution::expressions::{Expr as VExpr, UnaryOperator};
 
 /// Recognize only the canonical last-defined fold with a null identity. A
@@ -84,6 +86,22 @@ pub(crate) fn argument(node: &VExpr) -> Option<&VExpr> {
     if !defined(condition, consequent) || !variable(alternate, state_parameter) {
         return None;
     }
+    // The value must be a row expression, not a recurrence over fold state.
+    // Syntactically similar folds may still depend on the previous state.
+    let mut captures_state = false;
+    consequent.visit_unique(&mut |expr| {
+        captures_state |= matches!(expr, VExpr::LambdaVariable {name, ..}
+            if name == state_parameter || name == left_parameter || name == right_parameter);
+        captures_state |=
+            matches!(expr, VExpr::NestedFunction {function, ..} if function.starts_with("random_"));
+    });
+    if captures_state
+        || state_parameter == left_parameter
+        || state_parameter == right_parameter
+        || left_parameter == right_parameter
+    {
+        return None;
+    }
     let VExpr::IfElse {
         condition,
         consequent: right,
@@ -98,12 +116,41 @@ pub(crate) fn argument(node: &VExpr) -> Option<&VExpr> {
     .then_some(consequent.as_ref())
 }
 
+// A replayable source partition is independent of other output streams.
+// Exchanges/sorts/joins/upstream scans retain the generic lowering until their
+// producer exposes an explicit demand-safe replay domain. Deterministic
+// pointwise expressions preserve the native source's partition membership.
+pub(crate) fn independent_source(table: &crate::TableRef) -> bool {
+    use crate::TableNode;
+    fn stable(expr: &VExpr) -> bool {
+        let mut stable = true;
+        expr.visit_unique(&mut |node| {
+            stable &= !matches!(node, VExpr::Aggregate { .. } | VExpr::AggregateFold { .. });
+            stable &= !matches!(node, VExpr::NestedFunction {function, ..} if function.starts_with("random_"));
+        });
+        stable
+    }
+    match table.node() {
+        TableNode::Read { .. } | TableNode::Parallelize { .. } | TableNode::Range { .. } => true,
+        TableNode::MapGlobals { child } => independent_source(child),
+        TableNode::MapRows { child, fields, .. } => {
+            independent_source(child) && fields.iter().all(|(_, expr)| stable(expr))
+        }
+        TableNode::Filter {
+            child, predicate, ..
+        } => independent_source(child) && stable(predicate),
+        TableNode::KeyBy { child, keys } if keys.is_empty() || keys == child.keys() => {
+            independent_source(child)
+        }
+        _ => false,
+    }
+}
+
 static NEXT_ID: AtomicU64 = AtomicU64::new(0);
 #[derive(Debug, Clone)]
 pub(crate) struct Previous {
     id: u64,
     input: LogicalPlan,
-    summary: LogicalPlan,
     schema: DFSchemaRef,
     arguments: Vec<String>,
     outputs: Vec<String>,
@@ -144,7 +191,7 @@ impl UserDefinedLogicalNodeCore for Previous {
         "VailPreviousNonNull"
     }
     fn inputs(&self) -> Vec<&LogicalPlan> {
-        vec![&self.input, &self.summary]
+        vec![&self.input]
     }
     fn schema(&self) -> &DFSchemaRef {
         &self.schema
@@ -160,17 +207,15 @@ impl UserDefinedLogicalNodeCore for Previous {
         exprs: Vec<Expr>,
         mut inputs: Vec<LogicalPlan>,
     ) -> Result<Self> {
-        if !exprs.is_empty() || inputs.len() != 2 {
+        if !exprs.is_empty() || inputs.len() != 1 {
             return Err(DataFusionError::Plan(
-                "previous scan requires two inputs".into(),
+                "previous scan requires one input".into(),
             ));
         }
-        let summary = inputs.pop().unwrap();
         let input = inputs.pop().unwrap();
         let schema = schema(&input, &self.arguments, &self.outputs)?;
         Ok(Self {
             input,
-            summary,
             schema,
             ..self.clone()
         })
@@ -194,17 +239,11 @@ pub(crate) fn logical(
     let input = LogicalPlanBuilder::from(input).project(columns)?.build()?;
     let names: Vec<_> = arguments.iter().map(|(_, name, _)| name.clone()).collect();
     let outputs: Vec<_> = arguments.into_iter().map(|(_, _, name)| name).collect();
-    // Two explicit logical consumers: the summary projection needs only scan
-    // arguments, while the output stream retains all current-row columns.
-    let summary = LogicalPlanBuilder::from(input.clone())
-        .project(names.iter().map(datafusion_expr::col).collect::<Vec<_>>())?
-        .build()?;
     let schema = schema(&input, &names, &outputs)?;
     Ok(LogicalPlan::Extension(Extension {
         node: Arc::new(Previous {
             id: NEXT_ID.fetch_add(1, Ordering::Relaxed),
-            input: crate::logical::ordered(crate::logical::independent_consumer(input)),
-            summary: crate::logical::ordered(crate::logical::independent_consumer(summary)),
+            input: crate::logical::independent_consumer(input),
             schema,
             arguments: names,
             outputs,
@@ -212,66 +251,185 @@ pub(crate) fn logical(
     }))
 }
 impl Previous {
-    pub(crate) fn physical(
-        &self,
-        input: PhysicalPlan,
-        summary: PhysicalPlan,
-    ) -> Result<PhysicalPlan> {
+    pub(crate) fn physical(&self, input: PhysicalPlan) -> Result<PhysicalPlan> {
         let indices = self
             .arguments
             .iter()
             .map(|name| input.schema().index_of(name))
             .collect::<std::result::Result<Vec<_>, _>>()?;
-        if input.properties().output_partitioning().partition_count()
-            != summary.properties().output_partitioning().partition_count()
-        {
-            return Err(DataFusionError::Plan(
-                "previous scan input partitions differ".into(),
-            ));
-        }
         Ok(Arc::new(PreviousExec::new(
             input,
-            summary,
             Arc::new(self.schema.as_arrow().clone()),
             indices,
         )?))
     }
 }
 
-type Carries = Vec<Vec<ArrayRef>>;
-type SharedCarries = Arc<OnceCell<std::result::Result<Carries, Arc<DataFusionError>>>>;
+type Values = Vec<ArrayRef>;
+type Saved = OnceCell<std::result::Result<Values, Arc<DataFusionError>>>;
+#[derive(Debug)]
+struct Summary {
+    value: Saved,
+    attempted: AtomicBool,
+}
+#[derive(Debug)]
+struct Prefixes {
+    input: PhysicalPlan,
+    indices: Vec<usize>,
+    producer: OnceCell<PhysicalPlan>,
+    summaries: Vec<Summary>,
+    carries: Vec<Saved>,
+    permits: Arc<Semaphore>,
+}
+impl Prefixes {
+    fn empty(&self) -> Values {
+        self.indices
+            .iter()
+            .map(|i| new_null_array(self.input.schema().field(*i).data_type(), 1))
+            .collect()
+    }
+    fn carry(
+        self: Arc<Self>,
+        partition: usize,
+        context: Arc<TaskContext>,
+    ) -> BoxFuture<'static, Result<Values>> {
+        Box::pin(async move {
+            if partition == 0 {
+                return Ok(self.empty());
+            }
+            let saved = self.carries.get(partition).ok_or_else(|| {
+                DataFusionError::Execution("previous scan partition out of range".into())
+            })?;
+            let value = saved
+                .get_or_init(|| async {
+                    // Each carry and summary is initialized once. This dependency
+                    // chain visits only preceding partitions, with O(P) shared work.
+                    // Spawn each dependency stage so thousands of partitions
+                    // do not create a recursively polled future stack. Tasks
+                    // and retained state scale with partitions, never rows.
+                    let state = self.clone();
+                    let task = datafusion_common_runtime::SpawnedTask::spawn(async move {
+                        let (mut carry, total) = tokio::try_join!(
+                            state.clone().carry(partition - 1, context.clone()),
+                            state.clone().summary(partition - 1, context)
+                        )?;
+                        for (carry, value) in carry.iter_mut().zip(total) {
+                            if value.is_valid(0) {
+                                *carry = value;
+                            }
+                        }
+                        Ok::<_, DataFusionError>(carry)
+                    });
+                    match task.await {
+                        Ok(result) => result.map_err(Arc::new),
+                        Err(error) => Err(Arc::new(DataFusionError::Execution(error.to_string()))),
+                    }
+                })
+                .await;
+            value
+                .clone()
+                .map_err(|error| DataFusionError::Execution(error.to_string()))
+        })
+    }
+    async fn summary(
+        self: Arc<Self>,
+        partition: usize,
+        context: Arc<TaskContext>,
+    ) -> Result<Values> {
+        let saved = &self.summaries[partition];
+        let result = saved
+            .value
+            .get_or_init(|| async {
+                let state = self.clone();
+                let task = datafusion_common_runtime::SpawnedTask::spawn(async move {
+                    let _permit = state
+                        .permits
+                        .clone()
+                        .acquire_owned()
+                        .await
+                        .map_err(|error| DataFusionError::Execution(error.to_string()))?;
+                    // Fork the *same optimized physical producer*, not a second
+                    // independently optimized projection with a potentially
+                    // different partition domain. No logical replanning occurs.
+                    let producer = state
+                        .producer
+                        .get_or_try_init(|| async {
+                            crate::partitioned::reset_plan_states(state.input.clone())
+                        })
+                        .await?;
+                    let retry = state.summaries[partition]
+                        .attempted
+                        .swap(true, Ordering::Relaxed);
+                    // Cancellation can leave an exchange/consumer partly claimed.
+                    // A retry receives fresh producer state; other readers keep
+                    // their original action-owned producer and completed summaries.
+                    let input = if retry {
+                        crate::partitioned::reset_plan_states(producer.clone())?
+                    } else {
+                        producer.clone()
+                    };
+                    let mut stream = input.execute(partition, context)?;
+                    let mut last = state.empty();
+                    while let Some(batch) = stream.try_next().await? {
+                        tokio::task::consume_budget().await;
+                        for (i, index) in state.indices.iter().enumerate() {
+                            let values = batch.column(*index);
+                            if let Some(row) = last_defined(values) {
+                                last[i] = compact_row(values, row)?;
+                            }
+                        }
+                    }
+                    Ok::<_, DataFusionError>(last)
+                });
+                match task.await {
+                    Ok(result) => result.map_err(Arc::new),
+                    Err(error) => Err(Arc::new(DataFusionError::Execution(error.to_string()))),
+                }
+            })
+            .await;
+        result
+            .clone()
+            .map_err(|error| DataFusionError::Execution(error.to_string()))
+    }
+}
 #[derive(Debug)]
 struct PreviousExec {
     input: PhysicalPlan,
-    summary: PhysicalPlan,
     indices: Vec<usize>,
     cache: Arc<PlanProperties>,
-    carries: SharedCarries,
+    prefixes: Arc<Prefixes>,
 }
 impl PreviousExec {
-    fn new(
-        input: PhysicalPlan,
-        summary: PhysicalPlan,
-        schema: Arc<Schema>,
-        indices: Vec<usize>,
-    ) -> Result<Self> {
-        let eq = input
-            .properties()
-            .eq_properties
-            .clone()
-            .with_new_schema(schema)?;
+    fn new(input: PhysicalPlan, schema: Arc<Schema>, indices: Vec<usize>) -> Result<Self> {
+        let partitions = input.properties().output_partitioning().partition_count();
+        let mut eq = datafusion_physical_expr::EquivalenceProperties::new(schema);
+        if let Some(ordering) = input.properties().output_ordering() {
+            eq.add_ordering(ordering.clone());
+        }
         let cache = Arc::new(PlanProperties::new(
             eq,
             input.properties().output_partitioning().clone(),
             input.properties().emission_type,
             input.properties().boundedness,
         ));
+        let prefixes = Arc::new(Prefixes {
+            input: input.clone(),
+            indices: indices.clone(),
+            producer: OnceCell::new(),
+            summaries: (0..partitions)
+                .map(|_| Summary {
+                    value: OnceCell::new(),
+                    attempted: AtomicBool::new(false),
+                })
+                .collect(),
+            carries: (0..partitions).map(|_| OnceCell::new()).collect(),
+            permits: Arc::new(Semaphore::new(32)),
+        });
         Ok(Self {
             input,
-            summary,
             indices,
             cache,
-            carries: Arc::new(OnceCell::new()),
+            prefixes,
         })
     }
 }
@@ -288,25 +446,30 @@ impl ExecutionPlan for PreviousExec {
         &self.cache
     }
     fn children(&self) -> Vec<&PhysicalPlan> {
-        vec![&self.input, &self.summary]
+        vec![&self.input]
     }
     fn maintains_input_order(&self) -> Vec<bool> {
-        vec![true, false]
+        vec![true]
     }
     fn benefits_from_input_partitioning(&self) -> Vec<bool> {
-        vec![false, false]
+        vec![false]
+    }
+    fn apply_expressions(
+        &self,
+        _: &mut dyn FnMut(
+            &Arc<dyn datafusion_physical_expr::PhysicalExpr>,
+        ) -> Result<datafusion_common::tree_node::TreeNodeRecursion>,
+    ) -> Result<datafusion_common::tree_node::TreeNodeRecursion> {
+        Ok(datafusion_common::tree_node::TreeNodeRecursion::Continue)
     }
     fn with_new_children(self: Arc<Self>, mut children: Vec<PhysicalPlan>) -> Result<PhysicalPlan> {
-        if children.len() != 2 {
+        if children.len() != 1 {
             return Err(DataFusionError::Plan(
-                "previous scan requires two physical inputs".into(),
+                "previous scan requires one physical input".into(),
             ));
         }
-        let summary = children.pop().unwrap();
-        let input = children.pop().unwrap();
         Ok(Arc::new(Self::new(
-            input,
-            summary,
+            children.remove(0),
             self.schema(),
             self.indices.clone(),
         )?))
@@ -319,19 +482,12 @@ impl ExecutionPlan for PreviousExec {
         let schema = self.schema();
         let output = schema.clone();
         let input = self.input.clone();
-        let summary = self.summary.clone();
         let indices = self.indices.clone();
-        let shared = self.carries.clone();
+        let prefixes = self.prefixes.clone();
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema,
             async_stream::try_stream! {
-                let mut previous=indices.iter().map(|i| new_null_array(input.schema().field(*i).data_type(),1)).collect::<Vec<_>>();
-                if partition>0 {
-                    let carries=shared.get_or_init(|| async {
-                        summarize(summary, context.clone()).await.map_err(Arc::new)
-                    }).await.as_ref().map_err(|error| DataFusionError::Execution(error.to_string()))?;
-                    previous=carries.get(partition).ok_or_else(||DataFusionError::Execution("previous scan partition out of range".into()))?.clone();
-                }
+                let mut previous=prefixes.carry(partition, context.clone()).await?;
                 let mut stream=input.execute(partition,context)?;
                 while let Some(batch)=stream.try_next().await? {
                     if batch.num_rows()==0 {continue;}
@@ -383,57 +539,63 @@ fn shift(values: &ArrayRef, previous: &ArrayRef) -> Result<ArrayRef> {
         &indices,
     )?)
 }
-async fn summarize(input: PhysicalPlan, context: Arc<TaskContext>) -> Result<Carries> {
-    let partitions = input.properties().output_partitioning().partition_count();
-    let empty = input
-        .schema()
-        .fields()
-        .iter()
-        .map(|field| new_null_array(field.data_type(), 1))
-        .collect::<Vec<_>>();
-    // JoinSet runs CPU-ready streams on independent workers and aborts them
-    // when the action is cancelled. A buffered collection of inline futures
-    // alone would serialize these CPU-bound source scans.
-    let count = partitions.saturating_sub(1);
-    let mut totals = vec![None; count];
-    let mut tasks = tokio::task::JoinSet::new();
-    let mut next = 0;
-    while next < count || !tasks.is_empty() {
-        while next < count && tasks.len() < 32 {
-            let partition = next;
-            next += 1;
-            let input = input.clone();
-            let context = context.clone();
-            let mut last = empty.clone();
-            tasks.spawn(async move {
-                let mut stream = input.execute(partition, context)?;
-                while let Some(batch) = stream.try_next().await? {
-                    for (i, values) in batch.columns().iter().enumerate() {
-                        if let Some(row) = last_defined(values) {
-                            last[i] = compact_row(values, row)?;
-                        }
-                    }
-                }
-                Ok::<_, DataFusionError>((partition, last))
-            });
-        }
-        let (partition, last) = tasks
-            .join_next()
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use arrow_array::UInt64Array;
+    use arrow_schema::DataType;
+    use futures::FutureExt;
+
+    #[tokio::test]
+    async fn cancelled_reader_can_retry_same_action_after_summary_started() {
+        // Real Arrow/DataFusion sources and the production one-shot consumer
+        // guard; no mock stream or counters. Many batches allow cancellation
+        // while the shared summary producer is partly consumed.
+        let schema = Arc::new(Schema::new(vec![Field::new("v", DataType::UInt64, false)]));
+        let partitions: Vec<Vec<RecordBatch>> = (0..4)
+            .map(|p| {
+                (0..4096)
+                    .map(|b| {
+                        let start = (p * 4096 + b) * 128;
+                        RecordBatch::try_new(
+                            schema.clone(),
+                            vec![Arc::new(UInt64Array::from_iter_values(start..start + 128))],
+                        )
+                        .unwrap()
+                    })
+                    .collect()
+            })
+            .collect();
+        let source = datafusion_datasource::memory::MemorySourceConfig::try_new_exec(
+            &partitions,
+            schema.clone(),
+            None,
+        )
+        .unwrap();
+        let source: PhysicalPlan = Arc::new(crate::rng_context::ConsumerScopeExec::new(source));
+        let output = Arc::new(Schema::new(vec![
+            Field::new("v", DataType::UInt64, false),
+            Field::new("previous", DataType::UInt64, true),
+        ]));
+        let scan = PreviousExec::new(source, output, vec![0]).unwrap();
+        let context = Arc::new(TaskContext::default());
+        let mut first = scan.execute(3, context.clone()).unwrap();
+        assert!(first.try_next().now_or_never().is_none());
+        tokio::task::yield_now().await;
+        drop(first);
+        let mut second = scan.execute(3, context).unwrap();
+        let batch = tokio::time::timeout(std::time::Duration::from_secs(10), second.try_next())
             .await
-            .expect("summary task")
-            .map_err(|error| DataFusionError::Execution(error.to_string()))??;
-        totals[partition] = Some(last);
+            .unwrap()
+            .unwrap()
+            .unwrap();
+        let previous = batch
+            .column(1)
+            .as_any()
+            .downcast_ref::<UInt64Array>()
+            .unwrap();
+        assert_eq!(previous.value(0), 3 * 4096 * 128 - 1);
+        assert_eq!(previous.value(1), 3 * 4096 * 128);
     }
-    let mut carry = empty;
-    let mut result = Vec::with_capacity(partitions);
-    result.push(carry.clone());
-    for total in totals {
-        for (carry, value) in carry.iter_mut().zip(total.expect("completed summary")) {
-            if value.is_valid(0) {
-                *carry = value;
-            }
-        }
-        result.push(carry.clone());
-    }
-    Ok(result)
 }

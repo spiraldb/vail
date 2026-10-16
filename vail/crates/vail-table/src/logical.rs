@@ -1388,7 +1388,7 @@ impl ExtensionPlanner for VailExtensionPlanner {
             )));
         }
         if let Some(node) = node.as_any().downcast_ref::<crate::streaming_prev::Previous>() {
-            return Ok(Some(node.physical(physical_inputs[0].clone(), physical_inputs[1].clone())?));
+            return Ok(Some(node.physical(physical_inputs[0].clone())?));
         }
         if let Some(node) = node
             .as_any()
