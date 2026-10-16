@@ -595,6 +595,30 @@
         "vail/docs/reviews/numeric-aggregate-cost.json"
       ],
       "native_sha256": "c2ca714e27b90dddef3ea38ddc59381f3dc902128d0d6dfceb213cc98a2b651e",
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "d5b7280b"
+    },
+    {
+      "module": "Vail collect/set/take/counter aggregate adapters and configuration identity",
+      "reviewed_base": "d5b7280b",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "select ordered keys once and interleave only winning value/order rows without concatenating wide input payload",
+        "retain bounded unordered prefix chunks and stop reading payload once full, copying only retained rows",
+        "validate exact canonical ordered packing and reject observed null packed parents",
+        "share singleton collect arrays directly and prepare set item descriptors once per factory",
+        "replace hash-only aggregate configuration names with lossless canonical Arrow/JSON descriptor encoding",
+        "replace private kernel/state/strategy/identity/storage-topology assertions with public values/partitions/IEEE/null/tagged/phase/order/configuration/raw Arrow cases"
+      ],
+      "validation": [
+        "149 public Python collection/aggregate/grouped/numeric/scan/order/global-initialization tests passed; nested-tagged storage subcases limited as documented",
+        "136 Rust tests passed:71 execution (46 library +2 factories +2 array +4 collection +7 Matrix +3 numeric +7 type) and65 table (49 library +1 conditional +5 plans +1 fold/scan +7 partitions +2 type)"
+      ],
+      "reports": [
+        "vail/docs/reviews/collection-aggregate-cost.json"
+      ],
+      "native_sha256": "bc7622bca343ed0da8cf7adf222b200432e9813306d5e4018d54368afb95dc89",
+      "excluded_storage_subcases": "Nested tagged dataset with3/7 partitions: known excluded Vortex ListLayoutStrategy needs at least one chunk;1-partition roundtrip andallpartition aggregatevalues retained",
       "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests."
     }
   ],

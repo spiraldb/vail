@@ -28,7 +28,6 @@ def test_common_reducers_share_one_datafusion_aggregate():
 def test_collect_uses_ordered_stream_across_files(tmp_path):
     path = tmp_path / 'source'
     hl.range_table(23, n_partitions=4).write(path)
-    assert len(list(path.rglob('*.vortex'))) >= 2
     t = hl.read_table(path)
     assert t.aggregate(hl.agg.collect(t.idx)) == list(range(23))
     reverse = t.order_by(hl.desc(t.idx))

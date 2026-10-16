@@ -21,7 +21,7 @@ arrow-data = "=59.2.0"
 arrow-cast = "=59.2.0"
 arrow-buffer.workspace = true
 arrow-select.workspace = true
-arrow-schema.workspace = true
+arrow-schema = { workspace = true, features = ["serde"] }
 datafusion-common.workspace = true
 datafusion-expr.workspace = true
 datafusion-functions-nested.workspace = true
