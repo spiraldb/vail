@@ -35,7 +35,7 @@ def test_call_equality_with_expressions_and_phase_order():
     assert hl.eval(expression == value)
 
 
-@pytest.mark.parametrize('word', [6, 7, 8, 9, None])
+@pytest.mark.parametrize('word', [6, 7, 8, 9, -1, -8, None])
 @pytest.mark.parametrize('accessor', ['phase', 'alleles', 'ploidy', 'alternate_count', 'first', 'het', 'hom_var'])
 def test_imported_malformed_call_is_rejected_by_executed_accessors(word, accessor):
     import pyarrow as pa
@@ -124,3 +124,34 @@ def test_call_predicates_use_packed_words_for_every_supported_ploidy():
         assert row.het_ref == (heterozygous and 0 in alleles)
         assert row.het_non_ref == (heterozygous and all(a > 0 for a in alleles))
         assert row.n_alt == sum(a > 0 for a in alleles)
+
+
+@pytest.mark.parametrize("property", [
+    "is_haploid", "is_diploid", "is_hom_ref", "is_non_ref", "is_het",
+    "is_het_ref", "is_het_non_ref", "is_hom_var", "n_alt_alleles",
+])
+def test_packed_call_properties_preserve_missingness_of_sliced_parent(property):
+    import pyarrow as pa
+    from vail.arrow import arrow_type
+
+    dtype = arrow_type(hl.tcall)
+    # Invalid words beneath missing parents must never be validated or exposed.
+    values = pa.StructArray.from_arrays(
+        [pa.array([6, 21, 8, -6, 20], type=pa.int32())], fields=list(dtype),
+        mask=pa.array([True, False, True, False, False]),
+    ).slice(1, 3)
+    table = hl.Table.parallelize(pa.table({"c": values}))
+    result = table.select(value=getattr(table.c, property)()).collect()
+    def expected_for(alleles):
+        het = len(alleles) == 2 and alleles[0] != alleles[1]
+        return {
+            "is_haploid": len(alleles) == 1, "is_diploid": len(alleles) == 2,
+            "is_hom_ref": all(a == 0 for a in alleles),
+            "is_non_ref": any(a > 0 for a in alleles), "is_het": het,
+            "is_het_ref": het and 0 in alleles,
+            "is_het_non_ref": het and all(a > 0 for a in alleles),
+            "is_hom_var": not het and all(a > 0 for a in alleles),
+            "n_alt_alleles": sum(a > 0 for a in alleles),
+        }[property]
+    expected = [expected_for([1, 0]), None, expected_for([(1 << 29) - 1])]
+    assert [row.value for row in result] == expected

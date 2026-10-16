@@ -2281,16 +2281,9 @@ impl Expr {
                         "invalid interval field {name:?}"
                     ))),
                 },
-                Type::Primitive(PrimitiveType::Call) => match name.as_str() {
-                    "__vail_call_alleles" => Ok(Type::Array {
-                        array: Box::new(Type::Primitive(PrimitiveType::Int32)),
-                    }),
-                    "__vail_call_phased" => Ok(Type::Primitive(PrimitiveType::Bool)),
-                    "__vail_call_word" => Ok(Type::Primitive(PrimitiveType::Int32)),
-                    _ => Err(ExprError::Invalid(format!(
-                        "invalid call storage field {name:?}"
-                    ))),
-                },
+                Type::Primitive(PrimitiveType::Call) => crate::calls::CallAccessor::for_field(name)
+                    .map(|accessor| accessor.result_type())
+                    .ok_or_else(|| ExprError::Invalid(format!("invalid call storage field {name:?}"))),
                 Type::Ndarray { ndarray } => match name.as_str() {
                     "__vail_ndarray_data" => Ok(Type::Array {
                         array: Box::new(ndarray.0),
