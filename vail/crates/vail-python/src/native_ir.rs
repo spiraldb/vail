@@ -345,6 +345,30 @@ pub(crate) struct NativeExpr {
     pub inner: Arc<Expr>,
 }
 impl NativeExpr {
+    fn literal_precedence(&self) -> bool {
+        fn visit(node: &Expr, memo: &mut std::collections::HashMap<*const Expr, bool>) -> bool {
+            let key = node as *const Expr;
+            if let Some(found) = memo.get(&key) { return *found; }
+            let found = match node {
+                Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => true,
+                Expr::Cast { value, .. } | Expr::Unary { value, .. } => visit(value, memo),
+                Expr::Binary { left, right, .. } => visit(left, memo) && visit(right, memo),
+                Expr::Array { elements, .. } | Expr::Tuple { elements } => elements.iter().all(|v| visit(v,memo)),
+                Expr::Struct { fields } => fields.iter().all(|(_,v)| visit(v,memo)),
+                _ => false,
+            };
+            memo.insert(key,found);
+            found
+        }
+        match self.inner.as_ref() {
+            Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => true,
+            Expr::Array { elements, .. } => {
+                let mut memo = std::collections::HashMap::new();
+                elements.iter().all(|v| visit(v,&mut memo))
+            }
+            _ => false,
+        }
+    }
     fn operation(&self) -> &'static str {
         match self.inner.as_ref() {
             Expr::MatrixField { .. } => "matrix_field",
@@ -786,6 +810,7 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
 
 #[pymethods]
 impl NativeExpr {
+    fn literal_dict_precedence(&self) -> bool { self.literal_precedence() }
     #[new]
     fn new(value: &Bound<'_, PyAny>) -> PyResult<Self> {
         Ok(Self {

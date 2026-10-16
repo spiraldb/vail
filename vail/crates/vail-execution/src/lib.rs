@@ -546,6 +546,7 @@ pub mod array_length_aggregate;
 pub mod fold_aggregate;
 
 mod collection_groups;
+mod collection_grouped;
 
 mod collection_lookup;
 

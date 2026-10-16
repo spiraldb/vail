@@ -148,7 +148,9 @@ def test_collection_operations_in_lazy_table_with_globals(tmp_path):
     assert result.n_partitions() == 2
     assert [(r.d, r.v, r.s) for r in result.collect()] == [({'x': 11}, 1, {11, 12}), ({}, 10, set())]
     result.write(str(tmp_path / 'collections'))
-    assert hl.read_table(str(tmp_path / 'collections'))._same(result)
+    restored = hl.read_table(str(tmp_path / 'collections'))
+    assert restored.collect() == result.collect()
+    assert hl.eval(restored.index_globals()) == hl.eval(result.index_globals())
 
 
 def test_explicit_datafusion_gaps():
@@ -302,10 +304,10 @@ def test_dictionary_complex_key_lookup():
     assert hl.eval(d.contains(hl.as_expr((2, hl.missing(hl.tint32))))) is False
 
 
-def test_datafusion_function_ir_and_validation():
+def test_collection_results_and_validation():
     s = hl.set(hl.array([1, 1]))
-    assert s.to_ir()['function'] == 'array_distinct'
-    assert s.union(hl.literal({2})).to_ir()['function'] == 'array_union'
+    assert hl.eval(s) == {1}
+    assert hl.eval(s.union(hl.literal({2}))) == {1, 2}
     with pytest.raises(TypeError, match='same type'):
         s.union(hl.literal({'a'}))
     with pytest.raises(TypeError, match='bool'):
@@ -339,3 +341,12 @@ def test_sorted_native_primitive_collections_keep_missing_last():
     assert hl.eval(hl.sorted(hl.array([3, None, 1, 2]))) == [1, 2, 3, None]
     assert hl.eval(hl.sorted(hl.array([3, None, 1]), reverse=True)) == [3, 1, None]
     assert hl.eval(hl.sorted(hl.set([3, 1, 2]))) == [1, 2, 3]
+
+
+def test_runtime_set_extrema_do_not_depend_on_nan_iteration_order():
+    import math
+    table = hl.Table.parallelize([{'a': [float('nan'), 1.]}, {'a': [1., float('nan')]}],
+                                schema=hl.tstruct(a=hl.tarray(hl.tfloat64)))
+    values = hl.set(table.a)
+    assert hl.min(values).collect() == [1., 1.]
+    assert all(math.isnan(value) for value in hl.max(values).collect())

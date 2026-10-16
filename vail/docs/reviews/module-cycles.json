@@ -427,6 +427,34 @@
       ],
       "excluded_tests": [
         "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: excluded patched Vortex empty nested-list writer"
+      ],
+      "merged_commit": "182c4185"
+    },
+    {
+      "module": "Vail collection APIs, lookup/grouping, consecutive array groups and scalar descriptor restoration",
+      "reviewed_base": "182c4185",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "restore set type after random filtering without redundant deduplication",
+        "avoid sorting set extrema; bind sorted floating sum/product input and SQL reduction once while preserving arithmetic policy",
+        "perform duplicate-precedence discovery with memoized original borrowed native DAG nodes",
+        "use ordered struct type snapshots for collection predicate/key checks",
+        "build grouping selections and offsets in final sorted group order and take payload once",
+        "borrow contiguous scalar dictionary keys instead of taking a copy",
+        "build consecutive group offsets over shared array-column child buffers and check positive group sizes",
+        "replace private grouped-kernel, backing-type, IR-name, cast and _same assertions with public values/types/Arrow input/storage/replay tests",
+        "preserve scalar nested values through physical/logical descriptor restoration before lookup can broadcast them"
+      ],
+      "validation": [
+        "220 public Python tests passed;1 known dependency-only Vortex nested-list storagecase deselected",
+        "76 Rust execution tests passed (69 library +7 public integration); private grouped unit replaced by public execution cases",
+        "15 public Rust table integration tests passed (conditional globals/DataFusion plans/physical partitions/type contracts)"
+      ],
+      "reports": [
+        "vail/docs/reviews/collection-cost.json"
+      ],
+      "excluded_tests": [
+        "test_arrow_type_metadata.py::test_tagged_types_survive_execution_export_and_storage[dtype4-value4]: excluded patched Vortex empty nested-list writer"
       ]
     }
   ],
@@ -554,6 +582,7 @@
     "vail/crates/vail-execution/src/variant_kernels.rs",
     "vail/crates/vail-table/src/vcf_export.rs",
     "vail/crates/vail-python/src/random_binding.rs",
-    "vail/crates/vail-execution/src/aggregate_contract.rs"
+    "vail/crates/vail-execution/src/aggregate_contract.rs",
+    "vail/crates/vail-execution/src/collection_grouped.rs"
   ]
 }

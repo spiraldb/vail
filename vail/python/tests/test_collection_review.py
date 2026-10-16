@@ -81,3 +81,38 @@ def test_collection_helpers_accept_hail_collection_keyword():
     assert hl.array(collection=expression) is expression
     assert hl.sum(collection=expression).collect() == [5]
     assert hl.product(collection=expression).collect() == [6]
+
+
+@pytest.mark.parametrize('size', [0, -1, -(2**31)])
+def test_grouped_requires_positive_sizes(size):
+    value = hl.literal([1, 2, 3])
+    with pytest.raises(ValueError, match='positive'):
+        value.grouped(size)
+    table = hl.Table.parallelize([{'values': [1, 2], 'size': size}],
+                                schema=hl.tstruct(values=hl.tarray(hl.tint32), size=hl.tint32))
+    with pytest.raises((RuntimeError, ValueError), match='positive'):
+        table.values.grouped(table.size).collect()
+
+
+def test_grouped_preserves_slices_empty_null_arrays_and_missing_sizes():
+    import pyarrow as pa
+    # Null list rows can retain hidden child spans in valid Arrow storage.
+    arrays = pa.ListArray.from_arrays(
+        pa.array([0, 1, 6, 9, 9, 11], type=pa.int32()),
+        pa.array(['sentinel', 'é', None, '漢字', 'last', 'tail', 'hidden', 'hidden', 'hidden', 'a', 'b']),
+        mask=pa.array([False, False, True, False, False]))
+    table = hl.Table.parallelize(pa.table({'values': arrays.slice(1, 4),
+                                         'size': pa.array([2, 2, 2, None], type=pa.int32())}))
+    assert table.values.grouped(table.size).collect() == [
+        [['é', None], ['漢字', 'last'], ['tail']], None, [], None]
+    assert hl.eval(hl.literal([1, 2, 3]).grouped(2)) == [[1, 2], [3]]
+    assert hl.eval(hl.literal([], hl.tarray(hl.tint32)).grouped(2)) == []
+
+
+def test_literal_dictionary_shared_expression_duplicate_precedence():
+    value = hl.int32(1)
+    for _ in range(10):
+        value = value + value
+    dictionary = hl.dict(hl.array([hl.tuple([0, value]), hl.tuple([0, value + 1])]))
+    assert dictionary.dtype == hl.tdict(hl.tint32, hl.tint32)
+    assert hl.eval(dictionary) == {0: 1025}

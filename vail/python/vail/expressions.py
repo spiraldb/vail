@@ -497,6 +497,8 @@ class Expression:
         """Split an array expression into consecutive fixed-size groups."""
         if not isinstance(self.dtype, tarray):
             raise TypeError("grouped requires an array expression")
+        if type(group_size) is int and group_size <= 0:
+            raise ValueError("group size must be positive")
         size = as_expr(group_size)
         if size.dtype != tint32:
             raise TypeError("group size must have int32 type")
@@ -584,7 +586,12 @@ class Expression:
             indexed, predicate = index_callback(self, parameter, predicate)
             filtered = Expression(indexed.dtype, _merge_sources(self.source, predicate.source),
                                  {"op": "array_filter", "value": indexed.to_ir(), "parameter": parameter, "predicate": predicate.to_ir()})
-            return filtered.map(lambda pair: pair[1])
+            result = filtered.map(lambda pair: pair[1])
+            # Filtering a unique collection cannot introduce duplicates.
+            if isinstance(self.dtype, (tset, tdict)):
+                from .collections import _cast
+                result = _cast(result, self.dtype)
+            return result
         return Expression(self.dtype, _merge_sources(self.source, predicate.source),
                           {"op": "array_filter", "value": self.to_ir(),
                            "parameter": parameter, "predicate": predicate.to_ir()})

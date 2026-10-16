@@ -1589,6 +1589,14 @@ impl Expr {
                 let Type::Array { array } = value.dtype_scoped(schema, globals, scope)? else {
                     return Err(ExprError::Invalid("array_grouped requires array".into()));
                 };
+                let constant = match size.as_ref() {
+                    Self::Literal { value, .. } => value.as_i64(),
+                    Self::RuntimeLiteral { value: ScalarValue::Int32(value) } => value.map(i64::from),
+                    _ => None,
+                };
+                if constant.is_some_and(|n| n <= 0) {
+                    return Err(ExprError::Invalid("group size must be positive".into()));
+                }
                 let size_type = size.dtype_scoped(schema, globals, scope)?;
                 if size_type != Type::Primitive(PrimitiveType::Int32) {
                     return Err(ExprError::Invalid(format!(
@@ -3962,6 +3970,12 @@ impl PhysicalExpr for HailPhysicalExpr {
     }
     fn evaluate(&self, batch: &RecordBatch) -> datafusion_common::Result<ColumnarValue> {
         let len = batch.num_rows();
+        if matches!(self.kind,HailKind::RestoreArrowType) {
+            // Descriptor restoration must retain scalar lists/records. Expanding
+            // a shared dictionary here defeats the lookup kernel's scalar index.
+            let value = self.args[0].evaluate(batch)?;
+            return crate::logical_expr::restore_arrow_value_type(value,&self.dtype);
+        }
         if let HailKind::Random(function)=&self.kind {
             if len==0 {return Ok(ColumnarValue::Array(arrow_array::new_empty_array(&self.dtype)));}
             let args=self.args.iter().map(|x|x.evaluate(batch)).collect::<datafusion_common::Result<Vec<_>>>()?;
@@ -4826,58 +4840,11 @@ fn lower_scoped(
             cast(range, schema, dtype)?
         }
         Expr::ArrayGrouped { value, size } => {
-            let input_type = value.dtype_scoped(schema, globals.schema(), scope)?;
-            let Type::Array { .. } = input_type else {
-                unreachable!("typing validates array_grouped")
-            };
-            let mut parameter = "__vail_group_start".to_owned();
-            while scope.iter().any(|(name, _, _)| name == &parameter) {
-                parameter.push('_');
-            }
-            let variable = Expr::LambdaVariable {
-                name: parameter.clone(),
-            };
-            let length = Expr::ArrayLength {
-                value: value.clone(),
-            };
-            let remaining = Expr::Binary {
-                operator: BinaryOperator::Sub,
-                left: Arc::new(length.clone()),
-                right: Arc::new(variable.clone()),
-            };
-            let capped_stop = Expr::IfElse {
-                condition: Arc::new(Expr::Binary {
-                    operator: BinaryOperator::Ge,
-                    left: size.clone(),
-                    right: Arc::new(remaining),
-                }),
-                consequent: Arc::new(length),
-                alternate: Arc::new(Expr::Binary {
-                    operator: BinaryOperator::Add,
-                    left: Arc::new(variable.clone()),
-                    right: size.clone(),
-                }),
-            };
-            let grouped = Expr::ArrayMap {
-                value: Arc::new(Expr::StreamRange {
-                    start: Arc::new(Expr::Literal {
-                        dtype: Type::Primitive(PrimitiveType::Int32),
-                        value: json!(0),
-                    }),
-                    stop: Arc::new(Expr::ArrayLength {
-                        value: value.clone(),
-                    }),
-                    step: size.clone(),
-                }),
-                parameter,
-                body: Arc::new(Expr::ArraySlice {
-                    value: value.clone(),
-                    start: Some(Arc::new(variable)),
-                    stop: Some(Arc::new(capped_stop)),
-                    step: None,
-                }),
-            };
-            lower_scoped(&grouped, schema, globals, scope)?
+            Arc::new(ScalarFunctionExpr::try_new(
+                crate::collection_grouped::udf(),
+                vec![lower_scoped(value,schema,globals,scope)?, lower_scoped(size,schema,globals,scope)?],
+                schema,Arc::new(ConfigOptions::default()),
+            )?)
         }
 
         Expr::ExternalGlobal { reference, dtype } => {

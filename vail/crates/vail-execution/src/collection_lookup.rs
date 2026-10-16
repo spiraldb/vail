@@ -91,11 +91,13 @@ impl ScalarUDFImpl for Lookup {
             }
         }
         let sources = UInt32Array::from(sources);
-        let dictionary_keys = take(
-            entries.column_by_name("key").unwrap().as_ref(),
-            &sources,
-            None,
-        )?;
+        let keys = entries.column_by_name("key").unwrap();
+        let dictionary_keys = if scalar_dict && lists.is_valid(0) {
+            let start = lists.value_offsets()[0] as usize;
+            keys.slice(start, lists.value_length(0) as usize)
+        } else {
+            take(keys.as_ref(), &sources, None)?
+        };
         let owner_array: ArrayRef = Arc::new(UInt32Array::from(owners));
         let mut grouping = new_group_values(
             Arc::new(Schema::new(vec![
