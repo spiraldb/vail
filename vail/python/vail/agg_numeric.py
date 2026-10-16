@@ -1,4 +1,4 @@
-"""Numeric/statistical aggregators with compile-time parameters.
+"""Numeric/statistical aggregators with lazy initialization parameters.
 
 The public ``agg`` module re-exports these functions. Runtime arguments are
 packed in a struct expression so the execution engine always sees one input.
@@ -88,7 +88,12 @@ def approx_cdf(expr, k=100, *, _raw=False):
 
 
 def linreg(y, x, nested_dim=1, weight=None):
-    """Fit a multivariate linear regression over complete observations."""
+    """Fit a multivariate regression over complete observations.
+
+    Missing observations are omitted. ``n`` includes zero-weight observations;
+    negative weights or nonfinite values produce NaN statistics when enough
+    observations exist. Rank-deficient fits have missing coefficient fields.
+    """
     y = cast(_numeric(y, "y"), tfloat64)
     xs = x if isinstance(x, (list, tuple)) else [x]
     xs = [cast(_numeric(v, "x"), tfloat64) for v in xs]
@@ -110,7 +115,11 @@ def linreg(y, x, nested_dim=1, weight=None):
 
 
 def downsample(x, y, label=None, n_divisions=500):
-    """Select representative (x, y) points from a two-dimensional grid."""
+    """Select finite representative points from an adaptive geometric grid.
+
+    At most ``n_divisions ** 2`` points are retained, with their original labels.
+    Representatives may differ across input orders and partitionings.
+    """
     x, y = _numeric(x, "x"), _numeric(y, "y")
     if isinstance(n_divisions, bool) or not isinstance(n_divisions, int) or n_divisions <= 0:
         raise ValueError("n_divisions must be a positive integer")

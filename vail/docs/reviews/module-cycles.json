@@ -569,6 +569,32 @@
         "vail/docs/reviews/fold-aggregate-cost.json"
       ],
       "native_sha256": "22112636296ef1774e82dd11dbdb961e00c4184fcf3786906aef79c025d5372b",
+      "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests.",
+      "merged_commit": "b23a1a2a"
+    },
+    {
+      "module": "Vail numeric aggregate APIs and histogram/correlation/regression/quantile/downsample kernels",
+      "reviewed_base": "b23a1a2a",
+      "status": "approved_and_merged",
+      "accepted_findings": [
+        "prepare finite histogram edges once with stable interpolation/fractions and explicit distinct-edge validation",
+        "pack histogram counts into one bounded list state rather than one state column per bin",
+        "replace regression normal equations/inversion/cancellation with bounded mergeable augmented QR factors and retained column origins",
+        "solve triangular coefficient/covariance systems, compute statistics from residual norms/ratios, borrow predictor slices and prepare Student-t once",
+        "skip/mask null packed parents so hidden child values cannot contribute",
+        "amortize geometric downsample bounds expansion, retain bounds through merges and normalize extreme finite coordinates safely",
+        "materialize labels only for retained representatives and account retained label heap",
+        "replace private numeric IR/options tests with public extreme, translated/scaled, weighted/partitioned, rank/nested-model, label, scan and raw-Arrow executions"
+      ],
+      "validation": [
+        "112 public Python numeric/aggregate/global initializer/lazy/scan/Matrix array/fold tests passed, including 48 numeric cases",
+        "74 Rust execution tests passed (53 library +2 factories +2 array +7 Matrix +3 public raw-Arrow numeric +7 type contracts)",
+        "65 Rust table tests passed (49 library +1 conditional globals +5 DataFusion plans +1 raw fold/scan +7 physical partitions +2 type contracts)"
+      ],
+      "reports": [
+        "vail/docs/reviews/numeric-aggregate-cost.json"
+      ],
+      "native_sha256": "c2ca714e27b90dddef3ea38ddc59381f3dc902128d0d6dfceb213cc98a2b651e",
       "review": "Reviewer final source/test/report acceptance; reviewer ran no builds/tests."
     }
   ],

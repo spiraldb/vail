@@ -11,19 +11,13 @@ class NumericAggregateApiTests(unittest.TestCase):
             schema=hl.tstruct(x=hl.tfloat64, y=hl.tfloat64, label=hl.tstr),
         )
 
-    def test_options_are_compile_time_and_inputs_are_expressions(self):
-        hist = hl.agg.hist(self.table.x, 0, 10, 5)
-        self.assertEqual(hist._ir["function"], "hist")
-        self.assertEqual([name for name, _ in hist._ir["init"]], ["start", "end", "bins"])
-
-        qs = hl.agg.approx_quantiles(self.table.x, [0, 0.5, 1], k=128)
-        self.assertEqual(qs._ir["function"], "approx_quantiles")
-        self.assertEqual(qs._ir["init"][0][0], "quantiles")
-        self.assertEqual(qs._ir["init"][0][1]["op"], "array")
-        self.assertEqual(qs._ir["options"]["k"], 128)
-
-        corr = hl.agg.corr(self.table.x, self.table.y)
-        self.assertEqual(corr._ir["function"], "corr")
+    def test_numeric_parameters_execute_with_declared_result_types(self):
+        histogram = self.table.aggregate(hl.agg.hist(self.table.x, 0, 10, 5))
+        self.assertEqual(histogram.bin_edges, [0., 2., 4., 6., 8., 10.])
+        self.assertEqual(histogram.bin_freq, [1, 0, 0, 0, 0])
+        result = hl.agg.approx_quantiles(self.table.x, [0, .5, 1], k=128)
+        self.assertEqual(result.dtype, hl.tarray(hl.tfloat64))
+        self.assertEqual(self.table.aggregate(result), [1., 1., 1.])
 
     def test_hist_corr_and_quantile_execution(self):
         table = hl.Table.parallelize(
@@ -62,12 +56,12 @@ class NumericAggregateApiTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.table.aggregate(hl.agg.approx_quantiles(self.table.x, [0.5, 1.1]))
 
-    def test_regression_and_downsample_shapes(self):
+    def test_regression_and_labeled_downsample_values(self):
+        points = self.table.aggregate(hl.agg.downsample(self.table.x, self.table.y, self.table.label))
+        self.assertEqual(points, [(1., 2., ['a'])])
         regression = hl.agg.linreg(self.table.y, [1.0, self.table.x])
-        self.assertEqual(regression.dtype["n"], hl.tint64)
-        self.assertEqual(regression._ir["options"]["nested_dim"], 1)
-        points = hl.agg.downsample(self.table.x, self.table.y, self.table.label)
-        self.assertEqual(points.dtype.element_type.types[2], hl.tarray(hl.tstr))
+        self.assertEqual(regression.dtype['n'], hl.tint64)
+        self.assertIsNone(self.table.aggregate(regression).beta)
 
 
 def test_numeric_empty_and_degenerate_execution():
@@ -146,3 +140,134 @@ def test_quantile_k_above_sketch_capacity_is_rejected(function):
     args = [table.idx, 0.5] if function is hl.agg.approx_quantiles else [table.idx]
     with pytest.raises(ValueError, match="maximum k"):
         table.aggregate(function(*args, k=65536))
+
+
+@pytest.mark.parametrize('partitions', [1, 3, 7])
+def test_histogram_finite_extreme_spans_and_exact_endpoints(partitions):
+    import math
+    table = hl.Table.parallelize([{'x': x} for x in [-1e308, 0., 1e308, -math.inf, math.inf, math.nan, None]],
+                                schema=hl.tstruct(x=hl.tfloat64), n_partitions=partitions)
+    histogram = table.aggregate(hl.agg.hist(table.x, -1e308, 1e308, 4))
+    assert histogram.bin_edges == pytest.approx([-1e308, -5e307, 0., 5e307, 1e308])
+    assert histogram.bin_freq == [1, 0, 1, 1]
+    assert (histogram.n_smaller, histogram.n_larger) == (1, 1)
+    positive = table.aggregate(hl.agg.hist(table.x, 1e308, 1.5e308, 4))
+    assert all(math.isfinite(x) for x in positive.bin_edges)
+    assert positive.bin_edges[-1] == 1.5e308
+
+
+def test_histogram_rejects_indistinguishable_adjacent_edges():
+    import math
+    table = hl.range_table(1)
+    with pytest.raises(ValueError, match='represented distinctly'):
+        table.aggregate(hl.agg.hist(table.idx, 1., math.nextafter(1., math.inf), 2))
+
+
+@pytest.mark.parametrize('partitions', [1, 3, 7])
+@pytest.mark.parametrize('weighted', [False, True])
+def test_regression_translation_and_residuals_are_stable(partitions, weighted):
+    rows = [{'x': float(i), 'shifted': 1e12 + i, 'y': 2. + 3. * i + ((i % 7) - 3) * .05,
+             'w': float(i % 5)} for i in range(-50, 51)]
+    table = hl.Table.parallelize(rows, n_partitions=partitions)
+    weight = table.w if weighted else None
+    origin = table.aggregate(hl.agg.linreg(table.y, [1., table.x], weight=weight))
+    shifted = table.aggregate(hl.agg.linreg(table.y, [1., table.shifted], weight=weight))
+    assert origin.n == shifted.n == 101
+    assert shifted.beta[1] == pytest.approx(origin.beta[1], abs=2e-5)
+    assert shifted.beta[0] + 1e12 * shifted.beta[1] == pytest.approx(origin.beta[0], abs=.05)
+    assert shifted.standard_error[1] == pytest.approx(origin.standard_error[1], rel=.01)
+    assert shifted.multiple_standard_error == pytest.approx(origin.multiple_standard_error, rel=.01)
+
+
+@pytest.mark.parametrize('nested', [0, 2])
+def test_regression_scaling_nested_models_and_rank_deficiency(nested):
+    import math
+    table = hl.range_table(20, n_partitions=3)
+    y = 4. + 2. * table.idx + hl.float64(table.idx % 3) * .1
+    fit = table.aggregate(hl.agg.linreg(y, [1., hl.float64(table.idx) * 1e-6], nested_dim=nested))
+    assert fit.beta[1] == pytest.approx(2e6, rel=.01)
+    assert math.isfinite(fit.multiple_standard_error)
+    if nested == 2:
+        assert fit.multiple_r_squared == 0.
+        assert math.isnan(fit.f_stat)
+    deficient = table.aggregate(hl.agg.linreg(y, [1., hl.float64(table.idx), hl.float64(table.idx)]))
+    assert deficient.n == 20 and deficient.beta is None
+
+
+@pytest.mark.parametrize('labels', [False, True])
+def test_downsample_extreme_finite_coordinates_and_labels(labels):
+    import sys
+    values = [-sys.float_info.max, -1e308, 0., 1e308, sys.float_info.max]
+    table = hl.Table.parallelize([{'x': x, 'label': str(i)} for i, x in enumerate(values)], n_partitions=3)
+    label = hl.array([table.label, None]) if labels else table.label
+    result = table.aggregate(hl.agg.downsample(table.x, table.x, label, n_divisions=4))
+    assert 1 <= len(result) <= 16
+    for x, y, text in result:
+        assert x == y and x in values
+        expected = str(values.index(x))
+        assert text == ([expected, None] if labels else [expected])
+
+
+def test_downsample_monotone_input_is_bounded_and_representatives_are_real():
+    table = hl.range_table(20_000, n_partitions=3)
+    points = table.aggregate(hl.agg.downsample(table.idx, table.idx, hl.str(table.idx), n_divisions=32))
+    assert 1 <= len(points) <= 32**2
+    assert all(x == y and x == int(x) and 0 <= x < 20_000
+               and label == [str(int(x))] for x, y, label in points)
+
+
+@pytest.mark.parametrize('partitions', [1, 3, 7])
+@pytest.mark.parametrize('scale', [1e-200, 1e200])
+def test_regression_response_scale_preserves_dimensionless_statistics(partitions, scale):
+    table = hl.Table.parallelize([{'x': float(i), 'y': 2. + 3. * i + ((i % 7) - 3) * .05}
+                                 for i in range(-20, 21)], n_partitions=partitions)
+    origin = table.aggregate(hl.agg.linreg(table.y, [1., table.x]))
+    scaled = table.aggregate(hl.agg.linreg(table.y * scale, [1., table.x]))
+    assert [x / scale for x in scaled.beta] == pytest.approx(origin.beta, rel=1e-10, abs=1e-10)
+    assert [x / scale for x in scaled.standard_error] == pytest.approx(origin.standard_error, rel=1e-10)
+    assert scaled.multiple_standard_error / scale == pytest.approx(origin.multiple_standard_error, rel=1e-10)
+    assert scaled.multiple_r_squared == pytest.approx(origin.multiple_r_squared, rel=1e-10)
+    assert scaled.f_stat == pytest.approx(origin.f_stat, rel=1e-9)
+
+
+@pytest.mark.parametrize('partitions', [1, 3, 7])
+@pytest.mark.parametrize('nested', [0, 1, 2])
+def test_regression_general_first_column_and_leading_zero_observations(partitions, nested):
+    import numpy as np
+    x = np.array([[0., 1.], [0., 1.], [1., 1.], [2., 1.], [3., 1.], [4., 1.]])
+    y = np.array([2., 2.1, 5., 8.1, 11., 13.9])
+    table = hl.Table.parallelize([{'a': a, 'b': b, 'y': yy} for (a, b), yy in zip(x.tolist(), y.tolist())], n_partitions=partitions)
+    result = table.aggregate(hl.agg.linreg(table.y, [table.a, table.b], nested_dim=nested))
+    beta = np.linalg.lstsq(x, y, rcond=None)[0]
+    residual = np.linalg.norm(y - x @ beta)
+    null_residual = np.linalg.norm(y if nested == 0 else y - x[:, :nested] @ np.linalg.lstsq(x[:, :nested], y, rcond=None)[0])
+    assert result.beta == pytest.approx(beta.tolist(), abs=1e-10)
+    assert result.multiple_standard_error == pytest.approx(residual / 2., rel=1e-10)
+    assert result.multiple_r_squared == pytest.approx(1. - (residual / null_residual)**2, abs=1e-10)
+
+
+def test_regression_zero_weights_rank_and_nonfinite_policies():
+    import math
+    table = hl.range_table(5, n_partitions=3)
+    zero = table.aggregate(hl.agg.linreg(hl.float64(table.idx), [1., hl.float64(table.idx)], weight=0.))
+    assert zero.n == 5 and zero.beta is None
+    rank = table.aggregate(hl.agg.linreg(hl.float64(table.idx), [0., 1.]))
+    assert rank.n == 5 and rank.beta is None
+    invalid = table.aggregate(hl.agg.linreg(hl.if_else(table.idx == 2, math.nan, hl.float64(table.idx)), [1., hl.float64(table.idx)]))
+    assert invalid.n == 5 and all(math.isnan(x) for x in invalid.beta)
+
+
+def test_numeric_prefix_scans_merge_histogram_qr_and_geometric_grid_states():
+    table = hl.range_table(20, n_partitions=3)
+    result = table.annotate(hist=hl.scan.hist(table.idx, 0., 20., 4),
+                            fit=hl.scan.linreg(2. + 3. * table.idx, [1., hl.float64(table.idx)]),
+                            points=hl.scan.downsample(table.idx, table.idx, hl.str(table.idx), n_divisions=4))
+    for row in result.collect():
+        assert row.hist.bin_edges == [0., 5., 10., 15., 20.]
+        assert sum(row.hist.bin_freq) == row.idx
+        assert row.fit.n == row.idx
+        if row.idx > 2:
+            assert row.fit.beta == pytest.approx([2., 3.], abs=1e-10)
+        assert len(row.points) <= 16
+        assert all(x == y and 0 <= x < row.idx and label == [str(int(x))]
+                   for x, y, label in row.points)
