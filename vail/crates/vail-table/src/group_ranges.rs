@@ -115,6 +115,56 @@ fn compatible_type(dtype: &DataType) -> bool {
         _ => false,
     }
 }
+// Index endpoints use Iceberg's canonical storage. Only representation
+// changes with the same value/order semantics may cross this boundary.
+fn compatible_endpoint(from: &DataType, to: &DataType) -> bool {
+    if from == to {
+        return true;
+    }
+    match (from, to) {
+        (DataType::Int32, DataType::UInt8 | DataType::UInt16) => true,
+        (
+            DataType::Utf8 | DataType::LargeUtf8 | DataType::Utf8View,
+            DataType::Utf8 | DataType::LargeUtf8 | DataType::Utf8View,
+        ) => true,
+        (DataType::Struct(left), DataType::Struct(right)) => {
+            left.len() == right.len()
+                && left.iter().zip(right).all(|(left, right)| {
+                    left.name() == right.name()
+                        && compatible_endpoint(left.data_type(), right.data_type())
+                })
+        }
+        (DataType::List(left), DataType::List(right))
+        | (DataType::LargeList(left), DataType::LargeList(right)) => {
+            compatible_endpoint(left.data_type(), right.data_type())
+        }
+        (DataType::FixedSizeList(left, a), DataType::FixedSizeList(right, b)) => {
+            a == b && compatible_endpoint(left.data_type(), right.data_type())
+        }
+        _ => false,
+    }
+}
+fn normalize_endpoint(
+    array: &arrow_array::ArrayRef,
+    dtype: &DataType,
+) -> Option<arrow_array::ArrayRef> {
+    if array.len() != 1 || !compatible_endpoint(array.data_type(), dtype) {
+        return None;
+    }
+    // safe=false makes out-of-range integer narrowing return an error instead
+    // of introducing nulls. Target descriptors retain nested logical metadata.
+    let normalized = arrow_cast::cast_with_options(
+        array,
+        dtype,
+        &arrow_cast::CastOptions {
+            safe: false,
+            ..Default::default()
+        },
+    )
+    .ok()?;
+    (normalized.data_type() == dtype).then_some(normalized)
+}
+
 fn source(table: &TableRef, arity: usize) -> Option<TableRef> {
     match table.node() {
         TableNode::Read { .. } | TableNode::Range { .. } => Some(table.clone()),
@@ -188,7 +238,31 @@ pub(crate) fn certify(
     if bounds.is_empty() || bounds.iter().any(Option::is_none) {
         return Ok(input);
     }
-    let bounds = bounds.into_iter().map(Option::unwrap).collect::<Vec<_>>();
+    let mut bounds = bounds.into_iter().map(Option::unwrap).collect::<Vec<_>>();
+    let types = table
+        .keys()
+        .iter()
+        .take(keys.len())
+        .map(|key| {
+            table
+                .schema()
+                .field_with_name(key)
+                .map(|field| field.data_type().clone())
+        })
+        .collect::<std::result::Result<Vec<_>, _>>()?;
+    for bound in &mut bounds {
+        for endpoint in [&mut bound.first, &mut bound.last] {
+            if endpoint.len() != types.len() {
+                return Ok(input);
+            }
+            for (component, dtype) in endpoint.iter_mut().zip(&types) {
+                let Some(normalized) = normalize_endpoint(component, dtype) else {
+                    return Ok(input);
+                };
+                *component = normalized;
+            }
+        }
+    }
     for bound in &bounds {
         if compare(&bound.first, &bound.last)?.is_gt() {
             return Ok(input);
@@ -326,6 +400,19 @@ impl CertifiedExec {
                 .collect::<datafusion_common::Result<Vec<_>>>()?,
         )
         .ok_or_else(|| DataFusionError::Plan("empty group range ordering".into()))?;
+        // Logical optimization may change a key's storage representation. A
+        // source certificate never implies that differently typed split values
+        // can be compared against that rewritten physical key.
+        if splits.iter().any(|split| {
+            split.values().iter().zip(&names).any(|(value, name)| {
+                input
+                    .schema()
+                    .field_with_name(name)
+                    .map_or(true, |field| value.data_type() != *field.data_type())
+            })
+        }) {
+            return Ok(input);
+        }
         let range = RangePartitioning::try_new(ordering.clone(), splits.clone())?;
         let mut cache = (**input.properties()).clone();
         // Advertise the certificate in the actual grouping-column namespace.
@@ -363,7 +450,10 @@ impl ExecutionPlan for CertifiedExec {
         vec![false]
     }
     fn maintains_input_order(&self) -> Vec<bool> {
-        vec![true]
+        // Ordering is established by this source proof, not inherited from a
+        // child's advertised ordering. This also prevents distribution rules
+        // probing this contract with a temporary unordered/coalesced child.
+        vec![false]
     }
     fn apply_expressions(
         &self,
@@ -384,12 +474,21 @@ impl ExecutionPlan for CertifiedExec {
                 "group range certificate requires one child".into(),
             ));
         }
-        Self::wrap(
+        let rewritten = Self::wrap(
             children.remove(0),
             self.source.clone(),
             self.names.clone(),
             self.splits.clone(),
-        )
+        )?;
+        // Ancestor aggregates may already have selected SinglePartitioned.
+        // Dropping a proof after that choice could leave their mode stale when
+        // no distribution-enforcement pass remains. Reject such a rewrite.
+        if !rewritten.as_ref().is::<Self>() {
+            return Err(DataFusionError::Plan(
+                "group range certificate invalidated by physical rewrite".into(),
+            ));
+        }
+        Ok(rewritten)
     }
     fn execute(
         &self,

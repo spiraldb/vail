@@ -240,6 +240,11 @@ async fn check_key_array(keys: arrow_array::ArrayRef) {
         .await
         .unwrap();
     let table = TableIR::read(path.to_str().unwrap()).await.unwrap();
+    let keys = arrow_cast::cast(
+        &keys,
+        table.schema().field_with_name("key").unwrap().data_type(),
+    )
+    .unwrap();
     let grouped = grouped(&table, &["key"]);
     let mut actual = Vec::new();
     for batch in grouped
@@ -379,4 +384,31 @@ async fn persisted_globals_join_preserves_grouped_values() {
         &(0..8).map(|i| (i, vec![i + 10])).collect::<Vec<_>>(),
     )
     .await;
+}
+
+#[tokio::test]
+async fn persisted_call_keys_normalize_iceberg_widened_bound_children() {
+    use arrow_array::{BooleanArray, StructArray, UInt8Array, UInt16Array};
+    let dtype = Type::Primitive(PrimitiveType::Call).to_arrow().unwrap();
+    let DataType::Struct(fields) = dtype else {
+        panic!("Call storage must be a struct");
+    };
+    let keys = StructArray::new(
+        fields,
+        vec![
+            Arc::new(UInt16Array::from(vec![0, 0, 0, 0, 1, 1])),
+            Arc::new(UInt16Array::from(vec![0, 0, 1, 1, 1, 1])),
+            Arc::new(UInt8Array::from(vec![2; 6])),
+            Arc::new(BooleanArray::from(vec![false; 6])),
+        ],
+        None,
+    );
+    check_key_array(Arc::new(keys)).await;
+}
+#[tokio::test]
+async fn alternate_string_storage_preserves_persisted_group_keys() {
+    use arrow_array::{LargeStringArray, StringViewArray};
+    let values = vec![Some("a"), Some("a"), Some("b"), Some("b"), None, None];
+    check_key_array(Arc::new(LargeStringArray::from(values.clone()))).await;
+    check_key_array(Arc::new(StringViewArray::from(values))).await;
 }
