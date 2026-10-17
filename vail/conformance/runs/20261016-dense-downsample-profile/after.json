@@ -41,7 +41,7 @@
           "diskio_bytesread": 0,
           "diskio_byteswritten": 0
         },
-        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "cpu_scope": "worker process only; descendants are not included",
         "directory": "/private/tmp/vail-downsample-after-telemetry/vail/benchmark_table--test_table_aggregate_downsample_dense"
       },
       "fixture_seconds": 0.075,
