@@ -753,6 +753,7 @@ struct CompilationMemo {
     physical_schemas: HashMap<usize, Arc<Schema>>,
     generated: Vec<Arc<Expr>>,
     scans: HashMap<*const Expr, bool>,
+    root_expression: usize,
 }
 #[derive(Clone, PartialEq, Eq, Hash)]
 struct CompilationBindings {
@@ -4686,7 +4687,11 @@ fn lower_bound(
     schema: &Schema,
     globals: GlobalBinding<'_>,
 ) -> Result<Arc<dyn PhysicalExpr>, ExprError> {
-    lower_scoped(expr, schema, globals, &[], &mut CompilationMemo::default())
+    let mut memo = CompilationMemo {
+        root_expression: expr as *const Expr as usize,
+        ..CompilationMemo::default()
+    };
+    lower_scoped(expr, schema, globals, &[], &mut memo)
 }
 
 pub(crate) fn string_function(
@@ -5215,10 +5220,14 @@ fn lower_cached(
         .entry(context)
         .or_insert_with(|| Arc::new(schema.clone()))
         .clone();
-    let output_type = value.data_type(schema)?;
-    let cache_constant = is_nested_arrow_type(&output_type)
-        && is_closed_physical_constant(expr)
-        && !vail_ordering::has_type_metadata(&output_type);
+    let cache_constant = if expr as *const Expr as usize == memo.root_expression {
+        let dtype = value.data_type(schema)?;
+        is_nested_arrow_type(&dtype)
+            && is_closed_physical_constant(expr)
+            && !vail_ordering::has_type_metadata(&dtype)
+    } else {
+        false
+    };
     let value = CompiledPhysical::bind(value, bound_schema, cache_constant)?;
     memo.physical.insert(key, value.clone());
     Ok(value)
@@ -5227,31 +5236,34 @@ fn lower_cached(
 /// A deliberately small whitelist for expressions whose result cannot depend
 /// on rows, globals, execution context, or mutable function state. The default
 /// is always non-cacheable.
-fn is_closed_physical_constant(expr: &Expr) -> bool {
-    fn all<'a>(children: impl IntoIterator<Item = &'a Expr>) -> bool {
-        children.into_iter().all(is_closed_physical_constant)
-    }
-    match expr {
-        Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => true,
+fn closed_constant_children(expr: &Expr) -> Option<Vec<&Expr>> {
+    Some(match expr {
+        Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => vec![],
         Expr::IfElse {
             condition,
             consequent,
             alternate,
-        } => all([condition.as_ref(), consequent.as_ref(), alternate.as_ref()]),
-        Expr::Die { message, .. } => is_closed_physical_constant(message),
+        } => vec![condition, consequent, alternate],
+        Expr::Die { message, .. } => vec![message],
         Expr::NestedFunction { function, args, .. } => {
-            !function.starts_with("random_")
-                && nested_function(function)
+            if function.starts_with("random_")
+                || !nested_function(function)
                     .is_ok_and(|udf| udf.signature().volatility == Volatility::Immutable)
-                && all(args)
+            {
+                return None;
+            }
+            args.iter().collect()
         }
         Expr::StringFunction { function, args } => {
-            string_function(function)
+            if !string_function(function)
                 .is_ok_and(|(udf, _, _)| udf.signature().volatility == Volatility::Immutable)
-                && all(args)
+            {
+                return None;
+            }
+            args.iter().collect()
         }
         Expr::IntegerBinary { left, right, .. } | Expr::Binary { left, right, .. } => {
-            all([left.as_ref(), right.as_ref()])
+            vec![left, right]
         }
         Expr::Unary { value, .. }
         | Expr::Cast { value, .. }
@@ -5261,11 +5273,26 @@ fn is_closed_physical_constant(expr: &Expr) -> bool {
         | Expr::IsMissing { value }
         | Expr::ArrayFlatten { value }
         | Expr::ArrayLength { value }
-        | Expr::ArrayReduce { value, .. } => is_closed_physical_constant(value),
-        Expr::Tuple { elements } | Expr::Array { elements, .. } => all(elements),
-        Expr::Struct { fields } => all(fields.iter().map(|(_, value)| value)),
-        _ => false,
+        | Expr::ArrayReduce { value, .. } => vec![value],
+        Expr::Tuple { elements } | Expr::Array { elements, .. } => elements.iter().collect(),
+        Expr::Struct { fields } => fields.iter().map(|(_, value)| value).collect(),
+        _ => return None,
+    })
+}
+
+fn is_closed_physical_constant(expr: &Expr) -> bool {
+    let mut pending = vec![expr];
+    let mut visited = HashSet::new();
+    while let Some(node) = pending.pop() {
+        if !visited.insert(node as *const Expr as usize) {
+            continue;
+        }
+        let Some(children) = closed_constant_children(node) else {
+            return false;
+        };
+        pending.extend(children);
     }
+    true
 }
 
 fn is_nested_arrow_type(dtype: &DataType) -> bool {
