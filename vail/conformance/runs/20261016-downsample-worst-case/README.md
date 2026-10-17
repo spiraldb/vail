@@ -26,3 +26,7 @@ Telemetry was sampled at 10 Hz from the benchmark worker process only. Process-t
 - `before.json`, `after.json`: timed result, telemetry deltas, runner and upstream source hashes.
 - `before.metrics.csv`, `after.metrics.csv`: 10 Hz worker CPU/RSS/counter samples.
 - `before.sample.txt`, `after.sample.txt`: macOS stack samples.
+
+## Required review
+
+Reviewer chat `01a14128-21b8-7a53-b399-4ad8f9b31f4f` approved exact `19dd184c90550455536a02419a09c6ccf42d5cc2` against main `f032465d3a3d25e8ec3b49306188bd6b5b92d2b2`. Production commit `e464af50` is unchanged by the final assertion-only child. All review findings were addressed. The reviewer inspected source/tests/evidence, ran no builds/tests, and made no edits. Local throughput improvement is not a cloud speedup claim; same-VM validation follows separately after the join diagnostic policy is restored.
