@@ -159,7 +159,7 @@ impl PhysicalExpr for ProjectionBroadcastExpr {
         self: Arc<Self>,
         children: Vec<Arc<dyn PhysicalExpr>>,
     ) -> Result<Arc<dyn PhysicalExpr>> {
-        // State must not cross a physical-plan rewrite/action boundary.
+        // Rewrites start fresh; retained immutable arrays may safely outlive an action.
         Ok(Arc::new(Self::new(
             self.inner.clone().with_new_children(children)?,
         )))
