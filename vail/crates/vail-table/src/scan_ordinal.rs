@@ -5,7 +5,9 @@ use arrow_schema::{DataType, Field, Schema, SortOptions};
 use datafusion_common::{DFSchema, DFSchemaRef, DataFusionError, Result};
 use datafusion_execution::TaskContext;
 use datafusion_expr::{Expr, Extension, LogicalPlan, UserDefinedLogicalNodeCore};
-use datafusion_physical_expr::{LexOrdering, PhysicalSortExpr, expressions::Column};
+use datafusion_physical_expr::{
+    AcrossPartitions, LexOrdering, PhysicalSortExpr, expressions::Column,
+};
 use datafusion_physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, PlanProperties, SendableRecordBatchStream,
     stream::RecordBatchStreamAdapter,
@@ -116,6 +118,16 @@ pub(crate) fn numbered(
     name: &str,
     partition_name: &str,
 ) -> Result<LogicalPlan> {
+    // The ordinal counter is local to each input execution stream. Callers must
+    // preserve a single-stream domain for each logical partition tag (or
+    // retag partitions after splitting them) so repeated rows with the same tag
+    // cannot begin in independent streams. The provider's PartitionSetExec
+    // stamps each source partition with its own tag; prepared union/repartition
+    // paths retag their output partitions in partitioned.rs. lower_sort and
+    // lower_uncached's grouped-aggregate branch use an ordered global result
+    // with a uniform tag. SourceOrdinalExec also forbids optimizer-inserted
+    // input repartitioning and maintains input order, preserving these caller
+    // domains after physical planning.
     if input
         .schema()
         .fields()
@@ -164,6 +176,38 @@ impl SourceOrdinal {
         )?))
     }
 }
+
+fn source_partition_constant(
+    input: &PhysicalPlan,
+    partition_index: usize,
+) -> Option<AcrossPartitions> {
+    let column_constant = |plan: &PhysicalPlan, index: usize| {
+        let column: Arc<dyn datafusion_physical_expr::PhysicalExpr> =
+            Arc::new(Column::new(plan.schema().field(index).name(), index));
+        plan.properties()
+            .equivalence_properties()
+            .is_expr_constant(&column)
+    };
+
+    if let Some(constant) = column_constant(input, partition_index) {
+        return Some(constant);
+    }
+
+    // DF55 CrossJoinExec's Full-join equivalence calculation drops both
+    // sides' constants and orderings. Its output partitioning and execute()
+    // still come directly from the right input, so a right-side partition tag
+    // remains constant within each output stream. Remap only right columns;
+    // never infer a tag constant from the buffered left input.
+    let cross = input
+        .as_ref()
+        .downcast_ref::<datafusion_physical_plan::joins::CrossJoinExec>()?;
+    let left_width = cross.left().schema().fields().len();
+    if partition_index < left_width {
+        return None;
+    }
+    column_constant(cross.right(), partition_index - left_width)
+}
+
 #[derive(Debug)]
 struct SourceOrdinalExec {
     input: PhysicalPlan,
@@ -186,24 +230,12 @@ impl SourceOrdinalExec {
             schema.field(schema.fields().len() - 1).name(),
             schema.fields().len() - 1,
         ));
-        // Only certify the order when the source wrapper still proves that
-        // the logical partition field is constant within each physical stream.
-        // Coalesces and shuffles clear this per-partition constant witness.
-        let input_partition: Arc<dyn datafusion_physical_expr::PhysicalExpr> =
-            Arc::new(Column::new(
-                input.schema().field(partition_index).name(),
-                partition_index,
-            ));
-        let partition_tag_constant_per_stream = input
-            .properties()
-            .equivalence_properties()
-            .is_expr_constant(&input_partition)
-            .is_some();
-        if let Some(across_partitions) = input
-            .properties()
-            .equivalence_properties()
-            .is_expr_constant(&input_partition)
-        {
+        // Only certify the tag when the input properties prove it, including
+        // the narrowly handled CrossJoin right-side case above. The ordinal is
+        // generated here, so the resulting (tag, ordinal) order is ours.
+        let across_partitions = source_partition_constant(&input, partition_index);
+        let partition_tag_constant_per_stream = across_partitions.is_some();
+        if let Some(across_partitions) = across_partitions {
             equivalence
                 .add_constants([datafusion_physical_expr::ConstExpr::new(
                     partition.clone(),

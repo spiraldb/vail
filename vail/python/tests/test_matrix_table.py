@@ -82,6 +82,31 @@ def test_matrix_scan_count_preserves_head_prefix_order():
     assert [(row.row_idx, row.prefix) for row in after_scan] == expected
 
 
+def test_matrix_scan_count_after_repartition_union_and_head():
+    mt = hl.utils.range_matrix_table(12, 2, 4)
+    combined = mt.repartition(3).union_rows(mt)
+    expected = [
+        (row_idx, prefix)
+        for prefix, row_idx in enumerate([0, 0, 1, 1, 2, 2, 3, 3])
+    ]
+
+    before_scan = combined.head(8).annotate_rows(prefix=hl.scan.count()).rows().collect()
+    after_scan = combined.annotate_rows(prefix=hl.scan.count()).head(8).rows().collect()
+    assert [(row.row_idx, row.prefix) for row in before_scan] == expected
+    assert [(row.row_idx, row.prefix) for row in after_scan] == expected
+
+
+def test_matrix_scan_count_after_grouped_and_global_aggregate():
+    table = hl.utils.range_table(12, n_partitions=4)
+    grouped = table.group_by(k=table.idx % 3).aggregate(n=hl.agg.count())
+    grouped = grouped.annotate(prefix=hl.scan.count()).collect()
+    assert [(row.k, row.prefix) for row in grouped] == [(0, 0), (1, 1), (2, 2)]
+
+    global_aggregate = table.group_by().aggregate(n=hl.agg.count())
+    global_aggregate = global_aggregate.annotate(prefix=hl.scan.count()).collect()
+    assert [(row.n, row.prefix) for row in global_aggregate] == [(12, 0)]
+
+
 def test_annotations_actions_globals_and_native_plan():
     m = matrix()
     assert m.aggregate_entries(hl.agg.sum(m.x)) == 198

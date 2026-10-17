@@ -1038,7 +1038,11 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
                                 )
                             })
                             .collect::<Result<Vec<_>>>()?;
-                        LogicalPlanBuilder::from(plan).sort(sorts)?.build()?
+                        // Preserve the grouped-key ordering through the tag-0
+                        // projection below. SourceOrdinal runs after this
+                        // boundary and requires one ordered stream for the
+                        // global aggregate result.
+                        ordered(LogicalPlanBuilder::from(plan).sort(sorts)?.build()?)
                     };
                     let mut fields = plan
                         .schema()
