@@ -34,3 +34,20 @@ def test_nested_projection_global_captures_remain_bound_to_each_table():
     assert [row["values"] for row in first.collect()] == [[7, 8, 9]] * 17
     assert [row["values"] for row in second.collect()] == [[29, 30, 31]] * 17
     assert [row["values"] for row in first.collect()] == [[7, 8, 9]] * 17
+
+
+def test_failing_nested_projection_is_lazy_until_selected_rows_are_demanded():
+    import pytest
+
+    failing = hl.range(1).map(lambda _: hl.int32("vail-projection-invalid"))
+    empty = hl.range_table(0).annotate(values=failing)
+    assert empty.collect() == []
+    source = hl.range_table(3, n_partitions=2)
+    unselected = source.annotate(
+        values=hl.if_else(source.idx < 0, failing, hl.empty_array(hl.tint32))
+    )
+    assert [row["values"] for row in unselected.collect()] == [[], [], []]
+    selected = hl.range_table(1).annotate(values=failing)
+    for _ in range(2):
+        with pytest.raises(Exception, match="vail-projection-invalid"):
+            selected.collect()
