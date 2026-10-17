@@ -725,9 +725,18 @@ impl ReadKeyFilteredExec {
                 }
             }
         }
+        // The output carries its physical source-partition ID in the final
+        // column. Preserve that range distribution so downstream operators
+        // keep each filtered reader stream in its original partition.
+        let partitioning = partition_id_properties(
+            &schema,
+            &mut equivalence,
+            partition_ranges.len(),
+            schema.fields().len() - 1,
+        );
         let properties = Arc::new(PlanProperties::new(
             equivalence,
-            Partitioning::UnknownPartitioning(partition_ranges.len()),
+            partitioning,
             EmissionType::Incremental,
             Boundedness::Bounded,
         ));
