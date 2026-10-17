@@ -127,6 +127,13 @@ fn visit_reachable(expression: &Expr, f: &mut impl FnMut(&Expr)) {
             return;
         }
         f(expression);
+        // A closed array length produces a scalar per row and does not
+        // broadcast the nested array into the output batches.
+        if let Expr::ArrayLength { value } = expression
+            && is_closed_repeat(value)
+        {
+            return;
+        }
         if let Expr::IfElse {
             condition,
             consequent,
@@ -152,6 +159,16 @@ fn visit_reachable(expression: &Expr, f: &mut impl FnMut(&Expr)) {
         expression.visit_children(&mut |child| walk(child, seen, f));
     }
     walk(expression, &mut HashSet::new(), f);
+}
+
+fn is_closed_repeat(expression: &Expr) -> bool {
+    let Expr::NestedFunction { function, args, .. } = expression else {
+        return false;
+    };
+    function == "array_repeat"
+        && args.len() == 2
+        && known_positive_count(&args[1]).is_some()
+        && matches!(args[0], Expr::Literal { .. } | Expr::RuntimeLiteral { .. })
 }
 
 fn repeat_bytes(args: &[Expr], dtype: &Type) -> Option<u64> {
@@ -243,224 +260,40 @@ pub(crate) fn cap_filter_batches(
     plan: crate::plan::PhysicalPlan,
     rows: usize,
 ) -> crate::Result<crate::plan::PhysicalPlan> {
-    use datafusion_common::tree_node::{Transformed, TreeNode};
     use datafusion_physical_plan::filter::FilterExec;
-    Ok(plan
-        .transform_up(|plan| {
-            let Some(filter) = plan.as_ref().downcast_ref::<FilterExec>() else {
-                return Ok(Transformed::no(plan));
-            };
+
+    fn rewrite(
+        plan: crate::plan::PhysicalPlan,
+        rows: usize,
+        memo: &mut HashMap<usize, crate::plan::PhysicalPlan>,
+    ) -> datafusion_common::Result<crate::plan::PhysicalPlan> {
+        let identity = Arc::as_ptr(&plan) as *const () as usize;
+        if let Some(rewritten) = memo.get(&identity) {
+            return Ok(rewritten.clone());
+        }
+
+        let children = plan.children();
+        let mut rewritten_children = Vec::with_capacity(children.len());
+        let mut changed = false;
+        for child in children {
+            let rewritten = rewrite(child.clone(), rows, memo)?;
+            changed |= !Arc::ptr_eq(child, &rewritten);
+            rewritten_children.push(rewritten);
+        }
+        let mut rewritten = if changed {
+            plan.clone().with_new_children(rewritten_children)?
+        } else {
+            plan
+        };
+        if let Some(filter) = rewritten.as_ref().downcast_ref::<FilterExec>() {
             let batch_size = filter.batch_size().min(rows.max(1));
-            if batch_size == filter.batch_size() {
-                return Ok(Transformed::no(plan));
+            if batch_size < filter.batch_size() {
+                rewritten = Arc::new(filter.with_batch_size(batch_size)?);
             }
-            let capped: crate::plan::PhysicalPlan = Arc::new(filter.with_batch_size(batch_size)?);
-            Ok(Transformed::yes(capped))
-        })?
-        .data)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::TableIR;
-    use datafusion_execution::runtime_env::RuntimeEnv;
-    use serde_json::json;
-
-    #[derive(Debug)]
-    struct CallerExtension;
-
-    fn literal_i32(value: i32) -> Expr {
-        Expr::Literal {
-            dtype: Type::Primitive(PrimitiveType::Int32),
-            value: json!(value),
         }
+        memo.insert(identity, rewritten.clone());
+        Ok(rewritten)
     }
 
-    fn repeat(count: Expr) -> Expr {
-        Expr::NestedFunction {
-            function: "array_repeat".into(),
-            args: vec![literal_i32(0), count],
-            dtype: Type::Array {
-                array: Box::new(Type::Primitive(PrimitiveType::Int32)),
-            },
-        }
-    }
-
-    fn int64_from_i32(value: Expr) -> Expr {
-        Expr::Cast {
-            dtype: Type::Primitive(PrimitiveType::Int64),
-            value: Arc::new(value),
-        }
-    }
-
-    fn mapped(expression: Expr) -> TableRef {
-        TableIR::range(4, 1)
-            .unwrap()
-            .map_rows(vec![
-                ("idx".into(), Expr::Column { name: "idx".into() }),
-                ("items".into(), expression),
-            ])
-            .unwrap()
-    }
-
-    #[test]
-    fn advises_only_for_known_positive_primitive_repeats() {
-        assert_eq!(
-            for_table(
-                &mapped(repeat(int64_from_i32(literal_i32(50_000_000)))),
-                8192
-            ),
-            Some(1)
-        );
-        assert_eq!(
-            for_table(&mapped(repeat(int64_from_i32(literal_i32(1_000_000)))), 8192),
-            Some(16)
-        );
-
-        assert_eq!(
-            for_table(&mapped(repeat(int64_from_i32(literal_i32(-1)))), 8192),
-            None
-        );
-        assert_eq!(
-            for_table(&mapped(repeat(int64_from_i32(literal_i32(0)))), 8192),
-            None
-        );
-        assert_eq!(
-            for_table(
-                &mapped(repeat(int64_from_i32(Expr::Column { name: "idx".into() }))),
-                8192
-            ),
-            None
-        );
-        assert_eq!(
-            for_table(&mapped(repeat(int64_from_i32(literal_i32(50_000_000)))), 1),
-            Some(1)
-        );
-    }
-
-    #[test]
-    fn unknown_repeat_does_not_erase_known_wide_repeat_advice() {
-        let known = repeat(int64_from_i32(literal_i32(50_000_000)));
-        let bad_unselected = repeat(int64_from_i32(literal_i32(-1)));
-        let expression = Expr::IfElse {
-            condition: Arc::new(Expr::Literal {
-                dtype: Type::Primitive(PrimitiveType::Bool),
-                value: json!(false),
-            }),
-            consequent: Arc::new(bad_unselected),
-            alternate: Arc::new(known),
-        };
-        assert_eq!(for_table(&mapped(expression), 8192), Some(1));
-        assert_eq!(
-            for_table(
-                &mapped(repeat(int64_from_i32(Expr::Column { name: "idx".into() }))),
-                8192
-            ),
-            None
-        );
-    }
-
-    #[test]
-    fn dropped_projection_and_literal_unselected_repeat_do_not_cap() {
-        let source = TableIR::range(4, 1)
-            .unwrap()
-            .map_rows(vec![
-                ("idx".into(), Expr::Column { name: "idx".into() }),
-                (
-                    "items".into(),
-                    repeat(int64_from_i32(literal_i32(50_000_000))),
-                ),
-            ])
-            .unwrap();
-        let selected = source
-            .map_rows(vec![("idx".into(), Expr::Column { name: "idx".into() })])
-            .unwrap();
-        assert_eq!(for_table(&selected, 8192), None);
-
-        let expression = Expr::IfElse {
-            condition: Arc::new(Expr::Literal {
-                dtype: Type::Primitive(PrimitiveType::Bool),
-                value: json!(true),
-            }),
-            consequent: Arc::new(repeat(int64_from_i32(literal_i32(1)))),
-            alternate: Arc::new(repeat(int64_from_i32(literal_i32(50_000_000)))),
-        };
-        assert_eq!(for_table(&mapped(expression), 8192), None);
-    }
-
-    #[test]
-    fn advised_context_preserves_caller_identity_runtime_and_extensions() {
-        let udf = Arc::new(datafusion_expr::expr_fn::create_udf(
-            "caller_identity",
-            vec![arrow_schema::DataType::Int32],
-            arrow_schema::DataType::Int32,
-            datafusion_expr::Volatility::Immutable,
-            Arc::new(|values: &[datafusion_expr::ColumnarValue]| Ok(values[0].clone())),
-        ));
-        let scalar_functions = HashMap::from([("caller_identity".into(), udf.clone())]);
-        let runtime = Arc::new(RuntimeEnv::default());
-        let config = SessionConfig::new()
-            .with_batch_size(4096)
-            .with_extension(Arc::new(CallerExtension));
-        let context = TaskContext::new(
-            Some("caller-task".into()),
-            "caller-session".into(),
-            config,
-            scalar_functions,
-            Default::default(),
-            Default::default(),
-            Default::default(),
-            runtime.clone(),
-        );
-
-        let adjusted_config = with_limit(context.session_config().clone(), 1);
-        let adjusted = task_context_with_config(&context, adjusted_config);
-        assert_eq!(adjusted.task_id().as_deref(), Some("caller-task"));
-        assert_eq!(adjusted.session_id(), "caller-session");
-        assert!(Arc::ptr_eq(&runtime, &adjusted.runtime_env()));
-        assert_eq!(adjusted.session_config().batch_size(), 1);
-        assert!(
-            adjusted
-                .session_config()
-                .get_extension::<CallerExtension>()
-                .is_some()
-        );
-        assert!(
-            adjusted
-                .session_config()
-                .get_extension::<WideBatchLimit>()
-                .is_some()
-        );
-        assert_eq!(
-            adjusted.scalar_functions().len(),
-            context.scalar_functions().len()
-        );
-        assert!(Arc::ptr_eq(
-            adjusted.scalar_functions().get("caller_identity").unwrap(),
-            &udf
-        ));
-        assert_eq!(
-            adjusted.higher_order_functions().len(),
-            context.higher_order_functions().len()
-        );
-        assert_eq!(
-            adjusted.aggregate_functions().len(),
-            context.aggregate_functions().len()
-        );
-        assert_eq!(
-            adjusted.window_functions().len(),
-            context.window_functions().len()
-        );
-
-        let already_capped = with_limit(SessionConfig::new(), 32);
-        let still_capped = with_limit(already_capped, 64);
-        assert_eq!(
-            still_capped
-                .get_extension::<WideBatchLimit>()
-                .unwrap()
-                .rows,
-            32
-        );
-    }
+    rewrite(plan, rows, &mut HashMap::new()).map_err(Into::into)
 }

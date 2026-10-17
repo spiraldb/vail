@@ -87,12 +87,18 @@ async fn generated_arrays_preserve_values_and_source_partition_membership() {
 }
 
 #[tokio::test]
-async fn wide_repeat_filter_preserves_rows_and_order() {
-    let source = TableIR::range(7, 3).unwrap();
+async fn live_wide_repeat_is_split_into_single_row_batches() {
+    // Each row is just over the 64 MiB advice target, so the public action
+    // should emit two one-row batches rather than materialize both lists in
+    // one batch.
+    let source = TableIR::range(2, 1).unwrap();
     let table = source
         .map_rows(vec![
             ("idx".into(), ScalarIR::Column { name: "idx".into() }),
-            ("items".into(), repeat(16_384)),
+            (
+                "items".into(),
+                repeat_value(ScalarIR::Column { name: "idx".into() }, 16_300_000),
+            ),
         ])
         .unwrap()
         .filter(
@@ -105,39 +111,148 @@ async fn wide_repeat_filter_preserves_rows_and_order() {
         .unwrap();
 
     let partitions = table.collect_partitions().await.unwrap();
-    let mut seen = 0;
-    for batches in partitions {
-        for batch in batches {
-            let indices = batch
-                .column_by_name("idx")
-                .unwrap()
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap();
-            assert!(
-                indices
-                    .values()
-                    .iter()
-                    .copied()
-                    .eq(seen..seen + batch.num_rows() as i32)
-            );
-            let items = batch
-                .column_by_name("items")
-                .unwrap()
-                .as_any()
-                .downcast_ref::<ListArray>()
-                .unwrap();
-            assert_eq!(items.len(), batch.num_rows());
-            for row in 0..items.len() {
-                let values = items.value(row);
-                let values = values.as_any().downcast_ref::<Int32Array>().unwrap();
-                assert_eq!(values.len(), 16_384);
-                assert!(values.values().iter().all(|&value| value == 7));
-            }
-            seen += batch.num_rows() as i32;
-        }
+    assert_eq!(partitions.len(), 1);
+    let batches = &partitions[0];
+    assert_eq!(
+        batches
+            .iter()
+            .map(|batch| batch.num_rows())
+            .collect::<Vec<_>>(),
+        [1, 1]
+    );
+    for (expected_idx, batch) in batches.iter().enumerate() {
+        let indices = batch
+            .column_by_name("idx")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap();
+        assert_eq!(indices.values(), &[expected_idx as i32]);
+        let items = batch
+            .column_by_name("items")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap();
+        let values = items.value(0);
+        let values = values.as_any().downcast_ref::<Int32Array>().unwrap();
+        assert_eq!(values.len(), 16_300_000);
+        assert_eq!(values.value(0), expected_idx as i32);
+        assert_eq!(values.value(values.len() - 1), expected_idx as i32);
     }
-    assert_eq!(seen, 7);
+}
+
+#[tokio::test]
+async fn dropped_or_unselected_wide_repeat_does_not_change_batches() {
+    let source = TableIR::range(8, 1)
+        .unwrap()
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            ("items".into(), repeat(50_000_000)),
+        ])
+        .unwrap();
+    let projected = source
+        .map_rows(vec![(
+            "idx".into(),
+            ScalarIR::Column { name: "idx".into() },
+        )])
+        .unwrap();
+    let batches = projected.collect_partitions().await.unwrap();
+    assert_eq!(
+        batches[0]
+            .iter()
+            .map(|batch| batch.num_rows())
+            .collect::<Vec<_>>(),
+        [8]
+    );
+    let values = batches[0][0]
+        .column_by_name("idx")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!(values.values(), &(0..8).collect::<Vec<_>>());
+
+    let conditionally_selected = TableIR::range(8, 1)
+        .unwrap()
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            (
+                "items".into(),
+                ScalarIR::IfElse {
+                    condition: Arc::new(ScalarIR::Literal {
+                        dtype: Type::Primitive(PrimitiveType::Bool),
+                        value: json!(true),
+                    }),
+                    consequent: Arc::new(repeat(1)),
+                    alternate: Arc::new(repeat(50_000_000)),
+                },
+            ),
+        ])
+        .unwrap();
+    let batches = conditionally_selected.collect_partitions().await.unwrap();
+    assert_eq!(
+        batches[0]
+            .iter()
+            .map(|batch| batch.num_rows())
+            .collect::<Vec<_>>(),
+        [8]
+    );
+    let items = batches[0][0]
+        .column_by_name("items")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(items.value_length(0), 1);
+    assert_eq!(items.value_length(7), 1);
+}
+
+#[tokio::test]
+async fn closed_wide_array_length_reduction_keeps_normal_batches() {
+    let table = TableIR::range(100, 1)
+        .unwrap()
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            (
+                "length".into(),
+                ScalarIR::ArrayLength {
+                    value: Arc::new(repeat(1_000_000)),
+                },
+            ),
+        ])
+        .unwrap();
+    let batches = table.collect_partitions().await.unwrap();
+    assert_eq!(
+        batches[0]
+            .iter()
+            .map(|batch| batch.num_rows())
+            .collect::<Vec<_>>(),
+        [100]
+    );
+    let lengths = batches[0][0]
+        .column_by_name("length")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert!(lengths.values().iter().all(|&length| length == 1_000_000));
+}
+
+#[tokio::test]
+async fn ordinary_range_keeps_its_requested_batch_size() {
+    let batches = TableIR::range_batched(10, 1, 3)
+        .unwrap()
+        .collect_partitions()
+        .await
+        .unwrap();
+    assert_eq!(
+        batches[0]
+            .iter()
+            .map(|batch| batch.num_rows())
+            .collect::<Vec<_>>(),
+        [3, 3, 3, 1]
+    );
 }
 
 #[tokio::test]
