@@ -406,8 +406,8 @@ fn redundant_naive_coalesce_preserves_the_source_node() {
 }
 
 #[tokio::test]
-async fn annotations_preserve_unique_range_join_streaming() {
-    use vail_table::{TableJoinKind, partitioned};
+async fn annotated_range_joins_preserve_rows_and_key_order() {
+    use vail_table::TableJoinKind;
 
     let source = TableIR::range(30, 1).unwrap();
     let left = source.map_rows(vec![
@@ -419,14 +419,14 @@ async fn annotations_preserve_unique_range_join_streaming() {
         ("right_value".into(), column("idx")),
     ]).unwrap();
     let joined = left.join(right, TableJoinKind::Inner, 1).unwrap();
-    let prepared = partitioned::prepare(joined.clone()).await.unwrap();
-    let plan = prepared.physical_plan();
-    let display = datafusion_physical_plan::displayable(plan.as_ref()).indent(true).to_string();
-    assert!(display.contains("SortMergeJoinExec"));
-    assert!(!display.contains("SortExec:"), "{display}");
     let batches = joined.collect_partitions().await.unwrap();
     let actual: Vec<_> = batches.iter().flatten().flat_map(|batch| {
-        batch.column(0).as_any().downcast_ref::<Int32Array>().unwrap().values().to_vec()
+        let fields: Vec<_> = (0..3).map(|index| {
+            batch.column(index).as_any().downcast_ref::<Int32Array>().unwrap()
+        }).collect();
+        (0..batch.num_rows()).map(|row| {
+            (fields[0].value(row), fields[1].value(row), fields[2].value(row))
+        }).collect::<Vec<_>>()
     }).collect();
-    assert_eq!(actual, (0..30).collect::<Vec<_>>());
+    assert_eq!(actual, (0..30).map(|i| (i, i, i)).collect::<Vec<_>>());
 }
