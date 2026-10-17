@@ -1543,13 +1543,59 @@ class MatrixTable:
                 missing(self.entry.dtype),
             )
         )
-        output = _project(
-            base, [(n, base[_ROW][n]) for n in self.row.dtype] + [(en, entries)]
+        row_index_keys = self._mir.row_index_keys
+        preserve_index = (
+            bool(row_index_keys)
+            and tuple(base._keys) == tuple(row_index_keys)
+            and len(row_index_keys) == len(self._mir.row_key)
+            and all(
+                index_name in base._schema
+                and self.row.dtype[row_name] == base._schema[index_name]
+                for row_name, index_name in zip(self._mir.row_key, row_index_keys)
+            )
         )
-        if self._mir.row_index_keys:
-            output = output._with_keys(*self._mir.row_key)
-        else:
-            output = output.key_by(*self._mir.row_key)
+        if preserve_index:
+            index_by_row_key = dict(zip(self._mir.row_key, row_index_keys))
+            row_fields = [
+                (
+                    name,
+                    base[index_by_row_key[name]]
+                    if name in index_by_row_key
+                    else base[_ROW][name],
+                )
+                for name in self.row.dtype
+            ]
+            fields = row_fields + [(en, entries)]
+
+            # Preserve the persisted key columns through the native projection
+            # so MapRows can retain their ordering proof. If persisted names
+            # differ from public matrix key names, first carry the persisted
+            # names through unchanged, then rename key metadata and drop those
+            # temporary columns with another direct projection.
+            extra_keys = [name for name in row_index_keys if name not in self._mir.row_key]
+            output_names = {name for name, _ in fields}
+            if any(name in output_names for name in extra_keys):
+                preserve_index = False
+            else:
+                projected = base._project(
+                    fields + [(name, base[name]) for name in extra_keys],
+                    keys=base._keys,
+                )
+                if tuple(row_index_keys) != tuple(self._mir.row_key):
+                    projected = projected._with_keys(*self._mir.row_key)
+                    projected = projected._project(
+                        [(name, projected[name]) for name, _ in fields],
+                        keys=self._mir.row_key,
+                    )
+                output = projected
+        if not preserve_index:
+            output = _project(
+                base, [(n, base[_ROW][n]) for n in self.row.dtype] + [(en, entries)]
+            )
+            if row_index_keys:
+                output = output._with_keys(*self._mir.row_key)
+            else:
+                output = output.key_by(*self._mir.row_key)
         columns = self._public_axis("col", key=False)
         output = self._with_globals(output).annotate_globals(
             **{cn: columns.aggregate(agg._ordered_collect(columns.row), _localize=False)}

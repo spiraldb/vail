@@ -109,6 +109,66 @@ def test_sparse_coordinate_conversion_scatters_by_exact_column_positions():
         [0, None, 21], [None, 11, 12]]
 
 
+def test_localize_read_matrix_preserves_row_key_values_and_entry_alignment(tmp_path):
+    matrix = hl.range_matrix_table(5, 4, 3)
+    matrix = matrix.annotate_rows(
+        nested=hl.struct(label=hl.str(matrix.row_idx), doubled=matrix.row_idx * 2)
+    )
+    matrix = matrix.key_rows_by(reverse=5 - matrix.row_idx, original=matrix.row_idx)
+    matrix = matrix.annotate_entries(value=matrix.row_idx * 100 + matrix.col_idx)
+    matrix = matrix.choose_cols([3, 1, 3, 0]).filter_entries(matrix.col_idx != 0)
+    matrix = matrix.annotate_globals(marker="matrix-global")
+    path = str(tmp_path / "key-lineage.mt")
+    matrix.write(path)
+
+    localized = hl.read_matrix_table(path).localize_entries("entries", "columns")
+    rows = localized.collect()
+    assert [(row.reverse, row.original) for row in rows] == [
+        (5 - index, index) for index in reversed(range(5))
+    ]
+    assert [(row.nested.label, row.nested.doubled) for row in rows] == [
+        (str(index), index * 2) for index in reversed(range(5))
+    ]
+    assert [
+        [None if entry is None else entry.value for entry in row.entries]
+        for row in rows
+    ] == [
+        [index * 100 + column for column in (3, 1, 3)] + [None]
+        for index in reversed(range(5))
+    ]
+    assert [column.col_idx for column in hl.eval(localized.columns)] == [3, 1, 3, 0]
+    assert hl.eval(localized.globals.marker) == "matrix-global"
+
+
+def test_localize_read_matrix_with_hidden_index_key_duplicates_and_missing_key(tmp_path):
+    key_name = "__vail_matrix_row"
+    rows = hl.Table.parallelize(
+        [
+            {key_name: None, "nested": {"value": "first-null"}},
+            {key_name: None, "nested": {"value": "second-null"}},
+            {key_name: 2, "nested": {"value": "two"}},
+        ],
+        key=key_name,
+        globals={"source": "hidden-index"},
+    )
+    matrix = hl.MatrixTable.from_rows_table(rows)
+    path = str(tmp_path / "hidden-key.mt")
+    matrix.write(path)
+
+    localized = hl.read_matrix_table(path).localize_entries("entries", "columns")
+    result = localized.collect()
+    observed = sorted(
+        [(row[key_name], row.nested.value, row.entries) for row in result],
+        key=lambda row: (row[0] is not None, row[0] or 0, row[1]),
+    )
+    assert observed == [
+        (None, "first-null", []),
+        (None, "second-null", []),
+        (2, "two", []),
+    ]
+    assert hl.eval(localized.globals.source) == "hidden-index"
+
+
 def test_from_parts_infers_all_present_entry_values_and_promotes_numeric_types():
     m = hl.MatrixTable.from_parts(entries={'x': [[None, 1], [2.5, 3]]})
     assert m.x.dtype == hl.tfloat64
