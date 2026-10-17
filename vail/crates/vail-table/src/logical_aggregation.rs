@@ -226,6 +226,11 @@ pub(crate) fn needs_order(expression: &Expr) -> bool {
                     | "hardy_weinberg_test"
                     | "inbreeding"
                     | "call_stats"
+                    // Downsample state merges bounded per-partition grids.
+                    // Representative identities may vary with partitioning,
+                    // as they do in Hail's partial aggregator; its public
+                    // result contract is the bounded set of sampled points.
+                    | "downsample"
                 );
         }
     });

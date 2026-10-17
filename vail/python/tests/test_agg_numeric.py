@@ -146,6 +146,8 @@ def test_downsample_missing_label_is_missing():
 
 
 def test_downsample_rebin_preserves_labels_at_bounds_and_partition_merge():
+    import math
+
     rows = [
         {"x": 0., "y": 0., "label": "origin", "labels": ["origin"]},
         {"x": 10., "y": 10., "label": None, "labels": None},
@@ -153,6 +155,10 @@ def test_downsample_rebin_preserves_labels_at_bounds_and_partition_merge():
         {"x": -10., "y": -10., "label": "minimum", "labels": ["minimum"]},
         {"x": 0., "y": 10., "label": "upper", "labels": []},
         {"x": -10., "y": 10., "label": None, "labels": None},
+        {"x": None, "y": 1., "label": "missing-x", "labels": ["missing-x"]},
+        {"x": 1., "y": None, "label": "missing-y", "labels": ["missing-y"]},
+        {"x": math.nan, "y": 2., "label": "nan", "labels": ["nan"]},
+        {"x": math.inf, "y": 2., "label": "infinite", "labels": ["infinite"]},
     ]
     table = hl.Table.parallelize(
         rows,
@@ -180,10 +186,17 @@ def test_downsample_rebin_preserves_labels_at_bounds_and_partition_merge():
     for name in ("label", "labels"):
         points = table.aggregate(hl.agg.downsample(table.x, table.y, table[name], n_divisions=4))
         by_coordinate = {(x, y): label for x, y, label in points}
-        assert {(-10., -10.), (0., 0.), (0., 10.), (-10., 10.)} <= by_coordinate.keys()
-        assert len(points) <= 4**2
+        assert 1 <= len(points) <= 4**2
+        assert len(by_coordinate) == len(points)
+        assert set(by_coordinate) <= set(expected_labels[name])
         assert all(expected_labels[name][coordinate] == label for coordinate, label in by_coordinate.items())
-        assert (10., 10.) in by_coordinate or (9., 9.) in by_coordinate
+        # Merge and rebin retain one input representative per final grid cell;
+        # exact representative identity can depend on partitioning.
+        cells = {
+            (min(3, int((x + 10.) / 20. * 4)), min(3, int((y + 10.) / 20. * 4)))
+            for x, y in by_coordinate
+        }
+        assert cells == {(0, 0), (2, 2), (3, 3), (2, 3), (0, 3)}
 
 
 @pytest.mark.parametrize("k", [1, 7])
