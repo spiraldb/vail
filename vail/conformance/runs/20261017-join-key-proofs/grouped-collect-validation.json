@@ -1,0 +1,45 @@
+{
+  "candidate": "5a26d965b1b4c225696772f360194005e52248d9",
+  "base": "841b3ca099b917b3038635bee24c4e246787a115",
+  "source_hashes": {
+    "vail/crates/vail-execution/src/aggregate_contract.rs": "7edb36dde9733ea594303d2f248291382749c926eb862784111b526902ed2439",
+    "vail/crates/vail-table/src/logical_aggregation.rs": "379972bdf57b4aa9ca5134617832456848b22d5323ed2f4ebc9d8c9e8488b9b1",
+    "vail/python/vail/agg.py": "d0dc0e967e968e8676bacc4e3fe5523232f121983c84507f01b7cf854923e19b",
+    "vail/python/vail/matrixtable.py": "022ffaba284f79efff77f30d139e1373e20ebeec488e994c06eb5223d58c9511"
+  },
+  "native_sha256": "527d5d9c02884fe9ffd81085b54c8845296b63eba0f1d42b80453b75e5473200",
+  "benchmark_wheel_sha256": "c8ef87a8963e93f105a06900bfa1c10c87e44e0d4c556bcb1bf7a8cee9cfa249",
+  "docstring_repack_wheel_sha256": "8ad58e2e458fd6f528f641db7805c4aaaebc04c8f860e3f6f8f2a50fcbb1aaba",
+  "repack_scope": "agg.collect docstring only; native hashes identical; all four final production source hashes match cloud",
+  "archive_sha256": "17e0d14caffb10caaf2689bfa7977a106c4cf366f2ec2d0769c230eca2e12493",
+  "full_suite_before_assertion_updates": {
+    "passed": 1856,
+    "failed": 3,
+    "skipped": 1,
+    "subtests_passed": 19,
+    "failure_scope": "grouped collect list ordering assumptions only"
+  },
+  "focused_final_tests": {
+    "passed": 137,
+    "scope": "aggregate_execution, matrix_table, logical_planning, parallel_execution, randomness"
+  },
+  "runs": [
+    {
+      "seconds": 4.311901449000288,
+      "cpu_seconds": 26.520000000000003,
+      "peak_rss_gib": 7.050041198730469
+    },
+    {
+      "seconds": 4.3950044630000775,
+      "cpu_seconds": 26.759999999999994,
+      "peak_rss_gib": 7.171421051025391
+    },
+    {
+      "seconds": 4.367138034999698,
+      "cpu_seconds": 26.79,
+      "peak_rss_gib": 7.370513916015625
+    }
+  ],
+  "hail_seconds": 4.47670307899989,
+  "scope": "full upstream test_group_by_collect_per_row, same VM; marginal lead, not confidence claim"
+}
