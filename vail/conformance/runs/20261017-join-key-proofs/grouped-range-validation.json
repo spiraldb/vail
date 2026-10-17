@@ -1,0 +1,665 @@
+{
+  "candidate": "53d52d98c628fc8fef66622aff6966c0d121a575",
+  "base": "4885d21ce625a70fa3eb9a10783f55a91ee36f89",
+  "source_sha256": {
+    "crates/vail-table/src/group_ranges.rs": "1e6302dc57ddb5e69e7bb0c62f6338b5a73ce2993a7bb1b719ba4f39b2d71b41",
+    "crates/vail-table/src/join_interval.rs": "a3ed3ee3395c7fac8ac73c13c3ea2c67e0bca3afa0c85c38b6acbf1860903f5b",
+    "crates/vail-table/src/lib.rs": "fad6f8b5f0deba3eead90d4f29d126c126465d50da4219a9ec5737ea09989c20",
+    "crates/vail-table/src/logical.rs": "9d0dca3ca7adc92f8f1e6a764474bca3ec140d1332a1d70b6f6bec561aaea7fd",
+    "crates/vail-table/src/logical_aggregation.rs": "ccd60fe6f2b52f0d09ad73eef606d7cb70f54191356eff329443ad37f4362b06",
+    "crates/vail-table/src/plan.rs": "94056688dc2e4d2f27c6517d30f6cc2b7d5b52dd9905c123c06fa67244d4e542",
+    "crates/vail-table/src/provider.rs": "17cc931f929ee33d720ac87c43b1cc91dd4e9027a2e27041f91b6b3c65e8796d",
+    "crates/vail-table/tests/group_ranges.rs": "c7ef57fff0831e0d1bb110bd6f058aea300cb66d1eeba189f719e2c00e499af3",
+    "python/tests/test_grouped_aggregate.py": "6772317a76a2815be6c7a8e6b5d93bbda784576174f3c83a0c0d1148d51fea05",
+    "python/tests/test_matrix_layout.py": "f08daf35137f932acbd0a0987e45ad8d01d804b052da5227cb34b91668eccb15",
+    "python/vail/matrixtable.py": "207d974e51db57b1ca09c6da19b77ffa89351c85ccfe2792a956a07009d6ae32"
+  },
+  "native_sha256": "13e57c3e55c5dae69729fe1cc748eff17c9d0c7766718dde52fc13f73c7f8555",
+  "wheel_sha256": "f0ad4d12e55926f5958b6c95255aa6cd335e6dfdd9f47636a3a883a3160670b8",
+  "native_path": "/home/danielking/vail-env/lib/python3.11/site-packages/vail/_native.abi3.so",
+  "wheel_path": "/home/danielking/wheels-group-ranges-final/vail-0.1.0a1-cp311-abi3-manylinux_2_35_x86_64.whl",
+  "logical_cpus": 32,
+  "cpu_model": "AMD EPYC 7B13",
+  "memory": "MemTotal:       131895996 kB",
+  "archive_sha256": "a036267b79b4c6536f105d9109dfdae57a9845269a064c43abe456a4529414cd",
+  "artifact_root": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-gcp-full-upstream",
+  "artifact_archive": "/private/tmp/vail-vm-20261016/group-ranges-final-artifacts.tar.gz",
+  "python_suite": {
+    "passed": 1876,
+    "skipped": 1,
+    "subtests_passed": 19,
+    "seconds": 96.27,
+    "log": "group-ranges-final-python-tests.log"
+  },
+  "rust_validation": {
+    "range_tests_passed": 11,
+    "collect_tests_passed": 3,
+    "tested_commit": "b6eca7e5cddb949d3dc61f365591bbc819df9414",
+    "root_candidate": "53d52d98c628fc8fef66622aff6966c0d121a575",
+    "identical_table_crate_tree": "16d5ff768f46b3683a2a67e1a3caa3025cdf091f",
+    "logs_sha256": {
+      "group_ranges-combined-final.log": "8dc26c33f3f1be29fb07e93f9b1070c4de5d0e68496a2a090e8f0ff311f3ff68",
+      "collect_groups-combined-final.log": "5c98f363369948f2e0f1ce1db73fe9839097bed6a63be07184775a967a09ca38"
+    }
+  },
+  "controls": {
+    "passed": 64,
+    "faster_than_fixed_hail_observation": 64,
+    "vail_total_seconds": 110.92105277900009,
+    "hail_total_seconds": 448.95888542700004,
+    "cases": [
+      {
+        "case": "benchmark_table::test_table_key_by_shuffle",
+        "vail_seconds": 0.2264394510002603,
+        "hail_seconds": 6.3790945139999735,
+        "hail_over_vail": 28.171303568443292,
+        "vail_cpu_seconds": 3.68,
+        "vail_peak_rss_gib": 0.15816116333007812
+      },
+      {
+        "case": "benchmark_table::test_table_group_by_aggregate_sorted",
+        "vail_seconds": 0.1788655350010231,
+        "hail_seconds": 5.125780690999989,
+        "hail_over_vail": 28.657173619113763,
+        "vail_cpu_seconds": 3.58,
+        "vail_peak_rss_gib": 0.10633087158203125
+      },
+      {
+        "case": "benchmark_table::test_table_group_by_aggregate_unsorted",
+        "vail_seconds": 0.18092591499953414,
+        "hail_seconds": 5.513992425000026,
+        "hail_over_vail": 30.47652087327691,
+        "vail_cpu_seconds": 3.59,
+        "vail_peak_rss_gib": 0.10729217529296875
+      },
+      {
+        "case": "benchmark_table::test_table_range_force_count",
+        "vail_seconds": 0.04672922700046911,
+        "hail_seconds": 2.564036542999986,
+        "hail_over_vail": 54.87008254971232,
+        "vail_cpu_seconds": 0.06,
+        "vail_peak_rss_gib": 0.08411026000976562
+      },
+      {
+        "case": "benchmark_table::test_table_range_join[1000000000,1000]",
+        "vail_seconds": 0.01133343900073669,
+        "hail_seconds": 3.065712210000015,
+        "hail_over_vail": 270.5014964831716,
+        "vail_cpu_seconds": 0.030000000000000013,
+        "vail_peak_rss_gib": 0.09507369995117188
+      },
+      {
+        "case": "benchmark_table::test_table_range_join[1000000000,1000000000]",
+        "vail_seconds": 4.726195759998518,
+        "hail_seconds": 4.878991434,
+        "hail_over_vail": 1.0323295271208845,
+        "vail_cpu_seconds": 145.36,
+        "vail_peak_rss_gib": 0.5816268920898438
+      },
+      {
+        "case": "benchmark_table::test_table_python_construction",
+        "vail_seconds": 0.21739754199916206,
+        "hail_seconds": 1.2304407070000707,
+        "hail_over_vail": 5.659864852587953,
+        "vail_cpu_seconds": 3.6599999999999997,
+        "vail_peak_rss_gib": 0.07109451293945312
+      },
+      {
+        "case": "benchmark_table::test_table_big_aggregate_compilation",
+        "vail_seconds": 2.8947253200003615,
+        "hail_seconds": 56.46081242599996,
+        "hail_over_vail": 19.504721928501635,
+        "vail_cpu_seconds": 6.62,
+        "vail_peak_rss_gib": 0.183563232421875
+      },
+      {
+        "case": "benchmark_table::test_table_big_aggregate_compile_and_execute",
+        "vail_seconds": 3.1304418809995695,
+        "hail_seconds": 64.82754485199996,
+        "hail_over_vail": 20.708752091989044,
+        "vail_cpu_seconds": 10.96,
+        "vail_peak_rss_gib": 0.208160400390625
+      },
+      {
+        "case": "benchmark_table::test_table_foreign_key_join[1000000,1000000]",
+        "vail_seconds": 4.281561196001348,
+        "hail_seconds": 8.602272006000021,
+        "hail_over_vail": 2.009143770742758,
+        "vail_cpu_seconds": 8.19,
+        "vail_peak_rss_gib": 0.24522018432617188
+      },
+      {
+        "case": "benchmark_table::test_table_foreign_key_join[1000000,1000]",
+        "vail_seconds": 0.46981438100010564,
+        "hail_seconds": 9.276833894999982,
+        "hail_over_vail": 19.745742723439314,
+        "vail_cpu_seconds": 4.130000000000001,
+        "vail_peak_rss_gib": 0.23051834106445312
+      },
+      {
+        "case": "benchmark_table::test_table_aggregate_array_sum",
+        "vail_seconds": 0.5934669810012565,
+        "hail_seconds": 3.7191469709999865,
+        "hail_over_vail": 6.266813639278294,
+        "vail_cpu_seconds": 8.840000000000002,
+        "vail_peak_rss_gib": 0.3768463134765625
+      },
+      {
+        "case": "benchmark_table::test_table_annotate_many_flat",
+        "vail_seconds": 0.12108898000042245,
+        "hail_seconds": 3.4653244449999647,
+        "hail_over_vail": 28.618000126748736,
+        "vail_cpu_seconds": 3.53,
+        "vail_peak_rss_gib": 0.1407012939453125
+      },
+      {
+        "case": "benchmark_table::test_table_read_force_count_ints",
+        "vail_seconds": 0.2697925669999677,
+        "hail_seconds": 6.389137804000029,
+        "hail_over_vail": 23.681667271436705,
+        "vail_cpu_seconds": 1.9100000000000001,
+        "vail_peak_rss_gib": 0.43782806396484375
+      },
+      {
+        "case": "benchmark_table::test_table_read_force_count_strings",
+        "vail_seconds": 0.4510672020005586,
+        "hail_seconds": 5.026202141999988,
+        "hail_over_vail": 11.14291200891561,
+        "vail_cpu_seconds": 7.47,
+        "vail_peak_rss_gib": 0.4137725830078125
+      },
+      {
+        "case": "benchmark_table::test_table_aggregate_int_stats",
+        "vail_seconds": 1.6724706570003036,
+        "hail_seconds": 6.490434915000037,
+        "hail_over_vail": 3.880746659341156,
+        "vail_cpu_seconds": 25.010000000000005,
+        "vail_peak_rss_gib": 2.1823806762695312
+      },
+      {
+        "case": "benchmark_table::test_table_range_means",
+        "vail_seconds": 0.7094814280007995,
+        "hail_seconds": 3.083007019999968,
+        "hail_over_vail": 4.3454372423635785,
+        "vail_cpu_seconds": 12.420000000000002,
+        "vail_peak_rss_gib": 0.43300628662109375
+      },
+      {
+        "case": "benchmark_table::test_table_aggregate_counter",
+        "vail_seconds": 2.436529761998827,
+        "hail_seconds": 10.246022757999981,
+        "hail_over_vail": 4.205170368858771,
+        "vail_cpu_seconds": 50.8,
+        "vail_peak_rss_gib": 0.9692764282226562
+      },
+      {
+        "case": "benchmark_table::test_table_aggregate_take_by_strings",
+        "vail_seconds": 4.728313694999088,
+        "hail_seconds": 5.869432311999958,
+        "hail_over_vail": 1.2413373330554986,
+        "vail_cpu_seconds": 12.72,
+        "vail_peak_rss_gib": 0.5401611328125
+      },
+      {
+        "case": "benchmark_table::test_table_aggregate_downsample_dense",
+        "vail_seconds": 9.316370667998854,
+        "hail_seconds": 20.803637197000057,
+        "hail_over_vail": 2.2330194813372164,
+        "vail_cpu_seconds": 126.02000000000001,
+        "vail_peak_rss_gib": 8.189109802246094
+      },
+      {
+        "case": "benchmark_table::test_table_aggregate_downsample_worst_case",
+        "vail_seconds": 0.9282271419997414,
+        "hail_seconds": 4.668563847000087,
+        "hail_over_vail": 5.029548949562377,
+        "vail_cpu_seconds": 20.13,
+        "vail_peak_rss_gib": 0.3607978820800781
+      },
+      {
+        "case": "benchmark_table::test_table_aggregate_linreg",
+        "vail_seconds": 9.201168992998646,
+        "hail_seconds": 12.897176130999924,
+        "hail_over_vail": 1.401688865927106,
+        "vail_cpu_seconds": 227.58999999999997,
+        "vail_peak_rss_gib": 4.356212615966797
+      },
+      {
+        "case": "benchmark_table::test_table_take",
+        "vail_seconds": 1.0027125969991175,
+        "hail_seconds": 3.155078248000109,
+        "hail_over_vail": 3.1465429450497724,
+        "vail_cpu_seconds": 5.79,
+        "vail_peak_rss_gib": 0.24587249755859375
+      },
+      {
+        "case": "benchmark_table::test_table_show",
+        "vail_seconds": 1.0349162239999714,
+        "hail_seconds": 4.873563149999882,
+        "hail_over_vail": 4.709137838387986,
+        "vail_cpu_seconds": 5.85,
+        "vail_peak_rss_gib": 0.24832534790039062
+      },
+      {
+        "case": "benchmark_table::test_table_expr_take",
+        "vail_seconds": 1.8881253719991946,
+        "hail_seconds": 3.1596972259999347,
+        "hail_over_vail": 1.673457320609154,
+        "vail_cpu_seconds": 6.74,
+        "vail_peak_rss_gib": 0.5417404174804688
+      },
+      {
+        "case": "benchmark_table::test_read_force_count_partitions[10]",
+        "vail_seconds": 0.027571028000238584,
+        "hail_seconds": 2.815371402999972,
+        "hail_over_vail": 102.11339972436318,
+        "vail_cpu_seconds": 0.18,
+        "vail_peak_rss_gib": 0.089996337890625
+      },
+      {
+        "case": "benchmark_table::test_read_force_count_partitions[100]",
+        "vail_seconds": 0.04350358699957724,
+        "hail_seconds": 3.567415740999877,
+        "hail_over_vail": 82.00279533350997,
+        "vail_cpu_seconds": 0.6100000000000001,
+        "vail_peak_rss_gib": 0.0675201416015625
+      },
+      {
+        "case": "benchmark_table::test_read_force_count_partitions[1000]",
+        "vail_seconds": 0.3005698580000171,
+        "hail_seconds": 4.437989883,
+        "hail_over_vail": 14.76525261890947,
+        "vail_cpu_seconds": 5.290000000000001,
+        "vail_peak_rss_gib": 0.13013458251953125
+      },
+      {
+        "case": "benchmark_table::test_write_range_table[10000000,1000]",
+        "vail_seconds": 0.5401255800006766,
+        "hail_seconds": 7.962579569000127,
+        "hail_over_vail": 14.742089365569676,
+        "vail_cpu_seconds": 5.29,
+        "vail_peak_rss_gib": 0.16626739501953125
+      },
+      {
+        "case": "benchmark_table::test_write_range_table[10000000,100]",
+        "vail_seconds": 0.10173661299995729,
+        "hail_seconds": 4.822604300999956,
+        "hail_over_vail": 47.40283914309178,
+        "vail_cpu_seconds": 1.1600000000000001,
+        "vail_peak_rss_gib": 0.18975830078125
+      },
+      {
+        "case": "benchmark_table::test_write_range_table[10000000,10]",
+        "vail_seconds": 0.09273048300019582,
+        "hail_seconds": 4.4172604600000795,
+        "hail_over_vail": 47.63547343963205,
+        "vail_cpu_seconds": 0.8300000000000001,
+        "vail_peak_rss_gib": 0.2532691955566406
+      },
+      {
+        "case": "benchmark_table::test_read_with_index[1000]",
+        "vail_seconds": 1.2738755269983812,
+        "hail_seconds": 5.685103118999905,
+        "hail_over_vail": 4.462840362743799,
+        "vail_cpu_seconds": 11.76,
+        "vail_peak_rss_gib": 0.27260589599609375
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[10,10]",
+        "vail_seconds": 2.601283930000136,
+        "hail_seconds": 3.6119773270002042,
+        "hail_over_vail": 1.3885363628875436,
+        "vail_cpu_seconds": 6.180000000000001,
+        "vail_peak_rss_gib": 1.3205032348632812
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[10,100]",
+        "vail_seconds": 2.6974506429996836,
+        "hail_seconds": 4.821727903999999,
+        "hail_over_vail": 1.7875129305936164,
+        "vail_cpu_seconds": 6.52,
+        "vail_peak_rss_gib": 1.2293472290039062
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[10,1000]",
+        "vail_seconds": 2.978277252001135,
+        "hail_seconds": 8.201356777,
+        "hail_over_vail": 2.753725084355201,
+        "vail_cpu_seconds": 11.250000000000002,
+        "vail_peak_rss_gib": 1.18182373046875
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[100,10]",
+        "vail_seconds": 2.454803300999629,
+        "hail_seconds": 4.763740639999924,
+        "hail_over_vail": 1.940579368644349,
+        "vail_cpu_seconds": 6.23,
+        "vail_peak_rss_gib": 1.3984909057617188
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[100,100]",
+        "vail_seconds": 2.5555104930008383,
+        "hail_seconds": 3.8327988589999222,
+        "hail_over_vail": 1.499817304408409,
+        "vail_cpu_seconds": 6.58,
+        "vail_peak_rss_gib": 1.2103767395019531
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[100,1000]",
+        "vail_seconds": 2.259995963999245,
+        "hail_seconds": 5.83067815000004,
+        "hail_over_vail": 2.5799506914526456,
+        "vail_cpu_seconds": 10.620000000000003,
+        "vail_peak_rss_gib": 1.2496604919433594
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[1000,10]",
+        "vail_seconds": 2.720212881000407,
+        "hail_seconds": 7.23918117900007,
+        "hail_over_vail": 2.661255385401209,
+        "vail_cpu_seconds": 11.08,
+        "vail_peak_rss_gib": 1.2966575622558594
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[1000,100]",
+        "vail_seconds": 2.6524670270009665,
+        "hail_seconds": 6.0943587149999985,
+        "hail_over_vail": 2.2976190289877554,
+        "vail_cpu_seconds": 11.22,
+        "vail_peak_rss_gib": 1.2685470581054688
+      },
+      {
+        "case": "benchmark_table::test_union_partitions_table[1000,1000]",
+        "vail_seconds": 2.846568142000251,
+        "hail_seconds": 5.241200148999951,
+        "hail_over_vail": 1.841234738655165,
+        "vail_cpu_seconds": 16.23,
+        "vail_peak_rss_gib": 1.4169044494628906
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[10,10]",
+        "vail_seconds": 0.2591926310014969,
+        "hail_seconds": 3.418799093999951,
+        "hail_over_vail": 13.190186313515241,
+        "vail_cpu_seconds": 4.8999999999999995,
+        "vail_peak_rss_gib": 0.8760261535644531
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[10,100]",
+        "vail_seconds": 0.4301632380011142,
+        "hail_seconds": 4.4890481239999644,
+        "hail_over_vail": 10.435685171191539,
+        "vail_cpu_seconds": 8.100000000000001,
+        "vail_peak_rss_gib": 0.4612236022949219
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[10,1000]",
+        "vail_seconds": 2.90998401700017,
+        "hail_seconds": 7.082968672999868,
+        "hail_over_vail": 2.4340232219905884,
+        "vail_cpu_seconds": 36.5,
+        "vail_peak_rss_gib": 0.7403335571289062
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[100,10]",
+        "vail_seconds": 0.4252970990000904,
+        "hail_seconds": 4.50406017499995,
+        "hail_over_vail": 10.590385369637785,
+        "vail_cpu_seconds": 7.91,
+        "vail_peak_rss_gib": 0.51446533203125
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[100,100]",
+        "vail_seconds": 0.389231072000257,
+        "hail_seconds": 4.124512970000069,
+        "hail_over_vail": 10.596566581399097,
+        "vail_cpu_seconds": 6.81,
+        "vail_peak_rss_gib": 0.5669975280761719
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[100,1000]",
+        "vail_seconds": 2.4009538640002575,
+        "hail_seconds": 5.487666063000006,
+        "hail_over_vail": 2.285619122167113,
+        "vail_cpu_seconds": 22.990000000000006,
+        "vail_peak_rss_gib": 0.7460441589355469
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[1000,10]",
+        "vail_seconds": 2.8374875129993598,
+        "hail_seconds": 7.202339897999991,
+        "hail_over_vail": 2.538280737802005,
+        "vail_cpu_seconds": 36.809999999999995,
+        "vail_peak_rss_gib": 0.7875823974609375
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[1000,100]",
+        "vail_seconds": 2.5218477950002125,
+        "hail_seconds": 5.292590332999907,
+        "hail_over_vail": 2.0986953865704896,
+        "vail_cpu_seconds": 23.18,
+        "vail_peak_rss_gib": 0.777801513671875
+      },
+      {
+        "case": "benchmark_table::test_join_partitions_table[1000,1000]",
+        "vail_seconds": 2.5971413209990715,
+        "hail_seconds": 5.066914737999923,
+        "hail_over_vail": 1.950958423799124,
+        "vail_cpu_seconds": 21.16,
+        "vail_peak_rss_gib": 0.7306747436523438
+      },
+      {
+        "case": "benchmark_table::test_group_by_collect_per_row",
+        "vail_seconds": 4.108455429999594,
+        "hail_seconds": 4.47670307899989,
+        "hail_over_vail": 1.0896316523994352,
+        "vail_cpu_seconds": 20.02,
+        "vail_peak_rss_gib": 7.201957702636719
+      },
+      {
+        "case": "benchmark_table::test_group_by_take_rekey",
+        "vail_seconds": 2.4529272809995746,
+        "hail_seconds": 6.3038298070000565,
+        "hail_over_vail": 2.5699211940890594,
+        "vail_cpu_seconds": 20.04,
+        "vail_peak_rss_gib": 7.341396331787109
+      },
+      {
+        "case": "benchmark_table::test_table_scan_sum_1k_partitions",
+        "vail_seconds": 0.23007373300060863,
+        "hail_seconds": 5.191651799999818,
+        "hail_over_vail": 22.56516522894895,
+        "vail_cpu_seconds": 1.23,
+        "vail_peak_rss_gib": 0.1615447998046875
+      },
+      {
+        "case": "benchmark_table::test_table_scan_prev_non_null",
+        "vail_seconds": 2.942619696001202,
+        "hail_seconds": 4.8894911859999866,
+        "hail_over_vail": 1.6616116559827407,
+        "vail_cpu_seconds": 9.08,
+        "vail_peak_rss_gib": 0.1196746826171875
+      },
+      {
+        "case": "benchmark_table::test_test_map_filter_region_memory",
+        "vail_seconds": 0.8613271069989423,
+        "hail_seconds": 3.5715871449999668,
+        "hail_over_vail": 4.1466094773728654,
+        "vail_cpu_seconds": 4.32,
+        "vail_peak_rss_gib": 1.1391944885253906
+      },
+      {
+        "case": "benchmark_table::test_test_inner_join_region_memory",
+        "vail_seconds": 0.8770122669993725,
+        "hail_seconds": 3.644548476000182,
+        "hail_over_vail": 4.155641389680572,
+        "vail_cpu_seconds": 4.36,
+        "vail_peak_rss_gib": 0.8454551696777344
+      },
+      {
+        "case": "benchmark_table::test_test_left_join_region_memory",
+        "vail_seconds": 1.0757595619998028,
+        "hail_seconds": 3.8478474760001973,
+        "hail_over_vail": 3.5768656974307262,
+        "vail_cpu_seconds": 6.0,
+        "vail_peak_rss_gib": 2.3085479736328125
+      },
+      {
+        "case": "benchmark_matrix_table::test_matrix_table_cols_show",
+        "vail_seconds": 0.33119803499903355,
+        "hail_seconds": 3.8264275190001626,
+        "hail_over_vail": 11.553291730765638,
+        "vail_cpu_seconds": 3.78,
+        "vail_peak_rss_gib": 0.17850875854492188
+      },
+      {
+        "case": "benchmark_matrix_table::test_matrix_table_take_col",
+        "vail_seconds": 0.3420372849996056,
+        "hail_seconds": 2.181445778999887,
+        "hail_over_vail": 6.3778011189698285,
+        "vail_cpu_seconds": 3.8,
+        "vail_peak_rss_gib": 0.178009033203125
+      },
+      {
+        "case": "benchmark_matrix_table::test_write_range_matrix_table_p100",
+        "vail_seconds": 0.24566639300064708,
+        "hail_seconds": 5.008053758999949,
+        "hail_over_vail": 20.38558753531566,
+        "vail_cpu_seconds": 4.970000000000001,
+        "vail_peak_rss_gib": 0.2513847351074219
+      },
+      {
+        "case": "benchmark_matrix_table::test_per_row_stats_star_star",
+        "vail_seconds": 1.7457448330005718,
+        "hail_seconds": 4.290793336999968,
+        "hail_over_vail": 2.457858248175358,
+        "vail_cpu_seconds": 27.939999999999998,
+        "vail_peak_rss_gib": 9.704429626464844
+      },
+      {
+        "case": "benchmark_matrix_table::test_read_decode_gnomad_coverage",
+        "vail_seconds": 1.1739862750000611,
+        "hail_seconds": 3.3442530199999965,
+        "hail_over_vail": 2.8486304237243507,
+        "vail_cpu_seconds": 15.989999999999998,
+        "vail_peak_rss_gib": 7.745441436767578
+      },
+      {
+        "case": "benchmark_matrix_table::test_matrix_table_scan_count_rows_2",
+        "vail_seconds": 2.1608330819999537,
+        "hail_seconds": 3.7799336210000547,
+        "hail_over_vail": 1.749294590353803,
+        "vail_cpu_seconds": 29.92,
+        "vail_peak_rss_gib": 0.18845748901367188
+      },
+      {
+        "case": "benchmark_matrix_table::test_matrix_table_scan_count_cols_2",
+        "vail_seconds": 0.7372690259999217,
+        "hail_seconds": 2.8161393100003806,
+        "hail_over_vail": 3.819690249676486,
+        "vail_cpu_seconds": 4.2,
+        "vail_peak_rss_gib": 0.8438491821289062
+      }
+    ]
+  },
+  "grouped_repeats": [
+    {
+      "seconds": 4.0598752349997085,
+      "cpu_seconds": 19.55,
+      "peak_rss_gib": 7.306732177734375,
+      "result": "join-iteration/group-ranges-final-1/result.json"
+    },
+    {
+      "seconds": 3.8304576339996856,
+      "cpu_seconds": 18.77,
+      "peak_rss_gib": 6.212409973144531,
+      "result": "join-iteration/group-ranges-final-2/result.json"
+    },
+    {
+      "seconds": 4.153230337000423,
+      "cpu_seconds": 19.64,
+      "peak_rss_gib": 7.624980926513672,
+      "result": "join-iteration/group-ranges-final-3/result.json"
+    },
+    {
+      "seconds": 3.9363543130002654,
+      "cpu_seconds": 21.909999999999997,
+      "peak_rss_gib": 7.263584136962891,
+      "result": "join-iteration/group-ranges-final-4/result.json"
+    },
+    {
+      "seconds": 4.069626413000151,
+      "cpu_seconds": 21.83,
+      "peak_rss_gib": 7.120792388916016,
+      "result": "join-iteration/group-ranges-final-5/result.json"
+    },
+    {
+      "seconds": 4.012786307001079,
+      "cpu_seconds": 22.380000000000003,
+      "peak_rss_gib": 7.638526916503906,
+      "result": "join-iteration/group-ranges-final-6/result.json"
+    }
+  ],
+  "grouped_median_seconds": 4.036330771000394,
+  "grouped_hail_observation": {
+    "module": "benchmark_table.py",
+    "name": "test_group_by_collect_per_row",
+    "id": "benchmark_table::test_group_by_collect_per_row",
+    "args": [
+      "gnomad_dp_sim"
+    ],
+    "fixtures": [
+      "gnomad_dp_sim"
+    ],
+    "parameters": [],
+    "arguments": {},
+    "fixture_parameters": {},
+    "upstream_marks": [],
+    "status": "passed",
+    "benchmark_seconds": 4.47670307899989,
+    "telemetry": {
+      "cpu_seconds": 25.150000000000002,
+      "average_cores": 5.617431258090454,
+      "peak_rss_gib": 1.1215438842773438,
+      "sampling_hz": 10,
+      "counter_deltas": {
+        "user_time": 23.8,
+        "system_time": 1.35,
+        "instructions": null,
+        "cycles": null,
+        "diskio_bytesread": 176525312,
+        "diskio_byteswritten": 1249280
+      },
+      "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+      "directory": "/home/danielking/full-upstream-results-20261016/telemetry/hail/benchmark_table--test_group_by_collect_per_row",
+      "hardware_counters": {
+        "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+        "path": "/home/danielking/full-upstream-results-20261016/telemetry/hail/benchmark_table--test_group_by_collect_per_row/perf.csv",
+        "returncode": 255,
+        "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+      }
+    },
+    "worker_cleanup_forced": true,
+    "fixture_seconds": 6.997,
+    "elapsed_seconds": 16.518,
+    "source_commit": "2a0c62741209f14e83f689e0d4609c50a0dc2986",
+    "comparable": true,
+    "baseline_hardware": "same 32-vCPU Linux VM"
+  },
+  "interpretation": "Unchanged same-VM Hail observations are reused, not repeated baselines. All six grouped runs were faster, but margin is modest and memory remains 6\u20138 GiB versus Hail~1.12 GiB. Actual plan diagnostics explain resource changes and are not acceptance assertions.",
+  "review": {
+    "thread": "01a14128-21b8-7a53-b399-4ad8f9b31f4f",
+    "approved_candidate": "53d52d98c628fc8fef66622aff6966c0d121a575",
+    "base": "4885d21ce625a70fa3eb9a10783f55a91ee36f89",
+    "scope": "Exact source, matching public tests/runtime/resource provenance, plus documentation-only validation/disposition child. Reviewer ran no builds/tests and made no edits."
+  },
+  "cloud_completion": {
+    "current_vm": "vail-bench-20261016",
+    "current_zone": "us-central1-b",
+    "current_status": "TERMINATED",
+    "prior_vm": "vail-bench-20261015",
+    "prior_zone": "us-central1-a",
+    "prior_status": "TERMINATED",
+    "monitor_automation": "PAUSED"
+  }
+}
