@@ -1206,8 +1206,10 @@ pub(crate) fn display(table: &TableRef) -> Result<String> {
 }
 
 pub(crate) async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
-    let context = session_state(max_partitions(table)).task_ctx();
-    physical_with_context(table, context).await
+    let state = session_state(max_partitions(table));
+    let context = state.task_ctx();
+    let rows = crate::wide_batch::for_table(table, context.session_config().batch_size());
+    physical_in_context(lower(table)?, state, context, rows).await
 }
 
 pub(crate) fn max_partitions(table: &TableRef) -> usize {
@@ -1293,8 +1295,11 @@ async fn physical_in_context(
         let config = crate::wide_batch::with_limit(bindings.context.session_config().clone(), rows);
         bindings.context =
             crate::wide_batch::task_context_with_config(&bindings.context, config.clone());
-        let state = SessionContext::new_with_config_rt(config, bindings.context.runtime_env()).state();
-        bindings.state = with_metadata_optimizer(state);
+        bindings.state = datafusion::execution::session_state::SessionStateBuilder::new_from_existing(
+            bindings.state,
+        )
+        .with_config(config)
+        .build();
     }
     let plan = compile(logical, &bindings.state).await?;
     let plan = match wide_batch_rows {
