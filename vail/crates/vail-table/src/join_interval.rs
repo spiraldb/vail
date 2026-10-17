@@ -40,7 +40,7 @@ enum Cell {
 
 // A forwarding proof permits moving key demand below value-only projections.
 // Scan expressions change with their input scope, so they are never crossed.
-fn forwards_keys(
+pub(crate) fn forwards_keys(
     table: &TableRef,
     child: &TableRef,
     fields: &[(String, crate::ScalarIR)],

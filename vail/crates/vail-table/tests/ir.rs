@@ -385,3 +385,48 @@ async fn query_prefix_retains_duplicate_prefixes_across_original_partitions() {
     assert!(source.query_prefix(0, "q".into(), "p".into()).is_err());
     assert!(source.query_prefix(3, "q".into(), "p".into()).is_err());
 }
+
+#[test]
+fn redundant_naive_coalesce_preserves_the_source_node() {
+    use vail_table::RepartitionStrategy;
+
+    let source = TableIR::range(30, 1).unwrap();
+    for requested in [1, 16] {
+        let result = source
+            .repartition(requested, RepartitionStrategy::NaiveCoalesce)
+            .unwrap();
+        assert!(Arc::ptr_eq(&source, &result));
+    }
+    assert!(source.repartition(0, RepartitionStrategy::NaiveCoalesce).is_err());
+
+    let source = TableIR::range(30, 4).unwrap();
+    let reduced = source.repartition(2, RepartitionStrategy::NaiveCoalesce).unwrap();
+    assert!(matches!(reduced.node(), TableNode::Repartition { .. }));
+    assert_eq!(reduced.known_n_partitions(), Some(2));
+}
+
+#[tokio::test]
+async fn annotations_preserve_unique_range_join_streaming() {
+    use vail_table::{TableJoinKind, partitioned};
+
+    let source = TableIR::range(30, 1).unwrap();
+    let left = source.map_rows(vec![
+        ("idx".into(), column("idx")),
+        ("left_value".into(), column("idx")),
+    ]).unwrap();
+    let right = source.map_rows(vec![
+        ("idx".into(), column("idx")),
+        ("right_value".into(), column("idx")),
+    ]).unwrap();
+    let joined = left.join(right, TableJoinKind::Inner, 1).unwrap();
+    let prepared = partitioned::prepare(joined.clone()).await.unwrap();
+    let plan = prepared.physical_plan();
+    let display = datafusion_physical_plan::displayable(plan.as_ref()).indent(true).to_string();
+    assert!(display.contains("SortMergeJoinExec"));
+    assert!(!display.contains("SortExec:"), "{display}");
+    let batches = joined.collect_partitions().await.unwrap();
+    let actual: Vec<_> = batches.iter().flatten().flat_map(|batch| {
+        batch.column(0).as_any().downcast_ref::<Int32Array>().unwrap().values().to_vec()
+    }).collect();
+    assert_eq!(actual, (0..30).collect::<Vec<_>>());
+}

@@ -490,6 +490,16 @@ pub(crate) fn lower(
             TableNode::Range { .. } => table.keys() == ["idx"],
             TableNode::Prepared { .. } => table.partition_metadata.as_ref()
                 .is_some_and(unique_range_key),
+            TableNode::MapRows { child, fields, .. }
+                if crate::join_interval::forwards_keys(table, child, fields, 1) =>
+            {
+                unique_range_key(child)
+            }
+            TableNode::MapGlobals { child }
+            | TableNode::Filter { child, .. }
+            | TableNode::Head { child, .. }
+            | TableNode::Tail { child, .. }
+                if table.keys() == child.keys() => unique_range_key(child),
             _ => false,
         }
     }

@@ -1073,6 +1073,13 @@ impl TableIR {
                 "number of partitions must be positive".into(),
             ));
         }
+        // Coalescing cannot increase the partition count. Preserve the child
+        // when this is a no-op so key bounds and source pruning remain visible.
+        if strategy == RepartitionStrategy::NaiveCoalesce
+            && self.known_n_partitions().is_some_and(|count| count <= n)
+        {
+            return Ok(self.clone());
+        }
         Ok(Self::new(
             self.schema.clone(),
             self.keys.clone(),
