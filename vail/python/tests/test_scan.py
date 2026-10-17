@@ -59,6 +59,51 @@ def test_sum_and_count_scan_prefixes_preserve_null_and_partition_semantics():
     assert [row.total for row in rows] == [0, 0, 3, 3]
 
 
+def test_native_prefix_summary_projection_keeps_public_scan_semantics():
+    schema = hl.tstruct(keep=hl.tbool, x=hl.tint32, y=hl.tint32)
+    table = hl.Table.parallelize(
+        [
+            {"keep": True, "x": 1, "y": 2},
+            {"keep": False, "x": 100, "y": 1},
+            {"keep": True, "x": None, "y": 5},
+            {"keep": True, "x": 3, "y": 4},
+            {"keep": True, "x": -2, "y": 1},
+        ],
+        schema=schema,
+        n_partitions=4,
+    ).annotate_globals(offset=hl.int64(10))
+    filtered = table.filter(table.keep)
+    argument = hl.int64(filtered.x) + hl.int64(filtered.y) + filtered.offset
+    scanned = filtered.annotate(
+        n=hl.scan.count(),
+        total=hl.scan.sum(argument),
+    )
+    rows = scanned.collect()
+    assert [row.n for row in rows] == [0, 1, 2, 3]
+    # Sum arguments use two row columns, an Int32-to-Int64 cast, and a global;
+    # the missing x contributes no value to the accumulated sum.
+    assert [row.total for row in rows] == [0, 13, 13, 30]
+
+    empty = hl.Table.parallelize([], schema=schema, n_partitions=3).annotate_globals(
+        offset=hl.int64(10)
+    )
+    empty_scan = empty.annotate(
+        n=hl.scan.count(),
+        total=hl.scan.sum(hl.int64(empty.x) + hl.int64(empty.y) + empty.offset),
+    )
+    assert empty_scan.collect() == []
+
+
+def test_native_prefix_force_count_still_materializes_retained_payload():
+    table = hl.range_table(4, n_partitions=3)
+    scanned = table.annotate(
+        payload=hl.int32(hl.str(table.idx) + "invalid"),
+        prefix=hl.scan.sum(table.idx),
+    )
+    with pytest.raises(RuntimeError, match="invalid|cast|parse"):
+        scanned._force_count()
+
+
 def test_count_scan_reuses_row_ordinals_instead_of_a_second_local_window():
     table = hl.range_table(100, n_partitions=3)
     scanned = table.annotate(n=hl.scan.count())
