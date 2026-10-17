@@ -1426,7 +1426,7 @@ def _validate_aggregate_ir(node):
     try:
         node.validate_table_aggregate()
     except ValueError as exc:
-        raise ExpressionException(str(exc)) from None
+        raise ExpressionException(builtins.str(exc)) from None
 
 
 def _ir_has_aggregate(node):
