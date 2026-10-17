@@ -14,6 +14,46 @@ use datafusion_expr::{Expr as LogicalExpr, ExprSchemable, Operator, Signature, V
 
 use crate::expressions::{BinaryOperator, Expr, ExprError, PrimitiveType, Type, UnaryOperator};
 
+/// Whether a volatile semantic kernel is closed and deterministic apart from
+/// value-domain errors, so a successful projection result may be reused.
+///
+/// This intentionally recognizes the exact typed kernel implementation and
+/// never relies on the display name or digest. The original UDF volatility is
+/// unchanged: the projection cache is lazy and stores only successful results.
+pub fn is_cacheable_closed_semantic_kernel(function: &datafusion_expr::ScalarUDF) -> bool {
+    use crate::{
+        expression_effects::{Effects, effects},
+        expression_identity::Identity,
+        kernel_identity::Scalar,
+    };
+    use datafusion_expr::{TypeSignature, Volatility};
+
+    if function.signature().volatility != Volatility::Volatile
+        || function.signature().type_signature != TypeSignature::Nullary
+    {
+        return false;
+    }
+    let Some(kernel) = function
+        .inner()
+        .downcast_ref::<Scalar<(Identity, Arc<Schema>)>>()
+    else {
+        return false;
+    };
+    let (identity, schema) = kernel.key();
+    schema.fields().is_empty()
+        && identity.expression().is_closed_scalar()
+        && !contains_global_reference(identity.expression())
+        && effects(identity.expression()) != Effects::RandomContext
+}
+
+fn contains_global_reference(expression: &Expr) -> bool {
+    let mut found = false;
+    expression.visit_unique(&mut |node| {
+        found |= matches!(node, Expr::Global { .. } | Expr::ExternalGlobal { .. });
+    });
+    found
+}
+
 /// Lower a Vail expression against a logical input schema and global bindings.
 ///
 /// Binding indices for external globals address `schema` (the joined logical

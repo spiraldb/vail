@@ -222,6 +222,10 @@ impl Identity {
             nodes: memo.len(),
         }
     }
+
+    pub(crate) fn expression(&self) -> &Expr {
+        &self.expression
+    }
 }
 impl std::fmt::Debug for Identity {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

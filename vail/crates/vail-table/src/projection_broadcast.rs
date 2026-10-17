@@ -239,7 +239,10 @@ fn eligible(expr: &Arc<dyn PhysicalExpr>, schema: &Schema) -> bool {
     expr.downcast_ref::<ScalarFunctionExpr>()
         .is_some_and(|function| {
             function.args().is_empty()
-                && function.fun().signature().volatility == Volatility::Immutable
+                && (function.fun().signature().volatility == Volatility::Immutable
+                    || vail_execution::logical_expr::is_cacheable_closed_semantic_kernel(
+                        function.fun(),
+                    ))
         })
 }
 

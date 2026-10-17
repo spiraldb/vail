@@ -37,6 +37,11 @@ impl<K: fmt::Debug> fmt::Debug for Scalar<K> {
             .finish()
     }
 }
+impl<K> Scalar<K> {
+    pub(crate) fn key(&self) -> &K {
+        &self.key
+    }
+}
 impl<K: PartialEq> PartialEq for Scalar<K> {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
