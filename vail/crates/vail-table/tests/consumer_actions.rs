@@ -176,3 +176,35 @@ async fn force_count_evaluates_projected_fields_in_every_partition() {
         .to_lowercase();
     assert!(error.contains("step must not be zero"), "{error}");
 }
+
+#[tokio::test]
+async fn force_count_handles_grouped_output_with_row_payload() {
+    let grouped = TableIR::range(37, 3)
+        .unwrap()
+        .grouped_aggregate_bound(
+            vec![("idx".into(), ScalarIR::Column { name: "idx".into() })],
+            vec![(
+                "n".into(),
+                ScalarIR::Aggregate {
+                    result_type: None,
+                    function: "count".into(),
+                    value: None,
+                    options: json!({}),
+                    init: vec![],
+                },
+            )],
+            vail_table::globals::GlobalBindings::new(),
+        )
+        .unwrap();
+
+    assert_eq!(grouped.force_count().await.unwrap(), 37);
+    let rows = grouped
+        .collect_partitions()
+        .await
+        .unwrap()
+        .into_iter()
+        .flatten()
+        .map(|batch| batch.num_rows())
+        .sum::<usize>();
+    assert_eq!(rows, 37);
+}

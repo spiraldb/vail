@@ -1460,6 +1460,17 @@ fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<Phys
             node = children[0].clone();
             continue;
         }
+        if let Some(concat) = node.as_ref().downcast_ref::<OrderedConcatExec>() {
+            let children = node.children();
+            if concat.tag_index.is_some() || children.len() != 1 {
+                return Ok(None);
+            }
+            // A single-child untagged concat preserves both rows and schema.
+            // Unwrap it for counting; replaying it would only add a one-part
+            // stream wrapper around the same child.
+            node = children[0].clone();
+            continue;
+        }
         let Some(merge) = node.as_ref().downcast_ref::<SortPreservingMergeExec>() else {
             return Ok(None);
         };
