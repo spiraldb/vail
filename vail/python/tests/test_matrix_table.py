@@ -98,9 +98,26 @@ def test_matrix_scan_count_after_repartition_union_and_head():
 
 def test_matrix_scan_count_after_grouped_and_global_aggregate():
     table = hl.utils.range_table(12, n_partitions=4)
-    grouped = table.group_by(k=table.idx % 3).aggregate(n=hl.agg.count())
+    table = table.annotate(label=hl.str(table.idx), payload=hl.struct(x=table.idx))
+    grouped = table.group_by(k=table.idx % 3).aggregate(
+        n=hl.agg.count(),
+        labels=hl.agg.collect(table.label),
+        payloads=hl.agg.collect(table.payload),
+    )
     grouped = grouped.annotate(prefix=hl.scan.count()).collect()
-    assert [(row.k, row.prefix) for row in grouped] == [(0, 0), (1, 1), (2, 2)]
+    assert [
+        (row.k, row.prefix, row.n, sorted(row.labels), sorted(item.x for item in row.payloads))
+        for row in grouped
+    ] == [
+        (
+            key,
+            key,
+            4,
+            sorted(str(idx) for idx in range(key, 12, 3)),
+            sorted(range(key, 12, 3)),
+        )
+        for key in range(3)
+    ]
 
     global_aggregate = table.group_by().aggregate(n=hl.agg.count())
     global_aggregate = global_aggregate.annotate(prefix=hl.scan.count()).collect()

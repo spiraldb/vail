@@ -260,10 +260,13 @@ impl ExecutionPlan for SourceLineageExec {
 /// producer DAG. Reunify only copies of the SAME declared consumer, after all
 /// rewrites have completed. Distinct consumer identities never share exchange
 /// execution state merely because their logical expressions happen to match.
-// DataFusion's Partitioning PartialEq models known distribution equivalence:
-// UnknownPartitioning deliberately never equals even itself. Our consumer
-// boundary instead validates the output stream count for an already-proven
-// common producer lineage; unknown distribution adds no further guarantee.
+// DataFusion's PartialEq models optimizer guarantees: UnknownPartitioning and
+// UnKnownColumn deliberately never equal themselves. Consumer binding also
+// verifies producer origin and source contract before accepting duplicate
+// views. This local check ensures matching stream counts and declared hash
+// expressions. Treat matching UnKnownColumn placeholders as equal here; this
+// does not claim the optimizer can satisfy or compare that hash distribution
+// globally.
 fn same_consumer_distribution(
     left: &datafusion_physical_plan::Partitioning,
     right: &datafusion_physical_plan::Partitioning,
@@ -273,7 +276,34 @@ fn same_consumer_distribution(
             datafusion_physical_plan::Partitioning::UnknownPartitioning(a),
             datafusion_physical_plan::Partitioning::UnknownPartitioning(b),
         ) => a == b,
+        (
+            datafusion_physical_plan::Partitioning::Hash(left_exprs, left_count),
+            datafusion_physical_plan::Partitioning::Hash(right_exprs, right_count),
+        ) => {
+            left_count == right_count
+                && left_exprs.len() == right_exprs.len()
+                && left_exprs
+                    .iter()
+                    .zip(right_exprs)
+                    .all(|(left, right)| same_consumer_hash_expr(left, right))
+        }
         _ => left == right,
+    }
+}
+
+fn same_consumer_hash_expr(
+    left: &Arc<dyn PhysicalExpr>,
+    right: &Arc<dyn PhysicalExpr>,
+) -> bool {
+    use datafusion_physical_expr::expressions::UnKnownColumn;
+
+    match (
+        left.downcast_ref::<UnKnownColumn>(),
+        right.downcast_ref::<UnKnownColumn>(),
+    ) {
+        (Some(left), Some(right)) => left.name() == right.name(),
+        (Some(_), None) | (None, Some(_)) => false,
+        (None, None) => left == right,
     }
 }
 

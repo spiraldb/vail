@@ -93,8 +93,17 @@ impl UserDefinedLogicalNodeCore for OrderedNode {
                 "invalid ordered partitions rewrite".into(),
             ));
         }
+        let input = inputs.remove(0);
         Ok(Self {
-            input: inputs.remove(0),
+            // A transparent ordered node follows its rewritten child schema.
+            // Frozen consumer/RNG contexts keep the schema captured when the
+            // context was created, matching their existing identity contract.
+            schema: if self.freeze {
+                self.schema.clone()
+            } else {
+                input.schema().clone()
+            },
+            input,
             ..self.clone()
         })
     }
@@ -1038,11 +1047,7 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
                                 )
                             })
                             .collect::<Result<Vec<_>>>()?;
-                        // Preserve the grouped-key ordering through the tag-0
-                        // projection below. SourceOrdinal runs after this
-                        // boundary and requires one ordered stream for the
-                        // global aggregate result.
-                        ordered(LogicalPlanBuilder::from(plan).sort(sorts)?.build()?)
+                        LogicalPlanBuilder::from(plan).sort(sorts)?.build()?
                     };
                     let mut fields = plan
                         .schema()
@@ -1055,7 +1060,14 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
                         table.globals().schema(),
                         "__vail_partition",
                     )));
-                    Ok(LogicalPlanBuilder::from(plan).project(fields)?.build()?)
+                    // OrderedNode tags its final field with the output
+                    // partition ID. Place it after this projection so that
+                    // the private UInt64 tag, not the last user aggregate
+                    // (which may be a nested struct), is replaced. This also
+                    // protects the grouped-key sort from later rewrites.
+                    Ok(ordered(
+                        LogicalPlanBuilder::from(plan).project(fields)?.build()?,
+                    ))
                 }
                 None => Err(TableError::Invalid(
                     "missing logical grouped aggregate plan".into(),
