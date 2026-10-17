@@ -1,0 +1,54 @@
+{
+  "runner_sha256": "3d4b200822f38bc280df797e3bc004502cb2ad88f877ca8d0bfb12ef27d28732",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 300.0,
+  "fixture_timeout_seconds": 900.0,
+  "data_dir": "/private/tmp/hail-upstream-benchmark-data",
+  "smoke_fixtures": false,
+  "discovered": 1,
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_dense",
+      "id": "benchmark_table::test_table_aggregate_downsample_dense",
+      "args": [
+        "many_ints_ht"
+      ],
+      "fixtures": [
+        "many_ints_ht"
+      ],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 53.788219792000746,
+      "telemetry": {
+        "cpu_seconds": 45.104590875,
+        "average_cores": 0.8385563848014479,
+        "peak_rss_gib": 1.2638397216796875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 1072485065,
+          "system_time": 10025116,
+          "instructions": 70738722076,
+          "cycles": 141808859984,
+          "diskio_bytesread": 65536,
+          "diskio_byteswritten": 0
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/private/tmp/vail-downsample-before-telemetry/vail/benchmark_table--test_table_aggregate_downsample_dense"
+      },
+      "fixture_seconds": 205.416,
+      "elapsed_seconds": 259.25
+    }
+  ],
+  "totals": {
+    "passed": 1
+  }
+}

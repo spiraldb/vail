@@ -637,6 +637,7 @@ struct DownsamplePoint {
     x: f64,
     y: f64,
     label: ScalarValue,
+    label_size: usize,
 }
 fn tuple_item_type() -> DataType {
     let dtype = DataType::Struct(
@@ -709,6 +710,7 @@ struct DownsampleAccumulator {
     divisions: usize,
     points: BTreeMap<(i32, i32), DownsamplePoint>,
     bounds: Option<(f64, f64, f64, f64)>,
+    label_bytes: usize,
 }
 impl DownsampleAccumulator {
     fn new(divisions: usize) -> Self {
@@ -716,6 +718,7 @@ impl DownsampleAccumulator {
             divisions,
             points: BTreeMap::new(),
             bounds: None,
+            label_bytes: 0,
         }
     }
     fn cell(&self, x: f64, y: f64, bounds: (f64, f64, f64, f64)) -> (i32, i32) {
@@ -759,9 +762,13 @@ impl DownsampleAccumulator {
         if self.bounds != Some(bounds) {
             self.bounds = Some(bounds);
             let old = std::mem::take(&mut self.points);
+            self.label_bytes = 0;
             for point in old.into_values() {
                 let cell = self.cell(point.x, point.y, bounds);
-                self.points.entry(cell).or_insert(point);
+                if let std::collections::btree_map::Entry::Vacant(entry) = self.points.entry(cell) {
+                    self.label_bytes += point.label_size;
+                    entry.insert(point);
+                }
             }
         }
     }
@@ -773,15 +780,16 @@ impl DownsampleAccumulator {
     ) -> DfResult<()> {
         self.include_bounds(x, y);
         let cell = self.cell(x, y, self.bounds.unwrap());
-        if !self.points.contains_key(&cell) {
-            self.points.insert(
-                cell,
-                DownsamplePoint {
-                    x,
-                    y,
-                    label: label()?,
-                },
-            );
+        if let std::collections::btree_map::Entry::Vacant(entry) = self.points.entry(cell) {
+            let label = label()?;
+            let label_size = label.size();
+            self.label_bytes += label_size;
+            entry.insert(DownsamplePoint {
+                x,
+                y,
+                label,
+                label_size,
+            });
         }
         Ok(())
     }
@@ -890,11 +898,7 @@ impl Accumulator for DownsampleAccumulator {
     fn size(&self) -> usize {
         std::mem::size_of_val(self)
             + self.points.len() * std::mem::size_of::<((i32, i32), DownsamplePoint)>()
-            + self
-                .points
-                .values()
-                .map(|point| point.label.size())
-                .sum::<usize>()
+            + self.label_bytes
     }
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
         let mut state = vec![self.result()?];

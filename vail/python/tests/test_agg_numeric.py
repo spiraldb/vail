@@ -145,6 +145,47 @@ def test_downsample_missing_label_is_missing():
     assert all(point[2] is None for point in points)
 
 
+def test_downsample_rebin_preserves_labels_at_bounds_and_partition_merge():
+    rows = [
+        {"x": 0., "y": 0., "label": "origin", "labels": ["origin"]},
+        {"x": 10., "y": 10., "label": None, "labels": None},
+        {"x": 9., "y": 9., "label": "collision", "labels": ["collision"]},
+        {"x": -10., "y": -10., "label": "minimum", "labels": ["minimum"]},
+        {"x": 0., "y": 10., "label": "upper", "labels": []},
+        {"x": -10., "y": 10., "label": None, "labels": None},
+    ]
+    table = hl.Table.parallelize(
+        rows,
+        schema=hl.tstruct(x=hl.tfloat64, y=hl.tfloat64, label=hl.tstr, labels=hl.tarray(hl.tstr)),
+        n_partitions=3,
+    )
+    expected_labels = {
+        "label": {
+            (0., 0.): ["origin"],
+            (10., 10.): None,
+            (9., 9.): ["collision"],
+            (-10., -10.): ["minimum"],
+            (0., 10.): ["upper"],
+            (-10., 10.): None,
+        },
+        "labels": {
+            (0., 0.): ["origin"],
+            (10., 10.): None,
+            (9., 9.): ["collision"],
+            (-10., -10.): ["minimum"],
+            (0., 10.): [],
+            (-10., 10.): None,
+        },
+    }
+    for name in ("label", "labels"):
+        points = table.aggregate(hl.agg.downsample(table.x, table.y, table[name], n_divisions=4))
+        by_coordinate = {(x, y): label for x, y, label in points}
+        assert {(-10., -10.), (0., 0.), (0., 10.), (-10., 10.)} <= by_coordinate.keys()
+        assert len(points) <= 4**2
+        assert all(expected_labels[name][coordinate] == label for coordinate, label in by_coordinate.items())
+        assert (10., 10.) in by_coordinate or (9., 9.) in by_coordinate
+
+
 @pytest.mark.parametrize("k", [1, 7])
 def test_hail_accepts_k_below_datasketches_minimum(k):
     # Hail's ApproxCDFStateManager has an eight-item minimum level capacity,
