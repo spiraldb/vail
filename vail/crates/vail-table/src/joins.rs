@@ -503,7 +503,7 @@ pub(crate) fn lower(
             _ => false,
         }
     }
-    let unique_inner = kind == TableJoinKind::Inner && join_key == 1
+    let unique_ordered_join = matches!(kind, TableJoinKind::Inner | TableJoinKind::Left) && join_key == 1
         && unique_range_key(left) && unique_range_key(right);
     let left_plan = plan::ordinal(crate::partitioned::prepared_ordered(left)?.rows);
     let right_plan = plan::ordinal(crate::partitioned::prepared_ordered(right)?.rows);
@@ -640,7 +640,7 @@ pub(crate) fn lower(
     }
     // SortMergeJoin already emits keys in order. With unique input keys there
     // are no ties to reorder by side ordinals, so retain its streaming output.
-    let sorted: PhysicalPlan = if unique_inner {
+    let sorted: PhysicalPlan = if unique_ordered_join {
         projected
     } else {
         Arc::new(datafusion_physical_plan::sorts::sort::SortExec::new(

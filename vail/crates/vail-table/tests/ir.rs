@@ -439,3 +439,32 @@ async fn annotated_range_joins_preserve_rows_and_key_order() {
     }).collect();
     assert_eq!(actual, (0..30).map(|i| (i, i, i)).collect::<Vec<_>>());
 }
+
+#[tokio::test]
+async fn annotated_unique_left_join_keeps_unmatched_rows_in_key_order() {
+    use arrow_array::Array;
+    use vail_table::TableJoinKind;
+
+    let source = TableIR::range(30, 1).unwrap();
+    let left = source.map_rows(vec![
+        ("idx".into(), column("idx")),
+        ("left_value".into(), column("idx")),
+    ]).unwrap();
+    let right = source.filter(greater(column("idx"), int(14)), true).unwrap()
+        .map_rows(vec![
+            ("idx".into(), column("idx")),
+            ("right_value".into(), column("idx")),
+        ]).unwrap();
+    let joined = left.join(right, TableJoinKind::Left, 1).unwrap();
+    let batches = joined.collect_partitions().await.unwrap();
+    let actual: Vec<_> = batches.iter().flatten().flat_map(|batch| {
+        let fields: Vec<_> = (0..3).map(|index| {
+            batch.column(index).as_any().downcast_ref::<Int32Array>().unwrap()
+        }).collect();
+        (0..batch.num_rows()).map(|row| (
+            fields[0].value(row), fields[1].value(row),
+            fields[2].is_valid(row).then(|| fields[2].value(row)),
+        )).collect::<Vec<_>>()
+    }).collect();
+    assert_eq!(actual, (0..30).map(|i| (i, i, (i > 14).then_some(i))).collect::<Vec<_>>());
+}
