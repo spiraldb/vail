@@ -80,6 +80,11 @@ def mean(expr):
 
 
 def collect(expr):
+    """Collect values into an array; the result order is unspecified.
+
+    This matches Hail's ``agg.collect`` contract, which does not guarantee
+    aggregation order.
+    """
     value = as_expr(expr)
     return _aggregate("collect", value, tarray(value.dtype))
 
