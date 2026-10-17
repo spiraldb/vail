@@ -21,3 +21,19 @@ The region-memory cases still trail Hail and retain large buffers. Work continue
 Root key-proof changes remove no-op naive coalesces, preserve unique nonnull Range-key proofs through key-forwarding row maps and order-preserving subsets, and omit the final ordinal sort only for Inner/Left joins with both inputs proven unique and a single join key. Other cases retain their existing sort. Public tests cover rows/order/value columns, unmatched and empty-right left joins, coalesce partition limits and invalid zero. The original focused test pass preceded a formatting step that accidentally inserted a filename into the test file; review caught that artifact before integration, it was removed, and the entire exact repaired 13-test IR file passed afterward. No performance run used the malformed test file.
 
 Required review: chat `01a14128-21b8-7a53-b399-4ad8f9b31f4f` approved exact candidate `2d4009414a2de83b9e05d499d1fa965b037332e9` against `c510e35dbfb9ee1bfeac7117b7843bdf3b77e30a`. Source at `8341d3c6a366dd55a0e0e472a94ccbcb24679c60` is unchanged; later children replace private-plan/identity acceptance assertions, add empty-right coverage, repair the formatter artifact, and record validation. Reviewer cleared proof/coalesce semantics, public tests and normal-policy evidence with the residual Hail gap explicit. Reviewer ran no builds/tests and made no edits. No blocking findings remain for this candidate. Closed-expression caching and batch sizing are outside this approval.
+
+## Closed nested constants and wide-output batching
+
+The follow-up production candidate is `0c8bfa4524f5342ef7f6d83a44d7604b053e5dc2`, based on `ac0511e1c8950a854c528938402c932c016a222f`. The adjacent `wide-production-validation.json` records the five production source hashes, native/wheel identities, resource observations and download checksum. All source hashes matched the cloud source used to build the wheel. Three repeated full-input runs used normal production settings, without a global one-row override or diagnostic operator patches.
+
+| Case | Median Vail s | Hail s | Vail core-s, median-wall run | Vail peak GiB, median-wall run |
+|---|---:|---:|---:|---:|
+| Wide inner join | 0.827 | 3.645 | 4.30 | 0.763 |
+| Wide left join | 1.009 | 3.848 | 5.87 | 2.157 |
+| Wide map/filter | 0.833 | 3.572 | 4.30 | 1.154 |
+
+The exact final candidate passed 1,857 Python tests, one skip and 19 subtests, plus 19 public wide-array Rust tests and five public closed-constant Rust tests. The 64 passing benchmark controls were run with the preceding production policy candidate; they are distinct from these final-source affected-case repetitions and full Python run. The same-VM Hail baseline is unchanged. CPU/RAM/I/O telemetry was sampled at 10 Hz; hardware cycles/instructions were unavailable.
+
+Immutable closed nested expressions are cached lazily at the physical expression root. Empty and unselected inputs remain unevaluated; failed evaluations are not cached. Advisory batching models demanded list-containing outputs with statically known primitive repeats, preserves session context and state, and caps DataFusion filters' internal coalescers. Its 64 MiB target is advisory: a single row can exceed it, and scalar intermediates, unknown estimates, List32 limits and sources that do not honor the advice are outside the guarantee. Field lookup is indexed once per row map; the physical-plan rewrite retains DAG sharing.
+
+Required review chat `01a14128-21b8-7a53-b399-4ad8f9b31f4f` approved exact `0c8bfa4524f5342ef7f6d83a44d7604b053e5dc2` against `ac0511e1c8950a854c528938402c932c016a222f`, plus this documentation-only validation/disposition child. The reviewer cleared source, public tests and matching normal-policy resource provenance, ran no builds/tests and made no edits. Grouped-collect parallelism and SourceOrdinal ordering certificates are excluded from this approval.

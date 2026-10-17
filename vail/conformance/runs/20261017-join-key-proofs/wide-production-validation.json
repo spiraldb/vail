@@ -1,0 +1,89 @@
+{
+  "candidate": "0c8bfa4524f5342ef7f6d83a44d7604b053e5dc2",
+  "base": "ac0511e1c8950a854c528938402c932c016a222f",
+  "source_hashes": {
+    "vail/crates/vail-execution/src/expressions.rs": "2e2caf1255581375eae796fd0bec18e1548f1794b8889f11a3b76423fc222001",
+    "vail/crates/vail-table/src/lib.rs": "1cbba18ead203394dd3c7f3fcd6fa9b915d4ab1bcb3c0a797e62403ffa7be36b",
+    "vail/crates/vail-table/src/logical.rs": "254f2772d8610bce866c6bc2c2af2242f4c93c009e8502c095be98dcd497ea77",
+    "vail/crates/vail-table/src/plan.rs": "19f0abd5f41b81f2d785b37ce0ae36a7ba748cfd5caab87593d55eaef812cd86",
+    "vail/crates/vail-table/src/wide_batch.rs": "4834ae65dde3c9b02bf3f00736784256f60ff7576afa8232edcc2a369249392b"
+  },
+  "native_sha256": "864d1548998d8e95bc90d67e37d63961c1b2409859bd57fc55a7fa1973866470",
+  "wheel_sha256": "0758e78a67f870d239cff702c006de0d6db9ee36952600c22ba309beb02eef09",
+  "download_archive_sha256": "a199cf69ddc6e31f96ee0cee7861af9d47d1b07dbf898bfe0728af2e535772dd",
+  "full_python": {
+    "passed": 1857,
+    "skipped": 1,
+    "subtests_passed": 19
+  },
+  "focused_rust": {
+    "wide_arrays": 19,
+    "closed_constants": 5
+  },
+  "prior_policy_controls": {
+    "passed": 64,
+    "scope": "e041+SessionState followup, distinct from final0c full Python and repeated affected cases"
+  },
+  "cases": [
+    {
+      "id": "benchmark_table::test_test_map_filter_region_memory",
+      "wall_seconds": [
+        0.9610951910008225,
+        0.8333223999998154,
+        0.8331367890004913
+      ],
+      "median_seconds": 0.8333223999998154,
+      "cpu_seconds": [
+        4.45,
+        4.3,
+        4.310000000000001
+      ],
+      "peak_rss_gib": [
+        1.1310577392578125,
+        1.1535606384277344,
+        1.1591720581054688
+      ]
+    },
+    {
+      "id": "benchmark_table::test_test_inner_join_region_memory",
+      "wall_seconds": [
+        0.8344508309992307,
+        0.8233241800007818,
+        0.826896721000594
+      ],
+      "median_seconds": 0.826896721000594,
+      "cpu_seconds": [
+        4.29,
+        4.31,
+        4.3
+      ],
+      "peak_rss_gib": [
+        0.7480621337890625,
+        0.760711669921875,
+        0.7627754211425781
+      ]
+    },
+    {
+      "id": "benchmark_table::test_test_left_join_region_memory",
+      "wall_seconds": [
+        1.035040155000388,
+        0.9908464479995018,
+        1.0091493579993767
+      ],
+      "median_seconds": 1.0091493579993767,
+      "cpu_seconds": [
+        5.8999999999999995,
+        5.78,
+        5.869999999999999
+      ],
+      "peak_rss_gib": [
+        2.0569839477539062,
+        2.2210235595703125,
+        2.1566619873046875
+      ]
+    }
+  ],
+  "artifact_root": "/Users/danielking/projects/vail/vail/conformance/runs/20261016-gcp-full-upstream",
+  "telemetry_hz": 10,
+  "hardware_cycles_instructions": "unavailable on VM"
+}
