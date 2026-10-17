@@ -17,7 +17,9 @@ use datafusion::datasource::{TableProvider, TableType};
 use datafusion::logical_expr::{Expr, Operator, TableProviderFilterPushDown};
 use datafusion::physical_expr::{EquivalenceProperties, expressions::Column};
 use datafusion_common::SplitPoint;
-use datafusion_physical_expr::{LexOrdering, PhysicalSortExpr, RangePartitioning};
+use datafusion_physical_expr::{
+    AcrossPartitions, ConstExpr, LexOrdering, PhysicalSortExpr, RangePartitioning,
+};
 use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, PlanProperties,
     SendableRecordBatchStream,
@@ -892,6 +894,15 @@ impl PartitionSetExec {
         // partition. Certify that range distribution so partition-local windows
         // need neither a hash exchange nor a sort to rediscover it.
         let partition_id_index = schema.fields().len() - 1;
+        equivalence
+            .add_constants([ConstExpr::new(
+                Arc::new(Column::new(
+                    schema.field(partition_id_index).name(),
+                    partition_id_index,
+                )),
+                AcrossPartitions::Heterogeneous,
+            )])
+            .expect("source partition ID is a valid constant expression");
         let partitioning = partition_id_properties(
             &schema,
             &mut equivalence,

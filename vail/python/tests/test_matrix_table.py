@@ -65,6 +65,14 @@ def test_matrix_scan_count_preserves_source_order_across_partitions(n_rows, n_pa
     ]
 
 
+def test_matrix_scan_count_preserves_union_source_order():
+    mt = hl.utils.range_matrix_table(7, 2, 3)
+    rows = mt.union_rows(mt).annotate_rows(prefix=hl.scan.count()).rows().collect()
+    assert [(row.row_idx, row.prefix) for row in rows] == [
+        (i, prefix) for prefix, i in enumerate([0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6])
+    ]
+
+
 def test_annotations_actions_globals_and_native_plan():
     m = matrix()
     assert m.aggregate_entries(hl.agg.sum(m.x)) == 198

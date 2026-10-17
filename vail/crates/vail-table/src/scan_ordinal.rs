@@ -37,7 +37,7 @@ pub(crate) struct SourceOrdinal {
     id: u64,
     input: LogicalPlan,
     schema: DFSchemaRef,
-    partition_index: usize,
+    partition_name: String,
 }
 impl PartialEq for SourceOrdinal {
     fn eq(&self, other: &Self) -> bool {
@@ -82,6 +82,12 @@ impl UserDefinedLogicalNodeCore for SourceOrdinal {
             ));
         }
         let input = inputs.remove(0);
+        input
+            .schema()
+            .index_of_column_by_name(None, &self.partition_name)
+            .ok_or_else(|| {
+                DataFusionError::Plan("source ordinal partition field is missing".into())
+            })?;
         let ordinal = DFSchema::try_from(Schema::new(vec![
             self.schema
                 .as_arrow()
@@ -100,7 +106,7 @@ impl UserDefinedLogicalNodeCore for SourceOrdinal {
             id,
             input,
             schema,
-            partition_index: self.partition_index,
+            partition_name: self.partition_name.clone(),
         })
     }
 }
@@ -119,7 +125,7 @@ pub(crate) fn numbered(
     }
     let ordinal = DFSchema::try_from(Schema::new(vec![Field::new(name, DataType::UInt64, false)]))?;
     let schema = Arc::new(input.schema().join(&ordinal)?);
-    let partition_index = input
+    input
         .schema()
         .index_of_column_by_name(None, partition_name)
         .ok_or_else(|| DataFusionError::Plan("source ordinal partition field is missing".into()))?;
@@ -128,7 +134,7 @@ pub(crate) fn numbered(
             id: NEXT_ORDINAL.fetch_add(1, Ordering::Relaxed),
             input,
             schema,
-            partition_index,
+            partition_name: partition_name.to_owned(),
         }),
     }))
 }
@@ -153,18 +159,21 @@ impl SourceOrdinal {
                     .expect("ordinal field")
                     .clone(),
             ),
-            self.partition_index,
-        )))
+            &self.partition_name,
+        )?))
     }
 }
 #[derive(Debug)]
 struct SourceOrdinalExec {
     input: PhysicalPlan,
     cache: Arc<PlanProperties>,
-    partition_index: usize,
+    partition_name: String,
 }
 impl SourceOrdinalExec {
-    fn new(input: PhysicalPlan, schema: Arc<Schema>, partition_index: usize) -> Self {
+    fn new(input: PhysicalPlan, schema: Arc<Schema>, partition_name: &str) -> Result<Self> {
+        let partition_index = input.schema().index_of(partition_name).map_err(|_| {
+            DataFusionError::Plan("source ordinal partition field is missing".into())
+        })?;
         let mut equivalence = datafusion_physical_expr::EquivalenceProperties::new(schema.clone());
         let partition = Arc::new(Column::new(
             schema.field(partition_index).name(),
@@ -174,29 +183,43 @@ impl SourceOrdinalExec {
             schema.field(schema.fields().len() - 1).name(),
             schema.fields().len() - 1,
         ));
-        // Every Vail input partition carries one constant __vail_partition ID.
-        // The appended ordinal increases monotonically within that partition,
-        // so this lexicographic ordering remains true through row-preserving
-        // projections and lets right-probing joins avoid restoring the order
-        // with a full-row sort.
-        equivalence.add_ordering(
-            LexOrdering::new(vec![
-                PhysicalSortExpr::new(partition, SortOptions::default()),
-                PhysicalSortExpr::new(ordinal, SortOptions::default()),
-            ])
-            .expect("non-empty source ordinal ordering"),
-        );
+        // Only certify the order when the source wrapper still proves that
+        // the logical partition field is constant within each physical stream.
+        // Coalesces and shuffles clear this per-partition constant witness.
+        let input_partition: Arc<dyn datafusion_physical_expr::PhysicalExpr> =
+            Arc::new(Column::new(
+                input.schema().field(partition_index).name(),
+                partition_index,
+            ));
+        if let Some(across_partitions) = input
+            .properties()
+            .equivalence_properties()
+            .is_expr_constant(&input_partition)
+        {
+            equivalence
+                .add_constants([datafusion_physical_expr::ConstExpr::new(
+                    partition.clone(),
+                    across_partitions,
+                )])?;
+            equivalence.add_ordering(
+                LexOrdering::new(vec![
+                    PhysicalSortExpr::new(partition, SortOptions::default()),
+                    PhysicalSortExpr::new(ordinal, SortOptions::default()),
+                ])
+                .expect("non-empty source ordinal ordering"),
+            );
+        }
         let cache = Arc::new(PlanProperties::new(
             equivalence,
             input.properties().output_partitioning().clone(),
             input.properties().emission_type,
             input.properties().boundedness,
         ));
-        Self {
+        Ok(Self {
             input,
             cache,
-            partition_index,
-        }
+            partition_name: partition_name.to_owned(),
+        })
     }
 }
 impl DisplayAs for SourceOrdinalExec {
@@ -248,7 +271,7 @@ impl ExecutionPlan for SourceOrdinalExec {
                 .expect("ordinal field")
                 .clone(),
         );
-        Ok(Arc::new(Self::new(input, schema, self.partition_index)))
+        Ok(Arc::new(Self::new(input, schema, &self.partition_name)?))
     }
     fn execute(
         &self,
