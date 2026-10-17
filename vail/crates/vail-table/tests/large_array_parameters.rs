@@ -1,4 +1,4 @@
-use arrow_array::{Array, Int32Array, Int64Array, ListArray};
+use arrow_array::{Array, Int32Array, Int64Array, ListArray, StructArray};
 use datafusion_common::ScalarValue;
 use serde_json::json;
 use std::sync::Arc;
@@ -20,6 +20,25 @@ fn repeat(length: i64) -> ScalarIR {
         ],
         dtype: Type::Array {
             array: Box::new(Type::Primitive(PrimitiveType::Int32)),
+        },
+    }
+}
+
+fn repeat_f64(length: i64) -> ScalarIR {
+    ScalarIR::NestedFunction {
+        function: "array_repeat".into(),
+        args: vec![
+            ScalarIR::Literal {
+                dtype: Type::Primitive(PrimitiveType::Float64),
+                value: json!(1.0),
+            },
+            ScalarIR::Literal {
+                dtype: Type::Primitive(PrimitiveType::Int64),
+                value: json!(length),
+            },
+        ],
+        dtype: Type::Array {
+            array: Box::new(Type::Primitive(PrimitiveType::Float64)),
         },
     }
 }
@@ -96,9 +115,19 @@ async fn live_wide_repeat_is_split_into_single_row_batches() {
         .map_rows(vec![
             ("idx".into(), ScalarIR::Column { name: "idx".into() }),
             (
-                "items".into(),
-                repeat_value(ScalarIR::Column { name: "idx".into() }, 16_300_000),
+                "raw".into(),
+                ScalarIR::Struct {
+                    fields: vec![(
+                        "items".into(),
+                        repeat_value(ScalarIR::Column { name: "idx".into() }, 16_300_000),
+                    )],
+                },
             ),
+        ])
+        .unwrap()
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            ("payload".into(), ScalarIR::Column { name: "raw".into() }),
         ])
         .unwrap()
         .filter(
@@ -128,12 +157,13 @@ async fn live_wide_repeat_is_split_into_single_row_batches() {
             .downcast_ref::<Int32Array>()
             .unwrap();
         assert_eq!(indices.values(), &[expected_idx as i32]);
-        let items = batch
-            .column_by_name("items")
+        let payload = batch
+            .column_by_name("payload")
             .unwrap()
             .as_any()
-            .downcast_ref::<ListArray>()
+            .downcast_ref::<StructArray>()
             .unwrap();
+        let items = payload.column(0).as_any().downcast_ref::<ListArray>().unwrap();
         let values = items.value(0);
         let values = values.as_any().downcast_ref::<Int32Array>().unwrap();
         assert_eq!(values.len(), 16_300_000);
@@ -237,6 +267,59 @@ async fn closed_wide_array_length_reduction_keeps_normal_batches() {
         .downcast_ref::<Int32Array>()
         .unwrap();
     assert!(lengths.values().iter().all(|&length| length == 1_000_000));
+}
+
+#[tokio::test]
+async fn scalar_array_reductions_and_casts_keep_normal_batches() {
+    let repeated = || repeat_f64(100_000);
+    let sum = ScalarIR::NestedFunction {
+        function: "array_sum".into(),
+        args: vec![repeated()],
+        dtype: Type::Primitive(PrimitiveType::Float64),
+    };
+    let average = ScalarIR::NestedFunction {
+        function: "array_avg".into(),
+        args: vec![repeated()],
+        dtype: Type::Primitive(PrimitiveType::Float64),
+    };
+    let table = TableIR::range(100, 1)
+        .unwrap()
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            ("sum".into(), sum),
+            (
+                "average".into(),
+                ScalarIR::Cast {
+                    dtype: Type::Primitive(PrimitiveType::Float32),
+                    value: Arc::new(average),
+                },
+            ),
+        ])
+        .unwrap();
+
+    let batches = table.collect_partitions().await.unwrap();
+    assert_eq!(
+        batches[0]
+            .iter()
+            .map(|batch| batch.num_rows())
+            .collect::<Vec<_>>(),
+        [100]
+    );
+    let batch = &batches[0][0];
+    let sums = batch
+        .column_by_name("sum")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<arrow_array::Float64Array>()
+        .unwrap();
+    assert!(sums.values().iter().all(|&value| value == 100_000.0));
+    let averages = batch
+        .column_by_name("average")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<arrow_array::Float32Array>()
+        .unwrap();
+    assert!(averages.values().iter().all(|&value| value == 1.0));
 }
 
 #[tokio::test]

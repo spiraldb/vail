@@ -3,7 +3,9 @@
 //! This is deliberately narrow: it estimates a known materialized list only
 //! to avoid broadcasting that list across a large input batch. It is not a
 //! query-memory guarantee; a single output row may exceed the target. The
-//! estimate covers demanded primitive `array_repeat` expressions in row maps.
+//! estimate covers demanded row-map outputs whose Arrow type contains a list,
+//! including lists nested in struct fields. Scalar-only outputs and list
+//! intermediates reduced to scalars are intentionally outside the estimate.
 //! Range sources and Vail-built filters honor the advice explicitly; other
 //! source implementations must honor the session batch size themselves.
 
@@ -55,9 +57,16 @@ pub(crate) fn for_table(table: &TableRef, configured_rows: usize) -> Option<usiz
                 if !demanded.contains(name) {
                     continue;
                 }
+                let output_contains_list = table
+                    .schema()
+                    .field_with_name(name)
+                    .is_ok_and(|field| arrow_type_contains_list(field.data_type()));
                 visit_reachable(expression, &mut |node| {
                     if let Expr::Column { name } = node {
                         child_demand.insert(name.clone());
+                    }
+                    if !output_contains_list {
+                        return;
                     }
                     let Expr::NestedFunction {
                         function,
@@ -127,13 +136,6 @@ fn visit_reachable(expression: &Expr, f: &mut impl FnMut(&Expr)) {
             return;
         }
         f(expression);
-        // A closed array length produces a scalar per row and does not
-        // broadcast the nested array into the output batches.
-        if let Expr::ArrayLength { value } = expression
-            && is_closed_repeat(value)
-        {
-            return;
-        }
         if let Expr::IfElse {
             condition,
             consequent,
@@ -161,14 +163,15 @@ fn visit_reachable(expression: &Expr, f: &mut impl FnMut(&Expr)) {
     walk(expression, &mut HashSet::new(), f);
 }
 
-fn is_closed_repeat(expression: &Expr) -> bool {
-    let Expr::NestedFunction { function, args, .. } = expression else {
-        return false;
-    };
-    function == "array_repeat"
-        && args.len() == 2
-        && known_positive_count(&args[1]).is_some()
-        && matches!(args[0], Expr::Literal { .. } | Expr::RuntimeLiteral { .. })
+fn arrow_type_contains_list(dtype: &arrow_schema::DataType) -> bool {
+    use arrow_schema::DataType;
+    match dtype {
+        DataType::List(_) | DataType::LargeList(_) | DataType::FixedSizeList(_, _) => true,
+        DataType::Struct(fields) => fields
+            .iter()
+            .any(|field| arrow_type_contains_list(field.data_type())),
+        _ => false,
+    }
 }
 
 fn repeat_bytes(args: &[Expr], dtype: &Type) -> Option<u64> {
