@@ -84,6 +84,12 @@ def collect(expr):
     return _aggregate("collect", value, tarray(value.dtype))
 
 
+def _ordered_collect(expr):
+    """Collect in source order for internal layouts that depend on positions."""
+    value = as_expr(expr)
+    return _aggregate("collect", value, tarray(value.dtype), options={"ordered": True})
+
+
 def count_where(condition):
     predicate = as_expr(condition)
     if predicate.dtype != tbool:

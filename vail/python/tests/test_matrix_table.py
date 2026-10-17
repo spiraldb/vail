@@ -663,6 +663,20 @@ def test_sparse_column_collection_preserves_missing_slots():
     assert collected.col_idx.collect() == [[0, 1]]
 
 
+def test_collect_cols_by_key_keeps_column_and_entry_values_aligned():
+    m = hl.range_matrix_table(2, 3, n_partitions=3)
+    m = m.annotate_cols(column_value=m.col_idx)
+    m = m.annotate_entries(entry_value=m.row_idx * 100 + m.col_idx)
+    collected = m.key_cols_by(group=0).collect_cols_by_key()
+
+    columns = collected.column_value.collect()[0]
+    entries = collected.entry_value.collect()
+    assert columns == [0, 1, 2]
+    assert entries == [[0, 1, 2], [100, 101, 102]]
+    assert all([value - row * 100 for value in values] == columns
+               for row, values in enumerate(entries))
+
+
 def test_nested_explode_and_empty_column_choice():
     m = matrix(2, 2)
     m = m.annotate_rows(nested=hl.struct(xs=hl.array([m.row_idx, m.row_idx + 10])))

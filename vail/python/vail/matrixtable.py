@@ -278,7 +278,7 @@ class MatrixIR:
             rows = _project(rows, [(_ROW, rows[_ROW]), (_CELLS, rows[_CELLS])])
         if cols is not None:
             records = cols.aggregate(
-                agg.collect(struct(**{_CID: cols[_CID], _COL: cols[_COL]})),
+                agg._ordered_collect(struct(**{_CID: cols[_CID], _COL: cols[_COL]})),
                 _localize=False,
             )
             rows = rows.annotate_globals(**{_COLUMNS: records})
@@ -379,7 +379,7 @@ class MatrixTable:
     def _replace_column_metadata(self, cols):
         """Order-preserving column annotation; cell slots do not change."""
         from . import agg
-        records = cols.aggregate(agg.collect(cols.row), _localize=False)
+        records = cols.aggregate(agg._ordered_collect(cols.row), _localize=False)
         return self._copy(rows=self._mir.core.annotate_globals(**{_COLUMNS: records}))
 
     def _with_column_mask(self, mask):
@@ -423,7 +423,7 @@ class MatrixTable:
 
     def _select_columns_table(self, columns):
         from . import agg
-        positions = columns.aggregate(agg.collect(columns[self._column_position_name]), _localize=False)
+        positions = columns.aggregate(agg._ordered_collect(columns[self._column_position_name]), _localize=False)
         return self._with_column_positions(positions)
 
     def _cell_contexts(self, base, *, col_fields=None):
@@ -1124,7 +1124,7 @@ class MatrixTable:
         if axis == "col":
             from . import agg
             selected = predicate if keep else ~predicate
-            mask = base.aggregate(agg.collect(if_else(is_defined(selected), selected, False)), _localize=False)
+            mask = base.aggregate(agg._ordered_collect(if_else(is_defined(selected), selected, False)), _localize=False)
             return self._with_column_mask(mask)
         if axis == "row" and self._mir.row_index_keys:
             index_fields = dict(zip(self._mir.row_key, self._mir.row_index_keys))
@@ -1320,7 +1320,7 @@ class MatrixTable:
             output = output.head(n)
         from . import agg
 
-        return output.aggregate(agg.collect(output.value), _localize=False)
+        return output.aggregate(agg._ordered_collect(output.value), _localize=False)
 
     def count_rows(self, _localize=True):
         from . import agg
@@ -1552,7 +1552,7 @@ class MatrixTable:
             output = output.key_by(*self._mir.row_key)
         columns = self._public_axis("col", key=False)
         output = self._with_globals(output).annotate_globals(
-            **{cn: columns.aggregate(agg.collect(columns.row), _localize=False)}
+            **{cn: columns.aggregate(agg._ordered_collect(columns.row), _localize=False)}
         )
         if entries_array_field_name is None:
             output = output.drop(en)
@@ -1719,7 +1719,7 @@ class MatrixTable:
                         name = "__matrix_lookup_" + uuid4().hex
                         columns = columns.annotate(**{name: self._lower(raw, columns)})
                         records = columns.aggregate(
-                            agg.collect(columns[name]),
+                            agg._ordered_collect(columns[name]),
                             _localize=False,
                         )
                         position = Expression(tint32, self, {"op": "matrix_column_position"})
@@ -1923,7 +1923,7 @@ class MatrixTable:
                 (_COL, updated(expanded[_COL], path)),
             ],
         )
-        mapping = expanded.aggregate(agg.collect(expanded.row), _localize=False)
+        mapping = expanded.aggregate(agg._ordered_collect(expanded.row), _localize=False)
         positions = mapping.map(lambda col: col.parent_position)
         core = self._mir.core
         selected = _take_array(core[_CELLS], positions)
@@ -1962,8 +1962,8 @@ class MatrixTable:
         dense = self.unfilter_entries()
         return (
             dense.group_cols_by(*dense._mir.col_key)
-            .aggregate_cols(**{n: agg.collect(dense[n]) for n in dense.col_value.dtype})
-            .aggregate_entries(**{n: agg.collect(dense[n]) for n in dense.entry.dtype})
+            .aggregate_cols(**{n: agg._ordered_collect(dense[n]) for n in dense.col_value.dtype})
+            .aggregate_entries(**{n: agg._ordered_collect(dense[n]) for n in dense.entry.dtype})
             .result()
         )
 
@@ -2092,7 +2092,7 @@ class MatrixTable:
         )
 
         def missing_cells(columns):
-            ids = columns.aggregate(agg.collect(columns[_CID]), _localize=False)
+            ids = columns.aggregate(agg._ordered_collect(columns[_CID]), _localize=False)
             return ids.map(
                 lambda cid: struct(
                     **{
@@ -2662,10 +2662,10 @@ class GroupedMatrixTable:
             positions_name += "_"
         from . import sorted as sorted_array
         grouped = base.group_by(**keys).aggregate(**fields, **{
-            positions_name: sorted_array(agg.collect(base[m._column_position_name])),
+            positions_name: sorted_array(agg._ordered_collect(base[m._column_position_name])),
         })
         grouped = grouped.order_by(*(grouped[n] for n in groupnames)).key_by()
-        groups = grouped.aggregate(agg.collect(grouped.row), _localize=False)
+        groups = grouped.aggregate(agg._ordered_collect(grouped.row), _localize=False)
         columns = Table.parallelize(_indexed_cells(groups).map(lambda pair: struct(**{
             _CID: int64(pair["2"]),
             _COL: struct(**{n: pair["1"][n] for n in groupnames + tuple(fields)}),
@@ -2729,7 +2729,7 @@ def to_matrix_table(
         **{_COL: agg.take(col_value, 1)[0]}
     )
     cols = cols.order_by(*(cols[_COL][n] for n in col_key)).key_by()
-    column_values = cols.aggregate(agg.collect(cols[_COL]), _localize=False)
+    column_values = cols.aggregate(agg._ordered_collect(cols[_COL]), _localize=False)
     columns = Table.parallelize(_indexed_cells(column_values).map(
         lambda pair: struct(**{_CID: int64(pair["2"]), _COL: pair["1"]})
     ))
@@ -2739,13 +2739,13 @@ def to_matrix_table(
     ).key_by(ck)
     # Last duplicate coordinate wins, as in Hail's dictionary construction.
     coordinates = table.group_by(**{rk: row_query, ck: col_query}).aggregate(
-        **{_ROW: agg.take(row_value, 1)[0], _ENTRY: agg.collect(entry)[-1]}
+        **{_ROW: agg.take(row_value, 1)[0], _ENTRY: agg._ordered_collect(entry)[-1]}
     )
     coordinates = coordinates.annotate(**{_CID: lookup.index(coordinates[ck])[_CID]})
     records = coordinates.group_by(**{rk: coordinates[rk]}).aggregate(
         **{
             _ROW: agg.take(coordinates[_ROW], 1)[0],
-            _CELLS: agg.collect(
+            _CELLS: agg._ordered_collect(
                 struct(**{_CID: coordinates[_CID], _VALUE: coordinates[_ENTRY]})
             ),
         }

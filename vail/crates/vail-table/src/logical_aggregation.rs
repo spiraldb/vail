@@ -202,7 +202,12 @@ pub(crate) fn needs_order(expression: &Expr) -> bool {
         if matches!(node, Expr::AggregateFold { .. }) {
             ordered = true;
         }
-        if let Expr::Aggregate { function, .. } = node {
+        if let Expr::Aggregate {
+            function, options, ..
+        } = node
+        {
+            ordered |= function == "collect"
+                && options.get("ordered").and_then(serde_json::Value::as_bool) == Some(true);
             ordered |= !function.starts_with("__coordinate_")
                 && !matches!(
                     function.as_str(),
@@ -247,7 +252,15 @@ pub(crate) fn can_parallelize_total(expression: &Expr) -> bool {
     expression.visit_unique(&mut |node| {
         contains_aggregate |= matches!(node, Expr::Aggregate { .. } | Expr::AggregateFold { .. });
     });
-    contains_aggregate && !needs_order(expression)
+    contains_aggregate && !contains_collect(expression) && !needs_order(expression)
+}
+
+fn contains_collect(expression: &Expr) -> bool {
+    let mut found = false;
+    expression.visit_unique(&mut |node| {
+        found |= matches!(node, Expr::Aggregate { function, .. } if function == "collect");
+    });
+    found
 }
 
 pub(crate) fn scope_plan(
@@ -760,7 +773,9 @@ pub(crate) fn lower_logical_total(
     let output = extract(expression, &[], &mut groups, &mut used)?;
     let mut result = LogicalPlanBuilder::empty(true).build()?;
     if !groups.is_empty() {
-        let order_sensitive = needs_order(expression);
+        // Public collect is unordered and may use grouped partial aggregation,
+        // but total collects keep their existing source-order behavior.
+        let order_sensitive = needs_order(expression) || contains_collect(expression);
         let child = if order_sensitive {
             crate::logical::ordered(child)
         } else {
