@@ -116,7 +116,8 @@ def test_localize_read_matrix_preserves_row_key_values_and_entry_alignment(tmp_p
     )
     matrix = matrix.key_rows_by(reverse=5 - matrix.row_idx, original=matrix.row_idx)
     matrix = matrix.annotate_entries(value=matrix.row_idx * 100 + matrix.col_idx)
-    matrix = matrix.choose_cols([3, 1, 3, 0]).filter_entries(matrix.col_idx != 0)
+    matrix = matrix.choose_cols([3, 1, 3, 0])
+    matrix = matrix.filter_entries(matrix.col_idx != 0)
     matrix = matrix.annotate_globals(marker="matrix-global")
     path = str(tmp_path / "key-lineage.mt")
     matrix.write(path)
@@ -166,7 +167,7 @@ def test_localize_read_matrix_with_hidden_index_key_duplicates_and_missing_key(t
         (None, "second-null", []),
         (2, "two", []),
     ]
-    assert hl.eval(localized.globals.source) == "hidden-index"
+    assert hl.eval(localized.index_globals()["source"]) == "hidden-index"
 
 
 def test_from_parts_infers_all_present_entry_values_and_promotes_numeric_types():
