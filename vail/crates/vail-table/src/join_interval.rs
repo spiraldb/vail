@@ -34,6 +34,7 @@ struct Bound {
 enum Cell {
     Point(Vec<ArrayRef>),
     Between(Vec<ArrayRef>, Vec<ArrayRef>),
+    Span(Vec<ArrayRef>, Vec<ArrayRef>),
 }
 
 
@@ -165,6 +166,7 @@ impl ClipSource {
         let (lower, upper, lower_inclusive, upper_inclusive) = match cell {
             Cell::Point(point) => (point.as_slice(), point.as_slice(), true, true),
             Cell::Between(lower, upper) => (lower.as_slice(), upper.as_slice(), false, false),
+            Cell::Span(lower, upper) => (lower.as_slice(), upper.as_slice(), true, true),
         };
         self.clip_span(index, lower, upper, lower_inclusive, upper_inclusive, arity)
     }
@@ -279,6 +281,18 @@ fn add_range_split_points(table: &TableRef, join_key: usize, bounds: &mut Vec<Op
     }
 }
 
+fn needs_range_join_splitting(table: &TableRef, join_key: usize) -> bool {
+    if join_key != 1 || table.keys() != ["idx"] {
+        return false;
+    }
+    full_range_source(table)
+        .and_then(|source| match source.node() {
+            TableNode::Range { n, .. } => Some(*n > MAX_RANGE_JOIN_ROWS),
+            _ => None,
+        })
+        .unwrap_or(false)
+}
+
 /// Prepare a normal join as disjoint key cells. Every cell executes a DataFusion
 /// join over all original partitions whose certified/observed bounds overlap it.
 pub(crate) async fn prepare(
@@ -293,6 +307,24 @@ pub(crate) async fn prepare(
     let right_input = crate::partitioned::prepared_input(right)?;
     let left_bounds = bounds(left, &left_input, join_key, true).await?;
     let right_bounds = bounds(right, &right_input, join_key, true).await?;
+    if kind == TableJoinKind::Inner
+        && join_key > 0
+        && !needs_range_join_splitting(left, join_key)
+        && !needs_range_join_splitting(right, join_key)
+        && sorted_disjoint(&left_bounds)?
+        && sorted_disjoint(&right_bounds)?
+    {
+        return prepare_disjoint_inner(
+            output,
+            left,
+            right,
+            join_key,
+            &left_input,
+            &right_input,
+            &left_bounds,
+            &right_bounds,
+        );
+    }
     let left_clip = ClipSource::new(left, join_key, left_input.parts.len())?;
     let right_clip = ClipSource::new(right, join_key, right_input.parts.len())?;
     let mut boundaries = left_bounds.clone();
@@ -356,6 +388,121 @@ pub(crate) async fn prepare(
         parts,
         schema,
     })
+}
+
+/// Use one join plan for each intersecting pair of certified disjoint input
+/// partitions. The generic cell planner splits each pair at every endpoint,
+/// creating several plans even when each key belongs to one partition on either side.
+fn prepare_disjoint_inner(
+    output: &TableRef,
+    left: &TableRef,
+    right: &TableRef,
+    join_key: usize,
+    left_input: &PreparedTable,
+    right_input: &PreparedTable,
+    left_bounds: &[Option<Bound>],
+    right_bounds: &[Option<Bound>],
+) -> Result<PreparedTable> {
+    let left_clip = ClipSource::new(left, join_key, left_input.parts.len())?;
+    let right_clip = ClipSource::new(right, join_key, right_input.parts.len())?;
+    let mut pairs = Vec::new();
+    let (mut i, mut j) = (0, 0);
+    while i < left_bounds.len() && j < right_bounds.len() {
+        let Some(left_bound) = left_bounds[i].as_ref() else {
+            i += 1;
+            continue;
+        };
+        let Some(right_bound) = right_bounds[j].as_ref() else {
+            j += 1;
+            continue;
+        };
+        let lower = if compare_keys(&left_bound.first, &right_bound.first)? == Ordering::Less {
+            right_bound.first.clone()
+        } else {
+            left_bound.first.clone()
+        };
+        let upper = if compare_keys(&left_bound.last, &right_bound.last)? == Ordering::Greater {
+            right_bound.last.clone()
+        } else {
+            left_bound.last.clone()
+        };
+        if compare_keys(&lower, &upper)? != Ordering::Greater {
+            pairs.push((i, j, Cell::Span(lower, upper)));
+        }
+        match compare_keys(&left_bound.last, &right_bound.last)? {
+            Ordering::Less => i += 1,
+            Ordering::Greater => j += 1,
+            Ordering::Equal => {
+                i += 1;
+                j += 1;
+            }
+        }
+    }
+
+    let mut parts = Vec::with_capacity(pairs.len());
+    for (left_index, right_index, span) in pairs {
+        let left_parts = clipped_parts(
+            &left_input.parts,
+            left_bounds,
+            &[left_index],
+            &span,
+            left,
+            join_key,
+            left_clip.as_ref(),
+            true,
+        )?;
+        let right_parts = clipped_parts(
+            &right_input.parts,
+            right_bounds,
+            &[right_index],
+            &span,
+            right,
+            join_key,
+            right_clip.as_ref(),
+            true,
+        )?;
+        if left_parts.is_empty() || right_parts.is_empty() {
+            continue;
+        }
+        let left_rows = concat_cell(left, left_parts)?;
+        let right_rows = concat_cell(right, right_parts)?;
+        let left_local = TableIR::prepared(left, left_rows, None, 1);
+        let right_local = TableIR::prepared(right, right_rows, None, 1);
+        parts.push(
+            crate::joins::lower(
+                output,
+                &left_local,
+                &right_local,
+                TableJoinKind::Inner,
+                join_key,
+            )?
+            .rows,
+        );
+    }
+    let schema = plan::physical_schema(output);
+    if parts.is_empty() {
+        parts.push(Arc::new(datafusion_physical_plan::empty::EmptyExec::new(
+            schema.clone(),
+        )) as PhysicalPlan);
+    }
+    Ok(PreparedTable {
+        counts: vec![None; parts.len()],
+        parts,
+        schema,
+    })
+}
+
+fn sorted_disjoint(bounds: &[Option<Bound>]) -> Result<bool> {
+    let mut previous: Option<&Bound> = None;
+    for bound in bounds.iter().flatten() {
+        if let Some(previous) = previous {
+            if compare_keys(&previous.last, &bound.first)? != Ordering::Less {
+                return Ok(false);
+            }
+        }
+        previous = Some(bound);
+    }
+    Ok(true)
 }
 
 /// Keep each left reader partition independent for semi/anti joins. Prune and
@@ -604,6 +751,11 @@ fn clipped_parts(
                 Operator::And,
                 crate::join_key::predicate(&key, upper, Operator::Lt, rows.schema().as_ref())?,
             )) as Arc<dyn PhysicalExpr>,
+            Cell::Span(lower, upper) => Arc::new(BinaryExpr::new(
+                crate::join_key::predicate(&key, lower, Operator::GtEq, rows.schema().as_ref())?,
+                Operator::And,
+                crate::join_key::predicate(&key, upper, Operator::LtEq, rows.schema().as_ref())?,
+            )) as Arc<dyn PhysicalExpr>,
         };
         selected.push(Arc::new(FilterExec::try_new(predicate, rows)?) as PhysicalPlan);
     }
@@ -840,6 +992,8 @@ fn overlaps(bound: &Bound, cell: &Cell) -> Result<bool> {
             && compare_keys(key, &bound.last)? != Ordering::Greater),
         Cell::Between(lower, upper) => Ok(compare_keys(&bound.last, lower)? == Ordering::Greater
             && compare_keys(&bound.first, upper)? == Ordering::Less),
+        Cell::Span(lower, upper) => Ok(compare_keys(&bound.last, lower)? != Ordering::Less
+            && compare_keys(&bound.first, upper)? != Ordering::Greater),
     }
 }
 
@@ -852,7 +1006,7 @@ fn candidates_by_cell(bounds: &[Option<Bound>], cells: &[Cell]) -> Result<Vec<Ve
         .enumerate()
         .filter_map(|(cell_index, cell)| match cell {
             Cell::Point(value) => Some((cell_index, value)),
-            Cell::Between(_, _) => None,
+            Cell::Between(_, _) | Cell::Span(_, _) => None,
         })
         .collect::<Vec<_>>();
     if point_cells.is_empty() {

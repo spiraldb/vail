@@ -90,6 +90,67 @@ def test_interval_partition_joins_all_outer_modes_match_across_different_bounds(
     assert len(outer_rows) == len(expected_outer)
 
 
+def test_inner_join_uses_overlapping_sorted_partition_spans_once():
+    left = hl.range_table(12, n_partitions=3).annotate(
+        lv=hl.array([hl.int32(0), hl.int32(1)])
+    ).explode("lv")
+    right = hl.range_table(12, n_partitions=4).annotate(
+        rv=hl.array([hl.int32(0), hl.int32(1)])
+    ).explode("rv")
+
+    rows = left.join(right).collect()
+
+    assert Counter((row.idx, row.lv, row.rv) for row in rows) == Counter(
+        (index, lv, rv)
+        for index in range(12)
+        for lv in (0, 1)
+        for rv in (0, 1)
+    )
+
+
+def test_inner_join_span_preserves_null_key_nonmatching_semantics(tmp_path):
+    left_schema = hl.tstruct(k=hl.tint32, lv=hl.tint32)
+    right_schema = hl.tstruct(rk=hl.tint32, rv=hl.tint32)
+    left_nulls = _partitioned(
+        [{"k": None, "lv": 1}, {"k": None, "lv": 2}],
+        left_schema,
+        key="k",
+        partitions=1,
+    )
+    right_nulls = _partitioned(
+        [{"rk": None, "rv": 3}, {"rk": None, "rv": 4}],
+        right_schema,
+        key="rk",
+        partitions=1,
+    )
+    left_nulls.write(tmp_path / "left-nulls")
+    right_nulls.write(tmp_path / "right-nulls")
+    left_nulls = hl.read_table(tmp_path / "left-nulls")
+    right_nulls = hl.read_table(tmp_path / "right-nulls")
+    assert left_nulls.join(right_nulls, "inner").collect() == []
+
+    left_mixed = _partitioned(
+        [{"k": 1, "lv": 1}, {"k": None, "lv": 2}],
+        left_schema,
+        key="k",
+        partitions=1,
+    )
+    right_mixed = _partitioned(
+        [{"rk": 1, "rv": 3}, {"rk": None, "rv": 4}],
+        right_schema,
+        key="rk",
+        partitions=1,
+    )
+    left_mixed.write(tmp_path / "left-mixed")
+    right_mixed.write(tmp_path / "right-mixed")
+    left_mixed = hl.read_table(tmp_path / "left-mixed")
+    right_mixed = hl.read_table(tmp_path / "right-mixed")
+    assert [
+        (row.k, row.lv, row.rv)
+        for row in left_mixed.join(right_mixed, "inner").collect()
+    ] == [(1, 1, 3)]
+
+
 def test_interval_partition_join_prefix_keeps_suffix_keys_and_filters_each_side():
     left = _partitioned(
         [
