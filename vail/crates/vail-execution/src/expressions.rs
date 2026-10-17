@@ -5100,7 +5100,15 @@ impl PhysicalExpr for CompiledPhysical {
             let evaluated = self.inner.evaluate(&one_row)?;
             let scalar = match evaluated {
                 ColumnarValue::Scalar(value) => value,
-                ColumnarValue::Array(array) => ScalarValue::try_from_array(array.as_ref(), 0)?,
+                ColumnarValue::Array(array) => {
+                    if array.len() != 1 {
+                        return Err(DataFusionError::Internal(format!(
+                            "closed expression returned {} rows for a one-row input",
+                            array.len()
+                        )));
+                    }
+                    ScalarValue::try_from_array(array.as_ref(), 0)?
+                }
             };
             if scalar.data_type() != dtype {
                 return Err(DataFusionError::Internal(format!(
