@@ -26,3 +26,7 @@ Telemetry CSVs are worker-process-only 10 Hz samples, including CPU/RSS and proc
 - `before.sample.txt`, `after.sample.txt`: macOS stack samples.
 
 The source revision before changes was `2a0c62741209f14e83f689e0d4609c50a0dc2986`; the baseline binary hash above identifies the extension used for the before run. The candidate changed only the downsample accumulator and its public Python regression test. Full suite: 1855 passed, 1 skipped, 19 subtests passed (85.24 s), with Hail source checked out at the revision above.
+
+## Required review
+
+Reviewer chat `01a14128-21b8-7a53-b399-4ad8f9b31f4f` approved exact `d2806f0f562b3631de3d590752e7c21d1f4acff3` against main `2a0c62741209f14e83f689e0d4609c50a0dc2986`, including unchanged production/test commit `9f8320c047648011ada7912ac62ab1267d3e3460`. Source invariants, public regressions, full Python results and corrected profile provenance were reviewed; all findings were addressed. The reviewer ran no builds/tests and made no edits. Local timings describe this workload only; the same-VM cloud follow-up is separate. This child changes only the approval record.
