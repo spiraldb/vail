@@ -1262,9 +1262,14 @@ pub(crate) async fn physical_with_context(
     table: &TableRef,
     context: Arc<datafusion_execution::TaskContext>,
 ) -> Result<PhysicalPlan> {
-    let state =
-        SessionContext::new_with_config_rt(context.session_config().clone(), context.runtime_env())
-            .state();
+    let caller_config = context
+        .session_config()
+        .clone()
+        // Source partitions are observable table partitions. Caller-owned
+        // sessions must preserve that contract just like Vail's default
+        // session, which disables DataFusion's round-robin repartition rule.
+        .with_round_robin_repartition(false);
+    let state = SessionContext::new_with_config_rt(caller_config, context.runtime_env()).state();
     physical_in_context(lower(table)?, with_metadata_optimizer(state), context).await
 }
 
