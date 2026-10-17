@@ -386,8 +386,8 @@ async fn query_prefix_retains_duplicate_prefixes_across_original_partitions() {
     assert!(source.query_prefix(3, "q".into(), "p".into()).is_err());
 }
 
-#[test]
-fn redundant_naive_coalesce_preserves_the_source_node() {
+#[tokio::test]
+async fn naive_coalesce_preserves_rows_order_and_partition_limits() {
     use vail_table::RepartitionStrategy;
 
     let source = TableIR::range(30, 1).unwrap();
@@ -395,14 +395,23 @@ fn redundant_naive_coalesce_preserves_the_source_node() {
         let result = source
             .repartition(requested, RepartitionStrategy::NaiveCoalesce)
             .unwrap();
-        assert!(Arc::ptr_eq(&source, &result));
+        let partitions = result.collect_partitions().await.unwrap();
+        assert_eq!(partitions.len(), 1);
+        let values: Vec<_> = partitions.iter().flatten().flat_map(|batch| {
+            batch.column(0).as_any().downcast_ref::<Int32Array>().unwrap().values().to_vec()
+        }).collect();
+        assert_eq!(values, (0..30).collect::<Vec<_>>());
     }
     assert!(source.repartition(0, RepartitionStrategy::NaiveCoalesce).is_err());
 
     let source = TableIR::range(30, 4).unwrap();
     let reduced = source.repartition(2, RepartitionStrategy::NaiveCoalesce).unwrap();
-    assert!(matches!(reduced.node(), TableNode::Repartition { .. }));
-    assert_eq!(reduced.known_n_partitions(), Some(2));
+    let partitions = reduced.collect_partitions().await.unwrap();
+    assert_eq!(partitions.len(), 2);
+    let values: Vec<_> = partitions.iter().flatten().flat_map(|batch| {
+        batch.column(0).as_any().downcast_ref::<Int32Array>().unwrap().values().to_vec()
+    }).collect();
+    assert_eq!(values, (0..30).collect::<Vec<_>>());
 }
 
 #[tokio::test]
