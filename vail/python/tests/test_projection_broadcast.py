@@ -51,3 +51,12 @@ def test_failing_nested_projection_is_lazy_until_selected_rows_are_demanded():
     for _ in range(2):
         with pytest.raises(Exception, match="vail-projection-invalid"):
             selected.collect()
+
+
+def test_nested_random_projection_keeps_per_row_context():
+    table = hl.range_table(32, n_partitions=3)
+    result = table.annotate(samples=hl.range(2).map(lambda _: hl.rand_unif(seed=7)))
+    rows = result.collect()
+    samples = [row.samples for row in rows]
+    assert any(value != samples[0] for value in samples[1:])
+    assert [row.samples for row in result.collect()] == samples
