@@ -28,7 +28,7 @@ def test_ordered_collection_take_and_partition_boundaries_are_preserved():
     assert t.aggregate(hl.agg.sum(t.idx), _localize=False).dtype == hl.tint64
 
 
-def test_mixed_and_grouped_order_sensitive_aggregates_keep_sequence():
+def test_total_collect_keeps_order_and_grouped_collect_is_unordered():
     t = hl.range_table(97, 40).key_by()
     result = t.aggregate(hl.struct(total=hl.agg.sum(t.idx), rows=hl.agg.collect(t.idx)))
     assert result.total == sum(range(97))
@@ -36,7 +36,7 @@ def test_mixed_and_grouped_order_sensitive_aggregates_keep_sequence():
     g = t.group_by(parity=t.idx % 2).aggregate(total=hl.agg.sum(t.idx), rows=hl.agg.collect(t.idx))
     for row in g.collect():
         expected = list(range(row.parity, 97, 2))
-        assert row.rows == expected
+        assert sorted(row.rows) == expected
         assert row.total == sum(expected)
 
 

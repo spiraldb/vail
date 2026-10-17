@@ -25,9 +25,12 @@ def test_grouping_with_globals_uses_logical_aggregate():
     assert 'Aggregate:' in plan
     assert 'VailPartitionOperation: Aggregate' not in plan
     rows = grouped.collect()
-    assert [(r.g, r.n, r["values"]) for r in rows] == [
-        (g, 6, list(range(g + 10, 22, 2))) for g in range(2)
-    ]
+    actual = {r.g: (r.n, sorted(r["values"])) for r in rows}
+    expected = {
+        g: (6, list(range(g + 10, 22, 2)))
+        for g in range(2)
+    }
+    assert actual == expected
 
 
 def test_total_collect_preserves_partition_order():

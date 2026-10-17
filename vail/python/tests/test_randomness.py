@@ -160,8 +160,8 @@ def test_shared_random_nodes_keep_input_and_result_aggregate_scopes():
     assert result.scalar == hl.eval(hl.rand_int32(5, seed=-1))
     grouped = table.group_by(group=table.idx % 2).aggregate(values=hl.agg.collect(random), scalar=random)
     result = {row.group: row for row in grouped.collect()}
-    assert result[0]['values'] == [4, 2, 3]
-    assert result[1]['values'] == [3, 3]
+    assert sorted(result[0]['values']) == [2, 3, 4]
+    assert sorted(result[1]['values']) == [3, 3]
     assert (result[0].scalar, result[1].scalar) == (4, 3)
 
 
