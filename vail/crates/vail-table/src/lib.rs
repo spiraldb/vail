@@ -37,6 +37,7 @@ mod text_export;
 pub mod text_schema;
 pub mod vcf_export;
 mod vcf_source;
+mod wide_batch;
 mod zip_dedup;
 mod zip_join;
 mod zip_snapshot;

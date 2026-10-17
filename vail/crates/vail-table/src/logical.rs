@@ -1206,7 +1206,8 @@ pub(crate) fn display(table: &TableRef) -> Result<String> {
 }
 
 pub(crate) async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
-    physical_plan(lower(table)?, max_partitions(table)).await
+    let context = session_state(max_partitions(table)).task_ctx();
+    physical_with_context(table, context).await
 }
 
 pub(crate) fn max_partitions(table: &TableRef) -> usize {
@@ -1255,7 +1256,7 @@ pub(crate) async fn physical_plan(
 ) -> Result<PhysicalPlan> {
     let state = session_state(target_partitions);
     let context = state.task_ctx();
-    physical_in_context(logical, state, context).await
+    physical_in_context(logical, state, context, None).await
 }
 
 pub(crate) async fn physical_with_context(
@@ -1269,18 +1270,37 @@ pub(crate) async fn physical_with_context(
         // sessions must preserve that contract just like Vail's default
         // session, which disables DataFusion's round-robin repartition rule.
         .with_round_robin_repartition(false);
+    let wide_batch_rows = crate::wide_batch::for_table(table, caller_config.batch_size());
     let state = SessionContext::new_with_config_rt(caller_config, context.runtime_env()).state();
-    physical_in_context(lower(table)?, with_metadata_optimizer(state), context).await
+    physical_in_context(
+        lower(table)?,
+        with_metadata_optimizer(state),
+        context,
+        wide_batch_rows,
+    )
+    .await
 }
 
 async fn physical_in_context(
     logical: LogicalPlan,
     state: datafusion::execution::SessionState,
     context: Arc<datafusion_execution::TaskContext>,
+    wide_batch_rows: Option<usize>,
 ) -> Result<PhysicalPlan> {
     let mut bindings = crate::action_parameters::ActionParameters::with_context(state, context);
     let logical = crate::action_parameters::resolve(logical, &mut bindings).await?;
+    if let Some(rows) = wide_batch_rows {
+        let config = crate::wide_batch::with_limit(bindings.context.session_config().clone(), rows);
+        bindings.context =
+            crate::wide_batch::task_context_with_config(&bindings.context, config.clone());
+        let state = SessionContext::new_with_config_rt(config, bindings.context.runtime_env()).state();
+        bindings.state = with_metadata_optimizer(state);
+    }
     let plan = compile(logical, &bindings.state).await?;
+    let plan = match wide_batch_rows {
+        Some(rows) => crate::wide_batch::cap_filter_batches(plan, rows)?,
+        None => plan,
+    };
     Ok(crate::action_parameters::with_context(
         plan,
         bindings.context.clone(),

@@ -87,6 +87,60 @@ async fn generated_arrays_preserve_values_and_source_partition_membership() {
 }
 
 #[tokio::test]
+async fn wide_repeat_filter_preserves_rows_and_order() {
+    let source = TableIR::range(7, 3).unwrap();
+    let table = source
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            ("items".into(), repeat(16_384)),
+        ])
+        .unwrap()
+        .filter(
+            ScalarIR::Literal {
+                dtype: Type::Primitive(PrimitiveType::Bool),
+                value: json!(true),
+            },
+            true,
+        )
+        .unwrap();
+
+    let partitions = table.collect_partitions().await.unwrap();
+    let mut seen = 0;
+    for batches in partitions {
+        for batch in batches {
+            let indices = batch
+                .column_by_name("idx")
+                .unwrap()
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap();
+            assert!(
+                indices
+                    .values()
+                    .iter()
+                    .copied()
+                    .eq(seen..seen + batch.num_rows() as i32)
+            );
+            let items = batch
+                .column_by_name("items")
+                .unwrap()
+                .as_any()
+                .downcast_ref::<ListArray>()
+                .unwrap();
+            assert_eq!(items.len(), batch.num_rows());
+            for row in 0..items.len() {
+                let values = items.value(row);
+                let values = values.as_any().downcast_ref::<Int32Array>().unwrap();
+                assert_eq!(values.len(), 16_384);
+                assert!(values.values().iter().all(|&value| value == 7));
+            }
+            seen += batch.num_rows() as i32;
+        }
+    }
+    assert_eq!(seen, 7);
+}
+
+#[tokio::test]
 async fn large_stream_range_preserves_exact_values() {
     let table = TableIR::range(1, 1)
         .unwrap()

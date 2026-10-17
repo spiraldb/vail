@@ -498,14 +498,22 @@ impl ExecutionPlan for RangePartitionExec {
     fn execute(
         &self,
         p: usize,
-        _: Arc<TaskContext>,
+        context: Arc<TaskContext>,
     ) -> datafusion_common::Result<SendableRecordBatchStream> {
         if p != 0 {
             return Err(DataFusionError::Execution("invalid range partition".into()));
         }
         let (start, end, schema, row_schema) =
             (self.start, self.end, self.schema(), self.row_schema.clone());
-        let batch_size = self.batch_size;
+        // Ordinary ranges retain their explicit IR batch size. Only actions
+        // carrying the typed wide-list advice cap opt in to the session limit.
+        let batch_size = context
+            .session_config()
+            .get_extension::<crate::wide_batch::WideBatchLimit>()
+            .map_or(self.batch_size, |limit| {
+                std::num::NonZeroUsize::new(self.batch_size.get().min(limit.rows.max(1)))
+                    .expect("batch size stays positive")
+            });
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
