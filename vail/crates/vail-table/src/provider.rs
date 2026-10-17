@@ -20,6 +20,7 @@ use datafusion_common::SplitPoint;
 use datafusion_physical_expr::{
     AcrossPartitions, ConstExpr, LexOrdering, PhysicalSortExpr, RangePartitioning,
 };
+use datafusion_physical_expr::projection::ProjectionMapping;
 use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, PlanProperties,
     SendableRecordBatchStream,
@@ -875,6 +876,23 @@ struct PartitionSetExec {
 
 impl PartitionSetExec {
     fn new(partitions: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
+        let partition_id_index = schema.fields().len() - 1;
+        // execute() replaces the final tag column in every child stream.
+        // Project away the old tag before preserving child properties. The
+        // projection removes any stale constants/equalities/orderings that
+        // refer to the overwritten final column while retaining ordinary row
+        // properties such as key ordering.
+        let mapping = ProjectionMapping::try_new(
+            (0..partition_id_index).map(|index| {
+                (
+                    Arc::new(Column::new(schema.field(index).name(), index))
+                        as Arc<dyn datafusion::physical_expr::PhysicalExpr>,
+                    schema.field(index).name().clone(),
+                )
+            }),
+            &schema,
+        )
+        .expect("source partition identity projection is valid");
         let mut equivalence = partitions
             .first()
             .and_then(|first| {
@@ -887,13 +905,17 @@ impl PartitionSetExec {
                     .all(|part| {
                         part.properties().equivalence_properties().output_ordering() == ordering
                     })
-                    .then(|| first.properties().equivalence_properties().clone())
+                    .then(|| {
+                        first
+                            .properties()
+                            .equivalence_properties()
+                            .project(&mapping, schema.clone())
+                    })
             })
             .unwrap_or_else(|| EquivalenceProperties::new(schema.clone()));
         // execute() assigns exactly one private partition ID to each physical
         // partition. Certify that range distribution so partition-local windows
         // need neither a hash exchange nor a sort to rediscover it.
-        let partition_id_index = schema.fields().len() - 1;
         equivalence
             .add_constants([ConstExpr::new(
                 Arc::new(Column::new(

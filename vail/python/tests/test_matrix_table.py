@@ -73,6 +73,15 @@ def test_matrix_scan_count_preserves_union_source_order():
     ]
 
 
+def test_matrix_scan_count_preserves_head_prefix_order():
+    mt = hl.utils.range_matrix_table(10, 2, 4)
+    before_scan = mt.head(5).annotate_rows(prefix=hl.scan.count()).rows().collect()
+    after_scan = mt.annotate_rows(prefix=hl.scan.count()).head(5).rows().collect()
+    expected = [(i, i) for i in range(5)]
+    assert [(row.row_idx, row.prefix) for row in before_scan] == expected
+    assert [(row.row_idx, row.prefix) for row in after_scan] == expected
+
+
 def test_annotations_actions_globals_and_native_plan():
     m = matrix()
     assert m.aggregate_entries(hl.agg.sum(m.x)) == 198

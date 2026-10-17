@@ -1,6 +1,6 @@
 //! Freeze source row order before window sorting or hash redistribution.
 use crate::plan::PhysicalPlan;
-use arrow_array::{RecordBatch, UInt64Array};
+use arrow_array::{Array, RecordBatch, UInt64Array};
 use arrow_schema::{DataType, Field, Schema, SortOptions};
 use datafusion_common::{DFSchema, DFSchemaRef, DataFusionError, Result};
 use datafusion_execution::TaskContext;
@@ -12,6 +12,7 @@ use datafusion_physical_plan::{
 };
 use futures::TryStreamExt;
 use std::{
+    collections::HashMap,
     fmt,
     hash::{Hash, Hasher},
     sync::{
@@ -168,6 +169,8 @@ struct SourceOrdinalExec {
     input: PhysicalPlan,
     cache: Arc<PlanProperties>,
     partition_name: String,
+    partition_index: usize,
+    partition_tag_constant_per_stream: bool,
 }
 impl SourceOrdinalExec {
     fn new(input: PhysicalPlan, schema: Arc<Schema>, partition_name: &str) -> Result<Self> {
@@ -191,6 +194,11 @@ impl SourceOrdinalExec {
                 input.schema().field(partition_index).name(),
                 partition_index,
             ));
+        let partition_tag_constant_per_stream = input
+            .properties()
+            .equivalence_properties()
+            .is_expr_constant(&input_partition)
+            .is_some();
         if let Some(across_partitions) = input
             .properties()
             .equivalence_properties()
@@ -219,6 +227,8 @@ impl SourceOrdinalExec {
             input,
             cache,
             partition_name: partition_name.to_owned(),
+            partition_index,
+            partition_tag_constant_per_stream,
         })
     }
 }
@@ -281,16 +291,51 @@ impl ExecutionPlan for SourceOrdinalExec {
         let mut input = self.input.execute(partition, context)?;
         let schema = self.schema();
         let output = schema.clone();
+        let partition_index = self.partition_index;
+        let partition_tag_constant_per_stream = self.partition_tag_constant_per_stream;
         Ok(Box::pin(RecordBatchStreamAdapter::new(
             schema,
             async_stream::try_stream! {
                 // Vail's source boundary exposes each logical partition as one
                 // physical stream. The counter belongs to this execution only.
                 let mut offset=0u64;
+                let mut offsets_by_partition = HashMap::<u64, u64>::new();
                 while let Some(batch)=input.try_next().await?{
-                    let end=offset.checked_add(batch.num_rows() as u64).ok_or_else(||DataFusionError::Execution("source ordinal overflow".into()))?;
-                    let mut columns=batch.columns().to_vec();columns.push(Arc::new(UInt64Array::from_iter_values(offset..end)));
-                    offset=end;yield RecordBatch::try_new(output.clone(),columns)?;
+                    let ordinals = if partition_tag_constant_per_stream {
+                        let end=offset.checked_add(batch.num_rows() as u64).ok_or_else(||DataFusionError::Execution("source ordinal overflow".into()))?;
+                        let ordinals = UInt64Array::from_iter_values(offset..end);
+                        offset=end;
+                        ordinals
+                    } else {
+                        let tags = batch
+                            .column(partition_index)
+                            .as_any()
+                            .downcast_ref::<UInt64Array>()
+                            .ok_or_else(|| DataFusionError::Execution("source partition tag is not UInt64".into()))?;
+                        let mut ordinals = Vec::with_capacity(batch.num_rows());
+                        let mut start = 0;
+                        while start < batch.num_rows() {
+                            if tags.is_null(start) {
+                                Err(DataFusionError::Execution("source partition tag is null".into()))?;
+                            }
+                            let tag = tags.value(start);
+                            let mut end = start + 1;
+                            while end < batch.num_rows() && !tags.is_null(end) && tags.value(end) == tag {
+                                end += 1;
+                            }
+                            if end < batch.num_rows() && tags.is_null(end) {
+                                Err(DataFusionError::Execution("source partition tag is null".into()))?;
+                            }
+                            let next = offsets_by_partition.entry(tag).or_default();
+                            let run_end = next.checked_add((end - start) as u64).ok_or_else(|| DataFusionError::Execution("source ordinal overflow".into()))?;
+                            ordinals.extend(*next..run_end);
+                            *next = run_end;
+                            start = end;
+                        }
+                        UInt64Array::from(ordinals)
+                    };
+                    let mut columns=batch.columns().to_vec();columns.push(Arc::new(ordinals));
+                    yield RecordBatch::try_new(output.clone(),columns)?;
                 }
             },
         )))
