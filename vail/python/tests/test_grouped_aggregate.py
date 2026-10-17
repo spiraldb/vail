@@ -113,6 +113,10 @@ def test_grouped_aggregate_without_global_output_keeps_results():
         1: (2, 5),
         2: (1, 5),
     }
+    empty = hl.Table.parallelize(
+        [], schema=hl.tstruct(g=hl.tint32, x=hl.tint32), globals={"unused": "global"}
+    )
+    assert empty.group_by("g").aggregate(n=hl.agg.count()).collect() == []
 
 
 def test_grouped_output_global_is_bound_after_aggregation():
