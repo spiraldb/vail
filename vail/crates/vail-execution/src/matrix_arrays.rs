@@ -336,18 +336,18 @@ fn aligned(cells: &ListArray, columns: &ListArray, scalar_columns: bool) -> Resu
         .ok_or_else(|| {
             datafusion_common::exec_datafusion_err!("matrix entry presence must be boolean")
         })?;
-    // The usual matrix representation has no validity buffers on its lists,
-    // entry structs, presence bits, or identity columns. In that case Arrow's
+    // When list, entry-record, presence and identity arrays have no nulls,
+    // including explicit all-valid bitmaps, Arrow's
     // primitive value slices can check each row's complete identity span with
     // a single slice comparison instead of repeated per-value null checks.
     // Keep the element-wise path for nullable arrays so malformed nulls retain
     // their existing errors.
-    let all_valid = cells.nulls().is_none()
-        && columns.nulls().is_none()
-        && records.nulls().is_none()
-        && presence.nulls().is_none()
-        && cell_ids.nulls().is_none()
-        && column_ids.nulls().is_none();
+    let all_valid = cells.null_count() == 0
+        && columns.null_count() == 0
+        && records.null_count() == 0
+        && presence.null_count() == 0
+        && cell_ids.null_count() == 0
+        && column_ids.null_count() == 0;
     for row in 0..cells.len() {
         let column_row = if scalar_columns { 0 } else { row };
         let a = cells.value_offsets()[row] as usize;
