@@ -100,6 +100,37 @@ def test_grouped_aggregate_no_keys_globals_and_key_shadowing_are_lazy():
     }
 
 
+def test_grouped_aggregate_without_global_output_keeps_results():
+    table = hl.Table.parallelize(
+        [{"g": 1, "x": 2}, {"g": 1, "x": 3}, {"g": 2, "x": 5}],
+        schema=hl.tstruct(g=hl.tint32, x=hl.tint32),
+        globals={"unused": "not referenced by output"},
+    )
+    grouped = table.group_by("g").aggregate(
+        n=hl.agg.count(), total=hl.agg.sum(table.x)
+    )
+    assert {row.g: (row.n, row.total) for row in grouped.collect()} == {
+        1: (2, 5),
+        2: (1, 5),
+    }
+
+
+def test_grouped_output_global_is_bound_after_aggregation():
+    table = hl.range_table(6, n_partitions=2).annotate_globals(offset=10)
+    indexed_offset = table.index_globals().offset
+    grouped = table.group_by(parity=table.idx % 2).aggregate(
+        shifted_sum=hl.agg.sum(table.idx) + table.offset,
+        external_shifted_sum=hl.agg.sum(table.idx) + indexed_offset,
+    )
+    assert {
+        row.parity: (row.shifted_sum, row.external_shifted_sum)
+        for row in grouped.collect()
+    } == {
+        0: (16, 16),
+        1: (19, 19),
+    }
+
+
 def test_grouped_aggregate_scope_source_and_name_validation():
     table = hl.Table.parallelize([{"g": 1, "x": 2}], schema=hl.tstruct(g=hl.tint32, x=hl.tint32))
     other = hl.range_table(1)

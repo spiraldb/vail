@@ -732,9 +732,28 @@ pub(crate) fn lower_grouped_fields(
             .project(projection)?
             .build()?;
     }
-    result = crate::logical_globals::bind_globals(result, table, context)?;
+    // This stage only needs table globals when an unreduced output expression
+    // reads one. Aggregate inputs and grouping expressions were bound before
+    // their scopes were planned; a final singleton join here would otherwise
+    // erase the range ordering of the grouped result.
+    let needs_table_globals = outputs.iter().any(|(_, expr)| {
+        let mut found = false;
+        expr.visit_unique(&mut |node| {
+            found |= matches!(node, Expr::Global { .. });
+        });
+        found
+    });
+    if needs_table_globals {
+        result = crate::logical_globals::bind_globals(result, table, context)?;
+    }
     let (result, output_indices) =
         crate::logical_globals::bind_external(result, bindings, context)?;
+    let empty_globals = Schema::empty();
+    let output_globals = if needs_table_globals {
+        table.globals().schema()
+    } else {
+        &empty_globals
+    };
     let mut projection = keys
         .iter()
         .zip(&key_names)
@@ -745,7 +764,7 @@ pub(crate) fn lower_grouped_fields(
             lower_logical_with_bindings(
                 &expr,
                 result.schema(),
-                table.globals().schema(),
+                output_globals,
                 &output_indices,
             )?
             .alias(name),
