@@ -1423,61 +1423,10 @@ def _referenced_columns(node, scope="column"):
 
 def _validate_aggregate_ir(node):
     """Reject row references that are not inside an aggregate scope."""
-    def has_aggregate(value):
-        if isinstance(value, IR_NODE_TYPES):
-            if value.get("op") == "literal":
-                return False
-            if value.get("op") in ("aggregate", "agg_filter", "agg_explode", "agg_group_by", "agg_array", "aggregate_fold"):
-                return True
-            return builtins.any(has_aggregate(child) for child in value.values())
-        if isinstance(value, list):
-            return builtins.any(has_aggregate(child) for child in value)
-        return False
-
-    def visit(value, row_allowed=False):
-        if isinstance(value, IR_NODE_TYPES):
-            op = value.get("op")
-            if op == "literal":
-                return
-            if op == "column":
-                if not row_allowed:
-                    raise ExpressionException("row fields in Table.aggregate must be inside an aggregate")
-                return
-            if op == "aggregate_fold":
-                if has_aggregate(value["seq"]) or has_aggregate(value["combine"]):
-                    raise ExpressionException("nested aggregations are not supported inside fold")
-                visit(value["initial"], False)
-                visit(value["seq"], True)
-                visit(value["combine"], False)
-                return
-            if op == "aggregate":
-                if (value.get("options") or {}).get("__vail_scan"):
-                    raise ExpressionException("scan expressions cannot be used in table aggregation")
-                operand = value.get("value")
-                if operand is not None and has_aggregate(operand):
-                    raise ExpressionException("nested aggregations are not supported")
-                if operand is not None:
-                    visit(operand, True)
-                return
-            if op == "agg_filter":
-                visit(value["predicate"], True)
-                visit(value["body"], row_allowed)
-                return
-            if op == "agg_group_by":
-                visit(value["key"], True)
-                visit(value["body"], row_allowed)
-                return
-            if op in ("agg_explode", "agg_array"):
-                visit(value["value"], True)
-                visit(value["body"], row_allowed)
-                return
-            for child in value.values():
-                visit(child, row_allowed)
-        elif isinstance(value, list):
-            for child in value:
-                visit(child, row_allowed)
-
-    visit(node)
+    try:
+        node.validate_table_aggregate()
+    except ValueError as exc:
+        raise ExpressionException(str(exc)) from None
 
 
 def _ir_has_aggregate(node):

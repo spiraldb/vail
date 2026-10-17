@@ -34,6 +34,17 @@ def test_repartition_preserves_rows_types_keys_and_globals():
     assert coalesced.key.dtype == table.key.dtype
 
 
+def test_repartitioned_scan_count_keeps_global_prefix_order():
+    table = hl.range_table(30, n_partitions=4)
+    repartitioned = table.repartition(5)
+
+    rows = repartitioned.annotate(prefix=hl.scan.count()).collect()
+    assert [row.prefix for row in rows] == list(range(30))
+
+    filtered = repartitioned.filter(repartitioned.idx % 2 == 0)
+    assert filtered.annotate(prefix=hl.scan.count()).prefix.collect() == list(range(15))
+
+
 def test_naive_coalesce_handles_empty_tables():
     table = hl.Table.parallelize(
         [{"x": 0}, {"x": 1}], schema=hl.tstruct(x=hl.tint32), n_partitions=5,

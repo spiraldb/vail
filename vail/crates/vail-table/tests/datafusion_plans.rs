@@ -131,10 +131,7 @@ async fn nested_unkey_and_row_maps_preserve_rows_globals_and_filters() {
             .unwrap()
             .map_rows(vec![
                 ("idx".into(), ScalarIR::Column { name: "idx".into() }),
-                (
-                    format!("v{i}"),
-                    ScalarIR::Column { name: "idx".into() },
-                ),
+                (format!("v{i}"), ScalarIR::Column { name: "idx".into() }),
             ])
             .unwrap();
     }
@@ -174,8 +171,8 @@ async fn nested_unkey_and_row_maps_preserve_rows_globals_and_filters() {
 
     let predicate = ScalarIR::Binary {
         operator: BinaryOperator::Ge,
-        left: Box::new(ScalarIR::Column { name: "idx".into() }),
-        right: Box::new(ScalarIR::Literal {
+        left: Arc::new(ScalarIR::Column { name: "idx".into() }),
+        right: Arc::new(ScalarIR::Literal {
             dtype: Type::Primitive(PrimitiveType::Int32),
             value: json!(8),
         }),
@@ -320,8 +317,7 @@ async fn repeated_empty_keyby_and_row_maps_preserve_results_across_partition_cou
             .map(|partition| partition.iter().map(|&idx| (idx, idx)).collect::<Vec<_>>())
             .collect::<Vec<_>>();
         assert_eq!(
-            values,
-            expected,
+            values, expected,
             "repeated key and map operations should preserve row order and partition membership with {partitions} partitions"
         );
     }
@@ -487,7 +483,7 @@ async fn captured_globals_share_ir_without_retaining_table_rows() {
     assert_eq!(results, vec![7, 7, 7]);
 
     let external_g = ScalarIR::GetField {
-        value: Box::new(ScalarIR::ExternalGlobal {
+        value: Arc::new(ScalarIR::ExternalGlobal {
             reference: "other".into(),
             dtype,
         }),
@@ -495,8 +491,8 @@ async fn captured_globals_share_ir_without_retaining_table_rows() {
     };
     let predicate = ScalarIR::Binary {
         operator: BinaryOperator::Gt,
-        left: Box::new(ScalarIR::Column { name: "idx".into() }),
-        right: Box::new(external_g),
+        left: Arc::new(ScalarIR::Column { name: "idx".into() }),
+        right: Arc::new(external_g),
     };
     let keep = table
         .filter_bound(

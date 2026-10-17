@@ -33,9 +33,9 @@ fn literal_i32(value: i32) -> ScalarIR {
 
 fn range(start: i32, stop: i32, step: i32) -> ScalarIR {
     ScalarIR::StreamRange {
-        start: Box::new(literal_i32(start)),
-        stop: Box::new(literal_i32(stop)),
-        step: Box::new(literal_i32(step)),
+        start: Arc::new(literal_i32(start)),
+        stop: Arc::new(literal_i32(stop)),
+        step: Arc::new(literal_i32(step)),
     }
 }
 
@@ -122,7 +122,7 @@ fn erroring_repeat() -> ScalarIR {
     let mut expression = repeat(16_384);
     if let ScalarIR::NestedFunction { args, .. } = &mut expression {
         args[0] = ScalarIR::ArrayLength {
-            value: Box::new(range(0, 20_000, 0)),
+            value: Arc::new(range(0, 20_000, 0)),
         };
     }
     expression
@@ -138,16 +138,16 @@ async fn unselected_erroring_branch_with_large_repeat_is_not_evaluated_eagerly()
                 (
                     "length".into(),
                     ScalarIR::IfElse {
-                        condition: Box::new(ScalarIR::Binary {
+                        condition: Arc::new(ScalarIR::Binary {
                             operator: BinaryOperator::Eq,
-                            left: Box::new(ScalarIR::Column { name: "idx".into() }),
-                            right: Box::new(literal_i32(if select_error { 1 } else { 0 })),
+                            left: Arc::new(ScalarIR::Column { name: "idx".into() }),
+                            right: Arc::new(literal_i32(if select_error { 1 } else { 0 })),
                         }),
-                        consequent: Box::new(ScalarIR::ArrayLength {
-                            value: Box::new(repeat(16_384)),
+                        consequent: Arc::new(ScalarIR::ArrayLength {
+                            value: Arc::new(repeat(16_384)),
                         }),
-                        alternate: Box::new(ScalarIR::ArrayLength {
-                            value: Box::new(erroring_repeat()),
+                        alternate: Arc::new(ScalarIR::ArrayLength {
+                            value: Arc::new(erroring_repeat()),
                         }),
                     },
                 ),
@@ -223,16 +223,16 @@ async fn unused_array_branch_does_not_change_row_values() {
             (
                 "items".into(),
                 ScalarIR::IfElse {
-                    condition: Box::new(ScalarIR::Binary {
+                    condition: Arc::new(ScalarIR::Binary {
                         operator: BinaryOperator::Lt,
-                        left: Box::new(ScalarIR::Column { name: "idx".into() }),
-                        right: Box::new(ScalarIR::Literal {
+                        left: Arc::new(ScalarIR::Column { name: "idx".into() }),
+                        right: Arc::new(ScalarIR::Literal {
                             dtype: Type::Primitive(PrimitiveType::Int32),
                             value: json!(0),
                         }),
                     }),
-                    consequent: Box::new(repeat(16_384)),
-                    alternate: Box::new(repeat(0)),
+                    consequent: Arc::new(repeat(16_384)),
+                    alternate: Arc::new(repeat(0)),
                 },
             ),
         ])
@@ -264,7 +264,7 @@ async fn small_result_consumer_streams_many_batches_and_prepared_plan_replays() 
             (
                 "length".into(),
                 ScalarIR::ArrayLength {
-                    value: Box::new(repeat(20_000)),
+                    value: Arc::new(repeat(20_000)),
                 },
             ),
         ])
@@ -486,7 +486,7 @@ async fn large_globals_repeat_and_runtime_literal_work_with_and_without_rows() {
             (
                 "repeat_len".into(),
                 ScalarIR::ArrayLength {
-                    value: Box::new(ScalarIR::Global {
+                    value: Arc::new(ScalarIR::Global {
                         name: "repeated".into(),
                     }),
                 },
@@ -494,7 +494,7 @@ async fn large_globals_repeat_and_runtime_literal_work_with_and_without_rows() {
             (
                 "nested_len".into(),
                 ScalarIR::ArrayLength {
-                    value: Box::new(ScalarIR::Global {
+                    value: Arc::new(ScalarIR::Global {
                         name: "nested".into(),
                     }),
                 },
@@ -546,7 +546,7 @@ async fn large_globals_repeat_and_runtime_literal_work_with_and_without_rows() {
             (
                 "repeat_len".into(),
                 ScalarIR::ArrayLength {
-                    value: Box::new(ScalarIR::Global {
+                    value: Arc::new(ScalarIR::Global {
                         name: "repeated".into(),
                     }),
                 },
@@ -632,7 +632,7 @@ async fn large_repeat_after_empty_row_projection_preserves_cardinality() {
             .map_rows(vec![(
                 "length".into(),
                 ScalarIR::ArrayLength {
-                    value: Box::new(repeat(16_384)),
+                    value: Arc::new(repeat(16_384)),
                 },
             )])
             .unwrap();
@@ -688,7 +688,7 @@ async fn grouped_aggregate_then_large_repeat_preserves_aggregate_row() {
             (
                 "length".into(),
                 ScalarIR::ArrayLength {
-                    value: Box::new(repeat(16_384)),
+                    value: Arc::new(repeat(16_384)),
                 },
             ),
         ])
@@ -746,7 +746,7 @@ async fn large_repeat_after_constant_projection_preserves_empty_and_nonempty_row
                 (
                     "length".into(),
                     ScalarIR::ArrayLength {
-                        value: Box::new(repeat(16_384)),
+                        value: Arc::new(repeat(16_384)),
                     },
                 ),
             ])
@@ -799,7 +799,7 @@ async fn large_repeat_after_semantic_partition_map_preserves_partition_order() {
             (
                 "length".into(),
                 ScalarIR::ArrayLength {
-                    value: Box::new(repeat(16_384)),
+                    value: Arc::new(repeat(16_384)),
                 },
             ),
         ])

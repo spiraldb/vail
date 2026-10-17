@@ -74,18 +74,12 @@ def test_total_aggregate_fanout_runs_after_map_partitions():
             )
         )
 
-    mapped = table._map_partitions(annotate_partition_size)
+    mapped = table.map_partitions(annotate_partition_size)
     assert mapped.n_partitions() == table.n_partitions() == 4
-    partition_rows = [
-        mapped._filter_partitions([partition]).collect() for partition in range(4)
-    ]
-    sizes = [len(rows) for rows in partition_rows]
-    assert all(
-        row.partition_size == len(rows)
-        for rows in partition_rows
-        for row in rows
-    )
-    assert mapped.aggregate(hl.agg.sum(mapped.partition_size)) == sum(size * size for size in sizes)
+    rows = mapped.collect()
+    expected_sizes = [9] * 9 + [9] * 9 + [9] * 9 + [10] * 10
+    assert [row.partition_size for row in rows] == expected_sizes
+    assert mapped.aggregate(hl.agg.sum(mapped.partition_size)) == sum(expected_sizes)
     assert mapped.n_partitions() == 4
 
 

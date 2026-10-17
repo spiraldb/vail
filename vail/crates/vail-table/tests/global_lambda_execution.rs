@@ -1,5 +1,6 @@
 use arrow_array::{Array, Int32Array, ListArray};
 use serde_json::json;
+use std::sync::Arc;
 use vail_execution::expressions::{BinaryOperator, PrimitiveType, Type};
 use vail_table::{ScalarIR, TableIR};
 
@@ -16,19 +17,20 @@ async fn row_array_lambda_can_capture_a_global_value() {
         )])
         .unwrap();
     let expression = ScalarIR::ArrayMap {
-        value: Box::new(ScalarIR::Literal {
+        value: Arc::new(ScalarIR::Literal {
             dtype: Type::Array {
                 array: Box::new(Type::Primitive(PrimitiveType::Int32)),
             },
             value: json!([1, 2]),
         }),
         parameter: "element".into(),
-        body: Box::new(ScalarIR::Binary {
+        body: Arc::new(ScalarIR::Binary {
             operator: BinaryOperator::Add,
-            left: Box::new(ScalarIR::LambdaVariable {
+            left: Arc::new(ScalarIR::LambdaVariable {
                 name: "element".into(),
+                dtype: Type::Primitive(PrimitiveType::Int32),
             }),
-            right: Box::new(ScalarIR::Global {
+            right: Arc::new(ScalarIR::Global {
                 name: "offset".into(),
             }),
         }),

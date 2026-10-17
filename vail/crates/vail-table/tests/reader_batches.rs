@@ -74,8 +74,8 @@ fn keys(partitions: &[Vec<RecordBatch>]) -> Vec<Vec<i32>> {
 fn comparison(operator: BinaryOperator, boundary: i32) -> ScalarIR {
     ScalarIR::Binary {
         operator,
-        left: Box::new(ScalarIR::Column { name: "idx".into() }),
-        right: Box::new(ScalarIR::Literal {
+        left: Arc::new(ScalarIR::Column { name: "idx".into() }),
+        right: Arc::new(ScalarIR::Literal {
             dtype: Type::Primitive(PrimitiveType::Int32),
             value: json!(boundary),
         }),
@@ -158,8 +158,8 @@ async fn stored_scan_state_survives_reader_batch_and_partition_boundaries() {
                 "prefix".into(),
                 ScalarIR::Aggregate {
                     function: "sum".into(),
-                    value: Some(Box::new(ScalarIR::Cast {
-                        value: Box::new(ScalarIR::Column { name: "idx".into() }),
+                    value: Some(Arc::new(ScalarIR::Cast {
+                        value: Arc::new(ScalarIR::Column { name: "idx".into() }),
                         dtype: Type::Primitive(PrimitiveType::Int64),
                     })),
                     options: json!({"__vail_scan": true}),

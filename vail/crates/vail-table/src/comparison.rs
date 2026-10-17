@@ -3,7 +3,7 @@ use crate::plan::{PhysicalPlan, column, ordinal};
 use crate::{Result, TableError, TableIR};
 use arrow_array::{
     Array, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
-    RecordBatch, StringArray, StructArray,
+    RecordBatch, StringArray, StructArray, UInt8Array, UInt16Array,
 };
 use arrow_schema::DataType;
 use futures::TryStreamExt;
@@ -470,6 +470,14 @@ fn values_similar(
         }};
     }
     Ok(match left.data_type() {
+        DataType::UInt8 => {
+            let (a, b) = values!(UInt8Array);
+            a == b
+        }
+        DataType::UInt16 => {
+            let (a, b) = values!(UInt16Array);
+            a == b
+        }
         DataType::Int32 => {
             let (a, b) = values!(Int32Array);
             a == b

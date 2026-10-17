@@ -776,9 +776,12 @@ impl PartitionSetExec {
     }
     fn with_tag(parts: Vec<PhysicalPlan>, schema: SchemaRef, tag_index: Option<usize>) -> Self {
         let mut cache = (*properties(schema.clone(), EmissionType::Incremental)).clone();
-        cache.partitioning = crate::provider::partition_id_properties(
-            &schema, &mut cache.eq_properties, parts.len(),
-        );
+        cache.partitioning = match tag_index {
+            Some(index) => crate::provider::partition_id_properties(
+                &schema, &mut cache.eq_properties, parts.len(), index,
+            ),
+            None => Partitioning::UnknownPartitioning(parts.len().max(1)),
+        };
 
         if let Some(ordering) = parts
             .first()

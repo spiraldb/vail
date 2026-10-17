@@ -841,8 +841,104 @@ fn build(d: &Bound<'_, PyAny>) -> PyResult<Expr> {
     })
 }
 
+fn validate_table_aggregate_expr(root: &Expr) -> Result<(), &'static str> {
+    fn has_aggregate(node: &Expr, memo: &mut std::collections::HashMap<*const Expr, bool>) -> bool {
+        let key = node as *const Expr;
+        if let Some(found) = memo.get(&key) {
+            return *found;
+        }
+        let mut found = matches!(
+            node,
+            Expr::Aggregate { .. }
+                | Expr::AggregateFold { .. }
+                | Expr::AggFilter { .. }
+                | Expr::AggExplode { .. }
+                | Expr::AggGroupBy { .. }
+                | Expr::AggArray { .. }
+        );
+        if !found {
+            node.visit_children(&mut |child| found |= has_aggregate(child, memo));
+        }
+        memo.insert(key, found);
+        found
+    }
+
+    fn visit(
+        node: &Expr,
+        row_allowed: bool,
+        seen: &mut std::collections::HashSet<(*const Expr, bool)>,
+        aggregate_memo: &mut std::collections::HashMap<*const Expr, bool>,
+    ) -> Result<(), &'static str> {
+        if !seen.insert((node as *const Expr, row_allowed)) {
+            return Ok(());
+        }
+        match node {
+            Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => Ok(()),
+            Expr::Column { .. } if !row_allowed => {
+                Err("row fields in Table.aggregate must be inside an aggregate")
+            }
+            Expr::Column { .. } => Ok(()),
+            Expr::AggregateFold { initial, seq, combine, .. } => {
+                if has_aggregate(seq, aggregate_memo) || has_aggregate(combine, aggregate_memo) {
+                    return Err("nested aggregations are not supported inside fold");
+                }
+                visit(initial, false, seen, aggregate_memo)?;
+                visit(seq, true, seen, aggregate_memo)?;
+                visit(combine, false, seen, aggregate_memo)
+            }
+            Expr::Aggregate { value, options, .. } => {
+                if options.get("__vail_scan").and_then(Value::as_bool) == Some(true) {
+                    return Err("scan expressions cannot be used in table aggregation");
+                }
+                if value
+                    .as_deref()
+                    .is_some_and(|operand| has_aggregate(operand, aggregate_memo))
+                {
+                    return Err("nested aggregations are not supported");
+                }
+                if let Some(operand) = value {
+                    visit(operand, true, seen, aggregate_memo)?;
+                }
+                Ok(())
+            }
+            Expr::AggFilter { predicate, body } => {
+                visit(predicate, true, seen, aggregate_memo)?;
+                visit(body, row_allowed, seen, aggregate_memo)
+            }
+            Expr::AggGroupBy { key, body } => {
+                visit(key, true, seen, aggregate_memo)?;
+                visit(body, row_allowed, seen, aggregate_memo)
+            }
+            Expr::AggArray { value, body, .. } | Expr::AggExplode { value, body, .. } => {
+                visit(value, true, seen, aggregate_memo)?;
+                visit(body, row_allowed, seen, aggregate_memo)
+            }
+            _ => {
+                let mut result = Ok(());
+                node.visit_children(&mut |child| {
+                    if result.is_ok() {
+                        result = visit(child, row_allowed, seen, aggregate_memo);
+                    }
+                });
+                result
+            }
+        }
+    }
+
+    visit(
+        root,
+        false,
+        &mut std::collections::HashSet::new(),
+        &mut std::collections::HashMap::new(),
+    )
+}
+
 #[pymethods]
 impl NativeExpr {
+    fn validate_table_aggregate(&self) -> PyResult<()> {
+        validate_table_aggregate_expr(self.inner.as_ref()).map_err(value_error)
+    }
+
     fn referenced_names(&self, scope: &str) -> Vec<String> {
         let mut pending = vec![self.inner.as_ref()];
         let mut seen = std::collections::HashSet::new();

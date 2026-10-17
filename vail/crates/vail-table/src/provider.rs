@@ -882,7 +882,13 @@ impl PartitionSetExec {
         // execute() assigns exactly one private partition ID to each physical
         // partition. Certify that range distribution so partition-local windows
         // need neither a hash exchange nor a sort to rediscover it.
-        let partitioning = partition_id_properties(&schema, &mut equivalence, partitions.len());
+        let partition_id_index = schema.fields().len() - 1;
+        let partitioning = partition_id_properties(
+            &schema,
+            &mut equivalence,
+            partitions.len(),
+            partition_id_index,
+        );
         let properties = Arc::new(PlanProperties::new(
             equivalence,
             partitioning,
@@ -912,13 +918,13 @@ pub(crate) fn select_source_partition(input: &PhysicalPlan, index: usize) -> Opt
     Some(Arc::new(selected))
 }
 
-/// Both source boundaries replace the last column with their physical ID.
+/// Certify the supplied physical partition ID column as the partition range key.
 pub(crate) fn partition_id_properties(
     schema: &SchemaRef,
     equivalence: &mut EquivalenceProperties,
     partitions: usize,
+    index: usize,
 ) -> Partitioning {
-    let index = schema.fields().len() - 1;
     let ordering = LexOrdering::new(vec![PhysicalSortExpr::new(
         Arc::new(Column::new(schema.field(index).name(), index)),
         arrow_schema::SortOptions {

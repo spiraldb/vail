@@ -1054,7 +1054,7 @@ def test_row_aggregations_keep_sparse_column_alignment_and_call_fields():
 
 def test_column_sum_resolves_row_lookups_in_entry_context():
     target = hl.range_table(3).annotate(weight=hl.int64(2)).key_by('idx')
-    m = hl.range_matrix_table(3, 4, 2).choose_cols([3, 1, 3])
+    m = hl.range_matrix_table(3, 4, 2).key_cols_by().choose_cols([3, 1, 3])
     m = m.annotate_entries(x=m.row_idx + 1)
     result = m.annotate_cols(total=hl.agg.sum(m.x * target[m.row_idx].weight))
     assert [(row.col_idx, row.total) for row in result.cols().collect()] == [(3, 12), (1, 12), (3, 12)]

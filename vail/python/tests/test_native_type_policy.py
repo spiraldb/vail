@@ -157,5 +157,5 @@ def test_nested_typed_call_keys_roundtrip_through_iceberg(tmp_path, dtype, value
     path = tmp_path / 'nested-call-keys'
     table.write(path)
     loaded = hl.read_table(path)
-    assert loaded.key.dtype == dtype
+    assert loaded["key"].dtype == dtype
     assert loaded.collect() == table.collect()
