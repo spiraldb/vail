@@ -50,6 +50,13 @@ pub(crate) fn for_table(table: &TableRef, configured_rows: usize) -> Option<usiz
         let mut child_demand = demanded.clone();
         if let TableNode::MapRows { child, fields, .. } = table.node() {
             child_demand.clear();
+            let list_outputs: HashSet<&str> = table
+                .schema()
+                .fields()
+                .iter()
+                .filter(|field| arrow_type_contains_list(field.data_type()))
+                .map(|field| field.name().as_str())
+                .collect();
             for (name, expression) in fields {
                 // The expression's output is live only if the action still
                 // demands that field. This avoids capping a wide annotation
@@ -57,10 +64,7 @@ pub(crate) fn for_table(table: &TableRef, configured_rows: usize) -> Option<usiz
                 if !demanded.contains(name) {
                     continue;
                 }
-                let output_contains_list = table
-                    .schema()
-                    .field_with_name(name)
-                    .is_ok_and(|field| arrow_type_contains_list(field.data_type()));
+                let output_contains_list = list_outputs.contains(name.as_str());
                 visit_reachable(expression, &mut |node| {
                     if let Expr::Column { name } = node {
                         child_demand.insert(name.clone());
