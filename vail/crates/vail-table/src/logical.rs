@@ -1378,6 +1378,7 @@ async fn compile_mode(
             .build();
     }
     let plan = planner.create_physical_plan(&optimized, &state).await?;
+    let plan = crate::projection_broadcast::cache_nested_projection_broadcasts(plan)?;
     Ok(crate::rng_context::bind_consumers(plan)?)
 }
 

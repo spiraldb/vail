@@ -28,6 +28,7 @@ mod partition_grouping;
 mod partition_map;
 pub mod partitioned;
 mod partitioning;
+mod projection_broadcast;
 pub mod plan;
 mod provider;
 mod range_lookup;
