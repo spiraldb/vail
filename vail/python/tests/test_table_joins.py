@@ -84,6 +84,24 @@ def test_range_join_with_unequal_partition_counts_and_empty_partitions():
     assert [(row.idx, row.payload) for row in joined.take(3)] == [(0, 7), (1, 7), (2, 7)]
 
 
+def test_inner_range_join_prunes_cells_outside_the_overlap():
+    # Only the first thousand keys overlap. Executing the remaining billion
+    # source rows would defeat the certified key-bound planning.
+    left = hl.range_table(1_000_000_000, n_partitions=16)
+    right = hl.range_table(1_000, n_partitions=4)
+    joined = left.join(right)
+    assert [row.idx for row in joined.collect()] == list(range(1_000))
+    assert joined.n_partitions() < left.n_partitions()
+
+
+def test_large_range_join_has_bounded_streaming_cells():
+    table = hl.range_table(50_000_000, n_partitions=1)
+    joined = table.join(table)
+    plan = joined._native.physical_plan()
+    assert "SortExec:" not in plan
+    assert joined.n_partitions() > 3
+
+
 def test_join_mangles_right_row_and_global_names_and_keeps_left_key():
     left = keyed(
         [{"k": 1, "same": "L"}], schema=hl.tstruct(k=hl.tint32, same=hl.tstr),

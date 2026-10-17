@@ -156,3 +156,27 @@ def test_fold_retains_wide_unchanged_state_across_steps():
     rows = [{'a':list(range(128)),'state':[i]*4096} for i in range(4)]
     table = hl.Table.parallelize(rows,schema=hl.tstruct(a=hl.tarray(hl.tint32),state=hl.tarray(hl.tint32)))
     assert table.a.fold(lambda state,item:state,table.state).collect() == [[i]*4096 for i in range(4)]
+
+
+@pytest.mark.parametrize('dtype, values', [
+    (hl.tint32, [2147483647, 2147483647]),
+    (hl.tint64, [9223372036854775807, 9223372036854775807]),
+    (hl.tfloat32, [1.0, 2.0, 3.0]),
+    (hl.tfloat64, [1.0, 2.0, 3.0]),
+])
+def test_mean_uses_typed_kernel_without_array_cast(dtype, values):
+    expression = hl.mean(hl.literal(values, hl.tarray(dtype)))
+    assert hl.eval(expression) == pytest.approx(sum(float(x) for x in values) / len(values))
+
+
+def test_typed_range_mean_in_lazy_dataframe():
+    table = hl.range_table(10, 3)
+    table = table.annotate(values=hl.range(table.idx, -1, -2))
+    result = table.annotate(mean=hl.mean(table.values)).collect()
+    for row in result:
+        expected = list(range(row.idx, -1, -2))
+        assert row["values"] == expected
+        assert row.mean == sum(expected) / len(expected)
+    plan = table._native.logical_plan()
+    assert 'vail_range_int32' in plan
+    assert 'AS List(Int32)' not in plan

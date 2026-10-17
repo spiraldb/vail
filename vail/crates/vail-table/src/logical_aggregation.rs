@@ -184,7 +184,7 @@ pub(crate) fn unique(used: &mut HashSet<String>, base: &str) -> String {
     result
 }
 
-fn needs_order(expression: &Expr) -> bool {
+pub(crate) fn needs_order(expression: &Expr) -> bool {
     let mut ordered = false;
     expression.visit_unique(&mut |node| {
         // A fold's initial state is applied once, including for empty input.
@@ -220,6 +220,16 @@ fn needs_order(expression: &Expr) -> bool {
         }
     });
     ordered
+}
+
+/// Whether a total expression contains an aggregate and only uses reducers
+/// whose results can be combined without preserving row order.
+pub(crate) fn can_parallelize_total(expression: &Expr) -> bool {
+    let mut contains_aggregate = false;
+    expression.visit(&mut |node| {
+        contains_aggregate |= matches!(node, Expr::Aggregate { .. } | Expr::AggregateFold { .. });
+    });
+    contains_aggregate && !needs_order(expression)
 }
 
 pub(crate) fn scope_plan(
@@ -304,6 +314,7 @@ pub(crate) fn scope_plan(
     let nested_input = input.clone();
     let mut aggregates = Vec::new();
     let mut defaults = BTreeMap::new();
+    let mut native_sums = BTreeMap::new();
     for reducer in &group.reducers {
         if reducer.function == "__nested" {
             continue;
@@ -367,7 +378,7 @@ pub(crate) fn scope_plan(
         let value = fold_value.as_ref().unwrap_or(&value);
         let mut logical_value =
             lower_logical_with_bindings(value, input.schema(), table.globals().schema(), bindings)?;
-        let dtype = if reducer.function == "count" {
+        let mut dtype = if reducer.function == "count" {
             None
         } else {
             Some(
@@ -376,15 +387,42 @@ pub(crate) fn scope_plan(
                     .to_arrow()?,
             )
         };
-        let dtype = if let Some(payload) = fold_storage {
+        let mut dtype = if let Some(payload) = fold_storage {
             logical_value =
                 vail_execution::logical_expr::restore_type(logical_value, payload.clone());
             Some(payload)
         } else {
             dtype
         };
+        // Use DataFusion's grouped kernels rather than constructing one scalar
+        // accumulator per group. Widen before summing as required by Hail.
+        let native_sum_type = if reducer.function == "sum" {
+            match dtype.as_ref() {
+                Some(DataType::Int32 | DataType::Int64) => Some(DataType::Int64),
+                Some(DataType::Float32 | DataType::Float64) => Some(DataType::Float64),
+                _ => None,
+            }
+        } else {
+            None
+        };
+        if let Some(output_type) = native_sum_type {
+            logical_value = datafusion_expr::expr_fn::cast(logical_value, output_type.clone());
+            let zero = if output_type == DataType::Int64 {
+                ScalarValue::Int64(Some(0))
+            } else {
+                ScalarValue::Float64(Some(0.0))
+            };
+            native_sums.insert(reducer.name.clone(), zero);
+            dtype = Some(output_type);
+        }
         let udf = match fold_udf {
             Some(udf) => udf,
+            None if native_sums.contains_key(&reducer.name) => {
+                datafusion_functions_aggregate::sum::sum_udaf()
+            }
+            None if reducer.function == "count" => {
+                datafusion_functions_aggregate::count::count_udaf()
+            }
             None => factory(reducer, dtype.as_ref())?,
         };
         // Query the existing UDAF for its empty-input identity. This does not
@@ -398,7 +436,10 @@ pub(crate) fn scope_plan(
                 .build()?;
         defaults.insert(
             reducer.name.clone(),
-            physical.create_accumulator()?.evaluate()?,
+            match native_sums.get(&reducer.name) {
+                Some(zero) => zero.clone(),
+                None => physical.create_accumulator()?.evaluate()?,
+            },
         );
         aggregates.push(udf.call(vec![logical_value]).alias(&reducer.name));
     }
@@ -414,7 +455,17 @@ pub(crate) fn scope_plan(
         .build()?;
     // Native grouping retains the typed key itself; no representative
     // accumulator is necessary, including for zero-field structs.
-    let mut projection = columns(&result);
+    let mut projection = result
+        .schema()
+        .columns()
+        .into_iter()
+        .map(|column| match native_sums.get(&column.name) {
+            Some(zero) => datafusion_functions::core::coalesce()
+                .call(vec![DFExpr::Column(column.clone()), lit(zero.clone())])
+                .alias(&column.name),
+            None => DFExpr::Column(column),
+        })
+        .collect::<Vec<_>>();
     let restored_keys = group_names
         .iter()
         .zip(key_names)
@@ -691,13 +742,24 @@ pub(crate) fn lower_logical_total(
     let output = extract(expression, &[], &mut groups, &mut used)?;
     let mut result = LogicalPlanBuilder::empty(true).build()?;
     if !groups.is_empty() {
-        let child = if needs_order(expression) {
+        let order_sensitive = needs_order(expression);
+        let child = if order_sensitive {
             crate::logical::ordered(child)
         } else {
             child
         };
-        let child = crate::logical_globals::bind_globals(child, table, context)?;
-        let (child, indices) = crate::logical_globals::bind_external(child, bindings, context)?;
+        let mut child = crate::logical_globals::bind_globals(child, table, context)?;
+        let (bound_child, indices) = crate::logical_globals::bind_external(child, bindings, context)?;
+        child = bound_child;
+        // Fan out only this total aggregate's input. Preserve visible table
+        // partitioning and avoid changing order-sensitive reducers.
+        if crate::logical::should_fan_out_total(table, expression)
+            && !table
+                .known_n_partitions()
+                .is_some_and(|partitions| partitions >= crate::EXECUTION_CONCURRENCY)
+        {
+            child = crate::logical::protect_round_robin(child, crate::EXECUTION_CONCURRENCY);
+        }
         for group in groups {
             let (right, _, _) = scope_plan(
                 child.clone(),

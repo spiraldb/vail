@@ -103,7 +103,9 @@ def linreg(y, x, nested_dim=1, weight=None):
         raise TypeError("nested_dim must be an integer")
     if not 0 <= nested_dim <= len(xs):
         raise ValueError("nested_dim must be between zero and len(x)")
-    data = {"y": y, "x": xs}
+    # Predictors are fixed-width columns, not a variable-length list per row.
+    # A struct retains the Arrow child arrays through grouped/array aggregation.
+    data = {"y": y, "x": {f"x{i}": value for i, value in enumerate(xs)}}
     if weight is not None:
         data["weight"] = cast(_numeric(weight, "weight"), tfloat64)
     doubles = tarray(tfloat64)

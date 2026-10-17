@@ -1,0 +1,14 @@
+============================= test session starts ==============================
+platform darwin -- Python 3.12.12, pytest-9.1.1, pluggy-1.6.0
+rootdir: /Users/danielking/projects/vail/vail
+configfile: pyproject.toml
+collected 137 items
+
+python/tests/test_agg_numeric.py ..................                      [ 13%]
+python/tests/test_parallel_stats.py .......                              [ 18%]
+python/tests/test_scan.py .....................................          [ 45%]
+python/tests/test_matrix_table.py ...................................... [ 72%]
+..........................                                               [ 91%]
+python/tests/test_map_partitions_streams.py ...........                  [100%]
+
+======================= 137 passed in 184.14s (0:03:04) ========================

@@ -104,6 +104,26 @@ def test_linreg_null_model_and_negative_weight():
     assert math.isnan(fit.multiple_standard_error)
 
 
+def test_linreg_columnar_predictors_inside_array_aggregation():
+    table = hl.Table.parallelize(
+        [{"x": x, "y": None if x is None else 1.0 + 2.0 * x, "w": 1.0}
+         for x in [None, -2.0, -1.0, 0.0, 1.0, 2.0]],
+        schema=hl.tstruct(x=hl.tfloat64, y=hl.tfloat64, w=hl.tfloat64),
+        n_partitions=3,
+    )
+    fits = table.aggregate(hl.agg.array_agg(
+        lambda offset: hl.agg.linreg(table.y + offset, [1.0, table.x], weight=table.w),
+        hl.range(3),
+    ))
+    for offset, fit in enumerate(fits):
+        assert fit.n == 5
+        assert fit.beta == pytest.approx([1.0 + offset, 2.0])
+
+    # A missing predictor excludes the observation even when y is defined.
+    table = table.annotate(y=hl.or_else(table.y, 99.0))
+    assert table.aggregate(hl.agg.linreg(table.y, [1.0, table.x])).n == 5
+
+
 def test_kll_rejects_int64_precision_loss():
     t = hl.Table.parallelize([{"x": 2**53 + 1}], schema=hl.tstruct(x=hl.tint64))
     with pytest.raises(Exception, match="2\\^53"):

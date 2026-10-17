@@ -21,6 +21,7 @@ use datafusion_physical_plan::{
     projection::ProjectionExec,
     repartition::RepartitionExec,
     sorts::sort::SortExec,
+    limit::GlobalLimitExec,
     stream::{RecordBatchReceiverStreamBuilder, RecordBatchStreamAdapter},
 };
 use futures::{FutureExt, StreamExt, TryStreamExt, future::BoxFuture};
@@ -399,6 +400,25 @@ pub(crate) struct ProtectedRangeRepartitionExec {
     requirement: Option<OrderingRequirements>,
 }
 impl ProtectedRangeRepartitionExec {
+    pub(crate) fn identity_input(&self) -> Option<PhysicalPlan> {
+        let target = Partitioning::Range(self.range.clone());
+        if self.input.output_partitioning() == &target {
+            return Some(self.input.clone());
+        }
+        // The required single input can introduce a merge even when the child
+        // already has exactly the requested ranges. Remove both operations:
+        // merging and redistributing the same ranges only adds buffering.
+        if let Some(merge) = self.input.as_ref().downcast_ref::<
+            datafusion_physical_plan::sorts::sort_preserving_merge::SortPreservingMergeExec,
+        >() {
+            let input = merge.input();
+            if input.output_partitioning() == &target {
+                return Some(input.clone());
+            }
+        }
+        None
+    }
+
     pub(crate) fn new(
         input: PhysicalPlan,
         range: RangePartitioning,
@@ -478,6 +498,98 @@ impl ExecutionPlan for ProtectedRangeRepartitionExec {
         self.inner.execute(partition, context)
     }
 }
+
+/// Preserve a requested round-robin partition count across DataFusion's
+/// physical optimizer. The child remains visible to tree rewrites; execution
+/// delegates to the ordinary DataFusion repartition operator.
+#[derive(Debug)]
+pub(crate) struct ProtectedRoundRobinRepartitionExec {
+    input: PhysicalPlan,
+    partitions: usize,
+    inner: PhysicalPlan,
+    cache: Arc<PlanProperties>,
+}
+impl ProtectedRoundRobinRepartitionExec {
+    pub(crate) fn new(
+        input: PhysicalPlan,
+        partitions: usize,
+    ) -> datafusion_common::Result<Self> {
+        let partitions = partitions.max(1);
+        let inner: PhysicalPlan = Arc::new(RepartitionExec::try_new(
+            input.clone(),
+            Partitioning::RoundRobinBatch(partitions),
+        )?);
+        let cache = inner.properties().clone();
+        Ok(Self {
+            input,
+            partitions,
+            inner,
+            cache,
+        })
+    }
+}
+impl DisplayAs for ProtectedRoundRobinRepartitionExec {
+    fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "VailProtectedRoundRobinRepartitionExec: {}", self.partitions)
+    }
+}
+impl ExecutionPlan for ProtectedRoundRobinRepartitionExec {
+    fn name(&self) -> &'static str {
+        "VailProtectedRoundRobinRepartitionExec"
+    }
+    fn properties(&self) -> &Arc<PlanProperties> {
+        &self.cache
+    }
+    fn children(&self) -> Vec<&PhysicalPlan> {
+        vec![&self.input]
+    }
+    fn required_input_distribution(&self) -> Vec<datafusion_physical_plan::Distribution> {
+        vec![datafusion_physical_plan::Distribution::UnspecifiedDistribution]
+    }
+    fn required_input_ordering(&self) -> Vec<Option<OrderingRequirements>> {
+        vec![None]
+    }
+    fn maintains_input_order(&self) -> Vec<bool> {
+        vec![false]
+    }
+    fn benefits_from_input_partitioning(&self) -> Vec<bool> {
+        vec![false]
+    }
+    fn apply_expressions(
+        &self,
+        _: &mut dyn FnMut(&Arc<dyn PhysicalExpr>) -> datafusion_common::Result<TreeNodeRecursion>,
+    ) -> datafusion_common::Result<TreeNodeRecursion> {
+        Ok(TreeNodeRecursion::Continue)
+    }
+    fn with_new_children(
+        self: Arc<Self>,
+        children: Vec<PhysicalPlan>,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        if children.len() != 1 {
+            return Err(DataFusionError::Plan(
+                "round-robin repartition needs one child".into(),
+            ));
+        }
+        Ok(Arc::new(Self::new(
+            children[0].clone(),
+            self.partitions,
+        )?))
+    }
+    fn reset_state(self: Arc<Self>) -> datafusion_common::Result<PhysicalPlan> {
+        Ok(Arc::new(Self::new(
+            self.input.clone(),
+            self.partitions,
+        )?))
+    }
+    fn execute(
+        &self,
+        partition: usize,
+        context: Arc<TaskContext>,
+    ) -> datafusion_common::Result<SendableRecordBatchStream> {
+        self.inner.execute(partition, context)
+    }
+}
+
 impl ProtectedExec {
     pub(crate) fn new(input: PhysicalPlan, label: &'static str) -> Self {
         let requirement = required_ordering(&input);
@@ -565,6 +677,10 @@ pub(crate) fn partition_views(input: PhysicalPlan, count: usize) -> Vec<Physical
 
 impl PartitionViewExec {
     pub(crate) fn new(input: PhysicalPlan, index: usize) -> Self {
+        let (input, index) = match crate::provider::select_source_partition(&input, index) {
+            Some(selected) => (selected, 0),
+            None => (input, index),
+        };
         let mut cache = (**input.properties()).clone();
         cache.partitioning = Partitioning::UnknownPartitioning(1);
         let requirement = required_ordering(&input);
@@ -659,8 +775,11 @@ impl PartitionSetExec {
         Self::with_tag(parts, schema, None)
     }
     fn with_tag(parts: Vec<PhysicalPlan>, schema: SchemaRef, tag_index: Option<usize>) -> Self {
-        let mut cache = (*properties(schema, EmissionType::Incremental)).clone();
-        cache.partitioning = Partitioning::UnknownPartitioning(parts.len().max(1));
+        let mut cache = (*properties(schema.clone(), EmissionType::Incremental)).clone();
+        cache.partitioning = crate::provider::partition_id_properties(
+            &schema, &mut cache.eq_properties, parts.len(),
+        );
+
         if let Some(ordering) = parts
             .first()
             .and_then(|part| part.output_ordering())
@@ -985,6 +1104,32 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                 let (selected,counts)=input.parts.into_iter().zip(input.counts).enumerate().filter(|(i,_)|parts.contains(i)==*keep).map(|(_,entry)|entry).unzip();
                 Ok(PreparedTable {parts:selected,counts,schema})
             }
+            TableNode::Head { child, n } => {
+                if *n == 0 { return Ok(PreparedTable { parts: vec![], counts: vec![], schema }); }
+                let input = prepared_input(child)?;
+                let mut remaining = *n;
+                let mut parts = Vec::new();
+                let mut counts = Vec::new();
+                for (part, known) in input.parts.into_iter().zip(input.counts) {
+                    if remaining == 0 { break; }
+                    match known {
+                        Some(count) => {
+                            let take = count.min(remaining);
+                            if take > 0 {
+                                parts.push(Arc::new(GlobalLimitExec::new(part, 0, Some(take))) as PhysicalPlan);
+                                counts.push(Some(take)); remaining -= take;
+                            }
+                        }
+                        None => {
+                            // The logical head lowering keeps this bounded to the requested prefix.
+                            let rows = Arc::new(GlobalLimitExec::new(part, 0, Some(remaining))) as PhysicalPlan;
+                            parts.push(rows); counts.push(None); remaining = 0;
+                        }
+                    }
+                }
+                Ok(PreparedTable { parts, counts, schema })
+            }
+
             // Tail needs only a bounded suffix buffer, not a full-input count
             // window or a counting pass followed by a second data scan.
             TableNode::Tail { child, .. } => {
@@ -992,6 +1137,7 @@ pub(crate) fn prepare_operation(table: TableRef) -> BoxFuture<'static, Result<Pr
                 let one = table.replacing_node(replace_tail_child(table.node().clone(), TableIR::prepared(child, input.ordered(), None, 1))?);
                 let rows = plan::lower_operation(&one)?.rows;
                 Ok(PreparedTable { schema: rows.schema(), parts: vec![rows], counts: vec![None] })
+
             }
             TableNode::Repartition {child,n,strategy}=> {
                 let mut input=prepared_input(child)?;

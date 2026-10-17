@@ -2052,8 +2052,21 @@ def repeat(value, n):
     value = value() if callable(value) else as_expr(value)
     return range(n).map(lambda _: value)
 
+
+def zeros(length):
+    """Return a lazy array of int32 zeros, or missing for a missing length."""
+    from .collections import _function
+
+    length = as_expr(length)
+    if length.dtype != tint32:
+        raise TypeError("zeros length must be int32")
+    values = _function("array_repeat", [literal(0), int64(length)], tarray(tint32))
+    checked = case().when(length >= 0, values).or_error("zeros length must be nonnegative")
+    return if_else(is_missing(length), missing(tarray(tint32)), checked)
+
 from . import linalg
 
 from .simulation import balding_nichols_model
 
 from .qc import variant_qc, hardy_weinberg_test
+from .genotype_likelihoods import pl_to_gp, pl_dosage

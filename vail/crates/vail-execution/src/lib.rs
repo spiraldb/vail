@@ -41,6 +41,7 @@ pub mod logical_expr;
 mod matrix_arrays;
 mod moments;
 mod ndarray;
+mod numeric_lists;
 pub mod reference;
 pub mod scan_scopes;
 pub mod scan_state;

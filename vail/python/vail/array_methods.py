@@ -65,13 +65,9 @@ def mean(collection, filter_missing=True):
     if type(filter_missing) is not bool:
         raise TypeError("filter_missing must be bool")
     collection = _numeric_array(collection)
-    from .expressions import bind
-    def present(values):
-        defined = values.filter(lambda x: ~is_missing(x))
-        result = bind(lambda defined:
-                      defined.map(lambda x: cast(x,tfloat64))._reduce('sum') / cast(defined.length(),tfloat64),defined)
-        return result if filter_missing else if_else(values.any(is_missing),missing(tfloat64),result)
-    return bind(present,collection)
+    from .collections import _function
+    function = "vail_array_mean" if filter_missing else "vail_array_mean_strict"
+    return _function(function, [collection], tfloat64)
 
 
 def median(collection):

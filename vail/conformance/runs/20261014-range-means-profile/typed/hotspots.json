@@ -1,0 +1,1481 @@
+{
+  "sampled_cpu_seconds": 33.355065,
+  "thread_cpu_microseconds": {
+    "python": 9330,
+    "Thread <88588530>": 772905,
+    "tokio-rt-worker": 32572830
+  },
+  "leaf": [
+    {
+      "name": "<vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      "percent": 48.99157594206457
+    },
+    {
+      "name": "<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<f64, <alloc::vec::Vec<f64>>::extend_trusted<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}>>::{closure#0}>::{closure#0}>",
+      "percent": 42.10629480110442
+    },
+    {
+      "name": "madvise",
+      "percent": 4.827419763685065
+    },
+    {
+      "name": "__psynch_cvwait",
+      "percent": 1.9209076642482934
+    },
+    {
+      "name": "__sysctl",
+      "percent": 1.6684242707966541
+    },
+    {
+      "name": "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>",
+      "percent": 0.10050047871290313
+    },
+    {
+      "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_value",
+      "percent": 0.09759237465134606
+    },
+    {
+      "name": "_PyEval_EvalFrameDefault",
+      "percent": 0.07284051162844384
+    },
+    {
+      "name": "core::ptr::drop_in_place::<arrow_schema::datatype::DataType>",
+      "percent": 0.04778884406311305
+    },
+    {
+      "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::from_value",
+      "percent": 0.04565723376644596
+    },
+    {
+      "name": "_PyObject_Realloc",
+      "percent": 0.02983055197164209
+    },
+    {
+      "name": "_PyObject_Malloc",
+      "percent": 0.010733002618942581
+    },
+    {
+      "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<i32>>::from_iter::<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}::{closure#0}>>",
+      "percent": 0.010640063210789726
+    },
+    {
+      "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      "percent": 0.009974497126598314
+    },
+    {
+      "name": "tiny_malloc_should_clear",
+      "percent": 0.009863569445899747
+    },
+    {
+      "name": "tiny_free_list_remove_ptr",
+      "percent": 0.009398872405135471
+    },
+    {
+      "name": "core::ptr::drop_in_place::<alloc::vec::Vec<indexmap::Bucket<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, ()>>>",
+      "percent": 0.009278950588164046
+    },
+    {
+      "name": "AttributeError_init",
+      "percent": 0.0071563344277698155
+    },
+    {
+      "name": "0x68396ac",
+      "percent": 0.0057082784878398525
+    },
+    {
+      "name": "<datafusion_physical_optimizer::join_selection::JoinSelection as datafusion_session::physical_optimizer::PhysicalOptimizerRule>::optimize_with_context",
+      "percent": 0.005588356670868428
+    },
+    {
+      "name": "_platform_memset",
+      "percent": 0.005573366443746999
+    },
+    {
+      "name": "0x6dd4",
+      "percent": 0.005171628356892724
+    },
+    {
+      "name": "__bzero",
+      "percent": 0.002005692388847091
+    },
+    {
+      "name": "BaseException_new",
+      "percent": 2.998045424285637e-05
+    },
+    {
+      "name": "acquire_timed",
+      "percent": 2.3984363394285095e-05
+    },
+    {
+      "name": "__error",
+      "percent": 2.0986317969999457e-05
+    }
+  ],
+  "inclusive": [
+    {
+      "name": "_pthread_start",
+      "percent": 99.9720282361914
+    },
+    {
+      "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "<tokio::runtime::blocking::pool::Inner>::run",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+      "percent": 97.65482393753393
+    },
+    {
+      "name": "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+      "percent": 96.27194550512793
+    },
+    {
+      "name": "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+      "percent": 96.27194550512793
+    },
+    {
+      "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+      "percent": 96.27194550512793
+    },
+    {
+      "name": "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+      "percent": 96.27194550512793
+    },
+    {
+      "name": "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+      "percent": 96.22222591981158
+    },
+    {
+      "name": "<datafusion_physical_expr::projection::Projector>::project_batch",
+      "percent": 96.04167762827025
+    },
+    {
+      "name": "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+      "percent": 96.04167762827025
+    },
+    {
+      "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+      "percent": 96.04167762827025
+    },
+    {
+      "name": "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+      "percent": 96.04167762827025
+    },
+    {
+      "name": "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      "percent": 96.04167762827025
+    },
+    {
+      "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+      "percent": 96.04167762827025
+    },
+    {
+      "name": "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+      "percent": 96.04167762827025
+    },
+    {
+      "name": "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+      "percent": 96.03170313114366
+    },
+    {
+      "name": "<vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+      "percent": 95.87369114705668
+    },
+    {
+      "name": "<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<f64, <alloc::vec::Vec<f64>>::extend_trusted<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}>>::{closure#0}>::{closure#0}>",
+      "percent": 42.10629480110442
+    },
+    {
+      "name": "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<f64>>::from_iter::<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}>>",
+      "percent": 42.10629480110442
+    },
+    {
+      "name": "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter::<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>",
+      "percent": 42.10629480110442
+    },
+    {
+      "name": "<alloc::vec::Vec<f64> as alloc::vec::spec_from_iter::SpecFromIter<f64, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}>>>::from_iter",
+      "percent": 42.10629480110442
+    },
+    {
+      "name": "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+      "percent": 4.880781974191926
+    },
+    {
+      "name": "<alloc::sync::Arc<arrow_buffer::bytes::Bytes>>::drop_slow",
+      "percent": 4.827419763685065
+    },
+    {
+      "name": "madvise",
+      "percent": 4.827419763685065
+    },
+    {
+      "name": "core::ptr::drop_in_place::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float32Type>>",
+      "percent": 4.7622422561610955
+    },
+    {
+      "name": "core::ptr::drop_in_place::<datafusion_expr::udf::ScalarFunctionArgs>",
+      "percent": 4.758497697426163
+    },
+    {
+      "name": "core::ptr::drop_in_place::<arrow_array::array::list_array::GenericListArray<i32>>",
+      "percent": 4.758497697426163
+    },
+    {
+      "name": "_szone_free",
+      "percent": 4.752924330982416
+    },
+    {
+      "name": "free_large",
+      "percent": 4.752924330982416
+    },
+    {
+      "name": "_PyEval_EvalFrameDefault",
+      "percent": 2.3451760624660754
+    },
+    {
+      "name": "_PyFunction_Vectorcall",
+      "percent": 2.3230984559616354
+    },
+    {
+      "name": "method_vectorcall",
+      "percent": 2.31720429865749
+    },
+    {
+      "name": "pythread_wrapper",
+      "percent": 2.31720429865749
+    },
+    {
+      "name": "thread_run",
+      "percent": 2.31720429865749
+    },
+    {
+      "name": "__psynch_cvwait",
+      "percent": 1.9209076642482934
+    },
+    {
+      "name": "_pthread_cond_wait",
+      "percent": 1.9209076642482934
+    },
+    {
+      "name": "cfunction_call",
+      "percent": 1.675214843682661
+    },
+    {
+      "name": "__sysctl",
+      "percent": 1.6684242707966541
+    },
+    {
+      "name": "sysctl",
+      "percent": 1.6684242707966541
+    },
+    {
+      "name": "psutil_proc_kinfo_oneshot",
+      "percent": 1.6672520350357583
+    },
+    {
+      "name": "psutil_get_kinfo_proc",
+      "percent": 1.6672520350357583
+    }
+  ],
+  "stacks": [
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_NOARGS",
+        "pyo3::impl_::trampoline::noargs::<<pyo3::impl_::pyclass::PyClassImplCollector<_native::NativeTable> as pyo3::impl_::pyclass::PyMethods<_native::NativeTable>>::py_methods::ITEMS::Def>",
+        "pyo3::impl_::trampoline::trampoline::<pyo3::impl_::trampoline::noargs::inner::{closure#0}, *mut pyo3_ffi::object::PyObject>",
+        "<_native::NativeTable>::__pymethod_force_count__",
+        "<tokio::runtime::runtime::Runtime>::block_on::<<vail_table::TableIR>::force_count::{closure#0}>",
+        "tokio::runtime::context::runtime::enter_runtime::<<tokio::runtime::scheduler::multi_thread::MultiThread>::block_on<<vail_table::TableIR>::force_count::{closure#0}>::{closure#0}, core::result::Result<usize, vail_table::TableError>>",
+        "<tokio::runtime::park::CachedParkThread>::block_on::<<vail_table::TableIR>::force_count::{closure#0}>",
+        "vail_table::partitioned::prepare::{closure#0}",
+        "<datafusion::physical_planner::DefaultPhysicalPlanner as datafusion_session::planner::PhysicalPlanner>::create_physical_plan::{closure#0}",
+        "<datafusion::physical_planner::DefaultPhysicalPlanner>::create_initial_plan::{closure#0}",
+        "<datafusion::physical_planner::DefaultPhysicalPlanner>::create_initial_plan_inner::{closure#0}",
+        "<futures_util::stream::try_stream::try_collect::TryCollect<futures_util::stream::stream::buffer_unordered::BufferUnordered<futures_util::stream::iter::Iter<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<usize>, <datafusion::physical_planner::DefaultPhysicalPlanner>::create_initial_plan_inner::{closure#0}::{closure#1}>>>, alloc::vec::Vec<core::option::Option<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>> as core::future::future::Future>::poll",
+        "<futures_util::stream::stream::buffer_unordered::BufferUnordered<futures_util::stream::iter::Iter<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<usize>, <datafusion::physical_planner::DefaultPhysicalPlanner>::create_initial_plan_inner::{closure#0}::{closure#1}>>> as futures_core::stream::TryStream>::try_poll_next",
+        "<futures_util::stream::futures_unordered::FuturesUnordered<<datafusion::physical_planner::DefaultPhysicalPlanner>::task_helper::{closure#0}> as futures_core::stream::Stream>::poll_next",
+        "<datafusion::physical_planner::DefaultPhysicalPlanner>::map_logical_node_to_physical::{closure#0}",
+        "<vail_table::provider::VailSourceProvider as datafusion_session::table::TableProvider>::scan_with_args::{closure#0}",
+        "<vail_table::provider::VailSourceProvider as datafusion_session::table::TableProvider>::scan::{closure#0}",
+        "vail_table::plan::source_partition_projected_with_nested_paths",
+        "vail_table::plan::private_name",
+        "0x68396ac"
+      ],
+      "cpu_microseconds": 1904
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_NOARGS",
+        "pyo3::impl_::trampoline::noargs::<<pyo3::impl_::pyclass::PyClassImplCollector<_native::NativeTable> as pyo3::impl_::pyclass::PyMethods<_native::NativeTable>>::py_methods::ITEMS::Def>",
+        "pyo3::impl_::trampoline::trampoline::<pyo3::impl_::trampoline::noargs::inner::{closure#0}, *mut pyo3_ffi::object::PyObject>",
+        "<_native::NativeTable>::__pymethod_force_count__",
+        "<tokio::runtime::runtime::Runtime>::block_on::<<vail_table::TableIR>::force_count::{closure#0}>",
+        "tokio::runtime::context::runtime::enter_runtime::<<tokio::runtime::scheduler::multi_thread::MultiThread>::block_on<<vail_table::TableIR>::force_count::{closure#0}>::{closure#0}, core::result::Result<usize, vail_table::TableError>>",
+        "<tokio::runtime::park::CachedParkThread>::block_on::<<vail_table::TableIR>::force_count::{closure#0}>",
+        "<tokio::runtime::park::Inner>::park",
+        "_pthread_cond_wait",
+        "__psynch_cvwait"
+      ],
+      "cpu_microseconds": 3571
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_NOARGS",
+        "pyo3::impl_::trampoline::noargs::<<pyo3::impl_::pyclass::PyClassImplCollector<_native::NativeTable> as pyo3::impl_::pyclass::PyMethods<_native::NativeTable>>::py_methods::ITEMS::Def>",
+        "pyo3::impl_::trampoline::trampoline::<pyo3::impl_::trampoline::noargs::inner::{closure#0}, *mut pyo3_ffi::object::PyObject>",
+        "<_native::NativeTable>::__pymethod_force_count__",
+        "<pyo3::internal::state::SuspendAttach as core::ops::drop::Drop>::drop",
+        "pyo3_ffi::ceval::PyEval_RestoreThread",
+        "PyEval_RestoreThread",
+        "take_gil",
+        "_pthread_cond_wait",
+        "__psynch_cvwait"
+      ],
+      "cpu_microseconds": 25
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "type_call",
+        "slot_tp_init",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 1966
+    },
+    {
+      "frames": [
+        "start",
+        "Py_BytesMain",
+        "Py_RunMain",
+        "pymain_run_file",
+        "pymain_run_file_obj",
+        "_PyRun_AnyFileObject",
+        "_PyRun_SimpleFileObject",
+        "pyrun_file",
+        "run_mod",
+        "PyEval_EvalCode",
+        "_PyEval_Vector",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_NOARGS",
+        "pyo3::impl_::trampoline::noargs::<<pyo3::impl_::pyclass::PyClassImplCollector<_native::NativeTable> as pyo3::impl_::pyclass::PyMethods<_native::NativeTable>>::py_methods::ITEMS::Def>",
+        "pyo3::impl_::trampoline::trampoline::<pyo3::impl_::trampoline::noargs::inner::{closure#0}, *mut pyo3_ffi::object::PyObject>",
+        "<_native::NativeTable>::__pymethod_force_count__",
+        "<tokio::runtime::runtime::Runtime>::block_on::<<vail_table::TableIR>::force_count::{closure#0}>",
+        "tokio::runtime::context::runtime::enter_runtime::<<tokio::runtime::scheduler::multi_thread::MultiThread>::block_on<<vail_table::TableIR>::force_count::{closure#0}>::{closure#0}, core::result::Result<usize, vail_table::TableError>>",
+        "<tokio::runtime::park::CachedParkThread>::block_on::<<vail_table::TableIR>::force_count::{closure#0}>",
+        "vail_table::partitioned::prepare::{closure#0}",
+        "<datafusion::physical_planner::DefaultPhysicalPlanner as datafusion_session::planner::PhysicalPlanner>::create_physical_plan::{closure#0}",
+        "<datafusion_physical_optimizer::join_selection::JoinSelection as datafusion_session::physical_optimizer::PhysicalOptimizerRule>::optimize_with_context"
+      ],
+      "cpu_microseconds": 1864
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_proc_kinfo_oneshot",
+        "psutil_get_kinfo_proc",
+        "sysctl",
+        "__sysctl"
+      ],
+      "cpu_microseconds": 555914
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 5892
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_VARARGS_KEYWORDS",
+        "lock_PyThread_acquire_lock",
+        "acquire_timed",
+        "PyThread_acquire_lock_timed",
+        "_pthread_cond_wait",
+        "__psynch_cvwait"
+      ],
+      "cpu_microseconds": 175864
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_VARARGS_KEYWORDS",
+        "lock_PyThread_acquire_lock",
+        "acquire_timed"
+      ],
+      "cpu_microseconds": 8
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_pids",
+        "0x6dd4"
+      ],
+      "cpu_microseconds": 1725
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "type_call",
+        "slot_tp_init",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "set_attribute_error_context",
+        "_PyErr_NormalizeException",
+        "PyObject_CallOneArg",
+        "type_call",
+        "BaseException_new"
+      ],
+      "cpu_microseconds": 10
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "type_call",
+        "slot_tp_init",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_proc_kinfo_oneshot",
+        "psutil_get_kinfo_proc",
+        "sysctl",
+        "__sysctl"
+      ],
+      "cpu_microseconds": 199
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 3678
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "PyObject_GenericGetAttr",
+        "member_get",
+        "PyErr_Format",
+        "PyUnicode_FromFormatV",
+        "_PyObject_Realloc"
+      ],
+      "cpu_microseconds": 9950
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyObject_Malloc"
+      ],
+      "cpu_microseconds": 3580
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 943
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "method_vectorcall_VARARGS_KEYWORDS",
+        "lock_PyThread_acquire_lock",
+        "acquire_timed",
+        "take_gil",
+        "__error"
+      ],
+      "cpu_microseconds": 7
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyEval_EvalFrameDefault"
+      ],
+      "cpu_microseconds": 11817
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_pids",
+        "_psutil_pids",
+        "psutil_sysctl_malloc",
+        "sysctl",
+        "__sysctl"
+      ],
+      "cpu_microseconds": 391
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "set_attribute_error_context",
+        "_PyErr_NormalizeException",
+        "PyObject_CallOneArg",
+        "type_call",
+        "AttributeError_init"
+      ],
+      "cpu_microseconds": 2387
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "pythread_wrapper",
+        "thread_run",
+        "method_vectorcall",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "_PyFunction_Vectorcall",
+        "_PyEval_EvalFrameDefault",
+        "cfunction_call",
+        "psutil_pids",
+        "_psutil_pids",
+        "psutil_sysctl_malloc",
+        "szone_malloc_should_clear",
+        "medium_malloc_should_clear",
+        "__bzero"
+      ],
+      "cpu_microseconds": 540
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+        "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter::<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>",
+        "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<f64>>::from_iter::<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}>>",
+        "<alloc::vec::Vec<f64> as alloc::vec::spec_from_iter::SpecFromIter<f64, core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<f64, <alloc::vec::Vec<f64>>::extend_trusted<core::iter::adapters::map::Map<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>, <arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float64Type> as core::iter::traits::collect::FromIterator<core::option::Option<f64>>>::from_iter<core::iter::adapters::map::Map<core::ops::range::Range<usize>, vail_execution::numeric_lists::mean_lists::{closure#8}>>::{closure#0}>>::{closure#0}>::{closure#0}>"
+      ],
+      "cpu_microseconds": 14044582
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args"
+      ],
+      "cpu_microseconds": 16341172
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+        "core::ptr::drop_in_place::<datafusion_expr::udf::ScalarFunctionArgs>",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::list_array::GenericListArray<i32>>",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float32Type>>",
+        "<alloc::sync::Arc<arrow_buffer::bytes::Bytes>>::drop_slow",
+        "_szone_free",
+        "free_large",
+        "madvise"
+      ],
+      "cpu_microseconds": 1585341
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "_pthread_cond_wait",
+        "__psynch_cvwait"
+      ],
+      "cpu_microseconds": 461260
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}::{closure#0}, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, vail_table::partitioned::limited_input::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::coop::CooperativeStream<datafusion_physical_plan::stream::RecordBatchStreamAdapter<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>>> as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>> as futures_util::stream::stream::StreamExt>::poll_next_unpin",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+        "vail_table::plan::tag",
+        "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_value",
+        "szone_malloc_should_clear",
+        "medium_malloc_should_clear",
+        "__bzero"
+      ],
+      "cpu_microseconds": 129
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<datafusion_expr::expr_fn::SimpleScalarUDF as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+        "vail_execution::logical_expr::logical_kernel::{closure#1}",
+        "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#1}",
+        "arrow_arith::arity::try_binary_no_nulls::<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, &arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>, vail_execution::expressions::columnar_numeric::{closure#0}, arrow_array::types::Int32Type>"
+      ],
+      "cpu_microseconds": 33522
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}::{closure#0}, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, vail_table::partitioned::limited_input::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::coop::CooperativeStream<datafusion_physical_plan::stream::RecordBatchStreamAdapter<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>>> as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>> as futures_util::stream::stream::StreamExt>::poll_next_unpin",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+        "<arrow_buffer::buffer::immutable::Buffer as core::iter::traits::collect::FromIterator<i32>>::from_iter::<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <vail_table::plan::RangePartitionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}::{closure#0}>>"
+      ],
+      "cpu_microseconds": 3549
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}::{closure#0}, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+        "core::ptr::drop_in_place::<arrow_array::record_batch::RecordBatch>",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>",
+        "core::ptr::drop_in_place::<arrow_schema::datatype::DataType>"
+      ],
+      "cpu_microseconds": 15940
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}::{closure#0}, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+        "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>::from_value"
+      ],
+      "cpu_microseconds": 32552
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "core::ptr::drop_in_place::<arrow_array::record_batch::RecordBatch>",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>",
+        "<alloc::sync::Arc<arrow_buffer::bytes::Bytes>>::drop_slow",
+        "free_medium",
+        "mvm_madvise_free_plat",
+        "mvm_madvise_plat",
+        "madvise"
+      ],
+      "cpu_microseconds": 7246
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "core::ptr::drop_in_place::<arrow_array::record_batch::RecordBatch>",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Float32Type>>",
+        "<alloc::sync::Arc<arrow_buffer::bytes::Bytes>>::drop_slow",
+        "free_medium",
+        "mvm_madvise_free_plat",
+        "mvm_madvise_plat",
+        "madvise"
+      ],
+      "cpu_microseconds": 3108
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+        "core::ptr::drop_in_place::<datafusion_expr::udf::ScalarFunctionArgs>",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::list_array::GenericListArray<i32>>",
+        "<alloc::sync::Arc<arrow_schema::field::Field>>::drop_slow",
+        "free_tiny",
+        "_platform_memset"
+      ],
+      "cpu_microseconds": 1859
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr_common::metrics::baseline::BaselineMetrics>::record_poll",
+        "datafusion_common::utils::memory::get_record_batch_memory_size",
+        "datafusion_common::utils::memory::count_array_data_memory_size",
+        "<hashbrown::map::HashMap<core::num::nonzero::NonZero<usize>, ()>>::insert",
+        "<hashbrown::raw::RawTable<(core::num::nonzero::NonZero<usize>, ())>>::reserve_rehash::<hashbrown::map::make_hasher<core::num::nonzero::NonZero<usize>, (), hashbrown::hasher::DefaultHashBuilder>::{closure#0}>",
+        "<hashbrown::raw::RawTableInner>::fallible_with_capacity::<allocator_api2::stable::alloc::global::Global>",
+        "szone_malloc_should_clear",
+        "tiny_malloc_should_clear"
+      ],
+      "cpu_microseconds": 3290
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<datafusion_expr::expr_fn::SimpleScalarUDF as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+        "vail_execution::logical_expr::logical_kernel::{closure#1}",
+        "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_expr_common::columnar_value::ColumnarValue>::into_array",
+        "<datafusion_common::scalar::ScalarValue>::to_array_of_size",
+        "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::from_value"
+      ],
+      "cpu_microseconds": 11654
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Date32Type>>",
+        "<alloc::sync::Arc<arrow_buffer::bytes::Bytes>>::drop_slow",
+        "free_medium",
+        "mvm_madvise_free_plat",
+        "mvm_madvise_plat",
+        "madvise"
+      ],
+      "cpu_microseconds": 2203
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter"
+      ],
+      "cpu_microseconds": 3327
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<datafusion_expr::expr_fn::SimpleScalarUDF as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+        "vail_execution::logical_expr::logical_kernel::{closure#1}",
+        "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<vail_execution::expressions::HailPhysicalExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#1}",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Date32Type>>",
+        "<alloc::sync::Arc<arrow_buffer::bytes::Bytes>>::drop_slow",
+        "free_medium",
+        "mvm_madvise_free_plat",
+        "mvm_madvise_plat",
+        "madvise"
+      ],
+      "cpu_microseconds": 7529
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, datafusion_expr_common::columnar_value::ColumnarValue, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<datafusion_expr_common::columnar_value::ColumnarValue, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>>::{closure#0}, alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue>>",
+        "<alloc::vec::Vec<datafusion_expr_common::columnar_value::ColumnarValue> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_expr_common::columnar_value::ColumnarValue, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+        "<datafusion_expr::udf::ScalarUDF>::invoke_with_args",
+        "<vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args",
+        "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args::{closure#1}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args::{closure#1}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::numeric_lists::NumericList as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args::{closure#1}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::matrix_arrays::MatrixArray as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args::{closure#1}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr_common::columnar_value::ColumnarValue>, <vail_execution::matrix_arrays::MatrixArray as datafusion_expr::udf::ScalarUDFImpl>::invoke_with_args::{closure#1}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "<datafusion_expr_common::columnar_value::ColumnarValue>::into_array",
+        "<datafusion_common::scalar::ScalarValue>::to_array_of_size",
+        "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::from_value"
+      ],
+      "cpu_microseconds": 3575
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<alloc::sync::Arc<dyn datafusion_physical_expr::window::window_expr::WindowExpr>>::drop_slow",
+        "core::ptr::drop_in_place::<vail_table::partitioned::PartitionViewExec>",
+        "<alloc::sync::Arc<dyn datafusion_physical_expr::window::window_expr::WindowExpr>>::drop_slow",
+        "core::ptr::drop_in_place::<datafusion_physical_plan::projection::ProjectionExec>",
+        "<alloc::sync::Arc<dyn datafusion_physical_expr::window::window_expr::WindowExpr>>::drop_slow",
+        "core::ptr::drop_in_place::<vail_table::provider::PartitionSetExec>",
+        "<alloc::sync::Arc<dyn datafusion_physical_expr::window::window_expr::WindowExpr>>::drop_slow",
+        "<alloc::sync::Arc<datafusion_physical_plan::execution_plan::PlanProperties>>::drop_slow",
+        "core::ptr::drop_in_place::<datafusion_physical_expr::equivalence::properties::EquivalenceProperties>",
+        "core::ptr::drop_in_place::<datafusion_physical_expr::equivalence::properties::OrderingEquivalenceCache>",
+        "<alloc::vec::Vec<datafusion_physical_expr_common::sort_expr::LexOrdering> as core::ops::drop::Drop>::drop",
+        "core::ptr::drop_in_place::<alloc::vec::Vec<indexmap::Bucket<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, ()>>>"
+      ],
+      "cpu_microseconds": 3095
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<futures_util::stream::try_stream::and_then::AndThen<core::pin::Pin<alloc::boxed::Box<dyn datafusion_execution::stream::RecordBatchStream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}::{closure#0}, <vail_table::provider::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+        "core::ptr::drop_in_place::<arrow_array::record_batch::RecordBatch>",
+        "<alloc::sync::Arc<dyn arrow_array::array::Array>>::drop_slow",
+        "core::ptr::drop_in_place::<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::UInt64Type>>",
+        "<alloc::sync::Arc<arrow_buffer::bytes::Bytes>>::drop_slow",
+        "free_medium",
+        "mvm_madvise_free_plat",
+        "mvm_madvise_plat",
+        "madvise"
+      ],
+      "cpu_microseconds": 4762
+    },
+    {
+      "frames": [
+        "_pthread_start",
+        "<std::sys::thread::unix::Thread>::new::thread_start",
+        "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "<tokio::runtime::blocking::pool::Inner>::run",
+        "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "tokio::runtime::scheduler::multi_thread::worker::run",
+        "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "<alloc::sync::Arc<dyn datafusion_physical_expr::window::window_expr::WindowExpr>>::drop_slow",
+        "core::ptr::drop_in_place::<vail_table::partitioned::PartitionViewExec>",
+        "<alloc::sync::Arc<dyn datafusion_physical_expr::window::window_expr::WindowExpr>>::drop_slow",
+        "core::ptr::drop_in_place::<datafusion_physical_plan::projection::ProjectionExec>",
+        "<alloc::sync::Arc<dyn datafusion_physical_expr::window::window_expr::WindowExpr>>::drop_slow",
+        "core::ptr::drop_in_place::<vail_table::provider::PartitionSetExec>",
+        "<alloc::sync::Arc<dyn datafusion_physical_expr::window::window_expr::WindowExpr>>::drop_slow",
+        "<alloc::sync::Arc<datafusion_physical_plan::execution_plan::PlanProperties>>::drop_slow",
+        "<alloc::sync::Arc<arrow_schema::schema::Schema>>::drop_slow",
+        "<alloc::sync::Arc<[alloc::sync::Arc<arrow_schema::field::Field>]>>::drop_slow",
+        "free_tiny",
+        "tiny_free_no_lock",
+        "tiny_free_list_remove_ptr"
+      ],
+      "cpu_microseconds": 3135
+    }
+  ]
+}

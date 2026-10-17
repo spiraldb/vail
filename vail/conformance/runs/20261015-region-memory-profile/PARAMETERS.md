@@ -1,0 +1,28 @@
+# Large closed array constants
+
+The initial profile found large folded Arrow list constants dominating optimizer formatting and hashing. The fix keeps selected large closed immutable expressions opaque during optimization, evaluates them on first selected nonempty execution batch, and shares their Arrow buffers within that lowered plan. A fresh lowering owns fresh state. This is a targeted policy for large literal/cast repeat counts, integer ranges, and existing nested Arrow literals, not a general constant cost model.
+
+A raw singleton Arrow scan supplies the runtime dependency. A projected partition tag is insufficient: projection substitution can turn it into a literal and re-enable constant folding. The singleton is the buffered left side of a normal DataFusion cross join, with the actual relation streaming on its right; the original output columns are projected afterward. Pure functions retain Immutable volatility. No scalar-subquery execution context is introduced. Closed expressions exclude row/global column references and non-immutable functions. Deterministic expression errors may be cached; resource/I/O/unknown failures are not.
+
+Earlier prototype measurements are diagnostic only until validated on the final binding. The scalar-subquery seed prototype completed the controlled 8,388,608-row length consumer in 0.165 seconds versus 38.378 seconds before, with correct numeric totals. The exact original map/filter completed in 1.109 seconds; the baseline attempt was killed at 41.5 seconds by its 6 GiB guard, so there is no completed baseline time for that case. The same prototype failed the inner-join case because a scalar subquery was evaluated before execution. That implementation is not suitable for integration. A subsequent input-column prototype passed inner/left joins but review found its dependency could be constant-folded through projected columns; it too is superseded.
+
+Dense output replication remains a separate issue: head/tail exceeded the 6 GiB guard after planning was fixed. This change does not claim to bound all dense array outputs or eliminate their required materialization. Native and Python validation, exact join cases, small-query latency, and bounded profiles must be repeated against the final raw-scan binding before approval or integration.
+
+The rewrite is restricted to unary logical expression nodes. Multi-input expressions, including side-specific equijoin keys, are left unchanged; their bindings require a separate role-aware policy. Already projected arrays remain usable in joins.
+
+## Existing typing limitation found during validation
+
+An additional probe attached arbitrary metadata `{"vail.test.type": "nested-int"}` to the Int32 element Field of an Arrow List RuntimeLiteral. The assertion on `table.schema()` failed before `collect` or parameterization: `ScalarIR::RuntimeLiteral` uses `Type::from_arrow`, and reconstructing the Vail array type omits arbitrary child Field metadata. This is an existing frontend/native type round-trip limitation, not a raw-seed failure. The unsupported metadata precondition was removed from the parameter regression; null/value/empty checks remain. The parameter UDF explicitly forwards its captured physical return Field. The separate typing owner was informed. Native log `column-parameter-all-native-tests-2.log` records 13 passing parameter cases and this one pre-planning schema failure.
+
+## Final raw-scan revision validation
+
+Native SHA256: `1fd6d6eb42300966efa1e06ab1ae0d64b6f360536428000e50ca3d7ca08a36c6`. Matching extracted package: `/private/tmp/vail-raw-seed-parameter-package-20261015`.
+
+- All 24 release native tests passed: 14 parameters, 7 logical-plan behavior, 1 globals, 2 reader batching. Semantic partition-map regression checks exact partition membership and row order, including empty partitions.
+- All 137 focused Python aggregation, scan, MatrixTable, and partition-map tests passed (184.14 seconds under concurrent compiler load).
+- Controlled 8,388,608-row length consumer completed with correct sum 838,860,800,000,000: action 0.6731 seconds, measured worker/descendant CPU 0.8721 seconds, peak sampled RSS 1.305 GiB. Telemetry scope includes construction and guard/measurement overhead. The profile has 4 optimizer samples across 1,021 total sampled stacks; repeated list hashing/formatting is no longer the hotspot.
+- Exact upstream map/filter completed with count 15 in 2.7206 action seconds.
+- Exact inner join, left join, and head/tail hit the 6 GiB physical-footprint guard. Their profiles show dense Arrow take/memmove: 1,326/1,873, 802/1,237, and 556/992 sampled stacks respectively have memmove as leaf. These are failed bounded runs, not completed benchmark timings. Native smaller join regressions pass; the previous scalar-subquery execution failure is gone. Dense materialization is unresolved.
+- Sequential ABBA latency probe, 160 samples per engine per row count: baseline→current median milliseconds were 2.801→3.105 (0 rows), 2.965→2.889 (1), 2.881→2.897 (32), 2.942→2.935 (1,024). All passed the 1 ms added-median guard. Shared compiler load inflated/noised absolute values and tails; these are diagnostics, not calibrated benchmark comparisons or a tail-latency improvement claim.
+
+No Hail benchmark was rerun. Final profiles, symbol sidecars, 10 Hz counters, guards, summaries, latency phases and test logs are stored alongside this note. `summarize_profiles.py` resolves sampled library-relative addresses through samply symbol sidecars; inclusive categories overlap. Native SHA hashing visible near worker startup identifies the tested extension and is harness work, not data-file integrity checking.

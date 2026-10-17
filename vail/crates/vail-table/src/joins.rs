@@ -376,16 +376,8 @@ fn combined_globals(left: &GlobalsRef, right: &GlobalsRef) -> Result<GlobalsRef>
     left.map_bound(fields, bindings)
 }
 fn match_key(input: &PhysicalPlan, name: &str) -> Result<Arc<dyn PhysicalExpr>> {
-    let value = column(input, input.schema().index_of(name)?);
-    let missing = ScalarValue::try_from(value.data_type(input.schema().as_ref())?)?;
-    Ok(Arc::new(CaseExpr::try_new(
-        None,
-        vec![(
-            Arc::new(IsNullExpr::new(value.clone())),
-            Arc::new(Literal::new(missing)),
-        )],
-        Some(value),
-    )?))
+    // DataFusion's join null-equality policy handles missing keys directly.
+    Ok(column(input, input.schema().index_of(name)?))
 }
 fn prefer_left(
     left: Arc<dyn PhysicalExpr>,
@@ -492,6 +484,17 @@ pub(crate) fn lower(
     kind: TableJoinKind,
     join_key: usize,
 ) -> Result<TablePlan> {
+
+    fn unique_range_key(table: &TableRef) -> bool {
+        match table.node() {
+            TableNode::Range { .. } => table.keys() == ["idx"],
+            TableNode::Prepared { .. } => table.partition_metadata.as_ref()
+                .is_some_and(unique_range_key),
+            _ => false,
+        }
+    }
+    let unique_inner = kind == TableJoinKind::Inner && join_key == 1
+        && unique_range_key(left) && unique_range_key(right);
     let left_plan = plan::ordinal(crate::partitioned::prepared_ordered(left)?.rows);
     let right_plan = plan::ordinal(crate::partitioned::prepared_ordered(right)?.rows);
     let left_width = left_plan.schema().fields().len();
@@ -625,11 +628,17 @@ pub(crate) fn lower(
             options,
         ));
     }
-    let sorted: PhysicalPlan = Arc::new(datafusion_physical_plan::sorts::sort::SortExec::new(
+    // SortMergeJoin already emits keys in order. With unique input keys there
+    // are no ties to reorder by side ordinals, so retain its streaming output.
+    let sorted: PhysicalPlan = if unique_inner {
+        projected
+    } else {
+        Arc::new(datafusion_physical_plan::sorts::sort::SortExec::new(
         datafusion_physical_expr::LexOrdering::new(ordering)
             .expect("join ordinal ordering is nonempty"),
         projected,
-    ));
+        ))
+    };
     let mut fields = output
         .schema()
         .fields()

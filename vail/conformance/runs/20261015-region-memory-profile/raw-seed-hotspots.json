@@ -1,0 +1,2809 @@
+{
+  "raw-seed-consumer-profile.json.gz": [
+    {
+      "thread": "python",
+      "samples": 379,
+      "inclusive_categories": {
+        "optimizer": 4
+      },
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          74
+        ],
+        [
+          "sha256_block_armv8",
+          69
+        ],
+        [
+          "__sysctl",
+          40
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          16
+        ],
+        [
+          "dyld3::MachOFile::trieWalk(Diagnostics&, unsigned char const*, unsigned char const*, char const*)",
+          13
+        ],
+        [
+          "__open",
+          10
+        ],
+        [
+          "stat",
+          7
+        ],
+        [
+          "type_new",
+          6
+        ],
+        [
+          "visit_decref",
+          6
+        ],
+        [
+          "__fork",
+          6
+        ],
+        [
+          "mach_msg2_trap",
+          6
+        ],
+        [
+          "deduce_unreachable",
+          4
+        ]
+      ]
+    },
+    {
+      "thread": "Thread <2206311>",
+      "samples": 285,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__sysctl",
+          173
+        ],
+        [
+          "__psynch_cvwait",
+          86
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          4
+        ],
+        [
+          "__bzero",
+          3
+        ],
+        [
+          "BaseException_clear",
+          2
+        ],
+        [
+          "__psynch_mutexwait",
+          2
+        ],
+        [
+          "write",
+          2
+        ],
+        [
+          "merge_at",
+          1
+        ],
+        [
+          "list_dealloc",
+          1
+        ],
+        [
+          "cerror_nocancel",
+          1
+        ],
+        [
+          "PyLong_FromLong",
+          1
+        ],
+        [
+          "do_mkvalue.llvm.5142170934370309091",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "kevent",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 4,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          4
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 9,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          7
+        ],
+        [
+          "swtch_pri",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 10,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          6
+        ],
+        [
+          "swtch_pri",
+          4
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 13,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          10
+        ],
+        [
+          "swtch_pri",
+          2
+        ],
+        [
+          "tiny_malloc_from_free_list",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 4,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          4
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 8,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          6
+        ],
+        [
+          "swtch_pri",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 25,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          6
+        ],
+        [
+          "swtch_pri",
+          2
+        ],
+        [
+          "__bzero",
+          2
+        ],
+        [
+          "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::from_value",
+          2
+        ],
+        [
+          "tiny_free_no_lock",
+          2
+        ],
+        [
+          "<arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>>::try_unary::<arrow_cast::cast::try_numeric_cast<arrow_array::types::Int32Type, arrow_array::types::Int64Type>::{closure#0}, arrow_array::types::Int64Type, arrow_schema::error::ArrowError>",
+          2
+        ],
+        [
+          "madvise",
+          2
+        ],
+        [
+          "<datafusion_physical_expr::expressions::column::Column as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::evaluate",
+          1
+        ],
+        [
+          "datafusion_common::utils::memory::count_array_data_memory_size",
+          1
+        ],
+        [
+          "_malloc_zone_malloc",
+          1
+        ],
+        [
+          "free_medium",
+          1
+        ],
+        [
+          "free_tiny",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 6,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          4
+        ],
+        [
+          "swtch_pri",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 11,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          7
+        ],
+        [
+          "swtch_pri",
+          4
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 6,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          4
+        ],
+        [
+          "swtch_pri",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 164,
+      "inclusive_categories": {
+        "array_repeat": 154,
+        "arrow_take": 88
+      },
+      "top_leaves": [
+        [
+          "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter",
+          88
+        ],
+        [
+          "datafusion_functions_nested::repeat::array_repeat_inner",
+          63
+        ],
+        [
+          "__psynch_cvwait",
+          9
+        ],
+        [
+          "_kernelrpc_mach_vm_deallocate_trap",
+          3
+        ],
+        [
+          "__psynch_cvsignal",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "Thread <2206394>",
+      "samples": 3,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__workq_kernreturn",
+          2
+        ],
+        [
+          "mach_msg2_trap",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "Thread <2206395>",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__workq_kernreturn",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 40,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__semwait_signal",
+          18
+        ],
+        [
+          "__open",
+          2
+        ],
+        [
+          "_PyFrame_ClearExceptCode",
+          2
+        ],
+        [
+          "pthread_mutex_unlock",
+          1
+        ],
+        [
+          "getpath_abspath",
+          1
+        ],
+        [
+          "tzload",
+          1
+        ],
+        [
+          "mach_msg2_trap",
+          1
+        ],
+        [
+          "_PyUnicode_XStrip",
+          1
+        ],
+        [
+          "free_tiny",
+          1
+        ],
+        [
+          "expression_rule",
+          1
+        ],
+        [
+          "_PyTuple_FromArraySteal",
+          1
+        ],
+        [
+          "fun_86147c",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 10,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__semwait_signal",
+          2
+        ],
+        [
+          "set_update_internal.llvm.971890845530149457",
+          1
+        ],
+        [
+          "_PyDict_GetItem_KnownHash",
+          1
+        ],
+        [
+          "__open_nocancel",
+          1
+        ],
+        [
+          "dict_subscript",
+          1
+        ],
+        [
+          "_PyCfg_OptimizeCodeUnit",
+          1
+        ],
+        [
+          "__fcntl_nocancel",
+          1
+        ],
+        [
+          "strrchr",
+          1
+        ],
+        [
+          "_PyObject_Malloc",
+          1
+        ]
+      ]
+    }
+  ],
+  "raw-seed-head-tail-profile.json.gz": [
+    {
+      "thread": "python",
+      "samples": 184,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "sha256_block_armv8",
+          82
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          12
+        ],
+        [
+          "_PyCode_Quicken",
+          5
+        ],
+        [
+          "type_new",
+          5
+        ],
+        [
+          "read",
+          5
+        ],
+        [
+          "_PyObject_Malloc",
+          4
+        ],
+        [
+          "__open",
+          4
+        ],
+        [
+          "__mmap",
+          3
+        ],
+        [
+          "invocation function for block in dyld4::Loader::applyFixupsGeneric(Diagnostics&, dyld4::RuntimeState&, unsigned long long, dyld3::Array<void const*> const&, dyld3::Array<void const*> const&, bool, dyld3::Array<dyld4::Loader::MissingFlatLazySymbol> const&) const",
+          3
+        ],
+        [
+          "PyDict_SetDefault",
+          3
+        ],
+        [
+          "r_object.llvm.9845490566179339274",
+          3
+        ],
+        [
+          "_PyObject_Free",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 3,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ],
+        [
+          "__psynch_mutexwait",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "kevent",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 3,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ],
+        [
+          "__psynch_mutexwait",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 3,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ],
+        [
+          "__psynch_mutexwait",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 3,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ],
+        [
+          "__psynch_mutexwait",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 4,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          4
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 685,
+      "inclusive_categories": {
+        "array_repeat": 126,
+        "arrow_take": 625
+      },
+      "top_leaves": [
+        [
+          "_platform_memmove",
+          556
+        ],
+        [
+          "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter",
+          68
+        ],
+        [
+          "datafusion_functions_nested::repeat::array_repeat_inner",
+          56
+        ],
+        [
+          "__psynch_cvwait",
+          2
+        ],
+        [
+          "_kernelrpc_mach_vm_deallocate_trap",
+          2
+        ],
+        [
+          "_kernelrpc_mach_vm_map_trap",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 49,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__semwait_signal",
+          28
+        ],
+        [
+          "write",
+          3
+        ],
+        [
+          "__open",
+          2
+        ],
+        [
+          "remove_redundant_nops",
+          1
+        ],
+        [
+          "__open_nocancel",
+          1
+        ],
+        [
+          "dyld3::MachOLoaded::findClosestSymbol(unsigned long long, char const**, unsigned long long*) const",
+          1
+        ],
+        [
+          "getgid",
+          1
+        ],
+        [
+          "PyDict_GetItemWithError",
+          1
+        ],
+        [
+          "strrchr",
+          1
+        ],
+        [
+          "r_long",
+          1
+        ],
+        [
+          "close",
+          1
+        ],
+        [
+          "tupletraverse",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 6,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__semwait_signal",
+          2
+        ],
+        [
+          "method_dealloc",
+          1
+        ],
+        [
+          "_PyObject_Free",
+          1
+        ],
+        [
+          "gc_collect_main.llvm.6325940347975832991",
+          1
+        ],
+        [
+          "_PyObject_Malloc",
+          1
+        ]
+      ]
+    }
+  ],
+  "raw-seed-inner-join-profile.json.gz": [
+    {
+      "thread": "python",
+      "samples": 971,
+      "inclusive_categories": {
+        "array_repeat": 104,
+        "arrow_take": 736
+      },
+      "top_leaves": [
+        [
+          "_platform_memmove",
+          678
+        ],
+        [
+          "sha256_block_armv8",
+          71
+        ],
+        [
+          "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter",
+          60
+        ],
+        [
+          "datafusion_functions_nested::repeat::array_repeat_inner",
+          43
+        ],
+        [
+          "__open",
+          8
+        ],
+        [
+          "_kernelrpc_mach_vm_deallocate_trap",
+          8
+        ],
+        [
+          "read",
+          7
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          7
+        ],
+        [
+          "_PyObject_Free",
+          6
+        ],
+        [
+          "_PyObject_Malloc",
+          5
+        ],
+        [
+          "PyDict_GetItemWithError",
+          4
+        ],
+        [
+          "stat",
+          4
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 712,
+      "inclusive_categories": {
+        "array_repeat": 57,
+        "arrow_take": 680
+      },
+      "top_leaves": [
+        [
+          "_platform_memmove",
+          648
+        ],
+        [
+          "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter",
+          32
+        ],
+        [
+          "datafusion_functions_nested::repeat::array_repeat_inner",
+          24
+        ],
+        [
+          "__psynch_cvwait",
+          6
+        ],
+        [
+          "madvise",
+          1
+        ],
+        [
+          "__psynch_cvsignal",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "kevent",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 6,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          6
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 113,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__semwait_signal",
+          87
+        ],
+        [
+          "write",
+          6
+        ],
+        [
+          "r_object.llvm.9845490566179339274",
+          3
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          2
+        ],
+        [
+          "gc_collect_main.llvm.6325940347975832991",
+          2
+        ],
+        [
+          "type_ready.llvm.17950591547825741969",
+          1
+        ],
+        [
+          "access",
+          1
+        ],
+        [
+          "_szone_free",
+          1
+        ],
+        [
+          "stat",
+          1
+        ],
+        [
+          "_PyPegen_expect_token",
+          1
+        ],
+        [
+          "long_mul",
+          1
+        ],
+        [
+          "clone_combined_dict_keys.llvm.17796552667400033891",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 11,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "_PyObject_Malloc",
+          2
+        ],
+        [
+          "__semwait_signal",
+          2
+        ],
+        [
+          "type_ready.llvm.17950591547825741969",
+          1
+        ],
+        [
+          "deduce_unreachable",
+          1
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          1
+        ],
+        [
+          "_PyObject_GC_New",
+          1
+        ],
+        [
+          "stat",
+          1
+        ],
+        [
+          "_PyPegen_fill_token",
+          1
+        ],
+        [
+          "type_new",
+          1
+        ]
+      ]
+    }
+  ],
+  "raw-seed-left-join-profile.json.gz": [
+    {
+      "thread": "python",
+      "samples": 717,
+      "inclusive_categories": {
+        "array_repeat": 75,
+        "arrow_take": 511
+      },
+      "top_leaves": [
+        [
+          "_platform_memmove",
+          471
+        ],
+        [
+          "sha256_block_armv8",
+          73
+        ],
+        [
+          "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter",
+          43
+        ],
+        [
+          "datafusion_functions_nested::repeat::array_repeat_inner",
+          30
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          9
+        ],
+        [
+          "__open",
+          8
+        ],
+        [
+          "read",
+          7
+        ],
+        [
+          "type_new",
+          5
+        ],
+        [
+          "_PyObject_Malloc",
+          4
+        ],
+        [
+          "madvise",
+          4
+        ],
+        [
+          "intern_string_constants.llvm.15261601513331597411",
+          3
+        ],
+        [
+          "_kernelrpc_mach_vm_deallocate_trap",
+          3
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "kevent",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 387,
+      "inclusive_categories": {
+        "array_repeat": 50,
+        "arrow_take": 356
+      },
+      "top_leaves": [
+        [
+          "_platform_memmove",
+          331
+        ],
+        [
+          "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter",
+          25
+        ],
+        [
+          "datafusion_functions_nested::repeat::array_repeat_inner",
+          24
+        ],
+        [
+          "__psynch_cvwait",
+          6
+        ],
+        [
+          "madvise",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 6,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          6
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 58,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__semwait_signal",
+          38
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          4
+        ],
+        [
+          "primary_rule",
+          1
+        ],
+        [
+          "tok_get_normal_mode",
+          1
+        ],
+        [
+          "PyDict_SetItem",
+          1
+        ],
+        [
+          "ossl_fnv1a_hash",
+          1
+        ],
+        [
+          "analyze_descriptor",
+          1
+        ],
+        [
+          "PyDict_SetDefault",
+          1
+        ],
+        [
+          "PyMember_GetOne",
+          1
+        ],
+        [
+          "__open",
+          1
+        ],
+        [
+          "deduce_unreachable",
+          1
+        ],
+        [
+          "type_new",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 9,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__semwait_signal",
+          2
+        ],
+        [
+          "func_descr_get",
+          1
+        ],
+        [
+          "type_new",
+          1
+        ],
+        [
+          "lstat",
+          1
+        ],
+        [
+          "__open",
+          1
+        ],
+        [
+          "PyUnicode_Substring",
+          1
+        ],
+        [
+          "stat",
+          1
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          1
+        ]
+      ]
+    }
+  ],
+  "raw-seed-map-filter-profile.json.gz": [
+    {
+      "thread": "python",
+      "samples": 251,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "sha256_block_armv8",
+          133
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          12
+        ],
+        [
+          "read",
+          8
+        ],
+        [
+          "__open",
+          5
+        ],
+        [
+          "type_new",
+          5
+        ],
+        [
+          "_platform_memset",
+          4
+        ],
+        [
+          "__mmap",
+          4
+        ],
+        [
+          "__fork",
+          4
+        ],
+        [
+          "_PyCode_Quicken",
+          3
+        ],
+        [
+          "PyDict_SetDefault",
+          3
+        ],
+        [
+          "type_mro_modified",
+          3
+        ],
+        [
+          "__open_nocancel",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "kevent",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 2,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          2
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 5,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          5
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 4,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__psynch_cvwait",
+          4
+        ]
+      ]
+    },
+    {
+      "thread": "tokio-rt-worker",
+      "samples": 823,
+      "inclusive_categories": {
+        "array_repeat": 156,
+        "arrow_take": 732
+      },
+      "top_leaves": [
+        [
+          "_platform_memmove",
+          654
+        ],
+        [
+          "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter",
+          78
+        ],
+        [
+          "datafusion_functions_nested::repeat::array_repeat_inner",
+          75
+        ],
+        [
+          "_kernelrpc_mach_vm_deallocate_trap",
+          7
+        ],
+        [
+          "__psynch_cvwait",
+          4
+        ],
+        [
+          "madvise",
+          3
+        ],
+        [
+          "<tokio::runtime::task::list::OwnedTasks<alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::bind_inner",
+          1
+        ],
+        [
+          "datafusion_physical_plan::joins::cross_join::build_batch",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 78,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "__semwait_signal",
+          55
+        ],
+        [
+          "_PyEval_EvalFrameDefault",
+          4
+        ],
+        [
+          "visit_reachable",
+          3
+        ],
+        [
+          "stat",
+          2
+        ],
+        [
+          "gc_collect_main.llvm.6325940347975832991",
+          2
+        ],
+        [
+          "update_subclasses",
+          2
+        ],
+        [
+          "write",
+          2
+        ],
+        [
+          "__getdirentries64",
+          1
+        ],
+        [
+          "_PyCode_Quicken",
+          1
+        ],
+        [
+          "_Py_hashtable_get_entry_generic",
+          1
+        ],
+        [
+          "__open",
+          1
+        ],
+        [
+          "type_new",
+          1
+        ]
+      ]
+    },
+    {
+      "thread": "python",
+      "samples": 10,
+      "inclusive_categories": {},
+      "top_leaves": [
+        [
+          "mach_msg2_trap",
+          2
+        ],
+        [
+          "__semwait_signal",
+          2
+        ],
+        [
+          "_PyObject_LookupSpecial",
+          1
+        ],
+        [
+          "__ioctl",
+          1
+        ],
+        [
+          "PyDict_SetItem",
+          1
+        ],
+        [
+          "PyObject_GenericSetAttr",
+          1
+        ],
+        [
+          "__open",
+          1
+        ],
+        [
+          "type_ready.llvm.17950591547825741969",
+          1
+        ]
+      ]
+    }
+  ]
+}

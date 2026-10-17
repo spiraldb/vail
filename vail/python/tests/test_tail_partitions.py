@@ -4,6 +4,17 @@ import vail as hl
 
 
 class TailPartitionTests(unittest.TestCase):
+    def test_head_with_unknown_counts_stops_before_later_partitions(self):
+        table = hl.range_table(6, 3)
+        table = table.filter(table.idx >= 2)
+        table = table.annotate(value=hl.case().when(
+            table.idx < 4, table.idx,
+        ).or_error("HEAD evaluated an unrelated later partition"))
+        result = table.head(1)
+        self.assertEqual(result.value.collect(), [2])
+        self.assertEqual(result.n_partitions(), 1)
+        self.assertEqual(result._force_count(), 1)
+
     def test_head_tail_preserve_sequence_and_empty_results(self):
         table = hl.utils.range_table(10, n_partitions=3)
         self.assertEqual(table.head(7).idx.collect(), list(range(7)))

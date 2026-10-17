@@ -1,0 +1,4922 @@
+[
+  {
+    "thread": "python",
+    "samples": 18286,
+    "duration_ms": 41678.599666,
+    "mean_stack_depth": 46.55867877064421,
+    "sample_has": {
+      "logical_optimizer": 15555,
+      "take": 25,
+      "execution_plan": 2655,
+      "physical_optimizer": 2263
+    },
+    "leaf_categories": {
+      "free": 4,
+      "malloc": 1,
+      "rust_alloc": 2588
+    },
+    "top_inclusive_symbols": [
+      {
+        "name": "start",
+        "samples": 18286,
+        "percent": 100.0
+      },
+      {
+        "name": "pymain_main",
+        "samples": 18286,
+        "percent": 100.0
+      },
+      {
+        "name": "Py_BytesMain",
+        "samples": 18286,
+        "percent": 100.0
+      },
+      {
+        "name": "_PyEval_EvalFrameDefault",
+        "samples": 18285,
+        "percent": 99.99
+      },
+      {
+        "name": "PyEval_EvalCode",
+        "samples": 18284,
+        "percent": 99.99
+      },
+      {
+        "name": "run_mod.llvm.8217961648363706888",
+        "samples": 18283,
+        "percent": 99.98
+      },
+      {
+        "name": "Py_RunMain",
+        "samples": 18282,
+        "percent": 99.98
+      },
+      {
+        "name": "pyrun_file",
+        "samples": 18282,
+        "percent": 99.98
+      },
+      {
+        "name": "pymain_run_file_obj",
+        "samples": 18282,
+        "percent": 99.98
+      },
+      {
+        "name": "_PyRun_SimpleFileObject",
+        "samples": 18282,
+        "percent": 99.98
+      },
+      {
+        "name": "pymain_run_file",
+        "samples": 18282,
+        "percent": 99.98
+      },
+      {
+        "name": "_PyRun_AnyFileObject",
+        "samples": 18282,
+        "percent": 99.98
+      },
+      {
+        "name": "method_vectorcall_NOARGS.llvm.8353035897684409210",
+        "samples": 18216,
+        "percent": 99.62
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<<tokio::runtime::scheduler::multi_thread::MultiThread>::block_on<<vail_table::TableIR>::force_count::{closure#0}>::{closure#0}, core::result::Result<usize, vail_table::TableError>>",
+        "samples": 18214,
+        "percent": 99.61
+      },
+      {
+        "name": "pyo3::impl_::trampoline::noargs::<<pyo3::impl_::pyclass::PyClassImplCollector<_native::NativeTable> as pyo3::impl_::pyclass::PyMethods<_native::NativeTable>>::py_methods::ITEMS::Def>",
+        "samples": 18214,
+        "percent": 99.61
+      },
+      {
+        "name": "<tokio::runtime::park::CachedParkThread>::block_on::<<vail_table::TableIR>::force_count::{closure#0}>",
+        "samples": 18214,
+        "percent": 99.61
+      },
+      {
+        "name": "<_native::NativeTable>::__pymethod_force_count__",
+        "samples": 18214,
+        "percent": 99.61
+      },
+      {
+        "name": "pyo3::impl_::trampoline::trampoline::<pyo3::impl_::trampoline::noargs::inner::{closure#0}, *mut pyo3_ffi::object::PyObject>",
+        "samples": 18214,
+        "percent": 99.61
+      },
+      {
+        "name": "<tokio::runtime::runtime::Runtime>::block_on::<<vail_table::TableIR>::force_count::{closure#0}>",
+        "samples": 18214,
+        "percent": 99.61
+      },
+      {
+        "name": "vail_table::partitioned::prepare::{closure#0}",
+        "samples": 18212,
+        "percent": 99.6
+      },
+      {
+        "name": "<datafusion::execution::session_state::SessionState>::optimize",
+        "samples": 15555,
+        "percent": 85.07
+      },
+      {
+        "name": "<datafusion_optimizer::optimizer::Optimizer>::optimize::<<datafusion::execution::session_state::SessionState>::optimize::{closure#3}>",
+        "samples": 15555,
+        "percent": 85.07
+      },
+      {
+        "name": "datafusion_optimizer::optimize_projections::optimize_projections",
+        "samples": 14857,
+        "percent": 81.25
+      },
+      {
+        "name": "datafusion_optimizer::optimize_projections::optimize_projections::{closure#0}",
+        "samples": 14857,
+        "percent": 81.25
+      },
+      {
+        "name": "<datafusion_optimizer::optimize_projections::OptimizeProjections as datafusion_optimizer::optimizer::OptimizerRule>::rewrite",
+        "samples": 14857,
+        "percent": 81.25
+      },
+      {
+        "name": "core::fmt::write",
+        "samples": 14572,
+        "percent": 79.69
+      },
+      {
+        "name": "datafusion_expr::logical_plan::plan::projection_schema",
+        "samples": 14210,
+        "percent": 77.71
+      },
+      {
+        "name": "<datafusion_expr::logical_plan::plan::Projection>::try_new",
+        "samples": 14210,
+        "percent": 77.71
+      },
+      {
+        "name": "<datafusion_common::scalar::ScalarValue as core::fmt::Display>::fmt",
+        "samples": 14025,
+        "percent": 76.7
+      },
+      {
+        "name": "<datafusion_common::scalar::ScalarValue as core::fmt::Debug>::fmt",
+        "samples": 14025,
+        "percent": 76.7
+      },
+      {
+        "name": "datafusion_common::scalar::fmt_list",
+        "samples": 14025,
+        "percent": 76.7
+      },
+      {
+        "name": "<datafusion_expr::expr::Expr as core::fmt::Display>::fmt",
+        "samples": 14025,
+        "percent": 76.7
+      },
+      {
+        "name": "<arrow_cast::display::ValueFormatter as core::fmt::Display>::fmt",
+        "samples": 14024,
+        "percent": 76.69
+      },
+      {
+        "name": "<&arrow_array::array::list_array::GenericListArray<i32> as arrow_cast::display::DisplayIndexState>::write",
+        "samples": 14024,
+        "percent": 76.69
+      },
+      {
+        "name": "<datafusion_expr::expr::Expr>::qualified_name",
+        "samples": 11348,
+        "percent": 62.06
+      },
+      {
+        "name": "<datafusion_expr::expr::SchemaDisplay as core::fmt::Display>::fmt",
+        "samples": 11348,
+        "percent": 62.06
+      },
+      {
+        "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, datafusion_expr::utils::exprlist_to_fields<&[datafusion_expr::expr::Expr]>::{closure#0}>, (core::option::Option<datafusion_common::table_reference::TableReference>, alloc::sync::Arc<arrow_schema::field::Field>), core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<(core::option::Option<datafusion_common::table_reference::TableReference>, alloc::sync::Arc<arrow_schema::field::Field>)>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<(core::option::Option<datafusion_common::table_reference::TableReference>, alloc::sync::Arc<arrow_schema::field::Field>), datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, datafusion_expr::utils::exprlist_to_fields<&[datafusion_expr::expr::Expr]>::{closure#0}>>::{closure#0}, alloc::vec::Vec<(core::option::Option<datafusion_common::table_reference::TableReference>, alloc::sync::Arc<arrow_schema::field::Field>)>>",
+        "samples": 10971,
+        "percent": 60.0
+      },
+      {
+        "name": "<datafusion_expr::expr::Expr as datafusion_expr::expr_schema::ExprSchemable>::to_field",
+        "samples": 10971,
+        "percent": 60.0
+      },
+      {
+        "name": "<alloc::vec::Vec<(core::option::Option<datafusion_common::table_reference::TableReference>, alloc::sync::Arc<arrow_schema::field::Field>)> as alloc::vec::spec_from_iter::SpecFromIter<(core::option::Option<datafusion_common::table_reference::TableReference>, alloc::sync::Arc<arrow_schema::field::Field>), core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, datafusion_expr::utils::exprlist_to_fields<&[datafusion_expr::expr::Expr]>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "samples": 10971,
+        "percent": 60.0
+      },
+      {
+        "name": "<alloc::string::String as core::fmt::Write>::write_str",
+        "samples": 6112,
+        "percent": 33.42
+      },
+      {
+        "name": "<datafusion_expr::expr_fn::SimpleScalarUDF as datafusion_expr::udf::ScalarUDFImpl>::schema_name",
+        "samples": 5694,
+        "percent": 31.14
+      },
+      {
+        "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, <datafusion_expr::expr::Expr as datafusion_expr::expr_schema::ExprSchemable>::to_field::{closure#4}>, alloc::sync::Arc<arrow_schema::field::Field>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<arrow_schema::field::Field>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<arrow_schema::field::Field>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, <datafusion_expr::expr::Expr as datafusion_expr::expr_schema::ExprSchemable>::to_field::{closure#4}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<arrow_schema::field::Field>>>",
+        "samples": 5587,
+        "percent": 30.55
+      },
+      {
+        "name": "<alloc::vec::Vec<alloc::sync::Arc<arrow_schema::field::Field>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<arrow_schema::field::Field>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, <datafusion_expr::expr::Expr as datafusion_expr::expr_schema::ExprSchemable>::to_field::{closure#4}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "samples": 5587,
+        "percent": 30.55
+      },
+      {
+        "name": "<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, <datafusion_expr::expr::Expr as datafusion_expr::expr_schema::ExprSchemable>::to_field::{closure#3}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, <datafusion_expr::expr::Expr as datafusion_expr::expr_schema::ExprSchemable>::to_field::{closure#3}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<arrow_schema::field::Field>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<arrow_schema::field::Field>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<arrow_schema::field::Field>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<arrow_schema::field::Field>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<arrow_schema::field::Field>>>>",
+        "samples": 5587,
+        "percent": 30.55
+      },
+      {
+        "name": "<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as arrow_cast::display::DisplayIndex>::write",
+        "samples": 5537,
+        "percent": 30.28
+      },
+      {
+        "name": "datafusion_expr::expr::schema_name_from_exprs_inner",
+        "samples": 5524,
+        "percent": 30.21
+      },
+      {
+        "name": "alloc::fmt::format::format_inner",
+        "samples": 3401,
+        "percent": 18.6
+      },
+      {
+        "name": "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+        "samples": 3294,
+        "percent": 18.01
+      },
+      {
+        "name": "datafusion_common::hash_utils::hash_list_array::<i32, datafusion_common::hash_utils::HashStateChildHashing<foldhash::fast::FixedState>>",
+        "samples": 3271,
+        "percent": 17.89
+      },
+      {
+        "name": "_platform_memmove",
+        "samples": 3248,
+        "percent": 17.76
+      },
+      {
+        "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, datafusion_expr::logical_plan::plan::calc_func_dependencies_for_project::{closure#0}>, alloc::vec::Vec<usize>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::vec::Vec<usize>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::vec::Vec<usize>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, datafusion_expr::logical_plan::plan::calc_func_dependencies_for_project::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::vec::Vec<usize>>>",
+        "samples": 3239,
+        "percent": 17.71
+      },
+      {
+        "name": "datafusion_expr::expr::fmt_function",
+        "samples": 3239,
+        "percent": 17.71
+      },
+      {
+        "name": "<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, datafusion_expr::logical_plan::plan::calc_func_dependencies_for_project::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, datafusion_expr::logical_plan::plan::calc_func_dependencies_for_project::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::vec::Vec<usize>, core::ops::control_flow::ControlFlow<alloc::vec::Vec<usize>>, core::ops::control_flow::ControlFlow<alloc::vec::Vec<usize>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::vec::Vec<usize>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::vec::Vec<usize>>>>",
+        "samples": 3239,
+        "percent": 17.71
+      },
+      {
+        "name": "<alloc::vec::Vec<alloc::vec::Vec<usize>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::vec::Vec<usize>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, datafusion_expr::logical_plan::plan::calc_func_dependencies_for_project::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "samples": 3239,
+        "percent": 17.71
+      },
+      {
+        "name": "<alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<alloc::string::String, core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_expr::expr::Expr>, <datafusion_expr::expr::Expr as core::fmt::Display>::fmt::{closure#6}>>>::from_iter",
+        "samples": 3079,
+        "percent": 16.84
+      },
+      {
+        "name": "<datafusion::physical_planner::DefaultPhysicalPlanner as datafusion_session::planner::PhysicalPlanner>::create_physical_plan::{closure#0}",
+        "samples": 2655,
+        "percent": 14.52
+      },
+      {
+        "name": "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_expr_common::dyn_eq::DynHash>::dyn_hash",
+        "samples": 2651,
+        "percent": 14.5
+      },
+      {
+        "name": "<datafusion_physical_plan::projection::ProjectionExec>::try_from_projector",
+        "samples": 2651,
+        "percent": 14.5
+      },
+      {
+        "name": "<datafusion_physical_expr::expressions::literal::Literal as datafusion_expr_common::dyn_eq::DynHash>::dyn_hash",
+        "samples": 2651,
+        "percent": 14.5
+      },
+      {
+        "name": "datafusion_common::scalar::hash_nested_array::<&mut dyn core::hash::Hasher>",
+        "samples": 2651,
+        "percent": 14.5
+      },
+      {
+        "name": "<std::hash::random::RandomState as core::hash::BuildHasher>::hash_one::<&alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>",
+        "samples": 2100,
+        "percent": 11.48
+      },
+      {
+        "name": "<datafusion_physical_expr::equivalence::properties::EquivalenceProperties>::project",
+        "samples": 1947,
+        "percent": 10.65
+      },
+      {
+        "name": "datafusion_physical_plan::execution_plan::replace_children_if_necessary",
+        "samples": 1552,
+        "percent": 8.49
+      },
+      {
+        "name": "<datafusion_physical_plan::projection::ProjectionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::replace_children",
+        "samples": 1551,
+        "percent": 8.48
+      },
+      {
+        "name": "datafusion_common::hash_utils::create_hashes::<[alloc::sync::Arc<dyn arrow_array::array::Array>; 1], alloc::sync::Arc<dyn arrow_array::array::Array>, foldhash::fast::FixedState>",
+        "samples": 1386,
+        "percent": 7.58
+      },
+      {
+        "name": "datafusion_common::tree_node::TreeNode::transform_down::transform_down_impl::<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_physical_plan::projection::remove_unnecessary_projections>",
+        "samples": 1385,
+        "percent": 7.57
+      },
+      {
+        "name": "<datafusion_physical_optimizer::projection_pushdown::ProjectionPushdown as datafusion_session::physical_optimizer::PhysicalOptimizerRule>::optimize_with_context",
+        "samples": 1385,
+        "percent": 7.57
+      },
+      {
+        "name": "<datafusion_physical_expr::equivalence::class::EquivalenceGroup>::project",
+        "samples": 1234,
+        "percent": 6.75
+      },
+      {
+        "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>, <core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>> as datafusion_common::tree_node::TreeNodeIterator>::map_until_stop_and_collect<datafusion_common::tree_node::TreeNode::transform_down::transform_down_impl<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_physical_plan::projection::remove_unnecessary_projections>::{closure#0}::{closure#0}::{closure#0}>::{closure#0}>, alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>, <core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>> as datafusion_common::tree_node::TreeNodeIterator>::map_until_stop_and_collect<datafusion_common::tree_node::TreeNode::transform_down::transform_down_impl<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_physical_plan::projection::remove_unnecessary_projections>::{closure#0}::{closure#0}::{closure#0}>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>",
+        "samples": 960,
+        "percent": 5.25
+      },
+      {
+        "name": "<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>> as core::iter::traits::iterator::Iterator>::try_fold::<(), core::iter::adapters::cloned::clone_try_fold<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>, core::iter::adapters::map::map_try_fold<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, core::result::Result<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_common::error::DataFusionError>, (), core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>, <core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>> as datafusion_common::tree_node::TreeNodeIterator>::map_until_stop_and_collect<datafusion_common::tree_node::TreeNode::transform_down::transform_down_impl<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_physical_plan::projection::remove_unnecessary_projections>::{closure#0}::{closure#0}::{closure#0}>::{closure#0}, <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>, <core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>> as datafusion_common::tree_node::TreeNodeIterator>::map_until_stop_and_collect<datafusion_common::tree_node::TreeNode::transform_down::transform_down_impl<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_physical_plan::projection::remove_unnecessary_projections>::{closure#0}::{closure#0}::{closure#0}>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>::{closure#0}>::{closure#0}>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>>",
+        "samples": 960,
+        "percent": 5.25
+      },
+      {
+        "name": "<alloc::vec::Vec<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>, <core::iter::adapters::cloned::Cloned<alloc::vec::into_iter::IntoIter<&alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>> as datafusion_common::tree_node::TreeNodeIterator>::map_until_stop_and_collect<datafusion_common::tree_node::TreeNode::transform_down::transform_down_impl<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_physical_plan::projection::remove_unnecessary_projections>::{closure#0}::{closure#0}::{closure#0}>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "samples": 960,
+        "percent": 5.25
+      },
+      {
+        "name": "<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan> as datafusion_common::tree_node::TreeNode>::map_children::<datafusion_common::tree_node::TreeNode::transform_down::transform_down_impl<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, datafusion_physical_plan::projection::remove_unnecessary_projections>::{closure#0}::{closure#0}::{closure#0}>",
+        "samples": 960,
+        "percent": 5.25
+      },
+      {
+        "name": "<datafusion_physical_optimizer::ensure_coop::EnsureCooperative as datafusion_session::physical_optimizer::PhysicalOptimizerRule>::optimize_with_context",
+        "samples": 877,
+        "percent": 4.8
+      },
+      {
+        "name": "<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan> as datafusion_common::tree_node::TreeNode>::map_children::<datafusion_common::tree_node::TreeNode::transform_down_up::transform_down_up_impl<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, <datafusion_physical_optimizer::ensure_coop::EnsureCooperative as datafusion_session::physical_optimizer::PhysicalOptimizerRule>::optimize::{closure#0}, <datafusion_physical_optimizer::ensure_coop::EnsureCooperative as datafusion_session::physical_optimizer::PhysicalOptimizerRule>::optimize::{closure#1}>::{closure#0}::{closure#0}::{closure#0}>",
+        "samples": 877,
+        "percent": 4.8
+      },
+      {
+        "name": "datafusion_common::tree_node::TreeNode::transform_down_up::transform_down_up_impl::<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>, <datafusion_physical_optimizer::ensure_coop::EnsureCooperative as datafusion_session::physical_optimizer::PhysicalOptimizerRule>::optimize::{closure#0}, <datafusion_physical_optimizer::ensure_coop::EnsureCooperative as datafusion_session::physical_optimizer::PhysicalOptimizerRule>::optimize::{closure#1}>",
+        "samples": 877,
+        "percent": 4.8
+      },
+      {
+        "name": "<indexmap::map::IndexMap<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets> as core::iter::traits::collect::FromIterator<(alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets)>>::from_iter::<core::iter::adapters::map::Map<indexmap::map::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets>, <datafusion_physical_expr::equivalence::properties::EquivalenceProperties>::normalize_mapping::{closure#0}>>",
+        "samples": 713,
+        "percent": 3.9
+      },
+      {
+        "name": "<core::iter::adapters::map::Map<indexmap::map::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets>, <datafusion_physical_expr::equivalence::properties::EquivalenceProperties>::normalize_mapping::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<(alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets), <indexmap::map::IndexMap<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets> as core::iter::traits::collect::Extend<(alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets)>>::extend<core::iter::adapters::map::Map<indexmap::map::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets>, <datafusion_physical_expr::equivalence::properties::EquivalenceProperties>::normalize_mapping::{closure#0}>>::{closure#0}>::{closure#0}>",
+        "samples": 713,
+        "percent": 3.9
+      },
+      {
+        "name": "datafusion_physical_plan::projection::remove_unnecessary_projections",
+        "samples": 710,
+        "percent": 3.88
+      },
+      {
+        "name": "<datafusion_physical_plan::projection::ProjectionExec>::try_new::<alloc::vec::Vec<datafusion_physical_expr::projection::ProjectionExpr>, datafusion_physical_expr::projection::ProjectionExpr>",
+        "samples": 709,
+        "percent": 3.88
+      },
+      {
+        "name": "datafusion_physical_plan::projection::try_embed_projection::<datafusion_physical_plan::filter::FilterExec>",
+        "samples": 709,
+        "percent": 3.88
+      },
+      {
+        "name": "<datafusion_physical_plan::filter::FilterExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::try_swapping_with_projection",
+        "samples": 709,
+        "percent": 3.88
+      },
+      {
+        "name": "<datafusion_physical_expr::projection::ProjectionExprs>::projection_mapping",
+        "samples": 704,
+        "percent": 3.85
+      },
+      {
+        "name": "<indexmap::map::IndexMap<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets>>::entry",
+        "samples": 704,
+        "percent": 3.85
+      },
+      {
+        "name": "<indexmap::map::IndexMap<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::equivalence::class::EquivalenceClass>>::entry",
+        "samples": 683,
+        "percent": 3.74
+      },
+      {
+        "name": "<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<alloc::vec::into_iter::IntoIter<datafusion_expr::expr::Expr>, alloc::vec::into_iter::IntoIter<datafusion_expr::expr_rewriter::SavedName>>, <datafusion_optimizer::common_subexpr_eliminate::CommonSubexprEliminate>::try_optimize_window::{closure#2}::{closure#1}::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<alloc::vec::in_place_drop::InPlaceDrop<datafusion_expr::expr::Expr>, alloc::vec::in_place_collect::write_in_place_with_drop<datafusion_expr::expr::Expr>::{closure#0}, core::result::Result<alloc::vec::in_place_drop::InPlaceDrop<datafusion_expr::expr::Expr>, !>>",
+        "samples": 648,
+        "percent": 3.54
+      },
+      {
+        "name": "alloc::vec::in_place_collect::from_iter_in_place::<core::iter::adapters::map::Map<core::iter::adapters::zip::Zip<alloc::vec::into_iter::IntoIter<datafusion_expr::expr::Expr>, alloc::vec::into_iter::IntoIter<datafusion_expr::expr_rewriter::SavedName>>, datafusion_optimizer::optimize_projections::merge_consecutive_projections_one_level::{closure#3}>, datafusion_expr::expr::Expr>",
+        "samples": 648,
+        "percent": 3.54
+      },
+      {
+        "name": "<datafusion_expr::expr_rewriter::SavedName>::restore",
+        "samples": 648,
+        "percent": 3.54
+      },
+      {
+        "name": "datafusion_common::scalar::hash_nested_array::<std::hash::random::DefaultHasher>",
+        "samples": 643,
+        "percent": 3.52
+      },
+      {
+        "name": "0x6765f28",
+        "samples": 590,
+        "percent": 3.23
+      },
+      {
+        "name": "<indexmap::map::IndexMap<&alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, (&datafusion_physical_expr::projection::ProjectionTargets, core::option::Option<&datafusion_physical_expr::equivalence::class::EquivalenceClass>)> as core::iter::traits::collect::FromIterator<(&alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, (&datafusion_physical_expr::projection::ProjectionTargets, core::option::Option<&datafusion_physical_expr::equivalence::class::EquivalenceClass>))>>::from_iter::<core::iter::adapters::map::Map<indexmap::map::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::projection::ProjectionTargets>, <datafusion_physical_expr::equivalence::class::EquivalenceGroup>::augment_projection_mapping::{closure#0}>>",
+        "samples": 551,
+        "percent": 3.01
+      },
+      {
+        "name": "<std::hash::random::RandomState as core::hash::BuildHasher>::hash_one::<&&alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>",
+        "samples": 551,
+        "percent": 3.01
+      },
+      {
+        "name": "<alloc::vec::Vec<datafusion_physical_expr::equivalence::class::EquivalenceClass> as alloc::vec::spec_from_iter::SpecFromIter<datafusion_physical_expr::equivalence::class::EquivalenceClass, core::iter::adapters::filter::Filter<core::iter::adapters::chain::Chain<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::equivalence::class::EquivalenceClass>, <datafusion_physical_expr::equivalence::class::EquivalenceGroup>::project::{closure#0}>, indexmap::map::iter::IntoValues<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::equivalence::class::EquivalenceClass>>, <datafusion_physical_expr::equivalence::class::EquivalenceGroup>::project::{closure#1}>>>::from_iter",
+        "samples": 551,
+        "percent": 3.01
+      },
+      {
+        "name": "<core::iter::adapters::filter::Filter<core::iter::adapters::chain::Chain<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::equivalence::class::EquivalenceClass>, <datafusion_physical_expr::equivalence::class::EquivalenceGroup>::project::{closure#0}>, indexmap::map::iter::IntoValues<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>, datafusion_physical_expr::equivalence::class::EquivalenceClass>>, <datafusion_physical_expr::equivalence::class::EquivalenceGroup>::project::{closure#1}> as core::iter::traits::iterator::Iterator>::next",
+        "samples": 551,
+        "percent": 3.01
+      },
+      {
+        "name": "<datafusion_physical_expr::equivalence::class::EquivalenceClass>::new::<core::iter::adapters::flatten::Flatten<core::iter::adapters::map::Map<indexmap::set::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::equivalence::class::EquivalenceGroup>::project_expressions<indexmap::set::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>>::{closure#0}>>>",
+        "samples": 551,
+        "percent": 3.01
+      },
+      {
+        "name": "<futures_util::stream::try_stream::try_collect::TryCollect<futures_util::stream::stream::buffer_unordered::BufferUnordered<futures_util::stream::iter::Iter<core::iter::adapters::map::Map<alloc::vec::into_iter::IntoIter<usize>, <datafusion::physical_planner::DefaultPhysicalPlanner>::create_initial_plan_inner::{closure#0}::{closure#1}>>>, alloc::vec::Vec<core::option::Option<alloc::sync::Arc<dyn datafusion_physical_plan::execution_plan::ExecutionPlan>>>> as core::future::future::Future>::poll",
+        "samples": 391,
+        "percent": 2.14
+      },
+      {
+        "name": "<datafusion::physical_planner::DefaultPhysicalPlanner>::create_initial_plan::{closure#0}",
+        "samples": 391,
+        "percent": 2.14
+      },
+      {
+        "name": "<datafusion::physical_planner::DefaultPhysicalPlanner>::create_initial_plan_inner::{closure#0}",
+        "samples": 391,
+        "percent": 2.14
+      },
+      {
+        "name": "<futures_util::stream::futures_unordered::FuturesUnordered<<datafusion::physical_planner::DefaultPhysicalPlanner>::task_helper::{closure#0}> as futures_core::stream::Stream>::poll_next",
+        "samples": 391,
+        "percent": 2.14
+      },
+      {
+        "name": "<datafusion_physical_plan::projection::ProjectionExec>::try_new_with_schema_metadata::<alloc::vec::Vec<datafusion_physical_expr::projection::ProjectionExpr>, datafusion_physical_expr::projection::ProjectionExpr>",
+        "samples": 391,
+        "percent": 2.14
+      },
+      {
+        "name": "<datafusion::physical_planner::DefaultPhysicalPlanner>::map_logical_node_to_physical::{closure#0}",
+        "samples": 391,
+        "percent": 2.14
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "core::fmt::write",
+        "samples": 3793,
+        "percent": 20.74
+      },
+      {
+        "name": "_platform_memmove",
+        "samples": 3248,
+        "percent": 17.76
+      },
+      {
+        "name": "<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as arrow_cast::display::DisplayIndex>::write",
+        "samples": 2652,
+        "percent": 14.5
+      },
+      {
+        "name": "<alloc::string::String as core::fmt::Write>::write_str",
+        "samples": 2560,
+        "percent": 14.0
+      },
+      {
+        "name": "datafusion_common::hash_utils::hash_list_array::<i32, datafusion_common::hash_utils::HashStateChildHashing<foldhash::fast::FixedState>>",
+        "samples": 1883,
+        "percent": 10.3
+      },
+      {
+        "name": "datafusion_common::hash_utils::hash_single_array::<foldhash::fast::FixedState>",
+        "samples": 1386,
+        "percent": 7.58
+      },
+      {
+        "name": "<arrow_cast::display::ValueFormatter as core::fmt::Display>::fmt",
+        "samples": 978,
+        "percent": 5.35
+      },
+      {
+        "name": "0x6765f28",
+        "samples": 590,
+        "percent": 3.23
+      },
+      {
+        "name": "<arrow_cast::display::ArrayFormat<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>> as arrow_cast::display::DisplayIndex>::write",
+        "samples": 343,
+        "percent": 1.88
+      },
+      {
+        "name": "<&arrow_array::array::list_array::GenericListArray<i32> as arrow_cast::display::DisplayIndexState>::write",
+        "samples": 320,
+        "percent": 1.75
+      },
+      {
+        "name": "<core::fmt::Formatter>::write_str",
+        "samples": 268,
+        "percent": 1.47
+      },
+      {
+        "name": "_kernelrpc_mach_vm_deallocate_trap",
+        "samples": 58,
+        "percent": 0.32
+      },
+      {
+        "name": "sha256_block_armv8",
+        "samples": 32,
+        "percent": 0.17
+      },
+      {
+        "name": "madvise",
+        "samples": 27,
+        "percent": 0.15
+      },
+      {
+        "name": "datafusion_functions_nested::repeat::array_repeat_inner",
+        "samples": 27,
+        "percent": 0.15
+      },
+      {
+        "name": "_platform_memcmp",
+        "samples": 26,
+        "percent": 0.14
+      },
+      {
+        "name": "<alloc::vec::Vec<i32> as alloc::vec::spec_from_iter::SpecFromIter<i32, core::iter::adapters::map::Map<core::slice::iter::Iter<u64>, arrow_select::take::take_native<i32, arrow_array::types::UInt64Type>::{closure#2}>>>::from_iter",
+        "samples": 25,
+        "percent": 0.14
+      },
+      {
+        "name": "mach_msg2_trap",
+        "samples": 17,
+        "percent": 0.09
+      },
+      {
+        "name": "_PyEval_EvalFrameDefault",
+        "samples": 4,
+        "percent": 0.02
+      },
+      {
+        "name": "_PyObject_Malloc",
+        "samples": 3,
+        "percent": 0.02
+      },
+      {
+        "name": "_kernelrpc_mach_vm_map_trap",
+        "samples": 3,
+        "percent": 0.02
+      },
+      {
+        "name": "__open",
+        "samples": 2,
+        "percent": 0.01
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 0.01
+      },
+      {
+        "name": "_PyCode_Quicken",
+        "samples": 1,
+        "percent": 0.01
+      },
+      {
+        "name": "_PyUnicode_JoinArray",
+        "samples": 1,
+        "percent": 0.01
+      },
+      {
+        "name": "r_object.llvm.9845490566179339274",
+        "samples": 1,
+        "percent": 0.01
+      },
+      {
+        "name": "free",
+        "samples": 1,
+        "percent": 0.01
+      },
+      {
+        "name": "__open_nocancel",
+        "samples": 1,
+        "percent": 0.01
+      },
+      {
+        "name": "type_new",
+        "samples": 1,
+        "percent": 0.01
+      },
+      {
+        "name": "PyTuple_New",
+        "samples": 1,
+        "percent": 0.01
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2051,
+    "duration_ms": 41520.599083,
+    "mean_stack_depth": 31.233544612384204,
+    "sample_has": {
+      "execution_plan": 2049,
+      "lambda": 722,
+      "take": 260
+    },
+    "leaf_categories": {
+      "rust_alloc": 330
+    },
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2051,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::current_thread::Handle>>>::poll",
+        "samples": 2049,
+        "percent": 99.9
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<vail_table::partitioned::count_parts::{closure#0}::{closure#0}, alloc::sync::Arc<tokio::runtime::scheduler::multi_thread::handle::Handle>>>::poll",
+        "samples": 2049,
+        "percent": 99.9
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run_task",
+        "samples": 2049,
+        "percent": 99.9
+      },
+      {
+        "name": "vail_table::partitioned::count_parts::{closure#0}::{closure#0}",
+        "samples": 2049,
+        "percent": 99.9
+      },
+      {
+        "name": "<datafusion_physical_expr::projection::Projector>::with_metrics",
+        "samples": 1788,
+        "percent": 87.18
+      },
+      {
+        "name": "<datafusion_physical_plan::projection::ProjectionExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute",
+        "samples": 1788,
+        "percent": 87.18
+      },
+      {
+        "name": "<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::ProjectionExprs>::create_expression_metrics::{closure#0}> as core::iter::traits::iterator::Iterator>::fold::<(), core::iter::traits::iterator::Iterator::for_each::call<alloc::string::String, <alloc::vec::Vec<alloc::string::String>>::extend_trusted<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::ProjectionExprs>::create_expression_metrics::{closure#0}>>::{closure#0}>::{closure#0}>",
+        "samples": 1772,
+        "percent": 86.4
+      },
+      {
+        "name": "<alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<alloc::string::String, core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::ProjectionExprs>::create_expression_metrics::{closure#0}>>>::from_iter",
+        "samples": 1772,
+        "percent": 86.4
+      },
+      {
+        "name": "core::fmt::write",
+        "samples": 1742,
+        "percent": 84.93
+      },
+      {
+        "name": "<datafusion_common::scalar::ScalarValue as core::fmt::Display>::fmt",
+        "samples": 1698,
+        "percent": 82.79
+      },
+      {
+        "name": "datafusion_common::scalar::fmt_list",
+        "samples": 1698,
+        "percent": 82.79
+      },
+      {
+        "name": "<arrow_cast::display::ValueFormatter as core::fmt::Display>::fmt",
+        "samples": 1698,
+        "percent": 82.79
+      },
+      {
+        "name": "<&arrow_array::array::list_array::GenericListArray<i32> as arrow_cast::display::DisplayIndexState>::write",
+        "samples": 1698,
+        "percent": 82.79
+      },
+      {
+        "name": "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::fmt_sql",
+        "samples": 976,
+        "percent": 47.59
+      },
+      {
+        "name": "<datafusion_physical_expr::expressions::literal::Literal as datafusion_physical_expr_common::physical_expr::PhysicalExpr>::fmt_sql",
+        "samples": 976,
+        "percent": 47.59
+      },
+      {
+        "name": "<datafusion_physical_expr::scalar_function::ScalarFunctionExpr as core::fmt::Display>::fmt",
+        "samples": 778,
+        "percent": 37.93
+      },
+      {
+        "name": "<alloc::string::String as core::fmt::Write>::write_str",
+        "samples": 775,
+        "percent": 37.79
+      },
+      {
+        "name": "alloc::fmt::format::format_inner",
+        "samples": 738,
+        "percent": 35.98
+      },
+      {
+        "name": "<datafusion_physical_expr::expressions::literal::Literal as core::fmt::Display>::fmt",
+        "samples": 722,
+        "percent": 35.2
+      },
+      {
+        "name": "<alloc::vec::Vec<alloc::string::String> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<alloc::string::String, core::iter::adapters::map::Map<core::slice::iter::Iter<alloc::sync::Arc<dyn datafusion_physical_expr_common::physical_expr::PhysicalExpr>>, <datafusion_physical_expr::higher_order_function::HigherOrderFunctionExpr as core::fmt::Display>::fmt::{closure#0}>>>::from_iter",
+        "samples": 722,
+        "percent": 35.2
+      },
+      {
+        "name": "_platform_memmove",
+        "samples": 665,
+        "percent": 32.42
+      },
+      {
+        "name": "<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as arrow_cast::display::DisplayIndex>::write",
+        "samples": 657,
+        "percent": 32.03
+      },
+      {
+        "name": "<datafusion_physical_plan::projection::ProjectionStream as futures_core::stream::Stream>::poll_next",
+        "samples": 261,
+        "percent": 12.73
+      },
+      {
+        "name": "arrow_select::take::take_list::<arrow_array::types::UInt32Type, arrow_array::types::Int32Type>",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "arrow_select::take::take_impl::<arrow_array::types::UInt32Type>",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "<datafusion_common::scalar::ScalarValue>::list_to_array_of_size",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>> as alloc::vec::spec_from_iter::SpecFromIter<alloc::sync::Arc<dyn arrow_array::array::Array>, core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>>>>::from_iter",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "<datafusion_physical_expr::projection::Projector>::project_batch",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "<datafusion_common::scalar::ScalarValue>::to_array_of_size",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "<datafusion_expr_common::columnar_value::ColumnarValue>::into_array_of_size",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "core::iter::adapters::try_process::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, alloc::sync::Arc<dyn arrow_array::array::Array>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>, <core::result::Result<alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>, datafusion_common::error::DataFusionError> as core::iter::traits::collect::FromIterator<core::result::Result<alloc::sync::Arc<dyn arrow_array::array::Array>, datafusion_common::error::DataFusionError>>>::from_iter<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>>::{closure#0}, alloc::vec::Vec<alloc::sync::Arc<dyn arrow_array::array::Array>>>",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "arrow_data::transform::primitive::build_extend::<i32>::{closure#0}",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "arrow_select::take::take",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "<arrow_data::transform::MutableArrayData>::try_extend",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}> as core::iter::traits::iterator::Iterator>::try_fold::<(), <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>, datafusion_physical_expr_common::utils::evaluate_expressions_to_arrays_with_metrics<core::iter::adapters::map::Map<core::slice::iter::Iter<datafusion_physical_expr::projection::ProjectionExpr>, <datafusion_physical_expr::projection::Projector>::project_batch::{closure#0}>>::{closure#0}>, core::result::Result<core::convert::Infallible, datafusion_common::error::DataFusionError>> as core::iter::traits::iterator::Iterator>::try_fold<(), core::iter::traits::iterator::Iterator::try_for_each::call<alloc::sync::Arc<dyn arrow_array::array::Array>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>::Break>::{closure#0}, core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>::{closure#0}, core::ops::control_flow::ControlFlow<core::ops::control_flow::ControlFlow<alloc::sync::Arc<dyn arrow_array::array::Array>>>>",
+        "samples": 260,
+        "percent": 12.68
+      },
+      {
+        "name": "0x6765f28",
+        "samples": 80,
+        "percent": 3.9
+      },
+      {
+        "name": "<core::fmt::Formatter>::write_str",
+        "samples": 48,
+        "percent": 2.34
+      },
+      {
+        "name": "<arrow_cast::display::ArrayFormat<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>> as arrow_cast::display::DisplayIndex>::write",
+        "samples": 35,
+        "percent": 1.71
+      },
+      {
+        "name": "alloc::str::join_generic_copy::<str, u8, alloc::string::String>",
+        "samples": 27,
+        "percent": 1.32
+      },
+      {
+        "name": "alloc::vec::in_place_collect::from_iter_in_place::<core::iter::adapters::map::Map<core::iter::adapters::enumerate::Enumerate<alloc::vec::into_iter::IntoIter<alloc::string::String>>, <datafusion_physical_expr_common::metrics::expression::ExpressionEvaluatorMetrics>::new<alloc::string::String, alloc::vec::Vec<alloc::string::String>>::{closure#0}>, datafusion_physical_expr_common::metrics::value::Time>",
+        "samples": 16,
+        "percent": 0.78
+      },
+      {
+        "name": "<datafusion_physical_expr_common::metrics::builder::MetricBuilder>::with_new_label::<&str, alloc::string::String>",
+        "samples": 16,
+        "percent": 0.78
+      },
+      {
+        "name": "<datafusion_physical_expr_common::metrics::LabelValue as core::convert::From<alloc::string::String>>::from",
+        "samples": 16,
+        "percent": 0.78
+      },
+      {
+        "name": "<alloc::vec::into_iter::IntoIter<alloc::string::String> as core::iter::traits::iterator::Iterator>::try_fold::<alloc::vec::in_place_drop::InPlaceDrop<datafusion_physical_expr_common::metrics::value::Time>, <core::iter::adapters::enumerate::Enumerate<_> as core::iter::traits::iterator::Iterator>::try_fold::enumerate<alloc::string::String, alloc::vec::in_place_drop::InPlaceDrop<datafusion_physical_expr_common::metrics::value::Time>, core::result::Result<alloc::vec::in_place_drop::InPlaceDrop<datafusion_physical_expr_common::metrics::value::Time>, !>, core::iter::adapters::map::map_try_fold<(usize, alloc::string::String), datafusion_physical_expr_common::metrics::value::Time, alloc::vec::in_place_drop::InPlaceDrop<datafusion_physical_expr_common::metrics::value::Time>, core::result::Result<alloc::vec::in_place_drop::InPlaceDrop<datafusion_physical_expr_common::metrics::value::Time>, !>, <datafusion_physical_expr_common::metrics::expression::ExpressionEvaluatorMetrics>::new<alloc::string::String, alloc::vec::Vec<alloc::string::String>>::{closure#0}, alloc::vec::in_place_collect::write_in_place_with_drop<datafusion_physical_expr_common::metrics::value::Time>::{closure#0}>::{closure#0}>::{closure#0}, core::result::Result<alloc::vec::in_place_drop::InPlaceDrop<datafusion_physical_expr_common::metrics::value::Time>, !>>",
+        "samples": 16,
+        "percent": 0.78
+      },
+      {
+        "name": "free_large",
+        "samples": 4,
+        "percent": 0.2
+      },
+      {
+        "name": "_szone_free",
+        "samples": 4,
+        "percent": 0.2
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "<alloc::raw_vec::RawVecInner>::finish_grow",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "vm_copy",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "_malloc_zone_realloc",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "mach_msg2_internal",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "mach_msg2_trap",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "szone_realloc",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "<alloc::raw_vec::RawVecInner<_>>::reserve::do_reserve_and_handle::<alloc::alloc::Global>",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "_realloc",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "madvise",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "mvm_deallocate_plat",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "_kernelrpc_mach_vm_deallocate_trap",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "mach_vm_deallocate",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<core::pin::Pin<alloc::boxed::Box<dyn futures_core::stream::Stream<Item = core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>> + core::marker::Send>>> as futures_core::stream::Stream>::poll_next",
+        "samples": 1,
+        "percent": 0.05
+      },
+      {
+        "name": "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::partitioned::PartitionSetExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+        "samples": 1,
+        "percent": 0.05
+      },
+      {
+        "name": "<datafusion_physical_plan::stream::RecordBatchStreamAdapter<async_stream::async_stream::AsyncStream<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>, <vail_table::partitioned::OrderedConcatExec as datafusion_physical_plan::execution_plan::ExecutionPlan>::execute::{closure#0}>> as futures_core::stream::Stream>::poll_next",
+        "samples": 1,
+        "percent": 0.05
+      },
+      {
+        "name": "<datafusion_physical_plan::filter::FilterExecStream as futures_core::stream::Stream>::poll_next",
+        "samples": 1,
+        "percent": 0.05
+      },
+      {
+        "name": "<futures_util::stream::select::Select<futures_util::stream::unfold::Unfold<tokio::sync::mpsc::bounded::Receiver<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>>, <datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#2}, <datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#2}::{closure#0}>, futures_util::stream::stream::filter_map::FilterMap<futures_util::stream::once::Once<<datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#0}>, <datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#1}::{closure#0}, <datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+        "samples": 1,
+        "percent": 0.05
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "_platform_memmove",
+        "samples": 665,
+        "percent": 32.42
+      },
+      {
+        "name": "core::fmt::write",
+        "samples": 447,
+        "percent": 21.79
+      },
+      {
+        "name": "<alloc::string::String as core::fmt::Write>::write_str",
+        "samples": 330,
+        "percent": 16.09
+      },
+      {
+        "name": "<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type> as arrow_cast::display::DisplayIndex>::write",
+        "samples": 266,
+        "percent": 12.97
+      },
+      {
+        "name": "<arrow_cast::display::ValueFormatter as core::fmt::Display>::fmt",
+        "samples": 135,
+        "percent": 6.58
+      },
+      {
+        "name": "0x6765f28",
+        "samples": 80,
+        "percent": 3.9
+      },
+      {
+        "name": "<core::fmt::Formatter>::write_str",
+        "samples": 48,
+        "percent": 2.34
+      },
+      {
+        "name": "<&arrow_array::array::list_array::GenericListArray<i32> as arrow_cast::display::DisplayIndexState>::write",
+        "samples": 36,
+        "percent": 1.76
+      },
+      {
+        "name": "<arrow_cast::display::ArrayFormat<&arrow_array::array::primitive_array::PrimitiveArray<arrow_array::types::Int32Type>> as arrow_cast::display::DisplayIndex>::write",
+        "samples": 35,
+        "percent": 1.71
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "mach_msg2_trap",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "madvise",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "_kernelrpc_mach_vm_deallocate_trap",
+        "samples": 2,
+        "percent": 0.1
+      },
+      {
+        "name": "<futures_util::stream::select::Select<futures_util::stream::unfold::Unfold<tokio::sync::mpsc::bounded::Receiver<core::result::Result<arrow_array::record_batch::RecordBatch, datafusion_common::error::DataFusionError>>, <datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#2}, <datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#2}::{closure#0}>, futures_util::stream::stream::filter_map::FilterMap<futures_util::stream::once::Once<<datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#0}>, <datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#1}::{closure#0}, <datafusion_physical_plan::stream::ReceiverStreamBuilder<arrow_array::record_batch::RecordBatch>>::build::{closure#1}>> as futures_core::stream::Stream>::poll_next",
+        "samples": 1,
+        "percent": 0.05
+      }
+    ]
+  },
+  {
+    "thread": "python",
+    "samples": 874,
+    "duration_ms": 41512.52791700001,
+    "mean_stack_depth": 15.598398169336384,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "Py_RunMain",
+        "samples": 874,
+        "percent": 100.0
+      },
+      {
+        "name": "start",
+        "samples": 874,
+        "percent": 100.0
+      },
+      {
+        "name": "pymain_run_file_obj",
+        "samples": 874,
+        "percent": 100.0
+      },
+      {
+        "name": "Py_BytesMain",
+        "samples": 874,
+        "percent": 100.0
+      },
+      {
+        "name": "pymain_main",
+        "samples": 874,
+        "percent": 100.0
+      },
+      {
+        "name": "_PyRun_SimpleFileObject",
+        "samples": 874,
+        "percent": 100.0
+      },
+      {
+        "name": "pymain_run_file",
+        "samples": 874,
+        "percent": 100.0
+      },
+      {
+        "name": "_PyRun_AnyFileObject",
+        "samples": 874,
+        "percent": 100.0
+      },
+      {
+        "name": "_PyEval_EvalFrameDefault",
+        "samples": 872,
+        "percent": 99.77
+      },
+      {
+        "name": "pyrun_file",
+        "samples": 872,
+        "percent": 99.77
+      },
+      {
+        "name": "run_mod.llvm.8217961648363706888",
+        "samples": 872,
+        "percent": 99.77
+      },
+      {
+        "name": "PyEval_EvalCode",
+        "samples": 872,
+        "percent": 99.77
+      },
+      {
+        "name": "nanosleep",
+        "samples": 805,
+        "percent": 92.11
+      },
+      {
+        "name": "__semwait_signal",
+        "samples": 805,
+        "percent": 92.11
+      },
+      {
+        "name": "time_sleep",
+        "samples": 805,
+        "percent": 92.11
+      },
+      {
+        "name": "_PyObject_VectorcallTstate.llvm.12038793513780791252",
+        "samples": 52,
+        "percent": 5.95
+      },
+      {
+        "name": "_io_TextIOWrapper_flush",
+        "samples": 49,
+        "percent": 5.61
+      },
+      {
+        "name": "method_vectorcall_NOARGS.llvm.8353035897684409210",
+        "samples": 47,
+        "percent": 5.38
+      },
+      {
+        "name": "_bufferedwriter_flush_unlocked",
+        "samples": 47,
+        "percent": 5.38
+      },
+      {
+        "name": "_bufferedwriter_raw_write",
+        "samples": 47,
+        "percent": 5.38
+      },
+      {
+        "name": "_io__Buffered_flush",
+        "samples": 47,
+        "percent": 5.38
+      },
+      {
+        "name": "method_vectorcall_FASTCALL_KEYWORDS_METHOD.llvm.8353035897684409210",
+        "samples": 46,
+        "percent": 5.26
+      },
+      {
+        "name": "_Py_write_impl.llvm.908256897274526050",
+        "samples": 46,
+        "percent": 5.26
+      },
+      {
+        "name": "write",
+        "samples": 46,
+        "percent": 5.26
+      },
+      {
+        "name": "_io_FileIO_write",
+        "samples": 46,
+        "percent": 5.26
+      },
+      {
+        "name": "_ctypes_callproc",
+        "samples": 8,
+        "percent": 0.92
+      },
+      {
+        "name": "PyCFuncPtr_call",
+        "samples": 8,
+        "percent": 0.92
+      },
+      {
+        "name": "_call_function_pointer",
+        "samples": 7,
+        "percent": 0.8
+      },
+      {
+        "name": "object_vacall.llvm.12038793513780791252",
+        "samples": 5,
+        "percent": 0.57
+      },
+      {
+        "name": "PyObject_CallMethodObjArgs",
+        "samples": 5,
+        "percent": 0.57
+      },
+      {
+        "name": "PyImport_ImportModuleLevelObject",
+        "samples": 5,
+        "percent": 0.57
+      },
+      {
+        "name": "cfunction_vectorcall_O.llvm.13170489690383736192",
+        "samples": 4,
+        "percent": 0.46
+      },
+      {
+        "name": "ffi_call_SYSV",
+        "samples": 4,
+        "percent": 0.46
+      },
+      {
+        "name": "__proc_info",
+        "samples": 4,
+        "percent": 0.46
+      },
+      {
+        "name": "ffi_call_int",
+        "samples": 4,
+        "percent": 0.46
+      },
+      {
+        "name": "cfunction_vectorcall_FASTCALL_KEYWORDS.llvm.13170489690383736192",
+        "samples": 3,
+        "percent": 0.34
+      },
+      {
+        "name": "builtin_exec",
+        "samples": 3,
+        "percent": 0.34
+      },
+      {
+        "name": "marshal_loads",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "read_object.llvm.9845490566179339274",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "r_object.llvm.9845490566179339274",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "dict_traverse",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "gc_collect_main.llvm.6325940347975832991",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "deduce_unreachable",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "PyDict_GetItemWithError",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "_ctypes_get_errobj",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "_PyErr_PrintEx",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "Py_FinalizeEx",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "handle_system_exit",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "Py_Exit",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "_PyType_FromMetaclass_impl.llvm.17950591547825741969",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_ctypes_mod_exec",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyUnicode_FromString",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "create_builtin",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_ctypes_add_types",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyInit__ctypes",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyDescr_NewGetSet",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_imp_create_builtin",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "type_ready.llvm.17950591547825741969",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_PyCode_Quicken",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_PyCode_New",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "builtin___import__",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "type_call",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "slot_tp_new",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_PyObject_Malloc",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyCapsule_IsValid",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "mbuf_add_view.llvm.13290895381365229995",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyMemoryView_FromBuffer",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "object_recursive_isinstance.llvm.12654221660605038530",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyCPointerType_from_param",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyObject_CallOneArg",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "method_get",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "cfunction_vectorcall_NOARGS.llvm.13170489690383736192",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyBytes_FromStringAndSize",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_textiowrapper_writeflush",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyDict_SetItem",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "finalize_modules.llvm.18044734875459590981",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_Py_Deepfreeze_Fini",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "finalize_interp_clear.llvm.18044734875459590981",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_PyStaticCode_Fini",
+        "samples": 1,
+        "percent": 0.11
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__semwait_signal",
+        "samples": 805,
+        "percent": 92.11
+      },
+      {
+        "name": "write",
+        "samples": 46,
+        "percent": 5.26
+      },
+      {
+        "name": "_PyEval_EvalFrameDefault",
+        "samples": 4,
+        "percent": 0.46
+      },
+      {
+        "name": "__proc_info",
+        "samples": 4,
+        "percent": 0.46
+      },
+      {
+        "name": "dict_traverse",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "PyDict_GetItemWithError",
+        "samples": 2,
+        "percent": 0.23
+      },
+      {
+        "name": "PyUnicode_FromString",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_PyCode_Quicken",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_PyObject_Malloc",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyCapsule_IsValid",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "mbuf_add_view.llvm.13290895381365229995",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "method_get",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "cfunction_vectorcall_NOARGS.llvm.13170489690383736192",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyBytes_FromStringAndSize",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "PyDict_SetItem",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_io_TextIOWrapper_flush",
+        "samples": 1,
+        "percent": 0.11
+      },
+      {
+        "name": "_PyStaticCode_Fini",
+        "samples": 1,
+        "percent": 0.11
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 4,
+    "duration_ms": 41520.599083,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 4,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 4,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "python",
+    "samples": 4,
+    "duration_ms": 42140.87300000001,
+    "mean_stack_depth": 22.75,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "_PyEval_EvalFrameDefault",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "Py_RunMain",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "run_mod.llvm.8217961648363706888",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "PyRun_StringFlags",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "start",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "Py_BytesMain",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "pymain_main",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "PyRun_SimpleStringFlags",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "PyEval_EvalCode",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "pymain_run_command",
+        "samples": 4,
+        "percent": 100.0
+      },
+      {
+        "name": "_PyObject_VectorcallTstate.llvm.12038793513780791252",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "object_vacall.llvm.12038793513780791252",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "cfunction_vectorcall_FASTCALL_KEYWORDS.llvm.13170489690383736192",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "builtin_exec",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "PyObject_CallMethodObjArgs",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "PyImport_ImportModuleLevelObject",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "nanosleep",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "__semwait_signal",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "cfunction_vectorcall_O.llvm.13170489690383736192",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "time_sleep",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "_PyObject_CallFunctionVa.llvm.12038793513780791252",
+        "samples": 1,
+        "percent": 25.0
+      },
+      {
+        "name": "_io_FileIO___init__",
+        "samples": 1,
+        "percent": 25.0
+      },
+      {
+        "name": "_io_open",
+        "samples": 1,
+        "percent": 25.0
+      },
+      {
+        "name": "PyFile_OpenCodeObject",
+        "samples": 1,
+        "percent": 25.0
+      },
+      {
+        "name": "_PyObject_CallFunction_SizeT",
+        "samples": 1,
+        "percent": 25.0
+      },
+      {
+        "name": "fstat",
+        "samples": 1,
+        "percent": 25.0
+      },
+      {
+        "name": "type_call",
+        "samples": 1,
+        "percent": 25.0
+      },
+      {
+        "name": "_io_open_code",
+        "samples": 1,
+        "percent": 25.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__semwait_signal",
+        "samples": 2,
+        "percent": 50.0
+      },
+      {
+        "name": "fstat",
+        "samples": 1,
+        "percent": 25.0
+      },
+      {
+        "name": "_PyEval_EvalFrameDefault",
+        "samples": 1,
+        "percent": 25.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 3,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 13.666666666666666,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_mutexwait",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "_pthread_mutex_firstfit_lock_wait",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "_pthread_mutex_firstfit_lock_slow",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "<std::sys::pal::unix::sync::mutex::Mutex>::lock",
+        "samples": 1,
+        "percent": 33.33
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_mutexwait",
+        "samples": 1,
+        "percent": 33.33
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 3,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 13.666666666666666,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_mutexwait",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "_pthread_mutex_firstfit_lock_wait",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "_pthread_mutex_firstfit_lock_slow",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "<std::sys::pal::unix::sync::mutex::Mutex>::lock",
+        "samples": 1,
+        "percent": 33.33
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_mutexwait",
+        "samples": 1,
+        "percent": 33.33
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 3,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 13.666666666666666,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_mutexwait",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "_pthread_mutex_firstfit_lock_wait",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "_pthread_mutex_firstfit_lock_slow",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "<std::sys::pal::unix::sync::mutex::Mutex>::lock",
+        "samples": 1,
+        "percent": 33.33
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_mutexwait",
+        "samples": 1,
+        "percent": 33.33
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 3,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 13.666666666666666,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 3,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_mutexwait",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "_pthread_mutex_firstfit_lock_wait",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "_pthread_mutex_firstfit_lock_slow",
+        "samples": 1,
+        "percent": 33.33
+      },
+      {
+        "name": "<std::sys::pal::unix::sync::mutex::Mutex>::lock",
+        "samples": 1,
+        "percent": 33.33
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 66.67
+      },
+      {
+        "name": "__psynch_mutexwait",
+        "samples": 1,
+        "percent": 33.33
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 17.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::io::driver::Driver>::turn",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<mio::poll::Poll>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::time::Driver>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "kevent",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "kevent",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41522.381375,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41520.599083,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41520.599083,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41520.599083,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41520.599083,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  },
+  {
+    "thread": "tokio-rt-worker",
+    "samples": 2,
+    "duration_ms": 41520.599083,
+    "mean_stack_depth": 16.0,
+    "sample_has": {},
+    "leaf_categories": {},
+    "top_inclusive_symbols": [
+      {
+        "name": "tokio::runtime::scheduler::multi_thread::worker::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::context::scoped::Scoped<tokio::runtime::scheduler::Context>>::set::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::pool::Inner>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::park::Inner>::park_condvar",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::sys::thread::unix::Thread>::new::thread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "tokio::runtime::context::runtime::enter_runtime::<tokio::runtime::scheduler::multi_thread::worker::run::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_start",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}> as core::future::future::Future>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::harness::Harness<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::task::core::Core<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule>>::poll",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::run",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "_pthread_cond_wait",
+        "samples": 2,
+        "percent": 100.0
+      },
+      {
+        "name": "<tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ],
+    "top_leaf_symbols": [
+      {
+        "name": "__psynch_cvwait",
+        "samples": 2,
+        "percent": 100.0
+      }
+    ]
+  }
+]

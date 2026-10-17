@@ -16,12 +16,15 @@ use datafusion::common::{
 use datafusion::datasource::{TableProvider, TableType};
 use datafusion::logical_expr::{Expr, Operator, TableProviderFilterPushDown};
 use datafusion::physical_expr::{EquivalenceProperties, expressions::Column};
+use datafusion_common::SplitPoint;
+use datafusion_physical_expr::{LexOrdering, PhysicalSortExpr, RangePartitioning};
 use datafusion::physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, Partitioning, PlanProperties,
     SendableRecordBatchStream,
     execution_plan::{Boundedness, EmissionType},
     projection::ProjectionExec,
-    stream::RecordBatchStreamAdapter,
+    metrics::{ExecutionPlanMetricsSet, SplitMetrics},
+    stream::{BatchSplitStream, RecordBatchStreamAdapter},
 };
 use futures::TryStreamExt;
 use std::{fmt, sync::Arc};
@@ -231,7 +234,7 @@ impl TableProvider for VailSourceProvider {
                         field_ids,
                         queries,
                         nested_paths,
-                    ))
+                    )?)
                 } else {
                     let parts = (0..source.partition_rows().len())
                         .map(|part| {
@@ -684,6 +687,9 @@ struct ReadKeyFilteredExec {
     nested_projection_paths: Vec<Vec<String>>,
     concurrency: Arc<tokio::sync::Semaphore>,
     properties: Arc<PlanProperties>,
+    metrics: ExecutionPlanMetricsSet,
+    // Contiguous, ordered row intervals, validated once when planning the scan.
+    partition_ranges: Vec<std::ops::Range<u64>>,
 }
 
 impl ReadKeyFilteredExec {
@@ -695,7 +701,16 @@ impl ReadKeyFilteredExec {
         field_ids: Vec<i32>,
         queries: Vec<QueryInterval>,
         nested_projection_paths: Vec<Vec<String>>,
-    ) -> Self {
+    ) -> DFResult<Self> {
+        let mut partition_ranges = Vec::new();
+        let mut start = 0u64;
+        for &rows in source.partition_rows() {
+            let end = start.checked_add(rows as u64).ok_or_else(|| {
+                DataFusionError::Execution("partition offset overflow".into())
+            })?;
+            partition_ranges.push(start..end);
+            start = end;
+        }
         let mut equivalence = EquivalenceProperties::new(schema.clone());
         if !table.keys().is_empty() {
             if let Ok(order) = crate::order_requirement(
@@ -712,11 +727,11 @@ impl ReadKeyFilteredExec {
         }
         let properties = Arc::new(PlanProperties::new(
             equivalence,
-            Partitioning::UnknownPartitioning(source.partition_rows().len()),
+            Partitioning::UnknownPartitioning(partition_ranges.len()),
             EmissionType::Incremental,
             Boundedness::Bounded,
         ));
-        Self {
+        Ok(Self {
             source,
             row_schema,
             schema,
@@ -725,7 +740,9 @@ impl ReadKeyFilteredExec {
             nested_projection_paths,
             properties,
             concurrency: Arc::new(tokio::sync::Semaphore::new(crate::EXECUTION_CONCURRENCY)),
-        }
+            metrics: ExecutionPlanMetricsSet::new(),
+            partition_ranges,
+        })
     }
 }
 
@@ -741,6 +758,9 @@ impl ExecutionPlan for ReadKeyFilteredExec {
     }
     fn properties(&self) -> &Arc<PlanProperties> {
         &self.properties
+    }
+    fn metrics(&self) -> Option<datafusion::physical_plan::metrics::MetricsSet> {
+        Some(self.metrics.clone_inner())
     }
     fn children(&self) -> Vec<&Arc<dyn ExecutionPlan>> {
         vec![]
@@ -765,21 +785,14 @@ impl ExecutionPlan for ReadKeyFilteredExec {
     fn execute(
         &self,
         partition: usize,
-        _context: Arc<datafusion::execution::TaskContext>,
+        context: Arc<datafusion::execution::TaskContext>,
     ) -> DFResult<SendableRecordBatchStream> {
-        let rows = self.source.partition_rows();
-        let count = *rows.get(partition).ok_or_else(|| {
+        let range = self.partition_ranges.get(partition).ok_or_else(|| {
             DataFusionError::Execution(format!(
                 "indexed read partition {partition} is out of range"
             ))
         })?;
-        let start = rows[..partition].iter().try_fold(0u64, |sum, &n| {
-            sum.checked_add(n as u64)
-                .ok_or_else(|| DataFusionError::Execution("partition offset overflow".into()))
-        })?;
-        let end = start
-            .checked_add(count as u64)
-            .ok_or_else(|| DataFusionError::Execution("partition offset overflow".into()))?;
+        let (start, end) = (range.start, range.end);
         let source = self.source.clone();
         let queries = self.queries.clone();
         let row_schema = self.row_schema.clone();
@@ -789,7 +802,7 @@ impl ExecutionPlan for ReadKeyFilteredExec {
         let mut batches =
             source.projected_interval_batches_in_rows(&queries, start..end, &field_ids);
         let concurrency = self.concurrency.clone();
-        Ok(Box::pin(RecordBatchStreamAdapter::new(
+        let stream = Box::pin(RecordBatchStreamAdapter::new(
             schema.clone(),
             async_stream::try_stream! {
                 let _permit = concurrency.acquire_owned().await.map_err(|_| {
@@ -809,12 +822,31 @@ impl ExecutionPlan for ReadKeyFilteredExec {
                     yield RecordBatch::try_new(schema.clone(), columns)?;
                 }
             },
+        ));
+        Ok(Box::pin(BatchSplitStream::new(
+            stream,
+            context.session_config().batch_size(),
+            SplitMetrics::new(&self.metrics, partition),
         )))
     }
 }
 
 fn to_df_error(error: TableError) -> DataFusionError {
     DataFusionError::External(Box::new(error))
+}
+
+fn replace_source_partition_id(
+    batch: RecordBatch,
+    schema: SchemaRef,
+    partition: usize,
+) -> DFResult<RecordBatch> {
+    let mut columns = batch.columns().to_vec();
+    let index = columns
+        .len()
+        .checked_sub(1)
+        .ok_or_else(|| DataFusionError::Internal("source partition tag is absent".into()))?;
+    columns[index] = Arc::new(UInt64Array::from_value(partition as u64, batch.num_rows()));
+    RecordBatch::try_new(schema, columns).map_err(Into::into)
 }
 
 /// Presents one single-partition source plan per source partition without
@@ -826,11 +858,13 @@ struct PartitionSetExec {
     schema: SchemaRef,
     properties: Arc<PlanProperties>,
     concurrency: Arc<tokio::sync::Semaphore>,
+    partition_offset: usize,
+    metrics: ExecutionPlanMetricsSet,
 }
 
 impl PartitionSetExec {
     fn new(partitions: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
-        let equivalence = partitions
+        let mut equivalence = partitions
             .first()
             .and_then(|first| {
                 let ordering = first
@@ -845,9 +879,13 @@ impl PartitionSetExec {
                     .then(|| first.properties().equivalence_properties().clone())
             })
             .unwrap_or_else(|| EquivalenceProperties::new(schema.clone()));
+        // execute() assigns exactly one private partition ID to each physical
+        // partition. Certify that range distribution so partition-local windows
+        // need neither a hash exchange nor a sort to rediscover it.
+        let partitioning = partition_id_properties(&schema, &mut equivalence, partitions.len());
         let properties = Arc::new(PlanProperties::new(
             equivalence,
-            Partitioning::UnknownPartitioning(partitions.len().max(1)),
+            partitioning,
             EmissionType::Incremental,
             Boundedness::Bounded,
         ));
@@ -856,8 +894,47 @@ impl PartitionSetExec {
             schema,
             properties,
             concurrency: Arc::new(tokio::sync::Semaphore::new(crate::EXECUTION_CONCURRENCY)),
+            partition_offset: 0,
+            metrics: ExecutionPlanMetricsSet::new(),
         }
     }
+}
+
+/// A partition view needs only its selected source plan, not another copy of
+/// the complete source tree. Preserve the original ID and concurrency gate.
+pub(crate) fn select_source_partition(input: &PhysicalPlan, index: usize) -> Option<PhysicalPlan> {
+    let source = input.as_ref().downcast_ref::<PartitionSetExec>()?;
+    let part = source.partitions.get(index)?.clone();
+    let mut selected = PartitionSetExec::new(vec![part], source.schema.clone());
+    selected.partition_offset = source.partition_offset + index;
+    selected.concurrency = source.concurrency.clone();
+    selected.metrics = source.metrics.clone();
+    Some(Arc::new(selected))
+}
+
+/// Both source boundaries replace the last column with their physical ID.
+pub(crate) fn partition_id_properties(
+    schema: &SchemaRef,
+    equivalence: &mut EquivalenceProperties,
+    partitions: usize,
+) -> Partitioning {
+    let index = schema.fields().len() - 1;
+    let ordering = LexOrdering::new(vec![PhysicalSortExpr::new(
+        Arc::new(Column::new(schema.field(index).name(), index)),
+        arrow_schema::SortOptions {
+            descending: false,
+            nulls_first: false,
+        },
+    )])
+    .expect("source partition ordering is nonempty");
+    equivalence.add_ordering(ordering.clone());
+    let splits = (1..partitions)
+        .map(|partition| SplitPoint::new(vec![ScalarValue::UInt64(Some(partition as u64))]))
+        .collect();
+    Partitioning::Range(
+        RangePartitioning::try_new(ordering, splits)
+            .expect("source partition IDs have increasing UInt64 split points"),
+    )
 }
 
 impl DisplayAs for PartitionSetExec {
@@ -873,6 +950,10 @@ impl ExecutionPlan for PartitionSetExec {
 
     fn properties(&self) -> &Arc<PlanProperties> {
         &self.properties
+    }
+
+    fn metrics(&self) -> Option<datafusion::physical_plan::metrics::MetricsSet> {
+        Some(self.metrics.clone_inner())
     }
 
     fn apply_expressions(
@@ -910,7 +991,11 @@ impl ExecutionPlan for PartitionSetExec {
                 children.len()
             )));
         }
-        Ok(Arc::new(Self::new(children, self.schema.clone())))
+        let mut source = Self::new(children, self.schema.clone());
+        source.partition_offset = self.partition_offset;
+        source.concurrency = self.concurrency.clone();
+        source.metrics = self.metrics.clone();
+        Ok(Arc::new(source))
     }
 
     fn execute(
@@ -926,25 +1011,30 @@ impl ExecutionPlan for PartitionSetExec {
         let child = self.partitions.get(partition).ok_or_else(|| {
             DataFusionError::Execution(format!("Vail source partition {partition} is out of range"))
         })?;
-        let input =
-            crate::partitioned::limited_input(child.clone(), 0, context, self.concurrency.clone());
+        let batch_size = context.session_config().batch_size();
+        let input = crate::partitioned::limited_input(
+            child.clone(),
+            0,
+            context,
+            self.concurrency.clone(),
+        );
         let schema = self.schema.clone();
         let output_schema = schema.clone();
         // Each child executes as partition zero locally. Expose its actual
         // source partition identity to logical windows and partition operations.
+        let source_partition = self.partition_offset + partition;
         let stream = input.and_then(move |batch| {
             let schema = output_schema.clone();
             async move {
-                let mut columns = batch.columns().to_vec();
-                let index = columns.len().checked_sub(1).ok_or_else(|| {
-                    DataFusionError::Internal("source partition tag is absent".into())
-                })?;
-                columns[index] =
-                    Arc::new(UInt64Array::from_value(partition as u64, batch.num_rows()));
-                RecordBatch::try_new(schema, columns).map_err(Into::into)
+                replace_source_partition_id(batch, schema, source_partition)
             }
         });
-        Ok(Box::pin(RecordBatchStreamAdapter::new(schema, stream)))
+        let stream = Box::pin(RecordBatchStreamAdapter::new(schema, stream));
+        Ok(Box::pin(BatchSplitStream::new(
+            stream,
+            batch_size,
+            SplitMetrics::new(&self.metrics, partition),
+        )))
     }
 }
 
@@ -1121,6 +1211,58 @@ mod projected_provider_tests {
     use datafusion::execution::context::SessionContext;
     use futures::TryStreamExt;
     use serde_json::json;
+
+    #[tokio::test]
+    async fn selected_source_view_keeps_only_one_partition_and_original_id() {
+        let table = crate::TableIR::range(512, 128).unwrap();
+        let source = make_source_parts(&table, plan::physical_schema(&table)).unwrap();
+        let original = source.as_ref().downcast_ref::<PartitionSetExec>().unwrap();
+        for partition in [0, 1, 127] {
+            let selected = select_source_partition(&source, partition).unwrap();
+            let rebuilt = selected.clone().with_new_children(
+                selected.children().into_iter().cloned().collect(),
+            ).unwrap();
+            let inner = rebuilt.as_ref().downcast_ref::<PartitionSetExec>().unwrap();
+            assert_eq!(inner.partitions.len(), 1);
+            assert!(Arc::ptr_eq(&inner.concurrency, &original.concurrency));
+            let view = crate::partitioned::PartitionViewExec::new(source.clone(), partition);
+            assert_eq!(view.children()[0].children().len(), 1);
+            for plan in [rebuilt, Arc::new(view) as PhysicalPlan] {
+                let batches = plan.execute(0, Arc::new(datafusion_execution::TaskContext::default()))
+                    .unwrap().try_collect::<Vec<_>>().await.unwrap();
+                let values = batches.iter().flat_map(|batch| {
+                    let ids = batch.columns().last().unwrap().as_any()
+                        .downcast_ref::<UInt64Array>().unwrap();
+                    assert!(ids.values().iter().all(|id| *id == partition as u64));
+                    batch.column(0).as_any().downcast_ref::<Int32Array>()
+                        .unwrap().values().to_vec()
+                }).collect::<Vec<_>>();
+                assert_eq!(values, (partition as i32 * 4..partition as i32 * 4 + 4).collect::<Vec<_>>());
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn source_partition_range_matches_emitted_ids() {
+        let table = crate::TableIR::range(12, 3).unwrap();
+        let source = make_source_parts(&table, plan::physical_schema(&table)).unwrap();
+        let Partitioning::Range(range) = source.properties().output_partitioning() else {
+            panic!("source must advertise its partition ID ranges");
+        };
+        assert_eq!(range.partition_count(), 3);
+        let context = Arc::new(datafusion_execution::TaskContext::default());
+        for partition in 0..3 {
+            let mut rows = 0;
+            let mut stream = source.execute(partition, context.clone()).unwrap();
+            while let Some(batch) = stream.try_next().await.unwrap() {
+                let ids = batch.columns().last().unwrap()
+                    .as_any().downcast_ref::<UInt64Array>().unwrap();
+                assert!(ids.values().iter().all(|id| *id == partition as u64));
+                rows += batch.num_rows();
+            }
+            assert_eq!(rows, 4);
+        }
+    }
 
     #[tokio::test]
     async fn read_projection_reaches_storage_and_returns_only_selected_field() {

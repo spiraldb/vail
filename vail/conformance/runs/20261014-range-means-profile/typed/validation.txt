@@ -1,0 +1,13 @@
+Release validation for typed range and direct numeric-buffer mean
+
+Rust: cargo test --release -p vail-execution --lib
+88 passed; 0 failed
+
+Python: pytest -q python/tests/test_range.py python/tests/test_array_methods.py python/tests/test_agg_composition_execution.py python/tests/test_matrix_table.py
+95 passed in 133.30s
+
+The separate focused 31-test run is included in the 95-test result, not additional coverage.
+
+Benchmark: 10,000,000 rows, 16 partitions, one warmup, three measured runs.
+Native profile: samply 500 Hz; process-tree telemetry: 10 Hz.
+No compilation was active when the updated benchmark began.

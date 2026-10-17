@@ -1,0 +1,49 @@
+"""Genotype likelihood expressions composed from DataFusion array arithmetic."""
+from .collections import _function
+from .expressions import as_expr, bind, coalesce, if_else, is_missing, literal, missing
+from .types import tarray, tint32, tfloat64
+
+
+def pl_to_gp(pl, _cache_size=2048):
+    """Normalize Phred-scaled int32 likelihoods using a uniform prior."""
+    from . import case, float64
+
+    try:
+        pl = as_expr(pl)
+    except ValueError:
+        # The argument type supplies the missing element type for [] / None.
+        pl = literal(pl, tarray(tint32))
+    if pl.dtype != tarray(tint32):
+        raise TypeError("pl_to_gp requires array<int32>")
+    if type(_cache_size) is not int:
+        raise TypeError("_cache_size must be int")
+
+    def probability(value):
+        # Hail indexes its cached probability array with negative PLs. Match
+        # that wraparound analytically, without broadcasting a lookup table.
+        if _cache_size > 0:
+            index = case().when(value >= -_cache_size,
+                if_else(value < 0, value + _cache_size, value)
+            ).or_error("PL probability cache index out of bounds")
+        else:
+            index = case().when(value >= _cache_size, value).or_error(
+                "PL probability cache index out of bounds")
+        return if_else(is_missing(value), missing(tfloat64), 10.0 ** (-float64(index) / 10.0))
+
+    return bind(lambda probabilities: probabilities / coalesce(
+        _function("array_sum", [probabilities], tfloat64), 0.0,
+    ), pl.map(probability))
+
+
+def pl_dosage(pl):
+    """Return expected alternate-allele count for three genotype likelihoods."""
+    from . import case
+
+    def dosage(probabilities):
+        value = if_else(probabilities.any(is_missing), missing(tfloat64),
+                        probabilities[1] + 2.0 * probabilities[2])
+        checked = case().when(probabilities.length() == 3, value).or_error(
+            "pl_dosage requires exactly three likelihoods")
+        return if_else(is_missing(probabilities), missing(tfloat64), checked)
+
+    return bind(dosage, pl_to_gp(pl))

@@ -137,6 +137,81 @@ fn frozen_rng_context(input: LogicalPlan) -> LogicalPlan {
     })
 }
 
+/// Keep a requested round-robin output partition count visible to DataFusion's
+/// physical optimizer while leaving the input relation available for logical
+/// projection pushdown.
+#[derive(Clone, Debug)]
+struct ProtectedRoundRobinNode {
+    id: u64,
+    input: LogicalPlan,
+    schema: DFSchemaRef,
+    partitions: usize,
+}
+impl PartialEq for ProtectedRoundRobinNode {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+impl Eq for ProtectedRoundRobinNode {}
+impl PartialOrd for ProtectedRoundRobinNode {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.id.cmp(&other.id))
+    }
+}
+impl Hash for ProtectedRoundRobinNode {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state)
+    }
+}
+impl UserDefinedLogicalNodeCore for ProtectedRoundRobinNode {
+    fn name(&self) -> &str {
+        "VailProtectedRoundRobin"
+    }
+    fn inputs(&self) -> Vec<&LogicalPlan> {
+        vec![&self.input]
+    }
+    fn schema(&self) -> &DFSchemaRef {
+        &self.schema
+    }
+    fn expressions(&self) -> Vec<Expr> {
+        vec![]
+    }
+    fn necessary_children_exprs(&self, output_columns: &[usize]) -> Option<Vec<Vec<usize>>> {
+        Some(vec![output_columns.to_vec()])
+    }
+    fn fmt_for_explain(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "VailProtectedRoundRobin: {}", self.partitions)
+    }
+    fn with_exprs_and_inputs(
+        &self,
+        exprs: Vec<Expr>,
+        mut inputs: Vec<LogicalPlan>,
+    ) -> datafusion_common::Result<Self> {
+        if !exprs.is_empty() || inputs.len() != 1 {
+            return Err(DataFusionError::Plan(
+                "invalid protected round-robin rewrite".into(),
+            ));
+        }
+        let input = inputs.remove(0);
+        Ok(Self {
+            schema: input.schema().clone(),
+            input,
+            ..self.clone()
+        })
+    }
+}
+
+pub(crate) fn protect_round_robin(input: LogicalPlan, partitions: usize) -> LogicalPlan {
+    LogicalPlan::Extension(Extension {
+        node: Arc::new(ProtectedRoundRobinNode {
+            id: NEXT_NODE.fetch_add(1, Ordering::Relaxed),
+            schema: input.schema().clone(),
+            input,
+            partitions: partitions.max(1),
+        }),
+    })
+}
+
 #[derive(Clone, Debug)]
 struct RestorePartitionsNode {
     id: u64,
@@ -174,6 +249,17 @@ impl UserDefinedLogicalNodeCore for RestorePartitionsNode {
     fn expressions(&self) -> Vec<Expr> {
         vec![]
     }
+    fn necessary_children_exprs(&self, output_columns: &[usize]) -> Option<Vec<Vec<usize>>> {
+        let mut required = output_columns.to_vec();
+        let partition = self
+            .input
+            .schema()
+            .index_of_column_by_name(None, &self.partition_name)?;
+        required.push(partition);
+        required.sort_unstable();
+        required.dedup();
+        Some(vec![required])
+    }
     fn fmt_for_explain(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "VailRestorePartitions: {}", self.partitions)
     }
@@ -187,8 +273,10 @@ impl UserDefinedLogicalNodeCore for RestorePartitionsNode {
                 "invalid partition restoration rewrite".into(),
             ));
         }
+        let input = inputs.remove(0);
         Ok(Self {
-            input: inputs.remove(0),
+            schema: input.schema().clone(),
+            input,
             ..self.clone()
         })
     }
@@ -435,6 +523,20 @@ fn indexed_column(plan: &LogicalPlan, index: usize) -> Expr {
     Expr::Column(datafusion_common::Column::from(
         plan.schema().qualified_field(index),
     ))
+}
+
+fn contains_global(expr: &vail_execution::expressions::Expr) -> bool {
+    let mut found = false;
+    expr.visit(&mut |node| {
+        found |= matches!(node, vail_execution::expressions::Expr::Global { .. });
+    });
+    found
+}
+
+fn contains_scan_expr(expr: &vail_execution::expressions::Expr) -> bool {
+    let mut found = false;
+    expr.visit(&mut |node| found |= is_scan(node));
+    found
 }
 
 fn is_scan(expr: &vail_execution::expressions::Expr) -> bool {
@@ -857,6 +959,8 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
             )
         }
         TableNode::MapGlobals { child } => lower_inner(child, context),
+        // Clearing key metadata does not alter rows or their ordering.
+        TableNode::KeyBy { child, keys } if keys.is_empty() => lower_inner(child, context),
         TableNode::KeyBy { child, keys } if native_sort_keys(child, keys.iter().cloned())? => {
             lower_sort(
                 child,
@@ -972,7 +1076,20 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
             } else {
                 lower_inner(child, context)?
             };
-            let input = crate::logical_globals::bind_globals(lowered_child, child, context)?;
+            let binds_globals = fields.iter().any(|(_, expr)| {
+                contains_global(expr) || is_rng_uid(expr) || contains_scan_expr(expr)
+            });
+            let input = if binds_globals {
+                crate::logical_globals::bind_globals(lowered_child, child, context)?
+            } else {
+                lowered_child
+            };
+            let empty_globals = arrow_schema::Schema::empty();
+            let globals_schema = if binds_globals {
+                child.globals().schema().as_ref()
+            } else {
+                &empty_globals
+            };
             let (input, indices) = crate::logical_globals::bind_external(input, bindings, context)?;
             if fields.iter().any(|(_, expr)| is_rng_uid(expr)) {
                 return lower_rng_uids(child, input, fields, &indices);
@@ -1002,26 +1119,24 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
             let projected = fields
                 .iter()
                 .map(|(name, expr)| {
-                    lower_logical_with_bindings(
-                        expr,
-                        input.schema(),
-                        child.globals().schema(),
-                        &indices,
-                    )
-                    .map(|e| match expr {
-                        vail_execution::expressions::Expr::Column { name: source }
-                            if source == name =>
-                        {
-                            e
-                        }
-                        _ => e.alias(name),
-                    })
+                    lower_logical_with_bindings(expr, input.schema(), globals_schema, &indices)
+                        .map(|e| match expr {
+                            vail_execution::expressions::Expr::Column { name: source }
+                                if source == name =>
+                            {
+                                e
+                            }
+                            _ => e.alias(name),
+                        })
                 })
                 .collect::<std::result::Result<Vec<_>, _>>();
             match projected {
                 Ok(mut projected) => {
-                    let partition_index =
-                        child.globals().schema().fields().len() + child.schema().fields().len();
+                    let partition_index = (if binds_globals {
+                        child.globals().schema().fields().len()
+                    } else {
+                        0
+                    }) + child.schema().fields().len();
                     projected.push(indexed_column(&input, partition_index));
                     Ok(LogicalPlanBuilder::from(input)
                         .project(projected)?
@@ -1041,19 +1156,29 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
             keep,
             bindings,
         } => {
-            let input =
-                crate::logical_globals::bind_globals(lower_inner(child, context)?, child, context)?;
+            let binds_globals = contains_global(predicate);
+            let lowered_child = lower_inner(child, context)?;
+            let input = if binds_globals {
+                crate::logical_globals::bind_globals(lowered_child, child, context)?
+            } else {
+                lowered_child
+            };
             let (input, indices) = crate::logical_globals::bind_external(input, bindings, context)?;
-            match lower_logical_with_bindings(
-                predicate,
-                input.schema(),
-                child.globals().schema(),
-                &indices,
-            ) {
+            let empty_globals = arrow_schema::Schema::empty();
+            let globals_schema = if binds_globals {
+                child.globals().schema().as_ref()
+            } else {
+                &empty_globals
+            };
+            match lower_logical_with_bindings(predicate, input.schema(), globals_schema, &indices) {
                 Ok(predicate) => {
                     let predicate = if *keep { predicate } else { predicate.not() };
                     let filtered = LogicalPlanBuilder::from(input).filter(predicate)?.build()?;
-                    let offset = child.globals().schema().fields().len();
+                    let offset = if binds_globals {
+                        child.globals().schema().fields().len()
+                    } else {
+                        0
+                    };
                     let projected = (0..=child.schema().fields().len())
                         .map(|i| indexed_column(&filtered, offset + i))
                         .collect::<Vec<_>>();
@@ -1076,7 +1201,8 @@ fn lower_uncached(table: &TableRef, context: &mut LoweringContext) -> Result<Log
 /// Display the plan DataFusion will optimize and lower for an action.
 pub(crate) fn display(table: &TableRef) -> Result<String> {
     let state = session_state(max_partitions(table));
-    Ok(state.optimize(&lower(table)?)?.display_indent().to_string())
+    let logical = crate::logical_parameters::parameterize(lower(table)?, state.execution_props())?;
+    Ok(state.optimize(&logical)?.display_indent().to_string())
 }
 
 pub(crate) async fn physical(table: &TableRef) -> Result<PhysicalPlan> {
@@ -1095,6 +1221,30 @@ pub(crate) fn max_partitions(table: &TableRef) -> usize {
         pending.extend(children(&table));
     }
     maximum
+}
+
+/// Whether a total reducer can use parallel partial aggregation without changing order.
+pub(crate) fn should_fan_out_total(
+    table: &TableRef,
+    expression: &vail_execution::expressions::Expr,
+) -> bool {
+    crate::logical_aggregation::can_parallelize_total(expression)
+        && !table
+            .known_count()
+            .is_some_and(|row_count| row_count <= SessionConfig::new().batch_size())
+}
+
+/// Select a target count for total aggregates while preserving source targets elsewhere.
+pub(crate) fn total_aggregate_target(
+    table: &TableRef,
+    expression: &vail_execution::expressions::Expr,
+) -> usize {
+    let partitions = max_partitions(table);
+    if should_fan_out_total(table, expression) {
+        partitions.max(crate::EXECUTION_CONCURRENCY)
+    } else {
+        partitions
+    }
 }
 
 /// Scalar subqueries are resolved once per action, before optimizing and
@@ -1158,6 +1308,9 @@ async fn compile_mode(
     ]);
     use datafusion_common::tree_node::{TreeNode, TreeNodeRecursion};
     let mut state = state.clone();
+    // Keep large immutable Arrow constants opaque to expression optimization.
+    // This runs after action parameters are resolved and before optimization.
+    let logical = crate::logical_parameters::parameterize(logical, state.execution_props())?;
     let optimized = state.optimize(&logical)?;
     // DF55 physical filter pushdown can inline volatile projection expressions
     // and evaluate a checked cast before an earlier filter. Keep logical scan
@@ -1221,6 +1374,33 @@ impl datafusion::physical_optimizer::PhysicalOptimizerRule for MetadataCrossJoin
     }
 }
 
+#[derive(Debug)]
+struct EliminateIdentityRanges;
+impl datafusion::physical_optimizer::PhysicalOptimizerRule for EliminateIdentityRanges {
+    fn name(&self) -> &str {
+        "vail_eliminate_identity_ranges"
+    }
+    fn schema_check(&self) -> bool {
+        true
+    }
+    fn optimize(
+        &self,
+        plan: PhysicalPlan,
+        _: &datafusion_common::config::ConfigOptions,
+    ) -> datafusion_common::Result<PhysicalPlan> {
+        use datafusion_common::tree_node::{Transformed, TreeNode};
+        Ok(plan.transform_up(|plan| {
+            if let Some(range) = plan.as_ref()
+                .downcast_ref::<crate::partitioned::ProtectedRangeRepartitionExec>()
+                && let Some(input) = range.identity_input()
+            {
+                return Ok(Transformed::yes(input));
+            }
+            Ok(Transformed::no(plan))
+        })?.data)
+    }
+}
+
 fn session_state(target_partitions: usize) -> datafusion::execution::SessionState {
     // Vail source partitions are observable. DataFusion may otherwise insert
     // a round-robin repartition to the host's core count after a narrow filter.
@@ -1237,6 +1417,7 @@ fn with_metadata_optimizer(
         Arc<dyn datafusion::physical_optimizer::PhysicalOptimizerRule + Send + Sync>,
     > = vec![Arc::new(MetadataCrossJoin)];
     rules.extend(state.physical_optimizers().iter().cloned());
+    rules.push(Arc::new(EliminateIdentityRanges));
     datafusion::execution::session_state::SessionStateBuilder::new_from_existing(state)
         .with_physical_optimizer_rules(rules)
         .build()
@@ -1244,7 +1425,11 @@ fn with_metadata_optimizer(
 
 pub(crate) async fn physical_globals(globals: &crate::globals::GlobalsRef) -> Result<PhysicalPlan> {
     let target = match globals.node() {
-        crate::globals::Node::Aggregate { table, .. } => max_partitions(table),
+        crate::globals::Node::Aggregate {
+            table,
+            expression,
+            ..
+        } => total_aggregate_target(table, expression),
         _ => 1,
     };
     physical_plan(crate::logical_globals::lower(globals)?, target).await
@@ -1364,6 +1549,17 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 )));
             }
         }
+        if let Some(node) = node.as_any().downcast_ref::<ProtectedRoundRobinNode>() {
+            let input = physical_inputs.first().ok_or_else(|| {
+                DataFusionError::Plan("protected round-robin needs one input".into())
+            })?;
+            return Ok(Some(Arc::new(
+                crate::partitioned::ProtectedRoundRobinRepartitionExec::new(
+                    input.clone(),
+                    node.partitions,
+                )?,
+            )));
+        }
         if let Some(node) = node.as_any().downcast_ref::<RestorePartitionsNode>() {
             let input = &physical_inputs[0];
             // Keep the restoration boundary even for one logical partition:
@@ -1378,7 +1574,10 @@ impl ExtensionPlanner for VailExtensionPlanner {
             let ranges = RangePartitioning::try_new(
                 LexOrdering::new(vec![PhysicalSortExpr::new(
                     key,
-                    arrow_schema::SortOptions::default(),
+                    arrow_schema::SortOptions {
+                        descending: false,
+                        nulls_first: false,
+                    },
                 )])
                 .expect("one partition sort key"),
                 splits,

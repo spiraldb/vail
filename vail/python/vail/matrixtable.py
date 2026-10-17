@@ -85,6 +85,26 @@ def _axes(node, *, outside_aggregates=False):
     return set()
 
 
+def _project_context_fields(value, paths):
+    if paths is None:
+        return value
+    if () in paths:
+        return value
+    by_field = {}
+    for path in paths:
+        if path:
+            by_field.setdefault(path[0], set()).add(path[1:])
+    children = {}
+    for name, tails in sorted(by_field.items()):
+        child = value[name]
+        children[name] = (
+            child
+            if () in tails or not isinstance(child.dtype, tstruct)
+            else _project_context_fields(child, tails)
+        )
+    return struct(**children)
+
+
 def _uses_axis_field(node, axis):
     """Whether an expression directly reads a row/column field."""
     if isinstance(node, IR_NODE_TYPES):
@@ -97,6 +117,18 @@ def _uses_axis_field(node, axis):
         return any(_uses_axis_field(value, axis) for value in node.values())
     if isinstance(node, list):
         return any(_uses_axis_field(value, axis) for value in node)
+    return False
+
+
+def _uses_column_position(node):
+    if isinstance(node, IR_NODE_TYPES):
+        if node.get("op") == "literal":
+            return False
+        return node.get("op") == "matrix_column_position" or any(
+            _uses_column_position(value) for value in node.values()
+        )
+    if isinstance(node, list):
+        return any(_uses_column_position(value) for value in node)
     return False
 
 
@@ -400,10 +432,17 @@ class MatrixTable:
         positions = columns.aggregate(agg.collect(columns[self._column_position_name]), _localize=False)
         return self._with_column_positions(positions)
 
-    def _cell_contexts(self, base):
+    def _cell_contexts(self, base, *, col_fields=None):
         # Zip columns before entering any lambda. Capturing the whole column
         # list inside the callback makes DF replicate it for every cell.
-        return _zip_arrays(_indexed_cells(base[_CELLS]), self._mir.column_records)
+        columns = self._mir.column_records
+        if col_fields is not None:
+            columns = columns.map(
+                lambda record: struct(
+                    **{_COL: _project_context_fields(record[_COL], col_fields)}
+                )
+            )
+        return _zip_arrays(_indexed_cells(base[_CELLS]), columns)
 
     def _without_row_index_keys(self):
         names = self._mir.row_index_keys
@@ -551,19 +590,32 @@ class MatrixTable:
         check_initializers(expr.to_ir())
         return expr
 
-    def _context(self, axis):
+    def _context(self, axis, *, with_columns=True, with_rows=True):
         if axis in ("row", "global"):
             return self._mir.core
         if axis == "col":
             return self._mir.cols
         base = self._mir.core
         name = "__vail_matrix_context"
-        source = base.annotate(**{name: _zip_arrays(base[_CELLS], self._mir.column_records)}).explode(name)
+        row_fields = [(_ROW, base[_ROW])] if with_rows else []
+        if not with_columns:
+            source = _project(base, row_fields + [(name, base[_CELLS])]).explode(name)
+            source = source.filter(source[name][_PRESENT])
+            cell = source[name]
+            return _project(source, ([(_ROW, source[_ROW])] if with_rows else []) + [
+                (_ENTRY, cell[_VALUE] if len(self.entry.dtype) else struct()),
+            ])
+        # Drop the original cell array before UNNEST: retaining it would
+        # duplicate that whole array once for every emitted entry.
+        source = _project(base, [
+            *row_fields,
+            (name, _zip_arrays(base[_CELLS], self._mir.column_records)),
+        ]).explode(name)
         cell = source[name]["1"]
         source = source.filter(cell[_PRESENT])
         cell = source[name]["1"]
-        return _project(source, [
-            (_ROW, source[_ROW]), (_CID, cell[_CID]),
+        return _project(source, ([(_ROW, source[_ROW])] if with_rows else []) + [
+            (_CID, cell[_CID]),
             (_ENTRY, cell[_VALUE] if len(self.entry.dtype) else struct()),
             (_COL, source[name]["2"][_COL]),
         ])
@@ -654,12 +706,18 @@ class MatrixTable:
 
         return Expression(expr.dtype, base, _IR(rewrite(expr.to_ir()), refs, lookups))
 
-    def _row_contexts(self, base, *, filter_present=True, with_position=True):
+    def _row_contexts(
+        self, base, *, filter_present=True, with_position=True,
+        entry_fields=None, col_fields=None,
+    ):
         cells = base[_CELLS]
         if with_position:
-            contexts = self._cell_contexts(base).map(
+            contexts = self._cell_contexts(base, col_fields=col_fields).map(
                 lambda item: struct(
-                    entry=item["1"]["1"][_VALUE] if len(self.entry.dtype) else struct(),
+                    entry=(
+                        _project_context_fields(item["1"]["1"][_VALUE], entry_fields)
+                        if len(self.entry.dtype) else struct()
+                    ),
                     present=item["1"]["1"][_PRESENT],
                     column_id=item["1"]["1"][_CID],
                     position=item["1"]["2"],
@@ -673,7 +731,10 @@ class MatrixTable:
             # the scalar values are projected.
             contexts = cells.map(
                 lambda cell: struct(
-                    entry=(cell[_VALUE] if len(self.entry.dtype) else struct()),
+                    entry=(
+                        _project_context_fields(cell[_VALUE], entry_fields)
+                        if len(self.entry.dtype) else struct()
+                    ),
                     present=cell[_PRESENT],
                     bindings=struct(),
                 )
@@ -719,6 +780,36 @@ class MatrixTable:
             if direct is not None:
                 return direct
             return reduce_list(self, expr, base, self._row_aggregate_contexts(expr, base))
+        node = expr.to_ir()
+        if (axis == "col" and node.get("op") == "aggregate"
+                and node.get("function") == "sum"
+                and not _uses_axis_field(node["value"], "col")
+                and not node.get("init")
+                and set(node.get("options", {})) <= {"__vail_result_type"}):
+            # Cell positions already align with the global column array.
+            # Reduce each position with DataFusion's coordinate aggregate,
+            # avoiding an explode and a hash lookup for every matrix entry.
+            from . import agg, cast, is_missing, len as length, repeat
+
+            core = self._mir.core
+            argument = _expression(expr.dtype, self, node["value"], expr)
+            values = core[_CELLS].map(lambda cell: if_else(
+                cell[_PRESENT],
+                cast(self._lower_cell(argument, core, cell, struct()), expr.dtype),
+                missing(expr.dtype),
+            ))
+            totals = core.aggregate(agg.array_sum(values), _localize=False)
+            # An empty row axis still has one zero result per column.
+            totals = if_else(
+                is_missing(totals) | (length(totals) == 0),
+                repeat(literal(0, expr.dtype), length(self._mir.column_records)),
+                totals,
+            )
+            records = _zip_arrays(self._mir.column_records, totals).map(
+                lambda pair: struct(**{_CID: pair["1"][_CID], "value": pair["2"]})
+            )
+            results = Table.parallelize(records).key_by(_CID)
+            return results.index(base[_CID]).value
         context = self._context("entry")
         refs, lookups = dict(expr._global_refs), dict(expr._lookup_refs)
 
@@ -778,42 +869,32 @@ class MatrixTable:
             base, prepared = self._prepare_row_lookups(base, [v for _, v in fields])
             fields = [(n, v) for (n, _), v in zip(fields, prepared)]
             uses_column = any(_uses_axis_field(v.to_ir(), "col") for _, v in fields)
+            def project_cell(cell, column, position=None):
+                return struct(**{
+                    _CID: cell[_CID],
+                    _PRESENT: cell[_PRESENT],
+                    _VALUE: struct(**{
+                        n: self._lower_cell(v, base, cell, column, position)
+                        for n, v in fields
+                    }),
+                })
+
             if uses_column:
-                cells = self._cell_contexts(base).map(
-                    lambda item: struct(
-                        **{
-                            _CID: item["1"]["1"][_CID],
-                            _PRESENT: item["1"]["1"][_PRESENT],
-                            _VALUE: struct(
-                                **{
-                                    n: self._lower_cell(
-                                        v, base, item["1"]["1"],
-                                        item["2"][_COL], item["1"]["2"],
-                                    )
-                                    for n, v in fields
-                                }
-                            ),
-                        }
+                if any(_uses_column_position(v.to_ir()) for _, v in fields):
+                    cells = self._cell_contexts(base).map(
+                        lambda item: project_cell(
+                            item["1"]["1"], item["2"][_COL], item["1"]["2"],
+                        )
                     )
-                )
+                else:
+                    cells = _zip_arrays(base[_CELLS], self._mir.column_records).map(
+                        lambda item: project_cell(item["1"], item["2"][_COL])
+                    )
             else:
                 # Entry expressions scoped only to rows/globals/entries need
                 # no column records or positions: preserve the owning cell
                 # identity and presence directly while projecting its value.
-                cells = base[_CELLS].map(
-                    lambda cell: struct(
-                        **{
-                            _CID: cell[_CID],
-                            _PRESENT: cell[_PRESENT],
-                            _VALUE: struct(
-                                **{
-                                    n: self._lower_cell(v, base, cell, struct())
-                                    for n, v in fields
-                                }
-                            ),
-                        }
-                    )
-                )
+                cells = base[_CELLS].map(lambda cell: project_cell(cell, struct()))
             projected = _project(
                 base,
                 [(_ROW, base[_ROW]), (_CELLS, cells)]
@@ -1108,12 +1189,17 @@ class MatrixTable:
             axis == "row"
             and key
             and bool(self._mir.row_index_keys)
-            and self._mir.row_index_keys == self._mir.row_key
         )
         if preserve_index:
             index_keys = self._mir.row_key
+            aliases = dict(zip(index_keys, self._mir.row_index_keys))
+            if self._mir.row_index_keys != index_keys:
+                # Renaming certified key aliases changes metadata only. Drop
+                # the old key names before projecting their public names.
+                table = table.key_by()
+                value = table[_ROW]
             projected = table._project(
-                [(n, table[n] if n in index_keys else value[n]) for n in names],
+                [(n, table[aliases[n]] if n in aliases else value[n]) for n in names],
                 keys=index_keys,
             )._with_keys(*index_keys)
             output = projected
@@ -1195,7 +1281,10 @@ class MatrixTable:
                     self, expr, core, None, direct_entry_sum=True
                 )
             return core.aggregate(aggregate_sum(row_total), _localize=localize)
-        table = self._context(axis)
+        table = self._context(
+            axis, with_columns=_uses_axis_field(node, "col"),
+            with_rows=_uses_axis_field(node, "row"),
+        )
         if axis == "col" and self._mir.col_key:
             table = table.order_by(
                 *(table[_COL][n] for n in self._mir.col_key)
@@ -1223,7 +1312,10 @@ class MatrixTable:
             if axes == {"col"}
             else "global"
         )
-        table = self._context(axis) if axis != "global" else self.globals_table()
+        table = self.globals_table() if axis == "global" else self._context(
+            axis, with_columns=_uses_axis_field(expr.to_ir(), "col"),
+            with_rows=_uses_axis_field(expr.to_ir(), "row"),
+        )
         lowered = self._lower(expr, table)
         output = _project(table, [("value", lowered)])
         if n is not None:
@@ -1455,7 +1547,11 @@ class MatrixTable:
         )
         output = _project(
             base, [(n, base[_ROW][n]) for n in self.row.dtype] + [(en, entries)]
-        ).key_by(*self._mir.row_key)
+        )
+        if self._mir.row_index_keys:
+            output = output._with_keys(*self._mir.row_key)
+        else:
+            output = output.key_by(*self._mir.row_key)
         columns = self._public_axis("col", key=False)
         output = self._with_globals(output).annotate_globals(
             **{cn: columns.aggregate(agg.collect(columns.row), _localize=False)}

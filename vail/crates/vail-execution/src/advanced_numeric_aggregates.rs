@@ -1025,9 +1025,10 @@ fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, Expr
     }
     let xt = fields[1].data_type();
     let n_actual = match xt {
+        DataType::Struct(xs) if xs.iter().all(|f| f.data_type() == &DataType::Float64) => xs.len(),
         DataType::List(f) if *f.data_type() == DataType::Float64 => p,
         DataType::Float64 => 1,
-        _ => return Err(invalid("linreg x must be float64 or array<float64>")),
+        _ => return Err(invalid("linreg x must contain float64 predictors")),
     };
     if n_actual != p {
         return Err(invalid("linreg n_predictors does not match x type"));
@@ -1131,6 +1132,34 @@ impl LinregAccumulator {
                 self.work[k] = c * value - sine * old;
             }
         }
+    }
+    fn accumulate_observation(&mut self, x: &[f64], y: f64, weight: f64) {
+        if weight < 0.0 || !weight.is_finite() || !y.is_finite() || x.iter().any(|v| !v.is_finite())
+        {
+            self.invalid_numeric = true;
+            return;
+        }
+        if !self.origin_set && x[0] != 0.0 {
+            for j in 1..self.p {
+                let origin = x[j] / x[0];
+                self.origins[j] = if origin.is_finite() { origin } else { 0.0 };
+            }
+            let origin = y / x[0];
+            self.origins[self.p] = if origin.is_finite() { origin } else { 0.0 };
+            self.origin_set = true;
+        }
+        let scale = weight.sqrt();
+        self.work[0] = scale * x[0];
+        for j in 1..self.p {
+            self.work[j] = scale * (-self.origins[j]).mul_add(x[0], x[j]);
+        }
+        self.work[self.p] = scale * (-self.origins[self.p]).mul_add(x[0], y);
+        if self.work.iter().any(|value| !value.is_finite()) {
+            self.invalid_numeric = true;
+            return;
+        }
+        self.append_work();
+        self.n += 1;
     }
     fn result(&self) -> DfResult<ScalarValue> {
         let DataType::Struct(fields) = linreg_type() else {
@@ -1284,8 +1313,35 @@ impl Accumulator for LinregAccumulator {
             .as_any()
             .downcast_ref::<Float64Array>()
             .ok_or_else(|| DataFusionError::Execution("linreg y must be float64".into()))?;
-        let lists = columns[1].as_any().downcast_ref::<ListArray>();
-        let scalar = columns[1].as_any().downcast_ref::<Float64Array>();
+        let predictors = columns[1].as_ref();
+        let lists = predictors.as_any().downcast_ref::<ListArray>();
+        let scalar = predictors.as_any().downcast_ref::<Float64Array>();
+        let predictor_columns = predictors
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .map(|xs| {
+                if xs.columns().len() != self.p {
+                    return Err(DataFusionError::Execution(format!(
+                        "linreg predictor struct has {} fields, expected {}",
+                        xs.columns().len(),
+                        self.p
+                    )));
+                }
+                xs.columns()
+                    .iter()
+                    .map(|column| {
+                        column
+                            .as_any()
+                            .downcast_ref::<Float64Array>()
+                            .ok_or_else(|| {
+                                DataFusionError::Execution(
+                                    "linreg predictors must be float64".into(),
+                                )
+                            })
+                    })
+                    .collect::<DfResult<Vec<_>>>()
+            })
+            .transpose()?;
         let children = lists
             .map(|list| {
                 list.values()
@@ -1308,60 +1364,46 @@ impl Accumulator for LinregAccumulator {
         } else {
             None
         };
+        // Pick the input representation once per batch. Struct predictors use one
+        // reusable scratch vector; list predictors borrow directly from Arrow values.
+        let mut scratch = vec![0.0; self.p];
         for row in 0..rows.len() {
             if rows.is_null(row)
                 || ys.is_null(row)
-                || columns[1].is_null(row)
+                || predictors.is_null(row)
                 || weights.is_some_and(|w| w.is_null(row))
             {
                 continue;
             }
-            let x = if let (Some(lists), Some(children)) = (lists, children) {
-                let start = lists.value_offsets()[row] as usize;
-                let end = lists.value_offsets()[row + 1] as usize;
-                if end - start != self.p || (start..end).any(|i| children.is_null(i)) {
+            let x: &[f64] = if let Some(xs) = &predictor_columns {
+                if xs.iter().any(|column| column.is_null(row)) {
                     continue;
                 }
-                &children.values()[start..end]
-            } else if let Some(scalar) = scalar {
-                std::slice::from_ref(&scalar.values()[row])
-            } else {
-                continue;
-            };
-            if x.len() != self.p {
-                continue;
-            }
-            let weight = weights.map_or(1., |values| values.value(row));
-            let y = ys.value(row);
-            self.n += 1;
-            if weight < 0.
-                || !weight.is_finite()
-                || !y.is_finite()
-                || x.iter().any(|x| !x.is_finite())
-            {
-                self.invalid_numeric = true;
-                continue;
-            }
-            if !self.origin_set && x[0] != 0. {
-                for j in 1..self.p {
-                    let origin = x[j] / x[0];
-                    self.origins[j] = if origin.is_finite() { origin } else { 0. };
+                for (slot, column) in scratch.iter_mut().zip(xs) {
+                    *slot = column.value(row);
                 }
-                let origin = y / x[0];
-                self.origins[self.p] = if origin.is_finite() { origin } else { 0. };
-                self.origin_set = true;
-            }
-            let scale = weight.sqrt();
-            self.work[0] = scale * x[0];
-            for j in 1..self.p {
-                self.work[j] = scale * (-self.origins[j]).mul_add(x[0], x[j]);
-            }
-            self.work[self.p] = scale * (-self.origins[self.p]).mul_add(x[0], y);
-            if self.work.iter().any(|value| !value.is_finite()) {
-                self.invalid_numeric = true;
-                continue;
-            }
-            self.append_work();
+                &scratch
+            } else if let (Some(list), Some(values)) = (lists, children) {
+                let offsets = list.value_offsets();
+                let start = offsets[row] as usize;
+                let end = offsets[row + 1] as usize;
+                if end - start != self.p || (start..end).any(|i| values.is_null(i)) {
+                    continue;
+                }
+                &values.values()[start..end]
+            } else if let Some(values) = scalar {
+                if self.p != 1 {
+                    return Err(DataFusionError::Execution(
+                        "linreg scalar predictor requires exactly one predictor".into(),
+                    ));
+                }
+                std::slice::from_ref(&values.values()[row])
+            } else {
+                return Err(DataFusionError::Execution(
+                    "linreg x has unsupported predictor representation".into(),
+                ));
+            };
+            self.accumulate_observation(x, ys.value(row), weights.map_or(1.0, |w| w.value(row)));
         }
         Ok(())
     }

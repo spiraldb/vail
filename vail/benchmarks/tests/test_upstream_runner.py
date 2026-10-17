@@ -14,7 +14,7 @@ coverage = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(coverage)
 
 
-def slow_shutdown_worker(case, engine, smoke, data_dir, queue):
+def slow_shutdown_worker(case, engine, smoke, data_dir, queue, start_event=None):
     os.setsid()
     queue.put({"status": "ready"})
     queue.put(case["result"])
@@ -31,6 +31,7 @@ def test_completed_result_survives_slow_shutdown(monkeypatch, result):
 
     class SlowShutdownContext:
         Queue = staticmethod(context.Queue)
+        Event = staticmethod(context.Event)
 
         @staticmethod
         def Process(*, target, args):
@@ -69,7 +70,7 @@ def test_inventory_binds_every_upstream_argument():
     ]
 
 
-def crash_worker(case, engine, smoke, data_dir, queue):
+def crash_worker(case, engine, smoke, data_dir, queue, start_event=None):
     os.setsid()
     if case["after_ready"]:
         queue.put({"status": "ready"})
@@ -83,6 +84,7 @@ def test_worker_exit_is_reported_without_waiting_for_timeout(monkeypatch, after_
 
     class CrashContext:
         Queue = staticmethod(context.Queue)
+        Event = staticmethod(context.Event)
 
         @staticmethod
         def Process(*, target, args):

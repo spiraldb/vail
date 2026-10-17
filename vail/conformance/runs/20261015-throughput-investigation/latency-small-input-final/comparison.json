@@ -1,0 +1,79 @@
+{
+  "phases": {
+    "before": {
+      "package": "/private/tmp/vail-profile-fanout-recovered-20261015",
+      "native_sha256": "a5a6a66114deeb7d123d0f825d7b4f4bdf838e379ce819b1a1a19c564434dfbf",
+      "cases": {
+        "0": {
+          "median_wall_ms": 4.0743125,
+          "p95_wall_ms": 34.87537645
+        },
+        "1": {
+          "median_wall_ms": 3.3331665,
+          "p95_wall_ms": 23.260734750000005
+        },
+        "32": {
+          "median_wall_ms": 3.7828545,
+          "p95_wall_ms": 22.38061455
+        },
+        "1024": {
+          "median_wall_ms": 4.10625,
+          "p95_wall_ms": 35.86195175
+        }
+      }
+    },
+    "after": {
+      "package": "/private/tmp/vail-small-input-final-package-20261015",
+      "native_sha256": "180f6f25bf286f96fd346450d9d2fcbc54d8903b5e705827527667d6ce6cafd9",
+      "cases": {
+        "0": {
+          "median_wall_ms": 3.676271,
+          "p95_wall_ms": 28.62041905
+        },
+        "1": {
+          "median_wall_ms": 4.0504995,
+          "p95_wall_ms": 27.927091349999994
+        },
+        "32": {
+          "median_wall_ms": 5.7908335,
+          "p95_wall_ms": 45.5110351
+        },
+        "1024": {
+          "median_wall_ms": 3.811708,
+          "p95_wall_ms": 19.4975253
+        }
+      }
+    }
+  },
+  "acceptance_overhead_ms": 1.0,
+  "comparison": {
+    "0": {
+      "before_median_wall_ms": 4.0743125,
+      "after_median_wall_ms": 3.676271,
+      "absolute_overhead_ms": -0.3980414999999997,
+      "ratio": 0.9023046219454203,
+      "passed": true
+    },
+    "1": {
+      "before_median_wall_ms": 3.3331665,
+      "after_median_wall_ms": 4.0504995,
+      "absolute_overhead_ms": 0.717333,
+      "ratio": 1.2152106712940982,
+      "passed": true
+    },
+    "32": {
+      "before_median_wall_ms": 3.7828545,
+      "after_median_wall_ms": 5.7908335,
+      "absolute_overhead_ms": 2.0079789999999997,
+      "ratio": 1.5308105294559968,
+      "passed": false
+    },
+    "1024": {
+      "before_median_wall_ms": 4.10625,
+      "after_median_wall_ms": 3.811708,
+      "absolute_overhead_ms": -0.2945420000000003,
+      "ratio": 0.9282698325722982,
+      "passed": true
+    }
+  }
+}

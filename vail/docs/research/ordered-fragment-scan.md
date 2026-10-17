@@ -18,6 +18,15 @@ their full inputs. Certified key fields remain intact. Join cells push full-key
 bounds into indexed readers, and integer range sources generate only the
 intersecting slice. Unsupported index domains retain residual filtering.
 
+The nested-list reader change is submitted upstream as
+[Vortex PR #10506](https://github.com/vortex-data/vortex/pull/10506)
+(commit `92c691356cb086f3f5aef131e56a41a66215c5b6`). The two local
+`patches/vortex-*` crates temporarily backport it to the pinned Vortex 0.86.1,
+including the nullable-root prerequisites already present on upstream develop.
+Remove these overrides when upgrading to a release containing the change.
+The upstream patch passed 109 focused array/list/struct tests, including an I/O
+regression that rejects reading an unrequested element-field segment.
+
 Current update (2026-09-29): new certificates use `vail-total-order-key-v3`,
 with IEEE 754 totalOrder for both float widths and recursive total ordering
 for composite values. Keyed v2 snapshots are rejected rather than treating

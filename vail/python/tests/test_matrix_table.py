@@ -3,6 +3,7 @@
 from vail.expressions import IR_NODE_TYPES
 
 import json
+import math
 import subprocess
 import os
 import sys
@@ -33,6 +34,18 @@ def test_row_scoped_entry_projection_and_filter_skip_column_context_zip(monkeypa
     assert [row.row_value for row in selected.entries().collect()] == [5, 6, 7, 16, 17, 18]
     assert [row.row_value for row in filtered.entries().collect()] == [16, 17, 18]
     assert [row.row_value for row in transmuted.entries().collect()] == [1, 1, 1, 2, 2, 2]
+
+
+def test_named_column_entry_projection_does_not_construct_positions(monkeypatch):
+    import vail.matrixtable as module
+
+    m = matrix(2, 3).choose_cols([2, 0, 2])
+    m = m.filter_entries(m.col_idx != 0)
+    def unexpected(*args, **kwargs):
+        raise AssertionError("named column projection constructed position indices")
+    monkeypatch.setattr(module, "_indexed_cells", unexpected)
+    result = m.annotate_entries(y=m.row_idx + m.col_idx + m.x)
+    assert result.y.collect() == [9, 9, 20, 20]
 
 
 @pytest.mark.parametrize("nr,nc", [(0, 0), (0, 3), (3, 0), (2, 3)])
@@ -286,6 +299,80 @@ def test_row_column_aggregation_and_empty_initialization():
     ] * 3
     assert m.filter_rows(hl.agg.sum(m.x) > 20).row_idx.collect() == [1, 2]
     assert hl.eval(m.aggregate_cols(hl.agg.count(), _localize=False)) == 2
+
+
+def test_row_boolean_aggregations_handle_missing_and_empty_values():
+    m = hl.range_matrix_table(1, 3, 1)
+    predicate = hl.if_else(
+        m.col_idx == 0,
+        True,
+        hl.if_else(m.col_idx == 1, False, hl.missing(hl.tbool)),
+    )
+
+    def aggregate(matrix):
+        return matrix.annotate_rows(
+            n=hl.agg.count_where(matrix.predicate),
+            any=hl.agg.any(matrix.predicate),
+            all=hl.agg.all(matrix.predicate),
+            fraction=hl.agg.fraction(matrix.predicate),
+        ).rows().collect()[0]
+
+    mixed = aggregate(m.annotate_entries(predicate=predicate))
+    assert (mixed.n, mixed.any, mixed.all, mixed.fraction) == (1, True, False, 1 / 3)
+
+    all_missing = aggregate(m.annotate_entries(predicate=hl.missing(hl.tbool)))
+    assert (all_missing.n, all_missing.any, all_missing.all, all_missing.fraction) == (
+        0, False, True, 0.0
+    )
+
+    empty = aggregate(m.annotate_entries(predicate=predicate).filter_entries(False))
+    assert (empty.n, empty.any, empty.all) == (0, False, True)
+    assert math.isnan(empty.fraction)
+
+
+def test_row_aggregation_context_projection_preserves_values():
+    m = hl.range_matrix_table(2, 3, 1)
+    m = m.annotate_cols(sex=hl.if_else(m.col_idx == 0, "F", "M"))
+    m = m.annotate_entries(
+        record=hl.struct(
+            gt=m.col_idx,
+            nested=hl.struct(keep=m.col_idx > 0, unused=m.row_idx),
+        ),
+        unrelated=m.row_idx + m.col_idx,
+    )
+    rows = m.annotate_rows(
+        selected=hl.agg.count_where(
+            (m.record.nested.keep) & (m.sex == "M")
+        )
+    )
+
+    assert rows.selected.collect() == [2, 2]
+
+    ancestor_and_leaf = m.annotate_rows(
+        selected=hl.agg.count_where(
+            hl.is_defined(m.record) & m.record.nested.keep
+        )
+    )
+    assert ancestor_and_leaf.selected.collect() == [2, 2]
+
+    missing_parent = m.annotate_entries(
+        record=hl.if_else(
+            m.col_idx == 0,
+            hl.missing(m.record.dtype),
+            m.record,
+        )
+    )
+    missing_rows = missing_parent.annotate_rows(
+        selected=hl.agg.count_where(hl.is_defined(missing_parent.record.nested.keep))
+    )
+    assert missing_rows.selected.collect() == [2, 2]
+
+    whole = m.annotate_rows(records=hl.agg.collect(m.entry))
+    assert whole.records.collect()[0] == [
+        {"record": {"gt": 0, "nested": {"keep": False, "unused": 0}}, "unrelated": 0},
+        {"record": {"gt": 1, "nested": {"keep": True, "unused": 0}}, "unrelated": 1},
+        {"record": {"gt": 2, "nested": {"keep": True, "unused": 0}}, "unrelated": 2},
+    ]
 
 
 @pytest.mark.parametrize(
@@ -738,6 +825,99 @@ def test_row_aligned_entry_lookup_filters_preserve_presence():
     assert filtered.count() == (2, 2)
     assert filtered.x.collect() == [15, 16]
     assert filtered.unfilter_entries().x.collect() == [None, None, 15, 16]
+
+
+def test_column_sum_preserves_positions_missing_entries_and_empty_rows():
+    m = hl.range_matrix_table(4, 5, 3)
+    m = m.annotate_entries(x=hl.or_missing(m.row_idx != 1, m.row_idx * 10 + m.col_idx))
+    m = m.key_cols_by().choose_cols([4, 1, 4])
+    m = m.filter_entries(m.col_idx != 1)
+    result = m.annotate_cols(total=hl.agg.sum(m.x))
+    assert [(row.col_idx, row.total) for row in result.cols().collect()] == [
+        (4, 62), (1, 0), (4, 62),
+    ]
+    empty = hl.range_matrix_table(0, 3, 2)
+    empty = empty.annotate_entries(x=hl.int32(1))
+    assert empty.annotate_cols(total=hl.agg.sum(empty.x)).total.collect() == [0, 0, 0]
+
+
+def test_column_sum_preserves_many_partitions_and_missing_values():
+    m = hl.range_matrix_table(80, 3, 80).choose_cols([2, 0, 2])
+    m = m.annotate_entries(x=hl.if_else(
+        m.row_idx % 3 == 0, hl.missing(hl.tint32), m.row_idx * 10 + m.col_idx,
+    ))
+    m = m.filter_entries(m.row_idx % 2 == 0)
+    result = m.annotate_cols(total=hl.agg.sum(m.x))
+    assert result.n_partitions() == 80
+    assert result.total.dtype == hl.tint64
+    assert result.total.collect() == [
+        sum(row * 10 + column for row in range(80) if row % 2 == 0 and row % 3 != 0)
+        for column in [2, 0, 2]
+    ]
+    empty = m.filter_rows(False)
+    assert empty.annotate_cols(total=hl.agg.sum(empty.x)).total.collect() == [0, 0, 0]
+
+
+def test_row_aggregations_skip_unreferenced_column_context(monkeypatch):
+    m = hl.range_matrix_table(3, 4, 2)
+    m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
+    def unexpected(*args, **kwargs):
+        raise AssertionError("entry-only row reduction requested column contexts")
+    monkeypatch.setattr(hl.MatrixTable, "_cell_contexts", unexpected)
+    result = m.annotate_rows(total=hl.agg.sum(m.x), n=hl.agg.count())
+    assert result.total.collect() == [6, 46, 86]
+    assert result.n.collect() == [4, 4, 4]
+
+
+def test_localization_preserves_indexed_row_order_without_resorting(tmp_path):
+    m = hl.range_matrix_table(20, 4, 4)
+    m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
+    path = str(tmp_path / "localized.mt")
+    m.write(path)
+    restored = hl.read_matrix_table(path)
+    assert restored._mir.row_index_keys
+    localized = restored.localize_entries("entries", "columns")
+    assert "SortExec:" not in localized._native.physical_plan()
+    rows = localized.head(3).collect()
+    assert [row.row_idx for row in rows] == [0, 1, 2]
+    assert [[entry.x for entry in row.entries] for row in rows] == [
+        [0, 1, 2, 3], [10, 11, 12, 13], [20, 21, 22, 23],
+    ]
+
+
+def test_entry_aggregations_skip_unreferenced_column_context(monkeypatch):
+    import vail.matrixtable as module
+
+    m = hl.range_matrix_table(3, 4, 2)
+    m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
+    m = m.filter_entries(m.col_idx % 2 == 0)
+    def unexpected(*args, **kwargs):
+        raise AssertionError("entry-only aggregation requested column contexts")
+    monkeypatch.setattr(module, "_zip_arrays", unexpected)
+    result = m.aggregate_entries(hl.struct(stats=hl.agg.stats(m.x), n=hl.agg.count()))
+    assert result.n == 6
+    assert result.stats.sum == 66
+    assert result.stats.mean == 11
+
+
+def test_entry_context_drops_cell_array_before_exploding(monkeypatch):
+    import vail.matrixtable as module
+
+    m = matrix(2, 3)
+    schemas = []
+    original = hl.Table.explode
+    def explode(table, field, *args, **kwargs):
+        if field == "__vail_matrix_context":
+            assert module._CELLS not in table._schema
+            schemas.append(set(table._schema))
+        return original(table, field, *args, **kwargs)
+    monkeypatch.setattr(hl.Table, "explode", explode)
+    assert m.aggregate_entries(hl.agg.stats(m.x)).sum == 66
+    assert module._ROW not in schemas[-1]
+    assert m.x.take(2) == [5, 6]
+    assert module._ROW not in schemas[-1]
+    assert len(m.entries().collect()) == 6
+    assert module._ROW in schemas[-1]
 
 
 def test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback():

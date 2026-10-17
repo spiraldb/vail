@@ -3,7 +3,7 @@ use datafusion_execution::{TaskContext, config::SessionConfig, runtime_env::Runt
 use datafusion_physical_plan::{ExecutionPlan, ExecutionPlanProperties, execution_plan::collect};
 use serde_json::json;
 use std::sync::Arc;
-use vail_execution::expressions::{PrimitiveType, Type};
+use vail_execution::expressions::{BinaryOperator, PrimitiveType, Type};
 use vail_table::{ScalarIR, TableIR, plan};
 
 fn find<'a>(plan: &'a dyn ExecutionPlan, name: &str) -> Option<&'a dyn ExecutionPlan> {
@@ -81,6 +81,250 @@ async fn singleton_globals_and_rows_are_both_datafusion_plans() {
     assert_eq!(mapped.count().await.unwrap(), 8);
     let dropped = table.map_globals(vec![]).unwrap();
     assert_eq!(dropped.globals().evaluate().await.unwrap().num_rows(), 1);
+}
+
+#[tokio::test]
+async fn nested_unkey_and_row_maps_preserve_rows_globals_and_filters() {
+    let source = TableIR::range(16, 4)
+        .unwrap()
+        .with_keys(vec!["idx".into()])
+        .unwrap()
+        .map_globals(
+            ["g0", "g1", "g2"]
+                .into_iter()
+                .map(|name| {
+                    (
+                        name.into(),
+                        ScalarIR::Literal {
+                            dtype: Type::Primitive(PrimitiveType::Int32),
+                            value: json!(5),
+                        },
+                    )
+                })
+                .collect(),
+        )
+        .unwrap();
+    let source_rows = source
+        .collect_partitions()
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|partition| {
+            partition
+                .into_iter()
+                .flat_map(|batch| {
+                    batch
+                        .column(0)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap()
+                        .values()
+                        .to_vec()
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let mut mapped = source;
+    for i in 0..20 {
+        mapped = mapped
+            .key_by(vec![])
+            .unwrap()
+            .map_rows(vec![
+                ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+                (
+                    format!("v{i}"),
+                    ScalarIR::Column { name: "idx".into() },
+                ),
+            ])
+            .unwrap();
+    }
+
+    let mapped_rows = mapped
+        .collect_partitions()
+        .await
+        .unwrap()
+        .into_iter()
+        .map(|partition| {
+            partition
+                .into_iter()
+                .flat_map(|batch| {
+                    let idx = batch
+                        .column(0)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap();
+                    let annotated = batch
+                        .column(1)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap();
+                    (0..batch.num_rows())
+                        .map(|row| (idx.value(row), annotated.value(row)))
+                        .collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let expected_mapped_rows = source_rows
+        .iter()
+        .map(|partition| partition.iter().map(|&idx| (idx, idx)).collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+    assert_eq!(mapped_rows, expected_mapped_rows);
+    assert_eq!(mapped.globals().evaluate().await.unwrap().num_rows(), 1);
+
+    let predicate = ScalarIR::Binary {
+        operator: BinaryOperator::Ge,
+        left: Box::new(ScalarIR::Column { name: "idx".into() }),
+        right: Box::new(ScalarIR::Literal {
+            dtype: Type::Primitive(PrimitiveType::Int32),
+            value: json!(8),
+        }),
+    };
+    let kept = mapped.filter(predicate.clone(), true).unwrap();
+    let removed = mapped.filter(predicate, false).unwrap();
+    let filtered_values = |partitions: Vec<Vec<arrow_array::RecordBatch>>| {
+        partitions
+            .into_iter()
+            .map(|partition| {
+                partition
+                    .into_iter()
+                    .flat_map(|batch| {
+                        batch
+                            .column(0)
+                            .as_any()
+                            .downcast_ref::<Int32Array>()
+                            .unwrap()
+                            .values()
+                            .to_vec()
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>()
+    };
+    let expected_kept = source_rows
+        .iter()
+        .map(|partition| partition.iter().copied().filter(|&idx| idx >= 8).collect())
+        .collect::<Vec<Vec<_>>>();
+    let expected_removed = source_rows
+        .iter()
+        .map(|partition| partition.iter().copied().filter(|&idx| idx < 8).collect())
+        .collect::<Vec<Vec<_>>>();
+    assert_eq!(
+        filtered_values(kept.collect_partitions().await.unwrap()),
+        expected_kept
+    );
+    assert_eq!(
+        filtered_values(removed.collect_partitions().await.unwrap()),
+        expected_removed
+    );
+
+    let direct_global = TableIR::range(2, 2)
+        .unwrap()
+        .map_globals(vec![(
+            "g".into(),
+            ScalarIR::Literal {
+                dtype: Type::Primitive(PrimitiveType::Int32),
+                value: json!(5),
+            },
+        )])
+        .unwrap()
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            ("x".into(), ScalarIR::Global { name: "g".into() }),
+        ])
+        .unwrap();
+    let rows = direct_global
+        .collect_partitions()
+        .await
+        .unwrap()
+        .into_iter()
+        .flatten()
+        .collect::<Vec<_>>();
+    assert!(rows.iter().all(|batch| {
+        batch
+            .column(1)
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .values()
+            .iter()
+            .all(|value| *value == 5)
+    }));
+}
+
+#[tokio::test]
+async fn repeated_empty_keyby_and_row_maps_preserve_results_across_partition_counts() {
+    for partitions in [1, 4, 16] {
+        let mut table = TableIR::range(64, partitions)
+            .unwrap()
+            .with_keys(vec!["idx".into()])
+            .unwrap();
+        let source_rows = table
+            .collect_partitions()
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|partition| {
+                partition
+                    .into_iter()
+                    .flat_map(|batch| {
+                        batch
+                            .column(0)
+                            .as_any()
+                            .downcast_ref::<Int32Array>()
+                            .unwrap()
+                            .values()
+                            .to_vec()
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        for i in 0..20 {
+            table = table
+                .key_by(vec![])
+                .unwrap()
+                .map_rows(vec![
+                    ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+                    (format!("v{i}"), ScalarIR::Column { name: "idx".into() }),
+                ])
+                .unwrap();
+        }
+        let values = table
+            .collect_partitions()
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|partition| {
+                partition
+                    .into_iter()
+                    .flat_map(|batch| {
+                        let idx = batch
+                            .column(0)
+                            .as_any()
+                            .downcast_ref::<Int32Array>()
+                            .unwrap();
+                        let mapped = batch
+                            .column(1)
+                            .as_any()
+                            .downcast_ref::<Int32Array>()
+                            .unwrap();
+                        (0..batch.num_rows())
+                            .map(|row| (idx.value(row), mapped.value(row)))
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        let expected = source_rows
+            .iter()
+            .map(|partition| partition.iter().map(|&idx| (idx, idx)).collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            values,
+            expected,
+            "repeated key and map operations should preserve row order and partition membership with {partitions} partitions"
+        );
+    }
 }
 
 #[tokio::test]
@@ -184,11 +428,27 @@ async fn captured_globals_share_ir_without_retaining_table_rows() {
     let expression = ScalarIR::GetField {
         value: Arc::new(ScalarIR::ExternalGlobal {
             reference: "other".into(),
-            dtype,
+            dtype: dtype.clone(),
         }),
         name: "g".into(),
     };
-    let destination = TableIR::range(3, 2).unwrap();
+    let destination = TableIR::range(3, 2)
+        .unwrap()
+        .map_globals(
+            ["own0", "own1", "own2"]
+                .into_iter()
+                .map(|name| {
+                    (
+                        name.into(),
+                        ScalarIR::Literal {
+                            dtype: Type::Primitive(PrimitiveType::Int32),
+                            value: json!(11),
+                        },
+                    )
+                })
+                .collect(),
+        )
+        .unwrap();
     let fields = vec![
         ("idx".into(), ScalarIR::Column { name: "idx".into() }),
         ("value".into(), expression),
@@ -225,6 +485,60 @@ async fn captured_globals_share_ir_without_retaining_table_rows() {
         })
         .collect::<Vec<_>>();
     assert_eq!(results, vec![7, 7, 7]);
+
+    let external_g = ScalarIR::GetField {
+        value: Box::new(ScalarIR::ExternalGlobal {
+            reference: "other".into(),
+            dtype,
+        }),
+        name: "g".into(),
+    };
+    let predicate = ScalarIR::Binary {
+        operator: BinaryOperator::Gt,
+        left: Box::new(ScalarIR::Column { name: "idx".into() }),
+        right: Box::new(external_g),
+    };
+    let keep = table
+        .filter_bound(
+            predicate.clone(),
+            true,
+            GlobalBindings::from([("other".into(), captured.clone())]),
+        )
+        .unwrap();
+    let drop = table
+        .filter_bound(
+            predicate,
+            false,
+            GlobalBindings::from([("other".into(), captured)]),
+        )
+        .unwrap();
+    let keep_rows = keep
+        .collect_partitions()
+        .await
+        .unwrap()
+        .into_iter()
+        .flatten()
+        .map(|batch| batch.num_rows())
+        .sum::<usize>();
+    assert_eq!(keep_rows, 0);
+    let mut drop_rows = drop
+        .collect_partitions()
+        .await
+        .unwrap()
+        .into_iter()
+        .flatten()
+        .flat_map(|batch| {
+            batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .to_vec()
+        })
+        .collect::<Vec<_>>();
+    drop_rows.sort_unstable();
+    assert_eq!(drop_rows, vec![0, 1, 2]);
 }
 
 #[tokio::test]

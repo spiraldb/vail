@@ -1,0 +1,79 @@
+{
+  "phases": {
+    "before": {
+      "package": "/private/tmp/vail-small-input-final-package-20261015",
+      "native_sha256": "180f6f25bf286f96fd346450d9d2fcbc54d8903b5e705827527667d6ce6cafd9",
+      "cases": {
+        "0": {
+          "median_wall_ms": 2.801396,
+          "p95_wall_ms": 15.35958365
+        },
+        "1": {
+          "median_wall_ms": 2.9651665,
+          "p95_wall_ms": 17.7799024
+        },
+        "32": {
+          "median_wall_ms": 2.8812084999999996,
+          "p95_wall_ms": 16.843094049999998
+        },
+        "1024": {
+          "median_wall_ms": 2.9421455,
+          "p95_wall_ms": 16.7768375
+        }
+      }
+    },
+    "after": {
+      "package": "/private/tmp/vail-raw-seed-parameter-package-20261015",
+      "native_sha256": "1fd6d6eb42300966efa1e06ab1ae0d64b6f360536428000e50ca3d7ca08a36c6",
+      "cases": {
+        "0": {
+          "median_wall_ms": 3.105083,
+          "p95_wall_ms": 18.20038095
+        },
+        "1": {
+          "median_wall_ms": 2.8885835,
+          "p95_wall_ms": 20.3023753
+        },
+        "32": {
+          "median_wall_ms": 2.8968125000000002,
+          "p95_wall_ms": 17.360025299999997
+        },
+        "1024": {
+          "median_wall_ms": 2.9351455,
+          "p95_wall_ms": 19.534700649999998
+        }
+      }
+    }
+  },
+  "acceptance_overhead_ms": 1.0,
+  "comparison": {
+    "0": {
+      "before_median_wall_ms": 2.801396,
+      "after_median_wall_ms": 3.105083,
+      "absolute_overhead_ms": 0.30368700000000004,
+      "ratio": 1.1084055949248162,
+      "passed": true
+    },
+    "1": {
+      "before_median_wall_ms": 2.9651665,
+      "after_median_wall_ms": 2.8885835,
+      "absolute_overhead_ms": -0.07658299999999985,
+      "ratio": 0.9741724452910149,
+      "passed": true
+    },
+    "32": {
+      "before_median_wall_ms": 2.8812084999999996,
+      "after_median_wall_ms": 2.8968125000000002,
+      "absolute_overhead_ms": 0.015604000000000617,
+      "ratio": 1.005415782995226,
+      "passed": true
+    },
+    "1024": {
+      "before_median_wall_ms": 2.9421455,
+      "after_median_wall_ms": 2.9351455,
+      "absolute_overhead_ms": -0.007000000000000117,
+      "ratio": 0.9976207838803349,
+      "passed": true
+    }
+  }
+}

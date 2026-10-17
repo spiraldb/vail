@@ -1,0 +1,6 @@
+{
+  "source_commit": "90e5447b6b6faf8444f3342c82c2d3926907c472",
+  "wheel": "/private/tmp/vail-full-20261015-wheels/vail-0.1.0a1-cp311-abi3-macosx_11_0_arm64.whl",
+  "comparison_note": "Fresh full Vail inventory: all 108 parameterized upstream Table and MatrixTable cases, with upstream skips respected. Exact upstream inputs/dimensions, one fresh-process attempt per case. Local 14 logical CPU / 96 GiB machine; 32 GiB process-tree RSS guard during fixture preparation and queries. Query limit 120 seconds unless the upstream timeout is longer; fixture limit 900 seconds. Query time excludes fixture preparation and engine startup. Hail results reused: same-machine baselines where available, otherwise historical 32-vCPU Linux VM results shown as references without speedup ratios. No Hail reruns.",
+  "title": "Full upstream Table and MatrixTable benchmarks"
+}

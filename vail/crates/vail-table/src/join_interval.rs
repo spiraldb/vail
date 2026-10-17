@@ -36,6 +36,7 @@ enum Cell {
     Between(Vec<ArrayRef>, Vec<ArrayRef>),
 }
 
+
 // A forwarding proof permits moving key demand below value-only projections.
 // Scan expressions change with their input scope, so they are never crossed.
 fn forwards_keys(
@@ -246,6 +247,38 @@ impl ClipSource {
     }
 }
 
+// Bound the working set of each independently executable range join and expose
+// parallel work even when a generated source has just one original partition.
+const MAX_RANGE_JOIN_ROWS: usize = 8 * 1024 * 1024;
+
+fn full_range_source(table: &TableRef) -> Option<&TableRef> {
+    match table.node() {
+        TableNode::Range { .. } => Some(table),
+        TableNode::Prepared { count: Some(count), .. } => {
+            let source = table.partition_metadata.as_ref()?;
+            // Clipped action-local inputs deliberately have no count. Only
+            // bypass a prepared plan certified to represent the full source.
+            (source.known_count() == Some(*count))
+                .then(|| full_range_source(source)).flatten()
+        }
+        _ => None,
+    }
+}
+
+fn add_range_split_points(table: &TableRef, join_key: usize, bounds: &mut Vec<Option<Bound>>) {
+    if join_key != 1 || table.keys() != ["idx"] {
+        return;
+    }
+    if let Some(source) = full_range_source(table)
+        && let TableNode::Range { n, .. } = source.node()
+    {
+        for split in (MAX_RANGE_JOIN_ROWS..*n).step_by(MAX_RANGE_JOIN_ROWS) {
+            let key = vec![Arc::new(Int32Array::from(vec![split as i32])) as ArrayRef];
+            bounds.push(Some(Bound { first: key.clone(), last: key }));
+        }
+    }
+}
+
 /// Prepare a normal join as disjoint key cells. Every cell executes a DataFusion
 /// join over all original partitions whose certified/observed bounds overlap it.
 pub(crate) async fn prepare(
@@ -255,17 +288,34 @@ pub(crate) async fn prepare(
     kind: TableJoinKind,
     join_key: usize,
 ) -> Result<PreparedTable> {
+
     let left_input = crate::partitioned::prepared_input(left)?;
     let right_input = crate::partitioned::prepared_input(right)?;
     let left_bounds = bounds(left, &left_input, join_key, true).await?;
     let right_bounds = bounds(right, &right_input, join_key, true).await?;
     let left_clip = ClipSource::new(left, join_key, left_input.parts.len())?;
     let right_clip = ClipSource::new(right, join_key, right_input.parts.len())?;
-    let cells = cells(&left_bounds, &right_bounds)?;
+    let mut boundaries = left_bounds.clone();
+    add_range_split_points(left, join_key, &mut boundaries);
+    add_range_split_points(right, join_key, &mut boundaries);
+    let cells = cells(&boundaries, &right_bounds)?;
+
     let left_candidates = candidates_by_cell(&left_bounds, &cells)?;
     let right_candidates = candidates_by_cell(&right_bounds, &cells)?;
     let mut parts = Vec::with_capacity(cells.len());
     for (index, cell) in cells.iter().enumerate() {
+        // Bounds certify that these cells cannot produce output. Avoid
+        // executing the populated input merely to discover the empty join.
+        let left_empty = left_candidates[index].is_empty();
+        let right_empty = right_candidates[index].is_empty();
+        if match kind {
+            TableJoinKind::Inner | TableJoinKind::Semi => left_empty || right_empty,
+            TableJoinKind::Left | TableJoinKind::Anti => left_empty,
+            TableJoinKind::Right => right_empty,
+            TableJoinKind::Outer => left_empty && right_empty,
+        } {
+            continue;
+        }
         let left_parts = clipped_parts(
             &left_input.parts,
             &left_bounds,
@@ -533,6 +583,7 @@ fn clipped_parts(
             .transpose()?
             .flatten()
         {
+
             Some(rows) => rows,
             None => {
                 if fresh {
@@ -543,6 +594,7 @@ fn clipped_parts(
             }
         };
         let key = key_expressions(&rows, &table.keys()[..join_key])?;
+
         let predicate = match cell {
             Cell::Point(value) => {
                 crate::join_key::predicate(&key, value, Operator::Eq, rows.schema().as_ref())?

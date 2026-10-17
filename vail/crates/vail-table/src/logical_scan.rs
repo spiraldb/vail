@@ -299,9 +299,8 @@ fn replace_native_scans(
     expr.try_map_children(&mut |child: &VExpr| replace_native_scans(child, scans))
 }
 
-/// Fast path for plain numeric sums and row counts. It keeps values as native
-/// DataFusion window aggregates; the generic ScanState path remains for custom,
-/// filtered, and nested scan scopes.
+/// Fast path for plain numeric sums and row counts. The generic ScanState path
+/// handles custom folds, including streaming previous-nonnull scans.
 fn lower_native_prefix(
     table: &TableRef,
     child: &TableRef,
@@ -363,15 +362,17 @@ fn lower_native_prefix(
     )?);
 
     let mut local_windows = Vec::with_capacity(nodes.len());
+    let mut ordinal_counts = Vec::new();
     let mut local_names = Vec::with_capacity(nodes.len());
     let mut total_aggregates = Vec::with_capacity(nodes.len());
     let mut total_names = Vec::with_capacity(nodes.len());
     let mut shared_windows: HashMap<Expr, (String, String)> = HashMap::new();
     for (i, (kind, value)) in kinds.iter().enumerate() {
-        // A row count is the sum of one per input row; the same native sum
-        // kernel handles its exclusive local prefix and partition total.
+        // Native aggregates compute partition totals. Counts reuse the local
+        // ordinal below; sums and previous values use their own local windows.
         let udf = match *kind {
-            "sum" | "count" => datafusion_functions_aggregate::sum::sum_udaf(),
+            "sum" => datafusion_functions_aggregate::sum::sum_udaf(),
+            "count" => datafusion_functions_aggregate::count::count_udaf(),
             _ => unreachable!(),
         };
         let mut arg = match value {
@@ -399,30 +400,66 @@ fn lower_native_prefix(
                 arg = Expr::Cast(datafusion_expr::expr::Cast::new(Box::new(arg), dtype));
             }
         }
-        let local_name = unique(&mut used, &format!("__scan_native_local_{i}"));
+        if *kind == "count" {
+            // ROW_NUMBER is already required for source order. Its exclusive
+            // zero-based ordinal is the local count; a second running SUM(1)
+            // would duplicate window state and per-row work.
+            let local_name = unique(&mut used, &format!("__scan_native_local_{i}"));
+            ordinal_counts.push(
+                (datafusion_expr::expr_fn::cast(
+                    datafusion_expr::col(&ordinal_name),
+                    DataType::Int64,
+                ) - datafusion_expr::lit(1_i64))
+                .alias(&local_name),
+            );
+            local_names.push(local_name);
+            let total_name = unique(&mut used, &format!("__scan_native_total_{i}"));
+            total_aggregates.push(udf.call(vec![arg]).alias(&total_name));
+            total_names.push(total_name);
+            continue;
+        }
+
         let mut local_window = WindowFunction::new(
             WindowFunctionDefinition::AggregateUDF(udf.clone()),
             vec![arg.clone()],
         );
         local_window.params.partition_by = vec![part.clone()];
-        local_window.params.order_by = vec![datafusion_expr::col(&ordinal_name).sort(true, true)];
+        local_window.params.order_by =
+            vec![datafusion_expr::col(&ordinal_name).sort(true, true)];
         local_window.params.window_frame = frame();
         let expression = Expr::WindowFunction(Box::new(local_window));
         if let Some((local_name, total_name)) = shared_windows.get(&expression) {
             local_names.push(local_name.clone());
             total_names.push(total_name.clone());
-        } else {
-            let total_name = unique(&mut used, &format!("__scan_native_total_{i}"));
-            local_windows.push(expression.clone().alias(&local_name));
-            total_aggregates.push(udf.call(vec![arg]).alias(&total_name));
-            shared_windows.insert(expression, (local_name.clone(), total_name.clone()));
-            local_names.push(local_name);
-            total_names.push(total_name);
+            continue;
         }
+
+        let local_name = unique(&mut used, &format!("__scan_native_local_{i}"));
+        let total_name = unique(&mut used, &format!("__scan_native_total_{i}"));
+        local_windows.push(expression.clone().alias(&local_name));
+        total_aggregates.push(udf.call(vec![arg]).alias(&total_name));
+        shared_windows.insert(expression, (local_name.clone(), total_name.clone()));
+        local_names.push(local_name);
+        total_names.push(total_name);
+
     }
-    local = LogicalPlanBuilder::from(local)
-        .window(local_windows)?
-        .build()?;
+    if !local_windows.is_empty() {
+        local = LogicalPlanBuilder::from(local)
+            .window(local_windows)?
+            .build()?;
+    }
+    if !ordinal_counts.is_empty() {
+        let mut projection = local
+            .schema()
+            .columns()
+            .into_iter()
+            .map(Expr::Column)
+            .collect::<Vec<_>>();
+        projection.extend(ordinal_counts);
+        local = LogicalPlanBuilder::from(local)
+            .project(projection)?
+            .build()?;
+    }
 
     let summary_part = unique(&mut used, "__scan_native_partition");
     let summary = LogicalPlanBuilder::from(crate::logical::independent_consumer(input))
@@ -468,13 +505,28 @@ fn lower_native_prefix(
     let right = LogicalPlanBuilder::from(summary)
         .project(right_projection)?
         .build()?;
-    let joined = LogicalPlanBuilder::from(local)
+    // Build only the compact prefix table. Probe with the ordered row stream
+    // and align partition ranges so DataFusion can preserve that stream order.
+    let carry = crate::logical::restore_partitions(
+        right,
+        right_key.clone(),
+        table.known_n_partitions().unwrap_or(1).max(1),
+    );
+    let columns = local
+        .schema()
+        .columns()
+        .into_iter()
+        .chain(carry.schema().columns())
+        .map(Expr::Column)
+        .collect::<Vec<_>>();
+    let joined = LogicalPlanBuilder::from(carry)
         .join(
-            right,
-            JoinType::Left,
-            (vec![part_name.clone()], vec![right_key]),
+            local,
+            JoinType::Right,
+            (vec![right_key], vec![part_name.clone()]),
             None,
         )?
+        .project(columns)?
         .build()?;
 
     let mut completed = joined
@@ -484,7 +536,7 @@ fn lower_native_prefix(
         .map(Expr::Column)
         .collect::<Vec<_>>();
     let mut scans = Vec::with_capacity(nodes.len());
-    for (i, ((node, _), _)) in nodes.iter().zip(kinds.iter()).enumerate() {
+    for (i, ((node, _), (kind, _))) in nodes.iter().zip(kinds.iter()).enumerate() {
         let total_type = joined
             .schema()
             .field_with_name(None, &local_names[i])?
@@ -833,13 +885,28 @@ pub(crate) fn lower(
     let right = LogicalPlanBuilder::from(summary)
         .project(right_projection)?
         .build()?;
-    let joined = LogicalPlanBuilder::from(local)
+    // Build only the compact prefix table. Probe with the ordered row stream
+    // and align partition ranges so DataFusion can preserve that stream order.
+    let carry = crate::logical::restore_partitions(
+        right,
+        right_key.clone(),
+        table.known_n_partitions().unwrap_or(1).max(1),
+    );
+    let columns = local
+        .schema()
+        .columns()
+        .into_iter()
+        .chain(carry.schema().columns())
+        .map(Expr::Column)
+        .collect::<Vec<_>>();
+    let joined = LogicalPlanBuilder::from(carry)
         .join(
-            right,
-            JoinType::Left,
-            (vec![part_name.clone()], vec![right_key]),
+            local,
+            JoinType::Right,
+            (vec![right_key], vec![part_name.clone()]),
             None,
         )?
+        .project(columns)?
         .build()?;
 
     let mut completed = joined

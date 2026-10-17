@@ -80,6 +80,20 @@ class RowExpressionTests(unittest.TestCase):
         )
         self.assertEqual(result.y.collect(), [6, None])
 
+    def test_array_struct_fields_combine_parent_and_child_nulls(self):
+        dtype = hl.tarray(hl.tstruct(x=hl.tint32, inner=hl.tstruct(y=hl.tint32)))
+        table = hl.Table.parallelize(
+            [{"xs": [{"x": 2, "inner": {"y": 3}}, None,
+                     {"x": None, "inner": None}, {"x": 5, "inner": {"y": None}}]}],
+            schema=hl.tstruct(xs=dtype),
+        )
+        result = table.annotate(
+            x=table.xs.map(lambda item: item.x),
+            y=table.xs[1:].map(lambda item: item.inner.y),
+        ).collect()[0]
+        self.assertEqual(result.x, [2, None, None, 5])
+        self.assertEqual(result.y, [None, None, None])
+
     def test_typed_nan_is_distinct_from_a_struct_float_tag_field(self):
         table = hl.Table.parallelize([{"id": 1}], schema=hl.tstruct(id=hl.tint32))
         result = table.annotate(

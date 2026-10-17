@@ -1,0 +1,4 @@
+{
+  "title": "Large matrix column sum improvement",
+  "comparison_note": "Exact upstream benchmark: 10,000 rows \u00d7 500,000 columns = 5 billion entries, 2,500 source partitions. Three baseline and three fixed Vail measurements; the table and chart use the fixed attempt at the median runtime. Same local machine and 32 GiB process-tree RSS guard. Hail timing is reused from the existing same-machine run; Hail was not rerun. No algebraic shortcut or reduced dimensions. Query time excludes engine startup. Before/after medians and every attempt are in RESULTS.md and measurements.csv."
+}

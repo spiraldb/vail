@@ -3,6 +3,28 @@ import pytest
 import vail as hl
 
 
+def test_zeros_uses_int32_and_preserves_missingness():
+    assert hl.zeros(3).dtype == hl.tarray(hl.tint32)
+    assert hl.eval(hl.zeros(3)) == [0, 0, 0]
+    assert hl.eval(hl.zeros(0)) == []
+    assert hl.eval(hl.zeros(hl.missing(hl.tint32))) is None
+    table = hl.range_table(4)
+    assert [row.z for row in table.annotate(z=hl.zeros(table.idx)).collect()] == [
+        [], [0], [0, 0], [0, 0, 0],
+    ]
+
+
+def test_zeros_rejects_negative_length():
+    with pytest.raises(RuntimeError, match="nonnegative"):
+        hl.eval(hl.zeros(-1))
+
+
+@pytest.mark.parametrize("length", [1.5, "3", True, hl.int64(3)])
+def test_zeros_requires_int32(length):
+    with pytest.raises(TypeError, match="int32"):
+        hl.zeros(length)
+
+
 @pytest.mark.parametrize('args, expected', [
     ((5,), [0, 1, 2, 3, 4]),
     ((3, 8), [3, 4, 5, 6, 7]),
