@@ -35,13 +35,15 @@ async fn collect_group_accumulator_preserves_nullable_nested_values_and_duplicat
     let values = ListArray::from_iter_primitive::<arrow_array::types::Int32Type, _, _>([
         Some(vec![Some(7), None]),
         None,
-        Some(vec![]),
+        Some(vec![Some(9)]),
         Some(vec![Some(7), None]),
+        Some(vec![]),
+        Some(vec![]),
     ]);
     let rows = RecordBatch::try_new(
         schema,
         vec![
-            Arc::new(Int32Array::from(vec![0, 0, 1, 0])),
+            Arc::new(Int32Array::from(vec![0, 0, 0, 0, 0, 1])),
             Arc::new(values),
         ],
     )
@@ -74,16 +76,27 @@ async fn collect_group_accumulator_preserves_nullable_nested_values_and_duplicat
     assert_eq!(groups[0].0, 0);
     let first = groups.remove(0).1;
     let first = first.as_any().downcast_ref::<ListArray>().unwrap();
-    assert_eq!(first.len(), 3);
-    assert_eq!(first.null_count(), 1);
-    let first_item = first.value(0);
-    let first_item = first_item.as_any().downcast_ref::<Int32Array>().unwrap();
-    assert_eq!(first_item.value(0), 7);
-    assert!(first_item.is_null(1));
-    let third_item = first.value(2);
-    let third_item = third_item.as_any().downcast_ref::<Int32Array>().unwrap();
-    assert_eq!(third_item.value(0), 7);
-    assert!(third_item.is_null(1));
+    let mut actual = Vec::new();
+    for row in 0..first.len() {
+        if first.is_null(row) {
+            actual.push(None);
+        } else {
+            let item = first.value(row);
+            let item = item.as_any().downcast_ref::<Int32Array>().unwrap();
+            actual.push(Some(item.iter().collect::<Vec<_>>()));
+        }
+    }
+    actual.sort();
+    assert_eq!(
+        actual,
+        vec![
+            None,
+            Some(vec![]),
+            Some(vec![Some(7), None]),
+            Some(vec![Some(7), None]),
+            Some(vec![Some(9)]),
+        ]
+    );
     assert_eq!(groups[0].0, 1);
     let second = groups.remove(0).1;
     assert_eq!(
