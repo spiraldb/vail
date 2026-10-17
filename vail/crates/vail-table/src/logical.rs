@@ -1596,6 +1596,9 @@ impl ExtensionPlanner for VailExtensionPlanner {
                 )));
             }
         }
+        if let Some(node) = node.as_any().downcast_ref::<crate::group_ranges::GroupRanges>() {
+            return Ok(Some(node.physical(physical_inputs[0].clone())?));
+        }
         if let Some(node) = node.as_any().downcast_ref::<ProtectedRoundRobinNode>() {
             let input = physical_inputs.first().ok_or_else(|| {
                 DataFusionError::Plan("protected round-robin needs one input".into())

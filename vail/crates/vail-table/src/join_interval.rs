@@ -25,9 +25,9 @@ use vail_storage::fragment_index::{
 use vail_storage::local_table::LocalRead;
 
 #[derive(Clone, Debug)]
-struct Bound {
-    first: Vec<ArrayRef>,
-    last: Vec<ArrayRef>,
+pub(crate) struct Bound {
+    pub(crate) first: Vec<ArrayRef>,
+    pub(crate) last: Vec<ArrayRef>,
 }
 
 #[derive(Clone, Debug)]
@@ -1233,7 +1233,7 @@ async fn bounds(
     scan_bounds(prepared, &table.keys()[..join_key], fresh).await
 }
 
-fn inherited_bounds(table: &TableRef, join_key: usize) -> Result<Option<Vec<Option<Bound>>>> {
+pub(crate) fn inherited_bounds(table: &TableRef, join_key: usize) -> Result<Option<Vec<Option<Bound>>>> {
     match table.node() {
         TableNode::Prepared { .. } => match &table.partition_metadata {
             Some(source) => inherited_bounds(source, join_key),

@@ -9,6 +9,7 @@ pub mod comparison;
 mod conditional_globals;
 pub mod globals;
 mod interval_read;
+mod group_ranges;
 mod join_interval;
 mod join_key;
 mod joins;

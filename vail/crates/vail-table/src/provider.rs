@@ -874,6 +874,28 @@ struct PartitionSetExec {
     metrics: ExecutionPlanMetricsSet,
 }
 
+/// Source identity and ordinal assignment, independently of advertised keys.
+pub(crate) fn matches_source_partitions(
+    input: &crate::plan::PhysicalPlan,
+    table: &TableRef,
+    count: usize,
+) -> bool {
+    if let Some(scan) = input.as_ref().downcast_ref::<ReadKeyFilteredExec>() {
+        return matches!(table.node(), TableNode::Read { source } if Arc::ptr_eq(source, &scan.source))
+            && scan.partition_ranges.len() == count;
+    }
+    let Some(set) = input.as_ref().downcast_ref::<PartitionSetExec>() else {
+        return false;
+    };
+    set.partition_offset == 0
+        && set.partitions.len() == count
+        && set
+            .partitions
+            .iter()
+            .enumerate()
+            .all(|(index, part)| crate::plan::matches_source_partition(part, table, index))
+}
+
 impl PartitionSetExec {
     fn new(partitions: Vec<PhysicalPlan>, schema: SchemaRef) -> Self {
         let partition_id_index = schema.fields().len() - 1;

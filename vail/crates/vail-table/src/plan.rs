@@ -116,6 +116,76 @@ struct SourceExec {
     cache: Arc<PlanProperties>,
     row_schema: SchemaRef,
 }
+
+/// The globals decoder validates exactly one row before emitting any batch.
+pub(crate) fn singleton_globals_source(input: &PhysicalPlan) -> bool {
+    input
+        .as_ref()
+        .downcast_ref::<SourceExec>()
+        .is_some_and(|scan| matches!(scan.source, Source::Globals(_)))
+}
+
+/// Match an immutable source partition to the metadata used by a range proof.
+pub(crate) fn matches_source_partition(
+    input: &PhysicalPlan,
+    table: &TableRef,
+    partition: usize,
+) -> bool {
+    // DataFusion inserts cooperative yielding around source streams without
+    // changing their batches, row order, or partition assignment.
+    if input.as_ref().is::<datafusion_physical_plan::coop::CooperativeExec>() {
+        return input.children().len() == 1 && matches_source_partition(input.children()[0], table, partition);
+    }
+    let identity = match table.node() {
+        TableNode::Read { source } => {
+            input
+                .as_ref()
+                .downcast_ref::<SourceExec>()
+                .is_some_and(|scan| match &scan.source {
+                    Source::ReadPartition(actual, index)
+                    | Source::ReadPartitionProjected(actual, index, _)
+                    | Source::ReadPartitionNested(actual, index, _, _) => {
+                        Arc::ptr_eq(actual, source) && *index == partition
+                    }
+                    _ => false,
+                })
+        }
+        TableNode::Range {
+            n, n_partitions, ..
+        } => input
+            .as_ref()
+            .downcast_ref::<RangePartitionExec>()
+            .is_some_and(|scan| {
+                let start = n / n_partitions * partition + partition.min(n % n_partitions);
+                let end = start + n / n_partitions + usize::from(partition < n % n_partitions);
+                scan.start == start && scan.end == end
+            }),
+        _ => false,
+    };
+    // Certified bounds complement, rather than replace, the source's existing
+    // ascending/nulls-last within-partition ordering contract.
+    identity
+        && order_requirement(
+            &table
+                .keys()
+                .iter()
+                .map(|name| (name.clone(), false))
+                .collect::<Vec<_>>(),
+        )
+        .and_then(|requirement| {
+            requirement
+                .physical_ordering(&input.schema())
+                .map_err(TableError::from)
+        })
+        .is_ok_and(|ordering| {
+            input
+                .properties()
+                .equivalence_properties()
+                .ordering_satisfy(ordering)
+                .unwrap_or(false)
+        })
+}
+
 impl DisplayAs for SourceExec {
     fn fmt_as(&self, _: DisplayFormatType, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.name())

@@ -502,7 +502,20 @@ pub(crate) fn scope_plan(
         .zip(key_names)
         .zip(&key_types)
         .map(|((group, value), dtype)| {
-            Ok(crate::aggregation::logical_restore_group_key(col(group), dtype)?.alias(value))
+            // DataFusion keeps native grouping values. When its actual output
+            // descriptor exactly matches the declared key type, restoration is
+            // identity, including nested field metadata. Preserve the column's
+            // ordering equivalence; changed descriptors still use restoration.
+            let actual = result
+                .schema()
+                .field_with_unqualified_name(group)?
+                .data_type();
+            let restored = if actual == dtype {
+                col(group)
+            } else {
+                crate::aggregation::logical_restore_group_key(col(group), dtype)?
+            };
+            Ok(restored.alias(value))
         })
         .collect::<Result<Vec<_>>>()?;
     projection.extend(restored_keys);
@@ -653,6 +666,7 @@ pub(crate) fn lower_grouped_fields(
     projected = LogicalPlanBuilder::from(projected)
         .project(projections)?
         .build()?;
+    projected = crate::group_ranges::certify(table, keys, &group_names, projected)?;
     let (mut result, _, _) = scope_plan(
         projected.clone(),
         table,
