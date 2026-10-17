@@ -1,0 +1,88 @@
+{
+  "candidate": "ed38d5ce2ca1347163dd62655851460e38560ef1",
+  "production_commit": "cb45f65ad4ed7b3e1db6eb694555e7c4abc8c1f9",
+  "base": "de90334624fac52996aafc03b7e340c0568392b8",
+  "source_sha256": {
+    "vail/crates/vail-table/src/logical.rs": "522ab62c135c471eb45b69116c4780531b2218f0788a3f480315b755d08b4ecc",
+    "vail/crates/vail-table/src/logical_scan.rs": "df3b1c4d45f51fb239499c3d0683a6d8edeab86ac79f074a8d539c9265b3ed49",
+    "vail/crates/vail-table/src/partitioned.rs": "b63ca3294e975965c41cb817a47839fca4bb9f6779fd07feb2cbcfa3574240a0",
+    "vail/crates/vail-table/src/provider.rs": "4b9304da0fdad0e02802b06bb93c7c14fa4b5b7cf7707a802e71645d5a2bf166",
+    "vail/crates/vail-table/src/rng_context.rs": "457ac3c8868ece5c29c4312786f25e91f86b12eefe0c30d3e803b2551ad3047a",
+    "vail/crates/vail-table/src/scan_ordinal.rs": "3c289203aa32d9b8fecb01fc37db183be7a0cdf117babe20183af8b09cdbe525"
+  },
+  "native_sha256": "65b5a6dc8f3780bb41f8f17824b03de4abf35620c71607e078fbe64c88ad9222",
+  "wheel_sha256": "09c203bf68aa1cd687b658ad710249bfd0c270f7e3b37c9f5252ef6103b90d23",
+  "artifact_archive_sha256": "440006241819414c7b65fc388d4b3aee388fa6c0a094891b74cd765676f10364",
+  "validation": {
+    "full_python": {
+      "passed": 1866,
+      "skipped": 1,
+      "subtests_passed": 19,
+      "seconds": 92.36
+    },
+    "subsequent_updated_scan_module": {
+      "passed": 50,
+      "seconds": 6.82
+    },
+    "rust_consumer_actions": 6,
+    "rust_text_io": 2,
+    "cargo_check": "passed"
+  },
+  "repeated_cases": {
+    "benchmark_table::test_group_by_collect_per_row": {
+      "seconds": [
+        4.394896087000234,
+        4.579442461000326,
+        4.3656798889996935
+      ],
+      "median_seconds": 4.394896087000234,
+      "cpu_seconds": [
+        25.740000000000006,
+        26.270000000000003,
+        25.560000000000002
+      ],
+      "peak_rss_gib": [
+        7.479419708251953,
+        7.426689147949219,
+        7.328876495361328
+      ]
+    },
+    "benchmark_matrix_table::test_matrix_table_scan_count_rows_2": {
+      "seconds": [
+        3.6618323220000093,
+        3.7689712729998064,
+        3.8366604059992824
+      ],
+      "median_seconds": 3.7689712729998064,
+      "cpu_seconds": [
+        40.129999999999995,
+        41.21,
+        41.81
+      ],
+      "peak_rss_gib": [
+        0.20258331298828125,
+        0.19565200805664062,
+        0.19878387451171875
+      ]
+    }
+  },
+  "caveat": "Reused unchanged Hail baseline. Three repeated target runs are near parity, not evidence of confident superiority.",
+  "controls": {
+    "passed": 64,
+    "slower_than_hail": [
+      [
+        "benchmark_table::test_group_by_collect_per_row",
+        4.578406671000266,
+        4.47670307899989
+      ],
+      [
+        "benchmark_matrix_table::test_matrix_table_scan_count_rows_2",
+        3.8521232349994534,
+        3.7799336210000547
+      ]
+    ],
+    "archive_sha256": "87d5532d65e42bc84c611d7fd77625b35901502d92b18e210a2ae2aab3eebc93",
+    "vail_total_seconds": 108.75987638599963,
+    "hail_total_seconds": 448.95888542700004
+  }
+}
