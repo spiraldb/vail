@@ -196,6 +196,7 @@ def test_downsample_rebin_preserves_labels_at_bounds_and_partition_merge():
             (min(3, int((x + 10.) / 20. * 4)), min(3, int((y + 10.) / 20. * 4)))
             for x, y in by_coordinate
         }
+        assert len(cells) == len(points)
         assert cells == {(0, 0), (2, 2), (3, 3), (2, 3), (0, 3)}
 
 
