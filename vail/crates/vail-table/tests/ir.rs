@@ -386,6 +386,8 @@ async fn query_prefix_retains_duplicate_prefixes_across_original_partitions() {
     assert!(source.query_prefix(3, "q".into(), "p".into()).is_err());
 }
 
+/private/tmp/vail-region-tests.rs:
+
 #[tokio::test]
 async fn naive_coalesce_preserves_rows_order_and_partition_limits() {
     use vail_table::RepartitionStrategy;
@@ -397,20 +399,46 @@ async fn naive_coalesce_preserves_rows_order_and_partition_limits() {
             .unwrap();
         let partitions = result.collect_partitions().await.unwrap();
         assert_eq!(partitions.len(), 1);
-        let values: Vec<_> = partitions.iter().flatten().flat_map(|batch| {
-            batch.column(0).as_any().downcast_ref::<Int32Array>().unwrap().values().to_vec()
-        }).collect();
+        let values: Vec<_> = partitions
+            .iter()
+            .flatten()
+            .flat_map(|batch| {
+                batch
+                    .column(0)
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap()
+                    .values()
+                    .to_vec()
+            })
+            .collect();
         assert_eq!(values, (0..30).collect::<Vec<_>>());
     }
-    assert!(source.repartition(0, RepartitionStrategy::NaiveCoalesce).is_err());
+    assert!(
+        source
+            .repartition(0, RepartitionStrategy::NaiveCoalesce)
+            .is_err()
+    );
 
     let source = TableIR::range(30, 4).unwrap();
-    let reduced = source.repartition(2, RepartitionStrategy::NaiveCoalesce).unwrap();
+    let reduced = source
+        .repartition(2, RepartitionStrategy::NaiveCoalesce)
+        .unwrap();
     let partitions = reduced.collect_partitions().await.unwrap();
     assert_eq!(partitions.len(), 2);
-    let values: Vec<_> = partitions.iter().flatten().flat_map(|batch| {
-        batch.column(0).as_any().downcast_ref::<Int32Array>().unwrap().values().to_vec()
-    }).collect();
+    let values: Vec<_> = partitions
+        .iter()
+        .flatten()
+        .flat_map(|batch| {
+            batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .to_vec()
+        })
+        .collect();
     assert_eq!(values, (0..30).collect::<Vec<_>>());
 }
 
@@ -419,24 +447,44 @@ async fn annotated_range_joins_preserve_rows_and_key_order() {
     use vail_table::TableJoinKind;
 
     let source = TableIR::range(30, 1).unwrap();
-    let left = source.map_rows(vec![
-        ("idx".into(), column("idx")),
-        ("left_value".into(), column("idx")),
-    ]).unwrap();
-    let right = source.map_rows(vec![
-        ("idx".into(), column("idx")),
-        ("right_value".into(), column("idx")),
-    ]).unwrap();
+    let left = source
+        .map_rows(vec![
+            ("idx".into(), column("idx")),
+            ("left_value".into(), column("idx")),
+        ])
+        .unwrap();
+    let right = source
+        .map_rows(vec![
+            ("idx".into(), column("idx")),
+            ("right_value".into(), column("idx")),
+        ])
+        .unwrap();
     let joined = left.join(right, TableJoinKind::Inner, 1).unwrap();
     let batches = joined.collect_partitions().await.unwrap();
-    let actual: Vec<_> = batches.iter().flatten().flat_map(|batch| {
-        let fields: Vec<_> = (0..3).map(|index| {
-            batch.column(index).as_any().downcast_ref::<Int32Array>().unwrap()
-        }).collect();
-        (0..batch.num_rows()).map(|row| {
-            (fields[0].value(row), fields[1].value(row), fields[2].value(row))
-        }).collect::<Vec<_>>()
-    }).collect();
+    let actual: Vec<_> = batches
+        .iter()
+        .flatten()
+        .flat_map(|batch| {
+            let fields: Vec<_> = (0..3)
+                .map(|index| {
+                    batch
+                        .column(index)
+                        .as_any()
+                        .downcast_ref::<Int32Array>()
+                        .unwrap()
+                })
+                .collect();
+            (0..batch.num_rows())
+                .map(|row| {
+                    (
+                        fields[0].value(row),
+                        fields[1].value(row),
+                        fields[2].value(row),
+                    )
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect();
     assert_eq!(actual, (0..30).map(|i| (i, i, i)).collect::<Vec<_>>());
 }
 
@@ -445,26 +493,53 @@ async fn annotated_unique_left_join_keeps_unmatched_rows_in_key_order() {
     use arrow_array::Array;
     use vail_table::TableJoinKind;
 
-    let source = TableIR::range(30, 1).unwrap();
-    let left = source.map_rows(vec![
-        ("idx".into(), column("idx")),
-        ("left_value".into(), column("idx")),
-    ]).unwrap();
-    let right = source.filter(greater(column("idx"), int(14)), true).unwrap()
-        .map_rows(vec![
-            ("idx".into(), column("idx")),
-            ("right_value".into(), column("idx")),
-        ]).unwrap();
-    let joined = left.join(right, TableJoinKind::Left, 1).unwrap();
-    let batches = joined.collect_partitions().await.unwrap();
-    let actual: Vec<_> = batches.iter().flatten().flat_map(|batch| {
-        let fields: Vec<_> = (0..3).map(|index| {
-            batch.column(index).as_any().downcast_ref::<Int32Array>().unwrap()
-        }).collect();
-        (0..batch.num_rows()).map(|row| (
-            fields[0].value(row), fields[1].value(row),
-            fields[2].is_valid(row).then(|| fields[2].value(row)),
-        )).collect::<Vec<_>>()
-    }).collect();
-    assert_eq!(actual, (0..30).map(|i| (i, i, (i > 14).then_some(i))).collect::<Vec<_>>());
+    for threshold in [14, 99] {
+        let source = TableIR::range(30, 1).unwrap();
+        let left = source
+            .map_rows(vec![
+                ("idx".into(), column("idx")),
+                ("left_value".into(), column("idx")),
+            ])
+            .unwrap();
+        let right = source
+            .filter(greater(column("idx"), int(threshold)), true)
+            .unwrap()
+            .map_rows(vec![
+                ("idx".into(), column("idx")),
+                ("right_value".into(), column("idx")),
+            ])
+            .unwrap();
+        let joined = left.join(right, TableJoinKind::Left, 1).unwrap();
+        let batches = joined.collect_partitions().await.unwrap();
+        let actual: Vec<_> = batches
+            .iter()
+            .flatten()
+            .flat_map(|batch| {
+                let fields: Vec<_> = (0..3)
+                    .map(|index| {
+                        batch
+                            .column(index)
+                            .as_any()
+                            .downcast_ref::<Int32Array>()
+                            .unwrap()
+                    })
+                    .collect();
+                (0..batch.num_rows())
+                    .map(|row| {
+                        (
+                            fields[0].value(row),
+                            fields[1].value(row),
+                            fields[2].is_valid(row).then(|| fields[2].value(row)),
+                        )
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .collect();
+        assert_eq!(
+            actual,
+            (0..30)
+                .map(|i| (i, i, (i > threshold).then_some(i)))
+                .collect::<Vec<_>>()
+        );
+    }
 }
