@@ -26,6 +26,7 @@ async fn csv_text_read_is_lazy_partitioned_and_streams_to_single_file() {
     .unwrap();
     assert_eq!(table.known_count(), None);
     assert_eq!(table.known_n_partitions(), Some(2));
+    assert_eq!(table.force_count().await.unwrap(), 2);
     let sampled = table.sample(1).await.unwrap();
     assert_eq!(
         sampled.iter().map(|batch| batch.num_rows()).sum::<usize>(),

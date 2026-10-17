@@ -8,7 +8,10 @@ use crate::{
 };
 use arrow_array::{Array, LargeListArray, ListArray, RecordBatch, StructArray, UInt64Array};
 use arrow_schema::{SchemaRef, SortOptions};
-use datafusion_common::{DataFusionError, ScalarValue, tree_node::TreeNodeRecursion};
+use datafusion_common::{
+    DataFusionError, ScalarValue,
+    tree_node::{TreeNode, TreeNodeRecursion},
+};
 use datafusion_execution::TaskContext;
 use datafusion_physical_expr::{
     LexOrdering, OrderingRequirements, PhysicalExpr, PhysicalSortExpr, RangePartitioning,
@@ -18,14 +21,15 @@ use datafusion_physical_plan::{
     DisplayAs, DisplayFormatType, ExecutionPlan, ExecutionPlanProperties, Partitioning,
     PlanProperties, SendableRecordBatchStream,
     execution_plan::EmissionType,
+    limit::GlobalLimitExec,
     projection::ProjectionExec,
     repartition::RepartitionExec,
     sorts::sort::SortExec,
-    limit::GlobalLimitExec,
+    sorts::sort_preserving_merge::SortPreservingMergeExec,
     stream::{RecordBatchReceiverStreamBuilder, RecordBatchStreamAdapter},
 };
 use futures::{FutureExt, StreamExt, TryStreamExt, future::BoxFuture};
-use std::{collections::VecDeque, fmt, sync::Arc};
+use std::{collections::{HashSet, VecDeque}, fmt, sync::Arc};
 use tokio::sync::{OnceCell, Semaphore};
 
 pub(crate) fn limited_input(
@@ -1410,8 +1414,115 @@ pub async fn count(table: TableRef) -> Result<usize> {
 /// soon as they have been counted. Unlike ordered row execution, no consumer
 /// waits for an earlier partition before it can drain a later one.
 pub async fn force_count(table: TableRef) -> Result<usize> {
-    let prepared = prepare(table).await?;
-    count_parts(prepared.parts, Arc::new(TaskContext::default())).await
+    let physical = crate::logical::physical(&table).await?;
+    let parts = if table.known_n_partitions() == Some(0) {
+        vec![]
+    } else {
+        count_terminal_merge_partitions(physical.clone())?.unwrap_or_else(|| {
+            let count = physical
+                .properties()
+                .output_partitioning()
+                .partition_count();
+            partition_views(physical, count)
+        })
+    };
+    count_parts(parts, Arc::new(TaskContext::default())).await
+}
+
+/// For a count action, a terminal sort-preserving merge only establishes row
+/// order for the stream consumer. Split its already-sorted inputs into count
+/// streams and replay only transparent projections above it. This still
+/// executes every projection and every child operator, including per-partition
+/// sorts, while avoiding comparisons and copies of wide rows in the terminal
+/// merge. Any non-projection operator blocks this optimization.
+fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<PhysicalPlan>>> {
+    let mut node = plan;
+    let mut wrappers = Vec::new();
+    loop {
+        if crate::action_parameters::repeatable_node(&node) {
+            let children = node.children();
+            if children.len() != 1 {
+                return Ok(None);
+            }
+            wrappers.push(node.clone());
+            node = children[0].clone();
+            continue;
+        }
+        if let Some(projection) = node.as_ref().downcast_ref::<ProjectionExec>() {
+            if projection_is_volatile(projection) {
+                return Ok(None);
+            }
+            let children = node.children();
+            if children.len() != 1 {
+                return Ok(None);
+            }
+            wrappers.push(node.clone());
+            node = children[0].clone();
+            continue;
+        }
+        let Some(merge) = node.as_ref().downcast_ref::<SortPreservingMergeExec>() else {
+            return Ok(None);
+        };
+        if merge.fetch().is_some() {
+            return Ok(None);
+        }
+        let input = merge.input().clone();
+        let count = input.properties().output_partitioning().partition_count();
+        // `count_parts` intentionally bounds active streams. A DF exchange
+        // may need every output partition to be polled to make progress, so
+        // keep the merge path for wider fan-outs that exceed this bound.
+        if count <= 1 || count > crate::EXECUTION_CONCURRENCY {
+            return Ok(None);
+        }
+        let mut parts = partition_views(input, count);
+        for part in &mut parts {
+            for wrapper in wrappers.iter().rev() {
+                if let Some(projection) = wrapper.as_ref().downcast_ref::<ProjectionExec>() {
+                    *part = Arc::new(ProjectionExec::try_new_with_schema_metadata(
+                        projection.expr().to_vec(),
+                        part.clone(),
+                        projection.schema().as_ref(),
+                    )?);
+                } else {
+                    *part = wrapper.clone().replace_children(
+                        vec![part.clone()],
+                        datafusion_physical_plan::ReplaceChildrenOptions::new(
+                            datafusion_physical_plan::ChildrenPropertiesMode::Keep,
+                        ),
+                    )?;
+                }
+            }
+        }
+        return Ok(Some(parts));
+    }
+}
+
+/// Use DataFusion's own per-node volatility contract, recursively. If a
+/// physical expression cannot be traversed, conservatively retain the merge.
+fn projection_is_volatile(projection: &ProjectionExec) -> bool {
+    let mut volatile = false;
+    let mut seen = HashSet::new();
+    for expression in projection.expr() {
+        if expression
+            .expr
+            .apply(|node| {
+                let identity = std::ptr::from_ref(node) as *const () as usize;
+                if !seen.insert(identity) {
+                    return Ok(TreeNodeRecursion::Jump);
+                }
+                volatile |= node.is_volatile_node();
+                Ok(if volatile {
+                    TreeNodeRecursion::Stop
+                } else {
+                    TreeNodeRecursion::Continue
+                })
+            })
+            .is_err()
+        {
+            return true;
+        }
+    }
+    volatile
 }
 
 async fn count_parts(parts: Vec<PhysicalPlan>, context: Arc<TaskContext>) -> Result<usize> {
