@@ -1,0 +1,412 @@
+{
+  "runner_sha256": "2b9d1bd42cb75c1087f1b90c34a14426fdcd8284a96fdd50580e4cc279bb7044",
+  "upstream_sha256": {
+    "benchmark_table.py": "a5e0c64d261d174743551150d6952abcb18fa615abe86950f673cb32d1d3b22d",
+    "benchmark_matrix_table.py": "9bc92624fd8e2c295d78f39733f5cf3a441eee31ab3bd53185edd2920d9a2125",
+    "fixtures.py": "344c5c5f5b7ff8edb799c532eff66644878f4c48e3c7cd1b626b83401beef1c3"
+  },
+  "engine": "vail",
+  "timeout_seconds": 250.0,
+  "fixture_timeout_seconds": 1800.0,
+  "data_dir": "/home/danielking/hail-benchmark-data",
+  "smoke_fixtures": false,
+  "discovered": 9,
+  "cases": [
+    {
+      "module": "benchmark_table.py",
+      "name": "test_table_aggregate_downsample_worst_case",
+      "id": "benchmark_table::test_table_aggregate_downsample_worst_case",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 3.0182848620002005,
+      "telemetry": {
+        "cpu_seconds": 20.83,
+        "average_cores": 6.900432669484887,
+        "peak_rss_gib": 0.3155326843261719,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 19.740000000000002,
+          "system_time": 1.09,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 64794624,
+          "diskio_byteswritten": 3129344
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_table_aggregate_downsample_worst_case",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_table_aggregate_downsample_worst_case/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.239,
+      "elapsed_seconds": 3.424
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[10,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        10,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 10,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.737561689999893,
+      "telemetry": {
+        "cpu_seconds": 34.15,
+        "average_cores": 12.473237235909881,
+        "peak_rss_gib": 0.7267379760742188,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 31.41,
+          "system_time": 2.7399999999999998,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 7434240,
+          "diskio_byteswritten": 8192
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[10,1000]",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[10,1000]/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.155,
+      "elapsed_seconds": 2.991
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[100,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        100,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 100,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.3645090149998396,
+      "telemetry": {
+        "cpu_seconds": 22.060000000000002,
+        "average_cores": 9.328347972683478,
+        "peak_rss_gib": 0.7519302368164062,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 19.21,
+          "system_time": 2.85,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 888832,
+          "diskio_byteswritten": 8192
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[100,1000]",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[100,1000]/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.148,
+      "elapsed_seconds": 2.614
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,10]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        10
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 10
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.8620938620001652,
+      "telemetry": {
+        "cpu_seconds": 35.21999999999999,
+        "average_cores": 12.304670122044424,
+        "peak_rss_gib": 0.752410888671875,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 32.209999999999994,
+          "system_time": 3.01,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 7434240,
+          "diskio_byteswritten": 12288
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[1000,10]",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[1000,10]/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.146,
+      "elapsed_seconds": 3.11
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,100]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        100
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 100
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.3814087929999914,
+      "telemetry": {
+        "cpu_seconds": 22.340000000000003,
+        "average_cores": 9.379968217048376,
+        "peak_rss_gib": 0.771148681640625,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 19.330000000000002,
+          "system_time": 3.01,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 757760,
+          "diskio_byteswritten": 8192
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[1000,100]",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[1000,100]/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.151,
+      "elapsed_seconds": 2.642
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_join_partitions_table",
+      "id": "benchmark_table::test_join_partitions_table[1000,1000]",
+      "args": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "fixtures": [
+        "many_partitions_ht1",
+        "many_partitions_ht2"
+      ],
+      "parameters": [
+        1000,
+        1000
+      ],
+      "arguments": {},
+      "fixture_parameters": {
+        "many_partitions_ht1": 1000,
+        "many_partitions_ht2": 1000
+      },
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 2.4679441479997877,
+      "telemetry": {
+        "cpu_seconds": 20.810000000000002,
+        "average_cores": 8.431101093319018,
+        "peak_rss_gib": 0.7333259582519531,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 18.19,
+          "system_time": 2.62,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 8192
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[1000,1000]",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_join_partitions_table[1000,1000]/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.145,
+      "elapsed_seconds": 2.721
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_map_filter_region_memory",
+      "id": "benchmark_table::test_test_map_filter_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 5.670719837999968,
+      "telemetry": {
+        "cpu_seconds": 9.59,
+        "average_cores": 1.691061794209108,
+        "peak_rss_gib": 5.992122650146484,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 5.55,
+          "system_time": 4.039999999999999,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 20480
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_test_map_filter_region_memory",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_test_map_filter_region_memory/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.151,
+      "elapsed_seconds": 5.883
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_inner_join_region_memory",
+      "id": "benchmark_table::test_test_inner_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 9.946017916000073,
+      "telemetry": {
+        "cpu_seconds": 14.240000000000002,
+        "average_cores": 1.4316999506350865,
+        "peak_rss_gib": 11.385997772216797,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 6.99,
+          "system_time": 7.250000000000001,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 28672
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_test_inner_join_region_memory",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_test_inner_join_region_memory/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.145,
+      "elapsed_seconds": 10.155
+    },
+    {
+      "module": "benchmark_table.py",
+      "name": "test_test_left_join_region_memory",
+      "id": "benchmark_table::test_test_left_join_region_memory",
+      "args": [],
+      "fixtures": [],
+      "parameters": [],
+      "arguments": {},
+      "fixture_parameters": {},
+      "upstream_marks": [],
+      "status": "passed",
+      "benchmark_seconds": 9.55081456300013,
+      "telemetry": {
+        "cpu_seconds": 15.379999999999997,
+        "average_cores": 1.610298782331606,
+        "peak_rss_gib": 10.709671020507812,
+        "sampling_hz": 10,
+        "counter_deltas": {
+          "user_time": 7.14,
+          "system_time": 8.24,
+          "instructions": null,
+          "cycles": null,
+          "diskio_bytesread": 0,
+          "diskio_byteswritten": 28672
+        },
+        "cpu_scope": "worker and live descendants, including JVM and telemetry thread",
+        "directory": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_test_left_join_region_memory",
+        "hardware_counters": {
+          "scope": "whole otherwise idle VM; separate 100 ms perf intervals",
+          "path": "/home/danielking/join-iteration/combined-join-validation/telemetry/vail/benchmark_table--test_test_left_join_region_memory/perf.csv",
+          "returncode": -2,
+          "note": "Inspect perf.csv and perf.log for unavailable events; blank process counters mean unavailable."
+        }
+      },
+      "fixture_seconds": 0.143,
+      "elapsed_seconds": 9.751
+    }
+  ],
+  "totals": {
+    "passed": 9
+  }
+}

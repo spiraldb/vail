@@ -386,7 +386,6 @@ async fn query_prefix_retains_duplicate_prefixes_across_original_partitions() {
     assert!(source.query_prefix(3, "q".into(), "p".into()).is_err());
 }
 
-/private/tmp/vail-region-tests.rs:
 
 #[tokio::test]
 async fn naive_coalesce_preserves_rows_order_and_partition_limits() {
