@@ -336,15 +336,37 @@ fn aligned(cells: &ListArray, columns: &ListArray, scalar_columns: bool) -> Resu
         .ok_or_else(|| {
             datafusion_common::exec_datafusion_err!("matrix entry presence must be boolean")
         })?;
+    // The usual matrix representation has no validity buffers on its lists,
+    // entry structs, presence bits, or identity columns. In that case Arrow's
+    // primitive value slices can check each row's complete identity span with
+    // a single slice comparison instead of repeated per-value null checks.
+    // Keep the element-wise path for nullable arrays so malformed nulls retain
+    // their existing errors.
+    let all_valid = cells.nulls().is_none()
+        && columns.nulls().is_none()
+        && records.nulls().is_none()
+        && presence.nulls().is_none()
+        && cell_ids.nulls().is_none()
+        && column_ids.nulls().is_none();
     for row in 0..cells.len() {
         let column_row = if scalar_columns { 0 } else { row };
         let a = cells.value_offsets()[row] as usize;
         let b = columns.value_offsets()[column_row] as usize;
         let count = cells.value_length(row) as usize;
-        if columns.is_null(column_row) || count != columns.value_length(column_row) as usize {
+        if (!all_valid && columns.is_null(column_row))
+            || count != columns.value_length(column_row) as usize
+        {
             return exec_err!(
                 "matrix alignment violation: entry array length differs from column count"
             );
+        }
+        if all_valid {
+            if cell_ids.values()[a..a + count] != column_ids.values()[b..b + count] {
+                return exec_err!(
+                    "matrix alignment violation: entry column identity differs from column at the same position"
+                );
+            }
+            continue;
         }
         for position in 0..count {
             let left = a + position;

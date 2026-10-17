@@ -214,6 +214,115 @@ fn alignment_compares_exact_positional_ids_against_shared_columns() {
     );
 }
 
+#[test]
+fn alignment_fast_path_handles_sliced_and_nullable_arrays() {
+    use arrow_buffer::NullBuffer;
+
+    // Both lists are sliced after construction so their offsets are nonzero.
+    // The aligned row must compare the sliced child spans rather than assume
+    // either list starts at child offset zero.
+    let cells = list_wrap(records(vec![Some(99), Some(7), Some(2)], true), vec![1, 2]).slice(1, 1);
+    let columns =
+        list_wrap(records(vec![Some(88), Some(7), Some(2)], false), vec![1, 2]).slice(1, 1);
+    let expected: ArrayRef = Arc::new(BooleanArray::from(vec![true]));
+    assert_eq!(
+        execute(
+            "__vail_matrix_aligned",
+            vec![(cells.clone(), false), (columns.clone(), true)],
+            &DataType::Boolean
+        )
+        .unwrap()
+        .as_ref(),
+        expected.as_ref()
+    );
+
+    let reordered =
+        list_wrap(records(vec![Some(88), Some(2), Some(7)], false), vec![1, 2]).slice(1, 1);
+    assert!(
+        execute(
+            "__vail_matrix_aligned",
+            vec![(cells.clone(), false), (reordered, true)],
+            &DataType::Boolean
+        )
+        .unwrap_err()
+        .contains("identity differs")
+    );
+
+    // An explicitly present, all-valid identity bitmap selects the nullable
+    // fallback; it must still accept the valid row and preserve null errors.
+    let valid = records(vec![Some(7), Some(2)], true);
+    let valid = valid.as_any().downcast_ref::<StructArray>().unwrap();
+    let mut nullable_columns = valid.columns().to_vec();
+    nullable_columns[0] = Arc::new(Int64Array::new(
+        vec![7, 2].into(),
+        Some(NullBuffer::from(vec![true, true])),
+    ));
+    let nullable_records = Arc::new(StructArray::new(
+        valid.fields().clone(),
+        nullable_columns.clone(),
+        None,
+    ));
+    let nullable_cells = list_wrap(nullable_records.clone(), vec![2]);
+    let aligned_columns = list_wrap(records(vec![Some(7), Some(2)], false), vec![2]);
+    assert_eq!(
+        execute(
+            "__vail_matrix_aligned",
+            vec![
+                (nullable_cells.clone(), false),
+                (aligned_columns.clone(), true)
+            ],
+            &DataType::Boolean
+        )
+        .unwrap()
+        .as_ref(),
+        Arc::new(BooleanArray::from(vec![true])).as_ref()
+    );
+
+    nullable_columns[1] = Arc::new(BooleanArray::from(vec![Some(true), None]));
+    let malformed_records = Arc::new(StructArray::new(
+        valid.fields().clone(),
+        nullable_columns,
+        None,
+    ));
+    let malformed_cells = list_wrap(malformed_records, vec![2]);
+    assert!(
+        execute(
+            "__vail_matrix_aligned",
+            vec![(malformed_cells, false), (aligned_columns, true)],
+            &DataType::Boolean
+        )
+        .unwrap_err()
+        .contains("presence must not be missing")
+    );
+
+    let DataType::List(entry_type) = cells.data_type() else {
+        panic!("test cells are a list");
+    };
+    let missing_cells: ArrayRef = Arc::new(ListArray::new_null(entry_type.clone(), 1));
+    assert!(
+        execute(
+            "__vail_matrix_aligned",
+            vec![(missing_cells, false), (columns.clone(), true)],
+            &DataType::Boolean
+        )
+        .unwrap_err()
+        .contains("entry arrays must not be missing")
+    );
+    let missing_columns: ArrayRef = Arc::new(ListArray::new_null(
+        Arc::new(Field::new("item", entry_type.data_type().clone(), true)),
+        1,
+    ));
+    assert!(
+        execute(
+            "__vail_matrix_aligned",
+            vec![(cells.clone(), false), (missing_columns, true)],
+            &DataType::Boolean
+        )
+        .unwrap_err()
+        .contains("entry array length differs")
+    );
+}
+
 fn context_records(contexts: Vec<i32>, values: ArrayRef) -> ArrayRef {
     let context: ArrayRef = Arc::new(StructArray::new(
         vec![Arc::new(Field::new("c", DataType::Int32, true))].into(),
