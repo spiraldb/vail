@@ -21,6 +21,25 @@ def test_collect_uses_ordered_stream_across_files(tmp_path):
     assert reverse.aggregate(hl.agg.collect(reverse.idx)) == list(reversed(range(23)))
 
 
+def test_collect_multiset_semantics_across_partitions():
+    t = hl.Table.parallelize(
+        [{'x': 2, 'nested': [2, None]}, {'x': None, 'nested': None},
+         {'x': 2, 'nested': [2, None]}, {'x': 1, 'nested': [1]}],
+        schema=hl.tstruct(x=hl.tint32, nested=hl.tarray(hl.tint32)),
+        n_partitions=3,
+    )
+    assert sorted(map(repr, t.aggregate(hl.agg.collect(t.row)))) == sorted(map(repr, [
+        hl.Struct(x=2, nested=[2, None]), hl.Struct(x=None, nested=None),
+        hl.Struct(x=2, nested=[2, None]), hl.Struct(x=1, nested=[1]),
+    ]))
+    assert sorted(map(repr, t.group_by(k=t.x).aggregate(values=hl.agg.collect(t.nested))
+                      .collect())) == sorted(map(repr, [
+        hl.Struct(k=2, values=[[2, None], [2, None]]),
+        hl.Struct(k=None, values=[None]),
+        hl.Struct(k=1, values=[[1]]),
+    ]))
+
+
 def test_query_backed_scalar_reduction_is_lazy_and_reusable(tmp_path):
     path = tmp_path / 'source'
     hl.range_table(6, n_partitions=2).write(path)

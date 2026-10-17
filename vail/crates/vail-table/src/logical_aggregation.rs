@@ -226,6 +226,9 @@ pub(crate) fn needs_order(expression: &Expr) -> bool {
                     | "hardy_weinberg_test"
                     | "inbreeding"
                     | "call_stats"
+                    // Hail does not guarantee collect order. Its native
+                    // accumulator merges partition lists by concatenation.
+                    | "collect"
                     // Downsample state merges bounded per-partition grids.
                     // Representative identities may vary with partitioning,
                     // as they do in Hail's partial aggregator; its public
