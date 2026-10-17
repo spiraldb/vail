@@ -79,7 +79,7 @@ def test_single_source_totals_preserve_globals_and_partition_semantics():
     # Scan values are computed in source order before aggregation fanout.
     scanned = hl.range_table(12, n_partitions=1)
     scanned = scanned.annotate(
-        previous=hl.scan._prev_nonnull(
+        previous=hl.scan.prev_nonnull(
             hl.or_missing(scanned.idx % 3 != 0, scanned.idx)
         )
     )
@@ -99,9 +99,9 @@ def test_total_collect_and_take_preserve_input_order():
 def test_totals_handle_empty_inputs_globals_and_initialized_reducers():
     empty = hl.range_table(0, n_partitions=1)
     assert empty.aggregate(hl.agg.sum(empty.idx)) == 0
-    no_partitions = hl.range_table(12, n_partitions=3)._filter_partitions([])
-    assert no_partitions.n_partitions() == 0
-    assert no_partitions.aggregate(hl.agg.sum(no_partitions.idx)) == 0
+    no_rows = hl.range_table(12, n_partitions=3)
+    no_rows = no_rows.filter(no_rows.idx < 0)
+    assert no_rows.aggregate(hl.agg.sum(no_rows.idx)) == 0
 
     # Hist binds bin parameters through the initialized-aggregate planner;
     # the runtime lowering must still apply the same safe fanout.
@@ -115,3 +115,32 @@ def test_nested_total_collect_preserves_input_order():
     table = hl.range_table(12, n_partitions=1).key_by()
     expression = hl.agg.array_agg(lambda i: hl.agg.collect(table.idx + i), hl.range(2))
     assert table.aggregate(expression) == [list(range(12)), list(range(1, 13))]
+
+
+def test_deep_shared_aggregate_expression_scales_with_unique_nodes():
+    table = hl.range_table(4, n_partitions=2)
+    shared = hl.float64(table.idx)
+    # Each addition points at the same previous subtree twice. The aggregate
+    # planner must inspect this DAG once per unique node, not once per path.
+    for _ in range(32):
+        shared = shared + shared
+
+    assert table.aggregate(hl.agg.sum(shared)) == float(sum(range(4)) * (1 << 32))
+
+
+def test_deep_shared_maprows_and_filter_with_global_and_scan_values():
+    table = hl.range_table(4, n_partitions=2).annotate_globals(offset=1.0)
+    shared = table.offset
+    for _ in range(32):
+        shared = shared + shared
+
+    # MapRows sees the shared global dependency; a scan expression in the
+    # same projection keeps source-order initialization active.
+    mapped = table.annotate(value=shared, previous=hl.scan.prev_nonnull(table.idx))
+    condition = mapped.offset
+    for _ in range(32):
+        condition = condition + condition
+    filtered = mapped.filter(condition > 0)
+    rows = filtered.collect()
+    assert [row.value for row in rows] == [float(1 << 32)] * 4
+    assert [row.previous for row in rows] == [None, 0, 1, 2]

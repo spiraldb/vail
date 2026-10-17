@@ -527,7 +527,7 @@ fn indexed_column(plan: &LogicalPlan, index: usize) -> Expr {
 
 fn contains_global(expr: &vail_execution::expressions::Expr) -> bool {
     let mut found = false;
-    expr.visit(&mut |node| {
+    expr.visit_unique(&mut |node| {
         found |= matches!(node, vail_execution::expressions::Expr::Global { .. });
     });
     found
@@ -535,7 +535,7 @@ fn contains_global(expr: &vail_execution::expressions::Expr) -> bool {
 
 fn contains_scan_expr(expr: &vail_execution::expressions::Expr) -> bool {
     let mut found = false;
-    expr.visit(&mut |node| found |= is_scan(node));
+    expr.visit_unique(&mut |node| found |= is_scan(node));
     found
 }
 

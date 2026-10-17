@@ -25,7 +25,10 @@ from urllib.request import urlretrieve
 
 
 ROOT = Path(__file__).resolve().parents[1]
-UPSTREAM = ROOT.parent / "hail" / "hail" / "python" / "benchmark" / "hail"
+UPSTREAM = Path(os.environ.get(
+    "VAIL_BENCHMARK_UPSTREAM",
+    ROOT.parent / "hail" / "hail" / "python" / "benchmark" / "hail",
+)).expanduser().resolve()
 SOURCES = ("benchmark_table.py", "benchmark_matrix_table.py")
 
 

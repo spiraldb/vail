@@ -227,7 +227,7 @@ def test_hail_key_sort_order_for_calls_unicode_and_nested_missing():
     table = hl.Table.parallelize([{'k': value} for value in calls],
                                  schema=hl.tstruct(k=hl.tcall)).key_by('k')
     assert [row.k for row in table.collect()] == [
-        hl.Call((0, 1)), hl.Call((0, 1), True), hl.Call((1, 1)), hl.Call((0, 2))]
+        hl.Call((0, 1)), hl.Call((0, 1), True), hl.Call((0, 2)), hl.Call((1, 1))]
     strings = hl.Table.parallelize([{'k': value} for value in ['β', None, '中', 'a']],
                                    schema=hl.tstruct(k=hl.tstr)).key_by('k')
     assert [row.k for row in strings.collect()] == ['a', 'β', '中', None]

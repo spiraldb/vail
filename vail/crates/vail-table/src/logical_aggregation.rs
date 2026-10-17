@@ -226,7 +226,7 @@ pub(crate) fn needs_order(expression: &Expr) -> bool {
 /// whose results can be combined without preserving row order.
 pub(crate) fn can_parallelize_total(expression: &Expr) -> bool {
     let mut contains_aggregate = false;
-    expression.visit(&mut |node| {
+    expression.visit_unique(&mut |node| {
         contains_aggregate |= matches!(node, Expr::Aggregate { .. } | Expr::AggregateFold { .. });
     });
     contains_aggregate && !needs_order(expression)

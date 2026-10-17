@@ -258,10 +258,18 @@ pub fn result_type(
             packed(input, &["y", "x"], Some("weight"))?;
             let predictors = options.get("n_predictors").and_then(Value::as_u64);
             let x = field(input, "x")?;
+            let predictor_count = predictors.unwrap_or(0) as usize;
+            let predictor_type_matches = match x {
+                Type::Array { array: element } => **element == f64t,
+                Type::Primitive(P::Float64) => predictor_count == 1,
+                Type::Struct { r#struct: columns } => {
+                    columns.len() == predictor_count && columns.iter().all(|(_, ty)| *ty == f64t)
+                }
+                _ => false,
+            };
             require(
-                *field(input, "y")? == f64t
-                    && (*x == array(f64t.clone()) || *x == f64t && predictors == Some(1)),
-                "linreg requires float64 y and scalar or array<float64> x",
+                *field(input, "y")? == f64t && predictor_type_matches,
+                "linreg requires float64 y and float64 scalar, array, or struct predictors matching n_predictors",
             )?;
             if let Ok(weight) = field(input, "weight") {
                 require(*weight == f64t, "linreg weight must be float64")?;

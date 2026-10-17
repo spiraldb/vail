@@ -406,10 +406,10 @@ fn lower_native_prefix(
             // would duplicate window state and per-row work.
             let local_name = unique(&mut used, &format!("__scan_native_local_{i}"));
             ordinal_counts.push(
-                (datafusion_expr::expr_fn::cast(
+                datafusion_expr::expr_fn::cast(
                     datafusion_expr::col(&ordinal_name),
                     DataType::Int64,
-                ) - datafusion_expr::lit(1_i64))
+                )
                 .alias(&local_name),
             );
             local_names.push(local_name);

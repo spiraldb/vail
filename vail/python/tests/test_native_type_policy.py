@@ -4,13 +4,13 @@ import pytest
 import vail as hl
 
 
-def test_packed_calls_roundtrip_order_and_lazy_construction(tmp_path):
+def test_typed_calls_roundtrip_order_and_lazy_construction(tmp_path):
     calls = [hl.Call((0, 2)), hl.Call((1, 1)), hl.Call((2, 0), True),
              hl.Call((7,)), hl.Call((), True), None]
     table = hl.Table.parallelize([{'c': c} for c in calls], schema=hl.tstruct(c=hl.tcall), n_partitions=2)
     assert table.collect() == [hl.Struct(c=c) for c in calls]
     ordered = table.key_by('c')
-    assert [r.c for r in ordered.collect()] == [hl.Call((), True), hl.Call((1, 1)), hl.Call((0, 2)), hl.Call((2, 0), True), hl.Call((7,)), None]
+    assert [r.c for r in ordered.collect()] == [hl.Call((), True), hl.Call((0, 2)), hl.Call((1, 1)), hl.Call((2, 0), True), hl.Call((7,)), None]
     table.write(tmp_path / 'calls')
     loaded = hl.read_table(tmp_path / 'calls')
     assert loaded.c.dtype == hl.tcall
@@ -95,9 +95,9 @@ def test_float_comparisons_and_grouping_preserve_zero_and_missing(dtype):
     assert sorted(r.n for r in grouped.collect()) == [1, 2]
 
 
-def test_packed_call_accessors_at_representation_boundaries():
+def test_typed_call_accessors_at_representation_boundaries():
     calls = [hl.Call((0, 32767)), hl.Call((16383, 16384), True),
-             hl.Call(((1 << 29) - 1,), True), None]
+             hl.Call((65535,), True), None]
     table = hl.Table.parallelize([{'c': c} for c in calls], schema=hl.tstruct(c=hl.tcall))
     rows = table.annotate(a=table.c.alleles,
                           phase=table.c.phased).collect()
@@ -140,3 +140,22 @@ def test_empty_struct_group_key_preserves_rows_and_missingness():
         hl.agg.group_by(table.k, hl.agg.array_sum(hl.array([table.idx])))
     )
     assert arrays == {hl.Struct(): [3], None: [0]}
+
+
+@pytest.mark.parametrize('dtype,values', [
+    (hl.tstruct(call=hl.tcall), [
+        {'call': hl.Call((0, 1))}, {'call': hl.Call((2, 1), True)}, None,
+    ]),
+    (hl.tarray(hl.tcall), [
+        [hl.Call((0, 1)), hl.Call((2,))], [hl.Call((1, 1), True)], None,
+    ]),
+])
+def test_nested_typed_call_keys_roundtrip_through_iceberg(tmp_path, dtype, values):
+    table = hl.Table.parallelize(
+        [{'key': value} for value in values], schema=hl.tstruct(key=dtype), n_partitions=2,
+    ).key_by('key')
+    path = tmp_path / 'nested-call-keys'
+    table.write(path)
+    loaded = hl.read_table(path)
+    assert loaded.key.dtype == dtype
+    assert loaded.collect() == table.collect()

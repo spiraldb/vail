@@ -1134,6 +1134,8 @@ impl LinregAccumulator {
         }
     }
     fn accumulate_observation(&mut self, x: &[f64], y: f64, weight: f64) {
+        // Hail's n counts defined rows even when their numeric values make the fit invalid.
+        self.n += 1;
         if weight < 0.0 || !weight.is_finite() || !y.is_finite() || x.iter().any(|v| !v.is_finite())
         {
             self.invalid_numeric = true;
@@ -1159,7 +1161,6 @@ impl LinregAccumulator {
             return;
         }
         self.append_work();
-        self.n += 1;
     }
     fn result(&self) -> DfResult<ScalarValue> {
         let DataType::Struct(fields) = linreg_type() else {

@@ -580,13 +580,48 @@ fn logical_type_matches_arrow(logical: &serde_json::Value, physical: &DataType) 
     logical.ensure_keyable().is_ok()
         && logical
             .to_arrow()
-            .is_ok_and(|expected| arrow_types_same_layout(&expected, physical))
+            .is_ok_and(|expected| iceberg_widened_layout_matches(&expected, physical))
         && make_comparator(
             new_null_array(physical, 1).as_ref(),
             new_null_array(physical, 1).as_ref(),
             SortOptions::default(),
         )
         .is_ok()
+}
+
+/// Iceberg has no unsigned integer fields and promotes the UInt16/UInt8
+/// fields in Call storage to Int32. Check this recursively against the exact
+/// Arrow schema declared by the logical type; all names and other types remain
+/// fixed, so unrelated schemas cannot use this compatibility path.
+fn iceberg_widened_layout_matches(expected: &DataType, physical: &DataType) -> bool {
+    if arrow_types_same_layout(expected, physical) {
+        return true;
+    }
+    match (expected, physical) {
+        (DataType::Struct(expected), DataType::Struct(physical)) => {
+            expected.len() == physical.len()
+                && expected.iter().zip(physical).all(|(expected, physical)| {
+                    expected.name() == physical.name()
+                        && iceberg_widened_layout_matches(
+                            expected.data_type(),
+                            physical.data_type(),
+                        )
+                })
+        }
+        (DataType::List(expected), DataType::List(physical))
+        | (DataType::LargeList(expected), DataType::LargeList(physical)) => {
+            iceberg_widened_layout_matches(expected.data_type(), physical.data_type())
+        }
+        (
+            DataType::FixedSizeList(expected, expected_size),
+            DataType::FixedSizeList(physical, physical_size),
+        ) => {
+            expected_size == physical_size
+                && iceberg_widened_layout_matches(expected.data_type(), physical.data_type())
+        }
+        (DataType::UInt8 | DataType::UInt16, DataType::Int32) => true,
+        _ => false,
+    }
 }
 
 fn arrow_types_same_layout(left: &DataType, right: &DataType) -> bool {
@@ -728,13 +763,33 @@ fn key_value_array(value: &KeyValue, field: &KeyField) -> Result<ArrayRef> {
         }
         KeyValue::ArrowIpc(bytes) => {
             let array = decode_typed_key_component(bytes)?;
-            if !key_array_type_matches(array.data_type(), field) {
-                return Err(IndexError::Invalid(format!(
-                    "typed key Arrow type {} differs from its index binding",
-                    array.data_type()
-                )));
+            if key_array_type_matches(array.data_type(), field) {
+                array
+            } else {
+                let KeyType::Arrow(logical_json) = &field.data_type else {
+                    return Err(IndexError::Invalid(format!(
+                        "typed key Arrow type {} differs from its index binding",
+                        array.data_type()
+                    )));
+                };
+                let logical = serde_json::from_value::<vail_execution::expressions::Type>(
+                    logical_json.clone(),
+                )
+                .map_err(|error| IndexError::Invalid(error.to_string()))?;
+                let expected = logical
+                    .to_arrow()
+                    .map_err(|error| IndexError::Invalid(error.to_string()))?;
+                if !arrow_types_same_layout(array.data_type(), &expected)
+                    || !logical_type_matches_arrow(logical_json, &field.physical_type)
+                {
+                    return Err(IndexError::Invalid(format!(
+                        "typed key Arrow type {} differs from its index binding",
+                        array.data_type()
+                    )));
+                }
+                arrow_cast::cast(&array, &field.physical_type)
+                    .map_err(|error| IndexError::Invalid(error.to_string()))?
             }
-            array
         }
         _ => {
             return Err(IndexError::Invalid(

@@ -116,3 +116,16 @@ def test_grouped_aggregate_scope_source_and_name_validation():
         table.group_by("g", g=table.g)
     with pytest.raises(ValueError, match="nested aggregations"):
         grouped.aggregate(bad=hl.agg.sum(hl.agg.count()))
+
+
+def test_native_grouped_sum_integer_boundaries():
+    table = hl.Table.parallelize(
+        [{'k': 0, 'x': 9223372036854775807}, {'k': 0, 'x': 1},
+         {'k': 1, 'x': -9223372036854775808}, {'k': 1, 'x': -1}],
+        schema=hl.tstruct(k=hl.tint32, x=hl.tint64), n_partitions=2,
+    )
+    rows = table.group_by(table.k).aggregate(total=hl.agg.sum(table.x)).collect()
+    assert [(row.k, row.total) for row in rows] == [(0, -9223372036854775808), (1, 9223372036854775807)]
+    small = hl.Table.parallelize([{'x': 2147483647}, {'x': 2147483647}],
+                                schema=hl.tstruct(x=hl.tint32), n_partitions=2)
+    assert small.aggregate(hl.agg.sum(small.x)) == 4294967294

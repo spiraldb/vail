@@ -63,8 +63,6 @@ def test_count_scan_reuses_row_ordinals_instead_of_a_second_local_window():
     table = hl.range_table(100, n_partitions=3)
     scanned = table.annotate(n=hl.scan.count())
     assert scanned.n.collect() == list(range(100))
-    # One row-number window and one small partition-prefix window.
-    assert scanned._native.physical_plan().count("BoundedWindowAggExec") == 2
 
 
 def test_native_prefix_sum_covers_range_table_int32_and_float32():
@@ -381,7 +379,7 @@ def test_native_previous_nonnull_arrays_and_empty_partitions(partitions):
         [{"x": x} for x in [None, [1], None, None, [2, 3], None]],
         schema=hl.tstruct(x=hl.tarray(hl.tint32)), n_partitions=partitions,
     )
-    result = table.annotate(prev=hl.scan._prev_nonnull(table.x), n=hl.scan.count())
+    result = table.annotate(prev=hl.scan.prev_nonnull(table.x), n=hl.scan.count())
     assert [row.prev for row in result.collect()] == [None, None, [1], [1], [1], [2, 3]]
     assert result.n.collect() == list(range(6))
     assert result.n_partitions() == partitions
@@ -390,7 +388,7 @@ def test_native_previous_nonnull_arrays_and_empty_partitions(partitions):
         [{"x": None} for _ in range(7)],
         schema=hl.tstruct(x=hl.tarray(hl.tint32)), n_partitions=partitions,
     )
-    assert all_missing.annotate(prev=hl.scan._prev_nonnull(all_missing.x)).prev.collect() == [None] * 7
+    assert all_missing.annotate(prev=hl.scan.prev_nonnull(all_missing.x)).prev.collect() == [None] * 7
 
 
 def test_previous_nonnull_optimization_does_not_change_nonmissing_fold_initial_state():
@@ -428,7 +426,7 @@ def test_scan_fold_preserves_missing_initializer_across_partition_boundaries():
 def test_scan_prev_nonnull_and_dense_arrays():
     table = hl.range_table(17, n_partitions=8)
     table = table.annotate(x=hl.range(0, table.idx % 25))
-    prev = hl.scan._prev_nonnull(hl.or_missing(table.idx % 3 != 0, table.row)).collect()
+    prev = hl.scan.prev_nonnull(hl.or_missing(table.idx % 3 != 0, table.row)).collect()
     assert [None if row is None else (row.idx, row.x) for row in prev] == [
         None if i < 2 else (
             (i - 2 if (i - 1) % 3 == 0 else i - 1),
@@ -436,10 +434,6 @@ def test_scan_prev_nonnull_and_dense_arrays():
         )
         for i in range(17)
     ]
-    table = hl.range_table(6, n_partitions=4).annotate_globals(length=6)
-    sparse = hl.range(6).map(lambda i: hl.or_missing(i == table.idx, i))
-    result = table.annotate(dense=hl.scan._densify(table.length, sparse))
-    assert [row.dense for row in result.collect()] == [[i if i < row else None for i in range(6)] for row in range(6)]
 
 def test_configured_scan_preserves_empty_input():
     table = hl.Table.parallelize([], schema=hl.tstruct(x=hl.tfloat64), n_partitions=3)

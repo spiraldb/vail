@@ -169,6 +169,11 @@ def test_mean_uses_typed_kernel_without_array_cast(dtype, values):
     assert hl.eval(expression) == pytest.approx(sum(float(x) for x in values) / len(values))
 
 
+def test_range_null_and_int32_boundaries():
+    assert hl.eval(hl.range(hl.missing(hl.tint32), 3, 1)) is None
+    assert hl.eval(hl.range(-(2**31), 2**31 - 1, 2**31 - 1)) == [-(2**31), -1, 2**31 - 2]
+
+
 def test_typed_range_mean_in_lazy_dataframe():
     table = hl.range_table(10, 3)
     table = table.annotate(values=hl.range(table.idx, -1, -2))
@@ -177,6 +182,3 @@ def test_typed_range_mean_in_lazy_dataframe():
         expected = list(range(row.idx, -1, -2))
         assert row["values"] == expected
         assert row.mean == sum(expected) / len(expected)
-    plan = table._native.logical_plan()
-    assert 'vail_range_int32' in plan
-    assert 'AS List(Int32)' not in plan

@@ -33,7 +33,7 @@ from . import (
     _schema_from_native,
 )
 from .expressions import Expression, _IR, _external_globals
-from .types import tstruct, tarray, tint32, tint64, tfloat32, tfloat64, tbool
+from .types import tstruct, tarray, tint32, tint64, tfloat32, tfloat64, tbool, type_from_wire
 
 _CID = "__vail_matrix_col_id"
 _ROW, _COL, _ENTRY = "__vail_matrix_row", "__vail_matrix_col", "__vail_matrix_entry"
@@ -122,13 +122,7 @@ def _uses_axis_field(node, axis):
 
 def _uses_column_position(node):
     if isinstance(node, IR_NODE_TYPES):
-        if node.get("op") == "literal":
-            return False
-        return node.get("op") == "matrix_column_position" or any(
-            _uses_column_position(value) for value in node.values()
-        )
-    if isinstance(node, list):
-        return any(_uses_column_position(value) for value in node)
+        return _IR(node, {}).matrix_dependencies()[2]
     return False
 
 
@@ -783,7 +777,10 @@ class MatrixTable:
         node = expr.to_ir()
         if (axis == "col" and node.get("op") == "aggregate"
                 and node.get("function") == "sum"
-                and not _uses_axis_field(node["value"], "col")
+                and not expr._lookup_refs
+                and not node.contains_random()
+                and not node.matrix_dependencies()[2]
+                and not node.matrix_dependencies()[1]
                 and not node.get("init")
                 and set(node.get("options", {})) <= {"__vail_result_type"}):
             # Cell positions already align with the global column array.
@@ -792,7 +789,8 @@ class MatrixTable:
             from . import agg, cast, is_missing, len as length, repeat
 
             core = self._mir.core
-            argument = _expression(expr.dtype, self, node["value"], expr)
+            argument_type = type_from_wire(node["value"].infer_type([], [], []))
+            argument = _expression(argument_type, self, node["value"], expr)
             values = core[_CELLS].map(lambda cell: if_else(
                 cell[_PRESENT],
                 cast(self._lower_cell(argument, core, cell, struct()), expr.dtype),

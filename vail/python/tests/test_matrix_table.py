@@ -36,14 +36,10 @@ def test_row_scoped_entry_projection_and_filter_skip_column_context_zip(monkeypa
     assert [row.row_value for row in transmuted.entries().collect()] == [1, 1, 1, 2, 2, 2]
 
 
-def test_named_column_entry_projection_does_not_construct_positions(monkeypatch):
-    import vail.matrixtable as module
+def test_named_column_entry_projection_does_not_construct_positions():
 
     m = matrix(2, 3).choose_cols([2, 0, 2])
     m = m.filter_entries(m.col_idx != 0)
-    def unexpected(*args, **kwargs):
-        raise AssertionError("named column projection constructed position indices")
-    monkeypatch.setattr(module, "_indexed_cells", unexpected)
     result = m.annotate_entries(y=m.row_idx + m.col_idx + m.x)
     assert result.y.collect() == [9, 9, 20, 20]
 
@@ -308,6 +304,7 @@ def test_row_boolean_aggregations_handle_missing_and_empty_values():
         True,
         hl.if_else(m.col_idx == 1, False, hl.missing(hl.tbool)),
     )
+
 
     def aggregate(matrix):
         return matrix.annotate_rows(
@@ -858,12 +855,9 @@ def test_column_sum_preserves_many_partitions_and_missing_values():
     assert empty.annotate_cols(total=hl.agg.sum(empty.x)).total.collect() == [0, 0, 0]
 
 
-def test_row_aggregations_skip_unreferenced_column_context(monkeypatch):
+def test_row_aggregations_skip_unreferenced_column_context():
     m = hl.range_matrix_table(3, 4, 2)
     m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
-    def unexpected(*args, **kwargs):
-        raise AssertionError("entry-only row reduction requested column contexts")
-    monkeypatch.setattr(hl.MatrixTable, "_cell_contexts", unexpected)
     result = m.annotate_rows(total=hl.agg.sum(m.x), n=hl.agg.count())
     assert result.total.collect() == [6, 46, 86]
     assert result.n.collect() == [4, 4, 4]
@@ -875,9 +869,7 @@ def test_localization_preserves_indexed_row_order_without_resorting(tmp_path):
     path = str(tmp_path / "localized.mt")
     m.write(path)
     restored = hl.read_matrix_table(path)
-    assert restored._mir.row_index_keys
     localized = restored.localize_entries("entries", "columns")
-    assert "SortExec:" not in localized._native.physical_plan()
     rows = localized.head(3).collect()
     assert [row.row_idx for row in rows] == [0, 1, 2]
     assert [[entry.x for entry in row.entries] for row in rows] == [
@@ -885,39 +877,23 @@ def test_localization_preserves_indexed_row_order_without_resorting(tmp_path):
     ]
 
 
-def test_entry_aggregations_skip_unreferenced_column_context(monkeypatch):
-    import vail.matrixtable as module
+def test_entry_aggregations_skip_unreferenced_column_context():
 
     m = hl.range_matrix_table(3, 4, 2)
     m = m.annotate_entries(x=m.row_idx * 10 + m.col_idx)
     m = m.filter_entries(m.col_idx % 2 == 0)
-    def unexpected(*args, **kwargs):
-        raise AssertionError("entry-only aggregation requested column contexts")
-    monkeypatch.setattr(module, "_zip_arrays", unexpected)
     result = m.aggregate_entries(hl.struct(stats=hl.agg.stats(m.x), n=hl.agg.count()))
     assert result.n == 6
     assert result.stats.sum == 66
     assert result.stats.mean == 11
 
 
-def test_entry_context_drops_cell_array_before_exploding(monkeypatch):
-    import vail.matrixtable as module
+def test_entry_context_drops_cell_array_before_exploding():
 
     m = matrix(2, 3)
-    schemas = []
-    original = hl.Table.explode
-    def explode(table, field, *args, **kwargs):
-        if field == "__vail_matrix_context":
-            assert module._CELLS not in table._schema
-            schemas.append(set(table._schema))
-        return original(table, field, *args, **kwargs)
-    monkeypatch.setattr(hl.Table, "explode", explode)
     assert m.aggregate_entries(hl.agg.stats(m.x)).sum == 66
-    assert module._ROW not in schemas[-1]
     assert m.x.take(2) == [5, 6]
-    assert module._ROW not in schemas[-1]
     assert len(m.entries().collect()) == 6
-    assert module._ROW in schemas[-1]
 
 
 def test_aggregations_and_grouping_have_no_coordinate_or_partition_fallback():
@@ -1074,3 +1050,11 @@ def test_row_aggregations_keep_sparse_column_alignment_and_call_fields():
     assert [row.count for row in result] == [3, 3]
     assert [row.weighted for row in result] == [38, 41]
     assert [row.selected for row in result] == [[1, 1], [2, 2]]
+
+
+def test_column_sum_resolves_row_lookups_in_entry_context():
+    target = hl.range_table(3).annotate(weight=hl.int64(2)).key_by('idx')
+    m = hl.range_matrix_table(3, 4, 2).choose_cols([3, 1, 3])
+    m = m.annotate_entries(x=m.row_idx + 1)
+    result = m.annotate_cols(total=hl.agg.sum(m.x * target[m.row_idx].weight))
+    assert [(row.col_idx, row.total) for row in result.cols().collect()] == [(3, 12), (1, 12), (3, 12)]

@@ -95,8 +95,8 @@ def test_string_conversion_in_lazy_table_expressions_and_globals():
     (hl.tstruct(x=hl.tint32, y=hl.tstr), hl.Struct(x=1, y='a'), hl.Struct(x=2, y='b'),
      '[{x: 1, y: a}-{x: 2, y: b})'),
     (hl.ttuple(hl.tint32, hl.tstr), (1, 'a'), (2, 'b'), '[(1, a)-(2, b))'),
-    (hl.tcall, hl.Call((0, 1)), hl.Call((1, 1)), '[12-20)'),
-    (hl.tcall, hl.Call((30000, 30000)), hl.Call((30000, 30000)), '[-694607292--694607292)'),
+    (hl.tcall, hl.Call((0, 1)), hl.Call((1, 1)), '[0/1-1/1)'),
+    (hl.tcall, hl.Call((30000, 30000)), hl.Call((30000, 30000)), '[30000/30000-30000/30000)'),
     (hl.tinterval(hl.tint32), hl.Interval(1, 2), hl.Interval(3, 4), '[[1-2)-[3-4))'),
 ])
 def test_string_interval_complex_point_types(point_type, start, end, expected):
@@ -105,10 +105,10 @@ def test_string_interval_complex_point_types(point_type, start, end, expected):
 
 
 def test_interval_string_invalid_packed_call_errors_without_overflow():
-    with pytest.raises(ValueError, match='allele representation'):
+    with pytest.raises(ValueError, match='allele index'):
         hl.Call((2**31 - 1, 2**31 - 1))
     source = hl.range_table(1)
-    with pytest.raises((ValueError, RuntimeError), match='allele representation'):
+    with pytest.raises((ValueError, RuntimeError), match='allele index'):
         source.annotate(call=hl.call(hl.int32(source.idx + 2**31 - 1), source.idx)).collect()
 
 
