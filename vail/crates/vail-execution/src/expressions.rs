@@ -7,7 +7,7 @@
 
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
-use std::sync::{Arc, OnceLock};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::reference::{PreparedReference, ReferenceDefinition};
 use arrow_array::types::{Float32Type, Float64Type, Int32Type, Int64Type};
@@ -20,7 +20,7 @@ use arrow_ord::sort::{SortColumn, SortOptions, lexsort_to_indices, sort_to_indic
 use arrow_schema::{ArrowError, DataType, Field, Schema, SchemaRef};
 use arrow_select::{concat::concat, nullif::nullif, take::take};
 use datafusion_common::{DataFusionError, ScalarValue, config::ConfigOptions};
-use datafusion_expr::{ColumnarValue, Operator};
+use datafusion_expr::{ColumnarValue, Operator, Volatility};
 use datafusion_physical_expr::PhysicalExpr;
 use datafusion_physical_expr::ScalarFunctionExpr;
 use datafusion_physical_expr::expressions::{
@@ -4896,6 +4896,10 @@ fn lower_scoped(
 // shared subgraphs once per incoming path.
 struct CompiledPhysical {
     inner: Arc<dyn PhysicalExpr>,
+    // Closed expressions producing nested values can otherwise rebuild the
+    // same large Arrow array for every input batch. Initialize only on the
+    // first nonempty evaluation and publish successful results only.
+    constant: Option<(OnceLock<ScalarValue>, Mutex<()>)>,
     primary: OnceLock<(Arc<Schema>, Arc<Field>)>,
     fields: std::sync::RwLock<HashMap<Arc<Schema>, Arc<Field>>>,
     label: String,
@@ -4905,6 +4909,7 @@ impl CompiledPhysical {
     fn with_fields(
         inner: Arc<dyn PhysicalExpr>,
         initial: Option<(Arc<Schema>, Arc<Field>)>,
+        cache_constant: bool,
     ) -> Arc<dyn PhysicalExpr> {
         if inner.children().is_empty() {
             return inner;
@@ -4933,6 +4938,7 @@ impl CompiledPhysical {
         }
         Arc::new(Self {
             inner,
+            constant: cache_constant.then(|| (OnceLock::new(), Mutex::new(()))),
             primary,
             fields: Default::default(),
             label,
@@ -4940,16 +4946,21 @@ impl CompiledPhysical {
         })
     }
     fn unbound(inner: Arc<dyn PhysicalExpr>) -> Arc<dyn PhysicalExpr> {
-        Self::with_fields(inner, None)
+        Self::with_fields(inner, None, false)
     }
     fn bind(
         inner: Arc<dyn PhysicalExpr>,
         schema: Arc<Schema>,
+        cache_constant: bool,
     ) -> datafusion_common::Result<Arc<dyn PhysicalExpr>> {
         let field = inner.return_field(schema.as_ref())?;
         // Compilation already interns this schema by lexical context. Keep
         // that shared Arc rather than cloning a wide field vector per node.
-        Ok(Self::with_fields(inner, Some((schema, field))))
+        Ok(Self::with_fields(
+            inner,
+            Some((schema, field)),
+            cache_constant,
+        ))
     }
     fn field(&self, schema: &Schema) -> datafusion_common::Result<Arc<Field>> {
         // Fields are Arc-backed inside Schema, so a clone of the original
@@ -5064,6 +5075,37 @@ impl PhysicalExpr for CompiledPhysical {
         self.field(schema)
     }
     fn evaluate(&self, batch: &RecordBatch) -> datafusion_common::Result<ColumnarValue> {
+        if let Some((cache, lock)) = &self.constant {
+            if let Some(value) = cache.get() {
+                return Ok(ColumnarValue::Scalar(value.clone()));
+            }
+            let _guard = lock.lock().map_err(|_| {
+                DataFusionError::Internal("constant expression cache poisoned".into())
+            })?;
+            if let Some(value) = cache.get() {
+                return Ok(ColumnarValue::Scalar(value.clone()));
+            }
+            let dtype = self.data_type(batch.schema_ref())?;
+            if batch.num_rows() == 0 {
+                return Ok(ColumnarValue::Array(new_null_array(&dtype, 0)));
+            }
+            // Evaluating one row avoids constructing a full repeated output.
+            // Errors are deliberately not stored, so transient failures retry.
+            let one_row = batch.slice(0, 1);
+            let evaluated = self.inner.evaluate(&one_row)?;
+            let scalar = match evaluated {
+                ColumnarValue::Scalar(value) => value,
+                ColumnarValue::Array(array) => ScalarValue::try_from_array(array.as_ref(), 0)?,
+            };
+            if scalar.data_type() != dtype {
+                return Err(DataFusionError::Internal(format!(
+                    "closed expression returned {:?}, expected {dtype:?}",
+                    scalar.data_type()
+                )));
+            }
+            let _ = cache.set(scalar.clone());
+            return Ok(ColumnarValue::Scalar(scalar));
+        }
         self.inner.evaluate(batch)
     }
     fn evaluate_selection(
@@ -5071,6 +5113,22 @@ impl PhysicalExpr for CompiledPhysical {
         batch: &RecordBatch,
         selection: &BooleanArray,
     ) -> datafusion_common::Result<ColumnarValue> {
+        if self.constant.is_some() {
+            if batch.num_rows() != selection.len() {
+                return Err(DataFusionError::Execution(format!(
+                    "Selection array length does not match batch row count: {} != {}",
+                    selection.len(),
+                    batch.num_rows()
+                )));
+            }
+            if !selection.has_true() {
+                return Ok(ColumnarValue::Array(new_null_array(
+                    &self.data_type(batch.schema_ref())?,
+                    0,
+                )));
+            }
+            return self.evaluate(batch);
+        }
         self.inner.evaluate_selection(batch, selection)
     }
     fn children(&self) -> Vec<&Arc<dyn PhysicalExpr>> {
@@ -5157,10 +5215,70 @@ fn lower_cached(
         .entry(context)
         .or_insert_with(|| Arc::new(schema.clone()))
         .clone();
-    let value = CompiledPhysical::bind(value, bound_schema)?;
+    let output_type = value.data_type(schema)?;
+    let cache_constant = is_nested_arrow_type(&output_type)
+        && is_closed_physical_constant(expr)
+        && !vail_ordering::has_type_metadata(&output_type);
+    let value = CompiledPhysical::bind(value, bound_schema, cache_constant)?;
     memo.physical.insert(key, value.clone());
     Ok(value)
 }
+
+/// A deliberately small whitelist for expressions whose result cannot depend
+/// on rows, globals, execution context, or mutable function state. The default
+/// is always non-cacheable.
+fn is_closed_physical_constant(expr: &Expr) -> bool {
+    fn all<'a>(children: impl IntoIterator<Item = &'a Expr>) -> bool {
+        children.into_iter().all(is_closed_physical_constant)
+    }
+    match expr {
+        Expr::Literal { .. } | Expr::RuntimeLiteral { .. } => true,
+        Expr::IfElse {
+            condition,
+            consequent,
+            alternate,
+        } => all([condition.as_ref(), consequent.as_ref(), alternate.as_ref()]),
+        Expr::Die { message, .. } => is_closed_physical_constant(message),
+        Expr::NestedFunction { function, args, .. } => {
+            !function.starts_with("random_")
+                && nested_function(function)
+                    .is_ok_and(|udf| udf.signature().volatility == Volatility::Immutable)
+                && all(args)
+        }
+        Expr::StringFunction { function, args } => {
+            string_function(function)
+                .is_ok_and(|(udf, _, _)| udf.signature().volatility == Volatility::Immutable)
+                && all(args)
+        }
+        Expr::IntegerBinary { left, right, .. } | Expr::Binary { left, right, .. } => {
+            all([left.as_ref(), right.as_ref()])
+        }
+        Expr::Unary { value, .. }
+        | Expr::Cast { value, .. }
+        | Expr::CollectionCast { value, .. }
+        | Expr::ToString { value }
+        | Expr::GetField { value, .. }
+        | Expr::IsMissing { value }
+        | Expr::ArrayFlatten { value }
+        | Expr::ArrayLength { value }
+        | Expr::ArrayReduce { value, .. } => is_closed_physical_constant(value),
+        Expr::Tuple { elements } | Expr::Array { elements, .. } => all(elements),
+        Expr::Struct { fields } => all(fields.iter().map(|(_, value)| value)),
+        _ => false,
+    }
+}
+
+fn is_nested_arrow_type(dtype: &DataType) -> bool {
+    matches!(
+        dtype,
+        DataType::List(_)
+            | DataType::LargeList(_)
+            | DataType::FixedSizeList(_, _)
+            | DataType::Struct(_)
+            | DataType::Map(_, _)
+    )
+}
+
 fn lower_synthetic(
     expr: Expr,
     schema: &Schema,
