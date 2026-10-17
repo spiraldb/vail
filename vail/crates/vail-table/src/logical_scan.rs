@@ -428,6 +428,13 @@ fn lower_native_prefix(
         &part_name,
     )?);
 
+    // The summary is an independent consumer. Keep its input narrow before
+    // introducing the consumer boundary so projection pruning can avoid
+    // constructing unrelated row payloads (notably Matrix cells) a second
+    // time. The main prefix stream above still receives the full input.
+    let summary_part = unique(&mut used, "__scan_native_partition");
+    let mut summary_columns = HashSet::new();
+    summary_columns.insert(input.schema().columns()[part_index].clone());
     let mut local_windows = Vec::with_capacity(nodes.len());
     let mut ordinal_counts = Vec::new();
     let mut local_names = Vec::with_capacity(nodes.len());
@@ -467,6 +474,10 @@ fn lower_native_prefix(
                 arg = Expr::Cast(datafusion_expr::expr::Cast::new(Box::new(arg), dtype));
             }
         }
+        // Keep expression evaluation above the independent-consumer boundary
+        // (especially random or erroring expressions); project only its raw
+        // column dependencies below the boundary.
+        datafusion_expr::utils::expr_to_columns(&arg, &mut summary_columns)?;
         if *kind == "count" {
             // ROW_NUMBER is already required for source order. Its exclusive
             // zero-based ordinal is the local count; a second running SUM(1)
@@ -528,8 +539,17 @@ fn lower_native_prefix(
             .build()?;
     }
 
-    let summary_part = unique(&mut used, "__scan_native_partition");
-    let summary = LogicalPlanBuilder::from(crate::logical::independent_consumer(input))
+    let summary_projection = input
+        .schema()
+        .columns()
+        .into_iter()
+        .filter(|column| summary_columns.contains(column))
+        .map(Expr::Column)
+        .collect::<Vec<_>>();
+    let summary_input = LogicalPlanBuilder::from(input)
+        .project(summary_projection)?
+        .build()?;
+    let summary = LogicalPlanBuilder::from(crate::logical::independent_consumer(summary_input))
         .aggregate(vec![part.alias(&summary_part)], total_aggregates)?
         .build()?;
     let mut carry_windows = Vec::with_capacity(total_names.len());
