@@ -120,6 +120,32 @@ async fn force_count_preserves_ordered_rows_and_limit_semantics() {
         .collect::<Vec<_>>();
     assert_eq!(values, (0..100).rev().collect::<Vec<_>>());
 
+    let mapped = TableIR::range(100, 4)
+        .unwrap()
+        .order_by(vec![("idx".into(), true)])
+        .unwrap()
+        .map_rows(vec![(
+            "mapped".into(),
+            ScalarIR::Column { name: "idx".into() },
+        )])
+        .unwrap();
+    assert_eq!(mapped.force_count().await.unwrap(), 100);
+    let batches = mapped.collect_partitions().await.unwrap();
+    let values = batches[0]
+        .iter()
+        .flat_map(|batch| {
+            batch
+                .column(0)
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap()
+                .values()
+                .iter()
+                .copied()
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(values, (0..100).rev().collect::<Vec<_>>());
+
     let limited = ordered.head(5);
     assert_eq!(limited.force_count().await.unwrap(), 5);
     let batches = limited.collect_partitions().await.unwrap();
@@ -148,6 +174,8 @@ async fn force_count_evaluates_projected_fields_in_every_partition() {
     };
     let table = TableIR::range(100, 4)
         .unwrap()
+        .order_by(vec![("idx".into(), true)])
+        .unwrap()
         .map_rows(vec![
             ("idx".into(), ScalarIR::Column { name: "idx".into() }),
             (
@@ -165,8 +193,6 @@ async fn force_count_evaluates_projected_fields_in_every_partition() {
                 },
             ),
         ])
-        .unwrap()
-        .order_by(vec![("idx".into(), true)])
         .unwrap();
     let error = table
         .force_count()

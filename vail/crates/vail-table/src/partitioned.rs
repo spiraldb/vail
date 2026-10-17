@@ -1517,7 +1517,7 @@ fn projection_is_volatile(projection: &ProjectionExec) -> bool {
         if expression
             .expr
             .apply(|node| {
-                let identity = std::ptr::from_ref(node) as *const () as usize;
+                let identity = Arc::as_ptr(node) as *const () as usize;
                 if !seen.insert(identity) {
                     return Ok(TreeNodeRecursion::Jump);
                 }
