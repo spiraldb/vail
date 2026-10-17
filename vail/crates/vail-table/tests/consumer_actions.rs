@@ -223,8 +223,16 @@ async fn force_count_handles_grouped_output_with_row_payload() {
         )
         .unwrap();
 
-    assert_eq!(grouped.force_count().await.unwrap(), 37);
-    let rows = grouped
+    let output = grouped
+        .order_by(vec![("idx".into(), false)])
+        .unwrap()
+        .map_rows(vec![
+            ("idx".into(), ScalarIR::Column { name: "idx".into() }),
+            ("n".into(), ScalarIR::Column { name: "n".into() }),
+        ])
+        .unwrap();
+    assert_eq!(output.force_count().await.unwrap(), 37);
+    let rows = output
         .collect_partitions()
         .await
         .unwrap()

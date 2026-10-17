@@ -1460,14 +1460,15 @@ fn count_terminal_merge_partitions(plan: PhysicalPlan) -> Result<Option<Vec<Phys
             node = children[0].clone();
             continue;
         }
-        if let Some(concat) = node.as_ref().downcast_ref::<OrderedConcatExec>() {
+        if node.as_ref().is::<OrderedConcatExec>() {
             let children = node.children();
-            if concat.tag_index.is_some() || children.len() != 1 {
+            if children.len() != 1 {
                 return Ok(None);
             }
-            // A single-child untagged concat preserves both rows and schema.
-            // Unwrap it for counting; replaying it would only add a one-part
-            // stream wrapper around the same child.
+            // Preserve casts and tags by replaying the concat around each
+            // corresponding input partition. Multi-child concatenation may
+            // combine independent partitions, so it is not transparent.
+            wrappers.push(node.clone());
             node = children[0].clone();
             continue;
         }
