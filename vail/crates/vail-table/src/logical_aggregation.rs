@@ -22,6 +22,16 @@ pub(crate) fn col(name: impl AsRef<str>) -> DFExpr {
 /// Lift ordinary coordinate reductions to one mergeable DataFusion UDAF.
 /// Complex nested scopes retain the general relational implementation.
 fn coordinate_reductions(expression: &Expr) -> Result<Expr> {
+    // Most scalar aggregates do not contain coordinate-array reductions.
+    // Preserve the original Arc DAG in that common case instead of rebuilding
+    // each shared edge as an expanded occurrence tree.
+    let mut has_array_aggregate = false;
+    expression.visit_unique(&mut |node| {
+        has_array_aggregate |= matches!(node, Expr::AggArray { .. });
+    });
+    if !has_array_aggregate {
+        return Ok(expression.clone());
+    }
     if let Expr::AggArray {
         value,
         parameter,

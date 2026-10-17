@@ -203,6 +203,11 @@ pub(crate) fn extract(
 /// Exploded variables become private relational columns. Array lambda variables
 /// stay lexical and continue through the existing scalar-expression lowering.
 pub(crate) fn resolve(expr: &Expr, scope: &BTreeMap<String, String>) -> Result<Expr> {
+    // With no exploded bindings there can be neither substitutions nor
+    // duplicate lambda identities. Keep shared Arc subgraphs intact.
+    if scope.is_empty() {
+        return Ok(expr.clone());
+    }
     match expr {
         Expr::LambdaVariable { name, .. } if scope.contains_key(name) => Ok(Expr::Column {
             name: scope[name].clone(),
@@ -228,6 +233,21 @@ pub(crate) fn bind_initializers(
     expr: &Expr,
     bind: &mut impl FnMut(&str, &Expr) -> Result<ScalarValue>,
 ) -> Result<Expr> {
+    // Do not rebuild every edge when this expression has no configuration to
+    // bind. This is common for ordinary reducers and preserves shared Arc DAGs.
+    let mut needs_binding = false;
+    expr.visit_unique(&mut |node| {
+        needs_binding |= match node {
+            Expr::Aggregate { init, .. } => !init.is_empty(),
+            Expr::AggregateFold { initial, .. } => {
+                !matches!(initial.as_ref(), Expr::RuntimeLiteral { .. })
+            }
+            _ => false,
+        };
+    });
+    if !needs_binding {
+        return Ok(expr.clone());
+    }
     let mut result = expr.clone();
     match &mut result {
         Expr::Aggregate { init, options, .. } => {

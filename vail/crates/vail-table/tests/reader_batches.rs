@@ -157,6 +157,7 @@ async fn stored_scan_state_survives_reader_batch_and_partition_boundaries() {
             (
                 "prefix".into(),
                 ScalarIR::Aggregate {
+                    result_type: None,
                     function: "sum".into(),
                     value: Some(Arc::new(ScalarIR::Cast {
                         value: Arc::new(ScalarIR::Column { name: "idx".into() }),

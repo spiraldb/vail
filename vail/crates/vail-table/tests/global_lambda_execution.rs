@@ -28,7 +28,7 @@ async fn row_array_lambda_can_capture_a_global_value() {
             operator: BinaryOperator::Add,
             left: Arc::new(ScalarIR::LambdaVariable {
                 name: "element".into(),
-                dtype: Type::Primitive(PrimitiveType::Int32),
+                dtype: Some(Type::Primitive(PrimitiveType::Int32)),
             }),
             right: Arc::new(ScalarIR::Global {
                 name: "offset".into(),

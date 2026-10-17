@@ -251,11 +251,7 @@ async fn unused_array_branch_does_not_change_row_values() {
 }
 
 #[tokio::test]
-async fn small_result_consumer_streams_many_batches_and_prepared_plan_replays() {
-    use datafusion_execution::TaskContext;
-    use futures::TryStreamExt;
-    use vail_table::partitioned;
-
+async fn small_result_consumer_streams_many_batches_across_actions() {
     let rows = 140_000;
     let table = TableIR::range(rows, 1)
         .unwrap()
@@ -269,58 +265,41 @@ async fn small_result_consumer_streams_many_batches_and_prepared_plan_replays() 
             ),
         ])
         .unwrap();
-    let prepared = partitioned::prepare(table.clone()).await.unwrap();
-    let context = Arc::new(TaskContext::default());
-    for _ in 0..2 {
+    // Each public action owns an independent execution scope. A physical
+    // consumer is deliberately not replayable inside one action.
+    for _ in 0..3 {
         let mut seen = 0;
-        for part in &prepared.parts {
-            let mut batches = part.execute(0, context.clone()).unwrap();
-            while let Some(batch) = batches.try_next().await.unwrap() {
-                let indices = batch
-                    .column_by_name("idx")
-                    .unwrap()
-                    .as_any()
-                    .downcast_ref::<Int32Array>()
-                    .unwrap();
-                let lengths = batch
-                    .column_by_name("length")
-                    .unwrap()
-                    .as_any()
-                    .downcast_ref::<Int32Array>()
-                    .unwrap();
-                assert_eq!(lengths.null_count(), 0);
-                assert!(lengths.values().iter().all(|&value| value == 20_000));
-                assert!(
-                    indices
-                        .values()
-                        .iter()
-                        .copied()
-                        .eq((seen..seen + batch.num_rows()).map(|i| i as i32))
-                );
-                seen += batch.num_rows();
-            }
+        for batch in table
+            .collect_partitions()
+            .await
+            .unwrap()
+            .into_iter()
+            .flatten()
+        {
+            let indices = batch
+                .column_by_name("idx")
+                .unwrap()
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap();
+            let lengths = batch
+                .column_by_name("length")
+                .unwrap()
+                .as_any()
+                .downcast_ref::<Int32Array>()
+                .unwrap();
+            assert_eq!(lengths.null_count(), 0);
+            assert!(lengths.values().iter().all(|&value| value == 20_000));
+            assert!(
+                indices
+                    .values()
+                    .iter()
+                    .copied()
+                    .eq((seen..seen + batch.num_rows()).map(|i| i as i32))
+            );
+            seen += batch.num_rows();
         }
         assert_eq!(seen, rows);
-    }
-    // A fresh lowering from the same lazy IR is also independent of replay.
-    let fresh = table.collect_partitions().await.unwrap();
-    assert_eq!(
-        fresh
-            .iter()
-            .flatten()
-            .map(|batch| batch.num_rows())
-            .sum::<usize>(),
-        rows
-    );
-    for batch in fresh.into_iter().flatten() {
-        let lengths = batch
-            .column_by_name("length")
-            .unwrap()
-            .as_any()
-            .downcast_ref::<Int32Array>()
-            .unwrap();
-        assert_eq!(lengths.null_count(), 0);
-        assert!(lengths.values().iter().all(|&value| value == 20_000));
     }
 }
 
@@ -673,6 +652,7 @@ async fn grouped_aggregate_then_large_repeat_preserves_aggregate_row() {
             vec![(
                 "n".into(),
                 ScalarIR::Aggregate {
+                    result_type: None,
                     function: "count".into(),
                     value: None,
                     options: json!({}),
