@@ -425,6 +425,7 @@ fn lower_native_prefix(
     let mut local = crate::logical::independent_consumer(crate::scan_ordinal::numbered(
         input.clone(),
         &ordinal_name,
+        &part_name,
     )?);
 
     let mut local_windows = Vec::with_capacity(nodes.len());
@@ -803,7 +804,7 @@ pub(crate) fn lower(
     }
 
     let ordinal_name = unique(&mut used, "__scan_local_ordinal");
-    let numbered = crate::scan_ordinal::numbered(input.clone(), &ordinal_name)?;
+    let numbered = crate::scan_ordinal::numbered(input.clone(), &ordinal_name, &part_name)?;
     let mut local = crate::logical::independent_consumer(numbered.clone());
     let mut local_windows = Vec::with_capacity(leaves.len());
     // Equal windows share one reducer state, partition summary and carry.

@@ -56,6 +56,15 @@ def test_range_dimensions_schema_and_empty_axes(nr, nc):
     assert list(m.col_key) == ["col_idx"]
 
 
+@pytest.mark.parametrize("n_rows,n_partitions", [(0, 3), (3, 5), (11, 4)])
+def test_matrix_scan_count_preserves_source_order_across_partitions(n_rows, n_partitions):
+    mt = hl.utils.range_matrix_table(n_rows, 2, n_partitions)
+    rows = mt.annotate_rows(prefix=hl.scan.count()).rows().collect()
+    assert [(row.row_idx, row.prefix) for row in rows] == [
+        (i, i) for i in range(n_rows)
+    ]
+
+
 def test_annotations_actions_globals_and_native_plan():
     m = matrix()
     assert m.aggregate_entries(hl.agg.sum(m.x)) == 198
