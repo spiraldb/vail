@@ -1,0 +1,79 @@
+{
+  "candidate": "10581c1a5f28d9c463757d808b8e74bf64053c26",
+  "base": "03225117da391bd69f60ccd569899ecfe6d815c4",
+  "native_sha256": "dc16b74df867b3c9279275b40c7e07190c4d95355c37d2c7f186f68d7ab570c4",
+  "wheel_sha256": "dada23a7fa6ae0e46e607855a3c60e71cb3fa5c2a056da671958f39f466981fa",
+  "source_sha256": {
+    "vail/crates/vail-execution/src/collect_aggregate.rs": "dc41eb5ea6865ddbae69da4d56f30e413c0b5b922a7e62f821b0cec793c7df56",
+    "vail/crates/vail-execution/src/matrix_arrays.rs": "121f7922993d25bfc7b1eb9a26c4cd25322fdcdda9154697a3d16c7f206e5377",
+    "vail/crates/vail-execution/src/expression_identity.rs": "19f25a9535101c1914a6de793c99955064ee02f2ea78ff0d36c8bf5e94097a97",
+    "vail/crates/vail-execution/src/kernel_identity.rs": "7642e985f38d9237bcab6ba9f7c860212d5cc9e4caf3bc722f77b48e725455ad",
+    "vail/crates/vail-execution/src/logical_expr.rs": "6ec57f621d15676e75ea1909742aaefcce46c0a65b675b365eef231e2dd60f71",
+    "vail/crates/vail-table/src/lib.rs": "f922d42dbcac9c05809b1f008248a1aad48f6eb56644a75a29152a6770515bd9",
+    "vail/crates/vail-table/src/logical.rs": "7b4681cd4895117c0e9b7e212d80c17bdde5211ccdad395619f360bfccc994cf",
+    "vail/crates/vail-table/src/projection_broadcast.rs": "40d0dced8df1f2fd40a6736c5488fec9474a88760f68b644fd27a6afbe0732de"
+  },
+  "validation": {
+    "python_passed": 1872,
+    "python_skipped": 1,
+    "subtests_passed": 19,
+    "python_seconds": 93.2,
+    "public_projection_baseline_before_extension": 4,
+    "rust_collect_after_restoring_fallback": 3,
+    "rust_execution_before_typed_extension": 45,
+    "rust_matrix_layout": 8,
+    "rust_stack_bytes": 16777216,
+    "cargo_check_typed_extension": "passed"
+  },
+  "controls": {
+    "passed": 64,
+    "vail_seconds": 107.73855239299701,
+    "hail_seconds": 448.95888542700004,
+    "slower": [],
+    "note": "All 64 controls faster in this observation; grouped-collect repeated median still near/slower than fixed Hail baseline."
+  },
+  "archives_sha256": {
+    "typed-projection-cache-artifacts.tar.gz": "1bdcc037a6145a625e7ee7cd6dc3ddf8f4193cf57f37d2262f0029b33d9a49d5",
+    "typed-controls-artifacts.tar.gz": "e6579488a1738370c68d257a15ded491a6dd8a452d53496133d314cc23af26c3"
+  },
+  "cases": {
+    "benchmark_matrix_table::test_matrix_table_scan_count_rows_2": {
+      "seconds": [
+        2.735011922000922,
+        1.8154135730001144,
+        2.500287410000965
+      ],
+      "median_seconds": 2.500287410000965,
+      "cpu_seconds": [
+        27.8,
+        27.09,
+        27.94
+      ],
+      "peak_rss_gib": [
+        0.195159912109375,
+        0.18412399291992188,
+        0.18587112426757812
+      ],
+      "hail_seconds": 3.7799336210000547
+    },
+    "benchmark_table::test_group_by_collect_per_row": {
+      "seconds": [
+        4.527556536000702,
+        4.801969725000163,
+        4.538267744999757
+      ],
+      "median_seconds": 4.538267744999757,
+      "cpu_seconds": [
+        27.520000000000003,
+        26.660000000000004,
+        26.450000000000003
+      ],
+      "peak_rss_gib": [
+        6.819145202636719,
+        7.665454864501953,
+        7.248119354248047
+      ],
+      "hail_seconds": 4.47670307899989
+    }
+  }
+}
