@@ -1,13 +1,13 @@
 use arrow_array::{Array, Int32Array, Int64Array, RecordBatch};
 use datafusion_execution::{TaskContext, config::SessionConfig};
-use datafusion_physical_plan::ExecutionPlan;
+use datafusion_physical_plan::{ExecutionPlan, ExecutionPlanProperties};
 use futures::TryStreamExt;
 use serde_json::json;
 use std::sync::Arc;
 use vail_execution::expressions::{BinaryOperator, PrimitiveType, Type};
-use vail_table::{ScalarIR, TableIR, TableRef, partitioned};
+use vail_table::{ScalarIR, TableIR, TableRef, plan};
 
-// Execute the supported prepared-table API using a caller-owned session.
+// Plan and execute through the public caller-owned session API.
 // No substitute reader or execution operator is installed by these tests.
 struct ReadOutput {
     partitions: Vec<Vec<RecordBatch>>,
@@ -27,23 +27,25 @@ fn observed_splitting(plan: &dyn ExecutionPlan) -> bool {
 }
 
 async fn batches(table: &TableRef, batch_size: usize) -> ReadOutput {
-    let prepared = partitioned::prepare(table.clone()).await.unwrap();
     let context = Arc::new(
         TaskContext::default()
             .with_session_config(SessionConfig::new().with_batch_size(batch_size)),
     );
+    let physical = plan::physical_with_context(table, context.clone())
+        .await
+        .unwrap();
     let mut partitions = Vec::new();
-    let mut split = false;
-    for part in prepared.parts {
+    for partition in 0..physical.output_partitioning().partition_count() {
         partitions.push(
-            part.execute(0, context.clone())
+            physical
+                .execute(partition, context.clone())
                 .unwrap()
                 .try_collect::<Vec<_>>()
                 .await
                 .unwrap(),
         );
-        split |= observed_splitting(part.as_ref());
     }
+    let split = observed_splitting(physical.as_ref());
     ReadOutput {
         partitions,
         observed_splitting: split,

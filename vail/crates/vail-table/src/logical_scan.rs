@@ -38,23 +38,53 @@ fn complex_scope(expr: &VExpr) -> bool {
     found
 }
 
-fn normalize_explodes(expr: &VExpr) -> Result<VExpr> {
-    if let VExpr::AggExplode {
-        value,
-        parameter,
-        body,
-    } = expr
-    {
-        // Keep selected-only nested filter scopes intact. Boolean flattening
-        // changes missing-filter short circuit and repeats predicate work.
-        if complex_scope(body) {
-            return Ok(expr.clone());
-        }
-        let body = normalize_explodes(body)?;
-        return explode_leaves(&body, value, parameter, None);
+fn contains_explode(expr: &VExpr, memo: &mut HashMap<usize, bool>) -> bool {
+    let id = expr as *const VExpr as usize;
+    if let Some(found) = memo.get(&id) {
+        return *found;
     }
-    expr.try_map_children(&mut |child: &VExpr| normalize_explodes(child))
-        .map_err(Into::into)
+    let mut found = matches!(expr, VExpr::AggExplode { .. });
+    if !found {
+        expr.visit_children(&mut |child| {
+            if !found {
+                found = contains_explode(child, memo);
+            }
+        });
+    }
+    memo.insert(id, found);
+    found
+}
+
+fn normalize_explodes(expr: &VExpr) -> Result<VExpr> {
+    if !contains_explode(expr, &mut HashMap::new()) {
+        return Ok(expr.clone());
+    }
+    fn normalize(expr: &VExpr, memo: &mut HashMap<usize, VExpr>) -> Result<VExpr> {
+        let id = expr as *const VExpr as usize;
+        if let Some(value) = memo.get(&id) {
+            return Ok(value.clone());
+        }
+        let value = if let VExpr::AggExplode {
+            value,
+            parameter,
+            body,
+        } = expr
+        {
+            // Keep selected-only nested filter scopes intact. Boolean flattening
+            // changes missing-filter short circuit and repeats predicate work.
+            if complex_scope(body) {
+                expr.clone()
+            } else {
+                let body = normalize(body, memo)?;
+                explode_leaves(&body, value, parameter, None)?
+            }
+        } else {
+            expr.try_map_original_children(|child| normalize(child, memo))?
+        };
+        memo.insert(id, value.clone());
+        Ok(value)
+    }
+    normalize(expr, &mut HashMap::new())
 }
 
 fn explode_leaves(
@@ -289,14 +319,50 @@ fn native_prefix_kind(expr: &VExpr) -> Option<(&'static str, Option<&VExpr>)> {
     }
 }
 
+fn contains_marked_scan(expr: &VExpr, memo: &mut HashMap<usize, bool>) -> bool {
+    let id = expr as *const VExpr as usize;
+    if let Some(found) = memo.get(&id) {
+        return *found;
+    }
+    let mut found = marked_scan(expr);
+    if !found {
+        expr.visit_children(&mut |child| {
+            if !found {
+                found = contains_marked_scan(child, memo);
+            }
+        });
+    }
+    memo.insert(id, found);
+    found
+}
+
 fn replace_native_scans(
     expr: &VExpr,
     scans: &[(VExpr, String)],
 ) -> std::result::Result<VExpr, vail_execution::expressions::ExprError> {
-    if let Some((_, name)) = scans.iter().find(|(scan, _)| scan == expr) {
-        return Ok(VExpr::Column { name: name.clone() });
+    if scans.is_empty() || !contains_marked_scan(expr, &mut HashMap::new()) {
+        return Ok(expr.clone());
     }
-    expr.try_map_children(&mut |child: &VExpr| replace_native_scans(child, scans))
+    fn replace(
+        expr: &VExpr,
+        scans: &[(VExpr, String)],
+        memo: &mut HashMap<usize, VExpr>,
+    ) -> std::result::Result<VExpr, vail_execution::expressions::ExprError> {
+        let id = expr as *const VExpr as usize;
+        if let Some(value) = memo.get(&id) {
+            return Ok(value.clone());
+        }
+        let value = if let Some((_, name)) = scans.iter().find(|(scan, _)| {
+            std::ptr::eq(scan, expr) || scan == expr
+        }) {
+            VExpr::Column { name: name.clone() }
+        } else {
+            expr.try_map_original_children(|child| replace(child, scans, memo))?
+        };
+        memo.insert(id, value.clone());
+        Ok(value)
+    }
+    replace(expr, scans, &mut HashMap::new())
 }
 
 /// Fast path for plain numeric sums and row counts. The generic ScanState path
@@ -1038,16 +1104,27 @@ fn bind_configuration(
     fn globals(
         expr: &VExpr,
         bind: &mut impl FnMut(&str, &VExpr) -> Result<ScalarValue>,
+        memo: &mut HashMap<usize, VExpr>,
     ) -> Result<VExpr> {
-        if matches!(expr, VExpr::Global { .. } | VExpr::ExternalGlobal { .. }) {
-            return Ok(VExpr::RuntimeLiteral {
-                value: bind("__global", expr)?,
-            });
+        let id = expr as *const VExpr as usize;
+        if let Some(value) = memo.get(&id) {
+            return Ok(value.clone());
         }
-        expr.try_map_children(&mut |child: &VExpr| globals(child, bind))
-            .map_err(Into::into)
+        let value = if matches!(expr, VExpr::Global { .. } | VExpr::ExternalGlobal { .. }) {
+            VExpr::RuntimeLiteral {
+                value: bind("__global", expr)?,
+            }
+        } else {
+            expr.try_map_original_children(|child| globals(child, bind, memo))?
+        };
+        memo.insert(id, value.clone());
+        Ok(value)
     }
-    globals(&crate::aggregation::bind_initializers(expr, bind)?, bind)
+    globals(
+        &crate::aggregation::bind_initializers(expr, bind)?,
+        bind,
+        &mut HashMap::new(),
+    )
 }
 
 pub(crate) fn initialize(

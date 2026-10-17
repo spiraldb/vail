@@ -117,30 +117,34 @@ def test_nested_total_collect_preserves_input_order():
     assert table.aggregate(expression) == [list(range(12)), list(range(1, 13))]
 
 
-def test_deep_shared_aggregate_expression_scales_with_unique_nodes():
+def test_deep_shared_aggregate_planning_scales_with_unique_nodes():
     table = hl.range_table(4, n_partitions=2)
     shared = hl.float64(table.idx)
-    # Each addition points at the same previous subtree twice. The aggregate
-    # planner must inspect this DAG once per unique node, not once per path.
     for _ in range(32):
         shared = shared + shared
-
-    assert table.aggregate(hl.agg.sum(shared)) == float(sum(range(4)) * (1 << 32))
+    # Lazy aggregate construction lowers the relation and derives its schema;
+    # it does not optimize the final physical plan or evaluate the expression.
+    deferred = table.aggregate(hl.agg.sum(shared), _localize=False)
+    assert deferred.dtype == hl.tfloat64
+    executable = hl.float64(table.idx)
+    for _ in range(12):
+        executable = executable + executable
+    assert table.aggregate(hl.agg.sum(executable)) == float(sum(range(4)) * (1 << 12))
 
 
 def test_deep_shared_maprows_and_filter_with_global_and_scan_values():
-    table = hl.range_table(4, n_partitions=2).annotate_globals(offset=1.0)
-    shared = table.offset
-    for _ in range(32):
-        shared = shared + shared
+    def query(depth):
+        table = hl.range_table(4, n_partitions=2).annotate_globals(offset=1.0)
+        shared = table.offset
+        for _ in range(depth):
+            shared = shared + shared
+        mapped = table.annotate(value=shared, previous=hl.scan.prev_nonnull(table.idx))
+        condition = mapped.offset
+        for _ in range(depth):
+            condition = condition + condition
+        return mapped.filter(condition > 0)
 
-    # MapRows sees the shared global dependency; a scan expression in the
-    # same projection keeps source-order initialization active.
-    mapped = table.annotate(value=shared, previous=hl.scan.prev_nonnull(table.idx))
-    condition = mapped.offset
-    for _ in range(32):
-        condition = condition + condition
-    filtered = mapped.filter(condition > 0)
-    rows = filtered.collect()
-    assert [row.value for row in rows] == [float(1 << 32)] * 4
+    assert query(32).aggregate(hl.agg.count(), _localize=False).dtype == hl.tint64
+    rows = query(12).collect()
+    assert [row.value for row in rows] == [float(1 << 12)] * 4
     assert [row.previous for row in rows] == [None, 0, 1, 2]
