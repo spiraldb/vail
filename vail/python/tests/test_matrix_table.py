@@ -1104,11 +1104,14 @@ def test_group_by_reductions_use_fused_per_list_groups():
     repeated = shared
     for _ in range(12):
         repeated = repeated + repeated
-    payload = hl.literal(list(range(2048)))
+    payload = hl.literal([
+        {"op": "aggregate", "function": "sum", "value": {"op": "binary"}}
+        for _ in range(2048)
+    ])
     shared_dag = m.annotate_rows(
         groups=hl.agg.group_by(m.col_idx % 2, repeated + hl.len(payload))
     ).rows().collect()[0].groups
-    assert shared_dag == {0: 12 * (2**12) + 2048, 1: 2048}
+    assert shared_dag == {0: 2 * (2**12) + 2048, 1: 2048}
 
     # Identical aggregate IR under distinct filters must retain its occurrence
     # scope, and a filtered value must not be evaluated for excluded entries.

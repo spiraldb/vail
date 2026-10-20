@@ -4,7 +4,7 @@ No partition materialization, row labels, coordinate regrouping, or Python cell
 execution. Unsupported shared list kernels are explicit capability boundaries.
 """
 
-from .expressions import IR_NODE_TYPES
+from .expressions import IR_NODE_TYPES, NativeExpr
 
 from .expressions import Expression, _IR, cast
 from .types import tarray, tbool, tint32, tint64, type_from_wire
@@ -373,6 +373,21 @@ def reduce_list(
             def same_node(left, right):
                 return node_identity(left) == node_identity(right)
 
+            # NativeExpr.view() materializes wrappers for inline Expr children.
+            # Keep each first view alive so discovery and substitution share
+            # those child handles instead of receiving fresh Arc wrappers.
+            native_views = {}
+            native_view_nodes = []
+
+            def node_view(value):
+                if not isinstance(value, NativeExpr):
+                    return value
+                identity = node_identity(value)
+                if identity not in native_views:
+                    native_views[identity] = value.view()
+                    native_view_nodes.append(value)
+                return native_views[identity]
+
             visited_aggregates = {}
             visited_nodes = []
 
@@ -384,7 +399,8 @@ def reduce_list(
                     return
                 if not isinstance(value, IR_NODE_TYPES):
                     return
-                op = value.get("op")
+                view = node_view(value)
+                op = view.get("op")
                 if op == "literal":
                     return
                 visit_key = (node_identity(value), tuple(map(node_identity, filters)))
@@ -393,14 +409,14 @@ def reduce_list(
                 visited_aggregates[visit_key] = True
                 visited_nodes.append(value)
                 if op == "agg_filter":
-                    find_aggregates(value["body"], filters + (value["predicate"],))
+                    find_aggregates(view["body"], filters + (view["predicate"],))
                     return
                 if op == "aggregate":
                     aggregate_nodes.append((value, filters))
                     return
                 elif isinstance(op, str) and op.startswith("agg_"):
                     has_unsupported_aggregation = True
-                for child in value.values():
+                for child in view.values():
                     find_aggregates(child, filters)
 
             find_aggregates(body)
@@ -508,21 +524,22 @@ def reduce_list(
                     }
 
                     def substitute(value, filters=()):
-                        if isinstance(value, IR_NODE_TYPES) and value.get("op") == "literal":
+                        view = node_view(value) if isinstance(value, IR_NODE_TYPES) else value
+                        if isinstance(value, IR_NODE_TYPES) and view.get("op") == "literal":
                             return value
                         key = (node_identity(value), tuple(map(node_identity, filters)))
                         if key in rewrite_memo:
                             return rewrite_memo[key]
                         if isinstance(value, IR_NODE_TYPES) and key in aggregate_replacements:
                             return aggregate_replacements[key]
-                        if isinstance(value, IR_NODE_TYPES) and value.get("op") == "agg_filter":
-                            result = substitute(value["body"], filters + (value["predicate"],))
+                        if isinstance(value, IR_NODE_TYPES) and view.get("op") == "agg_filter":
+                            result = substitute(view["body"], filters + (view["predicate"],))
                         elif isinstance(value, list):
                             result = [substitute(child, filters) for child in value]
                         elif isinstance(value, IR_NODE_TYPES):
                             result = {
                                 key: substitute(child, filters)
-                                for key, child in value.items()
+                                for key, child in view.items()
                             }
                         else:
                             return value
