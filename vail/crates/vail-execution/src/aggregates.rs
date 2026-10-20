@@ -19,7 +19,6 @@ enum Kind {
     /// Vail's planners lower count_where to native COUNT instead.
     CountWhere,
     Fraction,
-    Any,
     All,
 }
 #[derive(Debug)]
@@ -159,7 +158,6 @@ impl Accumulator for Reducer {
                     .integer
                     .wrapping_add(Self::boolean(input)?.true_count() as i64);
             }
-            Kind::Any => self.seen |= Self::boolean(input)?.true_count() != 0,
             Kind::All => {
                 let values = Self::boolean(input)?;
                 self.seen |= values.len() - values.null_count() - values.true_count() != 0;
@@ -205,7 +203,6 @@ impl Accumulator for Reducer {
             Kind::Fraction => ScalarValue::Float64(
                 (self.count != 0).then(|| self.integer as f64 / self.count as f64),
             ),
-            Kind::Any => ScalarValue::Boolean(Some(self.seen)),
             Kind::All => ScalarValue::Boolean(Some(!self.seen)),
             Kind::Min | Kind::Max if !self.seen => ScalarValue::try_from(&self.input)?,
             _ => self.value(),
@@ -221,7 +218,7 @@ impl Accumulator for Reducer {
                 ScalarValue::Int64(Some(self.count)),
                 ScalarValue::Int64(Some(self.integer)),
             ],
-            Kind::Any | Kind::All => vec![ScalarValue::Boolean(Some(self.seen))],
+            Kind::All => vec![ScalarValue::Boolean(Some(self.seen))],
             Kind::Min | Kind::Max => vec![self.evaluate()?],
             Kind::Sum | Kind::Product => vec![ScalarValue::Int64(Some(self.count)), self.value()],
         })
@@ -251,7 +248,7 @@ impl Accumulator for Reducer {
                     arrow_arith::aggregate::sum(Self::counts(&states[1])?).unwrap_or(0),
                 );
             }
-            Kind::Any | Kind::All => self.seen |= Self::boolean(&states[0])?.true_count() != 0,
+            Kind::All => self.seen |= Self::boolean(&states[0])?.true_count() != 0,
             Kind::Min | Kind::Max => self.update_batch(&states[..1])?,
             Kind::Sum | Kind::Product => {
                 self.count = self.count.wrapping_add(
@@ -310,6 +307,12 @@ pub fn aggregate_udf(
     if matches!(function, "mean" | "stddev_pop") {
         return crate::moments::udf(function, input);
     }
+    if function == "any" {
+        if input.is_some_and(|ty| ty != &DataType::Boolean) {
+            return Err(ExprError::Invalid("any requires Boolean input".into()));
+        }
+        return Ok(crate::native_bool::total_bool_udaf("any"));
+    }
     let (kind, input, output, state) = match function {
         "count" => (
             Kind::Count,
@@ -317,7 +320,7 @@ pub fn aggregate_udf(
             DataType::Int64,
             vec![DataType::Int64],
         ),
-        "count_where" | "fraction" | "any" | "all" => {
+        "count_where" | "fraction" | "all" => {
             if input.is_some_and(|ty| ty != &DataType::Boolean) {
                 return Err(ExprError::Invalid(format!(
                     "{function} requires Boolean input"
@@ -335,12 +338,6 @@ pub fn aggregate_udf(
                     DataType::Boolean,
                     DataType::Float64,
                     vec![DataType::Int64, DataType::Int64],
-                ),
-                "any" => (
-                    Kind::Any,
-                    DataType::Boolean,
-                    DataType::Boolean,
-                    vec![DataType::Boolean],
                 ),
                 _ => (
                     Kind::All,

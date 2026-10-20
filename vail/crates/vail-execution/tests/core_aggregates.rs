@@ -12,6 +12,7 @@ use datafusion_physical_expr::{
 };
 use datafusion_physical_plan::{
     aggregates::{AggregateExec, AggregateMode, PhysicalGroupBy},
+    coalesce_partitions::CoalescePartitionsExec,
     execution_plan::{ExecutionPlan, collect},
 };
 use std::sync::Arc;
@@ -105,6 +106,156 @@ async fn ordinary_grouped_product_uses_native_groups_accumulator() {
         .collect::<Vec<_>>();
     rows.sort_unstable();
     assert_eq!(rows, vec![(1, 8), (2, 15)]);
+}
+
+#[tokio::test]
+async fn any_uses_native_grouped_bool_or_and_hail_false_identity() {
+    use arrow_schema::DataType;
+
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("group", DataType::Int32, false),
+        Field::new("value", DataType::Boolean, true),
+        Field::new("keep", DataType::Boolean, false),
+    ]));
+    let first = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(Int32Array::from(vec![1, 2, 3])),
+            Arc::new(BooleanArray::from(vec![Some(true), None, Some(false)])),
+            Arc::new(BooleanArray::from(vec![true, true, true])),
+        ],
+    )
+    .unwrap();
+    let second = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(Int32Array::from(vec![1, 2, 4, 4])),
+            Arc::new(BooleanArray::from(vec![
+                None,
+                None,
+                Some(true),
+                Some(false),
+            ])),
+            Arc::new(BooleanArray::from(vec![true, true, false, true])),
+        ],
+    )
+    .unwrap();
+    let source =
+        MemorySourceConfig::try_new_exec(&[vec![first], vec![second]], schema.clone(), None)
+            .unwrap();
+    let udf = vail_execution::aggregates::aggregate_udf("any", Some(&DataType::Boolean)).unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("value", 1))])
+        .schema(schema.clone())
+        .alias("any")
+        .build()
+        .unwrap();
+    assert!(aggregate.groups_accumulator_supported());
+    let partial = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Partial,
+            PhysicalGroupBy::new_single(vec![(
+                Arc::new(Column::new("group", 0)),
+                "group".to_owned(),
+            )]),
+            vec![Arc::new(aggregate)],
+            vec![Some(Arc::new(Column::new("keep", 2)))],
+            source.clone(),
+            source.schema(),
+        )
+        .unwrap(),
+    );
+    let partial_schema = partial.schema();
+    let final_aggregate = AggregateExprBuilder::new(
+        vail_execution::aggregates::aggregate_udf("any", Some(&DataType::Boolean)).unwrap(),
+        vec![Arc::new(Column::new(partial_schema.field(1).name(), 1))],
+    )
+    .schema(partial_schema.clone())
+    .alias("any")
+    .build()
+    .unwrap();
+    assert!(final_aggregate.groups_accumulator_supported());
+    let partial_input: Arc<dyn ExecutionPlan> =
+        Arc::new(CoalescePartitionsExec::new(partial.clone()));
+    let plan = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Final,
+            PhysicalGroupBy::new_single(vec![(
+                Arc::new(Column::new("group", 0)),
+                "group".to_owned(),
+            )]),
+            vec![Arc::new(final_aggregate)],
+            vec![None],
+            partial_input.clone(),
+            partial_input.schema(),
+        )
+        .unwrap(),
+    );
+    let batches = collect(plan, Arc::new(TaskContext::default()))
+        .await
+        .unwrap();
+    let mut rows = Vec::new();
+    for result in &batches {
+        let groups = result
+            .column(0)
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap();
+        let any = result
+            .column(1)
+            .as_any()
+            .downcast_ref::<BooleanArray>()
+            .unwrap();
+        rows.extend((0..result.num_rows()).map(|row| {
+            assert!(!any.is_null(row));
+            (groups.value(row), any.value(row))
+        }));
+    }
+    rows.sort_unstable();
+    assert_eq!(rows, vec![(1, true), (2, false), (3, false), (4, false)]);
+}
+
+#[tokio::test]
+async fn any_empty_and_all_null_inputs_are_false() {
+    use arrow_schema::DataType;
+
+    let udf = vail_execution::aggregates::aggregate_udf("any", Some(&DataType::Boolean)).unwrap();
+    for input in [
+        BooleanArray::from(Vec::<Option<bool>>::new()),
+        BooleanArray::from(vec![None, None]),
+        BooleanArray::from(vec![Some(false), None]),
+    ] {
+        let native = execute(
+            datafusion_functions_aggregate::bool_and_or::bool_or_udaf(),
+            vec![Arc::new(input.clone())],
+        )
+        .await
+        .unwrap();
+        let native = native.as_any().downcast_ref::<BooleanArray>().unwrap();
+        if input.iter().all(|value| value.is_none()) {
+            // Native BOOL_OR correctly represents SQL's unknown result. Hail
+            // `any` differs only at its total Boolean empty/all-missing identity.
+            assert!(native.is_null(0));
+        }
+        let result = execute(udf.clone(), vec![Arc::new(input)]).await.unwrap();
+        let result = result.as_any().downcast_ref::<BooleanArray>().unwrap();
+        assert_eq!(result.iter().collect::<Vec<_>>(), vec![Some(false)]);
+    }
+}
+
+#[test]
+fn any_rejects_non_boolean_declared_type_and_keeps_boolean_signature() {
+    use arrow_schema::DataType;
+
+    assert!(vail_execution::aggregates::aggregate_udf("any", Some(&DataType::Int32)).is_err());
+    let udf = vail_execution::aggregates::aggregate_udf("any", None).unwrap();
+    assert_eq!(
+        udf.return_type(&[DataType::Boolean]).unwrap(),
+        DataType::Boolean
+    );
+    assert_eq!(
+        udf.signature().type_signature,
+        datafusion_expr::TypeSignature::Exact(vec![DataType::Boolean])
+    );
 }
 #[tokio::test]
 async fn stable_moments_accept_sliced_nullable_batches() {

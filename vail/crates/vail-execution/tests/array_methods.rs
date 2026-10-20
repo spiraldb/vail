@@ -1,6 +1,7 @@
 //! Array callbacks through the public native expression boundary.
 use arrow_array::{
-    Array, ArrayRef, LargeStringArray, ListArray, RecordBatch, StringArray, StringViewArray,
+    Array, ArrayRef, BooleanArray, LargeStringArray, ListArray, RecordBatch, StringArray,
+    StringViewArray,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{Field, Schema};
@@ -99,6 +100,122 @@ fn fold_and_scan_accept_alternate_string_storage() {
             }
         }
     }
+}
+
+#[test]
+fn list_any_uses_native_reducer_empty_and_missing_identity() {
+    use arrow_schema::DataType;
+    use vail_execution::expressions::{PrimitiveType, Type};
+
+    let values = Arc::new(BooleanArray::from(vec![
+        None,
+        None,
+        Some(false),
+        None,
+        Some(true),
+        None,
+    ])) as ArrayRef;
+    let list = Arc::new(ListArray::new(
+        Arc::new(Field::new_list_field(DataType::Boolean, true)),
+        OffsetBuffer::new(vec![0i32, 0, 2, 4, 6, 6].into()),
+        values,
+        Some(NullBuffer::from(vec![true, true, true, true, false])),
+    ));
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "values",
+        list.data_type().clone(),
+        true,
+    )]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![list]).unwrap();
+    let expression = Expr::NestedFunction {
+        function: "__vail_list_reduce_any".into(),
+        args: vec![Expr::Column {
+            name: "values".into(),
+        }],
+        dtype: Type::Primitive(PrimitiveType::Bool),
+    };
+    let result = lower(&expression, &schema)
+        .unwrap()
+        .evaluate(&batch)
+        .unwrap()
+        .into_array(5)
+        .unwrap();
+    let result = result.as_any().downcast_ref::<BooleanArray>().unwrap();
+    assert_eq!(
+        result.iter().collect::<Vec<_>>(),
+        vec![Some(false), Some(false), Some(false), Some(true), None]
+    );
+}
+
+#[test]
+fn any_array_aggregate_scan_is_exclusive_for_empty_and_missing_lists() {
+    use arrow_schema::DataType;
+    use vail_execution::expressions::{PrimitiveType, Type};
+
+    let offsets = OffsetBuffer::new(vec![0i32, 3, 3, 5, 5].into());
+    let field = Arc::new(Field::new_list_field(DataType::Boolean, true));
+    let values = Arc::new(ListArray::new(
+        field.clone(),
+        offsets.clone(),
+        Arc::new(BooleanArray::from(vec![
+            Some(true),
+            None,
+            Some(false),
+            None,
+            None,
+        ])),
+        Some(NullBuffer::from(vec![true, true, true, false])),
+    ));
+    let predicates = Arc::new(ListArray::new(
+        field,
+        offsets,
+        Arc::new(BooleanArray::from(vec![true, true, false, true, true])),
+        Some(NullBuffer::from(vec![true, true, true, false])),
+    ));
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("values", values.data_type().clone(), true),
+        Field::new("predicate", predicates.data_type().clone(), true),
+    ]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![values, predicates]).unwrap();
+    let array_bool = Type::Array {
+        array: Box::new(Type::Primitive(PrimitiveType::Bool)),
+    };
+    let expression = Expr::ArrayAggregateScan {
+        function: "any".into(),
+        value: column("values"),
+        predicate: column("predicate"),
+        options: serde_json::Value::Null,
+        dtype: array_bool,
+    };
+    let result = lower(&expression, &schema)
+        .unwrap()
+        .evaluate(&batch)
+        .unwrap()
+        .into_array(4)
+        .unwrap();
+    let result = result.as_any().downcast_ref::<ListArray>().unwrap();
+    let first = result.value(0);
+    assert_eq!(
+        first
+            .as_any()
+            .downcast_ref::<BooleanArray>()
+            .unwrap()
+            .iter()
+            .collect::<Vec<_>>(),
+        vec![Some(false), Some(true), Some(true)]
+    );
+    assert_eq!(result.value(1).len(), 0);
+    assert_eq!(
+        result
+            .value(2)
+            .as_any()
+            .downcast_ref::<BooleanArray>()
+            .unwrap()
+            .iter()
+            .collect::<Vec<_>>(),
+        vec![Some(false), Some(false)]
+    );
+    assert!(result.is_null(3));
 }
 
 #[test]
