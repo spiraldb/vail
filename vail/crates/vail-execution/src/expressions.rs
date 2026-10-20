@@ -1760,7 +1760,10 @@ impl Expr {
                 }
                 if expected == 2
                     && !matrix_function
-                    && !matches!(function.as_str(), "array_element" | "arrays_zip" | "array_repeat")
+                    && !matches!(
+                        function.as_str(),
+                        "array_element" | "arrays_zip" | "array_repeat"
+                    )
                     && !same_collection_storage(&args[0], &args[1])
                 {
                     return Err(ExprError::Invalid(
@@ -4714,12 +4717,12 @@ pub(crate) fn string_function(
     Ok(match name {
         "hwe_both_counts" => (
             crate::hwe_counts::udf(true),
-            vec![int32.clone(); 3],
+            vec![int64.clone(); 3],
             Type::from_arrow(&crate::hwe_counts::result_type(true))?,
         ),
         "hardy_weinberg_counts" => (
             crate::hwe_counts::udf(false),
-            vec![int32.clone(), int32.clone(), int32, boolean],
+            vec![int64.clone(), int64.clone(), int64, boolean],
             Type::Array {
                 array: Box::new(Type::Primitive(PrimitiveType::Float64)),
             },
@@ -5761,7 +5764,9 @@ fn lower_uncached(
                 .map(|arg| lower_cached(arg, schema, globals, scope, memo, context))
                 .collect::<Result<Vec<_>, ExprError>>()?;
             Arc::new(ScalarFunctionExpr::try_new(
-                crate::numeric_lists::range_udf(), args, schema,
+                crate::numeric_lists::range_udf(),
+                args,
+                schema,
                 Arc::new(ConfigOptions::default()),
             )?)
         }

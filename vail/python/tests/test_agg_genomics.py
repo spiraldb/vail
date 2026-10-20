@@ -108,6 +108,33 @@ class GenomicAggregateExecutionTests(unittest.TestCase):
         with self.assertRaises(Exception):
             invalid.aggregate(hl.agg.info_score(invalid.gp))
 
+    def test_composed_genomic_reducers_grouped(self):
+        table = hl.Table.parallelize(
+            [
+                {"group": "a", "gt": hl.Call((0, 0)), "p": .25,
+                 "gp": [1., 0., 0.]},
+                {"group": "a", "gt": hl.Call((0, 1)), "p": .25,
+                 "gp": [.25, .5, .25]},
+                {"group": "b", "gt": hl.Call((1, 1)), "p": .5,
+                 "gp": [0., 0., 1.]},
+            ],
+            schema=hl.tstruct(group=hl.tstr, gt=hl.tcall, p=hl.tfloat64,
+                              gp=hl.tarray(hl.tfloat64)),
+            n_partitions=3,
+        )
+        rows = table.group_by(group=table.group).aggregate(
+            hwe=hl.agg.hardy_weinberg_test(table.gt),
+            inbreeding=hl.agg.inbreeding(table.gt, table.p),
+            info=hl.agg.info_score(table.gp),
+        ).collect()
+        by_group = {row.group: row for row in rows}
+        self.assertAlmostEqual(by_group["a"].hwe.het_freq_hwe, .5)
+        self.assertEqual(by_group["a"].inbreeding.n_called, 2)
+        self.assertEqual(by_group["a"].inbreeding.observed_homs, 1)
+        self.assertEqual(by_group["a"].info.n_included, 2)
+        self.assertEqual(by_group["b"].hwe.het_freq_hwe, 0.)
+        self.assertEqual(by_group["b"].info.score, 1.)
+
     def test_ndarray_sum_and_shape_mismatch(self):
         dtype = hl.tndarray(hl.tfloat64, 2)
         def array(data, shape):
@@ -154,6 +181,33 @@ class GenomicAggregateExecutionTests(unittest.TestCase):
         self.assertEqual(by_group["a"].homozygote_count, [1, 1])
         self.assertEqual(by_group["b"].AC, [1, 1])
 
+    def test_grouped_call_stats_real_calls_and_filtered_identity(self):
+        table = hl.Table.parallelize(
+            [
+                {"group": "mixed", "gt": hl.Call((0, 1), True), "include": True},
+                {"group": "mixed", "gt": hl.Call((1,)), "include": True},
+                {"group": "zero", "gt": hl.Call(()), "include": True},
+                {"group": "missing", "gt": None, "include": True},
+                {"group": "filtered", "gt": hl.Call((1, 1)), "include": False},
+            ],
+            schema=hl.tstruct(group=hl.tstr, gt=hl.tcall, include=hl.tbool),
+            n_partitions=4,
+        )
+        rows = table.group_by("group").aggregate(
+            stats=hl.agg.filter(table.include, hl.agg.call_stats(table.gt, 2))
+        ).collect()
+        by_group = {row.group: row.stats for row in rows}
+        self.assertEqual(by_group["mixed"].AN, 3)
+        self.assertEqual(by_group["mixed"].AC, [1, 2])
+        self.assertEqual(by_group["mixed"].homozygote_count, [0, 0])
+        self.assertEqual(by_group["zero"].AN, 0)
+        self.assertEqual(by_group["zero"].AC, [0, 0])
+        self.assertIsNone(by_group["zero"].AF)
+        self.assertEqual(by_group["missing"].AN, 0)
+        self.assertEqual(by_group["missing"].AC, [0, 0])
+        self.assertEqual(by_group["filtered"].AN, 0)
+        self.assertEqual(by_group["filtered"].AC, [0, 0])
+
 
 def test_public_hwe_reference_examples_and_partitioned_equivalence():
     import pytest
@@ -175,6 +229,12 @@ def test_public_hwe_reference_examples_and_partitioned_equivalence():
             assert actual.p_value == pytest.approx(scalar.p_value)
             one = table.aggregate(hl.agg.hardy_weinberg_test(table.gt, one_sided=True))
             assert one.p_value == pytest.approx(hl.eval(hl.hardy_weinberg_test(*counts, True)).p_value)
+
+    large_hom_ref = 2**31 + 10
+    large = hl.eval(hl.hardy_weinberg_test(large_hom_ref, 1, 0))
+    assert large.het_freq_hwe == pytest.approx(1. / (large_hom_ref + 1), rel=1e-14)
+    with pytest.raises(Exception, match="overflow"):
+        hl.eval(hl.hardy_weinberg_test(2**63 - 1, 1, 0))
 
 
 def test_call_stats_public_invalid_initializer_and_indices():
