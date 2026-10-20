@@ -118,7 +118,7 @@ async fn grouped_correlation_handles_sliced_parent_null_filter_and_empty_groups(
             Some(false),
             Some(true),
             Some(true),
-            None,
+            Some(true),
             Some(true),
             Some(false),
         ])
@@ -258,7 +258,7 @@ fn grouped_correlation_converted_states_match_updates_across_emissions() {
     assert_eq!(rest.len(), 2);
     assert_eq!(first.value(0), direct.value(0));
     assert!(rest.value(0).is_nan());
-    assert_eq!(rest.value(1), 0.0);
+    assert!(rest.is_null(1));
     assert_eq!(direct.null_count(), 1);
 }
 
