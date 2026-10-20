@@ -500,6 +500,134 @@ async fn integer_product_wraps_with_widened_output() {
         i64::from(i32::MAX) * 2
     );
 }
+
+#[tokio::test]
+async fn fraction_delegates_null_as_false_and_keeps_empty_null() {
+    assert!(vail_execution::aggregates::aggregate_udf(
+        "fraction",
+        Some(&arrow_schema::DataType::Int64),
+    )
+    .is_err());
+    let udf = vail_execution::aggregates::aggregate_udf(
+        "fraction",
+        Some(&arrow_schema::DataType::Boolean),
+    )
+    .unwrap();
+    let first: ArrayRef = Arc::new(BooleanArray::from(vec![Some(true), None]));
+    let second: ArrayRef = Arc::new(BooleanArray::from(vec![Some(false), Some(true)]));
+    let result = execute(udf.clone(), vec![first, second]).await.unwrap();
+    let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert_eq!(result.value(0), 0.5);
+
+    let empty: ArrayRef = Arc::new(BooleanArray::from(Vec::<Option<bool>>::new()));
+    let result = execute(udf, vec![empty]).await.unwrap();
+    let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert_eq!(result.iter().collect::<Vec<_>>(), vec![None]);
+}
+
+#[tokio::test]
+async fn grouped_fraction_invocation_uses_native_groups_accumulator() {
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("group", arrow_schema::DataType::Int32, false),
+        Field::new("value", arrow_schema::DataType::Boolean, true),
+    ]));
+    let batch = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(Int32Array::from(vec![1, 2, 1, 2, 3])),
+            Arc::new(BooleanArray::from(vec![
+                Some(true),
+                Some(false),
+                None,
+                Some(true),
+                Some(true),
+            ])),
+        ],
+    )
+    .unwrap();
+    let source = MemorySourceConfig::try_new_exec(&[vec![batch]], schema.clone(), None).unwrap();
+    let udf = vail_execution::aggregates::aggregate_udf(
+        "fraction",
+        Some(&arrow_schema::DataType::Boolean),
+    )
+    .unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("value", 1))])
+        .schema(schema.clone())
+        .alias("fraction")
+        .build()
+        .unwrap();
+    assert!(aggregate.groups_accumulator_supported());
+    let plan = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Single,
+            PhysicalGroupBy::new_single(vec![(
+                Arc::new(Column::new("group", 0)),
+                "group".to_owned(),
+            )]),
+            vec![Arc::new(aggregate)],
+            vec![None],
+            source.clone(),
+            source.schema(),
+        )
+        .unwrap(),
+    );
+    let batches = collect(plan, Arc::new(TaskContext::default()))
+        .await
+        .unwrap();
+    let result = &batches[0];
+    let groups = result
+        .column(0)
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    let fractions = result
+        .column(1)
+        .as_any()
+        .downcast_ref::<Float64Array>()
+        .unwrap();
+    let mut rows = (0..result.num_rows())
+        .map(|row| (groups.value(row), fractions.value(row)))
+        .collect::<Vec<_>>();
+    rows.sort_by_key(|(group, _)| *group);
+    assert_eq!(rows, vec![(1, 0.5), (2, 0.5), (3, 1.0)]);
+}
+
+#[test]
+fn grouped_fraction_convert_to_state_applies_filter_and_merges_native_state() {
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "value",
+        arrow_schema::DataType::Boolean,
+        true,
+    )]));
+    let udf = vail_execution::aggregates::aggregate_udf(
+        "fraction",
+        Some(&arrow_schema::DataType::Boolean),
+    )
+    .unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("value", 0))])
+        .schema(schema)
+        .alias("fraction")
+        .build()
+        .unwrap();
+    assert!(aggregate.groups_accumulator_supported());
+    let groups = aggregate.create_groups_accumulator().unwrap();
+    let values: ArrayRef = Arc::new(BooleanArray::from(vec![
+        Some(true),
+        None,
+        Some(false),
+        Some(true),
+    ]));
+    let filter = BooleanArray::from(vec![true, true, true, false]);
+    let states = groups.convert_to_state(&[values], Some(&filter)).unwrap();
+    let mut merged = aggregate.create_groups_accumulator().unwrap();
+    merged.merge_batch(&states, &[0, 0, 1, 1], 3).unwrap();
+    let result = merged.evaluate(EmitTo::All).unwrap();
+    let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert_eq!(
+        result.iter().collect::<Vec<_>>(),
+        vec![Some(0.5), Some(0.0), None]
+    );
+}
 #[tokio::test]
 async fn int64_product_overflow_wraps() {
     let input: ArrayRef = Arc::new(Int64Array::from(vec![Some(i64::MAX), Some(2)]));

@@ -551,6 +551,7 @@ pub mod advanced_collection_aggregates;
 pub mod advanced_genomic_aggregates;
 pub mod advanced_numeric_aggregates;
 pub mod array_aggregate;
+mod fraction;
 mod list_aggregate;
 pub mod reducer;
 

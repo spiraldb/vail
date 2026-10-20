@@ -266,7 +266,6 @@ enum Kind {
     /// Compatibility path for direct Rust callers of `aggregate_udf`.
     /// Vail's planners lower count_where to native COUNT instead.
     CountWhere,
-    Fraction,
 }
 #[derive(Debug)]
 struct Reducer {
@@ -378,12 +377,6 @@ impl Accumulator for Reducer {
                     .count
                     .wrapping_add(Self::boolean(input)?.true_count() as i64)
             }
-            Kind::Fraction => {
-                self.count = self.count.wrapping_add(input.len() as i64);
-                self.integer = self
-                    .integer
-                    .wrapping_add(Self::boolean(input)?.true_count() as i64);
-            }
             Kind::Max => self.extreme(input)?,
             Kind::Sum | Kind::Product if self.integral() => {
                 let cast = arrow_cast::cast(input, &DataType::Int64)?;
@@ -422,9 +415,6 @@ impl Accumulator for Reducer {
     fn evaluate(&mut self) -> Result<ScalarValue> {
         Ok(match self.kind {
             Kind::Count | Kind::CountWhere => ScalarValue::Int64(Some(self.count)),
-            Kind::Fraction => ScalarValue::Float64(
-                (self.count != 0).then(|| self.integer as f64 / self.count as f64),
-            ),
             Kind::Max if !self.seen => ScalarValue::try_from(&self.input)?,
             _ => self.value(),
         })
@@ -435,16 +425,12 @@ impl Accumulator for Reducer {
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
         Ok(match self.kind {
             Kind::Count | Kind::CountWhere => vec![ScalarValue::Int64(Some(self.count))],
-            Kind::Fraction => vec![
-                ScalarValue::Int64(Some(self.count)),
-                ScalarValue::Int64(Some(self.integer)),
-            ],
             Kind::Max => vec![self.evaluate()?],
             Kind::Sum | Kind::Product => vec![ScalarValue::Int64(Some(self.count)), self.value()],
         })
     }
     fn merge_batch(&mut self, states: &[ArrayRef]) -> Result<()> {
-        let expected = if matches!(self.kind, Kind::Fraction | Kind::Sum | Kind::Product) {
+        let expected = if matches!(self.kind, Kind::Sum | Kind::Product) {
             2
         } else {
             1
@@ -459,14 +445,6 @@ impl Accumulator for Reducer {
                 self.count = self.count.wrapping_add(
                     arrow_arith::aggregate::sum(Self::counts(&states[0])?).unwrap_or(0),
                 )
-            }
-            Kind::Fraction => {
-                self.count = self.count.wrapping_add(
-                    arrow_arith::aggregate::sum(Self::counts(&states[0])?).unwrap_or(0),
-                );
-                self.integer = self.integer.wrapping_add(
-                    arrow_arith::aggregate::sum(Self::counts(&states[1])?).unwrap_or(0),
-                );
             }
             Kind::Max => self.update_batch(&states[..1])?,
             Kind::Sum | Kind::Product => {
@@ -520,6 +498,9 @@ pub fn aggregate_udf(
     function: &str,
     input: Option<&DataType>,
 ) -> std::result::Result<Arc<AggregateUDF>, ExprError> {
+    if function == "fraction" {
+        return crate::fraction::udf(input);
+    }
     if function == "sum" {
         return sum_udf(input);
     }
@@ -561,7 +542,7 @@ pub fn aggregate_udf(
             DataType::Int64,
             vec![DataType::Int64],
         ),
-        "count_where" | "fraction" => {
+        "count_where" => {
             if input.is_some_and(|ty| ty != &DataType::Boolean) {
                 return Err(ExprError::Invalid(format!(
                     "{function} requires Boolean input"
@@ -573,12 +554,6 @@ pub fn aggregate_udf(
                     DataType::Boolean,
                     DataType::Int64,
                     vec![DataType::Int64],
-                ),
-                "fraction" => (
-                    Kind::Fraction,
-                    DataType::Boolean,
-                    DataType::Float64,
-                    vec![DataType::Int64, DataType::Int64],
                 ),
                 _ => unreachable!("Boolean aggregate name is handled above"),
             }
