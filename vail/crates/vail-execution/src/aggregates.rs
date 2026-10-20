@@ -15,6 +15,8 @@ enum Kind {
     Product,
     Min,
     Max,
+    /// Compatibility path for direct Rust callers of `aggregate_udf`.
+    /// Vail's planners lower count_where to native COUNT instead.
     CountWhere,
     Fraction,
     Any,
@@ -293,6 +295,11 @@ impl Accumulator for Reducer {
         Ok(())
     }
 }
+/// Construct one of the low-level scalar aggregate UDAFs.
+///
+/// Vail's planners lower `count_where` to native COUNT over a false-to-null
+/// Boolean predicate. The legacy direct-factory route remains available for
+/// Rust callers that explicitly construct this low-level UDAF.
 pub fn aggregate_udf(
     function: &str,
     input: Option<&DataType>,

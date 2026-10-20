@@ -26,6 +26,36 @@ def test_serial_scan_exclusive_across_partitions_and_filter():
     assert scanned.filter(scanned.i == 5).collect()[0].n == 5
 
 
+def test_scan_count_where_ignores_false_and_missing_predicates():
+    table = hl.Table.parallelize(
+        [{"i": i, "b": b} for i, b in enumerate([True, False, None, True, False])],
+        schema=hl.tstruct(i=hl.tint32, b=hl.tbool),
+        n_partitions=3,
+    )
+    assert table.annotate(n=hl.scan.count_where(table.b)).n.collect() == [0, 1, 1, 1, 2]
+
+
+def test_scan_array_aggregate_count_where_with_null_and_filter_values():
+    table = hl.Table.parallelize(
+        [{"a": values} for values in ([True, None], [False, True], [None, False],
+                                       [True, False], [False, False])],
+        schema=hl.tstruct(a=hl.tarray(hl.tbool)), n_partitions=3)
+    result = table.annotate(prefix=hl.scan.array_agg(
+        lambda value: hl.scan.count_where(value), table.a)).prefix.collect()
+    assert result == [None, [1, 0], [1, 1], [1, 1], [2, 1]]
+
+    empty = hl.Table.parallelize(
+        [{"a": []}, {"a": []}], schema=hl.tstruct(a=hl.tarray(hl.tbool)), n_partitions=2)
+    assert empty.annotate(prefix=hl.scan.array_agg(
+        lambda value: hl.scan.count_where(value), empty.a)).prefix.collect() == [None, []]
+
+    missing = hl.Table.parallelize(
+        [{"a": [None, None]}, {"a": [None, None]}],
+        schema=hl.tstruct(a=hl.tarray(hl.tbool)), n_partitions=2)
+    assert missing.annotate(prefix=hl.scan.array_agg(
+        lambda value: hl.scan.count_where(value), missing.a)).prefix.collect() == [None, [0, 0]]
+
+
 def test_scan_sum_vectorized_finish_preserves_nulls_overflow_and_empty_partitions():
     schema = hl.tstruct(i=hl.tint64, x=hl.tfloat64)
     table = hl.Table.parallelize(

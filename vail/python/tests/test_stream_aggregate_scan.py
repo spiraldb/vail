@@ -41,6 +41,17 @@ def test_mean_nan_empty_and_missing_arrays():
     assert hl.eval(scan(None, lambda x: hl.scan.sum(x), hl.tint32)) is None
 
 
+def test_count_where_stream_scan_observes_true_false_missing_and_filtered_inputs():
+    result = hl.eval(scan([True, False, None, True, False], lambda x: hl.scan.count_where(x), hl.tbool))
+    assert result == [0, 1, 1, 1, 2]
+
+    selected = hl.eval(scan([2, None, -1, 5, 0], lambda x:
+        hl.scan.filter(x > 0, hl.scan.count_where(x > 0)), hl.tint32))
+    assert selected == [0, 1, 1, 1, 2]
+    assert hl.eval(scan([None, None], lambda x: hl.scan.count_where(x), hl.tbool)) == [0, 0]
+    assert hl.eval(scan([], lambda x: hl.scan.count_where(x), hl.tbool)) == []
+
+
 def test_array_valued_callback_keeps_independent_reducer_states():
     result = scan([2, 3, 7], lambda x: hl.array([hl.scan.sum(x), hl.scan.count()]))
     assert hl.eval(result) == [[0, 0], [2, 1], [5, 2]]

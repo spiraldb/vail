@@ -341,3 +341,30 @@ fn grouped_int64_product_overflow_wraps() {
         -2
     );
 }
+
+#[tokio::test]
+async fn direct_count_where_factory_remains_compatible() {
+    // Vail planner routes use native COUNT; this covers the legacy public Rust factory.
+    let udf = vail_execution::aggregates::aggregate_udf(
+        "count_where",
+        Some(&arrow_schema::DataType::Boolean),
+    )
+    .unwrap();
+    let input: ArrayRef = Arc::new(BooleanArray::from(vec![
+        Some(true),
+        Some(false),
+        None,
+        Some(true),
+    ]));
+    let result = execute(udf, vec![input.slice(0, 2), input.slice(2, 2)])
+        .await
+        .unwrap();
+    assert_eq!(
+        result
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap()
+            .value(0),
+        2
+    );
+}

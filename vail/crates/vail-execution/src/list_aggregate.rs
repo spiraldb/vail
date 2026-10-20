@@ -5,7 +5,10 @@
 //! initializer's value varies across rows; no aggregate semantics live here.
 use std::sync::Arc;
 
-use arrow_array::{Array, ArrayRef, Int32Array, Int64Array, ListArray, new_empty_array};
+use arrow_array::{
+    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, new_empty_array,
+};
+use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{Result, ScalarValue, exec_datafusion_err, plan_datafusion_err};
 use datafusion_expr::{
@@ -79,6 +82,9 @@ fn element_type(args: &[DataType], function: &str) -> Result<DataType> {
     let DataType::List(field) = &args[0] else {
         return Err(plan_datafusion_err!("list {function} requires a list"));
     };
+    if function == "count_where" && field.data_type() != &DataType::Boolean {
+        return Err(plan_datafusion_err!("count_where requires Boolean input"));
+    }
     if function == "call_stats" && args[1] != DataType::Int32 {
         return Err(plan_datafusion_err!(
             "call_stats initializer requires int32"
@@ -106,6 +112,8 @@ fn configured(
     };
     let function = if function == "take_ordered" {
         "take"
+    } else if function == "count_where" {
+        "count"
     } else {
         function
     };
@@ -218,7 +226,26 @@ impl ScalarUDFImpl for ListAggregate {
                 }
             };
             let mut accumulator = aggregate.create_accumulator()?;
-            accumulator.update_batch(&[lists.value(row)])?;
+            let values = lists.value(row);
+            if self.function == "count_where" {
+                let predicates = values
+                    .as_any()
+                    .downcast_ref::<BooleanArray>()
+                    .ok_or_else(|| exec_datafusion_err!("count_where requires Boolean input"))?;
+                // Reuse the predicate payload bitmap. Native COUNT only needs
+                // true values to be valid, so false bits become nulls in a
+                // lightweight validity view; only nullable inputs need a new
+                // bitmap combining predicate and original validity.
+                let valid = match predicates.nulls() {
+                    Some(nulls) => predicates.values() & nulls.inner(),
+                    None => predicates.values().clone(),
+                };
+                let true_only =
+                    BooleanArray::new(predicates.values().clone(), Some(NullBuffer::new(valid)));
+                accumulator.update_batch(&[Arc::new(true_only)])?;
+            } else {
+                accumulator.update_batch(&[values])?;
+            }
             output.push(accumulator.evaluate()?);
         }
         let result: ArrayRef = if output.is_empty() {

@@ -4,7 +4,7 @@ use datafusion_common::ScalarValue;
 use std::sync::Arc;
 use vail_execution::{
     array_aggregate::coordinate_udaf,
-    expressions::Expr,
+    expressions::{Expr, PrimitiveType, Type},
     fold_aggregate::{FoldProgram, fold_udaf},
 };
 
@@ -63,4 +63,58 @@ fn coordinate_factory_checks_empty_identity_against_executable_output() {
     let sum = datafusion_functions_aggregate::sum::sum_udaf();
     coordinate_udaf(sum.clone(), DataType::Int64, ScalarValue::Int64(Some(0))).unwrap();
     assert!(coordinate_udaf(sum, DataType::Int64, ScalarValue::Float64(Some(0.))).is_err());
+}
+
+#[test]
+fn count_where_scan_factory_requires_boolean_elements_and_supported_options() {
+    let bool_list = DataType::List(Arc::new(Field::new_list_field(DataType::Boolean, true)));
+    let int_list = DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true)));
+    assert!(
+        vail_execution::array_aggregate_scan::make_udf(
+            "count_where",
+            &bool_list,
+            &serde_json::json!({"__vail_scan": true}),
+        )
+        .is_ok()
+    );
+    assert!(
+        vail_execution::array_aggregate_scan::make_udf(
+            "count_where",
+            &int_list,
+            &serde_json::json!({"__vail_scan": true}),
+        )
+        .is_err()
+    );
+    assert!(
+        vail_execution::array_aggregate_scan::make_udf(
+            "count_where",
+            &bool_list,
+            &serde_json::json!({"unexpected": true}),
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn count_where_list_expression_typing_rejects_non_boolean_elements() {
+    let expression = |element| Expr::NestedFunction {
+        function: "__vail_list_reduce_count_where".into(),
+        args: vec![Expr::Literal {
+            dtype: Type::Array {
+                array: Box::new(element),
+            },
+            value: serde_json::json!([]),
+        }],
+        dtype: Type::Primitive(PrimitiveType::Int64),
+    };
+    assert!(
+        expression(Type::Primitive(PrimitiveType::Bool))
+            .dtype(&Schema::empty())
+            .is_ok()
+    );
+    assert!(
+        expression(Type::Primitive(PrimitiveType::Int32))
+            .dtype(&Schema::empty())
+            .is_err()
+    );
 }

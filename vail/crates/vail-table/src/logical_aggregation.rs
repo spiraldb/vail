@@ -107,7 +107,16 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
         &reducer.options,
         &[],
     )?;
-    let udf = factory_inner(reducer, dtype)?;
+    let udf = if reducer.function == "count_where" {
+        if dtype != Some(&DataType::Boolean) {
+            return Err(TableError::Invalid(
+                "count_where requires Boolean input".into(),
+            ));
+        }
+        datafusion_functions_aggregate::count::count_udaf()
+    } else {
+        factory_inner(reducer, dtype)?
+    };
     let arguments = dtype.into_iter().cloned().collect::<Vec<_>>();
     let actual = vail_execution::expressions::Type::from_arrow(&udf.return_type(&arguments)?)?;
     if actual != expected {
@@ -409,7 +418,7 @@ pub(crate) fn scope_plan(
         let value = fold_value.as_ref().unwrap_or(&value);
         let mut logical_value =
             lower_logical_with_bindings(value, input.schema(), table.globals().schema(), bindings)?;
-        let mut dtype = if reducer.function == "count" {
+        let mut dtype = if matches!(reducer.function.as_str(), "count" | "count_where") {
             None
         } else {
             Some(
@@ -425,6 +434,13 @@ pub(crate) fn scope_plan(
         } else {
             dtype
         };
+        // Nullify false predicates; native COUNT then ignores both false and
+        // missing values while supplying the zero empty identity and grouped
+        // implementation.
+        if reducer.function == "count_where" {
+            logical_value =
+                datafusion_functions::core::nullif().call(vec![logical_value, lit(false)]);
+        }
         // Use DataFusion's grouped kernels rather than constructing one scalar
         // accumulator per group. Widen before summing as required by Hail.
         let native_sum_type = if reducer.function == "sum" {
@@ -452,6 +468,9 @@ pub(crate) fn scope_plan(
                 datafusion_functions_aggregate::sum::sum_udaf()
             }
             None if reducer.function == "count" => {
+                datafusion_functions_aggregate::count::count_udaf()
+            }
+            None if reducer.function == "count_where" => {
                 datafusion_functions_aggregate::count::count_udaf()
             }
             None => factory(reducer, dtype.as_ref())?,
