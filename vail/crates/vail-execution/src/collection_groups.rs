@@ -800,6 +800,20 @@ fn grouped_aggregate(
             return exec_err!("group aggregate {function} has no native grouped accumulator");
         }
         let mut accumulator = aggregate.create_groups_accumulator()?;
+        if segments[segment].chunks.is_empty() {
+            let empty_data = arrow_array::new_empty_array(&input_type);
+            let empty_predicate = if *function == "count_where" {
+                Some(arrow_array::BooleanArray::from(Vec::<Option<bool>>::new()))
+            } else {
+                None
+            };
+            accumulator.update_batch(
+                std::slice::from_ref(&empty_data),
+                &[],
+                empty_predicate.as_ref(),
+                group_count,
+            )?;
+        }
         for (chunk_index, chunk) in segments[segment].chunks.iter().enumerate() {
             let data = if *function == "count" {
                 chunk.owners.clone()

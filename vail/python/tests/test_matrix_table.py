@@ -1053,6 +1053,10 @@ def test_group_by_reductions_use_fused_per_list_groups():
             m.col_idx % 2,
             hl.agg.filter(m.col_idx < 0, hl.agg.sum(m.x)),
         ),
+        empty_count=hl.agg.group_by(
+            m.col_idx % 2,
+            hl.agg.filter(False, hl.agg.count()),
+        ),
         summary=hl.agg.group_by(
             m.col_idx % 2,
             hl.struct(
@@ -1070,6 +1074,7 @@ def test_group_by_reductions_use_fused_per_list_groups():
     assert rows[0].positive == {0: 1, 1: 0}
     assert rows[0].filtered == {0: 1, 1: 0}
     assert rows[0].fully_filtered == {0: 0, 1: 0}
+    assert rows[0].empty_count == {0: 0, 1: 0}
     assert rows[0].summary[0].total == 2 and rows[0].summary[0].count == 2
     assert rows[0].summary[0].selected == 2
     assert rows[0].summary[0].selected_count == 1
@@ -1082,6 +1087,7 @@ def test_group_by_reductions_use_fused_per_list_groups():
     assert rows[1].positive == {0: 2, 1: 0}
     assert rows[1].filtered == {0: 2, 1: 0}
     assert rows[1].fully_filtered == {0: 0, 1: 0}
+    assert rows[1].empty_count == {0: 0, 1: 0}
     assert rows[1].summary[0].total == 22 and rows[1].summary[0].count == 2
     assert rows[1].summary[0].selected == 22
     assert rows[1].summary[0].selected_count == 2
