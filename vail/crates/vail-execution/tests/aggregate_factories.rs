@@ -398,6 +398,30 @@ fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
     let ac = ac.as_any().downcast_ref::<Int32Array>().unwrap();
     assert_eq!(ac.values(), &[1, 2]);
 
+    let mut scalar_source = aggregate.create_accumulator().unwrap();
+    scalar_source.update_batch(&[packed.clone()]).unwrap();
+    let scalar_state = scalar_source.state().unwrap();
+    let scalar_state = scalar_state
+        .iter()
+        .map(|value| value.to_array_of_size(1).unwrap())
+        .collect::<Vec<_>>();
+    let mut grouped_from_scalar = aggregate.create_groups_accumulator().unwrap();
+    grouped_from_scalar
+        .merge_batch(&scalar_state, &[0], 1)
+        .unwrap();
+    let from_scalar = grouped_from_scalar.evaluate(EmitTo::All).unwrap();
+    let from_scalar = from_scalar.as_any().downcast_ref::<StructArray>().unwrap();
+    assert_eq!(
+        from_scalar
+            .column_by_name("AN")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .value(0),
+        3
+    );
+
     let evaluated = grouped.evaluate(EmitTo::All).unwrap();
     let evaluated = evaluated.as_any().downcast_ref::<StructArray>().unwrap();
     let an = evaluated
