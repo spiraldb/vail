@@ -1760,10 +1760,7 @@ impl Expr {
                 }
                 if expected == 2
                     && !matrix_function
-                    && !matches!(
-                        function.as_str(),
-                        "array_element" | "arrays_zip" | "array_repeat"
-                    )
+                    && !matches!(function.as_str(), "array_element" | "arrays_zip" | "array_repeat")
                     && !same_collection_storage(&args[0], &args[1])
                 {
                     return Err(ExprError::Invalid(
@@ -5764,9 +5761,7 @@ fn lower_uncached(
                 .map(|arg| lower_cached(arg, schema, globals, scope, memo, context))
                 .collect::<Result<Vec<_>, ExprError>>()?;
             Arc::new(ScalarFunctionExpr::try_new(
-                crate::numeric_lists::range_udf(),
-                args,
-                schema,
+                crate::numeric_lists::range_udf(), args, schema,
                 Arc::new(ConfigOptions::default()),
             )?)
         }

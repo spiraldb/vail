@@ -73,8 +73,8 @@ pub fn result_type(
         .ok_or_else(|| invalid("aggregate options must be an object"))?;
     let allowed: &[&str] = match function {
         "count" | "sum" | "product" | "min" | "max" | "mean" | "stddev_pop" | "count_where"
-        | "fraction" | "any" | "all" | "collect_as_set" | "corr" | "inbreeding" | "info_score"
-        | "ndarray_sum" => &[],
+        | "fraction" | "any" | "all" | "collect_as_set" | "corr" | "inbreeding"
+        | "info_score" | "ndarray_sum" => &[],
         "collect" => &["ordered"],
         "take" => &["n", "ordered"],
         "hist" => &["start", "end", "bins"],
