@@ -19,6 +19,8 @@ use datafusion_physical_expr::{
     expressions::Column,
 };
 
+mod direct;
+
 const PREFIX: &str = "__vail_list_reduce_";
 
 #[derive(Debug, PartialEq, Eq, Hash)]
@@ -175,6 +177,15 @@ impl ScalarUDFImpl for ListAggregate {
             .as_any()
             .downcast_ref::<ListArray>()
             .ok_or_else(|| exec_datafusion_err!("list reducer requires Arrow lists"))?;
+        if let Some(result) = direct::reduce(lists, &self.function)? {
+            return if scalar {
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                    &result, 0,
+                )?))
+            } else {
+                Ok(ColumnarValue::Array(result))
+            };
+        }
         let initializers = arrays.get(1);
         let output_type =
             configured(&self.function, &input_type, 0)?.return_type(&[input_type.clone()])?;
