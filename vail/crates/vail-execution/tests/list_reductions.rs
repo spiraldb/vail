@@ -91,7 +91,7 @@ fn reduce_legacy_call_stats(
         Field::new("n_alleles", DataType::Int32, true),
     ]));
     let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(lists.clone()), initializers])?;
-    let expression = Expr::NestedFunction {
+    let expression = Expr::StringFunction {
         function: "genomic_list_call_stats".into(),
         args: vec![
             Expr::Column {
@@ -101,12 +101,13 @@ fn reduce_legacy_call_stats(
                 name: "n_alleles".into(),
             },
         ],
-        dtype: Type::from_arrow(&output_type).unwrap(),
     };
-    Ok(lower(&expression, &schema)
+    let result = lower(&expression, &schema)
         .unwrap()
         .evaluate(&batch)?
-        .into_array(lists.len())?)
+        .into_array(lists.len())?;
+    assert_eq!(result.data_type(), &output_type);
+    Ok(result)
 }
 
 fn tagged_call_type() -> DataType {
@@ -176,29 +177,11 @@ fn stddev_pop_list_reduction_batches_segments_and_preserves_null_outer_lists() {
 
 #[test]
 fn call_stats_list_reduction_batches_variable_initializers_in_outer_order() {
-    let call_fields = vec![
-        Arc::new(Field::new(
-            vail_execution::calls::FIRST,
-            DataType::UInt16,
-            true,
-        )),
-        Arc::new(Field::new(
-            vail_execution::calls::SECOND,
-            DataType::UInt16,
-            true,
-        )),
-        Arc::new(Field::new(
-            vail_execution::calls::PLOIDY,
-            DataType::UInt8,
-            true,
-        )),
-        Arc::new(Field::new(
-            vail_execution::calls::PHASED,
-            DataType::Boolean,
-            true,
-        )),
-    ];
     let call_type = tagged_call_type();
+    let call_fields = match &call_type {
+        DataType::Struct(fields) => fields.clone(),
+        _ => unreachable!(),
+    };
     let item_fields = vec![
         Arc::new(Field::new("__vail_genomic_call", call_type.clone(), true)),
         Arc::new(Field::new("__vail_genomic_alleles", DataType::Int32, true)),
@@ -211,7 +194,7 @@ fn call_stats_list_reduction_batches_variable_initializers_in_outer_order() {
         vail_execution::calls::Call::new(&[2, 2], false).unwrap(),
     ];
     let calls = Arc::new(StructArray::new(
-        call_fields.into(),
+        call_fields,
         vec![
             Arc::new(UInt16Array::from(
                 calls

@@ -712,19 +712,6 @@ impl GenomicAccumulator {
         Ok(())
     }
 
-    fn update_fixed_calls(&mut self, calls: &ArrayRef, n: usize) -> DfResult<()> {
-        if n != self.ac.len() {
-            return Err(bad("call_stats allele count differs from initializer"));
-        }
-        let rows = crate::calls::CallRows::new(calls).map_err(|e| bad(e.to_string()))?;
-        for row in 0..calls.len() {
-            if let Some(call) = rows.get(row).map_err(|e| bad(e.to_string()))? {
-                self.tally_call(call.alleles(), n)?;
-            }
-        }
-        Ok(())
-    }
-
     fn update_ndarray(&mut self, s: &StructArray) -> DfResult<()> {
         let datas = packed_col(s, "__vail_ndarray_data")?
             .as_any()
