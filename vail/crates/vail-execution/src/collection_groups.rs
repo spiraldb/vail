@@ -578,7 +578,7 @@ fn grouped_aggregate(
     ]));
     let mut grouping = new_group_values(grouping_schema, &GroupOrdering::None)?;
     let mut group_ids = Vec::new();
-    grouping.intern(&[owner_array, key_data.clone()], &mut group_ids)?;
+    grouping.intern(&[owner_array.clone(), key_data.clone()], &mut group_ids)?;
     let group_count = grouping.len();
 
     let mut aggregates = Vec::with_capacity(specs.len());
