@@ -37,6 +37,11 @@ class AggregateTests(unittest.TestCase):
         self.assertEqual(set_table.aggregate(
             hl.agg.explode(lambda x: hl.agg.sum(x), set_table.xs)), 6)
 
+    def test_count_where_uses_native_grouped_count_semantics(self):
+        grouped = self.table.group_by(k=self.table.x % 2).aggregate(
+            n=hl.agg.count_where(self.table.keep))
+        assert {row.k: row.n for row in grouped.collect()} == {1: 1, 0: 0, None: 1}
+
     def test_reducers_on_empty_and_all_missing_tables(self):
         for table, expected_count, expected_values, expected_fraction in (
             (hl.Table.parallelize([], schema=hl.tstruct(x=hl.tint64, b=hl.tbool)), 0, [], None),

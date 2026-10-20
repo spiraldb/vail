@@ -5,7 +5,9 @@
 //! initializer's value varies across rows; no aggregate semantics live here.
 use std::sync::Arc;
 
-use arrow_array::{Array, ArrayRef, Int32Array, Int64Array, ListArray, new_empty_array};
+use arrow_array::{
+    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, new_empty_array,
+};
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{Result, ScalarValue, exec_datafusion_err, plan_datafusion_err};
 use datafusion_expr::{
@@ -106,6 +108,8 @@ fn configured(
     };
     let function = if function == "take_ordered" {
         "take"
+    } else if function == "count_where" {
+        "count"
     } else {
         function
     };
@@ -218,7 +222,19 @@ impl ScalarUDFImpl for ListAggregate {
                 }
             };
             let mut accumulator = aggregate.create_accumulator()?;
-            accumulator.update_batch(&[lists.value(row)])?;
+            let values = lists.value(row);
+            if self.function == "count_where" {
+                let predicates = values
+                    .as_any()
+                    .downcast_ref::<BooleanArray>()
+                    .ok_or_else(|| exec_datafusion_err!("count_where requires Boolean input"))?;
+                let true_only = BooleanArray::from_iter(
+                    predicates.iter().map(|value| value.filter(|value| *value)),
+                );
+                accumulator.update_batch(&[Arc::new(true_only)])?;
+            } else {
+                accumulator.update_batch(&[values])?;
+            }
             output.push(accumulator.evaluate()?);
         }
         let result: ArrayRef = if output.is_empty() {

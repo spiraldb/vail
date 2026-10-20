@@ -26,6 +26,15 @@ def test_serial_scan_exclusive_across_partitions_and_filter():
     assert scanned.filter(scanned.i == 5).collect()[0].n == 5
 
 
+def test_scan_count_where_ignores_false_and_missing_predicates():
+    table = hl.Table.parallelize(
+        [{"i": i, "b": b} for i, b in enumerate([True, False, None, True])],
+        schema=hl.tstruct(i=hl.tint32, b=hl.tbool),
+        n_partitions=3,
+    )
+    assert table.annotate(n=hl.scan.count_where(table.b)).n.collect() == [0, 1, 1, 1]
+
+
 def test_scan_sum_vectorized_finish_preserves_nulls_overflow_and_empty_partitions():
     schema = hl.tstruct(i=hl.tint64, x=hl.tfloat64)
     table = hl.Table.parallelize(

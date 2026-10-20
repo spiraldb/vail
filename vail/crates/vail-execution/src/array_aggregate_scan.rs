@@ -20,7 +20,12 @@ pub fn make_udf(
             "aggregate scan requires list input".into(),
         ));
     };
-    let aggregate = crate::reducer::configured_udaf(function, Some(element.data_type()), options)?;
+    let count_where = function == "count_where";
+    let aggregate = if count_where {
+        datafusion_functions_aggregate::count::count_udaf()
+    } else {
+        crate::reducer::configured_udaf(function, Some(element.data_type()), options)?
+    };
     let descriptor =
         crate::scan_state::ScanState::new(aggregate, vec![element.data_type().clone()])?;
     let output_element = descriptor.output_type();
@@ -49,7 +54,7 @@ pub fn make_udf(
                 .ok_or_else(|| {
                     DataFusionError::Execution("aggregate scan predicate is not a list".into())
                 })?;
-            let result = scan_lists(values, predicates, &output_element, || {
+            let result = scan_lists(values, predicates, &output_element, count_where, || {
                 descriptor.accumulator()
             })?;
             Ok(ColumnarValue::Array(result))
@@ -61,6 +66,7 @@ fn scan_lists(
     values: &ListArray,
     predicates: &ListArray,
     output_element: &DataType,
+    count_where: bool,
     accumulator: impl Fn() -> Result<Box<dyn datafusion_expr::Accumulator>>,
 ) -> Result<Arc<ListArray>> {
     let mut outputs = Vec::new();
@@ -91,7 +97,13 @@ fn scan_lists(
         lengths.push(input.len());
         for index in 0..input.len() {
             outputs.push(accumulator.evaluate()?.to_array_of_size(1)?);
-            if flags.is_valid(index) && flags.value(index) {
+            let count_selected = !count_where
+                || (input.data_type() == &DataType::Boolean
+                    && input
+                        .as_any()
+                        .downcast_ref::<BooleanArray>()
+                        .is_some_and(|values| values.is_valid(index) && values.value(index)));
+            if flags.is_valid(index) && flags.value(index) && count_selected {
                 accumulator.update_batch(&[input.slice(index, 1)])?;
             }
         }

@@ -15,7 +15,6 @@ enum Kind {
     Product,
     Min,
     Max,
-    CountWhere,
     Fraction,
     Any,
     All,
@@ -146,11 +145,6 @@ impl Accumulator for Reducer {
                     .count
                     .wrapping_add((input.len() - input.null_count()) as i64)
             }
-            Kind::CountWhere => {
-                self.count = self
-                    .count
-                    .wrapping_add(Self::boolean(input)?.true_count() as i64)
-            }
             Kind::Fraction => {
                 self.count = self.count.wrapping_add(input.len() as i64);
                 self.integer = self
@@ -203,7 +197,7 @@ impl Accumulator for Reducer {
     }
     fn evaluate(&mut self) -> Result<ScalarValue> {
         Ok(match self.kind {
-            Kind::Count | Kind::CountWhere => ScalarValue::Int64(Some(self.count)),
+            Kind::Count => ScalarValue::Int64(Some(self.count)),
             Kind::Fraction => ScalarValue::Float64(
                 (self.count != 0).then(|| self.integer as f64 / self.count as f64),
             ),
@@ -218,7 +212,7 @@ impl Accumulator for Reducer {
     }
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
         Ok(match self.kind {
-            Kind::Count | Kind::CountWhere => vec![ScalarValue::Int64(Some(self.count))],
+            Kind::Count => vec![ScalarValue::Int64(Some(self.count))],
             Kind::Fraction => vec![
                 ScalarValue::Int64(Some(self.count)),
                 ScalarValue::Int64(Some(self.integer)),
@@ -240,7 +234,7 @@ impl Accumulator for Reducer {
             ));
         }
         match self.kind {
-            Kind::Count | Kind::CountWhere => {
+            Kind::Count => {
                 self.count = self.count.wrapping_add(
                     arrow_arith::aggregate::sum(Self::counts(&states[0])?).unwrap_or(0),
                 )
@@ -311,19 +305,13 @@ pub fn aggregate_udf(
             DataType::Int64,
             vec![DataType::Int64],
         ),
-        "count_where" | "fraction" | "any" | "all" => {
+        "fraction" | "any" | "all" => {
             if input.is_some_and(|ty| ty != &DataType::Boolean) {
                 return Err(ExprError::Invalid(format!(
                     "{function} requires Boolean input"
                 )));
             }
             match function {
-                "count_where" => (
-                    Kind::CountWhere,
-                    DataType::Boolean,
-                    DataType::Int64,
-                    vec![DataType::Int64],
-                ),
                 "fraction" => (
                     Kind::Fraction,
                     DataType::Boolean,
