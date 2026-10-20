@@ -75,6 +75,33 @@ def test_numeric_empty_and_degenerate_execution():
     assert math.isnan(constant.aggregate(hl.agg.corr(constant.x, constant.y)))
 
 
+def test_grouped_corr_uses_native_groups_with_hail_empty_and_degenerate_results():
+    import math
+
+    table = hl.Table.parallelize(
+        [
+            {"g": 0, "x": 1.0, "y": 2.0},
+            {"g": 0, "x": 2.0, "y": 4.0},
+            {"g": 1, "x": 1.0, "y": 2.0},
+            {"g": 2, "x": None, "y": 2.0},
+            {"g": 2, "x": 3.0, "y": None},
+            {"g": 3, "x": 2.0, "y": 4.0},
+            {"g": 3, "x": 2.0, "y": 8.0},
+            {"g": 4, "x": math.nan, "y": 1.0},
+            {"g": 4, "x": 2.0, "y": 3.0},
+        ],
+        schema=hl.tstruct(g=hl.tint32, x=hl.tfloat64, y=hl.tfloat64),
+        n_partitions=4,
+    )
+    grouped = table.group_by(table.g).aggregate(corr=hl.agg.corr(table.x, table.y)).collect()
+    by_group = {row.g: row.corr for row in grouped}
+    assert by_group[0] == 1.0
+    assert math.isnan(by_group[1])
+    assert by_group[2] is None
+    assert math.isnan(by_group[3])
+    assert math.isnan(by_group[4])
+
+
 def test_hist_right_endpoint_and_nan():
     import math
     t = hl.Table.parallelize([{"x": -1.}, {"x": 0.}, {"x": 2.},
@@ -143,6 +170,31 @@ def test_downsample_missing_label_is_missing():
     points = t.aggregate(hl.agg.downsample(t.x, t.y, n_divisions=4))
     assert len(points) == 2
     assert all(point[2] is None for point in points)
+
+
+def test_grouped_downsample_uses_bounded_state_per_group():
+    rows = [
+        {"group": group, "x": x, "y": x, "label": f"{group}:{x}"}
+        for group, base in (("a", 0), ("b", 100))
+        for x in range(base, base + 20)
+    ]
+    table = hl.Table.parallelize(
+        rows,
+        schema=hl.tstruct(group=hl.tstr, x=hl.tint32, y=hl.tint32, label=hl.tstr),
+        n_partitions=5,
+    )
+    grouped = table.group_by("group").aggregate(
+        points=hl.agg.downsample(table.x, table.y, table.label, n_divisions=4)
+    ).collect()
+    assert {row.group for row in grouped} == {"a", "b"}
+    for row in grouped:
+        start = 0 if row.group == "a" else 100
+        source = {
+            (float(x), float(x), (f"{row.group}:{x}",))
+            for x in range(start, start + 20)
+        }
+        assert 1 <= len(row.points) <= 16
+        assert {(x, y, tuple(label)) for x, y, label in row.points} <= source
 
 
 def test_downsample_rebin_preserves_labels_at_bounds_and_partition_merge():

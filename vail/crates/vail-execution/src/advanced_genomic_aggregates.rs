@@ -3,12 +3,18 @@
 use crate::aggregate_identity::configured_udaf_name;
 use crate::expressions::ExprError;
 use arrow_array::{
+    builder::{Float64Builder, Int32Builder, ListBuilder},
     Array, ArrayRef, Float32Array, Float64Array, Int32Array, Int64Array, ListArray, StructArray,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use datafusion_expr::{
+    expr_fn::create_udaf,
+    function::{AccumulatorArgs, StateFieldsArgs},
+    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
+};
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
 fn bad(s: impl Into<String>) -> DataFusionError {
@@ -180,16 +186,430 @@ pub fn make_udaf(
     };
     let ty = input_type.clone();
     let udaf_name = configured_udaf_name(function, input_type, options);
+    let grouped_output = output.clone();
     let factory: datafusion_expr::AccumulatorFactoryFunction =
         Arc::new(move |_| Ok(Box::new(GenomicAccumulator::new(kind, ty.clone()))));
-    Ok(Some(Arc::new(create_udaf(
+    let native = Arc::new(create_udaf(
         &udaf_name,
         vec![input_type.clone()],
         Arc::new(output),
         Volatility::Immutable,
         factory,
         Arc::new(state),
-    ))))
+    ));
+    if let Kind::CallStats(n_alleles) = kind {
+        Ok(Some(Arc::new(AggregateUDF::from(CallStatsUdf {
+            name: udaf_name,
+            input_type: input_type.clone(),
+            output_type: grouped_output,
+            signature: Signature::exact(vec![input_type.clone()], Volatility::Immutable),
+            native,
+            n_alleles,
+        }))))
+    } else {
+        Ok(Some(native))
+    }
+}
+
+/// The scalar call_stats accumulator is retained for list/scan contexts; this
+/// adapter adds a flat, per-group allele counter for relational group-bys.
+#[derive(Debug)]
+struct CallStatsUdf {
+    name: String,
+    input_type: DataType,
+    output_type: DataType,
+    signature: Signature,
+    native: Arc<AggregateUDF>,
+    n_alleles: usize,
+}
+impl PartialEq for CallStatsUdf {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.input_type == other.input_type
+            && self.output_type == other.output_type
+            && self.n_alleles == other.n_alleles
+    }
+}
+impl Eq for CallStatsUdf {}
+impl Hash for CallStatsUdf {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+        self.input_type.hash(state);
+        self.output_type.hash(state);
+        self.n_alleles.hash(state);
+    }
+}
+impl AggregateUDFImpl for CallStatsUdf {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+    fn return_type(&self, args: &[DataType]) -> DfResult<DataType> {
+        if args != [self.input_type.clone()] {
+            return Err(DataFusionError::Plan(
+                "call_stats input type mismatch".into(),
+            ));
+        }
+        Ok(self.output_type.clone())
+    }
+    fn is_nullable(&self) -> bool {
+        self.native.is_nullable()
+    }
+    fn accumulator(&self, args: AccumulatorArgs) -> DfResult<Box<dyn Accumulator>> {
+        self.native.inner().accumulator(args)
+    }
+    fn state_fields(&self, args: StateFieldsArgs) -> DfResult<Vec<arrow_schema::FieldRef>> {
+        self.native.inner().state_fields(args)
+    }
+    fn groups_accumulator_supported(&self, args: AccumulatorArgs) -> bool {
+        !args.is_distinct
+            && args.order_bys.is_empty()
+            && !args.is_reversed
+            && args.expr_fields.len() == 1
+            && args.expr_fields[0].data_type() == &self.input_type
+            && args.return_field.data_type() == &self.output_type
+    }
+    fn create_groups_accumulator(
+        &self,
+        args: AccumulatorArgs,
+    ) -> DfResult<Box<dyn GroupsAccumulator>> {
+        if !self.groups_accumulator_supported(args) {
+            return Err(DataFusionError::NotImplemented(
+                "call_stats grouped accumulator does not support these arguments".into(),
+            ));
+        }
+        Ok(Box::new(CallStatsGroups::new(self.n_alleles)))
+    }
+}
+
+#[derive(Debug)]
+struct CallStatsGroups {
+    n_alleles: usize,
+    allele_number: Vec<i64>,
+    allele_counts: Vec<i64>,
+    homozygote_counts: Vec<i64>,
+}
+impl CallStatsGroups {
+    fn new(n_alleles: usize) -> Self {
+        Self {
+            n_alleles,
+            allele_number: Vec::new(),
+            allele_counts: Vec::new(),
+            homozygote_counts: Vec::new(),
+        }
+    }
+    fn ensure(&mut self, total: usize) -> DfResult<()> {
+        let cells = total
+            .checked_mul(self.n_alleles)
+            .filter(|cells| *cells <= i32::MAX as usize)
+            .ok_or_else(|| bad("call_stats grouped state size overflow"))?;
+        self.allele_number.resize(total, 0);
+        self.allele_counts.resize(cells, 0);
+        self.homozygote_counts.resize(cells, 0);
+        Ok(())
+    }
+    fn group(&self, index: usize) -> DfResult<usize> {
+        if index >= self.allele_number.len() {
+            return Err(bad("call_stats group index exceeds state"));
+        }
+        index
+            .checked_mul(self.n_alleles)
+            .ok_or_else(|| bad("call_stats group state offset overflow"))
+    }
+    fn enabled(filter: Option<&arrow_array::BooleanArray>, row: usize) -> bool {
+        filter.is_none_or(|f| f.is_valid(row) && f.value(row))
+    }
+    fn take_prefix<T: Copy + Default>(values: &mut Vec<T>, count: usize) -> DfResult<Vec<T>> {
+        if count > values.len() {
+            return Err(bad("call_stats emitted groups exceed state"));
+        }
+        if count == values.len() {
+            Ok(std::mem::take(values))
+        } else {
+            Ok(values.drain(..count).collect())
+        }
+    }
+    fn emit(&mut self, to: EmitTo) -> DfResult<(Vec<i64>, Vec<i64>, Vec<i64>)> {
+        let groups = match to {
+            EmitTo::All => self.allele_number.len(),
+            EmitTo::First(n) => n,
+        };
+        let cells = groups
+            .checked_mul(self.n_alleles)
+            .ok_or_else(|| bad("call_stats grouped state size overflow"))?;
+        let allele_number = Self::take_prefix(&mut self.allele_number, groups)?;
+        let allele_counts = Self::take_prefix(&mut self.allele_counts, cells)?;
+        let homozygote_counts = Self::take_prefix(&mut self.homozygote_counts, cells)?;
+        Ok((allele_number, allele_counts, homozygote_counts))
+    }
+    fn list_i64(values: Vec<i64>, rows: usize, width: usize) -> DfResult<ArrayRef> {
+        let cells = rows
+            .checked_mul(width)
+            .filter(|cells| *cells <= i32::MAX as usize)
+            .ok_or_else(|| bad("call_stats grouped state exceeds Arrow list limit"))?;
+        if values.len() != cells {
+            return Err(bad("call_stats grouped state has wrong size"));
+        }
+        Ok(Arc::new(ListArray::new(
+            field("item", DataType::Int64),
+            OffsetBuffer::from_lengths(std::iter::repeat_n(width, rows)),
+            Arc::new(Int64Array::from(values)),
+            None,
+        )))
+    }
+    fn merge_list(
+        list: &ListArray,
+        row: usize,
+        width: usize,
+        into: &mut [i64],
+        label: &str,
+    ) -> DfResult<()> {
+        if list.is_null(row) || list.value_length(row) as usize != width || into.len() != width {
+            return Err(bad(format!(
+                "call_stats {label} state has wrong allele count"
+            )));
+        }
+        let values = list
+            .values()
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| bad(format!("call_stats {label} state must contain int64")))?;
+        let offset = list.value_offsets()[row] as usize;
+        for (i, value) in into.iter_mut().enumerate() {
+            let source = offset + i;
+            if values.is_null(source) {
+                return Err(bad("call_stats grouped state must be defined"));
+            }
+            if values.value(source) < 0 {
+                return Err(bad("call_stats grouped state must be nonnegative"));
+            }
+            *value = value
+                .checked_add(values.value(source))
+                .ok_or_else(|| bad("call_stats grouped state overflow"))?;
+        }
+        Ok(())
+    }
+}
+impl GroupsAccumulator for CallStatsGroups {
+    fn convert_to_state(
+        &self,
+        values: &[ArrayRef],
+        filter: Option<&arrow_array::BooleanArray>,
+    ) -> DfResult<Vec<ArrayRef>> {
+        let rows = values.first().map_or(0, |a| a.len());
+        let indices = (0..rows).collect::<Vec<_>>();
+        let mut groups = Self::new(self.n_alleles);
+        groups.update_batch(values, &indices, filter, rows)?;
+        groups.state(EmitTo::All)
+    }
+    fn update_batch(
+        &mut self,
+        values: &[ArrayRef],
+        indices: &[usize],
+        filter: Option<&arrow_array::BooleanArray>,
+        total: usize,
+    ) -> DfResult<()> {
+        let [input] = values else {
+            return Err(bad("call_stats requires one input"));
+        };
+        if input.len() != indices.len() || filter.is_some_and(|f| f.len() != indices.len()) {
+            return Err(bad("call_stats grouped row counts differ"));
+        }
+        if indices.iter().any(|&index| index >= total) {
+            return Err(bad("call_stats group index exceeds state"));
+        }
+        self.ensure(total)?;
+        let packed = input
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| bad("call_stats requires packed struct"))?;
+        let calls = packed_col(packed, "__vail_genomic_call")?
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| bad("call_stats requires Call"))?;
+        let decoded = crate::calls::CallRows::from_struct(calls).map_err(|e| bad(e.to_string()))?;
+        let allele_counts = packed_col(packed, "__vail_genomic_alleles")?;
+        for row in 0..packed.len() {
+            if !Self::enabled(filter, row) || packed.is_null(row) {
+                continue;
+            }
+            let n = match allele_counts.data_type() {
+                DataType::Int32 => {
+                    let a = allele_counts.as_any().downcast_ref::<Int32Array>().unwrap();
+                    if a.is_null(row) {
+                        continue;
+                    }
+                    a.value(row) as usize
+                }
+                DataType::List(_) => {
+                    let a = allele_counts.as_any().downcast_ref::<ListArray>().unwrap();
+                    if a.is_null(row) {
+                        continue;
+                    }
+                    a.value_length(row) as usize
+                }
+                _ => return Err(bad("invalid call_stats allele count type")),
+            };
+            if n > i32::MAX as usize {
+                return Err(bad("call_stats allele count exceeds int32"));
+            }
+            if n != self.n_alleles {
+                return Err(bad("call_stats allele count differs from initializer"));
+            }
+            let Some(call) = decoded.get(row).map_err(|e| bad(e.to_string()))? else {
+                continue;
+            };
+            let offset = self.group(indices[row])?;
+            for &allele in call.alleles() {
+                let allele = allele as usize;
+                if allele >= n {
+                    return Err(bad("call_stats allele index out of range"));
+                }
+                let count = &mut self.allele_counts[offset + allele];
+                *count = count
+                    .checked_add(1)
+                    .ok_or_else(|| bad("call_stats count overflow"))?;
+                self.allele_number[indices[row]] = self.allele_number[indices[row]]
+                    .checked_add(1)
+                    .ok_or_else(|| bad("call_stats AN overflow"))?;
+            }
+            if call.alleles().len() == 2 && call.alleles()[0] == call.alleles()[1] {
+                let allele = call.alleles()[0] as usize;
+                let count = &mut self.homozygote_counts[offset + allele];
+                *count = count
+                    .checked_add(1)
+                    .ok_or_else(|| bad("call_stats homozygote count overflow"))?;
+            }
+        }
+        Ok(())
+    }
+    fn evaluate(&mut self, to: EmitTo) -> DfResult<ArrayRef> {
+        let (an, ac, hom) = self.emit(to)?;
+        let rows = an.len();
+        let mut ac_list = ListBuilder::new(Int32Builder::new());
+        let mut af_list = ListBuilder::new(Float64Builder::new());
+        let mut hom_list = ListBuilder::new(Int32Builder::new());
+        for row in 0..rows {
+            let start = row * self.n_alleles;
+            for value in &ac[start..start + self.n_alleles] {
+                ac_list.values().append_value(
+                    i32::try_from(*value).map_err(|_| bad("call_stats AC overflow"))?,
+                );
+            }
+            ac_list.append(true);
+            for value in &hom[start..start + self.n_alleles] {
+                hom_list.values().append_value(
+                    i32::try_from(*value)
+                        .map_err(|_| bad("call_stats homozygote count overflow"))?,
+                );
+            }
+            hom_list.append(true);
+            if an[row] == 0 {
+                af_list.append(false);
+            } else {
+                for value in &ac[start..start + self.n_alleles] {
+                    af_list
+                        .values()
+                        .append_value(*value as f64 / an[row] as f64);
+                }
+                af_list.append(true);
+            }
+        }
+        let output = struct_type(vec![
+            ("AC", list_type(DataType::Int32)),
+            ("AF", list_type(DataType::Float64)),
+            ("AN", DataType::Int32),
+            ("homozygote_count", list_type(DataType::Int32)),
+        ]);
+        let fields = match output {
+            DataType::Struct(fields) => fields,
+            _ => unreachable!(),
+        };
+        let an = an
+            .into_iter()
+            .map(|value| i32::try_from(value).map_err(|_| bad("call_stats AN overflow")))
+            .collect::<DfResult<Vec<_>>>()?;
+        Ok(Arc::new(StructArray::try_new(
+            fields,
+            vec![
+                Arc::new(ac_list.finish()),
+                Arc::new(af_list.finish()),
+                Arc::new(Int32Array::from(an)),
+                Arc::new(hom_list.finish()),
+            ],
+            None,
+        )?))
+    }
+    fn size(&self) -> usize {
+        std::mem::size_of::<Self>()
+            + self.allele_number.capacity() * 8
+            + (self.allele_counts.capacity() + self.homozygote_counts.capacity()) * 8
+    }
+    fn state(&mut self, to: EmitTo) -> DfResult<Vec<ArrayRef>> {
+        let (an, ac, hom) = self.emit(to)?;
+        let rows = an.len();
+        Ok(vec![
+            Arc::new(Int64Array::from(an)),
+            Self::list_i64(ac, rows, self.n_alleles)?,
+            Self::list_i64(hom, rows, self.n_alleles)?,
+        ])
+    }
+    fn merge_batch(
+        &mut self,
+        states: &[ArrayRef],
+        indices: &[usize],
+        total: usize,
+    ) -> DfResult<()> {
+        let [an, ac, hom] = states else {
+            return Err(bad("call_stats state shape mismatch"));
+        };
+        if an.len() != indices.len() || ac.len() != indices.len() || hom.len() != indices.len() {
+            return Err(bad("call_stats grouped state rows differ"));
+        }
+        let an = an
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| bad("call_stats AN state must be int64"))?;
+        let ac = ac
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| bad("call_stats AC state must be a list"))?;
+        let hom = hom
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| bad("call_stats homozygote state must be a list"))?;
+        self.ensure(total)?;
+        for row in 0..indices.len() {
+            let group = indices[row];
+            let offset = self.group(group)?;
+            if an.is_null(row) {
+                return Err(bad("call_stats AN state must be defined"));
+            }
+            if an.value(row) < 0 {
+                return Err(bad("call_stats AN state must be nonnegative"));
+            }
+            self.allele_number[group] = self.allele_number[group]
+                .checked_add(an.value(row))
+                .ok_or_else(|| bad("call_stats AN state overflow"))?;
+            Self::merge_list(
+                ac,
+                row,
+                self.n_alleles,
+                &mut self.allele_counts[offset..offset + self.n_alleles],
+                "AC",
+            )?;
+            Self::merge_list(
+                hom,
+                row,
+                self.n_alleles,
+                &mut self.homozygote_counts[offset..offset + self.n_alleles],
+                "homozygote",
+            )?;
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -279,23 +699,15 @@ impl GenomicAccumulator {
             self.ac[index] = self.ac[index]
                 .checked_add(1)
                 .ok_or_else(|| bad("call_stats count overflow"))?;
-            self.ints[0] += 1;
+            self.ints[0] = self.ints[0]
+                .checked_add(1)
+                .ok_or_else(|| bad("call_stats AN overflow"))?;
         }
         if call.len() == 2 && call[0] == call[1] {
-            self.hom[call[0] as usize] += 1;
-        }
-        Ok(())
-    }
-
-    fn update_fixed_calls(&mut self, calls: &ArrayRef, n: usize) -> DfResult<()> {
-        if n != self.ac.len() {
-            return Err(bad("call_stats allele count differs from initializer"));
-        }
-        let rows = crate::calls::CallRows::new(calls).map_err(|e| bad(e.to_string()))?;
-        for row in 0..calls.len() {
-            if let Some(call) = rows.get(row).map_err(|e| bad(e.to_string()))? {
-                self.tally_call(call.alleles(), n)?;
-            }
+            let count = &mut self.hom[call[0] as usize];
+            *count = count
+                .checked_add(1)
+                .ok_or_else(|| bad("call_stats homozygote count overflow"))?;
         }
         Ok(())
     }
@@ -414,7 +826,7 @@ impl GenomicAccumulator {
     fn result(&self) -> DfResult<ScalarValue> {
         match self.kind {
             Kind::Hwe(one_sided) => {
-                let (freq, p) = hwe(self.ints[0], self.ints[1], self.ints[2], one_sided);
+                let (freq, p) = hwe(self.ints[0], self.ints[1], self.ints[2], one_sided)?;
                 scalar_struct(
                     &["het_freq_hwe", "p_value"],
                     vec![
@@ -713,7 +1125,9 @@ impl Accumulator for GenomicAccumulator {
                 }
                 for (j, a) in s.iter().enumerate() {
                     for i in 0..a.len() {
-                        self.ints[j] += int_col(a.as_ref(), i)?
+                        self.ints[j] = self.ints[j]
+                            .checked_add(int_col(a.as_ref(), i)?)
+                            .ok_or_else(|| bad("HWE state count overflow"))?;
                     }
                 }
             }
@@ -722,9 +1136,13 @@ impl Accumulator for GenomicAccumulator {
                     return Err(bad("inbreeding state shape mismatch"));
                 }
                 for i in 0..s[0].len() {
-                    self.ints[0] += int_col(s[0].as_ref(), i)?;
+                    self.ints[0] = self.ints[0]
+                        .checked_add(int_col(s[0].as_ref(), i)?)
+                        .ok_or_else(|| bad("inbreeding called count overflow"))?;
                     self.floats[0] += float_col(s[1].as_ref(), i)?;
-                    self.ints[1] += int_col(s[2].as_ref(), i)?
+                    self.ints[1] = self.ints[1]
+                        .checked_add(int_col(s[2].as_ref(), i)?)
+                        .ok_or_else(|| bad("inbreeding homozygote count overflow"))?;
                 }
             }
             Kind::CallStats(_) => {
@@ -740,10 +1158,16 @@ impl Accumulator for GenomicAccumulator {
                     if self.ac.len() != ac.len() {
                         return Err(bad("call_stats allele count differs between partitions"));
                     }
-                    self.ints[0] += int_col(s[0].as_ref(), i)?;
+                    self.ints[0] = self.ints[0]
+                        .checked_add(int_col(s[0].as_ref(), i)?)
+                        .ok_or_else(|| bad("call_stats AN overflow"))?;
                     for j in 0..ac.len() {
-                        self.ac[j] += ac[j];
-                        self.hom[j] += hom[j]
+                        self.ac[j] = self.ac[j]
+                            .checked_add(ac[j])
+                            .ok_or_else(|| bad("call_stats AC overflow"))?;
+                        self.hom[j] = self.hom[j]
+                            .checked_add(hom[j])
+                            .ok_or_else(|| bad("call_stats homozygote count overflow"))?;
                     }
                 }
             }
@@ -752,7 +1176,9 @@ impl Accumulator for GenomicAccumulator {
                     return Err(bad("info_score state shape mismatch"));
                 }
                 for i in 0..s[0].len() {
-                    self.ints[0] += int_col(s[0].as_ref(), i)?;
+                    self.ints[0] = self.ints[0]
+                        .checked_add(int_col(s[0].as_ref(), i)?)
+                        .ok_or_else(|| bad("info_score count overflow"))?;
                     for j in 0..3 {
                         self.floats[j] += float_col(s[j + 1].as_ref(), i)?
                     }
@@ -784,23 +1210,47 @@ impl Accumulator for GenomicAccumulator {
 }
 
 // Levene-Haldane conditional distribution; aggregate states remain three counters.
-pub(crate) fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> (f64, f64) {
-    let (frequency, two, one) = hwe_both(hom_ref, het, hom_var);
-    (frequency, if one_sided { one } else { two })
+pub(crate) fn hwe(hom_ref: i64, het: i64, hom_var: i64, one_sided: bool) -> DfResult<(f64, f64)> {
+    let (frequency, two, one) = hwe_both(hom_ref, het, hom_var)?;
+    Ok((frequency, if one_sided { one } else { two }))
 }
 
-pub(crate) fn hwe_both(hom_ref: i64, het: i64, hom_var: i64) -> (f64, f64, f64) {
+pub(crate) fn hwe_both(hom_ref: i64, het: i64, hom_var: i64) -> DfResult<(f64, f64, f64)> {
+    if hom_ref < 0 || het < 0 || hom_var < 0 {
+        return Err(bad("hardy_weinberg_test requires nonnegative counts"));
+    }
     // Hail's LeveneHaldane recurrence, including normalization and summation
     // order. Sharing this kernel keeps scalar and aggregate tests identical.
-    let n = hom_ref + het + hom_var;
+    let n = hom_ref
+        .checked_add(het)
+        .and_then(|n| n.checked_add(hom_var))
+        .ok_or_else(|| bad("hardy_weinberg_test count overflow"))?;
     if n == 0 {
-        return (f64::NAN, 0.5, 0.5);
+        return Ok((f64::NAN, 0.5, 0.5));
     }
-    let minor = het + 2 * hom_ref.min(hom_var);
-    let major = 2 * n - minor;
-    let freq = (minor as f64 * major as f64) / (2 * n - 1) as f64 / n as f64;
+    let minor = het
+        .checked_add(
+            hom_ref
+                .min(hom_var)
+                .checked_mul(2)
+                .ok_or_else(|| bad("hardy_weinberg_test count overflow"))?,
+        )
+        .ok_or_else(|| bad("hardy_weinberg_test count overflow"))?;
+    let twice_n = n
+        .checked_mul(2)
+        .ok_or_else(|| bad("hardy_weinberg_test count overflow"))?;
+    let major = twice_n
+        .checked_sub(minor)
+        .ok_or_else(|| bad("hardy_weinberg_test count overflow"))?;
+    let denominator = twice_n
+        .checked_sub(1)
+        .ok_or_else(|| bad("hardy_weinberg_test count overflow"))?;
+    let center_denominator = twice_n
+        .checked_add(3)
+        .ok_or_else(|| bad("hardy_weinberg_test count overflow"))?;
+    let freq = (minor as f64 * major as f64) / denominator as f64 / n as f64;
     let parity = minor % 2;
-    let center = (minor as f64 + 1.) * (major as f64 + 1.) / (2 * n + 3) as f64;
+    let center = (minor as f64 + 1.) * (major as f64 + 1.) / center_denominator as f64;
     let mode = 2 * ((center - parity as f64) / 2.).round() as i64 + parity;
     let mut right = vec![1.];
     let mut h = mode;
@@ -884,7 +1334,7 @@ pub(crate) fn hwe_both(hom_ref: i64, het: i64, hom_var: i64) -> (f64, f64, f64) 
         };
         (mid_tail(&left[1..]) + mid_tail(&right)) / norm
     };
-    (freq, two, one)
+    Ok((freq, two, one))
 }
 
 /// Per-owning-row adapter for the same checked CallStats reducer used by tables.
@@ -897,96 +1347,5 @@ pub(crate) fn list_call_stats() -> Result<
     ),
     ExprError,
 > {
-    use crate::expressions::{PrimitiveType, Type};
-    use datafusion_expr::{ColumnarValue, expr_fn::create_udf};
-    let call = Type::Primitive(PrimitiveType::Call);
-    let integer = Type::Primitive(PrimitiveType::Int32);
-    let calls = Type::Array {
-        array: Box::new(call.clone()),
-    };
-    let input_type = struct_type(vec![
-        ("__vail_genomic_call", call.to_arrow()?),
-        ("__vail_genomic_alleles", DataType::Int32),
-    ]);
-    let output = struct_type(vec![
-        ("AC", list_type(DataType::Int32)),
-        ("AF", list_type(DataType::Float64)),
-        ("AN", DataType::Int32),
-        ("homozygote_count", list_type(DataType::Int32)),
-    ]);
-    let result_type = Type::from_arrow(&output)?;
-    let output_empty = output.clone();
-    let udf = create_udf(
-        "vail_list_call_stats",
-        vec![calls.to_arrow()?, DataType::Int32],
-        output,
-        Volatility::Immutable,
-        Arc::new(move |values| {
-            let rows = values
-                .iter()
-                .find_map(|v| {
-                    if let ColumnarValue::Array(a) = v {
-                        Some(a.len())
-                    } else {
-                        None
-                    }
-                })
-                .unwrap_or(1);
-            let inputs = values
-                .iter()
-                .map(|v| match v {
-                    ColumnarValue::Array(a) => Ok(a.clone()),
-                    ColumnarValue::Scalar(s) => s.to_array(),
-                })
-                .collect::<DfResult<Vec<_>>>()?;
-            let arrays = inputs[0]
-                .as_any()
-                .downcast_ref::<ListArray>()
-                .ok_or_else(|| bad("list call_stats requires Call array"))?;
-            let counts = inputs[1]
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .ok_or_else(|| bad("list call_stats requires int32 allele count"))?;
-            let row_at = |arg: usize, row: usize| {
-                if matches!(values[arg], ColumnarValue::Scalar(_)) {
-                    0
-                } else {
-                    row
-                }
-            };
-            let mut results = Vec::with_capacity(rows);
-            for row in 0..rows {
-                let cr = row_at(1, row);
-                if counts.is_null(cr) || counts.value(cr) < 0 {
-                    return Err(bad(
-                        "call_stats requires a defined nonnegative allele count",
-                    ));
-                }
-                let n = counts.value(cr) as usize;
-                let ar = row_at(0, row);
-                let calls = if arrays.is_null(ar) {
-                    arrow_array::new_empty_array(&arrays.value_type())
-                } else {
-                    arrays.value(ar)
-                };
-                let mut accumulator =
-                    GenomicAccumulator::new(Kind::CallStats(n), input_type.clone());
-                accumulator.update_fixed_calls(&calls, n)?;
-                results.push(accumulator.result()?);
-            }
-            let result = if results.is_empty() {
-                arrow_array::new_empty_array(&output_empty)
-            } else {
-                ScalarValue::iter_to_array(results)?
-            };
-            if values.iter().all(|v| matches!(v, ColumnarValue::Scalar(_))) {
-                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
-                    &result, 0,
-                )?))
-            } else {
-                Ok(ColumnarValue::Array(result))
-            }
-        }),
-    );
-    Ok((Arc::new(udf), vec![calls, integer], result_type))
+    crate::list_aggregate::legacy_call_stats()
 }

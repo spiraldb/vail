@@ -1,12 +1,14 @@
 //! Primitive list reductions through the public expression boundary.
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
-    RecordBatch,
+    RecordBatch, StructArray, UInt16Array, UInt8Array,
 };
-use arrow_schema::{DataType, Schema};
-use datafusion_common::Result;
+use arrow_array::types::{Float32Type, Int32Type, Int64Type};
+use arrow_buffer::{NullBuffer, OffsetBuffer};
+use arrow_schema::{DataType, Field, Schema};
+use datafusion_common::{Result, ScalarValue};
 use std::sync::Arc;
-use vail_execution::expressions::{Expr, PrimitiveType, Type, lower};
+use vail_execution::expressions::{lower, Expr, PrimitiveType, Type};
 
 fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRef>> {
     let input = match lists.value_type() {
@@ -20,7 +22,7 @@ fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRef>> {
     let output = match function {
         "any" | "all" => PrimitiveType::Bool,
         "count_where" => PrimitiveType::Int64,
-        "mean" | "fraction" => PrimitiveType::Float64,
+        "mean" | "fraction" | "stddev_pop" => PrimitiveType::Float64,
         "sum" | "product" => match input {
             PrimitiveType::Int32 | PrimitiveType::Int64 => PrimitiveType::Int64,
             _ => PrimitiveType::Float64,
@@ -48,9 +50,565 @@ fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRef>> {
     ))
 }
 
-use arrow_array::types::{Float32Type, Int32Type, Int64Type};
-use arrow_buffer::{NullBuffer, OffsetBuffer};
-use arrow_schema::Field;
+fn reduce_struct_lists(
+    lists: &ListArray,
+    function: &str,
+    initializers: Option<ArrayRef>,
+    output_type: DataType,
+) -> Result<ArrayRef> {
+    let mut fields = vec![Field::new("values", lists.data_type().clone(), true)];
+    let mut columns = vec![Arc::new(lists.clone()) as ArrayRef];
+    let mut args = vec![Expr::Column {
+        name: "values".into(),
+    }];
+    if let Some(initializers) = initializers {
+        fields.push(Field::new("initializer", DataType::Int32, true));
+        columns.push(initializers);
+        args.push(Expr::Column {
+            name: "initializer".into(),
+        });
+    }
+    let schema = Arc::new(Schema::new(fields));
+    let batch = RecordBatch::try_new(schema.clone(), columns)?;
+    let expr = Expr::NestedFunction {
+        function: format!("__vail_list_reduce_{function}"),
+        args,
+        dtype: Type::from_arrow(&output_type).unwrap(),
+    };
+    Ok(lower(&expr, &schema)
+        .unwrap()
+        .evaluate(&batch)?
+        .into_array(lists.len())?)
+}
+
+fn reduce_legacy_call_stats(
+    lists: &ListArray,
+    initializers: ArrayRef,
+    output_type: DataType,
+) -> Result<ArrayRef> {
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("calls", lists.data_type().clone(), true),
+        Field::new("n_alleles", DataType::Int32, true),
+    ]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(lists.clone()), initializers])?;
+    let expression = Expr::StringFunction {
+        function: "genomic_list_call_stats".into(),
+        args: vec![
+            Expr::Column {
+                name: "calls".into(),
+            },
+            Expr::Column {
+                name: "n_alleles".into(),
+            },
+        ],
+    };
+    let result = lower(&expression, &schema)
+        .unwrap()
+        .evaluate(&batch)?
+        .into_array(lists.len())?;
+    assert_eq!(result.data_type(), &output_type);
+    Ok(result)
+}
+
+fn tagged_call_type() -> DataType {
+    let logical = Type::Primitive(PrimitiveType::Call);
+    vail_ordering::tag_type(
+        logical.to_arrow().unwrap(),
+        &serde_json::to_value(&logical).unwrap(),
+    )
+    .unwrap()
+}
+
+#[test]
+fn correlation_list_reduction_batches_rows_and_keeps_empty_and_null_semantics() {
+    let fields = vec![
+        Arc::new(Field::new("x", DataType::Float64, true)),
+        Arc::new(Field::new("y", DataType::Float64, true)),
+    ];
+    let item_type = DataType::Struct(fields.clone().into());
+    let child = Arc::new(StructArray::new(
+        fields.into(),
+        vec![
+            Arc::new(Float64Array::from(vec![0., 1., 2., 8., 99., 100., 5., 6.])),
+            Arc::new(Float64Array::from(vec![0., 2., 4., 4., 88., 99., 7., 7.])),
+        ],
+        None,
+    ));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", item_type, true)),
+        OffsetBuffer::from_lengths([1, 2, 1, 0, 2, 2]),
+        child,
+        Some(NullBuffer::from(vec![true, true, true, true, false, true])),
+    )
+    .slice(1, 5);
+    let result = reduce_struct_lists(&lists, "corr", None, DataType::Float64).unwrap();
+    let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert_eq!(result.value(0), 1.0);
+    assert!(result.value(1).is_nan());
+    assert!(result.is_null(2));
+    assert!(result.is_null(3));
+    assert!(result.value(4).is_nan());
+}
+
+#[test]
+fn stddev_pop_list_reduction_batches_segments_and_preserves_null_outer_lists() {
+    let child = Arc::new(Float64Array::from(vec![
+        Some(999.0),
+        Some(1.0),
+        Some(3.0),
+        Some(9.0),
+        Some(7.0),
+        Some(99.0),
+    ]));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", DataType::Float64, true)),
+        OffsetBuffer::from_lengths([1, 2, 0, 2, 1]),
+        child,
+        Some(NullBuffer::from(vec![true, true, true, false, true])),
+    )
+    .slice(1, 4);
+    let result = reduce(&lists, "stddev_pop").unwrap().unwrap();
+    let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert_eq!(result.value(0), 1.0);
+    assert!(result.value(1).is_nan());
+    assert!(result.is_null(2));
+    assert_eq!(result.value(3), 0.0);
+}
+
+#[test]
+fn call_stats_list_reduction_batches_variable_initializers_in_outer_order() {
+    let call_type = tagged_call_type();
+    let call_fields = match &call_type {
+        DataType::Struct(fields) => fields.clone(),
+        _ => unreachable!(),
+    };
+    let item_fields = vec![
+        Arc::new(Field::new("__vail_genomic_call", call_type.clone(), true)),
+        Arc::new(Field::new("__vail_genomic_alleles", DataType::Int32, true)),
+    ];
+    let item_type = DataType::Struct(item_fields.clone().into());
+    let calls = [
+        vail_execution::calls::Call::new(&[2, 2], false).unwrap(),
+        vail_execution::calls::Call::new(&[0, 1], false).unwrap(),
+        vail_execution::calls::Call::new(&[1, 1], false).unwrap(),
+        vail_execution::calls::Call::new(&[2, 2], false).unwrap(),
+    ];
+    let calls = Arc::new(StructArray::new(
+        call_fields,
+        vec![
+            Arc::new(UInt16Array::from(
+                calls
+                    .iter()
+                    .copied()
+                    .map(|call| call.first())
+                    .collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt16Array::from(
+                calls
+                    .iter()
+                    .copied()
+                    .map(|call| call.second())
+                    .collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt8Array::from(
+                calls
+                    .iter()
+                    .copied()
+                    .map(|call| call.ploidy())
+                    .collect::<Vec<_>>(),
+            )),
+            Arc::new(BooleanArray::from(
+                calls
+                    .iter()
+                    .copied()
+                    .map(|call| call.phased())
+                    .collect::<Vec<_>>(),
+            )),
+        ],
+        None,
+    ));
+    let child = Arc::new(StructArray::new(
+        item_fields.into(),
+        vec![calls, Arc::new(Int32Array::from(vec![3, 2, 2, 3]))],
+        None,
+    ));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", item_type, true)),
+        OffsetBuffer::from_lengths([1, 2, 1, 0, 0]),
+        child,
+        Some(NullBuffer::from(vec![true, true, true, true, false])),
+    )
+    .slice(1, 4);
+    let output = DataType::Struct(
+        vec![
+            Arc::new(Field::new(
+                "AC",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+            Arc::new(Field::new(
+                "AF",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Float64, true))),
+                true,
+            )),
+            Arc::new(Field::new("AN", DataType::Int32, true)),
+            Arc::new(Field::new(
+                "homozygote_count",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+        ]
+        .into(),
+    );
+    let result = reduce_struct_lists(
+        &lists,
+        "call_stats",
+        Some(Arc::new(Int32Array::from(vec![2, 3, 2, 3]))),
+        output,
+    )
+    .unwrap();
+    let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+    let an = result
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!([an.value(0), an.value(1), an.value(2)], [4, 2, 0]);
+    assert!(result.is_null(3));
+    let ac = result
+        .column_by_name("AC")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(
+        ac.value(0).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![1, 3])
+    );
+    assert_eq!(
+        ac.value(1).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![0, 0, 2])
+    );
+    assert_eq!(
+        ac.value(2).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![0, 0])
+    );
+}
+
+#[test]
+fn legacy_genomic_call_stats_alias_uses_batched_call_list_reducer() {
+    let calls = [
+        vail_execution::calls::Call::new(&[0, 1], false).unwrap(),
+        vail_execution::calls::Call::new(&[2, 2], false).unwrap(),
+        vail_execution::calls::Call::new(&[1, 1], false).unwrap(),
+    ];
+    let call_values = Arc::new(StructArray::new(
+        match tagged_call_type() {
+            DataType::Struct(fields) => fields,
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(UInt16Array::from(
+                calls.iter().map(|call| call.first()).collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt16Array::from(
+                calls.iter().map(|call| call.second()).collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt8Array::from(
+                calls.iter().map(|call| call.ploidy()).collect::<Vec<_>>(),
+            )),
+            Arc::new(BooleanArray::from(
+                calls.iter().map(|call| call.phased()).collect::<Vec<_>>(),
+            )),
+        ],
+        None,
+    ));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", call_values.data_type().clone(), true)),
+        OffsetBuffer::from_lengths([1, 1, 1]),
+        call_values,
+        Some(NullBuffer::from(vec![true, true, false])),
+    );
+    let output = DataType::Struct(
+        vec![
+            Arc::new(Field::new(
+                "AC",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+            Arc::new(Field::new(
+                "AF",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Float64, true))),
+                true,
+            )),
+            Arc::new(Field::new("AN", DataType::Int32, true)),
+            Arc::new(Field::new(
+                "homozygote_count",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+        ]
+        .into(),
+    );
+    let contiguous_slice = lists.slice(1, 1);
+    let contiguous_result = reduce_legacy_call_stats(
+        &contiguous_slice,
+        Arc::new(Int32Array::from(vec![3])),
+        output.clone(),
+    )
+    .unwrap();
+    let contiguous_an = contiguous_result
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap()
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!(contiguous_an.value(0), 2);
+    let result =
+        reduce_legacy_call_stats(&lists, Arc::new(Int32Array::from(vec![2, 3, 2])), output)
+            .unwrap();
+    let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+    let an = result
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!([an.value(0), an.value(1), an.value(2)], [2, 2, 0]);
+}
+
+#[test]
+fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
+    let predictor_fields = vec![
+        Arc::new(arrow_schema::Field::new("x0", DataType::Float64, true)),
+        Arc::new(arrow_schema::Field::new("x1", DataType::Float64, true)),
+    ];
+    let child_fields = vec![
+        Arc::new(arrow_schema::Field::new("y", DataType::Float64, true)),
+        Arc::new(arrow_schema::Field::new(
+            "x",
+            DataType::Struct(predictor_fields.clone().into()),
+            true,
+        )),
+    ];
+    let predictors = Arc::new(StructArray::new(
+        predictor_fields.into(),
+        vec![
+            Arc::new(Float64Array::from(
+                std::iter::repeat_n(1., 9).collect::<Vec<_>>(),
+            )),
+            Arc::new(Float64Array::from(vec![
+                0., 1., 2., 0., 1., 2., 10., 11., 12.,
+            ])),
+        ],
+        None,
+    ));
+    let child = Arc::new(StructArray::new(
+        child_fields.clone().into(),
+        vec![
+            Arc::new(Float64Array::from(vec![
+                1., 3., 5., -2., -5., -8., 500., 503., 506.,
+            ])),
+            predictors,
+        ],
+        None,
+    ));
+    let lists = ListArray::new(
+        Arc::new(arrow_schema::Field::new(
+            "item",
+            child.data_type().clone(),
+            true,
+        )),
+        OffsetBuffer::from_lengths([3, 3, 3, 0]),
+        child,
+        Some(NullBuffer::from(vec![true, true, false, true])),
+    );
+    let output_type = DataType::Struct(
+        vec![
+            Arc::new(arrow_schema::Field::new(
+                "beta",
+                DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    DataType::Float64,
+                    true,
+                ))),
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "standard_error",
+                DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    DataType::Float64,
+                    true,
+                ))),
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "t_stat",
+                DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    DataType::Float64,
+                    true,
+                ))),
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "p_value",
+                DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    DataType::Float64,
+                    true,
+                ))),
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "multiple_standard_error",
+                DataType::Float64,
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "multiple_r_squared",
+                DataType::Float64,
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "adjusted_r_squared",
+                DataType::Float64,
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new("f_stat", DataType::Float64, true)),
+            Arc::new(arrow_schema::Field::new(
+                "multiple_p_value",
+                DataType::Float64,
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new("n", DataType::Int64, true)),
+        ]
+        .into(),
+    );
+    let list_type = DataType::List(Arc::new(arrow_schema::Field::new(
+        "item",
+        lists.value_type(),
+        true,
+    )));
+    let evaluate = |test_lists: &ListArray,
+                    nested: Expr,
+                    nested_values: ArrayRef|
+     -> std::result::Result<ArrayRef, String> {
+        let schema = Arc::new(Schema::new(vec![
+            arrow_schema::Field::new("values", list_type.clone(), true),
+            arrow_schema::Field::new("nested", DataType::Int64, true),
+        ]));
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![Arc::new(test_lists.clone()), nested_values],
+        )
+        .map_err(|error| error.to_string())?;
+        let expr = Expr::NestedFunction {
+            function: "__vail_list_reduce_linreg".into(),
+            args: vec![
+                Expr::Column {
+                    name: "values".into(),
+                },
+                nested,
+            ],
+            dtype: Type::from_arrow(&output_type).unwrap(),
+        };
+        lower(&expr, &schema)
+            .map_err(|error| error.to_string())?
+            .evaluate(&batch)
+            .map_err(|error| error.to_string())?
+            .into_array(test_lists.len())
+            .map_err(|error| error.to_string())
+    };
+    let result = evaluate(
+        &lists,
+        Expr::RuntimeLiteral {
+            value: ScalarValue::Int64(Some(1)),
+        },
+        Arc::new(Int64Array::from(vec![1; lists.len()])),
+    )
+    .unwrap();
+    let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+    assert_eq!(result.null_count(), 1);
+    let counts = result
+        .column_by_name("n")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .unwrap();
+    assert!(result.is_null(2));
+    assert!(result.is_valid(0));
+    assert!(result.is_valid(1));
+    assert!(result.is_valid(3));
+    assert_eq!(
+        [counts.value(0), counts.value(1), counts.value(3)],
+        [3, 3, 0]
+    );
+    let beta = result
+        .column_by_name("beta")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    for (row, intercept, slope) in [(0, 1., 2.), (1, -2., -3.)] {
+        let values = beta.value(row);
+        let values = values.as_any().downcast_ref::<Float64Array>().unwrap();
+        assert!((values.value(0) - intercept).abs() < 1e-12);
+        assert!((values.value(1) - slope).abs() < 1e-12);
+    }
+
+    let sliced = lists.slice(1, 3);
+    let sliced_result = evaluate(
+        &sliced,
+        Expr::RuntimeLiteral {
+            value: ScalarValue::Int64(Some(1)),
+        },
+        Arc::new(Int64Array::from(vec![1; sliced.len()])),
+    )
+    .unwrap();
+    let sliced_result = sliced_result
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    assert_eq!(sliced_result.null_count(), 1);
+    let sliced_counts = sliced_result
+        .column_by_name("n")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .unwrap();
+    assert!(sliced_result.is_null(1));
+    assert!(sliced_result.is_valid(0));
+    assert!(sliced_result.is_valid(2));
+    assert_eq!([sliced_counts.value(0), sliced_counts.value(2)], [3, 0]);
+
+    for invalid in [
+        ScalarValue::Int64(None),
+        ScalarValue::Int64(Some(-1)),
+        ScalarValue::Int64(Some(3)),
+    ] {
+        assert!(evaluate(
+            &lists,
+            Expr::RuntimeLiteral { value: invalid },
+            Arc::new(Int64Array::from(vec![1; lists.len()])),
+        )
+        .is_err());
+    }
+    assert!(evaluate(
+        &lists,
+        Expr::Column {
+            name: "nested".into(),
+        },
+        Arc::new(Int64Array::from(vec![1, 2, 1, 1])),
+    )
+    .is_err());
+}
+
 
 #[test]
 fn integer_lists_keep_precision_missingness_and_sliced_offsets() {

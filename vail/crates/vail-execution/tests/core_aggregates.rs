@@ -1,6 +1,8 @@
 //! Public numeric UDAFs executed on sliced and nullable Arrow batches.
+use arrow_array::types::Float64Type;
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, RecordBatch,
+    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
+    RecordBatch,
 };
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{DataFusionError, ScalarValue};
@@ -457,13 +459,240 @@ fn native_mean_partial_state_and_grouped_filter_merge() {
         .update_batch(&[values], &[0, 0, 1, 1], Some(&filter), 3)
         .unwrap();
     let partial = grouped.state(EmitTo::All).unwrap();
-    let mut merged = udf.create_groups_accumulator(args).unwrap();
+    let mut merged = udf.create_groups_accumulator(args.clone()).unwrap();
     merged.merge_batch(&partial, &[0, 1, 2], 3).unwrap();
     let result = merged.evaluate(EmitTo::All).unwrap();
     let values = result.as_any().downcast_ref::<Float64Array>().unwrap();
     assert_eq!(values.value(0), 4.0);
     assert!(values.value(1).is_nan());
     assert!(values.value(2).is_nan());
+}
+
+#[test]
+fn linreg_uses_native_grouped_accumulator_with_filtered_partial_state() {
+    let input_type = DataType::Struct(
+        vec![
+            Arc::new(Field::new("y", DataType::Float64, true)),
+            Arc::new(Field::new(
+                "x",
+                DataType::List(Arc::new(Field::new("item", DataType::Float64, true))),
+                true,
+            )),
+        ]
+        .into(),
+    );
+    let udf = vail_execution::advanced_numeric_aggregates::make_udaf(
+        "linreg",
+        &input_type,
+        &serde_json::json!({"n_predictors":2,"nested_dim":1}),
+    )
+    .unwrap()
+    .unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "input",
+        input_type.clone(),
+        true,
+    )]));
+    let args = AccumulatorArgs {
+        return_field: Arc::new(Field::new(
+            "linreg",
+            udf.return_type(&[input_type.clone()]).unwrap(),
+            true,
+        )),
+        schema: &schema,
+        name: "linreg",
+        is_distinct: false,
+        exprs: &[],
+        expr_fields: &[Arc::new(Field::new("input", input_type, true))],
+        ignore_nulls: true,
+        order_bys: &[],
+        is_reversed: false,
+    };
+    assert!(udf.groups_accumulator_supported(args.clone()));
+    let mut grouped = udf.create_groups_accumulator(args.clone()).unwrap();
+    let values: ArrayRef = Arc::new(arrow_array::StructArray::new(
+        vec![
+            Arc::new(Field::new("y", DataType::Float64, true)),
+            Arc::new(Field::new(
+                "x",
+                DataType::List(Arc::new(Field::new("item", DataType::Float64, true))),
+                true,
+            )),
+        ]
+        .into(),
+        vec![
+            Arc::new(Float64Array::from(vec![1., 3., 5., 100.])),
+            Arc::new(ListArray::from_iter_primitive::<Float64Type, _, _>(vec![
+                Some(vec![Some(1.), Some(0.)]),
+                Some(vec![Some(1.), Some(1.)]),
+                Some(vec![Some(1.), Some(2.)]),
+                Some(vec![Some(1.), Some(99.)]),
+            ])),
+        ],
+        Some(arrow_buffer::NullBuffer::from(vec![
+            true, true, true, false,
+        ])),
+    ));
+    let filter = BooleanArray::from(vec![true, true, true, true]);
+    grouped
+        .update_batch(&[values.clone()], &[0, 0, 0, 1], Some(&filter), 3)
+        .unwrap();
+    let state = grouped.state(EmitTo::First(2)).unwrap();
+    let mut merged = udf.create_groups_accumulator(args.clone()).unwrap();
+    merged.merge_batch(&state, &[0, 1], 3).unwrap();
+    let rest = grouped.state(EmitTo::All).unwrap();
+    merged.merge_batch(&rest, &[0], 3).unwrap();
+    let result = merged.evaluate(EmitTo::All).unwrap();
+    let result = result
+        .as_any()
+        .downcast_ref::<arrow_array::StructArray>()
+        .unwrap();
+    let counts = result
+        .column_by_name("n")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .unwrap();
+    assert_eq!(counts.values(), &[3, 0, 0]);
+    let beta = result
+        .column_by_name("beta")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<arrow_array::ListArray>()
+        .unwrap();
+    let beta0 = beta.value(0);
+    let beta0 = beta0.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert!((beta0.value(0) - 1.).abs() < 1e-12);
+    assert!((beta0.value(1) - 2.).abs() < 1e-12);
+
+    let converter = udf.create_groups_accumulator(args.clone()).unwrap();
+    let converted = converter
+        .convert_to_state(&[values], Some(&filter))
+        .unwrap();
+    let mut converted_merge = udf.create_groups_accumulator(args).unwrap();
+    converted_merge
+        .merge_batch(&converted, &[0, 0, 0, 1], 2)
+        .unwrap();
+    let converted_result = converted_merge.evaluate(EmitTo::All).unwrap();
+    let converted_result = converted_result
+        .as_any()
+        .downcast_ref::<arrow_array::StructArray>()
+        .unwrap();
+    let converted_counts = converted_result
+        .column_by_name("n")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .unwrap();
+    assert_eq!(converted_counts.values(), &[3, 0]);
+}
+
+#[tokio::test]
+async fn linreg_physical_grouped_plan_fits_each_group() {
+    let input_type = DataType::Struct(
+        vec![
+            Arc::new(Field::new("y", DataType::Float64, true)),
+            Arc::new(Field::new(
+                "x",
+                DataType::List(Arc::new(Field::new("item", DataType::Float64, true))),
+                true,
+            )),
+        ]
+        .into(),
+    );
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("group", DataType::Int32, false),
+        Field::new("input", input_type.clone(), true),
+    ]));
+    let input = Arc::new(arrow_array::StructArray::new(
+        match &input_type {
+            DataType::Struct(fields) => fields.clone(),
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(Float64Array::from(vec![1., 3., 5., -2., -5., -8.])),
+            Arc::new(ListArray::from_iter_primitive::<Float64Type, _, _>(vec![
+                Some(vec![Some(1.), Some(0.)]),
+                Some(vec![Some(1.), Some(1.)]),
+                Some(vec![Some(1.), Some(2.)]),
+                Some(vec![Some(1.), Some(0.)]),
+                Some(vec![Some(1.), Some(1.)]),
+                Some(vec![Some(1.), Some(2.)]),
+            ])),
+        ],
+        None,
+    ));
+    let batch = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(Int32Array::from(vec![10, 10, 10, 20, 20, 20])),
+            input,
+        ],
+    )
+    .unwrap();
+    let source = MemorySourceConfig::try_new_exec(&[vec![batch]], schema.clone(), None).unwrap();
+    let udf = vail_execution::advanced_numeric_aggregates::make_udaf(
+        "linreg",
+        &input_type,
+        &serde_json::json!({"n_predictors":2,"nested_dim":1}),
+    )
+    .unwrap()
+    .unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("input", 1))])
+        .schema(schema.clone())
+        .alias("linreg")
+        .build()
+        .unwrap();
+    assert!(aggregate.groups_accumulator_supported());
+    let plan = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Single,
+            PhysicalGroupBy::new_single(vec![(
+                Arc::new(Column::new("group", 0)),
+                "group".to_owned(),
+            )]),
+            vec![Arc::new(aggregate)],
+            vec![None],
+            source.clone(),
+            source.schema(),
+        )
+        .unwrap(),
+    );
+    let batches = collect(plan, Arc::new(TaskContext::default()))
+        .await
+        .unwrap();
+    let result = &batches[0];
+    let groups = result
+        .column(0)
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    let fits = result
+        .column(1)
+        .as_any()
+        .downcast_ref::<arrow_array::StructArray>()
+        .unwrap();
+    for row in 0..result.num_rows() {
+        let beta = fits
+            .column_by_name("beta")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<arrow_array::ListArray>()
+            .unwrap()
+            .value(row);
+        let beta = beta.as_any().downcast_ref::<Float64Array>().unwrap();
+        match groups.value(row) {
+            10 => {
+                assert!((beta.value(0) - 1.).abs() < 1e-12);
+                assert!((beta.value(1) - 2.).abs() < 1e-12);
+            }
+            20 => {
+                assert!((beta.value(0) + 2.).abs() < 1e-12);
+                assert!((beta.value(1) + 3.).abs() < 1e-12);
+            }
+            group => panic!("unexpected group {group}"),
+        }
+    }
 }
 
 #[test]
@@ -1491,4 +1720,62 @@ fn all_rejects_non_boolean_declared_type_and_keeps_boolean_signature() {
         udf.default_value(&DataType::Boolean).unwrap(),
         datafusion_common::ScalarValue::Boolean(Some(true))
     );
+}
+
+#[test]
+fn direct_count_where_native_groups_masks_hidden_nulls_and_merges_states() {
+    use arrow_buffer::NullBuffer;
+    let udf =
+        vail_execution::aggregates::aggregate_udf("count_where", Some(&DataType::Boolean)).unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "value",
+        DataType::Boolean,
+        true,
+    )]));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("value", 0))])
+        .schema(schema)
+        .alias("true_count")
+        .build()
+        .unwrap();
+    let input = Arc::new(
+        BooleanArray::new(
+            vec![false, true, true, false, true].into(),
+            Some(NullBuffer::from(vec![true, true, false, true, true])),
+        )
+        .slice(1, 4),
+    ) as ArrayRef;
+    let filter = BooleanArray::from(vec![Some(true), Some(true), None, Some(false)]);
+    let mut groups = aggregate.create_groups_accumulator().unwrap();
+    groups
+        .update_batch(&[input.clone()], &[0, 0, 1, 2], Some(&filter), 3)
+        .unwrap();
+    let first = groups.evaluate(EmitTo::First(1)).unwrap();
+    assert_eq!(
+        first.as_any().downcast_ref::<Int64Array>().unwrap(),
+        &Int64Array::from(vec![1])
+    );
+    let state = groups.state(EmitTo::All).unwrap();
+    let mut scalar = aggregate.create_accumulator().unwrap();
+    scalar.merge_batch(&state).unwrap();
+    assert_eq!(scalar.evaluate().unwrap(), ScalarValue::Int64(Some(0)));
+    let state = groups
+        .convert_to_state(&[input.clone()], Some(&filter))
+        .unwrap();
+    let mut merged = aggregate.create_groups_accumulator().unwrap();
+    merged.merge_batch(&state, &[0, 0, 1, 2], 3).unwrap();
+    assert_eq!(
+        merged
+            .evaluate(EmitTo::All)
+            .unwrap()
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap(),
+        &Int64Array::from(vec![1, 0, 0])
+    );
+    let mut scalar = aggregate.create_accumulator().unwrap();
+    scalar.update_batch(&[input.clone()]).unwrap();
+    assert_eq!(scalar.evaluate().unwrap(), ScalarValue::Int64(Some(2)));
+    assert!(scalar.supports_retract_batch());
+    scalar.retract_batch(&[input.slice(0, 1)]).unwrap();
+    assert_eq!(scalar.evaluate().unwrap(), ScalarValue::Int64(Some(1)));
 }

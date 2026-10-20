@@ -609,6 +609,8 @@ def reduce_list(
                 arguments.append(literal(options["n"], tint64))
                 if options.get("ordered"):
                     function = "take_ordered"
+            if function == "linreg":
+                arguments.append(literal(options.get("nested_dim", 1), tint64))
             result = _function(
                 "__vail_list_reduce_" + function, arguments, dtype
             )

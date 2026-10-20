@@ -40,6 +40,7 @@ mod kernel_identity;
 pub mod logical_expr;
 mod matrix_arrays;
 mod native_bool;
+mod native_count_where;
 mod native_mean;
 mod native_stddev;
 mod ndarray;

@@ -14,9 +14,11 @@ def test_finite_mean_and_population_stdev(partitions):
     assert result.stats.n == len(values)
 
 
-# Hail's `hl.agg.stats` derives stdev from raw sum-of-squares, while this path
-# delegates to DataFusion's native population-stdev accumulator. Extreme
-# subnormal/overflow behavior therefore is not a cross-engine guarantee.
+# Hail's `hl.agg.stats` computes stdev as sqrt((sum(x**2) - mean * sum(x)) / n),
+# while this path delegates to DataFusion's native population-stdev accumulator
+# (Welford updates and partial-state merges). Their extreme subnormal/overflow
+# results can differ; for finite inputs near 1e308, Hail's raw sum-of-squares
+# may yield infinity while DataFusion's overflowing delta can yield NaN.
 @pytest.mark.parametrize('partitions', [1, 3, 7])
 @pytest.mark.parametrize('values,expected', [([math.inf, 1.], math.inf), ([-math.inf, 1.], -math.inf),
                                             ([math.inf, -math.inf], math.nan), ([math.nan, 1.], math.nan)])
@@ -70,13 +72,20 @@ def test_prefix_population_stdev_uses_native_nonfinite_behavior():
     result = table.annotate(stats=hl.scan.stats(table.x)).collect()
     assert math.isnan(result[0].stats.mean) and math.isnan(result[0].stats.stdev)
     assert result[1].stats.mean == -1e308 and result[1].stats.stdev == 0.
-    # The mean is still finite, but the native variance intermediate overflows.
-    assert result[2].stats.mean == 0. and math.isinf(result[2].stats.stdev)
+    # The mean is still finite. Welford's value - mean delta overflows to
+    # infinity, making the native M2 update invalid and the stdev NaN. Hail's
+    # raw sum-of-squares formula yields infinity for the same prefix; this is an
+    # accepted extreme-float divergence, not ordinary finite-range behavior.
+    assert result[2].stats.mean == 0. and math.isnan(result[2].stats.stdev)
 
 
 @pytest.mark.parametrize('partitions', [1, 3, 7])
-def test_coordinate_means_share_stable_scalar_semantics(partitions):
+def test_coordinate_means_follow_native_sum_overflow_semantics(partitions):
     table = hl.Table.parallelize(
         [{'xs': [1e308, -1e308, None]}, {'xs': [1e308, 1e308, 3.]}],
         schema=hl.tstruct(xs=hl.tarray(hl.tfloat64)), n_partitions=partitions)
-    assert table.aggregate(hl.agg.array_agg(hl.agg.mean, table.xs)) == [1e308, 0., 3.]
+    # Hail mean is sum(x) / count(x), like the native AVG implementation:
+    # summing the two first-coordinate 1e308 values overflows before division.
+    result = table.aggregate(hl.agg.array_agg(hl.agg.mean, table.xs))
+    assert math.isinf(result[0]) and result[0] > 0.
+    assert result[1:] == [0., 3.]
