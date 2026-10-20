@@ -191,9 +191,13 @@ pub fn result_type(
             }
         }
         "sum" | "product" | "min" | "max" | "mean" | "stddev_pop" => {
-            require(numeric(input), "numeric aggregate requires numeric input")?;
+            require(
+                numeric(input) || (function == "sum" && *input == boolt),
+                "numeric aggregate requires numeric input",
+            )?;
             match function {
                 "min" | "max" => input.clone(),
+                "sum" if *input == boolt => i64t,
                 "sum" | "product" if matches!(input, Type::Primitive(P::Int32 | P::Int64)) => i64t,
                 _ => f64t,
             }

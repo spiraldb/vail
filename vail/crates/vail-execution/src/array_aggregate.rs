@@ -6,6 +6,7 @@ use std::sync::{Arc, Mutex, Weak};
 
 use arrow_array::{Array, ArrayRef, Int64Array, ListArray, UInt32Array, new_empty_array};
 use arrow_buffer::OffsetBuffer;
+use arrow_cast::cast;
 use arrow_schema::{DataType, Field, Schema};
 use arrow_select::{concat::concat, take::take};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
@@ -70,9 +71,13 @@ pub fn coordinate_udaf(
     input: DataType,
     empty: ScalarValue,
 ) -> Result<Arc<AggregateUDF>> {
+    // Keep the expression's actual input type at this boundary. SUM owns its
+    // widening in a typed adapter, so annotations and callers cannot narrow
+    // or change its arithmetic contract.
+    let aggregate_input = input.clone();
     let schema = Arc::new(Schema::new(vec![Field::new(
         "element",
-        input.clone(),
+        aggregate_input.clone(),
         true,
     )]));
     let aggregate = Arc::new(
@@ -94,17 +99,24 @@ pub fn coordinate_udaf(
         .chain(std::iter::once(DataType::Int64))
         .collect::<Vec<_>>();
     let name = format!("vail_coordinate_{}", aggregate.fun().name());
-    let identity = (aggregate.fun().clone(), input.clone(), empty.clone());
+    let identity = (
+        aggregate.fun().clone(),
+        input.clone(),
+        aggregate_input.clone(),
+        empty.clone(),
+    );
     Ok(crate::kernel_identity::aggregate_named(
         &name,
         identity,
-        vec![list_type(input)],
+        vec![list_type(input.clone())],
         list_type(output),
         state_types,
         Arc::new(move |_| {
             Ok(Box::new(Coordinates::new(
                 aggregate.clone(),
                 empty.clone(),
+                input.clone(),
+                aggregate_input.clone(),
             )?))
         }),
     ))
@@ -131,10 +143,17 @@ struct Coordinates {
     kernels: Kernels,
     width: Option<usize>,
     empty: ScalarValue,
+    input: DataType,
+    aggregate_input: DataType,
     group_indices: Option<Arc<CoordinateIndices>>,
 }
 impl Coordinates {
-    fn new(aggregate: Arc<AggregateFunctionExpr>, empty: ScalarValue) -> Result<Self> {
+    fn new(
+        aggregate: Arc<AggregateFunctionExpr>,
+        empty: ScalarValue,
+        input: DataType,
+        aggregate_input: DataType,
+    ) -> Result<Self> {
         let kernels = if aggregate.groups_accumulator_supported() {
             Kernels::Groups(std::sync::Mutex::new(
                 aggregate.create_groups_accumulator()?,
@@ -147,6 +166,8 @@ impl Coordinates {
             kernels,
             width: None,
             empty,
+            input,
+            aggregate_input,
             group_indices: None,
         })
     }
@@ -239,6 +260,11 @@ impl Accumulator for Coordinates {
                 return Ok(());
             }
             concat(&chunks.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
+        };
+        let flat = if self.input == self.aggregate_input {
+            flat
+        } else {
+            cast(flat.as_ref(), &self.aggregate_input)?
         };
         if matches!(self.kernels, Kernels::Groups(_))
             && self

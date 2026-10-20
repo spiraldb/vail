@@ -396,7 +396,11 @@ fn lower_native_prefix(
                 if kind == "sum"
                     && !matches!(
                         dtype,
-                        DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64
+                        DataType::Boolean
+                            | DataType::Int32
+                            | DataType::Int64
+                            | DataType::Float32
+                            | DataType::Float64
                     )
                 {
                     return None;
@@ -464,7 +468,7 @@ fn lower_native_prefix(
                 .dtype_with_globals(input.schema().as_arrow(), child.globals().schema())?
                 .to_arrow()?;
             let widened = match dtype {
-                DataType::Int32 => Some(DataType::Int64),
+                DataType::Boolean | DataType::Int32 => Some(DataType::Int64),
                 DataType::Float32 => Some(DataType::Float64),
                 _ => None,
             };

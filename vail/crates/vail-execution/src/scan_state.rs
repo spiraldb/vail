@@ -235,19 +235,26 @@ impl ScanState {
 fn is_hail_sum_state(scan: &ScanState) -> bool {
     matches!(
         scan.inputs.as_slice(),
-        [DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64]
-    ) && scan.fields.len() == 2
+        [DataType::Boolean
+            | DataType::Int32
+            | DataType::Int64
+            | DataType::Float32
+            | DataType::Float64]
+    ) && ((scan.fields.len() == 2
         && scan.fields[0].data_type() == &DataType::Int64
-        && scan.fields[1].data_type() == &scan.output
+        && scan.fields[1].data_type() == &scan.output)
+        || (scan.fields.len() == 1 && scan.fields[0].data_type() == &scan.output))
         && matches!(scan.output, DataType::Int64 | DataType::Float64)
 }
 
 fn sum_state_values(state: &StructArray, output: &DataType) -> Result<ArrayRef> {
+    // Older Hail SUM states store [count, sum]; native DataFusion SUM stores
+    // only its mergeable sum value. The fast carry path supports both shapes.
     let values = state
         .columns()
-        .get(1)
+        .last()
         .ok_or_else(|| DataFusionError::Execution("sum scan state has no value column".into()))?;
-    if state.null_count() == 0 {
+    if state.null_count() == 0 && values.null_count() == 0 {
         return Ok(values.clone());
     }
 
@@ -261,7 +268,11 @@ fn sum_state_values(state: &StructArray, output: &DataType) -> Result<ArrayRef> 
             )));
         }
     };
-    let valid = BooleanArray::from((0..len).map(|row| state.is_valid(row)).collect::<Vec<_>>());
+    let valid = BooleanArray::from(
+        (0..len)
+            .map(|row| state.is_valid(row) && values.is_valid(row))
+            .collect::<Vec<_>>(),
+    );
     Ok(arrow_select::zip::zip(&valid, values, &zeros)?)
 }
 fn as_struct(array: &ArrayRef) -> Result<&StructArray> {

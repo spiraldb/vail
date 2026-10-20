@@ -57,3 +57,25 @@ def test_collection_aggregate_promotes_integer_sum_before_reduction():
     result = hl.array([2**31 - 1, 2**31 - 1]).aggregate(lambda x: hl.agg.sum(x))
     assert result.dtype == hl.tint64
     assert hl.eval(result) == 2**32 - 2
+
+
+def test_coordinate_sum_uses_actual_int32_type_and_widens_before_reduction():
+    table = hl.Table.parallelize(
+        [{'xs': [2**24 + 1]}, {'xs': [1]}],
+        schema=hl.tstruct(xs=hl.tarray(hl.tint32)),
+        n_partitions=2,
+    )
+    result = table.aggregate(hl.agg.array_agg(lambda x: hl.agg.sum(x), table.xs))
+    assert result == [2**24 + 2]
+
+
+def test_boolean_sum_uses_int64_for_table_coordinate_and_list_adapters():
+    table = hl.Table.parallelize(
+        [{'flags': [True]}, {'flags': [False]}, {'flags': [None]}],
+        schema=hl.tstruct(flags=hl.tarray(hl.tbool)),
+        n_partitions=2,
+    )
+    assert table.aggregate(hl.agg.sum(table.flags[0])) == 1
+    assert table.aggregate(hl.agg.array_agg(lambda x: hl.agg.sum(x), table.flags)) == [1]
+    values = hl.literal([True, False, None], hl.tarray(hl.tbool))
+    assert hl.eval(values.aggregate(lambda x: hl.agg.sum(x))) == 1

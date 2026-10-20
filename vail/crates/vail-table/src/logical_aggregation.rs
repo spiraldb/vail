@@ -136,9 +136,7 @@ fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<Aggr
         };
         let input = element.data_type();
         let inner = match function {
-            "sum" => {
-                vail_execution::reducer::configured_udaf("sum", Some(input), &reducer.options)?
-            }
+            "sum" => vail_execution::aggregates::aggregate_udf("sum", Some(input))?,
             "min" => datafusion_functions_aggregate::min_max::min_udaf(),
             "max" => datafusion_functions_aggregate::min_max::max_udaf(),
             "mean" => vail_execution::aggregates::aggregate_udf("mean", Some(input))?,
@@ -445,7 +443,9 @@ pub(crate) fn scope_plan(
         // accumulator per group. Widen before summing as required by Hail.
         let native_sum_type = if reducer.function == "sum" {
             match dtype.as_ref() {
-                Some(DataType::Int32 | DataType::Int64) => Some(DataType::Int64),
+                Some(DataType::Boolean | DataType::Int32 | DataType::Int64) => {
+                    Some(DataType::Int64)
+                }
                 Some(DataType::Float32 | DataType::Float64) => Some(DataType::Float64),
                 _ => None,
             }
@@ -568,6 +568,7 @@ pub(crate) fn scope_plan(
     }
     Ok((result, defaults, presence))
 }
+
 
 /// All grouped aggregate scopes use the logical relational lowering. Runtime
 /// initializer values are evaluated at an explicit logical extension boundary.

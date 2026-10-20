@@ -88,6 +88,13 @@ def test_sum_and_count_scan_prefixes_preserve_null_and_partition_semantics():
     assert [row.count for row in rows] == [0, 1, 2, 3]
     assert [row.total for row in rows] == [0, 0, 3, 3]
 
+    all_missing = hl.Table.parallelize(
+        [{"x": None}, {"x": None}],
+        schema=hl.tstruct(x=hl.tint32),
+        n_partitions=2,
+    )
+    assert all_missing.annotate(total=hl.scan.sum(all_missing.x)).total.collect() == [0, 0]
+
 
 def test_native_prefix_summary_projection_keeps_public_scan_semantics():
     schema = hl.tstruct(keep=hl.tbool, x=hl.tint32, y=hl.tint32)
@@ -156,6 +163,15 @@ def test_native_prefix_sum_covers_range_table_int32_and_float32():
     float_scan = floats.annotate(prefix=hl.scan.sum(floats.x))
     assert [row.prefix for row in float_scan.collect()] == [0.0, 1.25, 1.25, 3.75]
     assert float_scan.prefix.dtype == hl.tfloat64
+
+    booleans = hl.Table.parallelize(
+        [{"x": value} for value in [None, True, False]],
+        schema=hl.tstruct(x=hl.tbool),
+        n_partitions=2,
+    )
+    bool_scan = booleans.annotate(prefix=hl.scan.sum(booleans.x))
+    assert [row.prefix for row in bool_scan.collect()] == [0, 0, 1]
+    assert bool_scan.prefix.dtype == hl.tint64
 
 
 def test_scan_prefixes_preserve_partition_count():

@@ -3,10 +3,252 @@ use crate::expressions::ExprError;
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array,
 };
-use arrow_schema::DataType;
+use arrow_schema::{DataType, FieldRef};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, EmitTo, GroupsAccumulator};
+use datafusion_expr::{
+    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
+    function::{AccumulatorArgs, StateFieldsArgs},
+};
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
+
+/// Hail's SUM contract has a stable widened type and a zero identity, while
+/// DataFusion's native SUM owns the actual arithmetic and merge algorithm.
+#[derive(Debug, Clone)]
+struct SumAdapter {
+    input: DataType,
+    normalized: DataType,
+    output: DataType,
+    signature: Signature,
+    native: Arc<AggregateUDF>,
+}
+impl PartialEq for SumAdapter {
+    fn eq(&self, other: &Self) -> bool {
+        (&self.input, &self.normalized, &self.output)
+            == (&other.input, &other.normalized, &other.output)
+    }
+}
+impl Eq for SumAdapter {}
+impl Hash for SumAdapter {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.input.hash(state);
+        self.normalized.hash(state);
+        self.output.hash(state);
+    }
+}
+
+fn sum_type(input: &DataType) -> Option<DataType> {
+    match input {
+        DataType::Boolean | DataType::Int32 | DataType::Int64 => Some(DataType::Int64),
+        DataType::Float32 | DataType::Float64 => Some(DataType::Float64),
+        _ => None,
+    }
+}
+
+fn sum_zero(dtype: &DataType) -> Result<ScalarValue> {
+    match dtype {
+        DataType::Int64 => Ok(ScalarValue::Int64(Some(0))),
+        DataType::Float64 => Ok(ScalarValue::Float64(Some(0.0))),
+        _ => Err(DataFusionError::Plan(format!(
+            "unsupported SUM result {dtype}"
+        ))),
+    }
+}
+
+fn normalize_sum_array(values: &ArrayRef, dtype: &DataType) -> Result<ArrayRef> {
+    Ok(arrow_cast::cast(values, dtype)?)
+}
+
+#[derive(Debug)]
+struct SumAccumulator {
+    inner: Box<dyn Accumulator>,
+    input: DataType,
+    normalized: DataType,
+    output: DataType,
+}
+impl Accumulator for SumAccumulator {
+    fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
+        let value = values
+            .first()
+            .ok_or_else(|| DataFusionError::Execution("SUM requires one input".into()))?;
+        if value.data_type() != &self.input {
+            return Err(DataFusionError::Execution("SUM input type mismatch".into()));
+        }
+        self.inner
+            .update_batch(&[normalize_sum_array(value, &self.normalized)?])
+    }
+    fn evaluate(&mut self) -> Result<ScalarValue> {
+        let value = self.inner.evaluate()?;
+        if value.is_null() {
+            sum_zero(&self.output)
+        } else {
+            Ok(value)
+        }
+    }
+    fn size(&self) -> usize {
+        std::mem::size_of_val(self) + self.inner.size()
+    }
+    fn state(&mut self) -> Result<Vec<ScalarValue>> {
+        self.inner.state()
+    }
+    fn merge_batch(&mut self, states: &[ArrayRef]) -> Result<()> {
+        self.inner.merge_batch(states)
+    }
+    fn retract_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
+        let value = values
+            .first()
+            .ok_or_else(|| DataFusionError::Execution("SUM requires one input".into()))?;
+        if value.data_type() != &self.input {
+            return Err(DataFusionError::Execution("SUM input type mismatch".into()));
+        }
+        self.inner
+            .retract_batch(&[normalize_sum_array(value, &self.normalized)?])
+    }
+    fn supports_retract_batch(&self) -> bool {
+        self.inner.supports_retract_batch()
+    }
+}
+
+struct SumGroups {
+    inner: Box<dyn GroupsAccumulator>,
+    input: DataType,
+    normalized: DataType,
+    output: DataType,
+}
+impl std::fmt::Debug for SumGroups {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("NativeSumGroups")
+            .field("input", &self.input)
+            .field("output", &self.output)
+            .finish()
+    }
+}
+impl SumGroups {
+    fn normalize(&self, values: &[ArrayRef]) -> Result<Vec<ArrayRef>> {
+        let [value] = values else {
+            return Err(DataFusionError::Execution("SUM requires one input".into()));
+        };
+        if value.data_type() != &self.input {
+            return Err(DataFusionError::Execution("SUM input type mismatch".into()));
+        }
+        Ok(vec![normalize_sum_array(value, &self.normalized)?])
+    }
+    fn fill_empty(&self, values: ArrayRef) -> Result<ArrayRef> {
+        if values.null_count() == 0 {
+            return Ok(values);
+        }
+        let zeros: ArrayRef = match &self.output {
+            DataType::Int64 => Arc::new(Int64Array::from(vec![Some(0); values.len()])),
+            DataType::Float64 => Arc::new(Float64Array::from(vec![Some(0.0); values.len()])),
+            _ => return Err(DataFusionError::Plan("unsupported SUM output".into())),
+        };
+        let missing = arrow_arith::boolean::is_null(values.as_ref())?;
+        Ok(arrow_select::zip::zip(&missing, &zeros, &values)?)
+    }
+}
+impl GroupsAccumulator for SumGroups {
+    fn update_batch(
+        &mut self,
+        values: &[ArrayRef],
+        indices: &[usize],
+        filter: Option<&BooleanArray>,
+        total: usize,
+    ) -> Result<()> {
+        self.inner
+            .update_batch(&self.normalize(values)?, indices, filter, total)
+    }
+    fn evaluate(&mut self, to: EmitTo) -> Result<ArrayRef> {
+        let values = self.inner.evaluate(to)?;
+        self.fill_empty(values)
+    }
+    fn state(&mut self, to: EmitTo) -> Result<Vec<ArrayRef>> {
+        self.inner.state(to)
+    }
+    fn merge_batch(&mut self, states: &[ArrayRef], indices: &[usize], total: usize) -> Result<()> {
+        self.inner.merge_batch(states, indices, total)
+    }
+    fn convert_to_state(
+        &self,
+        values: &[ArrayRef],
+        filter: Option<&BooleanArray>,
+    ) -> Result<Vec<ArrayRef>> {
+        self.inner
+            .convert_to_state(&self.normalize(values)?, filter)
+    }
+    fn size(&self) -> usize {
+        std::mem::size_of_val(self) + self.inner.size()
+    }
+}
+
+impl AggregateUDFImpl for SumAdapter {
+    fn name(&self) -> &str {
+        "sum"
+    }
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+    fn return_type(&self, args: &[DataType]) -> Result<DataType> {
+        if args != [self.input.clone()] {
+            return Err(DataFusionError::Plan("SUM input type mismatch".into()));
+        }
+        Ok(self.output.clone())
+    }
+    fn is_nullable(&self) -> bool {
+        false
+    }
+    fn accumulator(&self, args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+        if args.expr_fields.len() != 1
+            || args.expr_fields[0].data_type() != &self.input
+            || args.return_field.data_type() != &self.output
+        {
+            return Err(DataFusionError::Plan(
+                "SUM accumulator arguments mismatch".into(),
+            ));
+        }
+        Ok(Box::new(SumAccumulator {
+            inner: self.native.inner().accumulator(args)?,
+            input: self.input.clone(),
+            normalized: self.normalized.clone(),
+            output: self.output.clone(),
+        }))
+    }
+    fn create_sliding_accumulator(&self, args: AccumulatorArgs) -> Result<Box<dyn Accumulator>> {
+        Ok(Box::new(SumAccumulator {
+            inner: self.native.inner().create_sliding_accumulator(args)?,
+            input: self.input.clone(),
+            normalized: self.normalized.clone(),
+            output: self.output.clone(),
+        }))
+    }
+    fn state_fields(&self, args: StateFieldsArgs) -> Result<Vec<FieldRef>> {
+        self.native.inner().state_fields(args)
+    }
+    fn groups_accumulator_supported(&self, args: AccumulatorArgs) -> bool {
+        !args.is_distinct
+            && args.order_bys.is_empty()
+            && !args.is_reversed
+            && args.expr_fields.len() == 1
+            && args.expr_fields[0].data_type() == &self.input
+            && args.return_field.data_type() == &self.output
+            && self.native.groups_accumulator_supported(args)
+    }
+    fn create_groups_accumulator(
+        &self,
+        args: AccumulatorArgs,
+    ) -> Result<Box<dyn GroupsAccumulator>> {
+        if !self.groups_accumulator_supported(args.clone()) {
+            return Err(DataFusionError::NotImplemented(
+                "native SUM groups accumulator does not support these arguments".into(),
+            ));
+        }
+        Ok(Box::new(SumGroups {
+            inner: self.native.inner().create_groups_accumulator(args)?,
+            input: self.input.clone(),
+            normalized: self.normalized.clone(),
+            output: self.output.clone(),
+        }))
+    }
+}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Kind {
@@ -271,6 +513,9 @@ pub fn aggregate_udf(
     function: &str,
     input: Option<&DataType>,
 ) -> std::result::Result<Arc<AggregateUDF>, ExprError> {
+    if function == "sum" {
+        return sum_udf(input);
+    }
     if function == "min" {
         let input = input.ok_or_else(|| ExprError::Invalid("min requires input".into()))?;
         if !matches!(
@@ -375,6 +620,21 @@ pub fn aggregate_udf(
         state,
         Arc::new(move |_| Ok(Box::new(Reducer::new(kind, input.clone())))),
     ))
+}
+
+fn sum_udf(input: Option<&DataType>) -> std::result::Result<Arc<AggregateUDF>, ExprError> {
+    let input = input.ok_or_else(|| ExprError::Invalid("sum requires input".into()))?;
+    let normalized = sum_type(input)
+        .ok_or_else(|| ExprError::Invalid("sum requires Boolean or numeric input".into()))?;
+    let native = datafusion_functions_aggregate::sum::sum_udaf();
+    let output = native.return_type(std::slice::from_ref(&normalized))?;
+    Ok(Arc::new(AggregateUDF::from(SumAdapter {
+        input: input.clone(),
+        normalized,
+        output,
+        signature: Signature::exact(vec![input.clone()], Volatility::Immutable),
+        native,
+    })))
 }
 
 fn product_udf(input: Option<&DataType>) -> std::result::Result<Arc<AggregateUDF>, ExprError> {
