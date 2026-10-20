@@ -1273,9 +1273,18 @@ impl DownsampleGroups {
         } else {
             None
         };
+        let reuse_labels = shared_labels.is_some();
         let mut point_lengths = Vec::with_capacity(rows);
-        let mut label_lengths = Vec::with_capacity(rows);
-        let mut label_validity = Vec::with_capacity(rows);
+        let mut label_lengths = if reuse_labels {
+            Vec::new()
+        } else {
+            Vec::with_capacity(rows)
+        };
+        let mut label_validity = if reuse_labels {
+            Vec::new()
+        } else {
+            Vec::with_capacity(rows)
+        };
         let mut label_values: Vec<Option<&str>> = Vec::new();
         let mut point_x = Vec::with_capacity(rows);
         let mut point_y = Vec::with_capacity(rows);
@@ -1296,6 +1305,10 @@ impl DownsampleGroups {
                 right.push(None);
                 bottom.push(None);
                 top.push(None);
+                if !reuse_labels {
+                    label_lengths.push(0);
+                    label_validity.push(false);
+                }
                 continue;
             }
             let (x, y) = (xs.value(row), ys.value(row));
@@ -1306,6 +1319,9 @@ impl DownsampleGroups {
             right.push(Some(x));
             bottom.push(Some(y));
             top.push(Some(y));
+            if reuse_labels {
+                continue;
+            }
             match labels {
                 None => {
                     label_lengths.push(0);
