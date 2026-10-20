@@ -137,13 +137,20 @@ impl SumGroups {
         if values.null_count() == 0 {
             return Ok(values);
         }
-        let zeros: ArrayRef = match &self.output {
-            DataType::Int64 => Arc::new(Int64Array::from(vec![Some(0); values.len()])),
-            DataType::Float64 => Arc::new(Float64Array::from(vec![Some(0.0); values.len()])),
-            _ => return Err(DataFusionError::Plan("unsupported SUM output".into())),
-        };
         let missing = arrow_arith::boolean::is_null(values.as_ref())?;
-        Ok(arrow_select::zip::zip(&missing, &zeros, &values)?)
+        match &self.output {
+            DataType::Int64 => Ok(arrow_select::zip::zip(
+                &missing,
+                &Int64Array::new_scalar(0),
+                &values,
+            )?),
+            DataType::Float64 => Ok(arrow_select::zip::zip(
+                &missing,
+                &Float64Array::new_scalar(0.0),
+                &values,
+            )?),
+            _ => Err(DataFusionError::Plan("unsupported SUM output".into())),
+        }
     }
 }
 impl GroupsAccumulator for SumGroups {

@@ -1,6 +1,6 @@
 //! Public coordinate SUM execution uses the actual element type, independent
 //! of optional frontend result annotations.
-use arrow_array::{Array, Int64Array, ListArray, RecordBatch};
+use arrow_array::{Array, BooleanArray, Int64Array, ListArray, RecordBatch};
 use arrow_buffer::OffsetBuffer;
 use arrow_schema::{DataType, Field, Schema};
 use serde_json::json;
@@ -72,4 +72,40 @@ async fn coordinate_sum_preserves_large_integer_with_absent_or_mismatched_annota
             "SUM output type comes from its actual Int64 input"
         );
     }
+}
+
+#[tokio::test]
+async fn coordinate_boolean_sum_uses_int64_empty_identity() {
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "xs",
+        DataType::List(Arc::new(Field::new_list_field(DataType::Boolean, true))),
+        true,
+    )]));
+    let lists = Arc::new(ListArray::new(
+        Arc::new(Field::new_list_field(DataType::Boolean, true)),
+        OffsetBuffer::from_lengths([1, 2]),
+        Arc::new(BooleanArray::from(vec![Some(true), Some(false), None])),
+        None,
+    ));
+    let batch = RecordBatch::try_new(schema, vec![lists]).unwrap();
+    let source = TableIR::parallelize(batch, 2).unwrap();
+    let result = GlobalsIR::aggregate(source, coordinate_sum(None), Default::default())
+        .unwrap()
+        .evaluate()
+        .await
+        .unwrap();
+    let list = result
+        .column(0)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(list.value_type(), DataType::Int64);
+    assert_eq!(
+        list.value(0)
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap()
+            .values(),
+        &[1]
+    );
 }

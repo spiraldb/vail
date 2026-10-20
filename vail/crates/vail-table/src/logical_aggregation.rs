@@ -149,10 +149,15 @@ fn factory_inner(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc<Aggr
             }
         };
         let empty = match function {
-            "sum" if matches!(input, DataType::Int32 | DataType::Int64) => {
-                ScalarValue::Int64(Some(0))
-            }
-            "sum" => ScalarValue::Float64(Some(0.0)),
+            "sum" => match inner.return_type(std::slice::from_ref(input))? {
+                DataType::Int64 => ScalarValue::Int64(Some(0)),
+                DataType::Float64 => ScalarValue::Float64(Some(0.0)),
+                other => {
+                    return Err(TableError::Invalid(format!(
+                        "unsupported SUM output {other}"
+                    )));
+                }
+            },
             "count" => ScalarValue::Int64(Some(0)),
             "mean" | "stddev_pop" => ScalarValue::Float64(Some(f64::NAN)),
             _ => ScalarValue::try_from(input)?,

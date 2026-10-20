@@ -1,8 +1,7 @@
 //! Parallel scans expose and combine existing DataFusion accumulator states.
 //! These adapters do not implement aggregate algorithms.
-use arrow_array::{
-    Array, ArrayRef, BooleanArray, Datum, Float64Array, Int64Array, Scalar, StructArray,
-};
+use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Int64Array, StructArray};
+use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, FieldRef, Fields, Schema};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::function::{AccumulatorArgs, StateFieldsArgs};
@@ -258,22 +257,25 @@ fn sum_state_values(state: &StructArray, output: &DataType) -> Result<ArrayRef> 
         return Ok(values.clone());
     }
 
-    let len = state.len();
-    let zeros: ArrayRef = match output {
-        DataType::Int64 => Arc::new(Int64Array::from(vec![Some(0); len])),
-        DataType::Float64 => Arc::new(Float64Array::from(vec![Some(0.0); len])),
-        other => {
-            return Err(DataFusionError::Execution(format!(
-                "unsupported sum scan output type {other:?}"
-            )));
-        }
+    let Some(validity) = NullBuffer::union(state.nulls(), values.nulls()) else {
+        return Ok(values.clone());
     };
-    let valid = BooleanArray::from(
-        (0..len)
-            .map(|row| state.is_valid(row) && values.is_valid(row))
-            .collect::<Vec<_>>(),
-    );
-    Ok(arrow_select::zip::zip(&valid, values, &zeros)?)
+    let valid = BooleanArray::new(validity.inner().clone(), None);
+    match output {
+        DataType::Int64 => Ok(arrow_select::zip::zip(
+            &valid,
+            values,
+            &Int64Array::new_scalar(0),
+        )?),
+        DataType::Float64 => Ok(arrow_select::zip::zip(
+            &valid,
+            values,
+            &Float64Array::new_scalar(0.0),
+        )?),
+        other => Err(DataFusionError::Execution(format!(
+            "unsupported sum scan output type {other:?}"
+        ))),
+    }
 }
 fn as_struct(array: &ArrayRef) -> Result<&StructArray> {
     array
