@@ -6,7 +6,8 @@
 
 use std::sync::Arc;
 
-use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Float64Builder, Int64Array};
+use arrow_array::builder::Float64Builder;
+use arrow_array::{Array, ArrayRef, BooleanArray, Int64Array};
 use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
