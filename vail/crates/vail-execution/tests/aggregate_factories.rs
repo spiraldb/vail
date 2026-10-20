@@ -1,6 +1,8 @@
 //! Checked public aggregate construction contracts.
-use arrow_array::{BooleanArray, Float32Array, Int32Array, ListArray};
-use arrow_buffer::OffsetBuffer;
+use arrow_array::{
+    Array, BooleanArray, Float32Array, Int32Array, ListArray, StructArray, UInt8Array, UInt16Array,
+};
+use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::ScalarValue;
 use datafusion_expr::EmitTo;
@@ -303,4 +305,173 @@ fn coordinate_sum_widens_boolean_input_to_int64() {
         .downcast_ref::<arrow_array::Int64Array>()
         .unwrap();
     assert_eq!(sums.value(0), 1);
+}
+
+#[test]
+fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
+    use datafusion_expr::GroupsAccumulator;
+    let call_type = vail_execution::calls::storage_type();
+    let packed_type = DataType::Struct(
+        vec![
+            Arc::new(Field::new("__vail_genomic_call", call_type.clone(), true)),
+            Arc::new(Field::new("__vail_genomic_alleles", DataType::Int32, true)),
+        ]
+        .into(),
+    );
+    let udf = vail_execution::advanced_genomic_aggregates::make_udaf(
+        "call_stats",
+        &packed_type,
+        &serde_json::json!({"n_alleles": 2}),
+    )
+    .unwrap()
+    .unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "packed",
+        packed_type.clone(),
+        true,
+    )]));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("packed", 0))])
+        .schema(schema)
+        .alias("stats")
+        .build()
+        .unwrap();
+    assert!(aggregate.groups_accumulator_supported());
+
+    let DataType::Struct(call_fields) = call_type else {
+        unreachable!()
+    };
+    let calls = Arc::new(StructArray::new(
+        call_fields,
+        vec![
+            Arc::new(UInt16Array::from(vec![Some(0), Some(1), Some(0), Some(0)])),
+            Arc::new(UInt16Array::from(vec![Some(1), Some(0), Some(0), None])),
+            Arc::new(UInt8Array::from(vec![Some(2), Some(1), Some(0), None])),
+            Arc::new(BooleanArray::from(vec![
+                Some(true),
+                Some(false),
+                Some(false),
+                None,
+            ])),
+        ],
+        Some(NullBuffer::from(vec![true, true, true, false])),
+    ));
+    let packed_fields = match &packed_type {
+        DataType::Struct(fields) => fields.clone(),
+        _ => unreachable!(),
+    };
+    let packed: arrow_array::ArrayRef = Arc::new(StructArray::new(
+        packed_fields,
+        vec![calls, Arc::new(Int32Array::from(vec![2, 2, 2, 2]))],
+        None,
+    ));
+    let mut grouped = aggregate.create_groups_accumulator().unwrap();
+    grouped
+        .update_batch(&[packed.clone()], &[0, 0, 1, 1], None, 2)
+        .unwrap();
+    let group_state = grouped.state(EmitTo::All).unwrap();
+
+    // A grouped partition state is also a valid scalar partial state: it has
+    // native-compatible Int64 AN plus fixed-width Int64 AC and homozygote lists.
+    let mut scalar = aggregate.create_accumulator().unwrap();
+    scalar.merge_batch(&group_state).unwrap();
+    let ScalarValue::Struct(result) = scalar.evaluate().unwrap() else {
+        panic!("call_stats must return a struct");
+    };
+    assert_eq!(
+        result
+            .column_by_name("AN")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .value(0),
+        3
+    );
+    let ac = result
+        .column_by_name("AC")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap()
+        .value(0);
+    let ac = ac.as_any().downcast_ref::<Int32Array>().unwrap();
+    assert_eq!(ac.values(), &[1, 2]);
+
+    let evaluated = grouped.evaluate(EmitTo::All).unwrap();
+    let evaluated = evaluated.as_any().downcast_ref::<StructArray>().unwrap();
+    let an = evaluated
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!(an.values(), &[3, 0]);
+
+    // Null parent Calls can contain hidden null children; the group reader
+    // ignores those hidden physical values exactly as the scalar reader does.
+    let bad_calls: arrow_array::ArrayRef = Arc::new(StructArray::new(
+        match vail_execution::calls::storage_type() {
+            DataType::Struct(fields) => fields,
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(UInt16Array::from(vec![Some(0)])),
+            Arc::new(UInt16Array::from(vec![Some(0)])),
+            Arc::new(UInt8Array::from(vec![None])),
+            Arc::new(BooleanArray::from(vec![Some(false)])),
+        ],
+        Some(NullBuffer::from(vec![false])),
+    ));
+    let hidden = StructArray::new(
+        match &packed_type {
+            DataType::Struct(fields) => fields.clone(),
+            _ => unreachable!(),
+        },
+        vec![bad_calls, Arc::new(Int32Array::from(vec![2]))],
+        None,
+    );
+    let mut hidden_groups = aggregate.create_groups_accumulator().unwrap();
+    hidden_groups
+        .update_batch(&[Arc::new(hidden)], &[0], None, 1)
+        .unwrap();
+    let empty = hidden_groups.evaluate(EmitTo::All).unwrap();
+    let empty = empty.as_any().downcast_ref::<StructArray>().unwrap();
+    assert_eq!(
+        empty
+            .column_by_name("AN")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .value(0),
+        0
+    );
+
+    let malformed_call: arrow_array::ArrayRef = Arc::new(StructArray::new(
+        match vail_execution::calls::storage_type() {
+            DataType::Struct(fields) => fields,
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(UInt16Array::from(vec![Some(0)])),
+            Arc::new(UInt16Array::from(vec![Some(0)])),
+            Arc::new(UInt8Array::from(vec![None])),
+            Arc::new(BooleanArray::from(vec![Some(false)])),
+        ],
+        None,
+    ));
+    let malformed = StructArray::new(
+        match &packed_type {
+            DataType::Struct(fields) => fields.clone(),
+            _ => unreachable!(),
+        },
+        vec![malformed_call, Arc::new(Int32Array::from(vec![2]))],
+        None,
+    );
+    let mut malformed_groups = aggregate.create_groups_accumulator().unwrap();
+    assert!(
+        malformed_groups
+            .update_batch(&[Arc::new(malformed)], &[0], None, 1)
+            .is_err()
+    );
 }

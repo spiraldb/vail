@@ -80,7 +80,7 @@ pub(crate) fn udf(both: bool) -> Arc<ScalarUDF> {
                     counts[0].value(row),
                     counts[1].value(row),
                     counts[2].value(row),
-                );
+                )?;
                 if both {
                     frequency.append_value(freq);
                     two.append_value(p);
