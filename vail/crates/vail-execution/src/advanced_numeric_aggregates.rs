@@ -6,7 +6,7 @@ use std::sync::Arc;
 use arrow_array::{
     Array, ArrayRef, Float64Array, Int64Array, ListArray, StructArray, new_empty_array,
 };
-use arrow_buffer::OffsetBuffer;
+use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{

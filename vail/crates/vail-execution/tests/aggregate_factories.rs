@@ -640,7 +640,7 @@ fn grouped_downsample_roundtrips_bounded_group_states() {
         .unwrap();
     assert_eq!(partial.evaluate(EmitTo::First(1)).unwrap().len(), 1);
     assert_eq!(partial.evaluate(EmitTo::All).unwrap().len(), 1);
-    let empty = aggregate.create_groups_accumulator().unwrap();
+    let mut empty = aggregate.create_groups_accumulator().unwrap();
     assert_eq!(empty.evaluate(EmitTo::All).unwrap().len(), 0);
 
     let xs = (0..40).map(|x| x as f64).collect::<Vec<_>>();
