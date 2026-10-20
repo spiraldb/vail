@@ -643,6 +643,141 @@ async fn int64_product_overflow_wraps() {
         -2
     );
 }
+#[tokio::test]
+async fn configured_max_uses_mergeable_datafusion_accumulator() {
+    use arrow_array::Int32Array;
+
+    let input: ArrayRef = Arc::new(Int32Array::from(vec![Some(1), None, Some(7), Some(3)]));
+    let udf = vail_execution::reducer::configured_udaf(
+        "max",
+        Some(input.data_type()),
+        &serde_json::Value::Null,
+    )
+    .unwrap();
+    let result = execute(udf, vec![input.slice(0, 2), input.slice(2, 2)])
+        .await
+        .unwrap();
+    assert_eq!(
+        result
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .value(0),
+        7
+    );
+
+    let empty: ArrayRef = Arc::new(Int32Array::from(Vec::<Option<i32>>::new()));
+    let udf = vail_execution::reducer::configured_udaf(
+        "max",
+        Some(empty.data_type()),
+        &serde_json::Value::Null,
+    )
+    .unwrap();
+    let result = execute(udf, vec![empty]).await.unwrap();
+    assert!(result.is_null(0));
+}
+
+#[tokio::test]
+async fn configured_max_preserves_numeric_types_and_empty_results() {
+    macro_rules! check_empty {
+        ($array:expr) => {{
+            let input: ArrayRef = Arc::new($array);
+            let input_type = input.data_type().clone();
+            let udf = vail_execution::reducer::configured_udaf(
+                "max",
+                Some(&input_type),
+                &serde_json::Value::Null,
+            )
+            .unwrap();
+            let result = execute(udf, vec![input]).await.unwrap();
+            assert_eq!(result.data_type(), &input_type);
+            assert!(result.is_null(0));
+        }};
+    }
+
+    check_empty!(Int32Array::from(Vec::<Option<i32>>::new()));
+    check_empty!(Int64Array::from(Vec::<Option<i64>>::new()));
+    check_empty!(Float32Array::from(Vec::<Option<f32>>::new()));
+    check_empty!(Float64Array::from(Vec::<Option<f64>>::new()));
+}
+
+#[tokio::test]
+async fn ordinary_grouped_max_uses_native_groups_accumulator_across_batches() {
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("group", arrow_schema::DataType::Int32, false),
+        Field::new("value", arrow_schema::DataType::Int32, true),
+    ]));
+    let first = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(Int32Array::from(vec![99, 1, 2, 3])).slice(1, 3),
+            Arc::new(Int32Array::from(vec![Some(99), Some(1), None, None])).slice(1, 3),
+        ],
+    )
+    .unwrap();
+    let second = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(Int32Array::from(vec![99, 1, 2, 3])).slice(1, 3),
+            Arc::new(Int32Array::from(vec![Some(99), Some(7), Some(4), None])).slice(1, 3),
+        ],
+    )
+    .unwrap();
+    let source =
+        MemorySourceConfig::try_new_exec(&[vec![first, second]], schema.clone(), None).unwrap();
+    let udf = vail_execution::reducer::configured_udaf(
+        "max",
+        Some(&arrow_schema::DataType::Int32),
+        &serde_json::Value::Null,
+    )
+    .unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("value", 1))])
+        .schema(schema.clone())
+        .alias("maximum")
+        .build()
+        .unwrap();
+    assert!(aggregate.groups_accumulator_supported());
+    let plan = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Single,
+            PhysicalGroupBy::new_single(vec![(
+                Arc::new(Column::new("group", 0)),
+                "group".to_owned(),
+            )]),
+            vec![Arc::new(aggregate)],
+            vec![None],
+            source.clone(),
+            source.schema(),
+        )
+        .unwrap(),
+    );
+    let batches = collect(plan, Arc::new(TaskContext::default()))
+        .await
+        .unwrap();
+    let result = &batches[0];
+    assert_eq!(result.column(1).data_type(), &arrow_schema::DataType::Int32);
+    let groups = result
+        .column(0)
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    let maxima = result
+        .column(1)
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    let mut rows = (0..result.num_rows())
+        .map(|row| {
+            (
+                groups.value(row),
+                maxima.is_valid(row).then(|| maxima.value(row)),
+            )
+        })
+        .collect::<Vec<_>>();
+    rows.sort_unstable_by_key(|(group, _)| *group);
+    assert_eq!(rows, vec![(1, Some(7)), (2, Some(4)), (3, None)]);
+}
+
 #[test]
 fn moments_reject_missing_and_nonnumeric_input_types() {
     for name in ["mean", "stddev_pop"] {

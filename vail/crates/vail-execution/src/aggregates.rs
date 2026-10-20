@@ -1,8 +1,6 @@
 //! Hail numeric/Boolean identities with typed Arrow batch reductions.
 use crate::expressions::ExprError;
-use arrow_array::{
-    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array,
-};
+use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Int32Array, Int64Array};
 use arrow_schema::{DataType, FieldRef};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::{
@@ -262,7 +260,6 @@ enum Kind {
     Count,
     Sum,
     Product,
-    Max,
     /// Compatibility path for direct Rust callers of `aggregate_udf`.
     /// Vail's planners lower count_where to native COUNT instead.
     CountWhere,
@@ -274,7 +271,6 @@ struct Reducer {
     count: i64,
     integer: i64,
     float: f64,
-    seen: bool,
 }
 impl Reducer {
     fn new(kind: Kind, input: DataType) -> Self {
@@ -284,59 +280,14 @@ impl Reducer {
             count: 0,
             integer: if kind == Kind::Product { 1 } else { 0 },
             float: if kind == Kind::Product { 1. } else { 0. },
-            seen: false,
         }
     }
     fn integral(&self) -> bool {
         matches!(self.input, DataType::Int32 | DataType::Int64)
     }
-    fn extreme(&mut self, input: &ArrayRef) -> Result<()> {
-        macro_rules! integer {
-            ($array:ty,$convert:expr) => {{
-                let values = input.as_any().downcast_ref::<$array>().unwrap();
-                let value = arrow_arith::aggregate::max(values);
-                if let Some(value) = value {
-                    let value = ($convert)(value);
-                    if !self.seen || value > self.integer {
-                        self.integer = value;
-                    }
-                    self.seen = true;
-                }
-            }};
-        }
-        macro_rules! floating {
-            ($array:ty,$native:ty) => {{
-                let values = input.as_any().downcast_ref::<$array>().unwrap();
-                let value = arrow_arith::aggregate::max(values);
-                if let Some(value) = value {
-                    // Arrow's batch extrema use IEEE total order; merges use
-                    // this same comparator.
-                    let order = value.total_cmp(&(self.float as $native));
-                    if !self.seen || order.is_gt() {
-                        self.float = value as f64;
-                    }
-                    self.seen = true;
-                }
-            }};
-        }
-        match self.input {
-            DataType::Int32 => integer!(Int32Array, |x: i32| i64::from(x)),
-            DataType::Int64 => integer!(Int64Array, |x: i64| x),
-            DataType::Float32 => floating!(Float32Array, f32),
-            DataType::Float64 => floating!(Float64Array, f64),
-            _ => unreachable!(),
-        };
-        Ok(())
-    }
     fn value(&self) -> ScalarValue {
         if self.integral() {
-            if self.input == DataType::Int32 && self.kind == Kind::Max {
-                ScalarValue::Int32(Some(self.integer as i32))
-            } else {
-                ScalarValue::Int64(Some(self.integer))
-            }
-        } else if self.input == DataType::Float32 && self.kind == Kind::Max {
-            ScalarValue::Float32(Some(self.float as f32))
+            ScalarValue::Int64(Some(self.integer))
         } else {
             ScalarValue::Float64(Some(self.float))
         }
@@ -377,7 +328,6 @@ impl Accumulator for Reducer {
                     .count
                     .wrapping_add(Self::boolean(input)?.true_count() as i64)
             }
-            Kind::Max => self.extreme(input)?,
             Kind::Sum | Kind::Product if self.integral() => {
                 let cast = arrow_cast::cast(input, &DataType::Int64)?;
                 let values = cast.as_any().downcast_ref::<Int64Array>().unwrap();
@@ -415,7 +365,6 @@ impl Accumulator for Reducer {
     fn evaluate(&mut self) -> Result<ScalarValue> {
         Ok(match self.kind {
             Kind::Count | Kind::CountWhere => ScalarValue::Int64(Some(self.count)),
-            Kind::Max if !self.seen => ScalarValue::try_from(&self.input)?,
             _ => self.value(),
         })
     }
@@ -425,7 +374,6 @@ impl Accumulator for Reducer {
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
         Ok(match self.kind {
             Kind::Count | Kind::CountWhere => vec![ScalarValue::Int64(Some(self.count))],
-            Kind::Max => vec![self.evaluate()?],
             Kind::Sum | Kind::Product => vec![ScalarValue::Int64(Some(self.count)), self.value()],
         })
     }
@@ -446,7 +394,6 @@ impl Accumulator for Reducer {
                     arrow_arith::aggregate::sum(Self::counts(&states[0])?).unwrap_or(0),
                 )
             }
-            Kind::Max => self.update_batch(&states[..1])?,
             Kind::Sum | Kind::Product => {
                 self.count = self.count.wrapping_add(
                     arrow_arith::aggregate::sum(Self::counts(&states[0])?).unwrap_or(0),
@@ -517,6 +464,16 @@ pub fn aggregate_udf(
     if function == "product" {
         return product_udf(input);
     }
+    if function == "max" {
+        let input = input.ok_or_else(|| ExprError::Invalid("max requires input".into()))?;
+        if !matches!(
+            input,
+            DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64
+        ) {
+            return Err(ExprError::Invalid("max requires numeric input".into()));
+        }
+        return Ok(datafusion_functions_aggregate::min_max::max_udaf());
+    }
     if function == "mean" {
         return crate::native_mean::udf(input);
     }
@@ -558,7 +515,7 @@ pub fn aggregate_udf(
                 _ => unreachable!("Boolean aggregate name is handled above"),
             }
         }
-        "sum" | "product" | "max" => {
+        "sum" | "product" => {
             let input =
                 input.ok_or_else(|| ExprError::Invalid(format!("{function} requires input")))?;
             if !matches!(
@@ -572,20 +529,14 @@ pub fn aggregate_udf(
             let kind = match function {
                 "sum" => Kind::Sum,
                 "product" => Kind::Product,
-                _ => Kind::Max,
+                _ => unreachable!(),
             };
-            let output = if kind == Kind::Max {
-                input.clone()
-            } else if matches!(input, DataType::Int32 | DataType::Int64) {
+            let output = if matches!(input, DataType::Int32 | DataType::Int64) {
                 DataType::Int64
             } else {
                 DataType::Float64
             };
-            let state = if kind == Kind::Max {
-                vec![output.clone()]
-            } else {
-                vec![DataType::Int64, output.clone()]
-            };
+            let state = vec![DataType::Int64, output.clone()];
             (kind, input.clone(), output, state)
         }
         _ => {
