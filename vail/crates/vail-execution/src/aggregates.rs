@@ -478,7 +478,9 @@ pub fn aggregate_udf(
         return crate::native_mean::udf(input);
     }
     if function == "stddev_pop" {
-        return crate::moments::udf(function, input);
+        let input = input.ok_or_else(|| ExprError::Invalid("stddev_pop requires input".into()))?;
+        return crate::native_stddev::udf(input)
+            .map_err(|error| ExprError::Invalid(error.to_string()));
     }
     if function == "all" {
         if input.is_some_and(|ty| ty != &DataType::Boolean) {

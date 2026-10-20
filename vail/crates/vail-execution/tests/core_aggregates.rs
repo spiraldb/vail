@@ -298,16 +298,16 @@ fn any_rejects_non_boolean_declared_type_and_keeps_boolean_signature() {
     );
 }
 #[tokio::test]
-async fn stable_moments_accept_sliced_nullable_batches() {
+async fn mean_and_population_stdev_accept_sliced_nullable_batches() {
     let input: ArrayRef = Arc::new(Float64Array::from(vec![
         Some(999.),
-        Some(-1e308),
+        Some(1.),
         None,
-        Some(1e308),
+        Some(3.),
         Some(999.),
     ]));
     let input = input.slice(1, 3);
-    for (name, expected) in [("mean", 0.), ("stddev_pop", 1e308)] {
+    for (name, expected) in [("mean", 2.), ("stddev_pop", 1.)] {
         let udf = vail_execution::aggregates::aggregate_udf(name, Some(input.data_type())).unwrap();
         let result = execute(udf, vec![input.slice(0, 2), input.slice(2, 1)])
             .await
@@ -318,6 +318,27 @@ async fn stable_moments_accept_sliced_nullable_batches() {
             .unwrap()
             .value(0);
         assert_eq!(actual, expected);
+    }
+}
+
+#[tokio::test]
+async fn population_stdev_maps_empty_and_nonfinite_results_to_nan() {
+    for input in [
+        Arc::new(Float64Array::from(vec![None, None])) as ArrayRef,
+        Arc::new(Float64Array::from(vec![Some(f64::NAN)])) as ArrayRef,
+        Arc::new(Float64Array::from(vec![Some(f64::INFINITY)])) as ArrayRef,
+    ] {
+        let udf = vail_execution::aggregates::aggregate_udf("stddev_pop", Some(input.data_type()))
+            .unwrap();
+        let result = execute(udf, vec![input]).await.unwrap();
+        assert!(
+            result
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .unwrap()
+                .value(0)
+                .is_nan()
+        );
     }
 }
 

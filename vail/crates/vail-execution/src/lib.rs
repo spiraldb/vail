@@ -42,6 +42,7 @@ mod matrix_arrays;
 mod moments;
 mod native_bool;
 mod native_mean;
+mod native_stddev;
 mod ndarray;
 mod numeric_lists;
 pub mod reference;
