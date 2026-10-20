@@ -356,40 +356,61 @@ fn invoke_linreg_lists(
             "linreg list reduction requires a native grouped accumulator"
         ));
     }
-    let offsets = lists.value_offsets();
-    let child_start = offsets.first().copied().unwrap_or(0) as usize;
-    let child_end = offsets.last().copied().unwrap_or(0) as usize;
-    let mut owners = Vec::with_capacity(child_end - child_start);
-    let mut include = Vec::with_capacity(child_end - child_start);
-    for row in 0..rows {
-        let start = offsets[row] as usize;
-        let end = offsets[row + 1] as usize;
-        owners.extend(std::iter::repeat_n(row, end - start));
-        include.extend(std::iter::repeat_n(lists.is_valid(row), end - start));
-    }
-    if owners.len() != child_end - child_start {
-        return Err(exec_datafusion_err!(
-            "linreg list offsets do not cover the child array"
-        ));
-    }
-    let filter = BooleanArray::from(include);
     let mut grouped = aggregate.create_groups_accumulator()?;
-    grouped.update_batch(
-        &[lists.values().slice(child_start, child_end - child_start)],
-        &owners,
-        Some(&filter),
-        rows,
-    )?;
+    let offsets = lists.value_offsets();
+    if lists.nulls().is_none() {
+        let child_start = offsets.first().copied().unwrap_or(0) as usize;
+        let child_end = offsets.last().copied().unwrap_or(0) as usize;
+        let mut owners = Vec::with_capacity(child_end - child_start);
+        for row in 0..rows {
+            let start = offsets[row] as usize;
+            let end = offsets[row + 1] as usize;
+            owners.extend(std::iter::repeat_n(row, end - start));
+        }
+        if owners.len() != child_end - child_start {
+            return Err(exec_datafusion_err!(
+                "linreg list offsets do not cover the child array"
+            ));
+        }
+        grouped.update_batch(
+            &[lists.values().slice(child_start, child_end - child_start)],
+            &owners,
+            None,
+            rows,
+        )?;
+    } else {
+        let mut updated = false;
+        for row in 0..rows {
+            if lists.is_null(row) {
+                continue;
+            }
+            let start = offsets[row] as usize;
+            let end = offsets[row + 1] as usize;
+            if start == end {
+                continue;
+            }
+            let owners = vec![row; end - start];
+            grouped.update_batch(
+                &[lists.values().slice(start, end - start)],
+                &owners,
+                None,
+                rows,
+            )?;
+            updated = true;
+        }
+        if !updated {
+            grouped.update_batch(&[lists.values().slice(0, 0)], &[], None, rows)?;
+        }
+    }
     let output = grouped.evaluate(datafusion_expr::EmitTo::All)?;
     let output = output
         .as_any()
         .downcast_ref::<StructArray>()
         .ok_or_else(|| exec_datafusion_err!("linreg must return struct results"))?;
-    let valid = NullBuffer::from((0..rows).map(|row| lists.is_valid(row)).collect::<Vec<_>>());
     let result: ArrayRef = Arc::new(StructArray::new(
         output.fields().clone(),
         output.columns().to_vec(),
-        Some(valid),
+        lists.nulls().cloned(),
     ));
     if scalar {
         Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(

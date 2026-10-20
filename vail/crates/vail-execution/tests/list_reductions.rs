@@ -160,28 +160,44 @@ fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
         lists.value_type(),
         true,
     )));
-    let schema = Arc::new(Schema::new(vec![arrow_schema::Field::new(
-        "values", list_type, true,
-    )]));
-    let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(lists.clone())]).unwrap();
-    let expr = Expr::NestedFunction {
-        function: "__vail_list_reduce_linreg".into(),
-        args: vec![
-            Expr::Column {
-                name: "values".into(),
-            },
-            Expr::RuntimeLiteral {
-                value: ScalarValue::Int64(Some(1)),
-            },
-        ],
-        dtype: Type::from_arrow(&output_type).unwrap(),
+    let evaluate = |test_lists: &ListArray,
+                    nested: Expr,
+                    nested_values: ArrayRef|
+     -> std::result::Result<ArrayRef, String> {
+        let schema = Arc::new(Schema::new(vec![
+            arrow_schema::Field::new("values", list_type.clone(), true),
+            arrow_schema::Field::new("nested", DataType::Int64, true),
+        ]));
+        let batch = RecordBatch::try_new(
+            schema.clone(),
+            vec![Arc::new(test_lists.clone()), nested_values],
+        )
+        .map_err(|error| error.to_string())?;
+        let expr = Expr::NestedFunction {
+            function: "__vail_list_reduce_linreg".into(),
+            args: vec![
+                Expr::Column {
+                    name: "values".into(),
+                },
+                nested,
+            ],
+            dtype: Type::from_arrow(&output_type).unwrap(),
+        };
+        lower(&expr, &schema)
+            .map_err(|error| error.to_string())?
+            .evaluate(&batch)
+            .map_err(|error| error.to_string())?
+            .into_array(test_lists.len())
+            .map_err(|error| error.to_string())
     };
-    let result = lower(&expr, &schema)
-        .unwrap()
-        .evaluate(&batch)
-        .unwrap()
-        .into_array(lists.len())
-        .unwrap();
+    let result = evaluate(
+        &lists,
+        Expr::RuntimeLiteral {
+            value: ScalarValue::Int64(Some(1)),
+        },
+        Arc::new(Int64Array::from(vec![1; lists.len()])),
+    )
+    .unwrap();
     let result = result.as_any().downcast_ref::<StructArray>().unwrap();
     assert_eq!(result.null_count(), 1);
     let counts = result
@@ -192,8 +208,10 @@ fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
         .unwrap();
     assert_eq!(
         counts.iter().collect::<Vec<_>>(),
-        vec![Some(3), Some(3), None, Some(0)]
+        vec![Some(3), Some(3), Some(0), Some(0)]
     );
+    assert!(result.is_null(2));
+    assert!(result.is_valid(3));
     let beta = result
         .column_by_name("beta")
         .unwrap()
@@ -206,6 +224,57 @@ fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
         assert!((values.value(0) - intercept).abs() < 1e-12);
         assert!((values.value(1) - slope).abs() < 1e-12);
     }
+
+    let sliced = lists.slice(1, 3);
+    let sliced_result = evaluate(
+        &sliced,
+        Expr::RuntimeLiteral {
+            value: ScalarValue::Int64(Some(1)),
+        },
+        Arc::new(Int64Array::from(vec![1; sliced.len()])),
+    )
+    .unwrap();
+    let sliced_result = sliced_result
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    assert_eq!(sliced_result.null_count(), 1);
+    let sliced_counts = sliced_result
+        .column_by_name("n")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .unwrap();
+    assert_eq!(
+        sliced_counts.iter().collect::<Vec<_>>(),
+        vec![Some(3), Some(0), Some(0)]
+    );
+    assert!(sliced_result.is_null(1));
+
+    for invalid in [
+        ScalarValue::Int64(None),
+        ScalarValue::Int64(Some(-1)),
+        ScalarValue::Int64(Some(3)),
+    ] {
+        assert!(
+            evaluate(
+                &lists,
+                Expr::RuntimeLiteral { value: invalid },
+                Arc::new(Int64Array::from(vec![1; lists.len()])),
+            )
+            .is_err()
+        );
+    }
+    assert!(
+        evaluate(
+            &lists,
+            Expr::Column {
+                name: "nested".into(),
+            },
+            Arc::new(Int64Array::from(vec![1, 2, 1, 1])),
+        )
+        .is_err()
+    );
 }
 
 use arrow_array::types::{Float32Type, Int32Type, Int64Type};
