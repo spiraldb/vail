@@ -408,13 +408,37 @@ def reduce_list(
                 functions = []
                 arguments = [keys]
                 output_fields = {}
+                filtered_items = []
+
+                def filtered_input(predicate):
+                    for existing, selected, selected_keys in filtered_items:
+                        if same_node(existing, predicate):
+                            return selected, selected_keys
+                    selected = items.filter(
+                        lambda ctx: raw(bind(predicate, ctx), tbool)
+                    )
+                    # The outer grouping keys define the output key universe,
+                    # including keys whose reducers select no values. Evaluate
+                    # the key once for every item, then select that existing
+                    # key list with the filter bitmap.
+                    from .matrixtable import _zip_arrays
+
+                    predicate_values = mapped(items, predicate)
+                    selected_keys = _zip_arrays(keys, predicate_values).filter(
+                        lambda pair: pair["2"]
+                    ).map(lambda pair: pair["1"])
+                    filtered_items.append((predicate, selected, selected_keys))
+                    return selected, selected_keys
+
                 for index, (aggregate, filters) in enumerate(supported_aggregates):
                     reducer = aggregate["function"]
                     functions.append(reducer + ("_filtered" if filters else ""))
-                    if reducer != "count":
-                        arguments.append(mapped(items, aggregate["value"]))
+                    aggregate_items = items
                     if filters:
-                        arguments.append(mapped(items, filters[0]))
+                        aggregate_items, selected_keys = filtered_input(filters[0])
+                        arguments.append(selected_keys)
+                    if reducer != "count":
+                        arguments.append(mapped(aggregate_items, aggregate["value"]))
                     aggregate_options = aggregate.get("options") or {}
                     output_fields[f"__agg_{index}"] = type_from_wire(
                         aggregate_options["__vail_result_type"]
@@ -447,6 +471,7 @@ def reduce_list(
                     aggregate_fields = [
                         (
                             aggregate,
+                            filters,
                             (
                                 record.value[f"__agg_{index}"] if multiple else record.value
                             ).to_ir(),
@@ -454,17 +479,23 @@ def reduce_list(
                         for index, (aggregate, _) in enumerate(supported_aggregates)
                     ]
 
-                    def substitute(value):
+                    def substitute(value, filters=()):
                         if isinstance(value, IR_NODE_TYPES):
-                            for aggregate, replacement in aggregate_fields:
-                                if same_node(value, aggregate):
+                            for aggregate, aggregate_filters, replacement in aggregate_fields:
+                                if same_node(value, aggregate) and len(filters) == len(aggregate_filters) and all(
+                                    same_node(left, right)
+                                    for left, right in zip(filters, aggregate_filters)
+                                ):
                                     return replacement
                         if isinstance(value, IR_NODE_TYPES) and value.get("op") == "agg_filter":
-                            return substitute(value["body"])
+                            return substitute(value["body"], filters + (value["predicate"],))
                         if isinstance(value, list):
-                            return [substitute(child) for child in value]
+                            return [substitute(child, filters) for child in value]
                         if isinstance(value, IR_NODE_TYPES):
-                            return {key: substitute(child) for key, child in value.items()}
+                            return {
+                                key: substitute(child, filters)
+                                for key, child in value.items()
+                            }
                         return value
 
                     projected = substitute(body)

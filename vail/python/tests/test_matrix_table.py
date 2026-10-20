@@ -1049,6 +1049,10 @@ def test_group_by_reductions_use_fused_per_list_groups():
         counts=hl.agg.group_by(m.col_idx % 2, hl.agg.count()),
         positive=hl.agg.group_by(m.col_idx % 2, hl.agg.count_where(m.x > 0)),
         filtered=hl.agg.group_by(m.col_idx % 2, hl.agg.filter(m.x > 0, hl.agg.count())),
+        fully_filtered=hl.agg.group_by(
+            m.col_idx % 2,
+            hl.agg.filter(m.col_idx < 0, hl.agg.sum(m.x)),
+        ),
         summary=hl.agg.group_by(
             m.col_idx % 2,
             hl.struct(
@@ -1066,6 +1070,7 @@ def test_group_by_reductions_use_fused_per_list_groups():
     assert rows[0].counts == {0: 2, 1: 1}
     assert rows[0].positive == {0: 1, 1: 0}
     assert rows[0].filtered == {0: 1, 1: 0}
+    assert rows[0].fully_filtered == {0: 0, 1: 0}
     assert rows[0].summary[0].total == 2 and rows[0].summary[0].count == 2
     assert rows[0].summary[0].selected == 2
     assert rows[0].summary[1].total == 0 and rows[0].summary[1].count == 1
@@ -1075,6 +1080,7 @@ def test_group_by_reductions_use_fused_per_list_groups():
     assert rows[1].counts == {0: 2, 1: 1}
     assert rows[1].positive == {0: 2, 1: 0}
     assert rows[1].filtered == {0: 2, 1: 0}
+    assert rows[1].fully_filtered == {0: 0, 1: 0}
     assert rows[1].summary[0].total == 22 and rows[1].summary[0].count == 2
     assert rows[1].summary[0].selected == 22
     assert rows[1].summary[1].total == 0 and rows[1].summary[1].count == 1
@@ -1090,6 +1096,39 @@ def test_group_by_reductions_use_fused_per_list_groups():
     assert cols[1].counts == {0: 1, 1: 1}
     assert cols[2].sums == {0: 2, 1: 12}
     assert cols[2].counts == {0: 1, 1: 1}
+
+    # Identical aggregate IR under distinct filters must retain its occurrence
+    # scope, and a filtered value must not be evaluated for excluded entries.
+    signed = hl.range_matrix_table(1, 3)
+    signed = signed.annotate_entries(x=signed.col_idx - 1)
+    shared_sum = hl.agg.sum(signed.x)
+    scoped = signed.annotate_rows(
+        groups=hl.agg.group_by(
+            signed.col_idx % 2,
+            hl.struct(
+                positive=hl.agg.filter(signed.x > 0, shared_sum),
+                negative=hl.agg.filter(signed.x < 0, shared_sum),
+                safe_division=hl.agg.filter(
+                    signed.x != 0,
+                    hl.agg.sum(hl.int32(1) // signed.x),
+                ),
+            ),
+        )
+    ).rows().collect()[0].groups
+    assert scoped[0].positive == 1 and scoped[0].negative == -1
+    assert scoped[0].safe_division == 0
+    assert scoped[1].positive == 0 and scoped[1].negative == 0
+    assert scoped[1].safe_division == 0
+
+    # A filter scopes reducer values only; it cannot hide an invalid grouping
+    # key on an item that the reducer predicate excludes.
+    with pytest.raises(Exception):
+        signed.annotate_rows(
+            groups=hl.agg.group_by(
+                hl.int32(1) // signed.x,
+                hl.agg.filter(signed.x > 0, hl.agg.sum(signed.x)),
+            )
+        ).rows().collect()
 
 
 def test_column_lookups_inside_entries_preserve_values_and_missingness():

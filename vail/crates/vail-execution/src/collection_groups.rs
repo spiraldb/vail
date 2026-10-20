@@ -139,6 +139,13 @@ impl ScalarUDFImpl for CollectionGroups {
             let mut value_types = values.iter();
             let mut result_fields = Vec::with_capacity(functions.len());
             for (index, (function, filtered)) in functions.iter().enumerate() {
+                if *filtered {
+                    match value_types.next() {
+                        Some(DataType::List(filtered_key))
+                            if filtered_key.data_type() == key.data_type() => {}
+                        _ => return plan_err!("filtered group aggregate requires key lists"),
+                    }
+                }
                 let input_type = if function == "count" {
                     None
                 } else {
@@ -167,17 +174,6 @@ impl ScalarUDFImpl for CollectionGroups {
                         .data_type()
                         .clone()
                 };
-                if *filtered {
-                    match value_types.next() {
-                        Some(DataType::List(filter))
-                            if filter.data_type() == &DataType::Boolean => {}
-                        _ => {
-                            return plan_err!(
-                                "filtered group aggregate requires boolean filter lists"
-                            );
-                        }
-                    }
-                }
                 result_fields.push(Field::new(
                     if functions.len() == 1 {
                         "value".to_owned()
@@ -252,14 +248,34 @@ impl ScalarUDFImpl for CollectionGroups {
                 array: keys,
                 scalar: arrays[0].1,
             };
-            let mut values = arrays.iter().skip(1);
+            let mut inputs = arrays.iter().skip(1);
             let mut specs = Vec::with_capacity(functions.len());
             for (function, filtered) in functions {
+                let aggregate_keys = if *filtered {
+                    inputs
+                        .next()
+                        .and_then(|(array, scalar)| {
+                            array
+                                .as_any()
+                                .downcast_ref::<ListArray>()
+                                .map(|array| ListInput {
+                                    array,
+                                    scalar: *scalar,
+                                })
+                        })
+                        .ok_or_else(|| {
+                            datafusion_common::exec_datafusion_err!(
+                                "filtered group keys must be lists"
+                            )
+                        })?
+                } else {
+                    keys
+                };
                 let value = if function == "count" {
                     None
                 } else {
                     Some(
-                        values
+                        inputs
                             .next()
                             .and_then(|(array, scalar)| {
                                 array
@@ -277,29 +293,7 @@ impl ScalarUDFImpl for CollectionGroups {
                             })?,
                     )
                 };
-                let filter = if *filtered {
-                    Some(
-                        values
-                            .next()
-                            .and_then(|(array, scalar)| {
-                                array
-                                    .as_any()
-                                    .downcast_ref::<ListArray>()
-                                    .map(|array| ListInput {
-                                        array,
-                                        scalar: *scalar,
-                                    })
-                            })
-                            .ok_or_else(|| {
-                                datafusion_common::exec_datafusion_err!(
-                                    "group filters must be lists"
-                                )
-                            })?,
-                    )
-                } else {
-                    None
-                };
-                specs.push((function.as_str(), value, filter));
+                specs.push((function.as_str(), *filtered, aggregate_keys, value));
             }
             let output_type = self.return_type(
                 &arrays
@@ -476,34 +470,33 @@ fn configured_group_aggregate(function: &str, input: &DataType) -> Result<Arc<Ag
         .map_err(|error| datafusion_common::plan_datafusion_err!("{error}"))
 }
 
-fn grouped_aggregate(
+struct GroupSegment {
+    keys: ArrayRef,
+    owners: Vec<u32>,
+    values: Option<ArrayRef>,
+}
+
+fn selected_indices(
     keys: ListInput<'_>,
-    specs: &[(&str, Option<ListInput<'_>>, Option<ListInput<'_>>)],
+    values: Option<ListInput<'_>>,
     row_count: usize,
-    output_type: &DataType,
-) -> Result<ArrayRef> {
-    let mut lists = vec![keys];
-    for (_, values, filter) in specs {
-        lists.extend(values.iter().copied());
-        lists.extend(filter.iter().copied());
-    }
-    if lists
+    select_keys: bool,
+) -> Result<(Vec<u32>, Option<Vec<u32>>, Vec<u32>, bool)> {
+    let inputs = std::iter::once(keys).chain(values).collect::<Vec<_>>();
+    if inputs
         .iter()
         .any(|input| input.array.len() != if input.scalar { 1 } else { row_count })
     {
         return exec_err!("group key/value row counts differ");
     }
-    let selection_needed = (row_count > 1 && lists.iter().any(|input| input.scalar))
-        || lists.iter().any(|input| input.array.null_count() != 0);
-    let offsets = lists
+    let selection = (row_count > 1 && inputs.iter().any(|input| input.scalar))
+        || inputs.iter().any(|input| input.array.null_count() != 0);
+    let offsets = inputs
         .iter()
         .map(|input| input.array.value_offsets())
         .collect::<Vec<_>>();
-    let mut selections = if selection_needed {
-        vec![Vec::new(); lists.len()]
-    } else {
-        Vec::new()
-    };
+    let mut key_indices = Vec::new();
+    let mut value_indices = values.map(|_| Vec::new());
     let mut owners = Vec::new();
     for row in 0..row_count {
         let key_row = if keys.scalar { 0 } else { row };
@@ -511,22 +504,21 @@ fn grouped_aggregate(
         if !valid && keys.scalar {
             continue;
         }
-        if lists.iter().enumerate().skip(1).any(|(index, input)| {
-            let input_row = if input.scalar { 0 } else { row };
-            input.array.is_null(input_row) == valid
-        }) {
-            return exec_err!("group key/value/filter list validity differs");
+        if let Some(value_input) = values {
+            let value_row = if value_input.scalar { 0 } else { row };
+            if value_input.array.is_null(value_row) == valid {
+                return exec_err!("group key/value list validity differs");
+            }
         }
         if !valid {
             continue;
         }
-        let key_start = offsets[0][key_row] as usize;
-        let key_end = offsets[0][key_row + 1] as usize;
-        for (index, list_offsets) in offsets.iter().enumerate().skip(1) {
-            let input_row = if lists[index].scalar { 0 } else { row };
-            if list_offsets[input_row + 1] - list_offsets[input_row] != (key_end - key_start) as i32
-            {
-                return exec_err!("group key/value/filter list lengths differ");
+        let start = offsets[0][key_row];
+        let end = offsets[0][key_row + 1];
+        if let Some(value_input) = values {
+            let value_row = if value_input.scalar { 0 } else { row };
+            if offsets[1][value_row + 1] - offsets[1][value_row] != end - start {
+                return exec_err!("group key/value list lengths differ");
             }
         }
         let owner = u32::try_from(row).map_err(|_| {
@@ -534,12 +526,19 @@ fn grouped_aggregate(
                 "collection owner count exceeds Arrow index capacity"
             )
         })?;
-        for offset in 0..key_end - key_start {
-            if selection_needed {
-                for (index, list_offsets) in offsets.iter().enumerate() {
-                    let input_row = if lists[index].scalar { 0 } else { row };
-                    selections[index].push(
-                        u32::try_from(list_offsets[input_row] as usize + offset).map_err(|_| {
+        for offset in 0..(end - start) as usize {
+            if selection {
+                if select_keys {
+                    key_indices.push(u32::try_from(start as usize + offset).map_err(|_| {
+                        datafusion_common::exec_datafusion_err!(
+                            "collection element offset exceeds Arrow index capacity"
+                        )
+                    })?);
+                }
+                if let (Some(value_input), Some(indices)) = (values, value_indices.as_mut()) {
+                    let value_row = if value_input.scalar { 0 } else { row };
+                    indices.push(
+                        u32::try_from(offsets[1][value_row] as usize + offset).map_err(|_| {
                             datafusion_common::exec_datafusion_err!(
                                 "collection element offset exceeds Arrow index capacity"
                             )
@@ -550,27 +549,114 @@ fn grouped_aggregate(
             owners.push(owner);
         }
     }
-    let child_arrays = lists
-        .iter()
-        .enumerate()
-        .map(|(index, input)| {
-            if selection_needed {
-                take(
-                    input.array.values().as_ref(),
-                    &UInt32Array::from(std::mem::take(&mut selections[index])),
-                    None,
-                )
-            } else {
-                let start = offsets[index][0] as usize;
-                let end = offsets[index][row_count] as usize;
-                Ok(input.array.values().slice(start, end - start))
-            }
+    Ok((key_indices, value_indices, owners, selection))
+}
+
+fn flatten_segment(
+    keys: ListInput<'_>,
+    values: Option<ListInput<'_>>,
+    row_count: usize,
+) -> Result<GroupSegment> {
+    let (key_indices, value_indices, owners, selection) =
+        selected_indices(keys, values, row_count, true)?;
+    let key_data = if selection {
+        take(
+            keys.array.values().as_ref(),
+            &UInt32Array::from(key_indices),
+            None,
+        )?
+    } else {
+        let start = keys.array.value_offsets()[0] as usize;
+        let end = keys.array.value_offsets()[row_count] as usize;
+        keys.array.values().slice(start, end - start)
+    };
+    let value_data = if let Some(values) = values {
+        Some(if selection {
+            take(
+                values.array.values().as_ref(),
+                &UInt32Array::from(value_indices.unwrap()),
+                None,
+            )?
+        } else {
+            let start = values.array.value_offsets()[0] as usize;
+            let end = values.array.value_offsets()[row_count] as usize;
+            values.array.values().slice(start, end - start)
         })
-        .collect::<Result<Vec<_>>>()?;
-    if !selection_needed && child_arrays[0].len() != owners.len() {
-        return exec_err!("group key offsets do not cover their children");
+    } else {
+        None
+    };
+    Ok(GroupSegment {
+        keys: key_data,
+        owners,
+        values: value_data,
+    })
+}
+
+fn flatten_values(
+    keys: ListInput<'_>,
+    values: ListInput<'_>,
+    row_count: usize,
+) -> Result<ArrayRef> {
+    let (_, indices, _, selection) = selected_indices(keys, Some(values), row_count, false)?;
+    if selection {
+        take(
+            values.array.values().as_ref(),
+            &UInt32Array::from(indices.unwrap()),
+            None,
+        )
+    } else {
+        let offsets = values.array.value_offsets();
+        let start = offsets[0] as usize;
+        let end = offsets[row_count] as usize;
+        Ok(values.array.values().slice(start, end - start))
     }
-    let key_data = child_arrays[0].clone();
+}
+
+fn grouped_aggregate(
+    keys: ListInput<'_>,
+    specs: &[(&str, bool, ListInput<'_>, Option<ListInput<'_>>)],
+    row_count: usize,
+    output_type: &DataType,
+) -> Result<ArrayRef> {
+    let mut segments = vec![flatten_segment(keys, None, row_count)?];
+    let mut spec_segments = Vec::with_capacity(specs.len());
+    let mut spec_values = Vec::with_capacity(specs.len());
+    for (function, filtered, aggregate_keys, values) in specs {
+        let segment = if *filtered {
+            segments.push(flatten_segment(*aggregate_keys, *values, row_count)?);
+            segments.len() - 1
+        } else {
+            0
+        };
+        let data = if *function == "count" {
+            None
+        } else if segment == 0 {
+            Some(flatten_values(keys, values.unwrap(), row_count)?)
+        } else {
+            segments[segment].values.clone()
+        };
+        spec_segments.push(segment);
+        spec_values.push(data);
+    }
+
+    let mut owners = Vec::new();
+    let mut segment_starts = Vec::with_capacity(segments.len());
+    let mut key_arrays = Vec::with_capacity(segments.len());
+    for segment in &segments {
+        segment_starts.push(owners.len());
+        owners.extend_from_slice(&segment.owners);
+        key_arrays.push(segment.keys.clone());
+    }
+    let key_data = if key_arrays.len() == 1 {
+        key_arrays[0].clone()
+    } else {
+        arrow_select::concat::concat(
+            &key_arrays
+                .iter()
+                .map(|array| array.as_ref())
+                .collect::<Vec<_>>(),
+        )?
+    };
     let owner_array: ArrayRef = Arc::new(UInt32Array::from(owners));
     let grouping_schema = Arc::new(Schema::new(vec![
         Field::new("owner", DataType::UInt32, false),
@@ -578,25 +664,19 @@ fn grouped_aggregate(
     ]));
     let mut grouping = new_group_values(grouping_schema, &GroupOrdering::None)?;
     let mut group_ids = Vec::new();
-    grouping.intern(&[owner_array.clone(), key_data.clone()], &mut group_ids)?;
+    grouping.intern(&[owner_array.clone(), key_data], &mut group_ids)?;
     let group_count = grouping.len();
 
     let mut aggregates = Vec::with_capacity(specs.len());
-    let mut child_index = 1;
-    for (function, values, filter) in specs {
+    for (index, (function, _, _, _)) in specs.iter().enumerate() {
+        let segment = spec_segments[index];
+        let start = segment_starts[segment];
+        let end = start + segments[segment].owners.len();
+        let ids = &group_ids[start..end];
         let data = if *function == "count" {
-            owner_array.clone()
+            owner_array.slice(start, end - start)
         } else {
-            let data = child_arrays[child_index].clone();
-            child_index += 1;
-            data
-        };
-        let filter_data = if filter.is_some() {
-            let data = child_arrays[child_index].clone();
-            child_index += 1;
-            Some(data)
-        } else {
-            None
+            spec_values[index].as_ref().unwrap().clone()
         };
         let aggregate_udf = if *function == "count" || *function == "count_where" {
             datafusion_functions_aggregate::count::count_udaf()
@@ -616,52 +696,18 @@ fn grouped_aggregate(
             return exec_err!("group aggregate {function} has no native grouped accumulator");
         }
         let mut accumulator = aggregate.create_groups_accumulator()?;
-        let mut combined_count_where = None;
         let predicate = if *function == "count_where" {
-            let input = data
-                .as_any()
-                .downcast_ref::<arrow_array::BooleanArray>()
-                .ok_or_else(|| {
-                    datafusion_common::exec_datafusion_err!("count_where values must be bool")
-                })?;
-            if let Some(filter) = &filter_data {
-                let filter = filter
-                    .as_any()
-                    .downcast_ref::<arrow_array::BooleanArray>()
-                    .ok_or_else(|| {
-                        datafusion_common::exec_datafusion_err!("group filter must be bool")
-                    })?;
-                let payload = input.values().clone();
-                let mut validity = &payload & filter.values();
-                if let Some(nulls) = input.nulls() {
-                    validity = &validity & nulls.inner();
-                }
-                if let Some(nulls) = filter.nulls() {
-                    validity = &validity & nulls.inner();
-                }
-                combined_count_where = Some(arrow_array::BooleanArray::new(
-                    payload,
-                    Some(NullBuffer::new(validity)),
-                ));
-                Some(combined_count_where.as_ref().unwrap())
-            } else {
-                Some(input)
-            }
-        } else if filter_data.is_some() {
             Some(
-                filter_data
-                    .as_ref()
-                    .unwrap()
-                    .as_any()
+                data.as_any()
                     .downcast_ref::<arrow_array::BooleanArray>()
                     .ok_or_else(|| {
-                        datafusion_common::exec_datafusion_err!("group filter must be bool")
+                        datafusion_common::exec_datafusion_err!("count_where values must be bool")
                     })?,
             )
         } else {
             None
         };
-        accumulator.update_batch(&[data.clone()], &group_ids, predicate, group_count)?;
+        accumulator.update_batch(&[data], ids, predicate, group_count)?;
         aggregates.push(accumulator.evaluate(EmitTo::All)?);
     }
 
@@ -670,7 +716,6 @@ fn grouped_aggregate(
         .as_any()
         .downcast_ref::<UInt32Array>()
         .ok_or_else(|| datafusion_common::exec_datafusion_err!("group owners must be uint32"))?;
-    let emitted_keys = &emitted[1];
     let options = Some(SortOptions {
         descending: false,
         nulls_first: false,
@@ -682,13 +727,13 @@ fn grouped_aggregate(
                 options,
             },
             SortColumn {
-                values: emitted_keys.clone(),
+                values: emitted[1].clone(),
                 options,
             },
         ],
         None,
     )?;
-    let sorted_keys = take(emitted_keys.as_ref(), &order, None)?;
+    let sorted_keys = take(emitted[1].as_ref(), &order, None)?;
     let sorted_aggregates = aggregates
         .iter()
         .map(|aggregate| take(aggregate.as_ref(), &order, None))
