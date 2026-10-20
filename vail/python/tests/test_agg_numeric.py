@@ -161,13 +161,13 @@ def test_grouped_downsample_uses_bounded_state_per_group():
     ).collect()
     assert {row.group for row in grouped} == {"a", "b"}
     for row in grouped:
+        start = 0 if row.group == "a" else 100
+        source = {
+            (float(x), float(x), (f"{row.group}:{x}",))
+            for x in range(start, start + 20)
+        }
         assert 1 <= len(row.points) <= 16
-        assert all(
-            (row.group == "a" and 0 <= x < 20)
-            or (row.group == "b" and 100 <= x < 120)
-            for x, y, label in row.points
-        )
-        assert all(x == y and label == [f"{row.group}:{x}"] for x, y, label in row.points)
+        assert {(x, y, tuple(label)) for x, y, label in row.points} <= source
 
 
 def test_downsample_rebin_preserves_labels_at_bounds_and_partition_merge():

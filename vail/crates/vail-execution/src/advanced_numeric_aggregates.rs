@@ -792,6 +792,7 @@ impl AggregateUDFImpl for DownsampleUdf {
         Ok(Box::new(DownsampleGroups {
             divisions: self.divisions,
             groups: Vec::new(),
+            state_bytes: 0,
         }))
     }
 }
@@ -810,6 +811,9 @@ impl DownsampleAccumulator {
             bounds: None,
             label_bytes: 0,
         }
+    }
+    fn heap_size(&self) -> usize {
+        self.points.len() * std::mem::size_of::<((i32, i32), DownsamplePoint)>() + self.label_bytes
     }
     fn cell(&self, x: f64, y: f64, bounds: (f64, f64, f64, f64)) -> (i32, i32) {
         let axis = |value, start, end| {
@@ -986,9 +990,7 @@ impl Accumulator for DownsampleAccumulator {
         self.result()
     }
     fn size(&self) -> usize {
-        std::mem::size_of_val(self)
-            + self.points.len() * std::mem::size_of::<((i32, i32), DownsamplePoint)>()
-            + self.label_bytes
+        std::mem::size_of_val(self) + self.heap_size()
     }
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
         let mut state = vec![self.result()?];
@@ -1100,9 +1102,17 @@ impl Accumulator for DownsampleAccumulator {
 struct DownsampleGroups {
     divisions: usize,
     groups: Vec<DownsampleAccumulator>,
+    state_bytes: usize,
 }
 impl DownsampleGroups {
     fn ensure(&mut self, total: usize) {
+        if total < self.groups.len() {
+            let dropped = self.groups[total..]
+                .iter()
+                .map(DownsampleAccumulator::heap_size)
+                .sum::<usize>();
+            self.state_bytes = self.state_bytes.saturating_sub(dropped);
+        }
         self.groups
             .resize_with(total, || DownsampleAccumulator::new(self.divisions));
     }
@@ -1116,6 +1126,11 @@ impl DownsampleGroups {
                 "downsample emitted groups exceed state".into(),
             ));
         }
+        let emitted_bytes = self.groups[..count]
+            .iter()
+            .map(DownsampleAccumulator::heap_size)
+            .sum::<usize>();
+        self.state_bytes = self.state_bytes.saturating_sub(emitted_bytes);
         if count == self.groups.len() {
             Ok(std::mem::take(&mut self.groups))
         } else {
@@ -1177,6 +1192,144 @@ impl DownsampleGroups {
             .map(ScalarValue::iter_to_array)
             .collect()
     }
+    fn convert_rows_to_state(
+        values: &[ArrayRef],
+        filter: Option<&arrow_array::BooleanArray>,
+    ) -> DfResult<Vec<ArrayRef>> {
+        let [input] = values else {
+            return Err(DataFusionError::Execution(
+                "downsample requires one input".into(),
+            ));
+        };
+        let rows = input.len();
+        if filter.is_some_and(|filter| filter.len() != rows) {
+            return Err(DataFusionError::Execution(
+                "downsample filter row count differs".into(),
+            ));
+        }
+        let packed = input
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| DataFusionError::Execution("downsample expects struct values".into()))?;
+        if packed.num_columns() < 2 || packed.num_columns() > 3 {
+            return Err(DataFusionError::Execution(
+                "downsample packed fields mismatch".into(),
+            ));
+        }
+        let x = arrow_cast::cast(packed.column(0), &DataType::Float64)?;
+        let y = arrow_cast::cast(packed.column(1), &DataType::Float64)?;
+        let xs = x.as_any().downcast_ref::<Float64Array>().unwrap();
+        let ys = y.as_any().downcast_ref::<Float64Array>().unwrap();
+        let labels = packed.columns().get(2);
+        let mut point_lengths = Vec::with_capacity(rows);
+        let mut label_lengths = Vec::with_capacity(rows);
+        let mut label_validity = Vec::with_capacity(rows);
+        let mut label_values: Vec<Option<&str>> = Vec::new();
+        let mut point_x = Vec::with_capacity(rows);
+        let mut point_y = Vec::with_capacity(rows);
+        let mut left = Vec::with_capacity(rows);
+        let mut right = Vec::with_capacity(rows);
+        let mut bottom = Vec::with_capacity(rows);
+        let mut top = Vec::with_capacity(rows);
+        for row in 0..rows {
+            let included = !packed.is_null(row)
+                && !xs.is_null(row)
+                && !ys.is_null(row)
+                && xs.value(row).is_finite()
+                && ys.value(row).is_finite()
+                && filter.is_none_or(|f| f.is_valid(row) && f.value(row));
+            if !included {
+                point_lengths.push(0);
+                left.push(None);
+                right.push(None);
+                bottom.push(None);
+                top.push(None);
+                continue;
+            }
+            let (x, y) = (xs.value(row), ys.value(row));
+            point_lengths.push(1);
+            point_x.push(x);
+            point_y.push(y);
+            left.push(Some(x));
+            right.push(Some(x));
+            bottom.push(Some(y));
+            top.push(Some(y));
+            match labels {
+                None => {
+                    label_lengths.push(0);
+                    label_validity.push(false);
+                }
+                Some(labels) if labels.is_null(row) => {
+                    label_lengths.push(0);
+                    label_validity.push(false);
+                }
+                Some(labels) if labels.data_type() == &DataType::Utf8 => {
+                    let labels = labels
+                        .as_any()
+                        .downcast_ref::<arrow_array::StringArray>()
+                        .ok_or_else(|| {
+                            DataFusionError::Execution("downsample label must be utf8".into())
+                        })?;
+                    label_values.push(Some(labels.value(row)));
+                    label_lengths.push(1);
+                    label_validity.push(true);
+                }
+                Some(labels) => {
+                    let labels = labels.as_any().downcast_ref::<ListArray>().ok_or_else(|| {
+                        DataFusionError::Execution("downsample label array must be a list".into())
+                    })?;
+                    let items = labels
+                        .values()
+                        .as_any()
+                        .downcast_ref::<arrow_array::StringArray>()
+                        .ok_or_else(|| {
+                            DataFusionError::Execution(
+                                "downsample label list must contain strings".into(),
+                            )
+                        })?;
+                    let start = labels.value_offsets()[row] as usize;
+                    let end = labels.value_offsets()[row + 1] as usize;
+                    label_values.extend(
+                        (start..end)
+                            .map(|index| (!items.is_null(index)).then(|| items.value(index))),
+                    );
+                    label_lengths.push(end - start);
+                    label_validity.push(true);
+                }
+            }
+        }
+        let labels = Arc::new(ListArray::new(
+            Arc::new(Field::new("item", DataType::Utf8, true)),
+            OffsetBuffer::from_lengths(label_lengths),
+            Arc::new(arrow_array::StringArray::from(label_values)),
+            Some(NullBuffer::from(label_validity)),
+        ));
+        let DataType::Struct(fields) = tuple_item_type() else {
+            unreachable!()
+        };
+        let tuples: ArrayRef = Arc::new(StructArray::try_new(
+            fields,
+            vec![
+                Arc::new(Float64Array::from(point_x)),
+                Arc::new(Float64Array::from(point_y)),
+                labels,
+            ],
+            None,
+        )?);
+        let points = Arc::new(ListArray::new(
+            Arc::new(Field::new("item", tuple_item_type(), true)),
+            OffsetBuffer::from_lengths(point_lengths),
+            tuples,
+            None,
+        ));
+        Ok(vec![
+            points,
+            Arc::new(Float64Array::from(left)),
+            Arc::new(Float64Array::from(right)),
+            Arc::new(Float64Array::from(bottom)),
+            Arc::new(Float64Array::from(top)),
+        ])
+    }
     fn update_inner(
         &mut self,
         values: &[ArrayRef],
@@ -1230,7 +1383,14 @@ impl DownsampleGroups {
                 continue;
             }
             let group = indices.map_or(row, |indices| indices[row]);
-            self.groups[group].insert_lazy(x, y, || Self::row_label(labels, row))?;
+            let before = self.groups[group].heap_size();
+            let update = self.groups[group].insert_lazy(x, y, || Self::row_label(labels, row));
+            let after = self.groups[group].heap_size();
+            self.state_bytes = self
+                .state_bytes
+                .saturating_sub(before)
+                .saturating_add(after);
+            update?;
         }
         Ok(())
     }
@@ -1241,13 +1401,7 @@ impl GroupsAccumulator for DownsampleGroups {
         values: &[ArrayRef],
         filter: Option<&arrow_array::BooleanArray>,
     ) -> DfResult<Vec<ArrayRef>> {
-        let rows = values.first().map_or(0, |value| value.len());
-        let mut groups = Self {
-            divisions: self.divisions,
-            groups: Vec::new(),
-        };
-        groups.update_inner(values, None, filter, rows)?;
-        Self::state_arrays(&mut groups.groups, true)
+        Self::convert_rows_to_state(values, filter)
     }
     fn update_batch(
         &mut self,
@@ -1263,7 +1417,9 @@ impl GroupsAccumulator for DownsampleGroups {
         Self::state_arrays(&mut groups, false).map(|mut arrays| arrays.remove(0))
     }
     fn size(&self) -> usize {
-        self.groups.iter().map(|group| group.size()).sum()
+        std::mem::size_of::<Self>()
+            + self.groups.capacity() * std::mem::size_of::<DownsampleAccumulator>()
+            + self.state_bytes
     }
     fn state(&mut self, emit_to: EmitTo) -> DfResult<Vec<ArrayRef>> {
         let mut groups = self.emitted(emit_to)?;
@@ -1294,11 +1450,18 @@ impl GroupsAccumulator for DownsampleGroups {
         }
         self.ensure(total_num_groups);
         for (row, &group) in group_indices.iter().enumerate() {
+            let before = self.groups[group].heap_size();
             let one_row = states
                 .iter()
                 .map(|state| state.slice(row, 1))
                 .collect::<Vec<_>>();
-            self.groups[group].merge_batch(&one_row)?;
+            let merge = self.groups[group].merge_batch(&one_row);
+            let after = self.groups[group].heap_size();
+            self.state_bytes = self
+                .state_bytes
+                .saturating_sub(before)
+                .saturating_add(after);
+            merge?;
         }
         Ok(())
     }

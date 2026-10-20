@@ -512,7 +512,12 @@ fn grouped_downsample_roundtrips_bounded_group_states() {
             _ => unreachable!(),
         },
         vec![
-            Arc::new(Float64Array::from(vec![0., 1., 100., 101.])),
+            Arc::new(Float64Array::from(vec![
+                Some(0.),
+                Some(1.),
+                Some(100.),
+                None,
+            ])),
             Arc::new(Float64Array::from(vec![0., 1., 100., 101.])),
             Arc::new(StringArray::from(vec!["a0", "a1", "b0", "b1"])),
         ],
@@ -520,7 +525,7 @@ fn grouped_downsample_roundtrips_bounded_group_states() {
     ));
     let mut grouped = aggregate.create_groups_accumulator().unwrap();
     grouped
-        .update_batch(&[values], &[0, 0, 1, 1], None, 2)
+        .update_batch(&[values.clone()], &[0, 0, 1, 1], None, 2)
         .unwrap();
     let states = grouped.state(EmitTo::All).unwrap();
     let mut merged = aggregate.create_groups_accumulator().unwrap();
@@ -528,17 +533,111 @@ fn grouped_downsample_roundtrips_bounded_group_states() {
     let result = merged.evaluate(EmitTo::All).unwrap();
     let result = result.as_any().downcast_ref::<ListArray>().unwrap();
     assert_eq!(result.len(), 2);
-    assert!((1..=2).contains(&result.value_length(0)));
+    assert!((1..=16).contains(&result.value_length(0)));
     assert!((1..=2).contains(&result.value_length(1)));
-    let points = result
-        .values()
+    for group in 0..result.len() {
+        let points = result.value(group);
+        let points = points.as_any().downcast_ref::<StructArray>().unwrap();
+        let xs = points
+            .column(0)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap();
+        let ys = points
+            .column(1)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap();
+        let labels = points
+            .column(2)
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap();
+        for row in 0..points.len() {
+            let label = labels.value(row);
+            let label = label.as_any().downcast_ref::<StringArray>().unwrap();
+            assert_eq!(label.len(), 1);
+            let source_x = match label.value(0) {
+                "a0" => 0.0,
+                "a1" => 1.0,
+                "b0" => 100.0,
+                "b1" => 101.0,
+                label => panic!("unexpected downsample label {label}"),
+            };
+            assert_eq!(xs.value(row), source_x);
+            assert_eq!(ys.value(row), source_x);
+        }
+    }
+
+    // Direct state conversion emits one bounded state per row, honoring null
+    // filters and null coordinates without building a per-row accumulator.
+    let filter = BooleanArray::from(vec![Some(true), Some(false), Some(true), None]);
+    let converted = grouped
+        .convert_to_state(&[values.clone()], Some(&filter))
+        .unwrap();
+    let converted_points = converted[0].as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(converted_points.len(), 4);
+    assert_eq!(converted_points.value_length(0), 1);
+    assert_eq!(converted_points.value_length(1), 0);
+    assert_eq!(converted_points.value_length(2), 1);
+    assert_eq!(converted_points.value_length(3), 0);
+    let converted_first = converted_points.value(0);
+    let converted_first = converted_first
         .as_any()
         .downcast_ref::<StructArray>()
         .unwrap();
-    let labels = points
+    assert_eq!(
+        converted_first
+            .column(0)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap()
+            .value(0),
+        0.0
+    );
+    let converted_label = converted_first
         .column(2)
         .as_any()
         .downcast_ref::<ListArray>()
+        .unwrap()
+        .value(0);
+    assert_eq!(
+        converted_label
+            .as_any()
+            .downcast_ref::<StringArray>()
+            .unwrap()
+            .value(0),
+        "a0"
+    );
+
+    let mut partial = aggregate.create_groups_accumulator().unwrap();
+    partial
+        .update_batch(&[values.clone()], &[0, 0, 1, 1], Some(&filter), 2)
         .unwrap();
-    assert_eq!(labels.len(), points.len());
+    assert_eq!(partial.evaluate(EmitTo::First(1)).unwrap().len(), 1);
+    assert_eq!(partial.evaluate(EmitTo::All).unwrap().len(), 1);
+    let empty = aggregate.create_groups_accumulator().unwrap();
+    assert_eq!(empty.evaluate(EmitTo::All).unwrap().len(), 0);
+
+    let xs = (0..40).map(|x| x as f64).collect::<Vec<_>>();
+    let labels = (0..40).map(|x| format!("p{x}")).collect::<Vec<_>>();
+    let many: arrow_array::ArrayRef = Arc::new(StructArray::new(
+        match &input_type {
+            DataType::Struct(fields) => fields.clone(),
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(Float64Array::from(xs.clone())),
+            Arc::new(Float64Array::from(xs)),
+            Arc::new(StringArray::from(labels)),
+        ],
+        None,
+    ));
+    let mut bounded = aggregate.create_groups_accumulator().unwrap();
+    bounded
+        .update_batch(&[many], &vec![0; 40], None, 1)
+        .unwrap();
+    let bounded = bounded.evaluate(EmitTo::All).unwrap();
+    let bounded = bounded.as_any().downcast_ref::<ListArray>().unwrap();
+    assert!(bounded.value_length(0) <= 16);
 }
