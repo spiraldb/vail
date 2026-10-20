@@ -1,6 +1,7 @@
 //! DataFusion's native population standard deviation with Hail's empty-result
 //! convention and Vail's numeric-input signature.
 use arrow_array::{Array, ArrayRef, Float64Array, UInt64Array};
+use arrow_buffer::{BooleanBuffer, NullBuffer};
 use arrow_schema::{DataType, Field, FieldRef};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::{
@@ -51,11 +52,12 @@ fn mask_nonfinite(values: &[ArrayRef]) -> Vec<ArrayRef> {
     if input.iter().flatten().all(|value| value.is_finite()) {
         return values.to_vec();
     }
-    vec![Arc::new(Float64Array::from_iter(
-        input
-            .iter()
-            .map(|value| value.filter(|value| value.is_finite())),
-    ))]
+    let finite = BooleanBuffer::collect_bool(input.len(), |row| {
+        !input.is_valid(row) || input.value(row).is_finite()
+    });
+    let nonfinite_nulls = NullBuffer::new(finite);
+    let nulls = NullBuffer::union(input.nulls(), Some(&nonfinite_nulls));
+    vec![Arc::new(Float64Array::new(input.values().clone(), nulls))]
 }
 
 fn state_flag(states: &[ArrayRef]) -> Result<&UInt64Array> {
