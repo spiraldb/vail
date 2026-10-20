@@ -406,6 +406,7 @@ fn product_udf(input: Option<&DataType>) -> std::result::Result<Arc<AggregateUDF
         DataType::Float64
     };
     let group_input = input.clone();
+    let support_input = input.clone();
     let group_output = output.clone();
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         "product",
@@ -420,6 +421,16 @@ fn product_udf(input: Option<&DataType>) -> std::result::Result<Arc<AggregateUDF
                 group_output.clone(),
             )))
         })),
+        Some(Arc::new(
+            move |args: &datafusion_expr::function::AccumulatorArgs<'_>| {
+                !args.is_distinct
+                    && args.order_bys.is_empty()
+                    && !args.is_reversed
+                    && args.ignore_nulls
+                    && args.expr_fields.len() == 1
+                    && args.expr_fields[0].data_type() == &support_input
+            },
+        )),
     ))
 }
 
@@ -587,13 +598,14 @@ impl GroupsAccumulator for ProductGroups {
                 .ok_or_else(|| {
                     DataFusionError::Execution("product value state must be int64".into())
                 })?;
-            for (r, i) in indices.iter().enumerate() {
-                {
-                    let v = vals.value(r);
+            for (r, (i, value)) in indices.iter().zip(vals.iter()).enumerate() {
+                if let Some(v) = value {
                     let integer = self.integer.as_mut().unwrap();
                     integer[*i] = integer[*i].wrapping_mul(v);
                 }
-                self.count[*i] = self.count[*i].wrapping_add(counts.value(r));
+                if counts.is_valid(r) {
+                    self.count[*i] = self.count[*i].wrapping_add(counts.value(r));
+                }
             }
         } else {
             let vals = states[1]
@@ -602,9 +614,13 @@ impl GroupsAccumulator for ProductGroups {
                 .ok_or_else(|| {
                     DataFusionError::Execution("product value state must be float64".into())
                 })?;
-            for (r, i) in indices.iter().enumerate() {
-                self.float.as_mut().unwrap()[*i] *= vals.value(r);
-                self.count[*i] = self.count[*i].wrapping_add(counts.value(r));
+            for (r, (i, value)) in indices.iter().zip(vals.iter()).enumerate() {
+                if let Some(value) = value {
+                    self.float.as_mut().unwrap()[*i] *= value;
+                }
+                if counts.is_valid(r) {
+                    self.count[*i] = self.count[*i].wrapping_add(counts.value(r));
+                }
             }
         }
         Ok(())
@@ -626,8 +642,13 @@ impl GroupsAccumulator for ProductGroups {
             ));
         }
         let selected = |row: usize| filter.is_none_or(|f| f.is_valid(row) && f.value(row));
-        let counts =
-            Int64Array::from_iter_values((0..rows).map(|row| if selected(row) { 1 } else { 0 }));
+        let counts = Int64Array::from_iter_values((0..rows).map(|row| {
+            if selected(row) && input.is_valid(row) {
+                1
+            } else {
+                0
+            }
+        }));
         let products = if self.output == DataType::Int64 {
             let values = match &self.input {
                 DataType::Int32 => input
@@ -637,7 +658,7 @@ impl GroupsAccumulator for ProductGroups {
                     .iter()
                     .enumerate()
                     .map(|(row, value)| {
-                        if selected(row) {
+                        if selected(row) && value.is_some() {
                             i64::from(value.unwrap_or(1))
                         } else {
                             1
@@ -650,11 +671,17 @@ impl GroupsAccumulator for ProductGroups {
                     .unwrap()
                     .iter()
                     .enumerate()
-                    .map(|(row, value)| if selected(row) { value.unwrap_or(1) } else { 1 })
+                    .map(|(row, value)| {
+                        if selected(row) && value.is_some() {
+                            value.unwrap_or(1)
+                        } else {
+                            1
+                        }
+                    })
                     .collect::<Vec<_>>(),
                 _ => unreachable!(),
             };
-            Arc::new(Int64Array::from_iter_values(values)) as ArrayRef
+            Arc::new(Int64Array::from(values)) as ArrayRef
         } else {
             let cast = arrow_cast::cast(input, &DataType::Float64)?;
             let values = cast.as_any().downcast_ref::<Float64Array>().unwrap();

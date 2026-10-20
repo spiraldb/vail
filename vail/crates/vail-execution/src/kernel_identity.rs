@@ -114,6 +114,7 @@ struct Aggregate<K> {
     fields: Vec<FieldRef>,
     factory: AccumulatorFactoryFunction,
     groups_factory: Option<Arc<dyn Fn() -> Result<Box<dyn GroupsAccumulator>> + Send + Sync>>,
+    groups_supported: Option<Arc<dyn for<'a> Fn(&AccumulatorArgs<'a>) -> bool + Send + Sync>>,
 }
 impl<K: fmt::Debug> fmt::Debug for Aggregate<K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -157,10 +158,20 @@ impl<K: fmt::Debug + Eq + Hash + Send + Sync + 'static> AggregateUDFImpl for Agg
     fn state_fields(&self, _: StateFieldsArgs) -> Result<Vec<FieldRef>> {
         Ok(self.fields.clone())
     }
-    fn groups_accumulator_supported(&self, _: AccumulatorArgs) -> bool {
-        self.groups_factory.is_some()
+    fn groups_accumulator_supported(&self, args: AccumulatorArgs) -> bool {
+        self.groups_supported
+            .as_ref()
+            .is_some_and(|supported| supported(&args))
     }
-    fn create_groups_accumulator(&self, _: AccumulatorArgs) -> Result<Box<dyn GroupsAccumulator>> {
+    fn create_groups_accumulator(
+        &self,
+        args: AccumulatorArgs,
+    ) -> Result<Box<dyn GroupsAccumulator>> {
+        if !self.groups_accumulator_supported(args) {
+            return Err(datafusion_common::DataFusionError::NotImplemented(
+                "groups accumulator is not supported for these arguments".into(),
+            ));
+        }
         self.groups_factory.as_ref().ok_or_else(|| {
             datafusion_common::DataFusionError::NotImplemented(
                 "groups accumulator is not supported".into(),
@@ -187,7 +198,7 @@ pub(crate) fn aggregate_named<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>
     states: Vec<DataType>,
     factory: AccumulatorFactoryFunction,
 ) -> Arc<AggregateUDF> {
-    aggregate_named_with_groups(label, key, inputs, output, states, factory, None)
+    aggregate_named_with_groups(label, key, inputs, output, states, factory, None, None)
 }
 pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>(
     label: &str,
@@ -197,6 +208,7 @@ pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Syn
     states: Vec<DataType>,
     factory: AccumulatorFactoryFunction,
     groups_factory: Option<Arc<dyn Fn() -> Result<Box<dyn GroupsAccumulator>> + Send + Sync>>,
+    groups_supported: Option<Arc<dyn for<'a> Fn(&AccumulatorArgs<'a>) -> bool + Send + Sync>>,
 ) -> Arc<AggregateUDF> {
     let signature = Signature::exact(inputs, Volatility::Immutable);
     let fields = states
@@ -213,5 +225,6 @@ pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Syn
         fields,
         factory,
         groups_factory,
+        groups_supported,
     }))
 }
