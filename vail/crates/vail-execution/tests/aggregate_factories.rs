@@ -508,7 +508,6 @@ fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
 
 #[test]
 fn grouped_downsample_roundtrips_bounded_group_states() {
-    use datafusion_expr::GroupsAccumulator;
     let input_type = DataType::Struct(
         vec![
             Arc::new(Field::new("x", DataType::Float64, true)),

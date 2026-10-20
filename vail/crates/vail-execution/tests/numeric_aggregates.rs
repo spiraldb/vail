@@ -9,7 +9,7 @@ use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::ScalarValue;
 use datafusion_datasource::memory::MemorySourceConfig;
 use datafusion_execution::TaskContext;
-use datafusion_expr::{Accumulator, EmitTo, function::AccumulatorArgs};
+use datafusion_expr::{EmitTo, function::AccumulatorArgs};
 use datafusion_physical_expr::{
     PhysicalExpr, aggregate::AggregateExprBuilder, expressions::Column,
 };
