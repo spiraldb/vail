@@ -1221,6 +1221,58 @@ impl DownsampleGroups {
         let xs = x.as_any().downcast_ref::<Float64Array>().unwrap();
         let ys = y.as_any().downcast_ref::<Float64Array>().unwrap();
         let labels = packed.columns().get(2);
+        // A no-op row selection is common when DataFusion converts a batch to
+        // grouped state. Keep the original UTF-8 value buffers in that case:
+        // wrapping scalar labels in a list only needs offsets and validity.
+        let identity_selection = (0..rows).all(|row| {
+            !packed.is_null(row)
+                && !xs.is_null(row)
+                && !ys.is_null(row)
+                && xs.value(row).is_finite()
+                && ys.value(row).is_finite()
+                && filter.is_none_or(|f| f.is_valid(row) && f.value(row))
+        });
+        let shared_labels = if identity_selection {
+            match labels {
+                Some(labels) if labels.data_type() == &DataType::Utf8 => {
+                    let labels = labels
+                        .as_any()
+                        .downcast_ref::<arrow_array::StringArray>()
+                        .ok_or_else(|| {
+                            DataFusionError::Execution("downsample label must be utf8".into())
+                        })?;
+                    Some(Arc::new(ListArray::new(
+                        Arc::new(Field::new("item", DataType::Utf8, true)),
+                        OffsetBuffer::from_lengths(std::iter::repeat_n(1, rows)),
+                        Arc::new(labels.clone()),
+                        labels.nulls().cloned(),
+                    )) as ArrayRef)
+                }
+                Some(labels) if matches!(labels.data_type(), DataType::List(_)) => {
+                    let labels = labels.as_any().downcast_ref::<ListArray>().ok_or_else(|| {
+                        DataFusionError::Execution("downsample label array must be a list".into())
+                    })?;
+                    let items = labels
+                        .values()
+                        .as_any()
+                        .downcast_ref::<arrow_array::StringArray>()
+                        .ok_or_else(|| {
+                            DataFusionError::Execution(
+                                "downsample label list must contain strings".into(),
+                            )
+                        })?;
+                    Some(Arc::new(ListArray::new(
+                        Arc::new(Field::new("item", DataType::Utf8, true)),
+                        labels.offsets().clone(),
+                        Arc::new(items.clone()),
+                        labels.nulls().cloned(),
+                    )) as ArrayRef)
+                }
+                _ => None,
+            }
+        } else {
+            None
+        };
         let mut point_lengths = Vec::with_capacity(rows);
         let mut label_lengths = Vec::with_capacity(rows);
         let mut label_validity = Vec::with_capacity(rows);
@@ -1298,12 +1350,14 @@ impl DownsampleGroups {
                 }
             }
         }
-        let labels = Arc::new(ListArray::new(
-            Arc::new(Field::new("item", DataType::Utf8, true)),
-            OffsetBuffer::from_lengths(label_lengths),
-            Arc::new(arrow_array::StringArray::from(label_values)),
-            Some(NullBuffer::from(label_validity)),
-        ));
+        let labels = shared_labels.unwrap_or_else(|| {
+            Arc::new(ListArray::new(
+                Arc::new(Field::new("item", DataType::Utf8, true)),
+                OffsetBuffer::from_lengths(label_lengths),
+                Arc::new(arrow_array::StringArray::from(label_values)),
+                Some(NullBuffer::from(label_validity)),
+            ))
+        });
         let DataType::Struct(fields) = tuple_item_type() else {
             unreachable!()
         };

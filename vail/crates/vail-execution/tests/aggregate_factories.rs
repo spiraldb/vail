@@ -422,7 +422,13 @@ fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
         3
     );
 
-    let evaluated = grouped.evaluate(EmitTo::All).unwrap();
+    // `state(EmitTo::All)` drains the original groups. Evaluate a fresh
+    // accumulator after merging that state to verify grouped state roundtrips.
+    let mut evaluated_groups = aggregate.create_groups_accumulator().unwrap();
+    evaluated_groups
+        .merge_batch(&group_state, &[0, 1], 2)
+        .unwrap();
+    let evaluated = evaluated_groups.evaluate(EmitTo::All).unwrap();
     let evaluated = evaluated.as_any().downcast_ref::<StructArray>().unwrap();
     let an = evaluated
         .column_by_name("AN")
@@ -632,6 +638,41 @@ fn grouped_downsample_roundtrips_bounded_group_states() {
             .unwrap()
             .value(0),
         "a0"
+    );
+
+    // Identity conversion wraps UTF-8 labels in one-element lists while
+    // reusing the source string values buffer.
+    let converted_all = grouped.convert_to_state(&[values.clone()], None).unwrap();
+    let converted_all_points = converted_all[0]
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    let converted_all_row = converted_all_points.value(0);
+    let converted_all_row = converted_all_row
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    let converted_all_labels = converted_all_row
+        .column(2)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    let converted_all_values = converted_all_labels
+        .values()
+        .as_any()
+        .downcast_ref::<StringArray>()
+        .unwrap();
+    let source_labels = values
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap()
+        .column(2)
+        .as_any()
+        .downcast_ref::<StringArray>()
+        .unwrap();
+    assert_eq!(
+        converted_all_values.values().as_ptr(),
+        source_labels.values().as_ptr()
     );
 
     let mut partial = aggregate.create_groups_accumulator().unwrap();
