@@ -36,20 +36,19 @@ fn nan_for_empty(value: ScalarValue) -> ScalarValue {
     }
 }
 
-fn nonfinite_count(values: &Float64Array) -> Result<u64> {
-    u64::try_from(
-        values
-            .iter()
-            .flatten()
-            .filter(|value| !value.is_finite())
-            .count(),
-    )
-    .map_err(|_| DataFusionError::Execution("stddev_pop nonfinite count exceeds uint64".into()))
+fn nonfinite_count(values: &Float64Array) -> Result<(u64, bool)> {
+    let mut count = 0u64;
+    for _ in values.iter().flatten().filter(|value| !value.is_finite()) {
+        count = count.checked_add(1).ok_or_else(|| {
+            DataFusionError::Execution("stddev_pop nonfinite count exceeds uint64".into())
+        })?;
+    }
+    Ok((count, count != 0))
 }
 
-fn mask_nonfinite(values: &[ArrayRef]) -> Vec<ArrayRef> {
+fn mask_nonfinite(values: &[ArrayRef], has_nonfinite: bool) -> Vec<ArrayRef> {
     let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
-    if input.iter().flatten().all(|value| value.is_finite()) {
+    if !has_nonfinite {
         return values.to_vec();
     }
     let finite = BooleanBuffer::collect_bool(input.len(), |row| {
@@ -132,13 +131,15 @@ impl Accumulator for NativeStddevAccumulator {
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
         let values = cast_values(values)?;
         let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
+        let (nonfinite_count, has_nonfinite) = nonfinite_count(input)?;
         self.nonfinite_count = self
             .nonfinite_count
-            .checked_add(nonfinite_count(input)?)
+            .checked_add(nonfinite_count)
             .ok_or_else(|| {
                 DataFusionError::Execution("stddev_pop nonfinite count exceeds uint64".into())
             })?;
-        self.inner.update_batch(&mask_nonfinite(&values))
+        self.inner
+            .update_batch(&mask_nonfinite(&values, has_nonfinite))
     }
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
@@ -179,8 +180,9 @@ impl Accumulator for NativeStddevAccumulator {
     fn retract_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
         let values = cast_values(values)?;
         let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
-        let nonfinite = nonfinite_count(input)?;
-        self.inner.retract_batch(&mask_nonfinite(&values))?;
+        let (nonfinite, has_nonfinite) = nonfinite_count(input)?;
+        self.inner
+            .retract_batch(&mask_nonfinite(&values, has_nonfinite))?;
         self.nonfinite_count = self.nonfinite_count.saturating_sub(nonfinite);
         Ok(())
     }
@@ -216,8 +218,13 @@ impl GroupsAccumulator for NativeStddevGroups {
             ));
         }
         self.nonfinite.resize(total_groups, 0);
+        let mut has_nonfinite = false;
         for (row, &group) in groups.iter().enumerate() {
-            if filter_passes(filter, row) && input.is_valid(row) && !input.value(row).is_finite() {
+            if input.is_valid(row) && !input.value(row).is_finite() {
+                has_nonfinite = true;
+                if !filter_passes(filter, row) {
+                    continue;
+                }
                 let count = self.nonfinite.get_mut(group).ok_or_else(|| {
                     DataFusionError::Execution("stddev_pop group index exceeds state".into())
                 })?;
@@ -226,8 +233,12 @@ impl GroupsAccumulator for NativeStddevGroups {
                 })?;
             }
         }
-        self.inner
-            .update_batch(&mask_nonfinite(&casted), groups, filter, total_groups)
+        self.inner.update_batch(
+            &mask_nonfinite(&casted, has_nonfinite),
+            groups,
+            filter,
+            total_groups,
+        )
     }
 
     fn evaluate(&mut self, emit_to: EmitTo) -> Result<ArrayRef> {
@@ -292,14 +303,21 @@ impl GroupsAccumulator for NativeStddevGroups {
         filter: Option<&arrow_array::BooleanArray>,
     ) -> Result<Vec<ArrayRef>> {
         let casted = cast_values(values)?;
+        let input = casted[0].as_any().downcast_ref::<Float64Array>().unwrap();
+        let mut has_nonfinite = false;
+        let nonfinite = input
+            .iter()
+            .enumerate()
+            .map(|(row, value)| {
+                let is_nonfinite = value.is_some_and(|value| !value.is_finite());
+                has_nonfinite |= is_nonfinite;
+                u64::from(filter_passes(filter, row) && is_nonfinite)
+            })
+            .collect::<Vec<_>>();
         let mut states = self
             .inner
-            .convert_to_state(&mask_nonfinite(&casted), filter)?;
-        let input = casted[0].as_any().downcast_ref::<Float64Array>().unwrap();
-        let nonfinite = input.iter().enumerate().map(|(row, value)| {
-            u64::from(filter_passes(filter, row) && value.is_some_and(|value| !value.is_finite()))
-        });
-        states.push(Arc::new(UInt64Array::from_iter_values(nonfinite)));
+            .convert_to_state(&mask_nonfinite(&casted, has_nonfinite), filter)?;
+        states.push(Arc::new(UInt64Array::from(nonfinite)));
         Ok(states)
     }
 
