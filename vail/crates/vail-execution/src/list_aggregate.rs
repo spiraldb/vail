@@ -1,12 +1,12 @@
 //! Run shared aggregate kernels over each row's Arrow list, without unnesting.
 //!
-//! A list slice borrows the existing child buffers. Each row gets one fresh
-//! accumulator and one update_batch call, including for an empty list. Only the
-//! initializer's value varies across rows; no aggregate semantics live here.
+//! Primitive reductions use Arrow segmented kernels; regression uses a batched
+//! native grouped kernel. Other reducers borrow each list's child buffers and
+//! use the shared aggregate adapter, including its empty-list identity.
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, new_empty_array,
+    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, StructArray, new_empty_array,
 };
 use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, Schema};
