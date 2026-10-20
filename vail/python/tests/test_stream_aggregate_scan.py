@@ -40,7 +40,7 @@ def test_mean_nan_empty_and_missing_arrays():
     assert hl.eval(scan([], lambda x: hl.scan.sum(x), hl.tint32)) == []
     assert hl.eval(scan(None, lambda x: hl.scan.sum(x), hl.tint32)) is None
     assert hl.eval(scan([None, None], lambda x: hl.scan.sum(x), hl.tint32)) == [0, 0]
-    assert hl.eval(scan([False, True, None], lambda x: hl.scan.sum(x), hl.tbool)) == [0, 1, 1]
+    assert hl.eval(scan([False, True, None], lambda x: hl.scan.sum(x), hl.tbool)) == [0, 0, 1]
 
 
 def test_count_where_stream_scan_observes_true_false_missing_and_filtered_inputs():
