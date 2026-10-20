@@ -13,7 +13,6 @@ enum Kind {
     Count,
     Sum,
     Product,
-    Min,
     Max,
     /// Compatibility path for direct Rust callers of `aggregate_udf`.
     /// Vail's planners lower count_where to native COUNT instead.
@@ -45,24 +44,13 @@ impl Reducer {
         matches!(self.input, DataType::Int32 | DataType::Int64)
     }
     fn extreme(&mut self, input: &ArrayRef) -> Result<()> {
-        let minimum = self.kind == Kind::Min;
         macro_rules! integer {
             ($array:ty,$convert:expr) => {{
                 let values = input.as_any().downcast_ref::<$array>().unwrap();
-                let value = if minimum {
-                    arrow_arith::aggregate::min(values)
-                } else {
-                    arrow_arith::aggregate::max(values)
-                };
+                let value = arrow_arith::aggregate::max(values);
                 if let Some(value) = value {
                     let value = ($convert)(value);
-                    if !self.seen
-                        || (if minimum {
-                            value < self.integer
-                        } else {
-                            value > self.integer
-                        })
-                    {
+                    if !self.seen || value > self.integer {
                         self.integer = value;
                     }
                     self.seen = true;
@@ -72,22 +60,12 @@ impl Reducer {
         macro_rules! floating {
             ($array:ty,$native:ty) => {{
                 let values = input.as_any().downcast_ref::<$array>().unwrap();
-                let value = if minimum {
-                    arrow_arith::aggregate::min(values)
-                } else {
-                    arrow_arith::aggregate::max(values)
-                };
+                let value = arrow_arith::aggregate::max(values);
                 if let Some(value) = value {
-                    // Arrow's batch extrema use IEEE total order, including
-                    // NaN sign and -0 < +0; merges use this same comparator.
+                    // Arrow's batch extrema use IEEE total order; merges use
+                    // this same comparator.
                     let order = value.total_cmp(&(self.float as $native));
-                    if !self.seen
-                        || (if minimum {
-                            order.is_lt()
-                        } else {
-                            order.is_gt()
-                        })
-                    {
+                    if !self.seen || order.is_gt() {
                         self.float = value as f64;
                     }
                     self.seen = true;
@@ -105,12 +83,12 @@ impl Reducer {
     }
     fn value(&self) -> ScalarValue {
         if self.integral() {
-            if self.input == DataType::Int32 && matches!(self.kind, Kind::Min | Kind::Max) {
+            if self.input == DataType::Int32 && self.kind == Kind::Max {
                 ScalarValue::Int32(Some(self.integer as i32))
             } else {
                 ScalarValue::Int64(Some(self.integer))
             }
-        } else if self.input == DataType::Float32 && matches!(self.kind, Kind::Min | Kind::Max) {
+        } else if self.input == DataType::Float32 && self.kind == Kind::Max {
             ScalarValue::Float32(Some(self.float as f32))
         } else {
             ScalarValue::Float64(Some(self.float))
@@ -162,7 +140,7 @@ impl Accumulator for Reducer {
                 let values = Self::boolean(input)?;
                 self.seen |= values.len() - values.null_count() - values.true_count() != 0;
             }
-            Kind::Min | Kind::Max => self.extreme(input)?,
+            Kind::Max => self.extreme(input)?,
             Kind::Sum | Kind::Product if self.integral() => {
                 let cast = arrow_cast::cast(input, &DataType::Int64)?;
                 let values = cast.as_any().downcast_ref::<Int64Array>().unwrap();
@@ -204,7 +182,7 @@ impl Accumulator for Reducer {
                 (self.count != 0).then(|| self.integer as f64 / self.count as f64),
             ),
             Kind::All => ScalarValue::Boolean(Some(!self.seen)),
-            Kind::Min | Kind::Max if !self.seen => ScalarValue::try_from(&self.input)?,
+            Kind::Max if !self.seen => ScalarValue::try_from(&self.input)?,
             _ => self.value(),
         })
     }
@@ -219,7 +197,7 @@ impl Accumulator for Reducer {
                 ScalarValue::Int64(Some(self.integer)),
             ],
             Kind::All => vec![ScalarValue::Boolean(Some(self.seen))],
-            Kind::Min | Kind::Max => vec![self.evaluate()?],
+            Kind::Max => vec![self.evaluate()?],
             Kind::Sum | Kind::Product => vec![ScalarValue::Int64(Some(self.count)), self.value()],
         })
     }
@@ -249,7 +227,7 @@ impl Accumulator for Reducer {
                 );
             }
             Kind::All => self.seen |= Self::boolean(&states[0])?.true_count() != 0,
-            Kind::Min | Kind::Max => self.update_batch(&states[..1])?,
+            Kind::Max => self.update_batch(&states[..1])?,
             Kind::Sum | Kind::Product => {
                 self.count = self.count.wrapping_add(
                     arrow_arith::aggregate::sum(Self::counts(&states[0])?).unwrap_or(0),
@@ -301,6 +279,16 @@ pub fn aggregate_udf(
     function: &str,
     input: Option<&DataType>,
 ) -> std::result::Result<Arc<AggregateUDF>, ExprError> {
+    if function == "min" {
+        let input = input.ok_or_else(|| ExprError::Invalid("min requires input".into()))?;
+        if !matches!(
+            input,
+            DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64
+        ) {
+            return Err(ExprError::Invalid("min requires numeric input".into()));
+        }
+        return Ok(datafusion_functions_aggregate::min_max::min_udaf());
+    }
     if function == "product" {
         return product_udf(input);
     }
@@ -347,7 +335,7 @@ pub fn aggregate_udf(
                 ),
             }
         }
-        "sum" | "product" | "min" | "max" => {
+        "sum" | "product" | "max" => {
             let input =
                 input.ok_or_else(|| ExprError::Invalid(format!("{function} requires input")))?;
             if !matches!(
@@ -361,17 +349,16 @@ pub fn aggregate_udf(
             let kind = match function {
                 "sum" => Kind::Sum,
                 "product" => Kind::Product,
-                "min" => Kind::Min,
                 _ => Kind::Max,
             };
-            let output = if matches!(kind, Kind::Min | Kind::Max) {
+            let output = if kind == Kind::Max {
                 input.clone()
             } else if matches!(input, DataType::Int32 | DataType::Int64) {
                 DataType::Int64
             } else {
                 DataType::Float64
             };
-            let state = if matches!(kind, Kind::Min | Kind::Max) {
+            let state = if kind == Kind::Max {
                 vec![output.clone()]
             } else {
                 vec![DataType::Int64, output.clone()]
