@@ -1155,7 +1155,8 @@ def test_group_by_reductions_use_fused_per_list_groups():
 
 def test_filtered_matrix_entries_preserve_grouped_reducer_context():
     m = hl.range_matrix_table(1, 4, 2)
-    m = m.annotate_entries(x=m.col_idx + 1).filter_entries(m.col_idx != 1)
+    m = m.annotate_entries(x=m.col_idx + 1)
+    m = m.filter_entries(m.col_idx != 1)
     result = m.annotate_rows(
         counts=hl.agg.group_by(m.col_idx % 2, hl.agg.count()),
         fractions=hl.agg.group_by(
