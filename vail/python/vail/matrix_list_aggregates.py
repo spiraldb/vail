@@ -407,42 +407,57 @@ def reduce_list(
             ):
                 functions = []
                 arguments = [keys]
+                unfiltered_arguments = []
                 output_fields = {}
-                filtered_items = []
-
-                def filtered_input(predicate):
-                    for existing, selected, selected_keys in filtered_items:
-                        if same_node(existing, predicate):
-                            return selected, selected_keys
-                    selected = items.filter(
-                        lambda ctx: raw(bind(predicate, ctx), tbool)
-                    )
-                    # The outer grouping keys define the output key universe,
-                    # including keys whose reducers select no values. Evaluate
-                    # the key once for every item, then select that existing
-                    # key list with the filter bitmap.
-                    from .matrixtable import _zip_arrays
-
-                    predicate_values = mapped(items, predicate)
-                    selected_keys = _zip_arrays(keys, predicate_values).filter(
-                        lambda pair: pair["2"]
-                    ).map(lambda pair: pair["1"])
-                    filtered_items.append((predicate, selected, selected_keys))
-                    return selected, selected_keys
-
+                filter_groups = []
                 for index, (aggregate, filters) in enumerate(supported_aggregates):
                     reducer = aggregate["function"]
-                    functions.append(reducer + ("_filtered" if filters else ""))
-                    aggregate_items = items
                     if filters:
-                        aggregate_items, selected_keys = filtered_input(filters[0])
-                        arguments.append(selected_keys)
-                    if reducer != "count":
-                        arguments.append(mapped(aggregate_items, aggregate["value"]))
+                        group = next(
+                            (
+                                group_index
+                                for group_index, (predicate, _) in enumerate(filter_groups)
+                                if same_node(predicate, filters[0])
+                            ),
+                            None,
+                        )
+                        if group is None:
+                            group = len(filter_groups)
+                            filter_groups.append((filters[0], []))
+                        filter_groups[group][1].append(index)
+                        functions.append(f"{reducer}_filtered{group}")
+                    else:
+                        functions.append(reducer)
+                        if reducer != "count":
+                            unfiltered_arguments.append(mapped(items, aggregate["value"]))
                     aggregate_options = aggregate.get("options") or {}
                     output_fields[f"__agg_{index}"] = type_from_wire(
                         aggregate_options["__vail_result_type"]
                     )
+                if filter_groups:
+                    from .matrixtable import _zip_arrays
+
+                    for predicate, aggregate_indices in filter_groups:
+                        # Keys are computed for all items above so outer-key
+                        # errors and empty filtered groups retain Hail semantics.
+                        # The one selected pair list shares predicate evaluation,
+                        # keys, and reducer contexts for this filter scope.
+                        selected_pairs = _zip_arrays(keys, items).filter(
+                            lambda pair: raw(bind(predicate, pair["2"]), tbool)
+                        )
+
+                        def project_pair(pair, indices=aggregate_indices):
+                            fields = {"key": pair["1"]}
+                            for aggregate_index in indices:
+                                aggregate = supported_aggregates[aggregate_index][0]
+                                if aggregate["function"] != "count":
+                                    fields[f"__value_{aggregate_index}"] = raw(
+                                        bind(aggregate["value"], pair["2"])
+                                    )
+                            return struct(**fields)
+
+                        arguments.append(selected_pairs.map(project_pair))
+                arguments.extend(unfiltered_arguments)
                 multiple = len(supported_aggregates) > 1
                 if multiple:
                     result_value_type = tstruct(**output_fields)

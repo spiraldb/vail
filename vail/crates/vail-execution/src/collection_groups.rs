@@ -22,7 +22,12 @@ enum Operation {
     First,
     Last,
     Group,
-    Aggregate(Vec<(String, bool)>),
+    Aggregate(Vec<AggregateSpec>),
+}
+#[derive(Debug, PartialEq, Eq, Hash)]
+struct AggregateSpec {
+    function: String,
+    filter_group: Option<usize>,
 }
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct CollectionGroups {
@@ -37,37 +42,81 @@ struct ListInput<'a> {
     scalar: bool,
 }
 
+struct FilteredGroupInput {
+    keys: ListArray,
+    scalar: bool,
+    values: std::collections::HashMap<usize, ListArray>,
+}
+
+fn list_struct_field(parent: &ListArray, name: &str) -> Result<ListArray> {
+    let records = parent
+        .values()
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .ok_or_else(|| {
+            datafusion_common::exec_datafusion_err!("filtered group inputs must be records")
+        })?;
+    let DataType::List(item) = parent.data_type() else {
+        unreachable!()
+    };
+    let DataType::Struct(fields) = item.data_type() else {
+        unreachable!()
+    };
+    let field = fields
+        .iter()
+        .find(|field| field.name() == name)
+        .cloned()
+        .ok_or_else(|| {
+            datafusion_common::exec_datafusion_err!("filtered group input missing {name}")
+        })?;
+    let values = records
+        .column_by_name(name)
+        .ok_or_else(|| {
+            datafusion_common::exec_datafusion_err!("filtered group input missing {name}")
+        })?
+        .clone();
+    Ok(ListArray::try_new(
+        field,
+        parent.value_offsets().clone(),
+        values,
+        parent.nulls().cloned(),
+    )?)
+}
+
 pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
     let operation = match name {
         "__vail_dict_first" => Operation::First,
         "__vail_dict_last" => Operation::Last,
         "__vail_collection_group" => Operation::Group,
         _ => {
-            let functions = if let Some(functions) =
+            let specs = if let Some(functions) =
                 name.strip_prefix("__vail_collection_group_aggregate_multi__")
             {
-                functions
-                    .split("__")
-                    .map(|spec| {
-                        spec.strip_suffix("_filtered")
-                            .map_or((spec.to_owned(), false), |function| {
-                                (function.to_owned(), true)
-                            })
-                    })
-                    .collect::<Vec<_>>()
+                functions.split("__").collect::<Vec<_>>()
             } else {
                 let spec = name.strip_prefix("__vail_collection_group_aggregate_")?;
-                vec![
-                    spec.strip_suffix("_filtered")
-                        .map_or((spec.to_owned(), false), |function| {
-                            (function.to_owned(), true)
-                        }),
-                ]
+                vec![spec]
             };
+            let functions = specs
+                .into_iter()
+                .map(|spec| {
+                    if let Some((function, group)) = spec.rsplit_once("_filtered") {
+                        Some(AggregateSpec {
+                            function: function.to_owned(),
+                            filter_group: Some(group.parse().ok()?),
+                        })
+                    } else {
+                        Some(AggregateSpec {
+                            function: spec.to_owned(),
+                            filter_group: None,
+                        })
+                    }
+                })
+                .collect::<Option<Vec<_>>>()?;
             if functions.is_empty()
-                || functions.iter().any(|(function, _)| {
+                || functions.iter().any(|spec| {
                     !matches!(
-                        function.as_str(),
+                        spec.function.as_str(),
                         "count"
                             | "count_where"
                             | "sum"
@@ -89,12 +138,16 @@ pub(crate) fn udf(name: &str) -> Option<Arc<ScalarUDF>> {
     };
     let aggregate_arguments = match &operation {
         Operation::Aggregate(functions) => {
-            1 + functions
+            let filter_groups = functions
                 .iter()
-                .map(|(function, filtered)| {
-                    (if function == "count" { 0 } else { 1 }) + (if *filtered { 1 } else { 0 })
-                })
-                .sum::<usize>()
+                .filter_map(|spec| spec.filter_group)
+                .collect::<std::collections::HashSet<_>>()
+                .len();
+            1 + filter_groups
+                + functions
+                    .iter()
+                    .filter(|spec| spec.filter_group.is_none() && spec.function != "count")
+                    .count()
         }
         _ => 1,
     };
@@ -133,23 +186,63 @@ impl ScalarUDFImpl for CollectionGroups {
     }
     fn return_type(&self, args: &[DataType]) -> Result<DataType> {
         if let Operation::Aggregate(functions) = &self.operation {
-            let [DataType::List(key), values @ ..] = args else {
+            let [DataType::List(key), remaining @ ..] = args else {
                 return plan_err!("group aggregate requires key and value lists");
             };
-            let mut value_types = values.iter();
-            let mut result_fields = Vec::with_capacity(functions.len());
-            for (index, (function, filtered)) in functions.iter().enumerate() {
-                if *filtered {
-                    match value_types.next() {
-                        Some(DataType::List(filtered_key))
-                            if filtered_key.data_type() == key.data_type() => {}
-                        _ => return plan_err!("filtered group aggregate requires key lists"),
-                    }
+            let group_count = functions
+                .iter()
+                .filter_map(|spec| spec.filter_group)
+                .collect::<std::collections::HashSet<_>>()
+                .len();
+            let mut cursor = 0;
+            let mut filtered_types = Vec::with_capacity(group_count);
+            for group in 0..group_count {
+                let Some(DataType::List(record)) = remaining.get(cursor) else {
+                    return plan_err!("filtered group aggregate requires record lists");
+                };
+                cursor += 1;
+                let DataType::Struct(fields) = record.data_type() else {
+                    return plan_err!("filtered group aggregate requires key/value records");
+                };
+                let Some(key_field) = fields.iter().find(|field| field.name() == "key") else {
+                    return plan_err!("filtered group aggregate requires key fields");
+                };
+                if key_field.data_type() != key.data_type() {
+                    return plan_err!("filtered group key type differs from base key type");
                 }
+                filtered_types.push(record.data_type());
+                if !functions
+                    .iter()
+                    .any(|spec| spec.filter_group == Some(group))
+                {
+                    return plan_err!("filtered group indices must be contiguous");
+                }
+            }
+            let mut result_fields = Vec::with_capacity(functions.len());
+            for (index, spec) in functions.iter().enumerate() {
+                let function = spec.function.as_str();
                 let input_type = if function == "count" {
                     None
+                } else if let Some(group) = spec.filter_group {
+                    let DataType::Struct(fields) = filtered_types[group] else {
+                        unreachable!()
+                    };
+                    let name = format!("__value_{index}");
+                    Some(
+                        fields
+                            .iter()
+                            .find(|field| field.name() == name)
+                            .ok_or_else(|| {
+                                datafusion_common::plan_datafusion_err!(
+                                    "filtered group aggregate requires {name}"
+                                )
+                            })?
+                            .data_type(),
+                    )
                 } else {
-                    Some(match value_types.next() {
+                    let value = remaining.get(cursor);
+                    cursor += 1;
+                    Some(match value {
                         Some(DataType::List(value)) => value.data_type(),
                         _ => return plan_err!("group aggregate requires matching value lists"),
                     })
@@ -184,7 +277,7 @@ impl ScalarUDFImpl for CollectionGroups {
                     true,
                 ));
             }
-            if value_types.next().is_some() {
+            if cursor != remaining.len() {
                 return plan_err!("group aggregate received extra value lists");
             }
             let value_type = if functions.len() == 1 {
@@ -248,52 +341,86 @@ impl ScalarUDFImpl for CollectionGroups {
                 array: keys,
                 scalar: arrays[0].1,
             };
-            let mut inputs = arrays.iter().skip(1);
+            let filter_group_count = functions
+                .iter()
+                .filter_map(|spec| spec.filter_group)
+                .collect::<std::collections::HashSet<_>>()
+                .len();
+            let mut filtered_inputs = Vec::with_capacity(filter_group_count);
+            for (array, scalar) in arrays.iter().skip(1).take(filter_group_count) {
+                let records = array.as_any().downcast_ref::<ListArray>().ok_or_else(|| {
+                    datafusion_common::exec_datafusion_err!("filtered group inputs must be lists")
+                })?;
+                let keys = list_struct_field(records, "key")?;
+                let mut values = std::collections::HashMap::new();
+                for (index, spec) in functions.iter().enumerate() {
+                    if spec.filter_group.is_some()
+                        && spec.filter_group == Some(filtered_inputs.len())
+                        && spec.function != "count"
+                    {
+                        values.insert(
+                            index,
+                            list_struct_field(records, &format!("__value_{index}"))?,
+                        );
+                    }
+                }
+                filtered_inputs.push(FilteredGroupInput {
+                    keys,
+                    scalar: *scalar,
+                    values,
+                });
+            }
+            let mut inputs =
+                arrays
+                    .iter()
+                    .skip(1 + filter_group_count)
+                    .filter_map(|(array, scalar)| {
+                        array
+                            .as_any()
+                            .downcast_ref::<ListArray>()
+                            .map(|array| ListInput {
+                                array,
+                                scalar: *scalar,
+                            })
+                    });
             let mut specs = Vec::with_capacity(functions.len());
-            for (function, filtered) in functions {
-                let aggregate_keys = if *filtered {
-                    inputs
-                        .next()
-                        .and_then(|(array, scalar)| {
-                            array
-                                .as_any()
-                                .downcast_ref::<ListArray>()
-                                .map(|array| ListInput {
-                                    array,
-                                    scalar: *scalar,
-                                })
-                        })
-                        .ok_or_else(|| {
-                            datafusion_common::exec_datafusion_err!(
-                                "filtered group keys must be lists"
-                            )
-                        })?
+            for (index, spec) in functions.iter().enumerate() {
+                let aggregate_keys = if let Some(group) = spec.filter_group {
+                    let input = filtered_inputs.get(group).ok_or_else(|| {
+                        datafusion_common::exec_datafusion_err!("missing filtered group input")
+                    })?;
+                    ListInput {
+                        array: &input.keys,
+                        scalar: input.scalar,
+                    }
                 } else {
                     keys
                 };
-                let value = if function == "count" {
+                let value = if spec.function == "count" {
                     None
+                } else if let Some(group) = spec.filter_group {
+                    let input = filtered_inputs.get(group).ok_or_else(|| {
+                        datafusion_common::exec_datafusion_err!("missing filtered group input")
+                    })?;
+                    Some(ListInput {
+                        array: input.values.get(&index).ok_or_else(|| {
+                            datafusion_common::exec_datafusion_err!(
+                                "missing filtered group value input"
+                            )
+                        })?,
+                        scalar: input.scalar,
+                    })
                 } else {
-                    Some(
-                        inputs
-                            .next()
-                            .and_then(|(array, scalar)| {
-                                array
-                                    .as_any()
-                                    .downcast_ref::<ListArray>()
-                                    .map(|array| ListInput {
-                                        array,
-                                        scalar: *scalar,
-                                    })
-                            })
-                            .ok_or_else(|| {
-                                datafusion_common::exec_datafusion_err!(
-                                    "group values must be lists"
-                                )
-                            })?,
-                    )
+                    Some(inputs.next().ok_or_else(|| {
+                        datafusion_common::exec_datafusion_err!("group values must be lists")
+                    })?)
                 };
-                specs.push((function.as_str(), *filtered, aggregate_keys, value));
+                specs.push((
+                    spec.function.as_str(),
+                    spec.filter_group.is_some(),
+                    aggregate_keys,
+                    value,
+                ));
             }
             let output_type = self.return_type(
                 &arrays
