@@ -309,7 +309,6 @@ fn coordinate_sum_widens_boolean_input_to_int64() {
 
 #[test]
 fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
-    use datafusion_expr::GroupsAccumulator;
     let call_type = vail_execution::calls::storage_type();
     let packed_type = DataType::Struct(
         vec![
@@ -397,7 +396,10 @@ fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
     let ac = ac.as_any().downcast_ref::<Int32Array>().unwrap();
     assert_eq!(ac.values(), &[1, 2]);
 
-    let evaluated = grouped.evaluate(EmitTo::All).unwrap();
+    // Emitting partial state drains the groups. Replay it before checking final output.
+    let mut replay = aggregate.create_groups_accumulator().unwrap();
+    replay.merge_batch(&group_state, &[0, 1], 2).unwrap();
+    let evaluated = replay.evaluate(EmitTo::All).unwrap();
     let evaluated = evaluated.as_any().downcast_ref::<StructArray>().unwrap();
     let an = evaluated
         .column_by_name("AN")
