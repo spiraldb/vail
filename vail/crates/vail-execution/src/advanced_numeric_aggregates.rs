@@ -3,12 +3,15 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, Float64Array, Int64Array, ListArray, StructArray, new_empty_array,
+    Array, ArrayRef, BooleanArray, Float64Array, Int64Array, ListArray, StructArray,
+    new_empty_array,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use datafusion_expr::{
+    Accumulator, AggregateUDF, EmitTo, GroupsAccumulator, Volatility, expr_fn::create_udaf,
+};
 use kll_rs::KllDoubleSketch;
 use nalgebra::{DMatrix, DVector};
 use statrs::distribution::{ContinuousCDF, FisherSnedecor, StudentsT};
@@ -148,35 +151,81 @@ fn histogram(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, E
         edges: Arc::new(Float64Array::from(edges)),
     });
     let list = |ty| DataType::List(Arc::new(Field::new("item", ty, true)));
-    let output = DataType::Struct(
-        vec![
-            Arc::new(Field::new("bin_edges", list(DataType::Float64), true)),
-            Arc::new(Field::new("bin_freq", list(DataType::Int64), true)),
-            Arc::new(Field::new("n_smaller", DataType::Int64, true)),
-            Arc::new(Field::new("n_larger", DataType::Int64, true)),
-        ]
-        .into(),
-    );
+    let fields = vec![
+        Arc::new(Field::new("bin_edges", list(DataType::Float64), true)),
+        Arc::new(Field::new("bin_freq", list(DataType::Int64), true)),
+        Arc::new(Field::new("n_smaller", DataType::Int64, true)),
+        Arc::new(Field::new("n_larger", DataType::Int64, true)),
+    ];
+    let output = DataType::Struct(fields.clone().into());
+    let state = list(DataType::Int64);
+    let udf_name = configured_udaf_name("hist", t, o);
+    let scalar_config = Arc::clone(&config);
     let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
         Ok(Box::new(HistAccumulator {
-            config: config.clone(),
-            counts: vec![0; bins + 2],
-        }))
+            config: Arc::clone(&scalar_config),
+            counts: vec![0; scalar_config.bins + 2],
+        }) as Box<dyn Accumulator>)
     });
-    Ok(Arc::new(create_udaf(
-        &configured_udaf_name("hist", t, o),
+    let groups_config = Arc::clone(&config);
+    let groups_factory = Arc::new(move || {
+        Ok(Box::new(HistGroupsAccumulator {
+            config: Arc::clone(&groups_config),
+            counts: Vec::new(),
+        }) as Box<dyn GroupsAccumulator>)
+    });
+    let groups_supported = Arc::new(|args: &datafusion_expr::function::AccumulatorArgs<'_>| {
+        !args.is_distinct
+            && args.order_bys.is_empty()
+            && !args.is_reversed
+            && args.expr_fields.len() == 1
+            && numeric(args.expr_fields[0].data_type())
+    });
+    Ok(crate::kernel_identity::aggregate_named_with_groups(
+        &udf_name,
+        (udf_name.clone(), t.clone(), output.clone()),
         vec![t.clone()],
-        Arc::new(output),
-        Volatility::Immutable,
+        output,
+        vec![state],
         factory,
-        Arc::new(vec![list(DataType::Int64)]),
-    )))
+        Some(groups_factory),
+        Some(groups_supported),
+    ))
 }
 #[derive(Debug)]
 struct HistAccumulator {
     config: Arc<HistogramConfig>,
     counts: Vec<i64>,
 }
+fn histogram_bin(config: &HistogramConfig, value: f64) -> Option<usize> {
+    if value.is_nan() {
+        return None;
+    }
+    Some(if value < config.range.start {
+        0
+    } else if value > config.range.end {
+        config.bins + 1
+    } else if value == config.range.end {
+        config.bins
+    } else {
+        let candidate = ((config.range.fraction(value) * config.bins as f64).floor() as usize)
+            .min(config.bins - 1);
+        let bin = if value >= config.edges.value(candidate)
+            && value < config.edges.value(candidate + 1)
+        {
+            candidate
+        } else {
+            config
+                .edges
+                .values()
+                .partition_point(|edge| *edge <= value)
+                .saturating_sub(1)
+                .min(config.bins - 1)
+        };
+        bin + 1
+    })
+}
+
 fn numeric_list(values: ArrayRef) -> ScalarValue {
     ScalarValue::List(Arc::new(ListArray::new(
         Arc::new(Field::new("item", values.data_type().clone(), true)),
@@ -185,6 +234,72 @@ fn numeric_list(values: ArrayRef) -> ScalarValue {
         None,
     )))
 }
+fn list_array(values: ArrayRef, list_width: usize) -> DfResult<ArrayRef> {
+    if list_width == 0 || values.len() % list_width != 0 {
+        return Err(DataFusionError::Execution(
+            "hist list values do not match the configured width".into(),
+        ));
+    }
+    let rows = values.len() / list_width;
+    if values.len() > i32::MAX as usize {
+        return Err(DataFusionError::Execution(
+            "hist list output exceeds Arrow's offset limit".into(),
+        ));
+    }
+    Ok(Arc::new(ListArray::new(
+        Arc::new(Field::new("item", values.data_type().clone(), true)),
+        OffsetBuffer::from_lengths(vec![list_width; rows]),
+        values,
+        None,
+    )))
+}
+
+fn histogram_groups_output(config: &HistogramConfig, counts: Vec<i64>) -> DfResult<ArrayRef> {
+    let width = config.bins + 2;
+    if counts.len() % width != 0 {
+        return Err(DataFusionError::Execution(
+            "hist grouped state width mismatch".into(),
+        ));
+    }
+    let groups = counts.len() / width;
+    let mut edges = Vec::with_capacity(groups.saturating_mul(config.edges.len()));
+    let mut frequencies = Vec::with_capacity(groups.saturating_mul(config.bins));
+    let mut smaller = Vec::with_capacity(groups);
+    let mut larger = Vec::with_capacity(groups);
+    for group in counts.chunks_exact(width) {
+        edges.extend(config.edges.values().iter().copied());
+        frequencies.extend_from_slice(&group[1..=config.bins]);
+        smaller.push(group[0]);
+        larger.push(group[config.bins + 1]);
+    }
+    let edge_lists = list_array(Arc::new(Float64Array::from(edges)), config.edges.len())?;
+    let frequency_lists = list_array(Arc::new(Int64Array::from(frequencies)), config.bins)?;
+    let fields = vec![
+        Arc::new(Field::new(
+            "bin_edges",
+            edge_lists.data_type().clone(),
+            true,
+        )),
+        Arc::new(Field::new(
+            "bin_freq",
+            frequency_lists.data_type().clone(),
+            true,
+        )),
+        Arc::new(Field::new("n_smaller", DataType::Int64, true)),
+        Arc::new(Field::new("n_larger", DataType::Int64, true)),
+    ];
+    Ok(Arc::new(StructArray::new(
+        fields.into(),
+        vec![
+            edge_lists,
+            frequency_lists,
+            Arc::new(Int64Array::from(smaller)),
+            Arc::new(Int64Array::from(larger)),
+        ],
+        None,
+    )))
+}
+
 impl Accumulator for HistAccumulator {
     fn update_batch(&mut self, values: &[ArrayRef]) -> DfResult<()> {
         let [input] = values else {
@@ -197,35 +312,9 @@ impl Accumulator for HistAccumulator {
             if values.is_null(row) {
                 continue;
             }
-            let value = values.value(row);
-            if value.is_nan() {
-                continue;
+            if let Some(index) = histogram_bin(config, values.value(row)) {
+                self.counts[index] = self.counts[index].wrapping_add(1);
             }
-            let index = if value < config.range.start {
-                0
-            } else if value > config.range.end {
-                config.bins + 1
-            } else if value == config.range.end {
-                config.bins
-            } else {
-                let candidate = ((config.range.fraction(value) * config.bins as f64).floor()
-                    as usize)
-                    .min(config.bins - 1);
-                let bin = if value >= config.edges.value(candidate)
-                    && value < config.edges.value(candidate + 1)
-                {
-                    candidate
-                } else {
-                    config
-                        .edges
-                        .values()
-                        .partition_point(|edge| *edge <= value)
-                        .saturating_sub(1)
-                        .min(config.bins - 1)
-                };
-                bin + 1
-            };
-            self.counts[index] = self.counts[index].wrapping_add(1);
         }
         Ok(())
     }
@@ -294,6 +383,203 @@ impl Accumulator for HistAccumulator {
             }
         }
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct HistGroupsAccumulator {
+    config: Arc<HistogramConfig>,
+    // Each group owns one contiguous row of `bins + 2` counts.
+    counts: Vec<i64>,
+}
+
+impl HistGroupsAccumulator {
+    fn width(&self) -> usize {
+        self.config.bins + 2
+    }
+
+    fn ensure_groups(&mut self, groups: usize) -> DfResult<()> {
+        let count_len = groups
+            .checked_mul(self.width())
+            .ok_or_else(|| DataFusionError::Execution("hist grouped state size overflow".into()))?;
+        if count_len > i32::MAX as usize {
+            return Err(DataFusionError::Execution(
+                "hist grouped state exceeds Arrow's offset limit".into(),
+            ));
+        }
+        if count_len > self.counts.len() {
+            self.counts.resize(count_len, 0);
+        }
+        Ok(())
+    }
+
+    fn take_counts(&mut self, emit_to: EmitTo) -> DfResult<Vec<i64>> {
+        let width = self.width();
+        let groups = self.counts.len() / width;
+        match emit_to {
+            EmitTo::All => Ok(std::mem::take(&mut self.counts)),
+            EmitTo::First(n) if n <= groups => Ok(self.counts.drain(0..n * width).collect()),
+            EmitTo::First(_) => Err(DataFusionError::Execution(
+                "hist emitted group count exceeds accumulator state".into(),
+            )),
+        }
+    }
+
+    fn checked_input<'a>(&self, values: &'a [ArrayRef]) -> DfResult<&'a ArrayRef> {
+        let [input] = values else {
+            return Err(DataFusionError::Execution("hist expects one input".into()));
+        };
+        Ok(input)
+    }
+
+    fn add_row(&mut self, group: usize, value: f64) {
+        if let Some(index) = histogram_bin(&self.config, value) {
+            let offset = group * self.width() + index;
+            self.counts[offset] = self.counts[offset].wrapping_add(1);
+        }
+    }
+}
+
+impl GroupsAccumulator for HistGroupsAccumulator {
+    fn update_batch(
+        &mut self,
+        values: &[ArrayRef],
+        group_indices: &[usize],
+        opt_filter: Option<&BooleanArray>,
+        total_num_groups: usize,
+    ) -> DfResult<()> {
+        let input = self.checked_input(values)?;
+        if input.len() != group_indices.len()
+            || opt_filter.is_some_and(|filter| filter.len() != input.len())
+            || group_indices.iter().any(|group| *group >= total_num_groups)
+            || !numeric(input.data_type())
+        {
+            return Err(DataFusionError::Execution(
+                "hist grouping input shape/type mismatch".into(),
+            ));
+        }
+        self.ensure_groups(total_num_groups)?;
+        let cast = arrow_cast::cast(input, &DataType::Float64)?;
+        let values = cast.as_any().downcast_ref::<Float64Array>().unwrap();
+        for (row, group) in group_indices.iter().copied().enumerate() {
+            if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row))
+                || values.is_null(row)
+            {
+                continue;
+            }
+            self.add_row(group, values.value(row));
+        }
+        Ok(())
+    }
+
+    fn evaluate(&mut self, emit_to: EmitTo) -> DfResult<ArrayRef> {
+        let config = Arc::clone(&self.config);
+        let counts = self.take_counts(emit_to)?;
+        histogram_groups_output(&config, counts)
+    }
+
+    fn size(&self) -> usize {
+        std::mem::size_of_val(self) + self.counts.capacity() * std::mem::size_of::<i64>()
+    }
+
+    fn state(&mut self, emit_to: EmitTo) -> DfResult<Vec<ArrayRef>> {
+        let width = self.width();
+        let counts = self.take_counts(emit_to)?;
+        Ok(vec![list_array(Arc::new(Int64Array::from(counts)), width)?])
+    }
+
+    fn merge_batch(
+        &mut self,
+        states: &[ArrayRef],
+        group_indices: &[usize],
+        total_num_groups: usize,
+    ) -> DfResult<()> {
+        let [state] = states else {
+            return Err(DataFusionError::Execution(
+                "hist state shape mismatch".into(),
+            ));
+        };
+        let lists = state
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| DataFusionError::Execution("hist state must be int64 list".into()))?;
+        let values = lists
+            .values()
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| DataFusionError::Execution("hist counts must be int64".into()))?;
+        if lists.len() != group_indices.len()
+            || group_indices.iter().any(|group| *group >= total_num_groups)
+        {
+            return Err(DataFusionError::Execution(
+                "hist grouped state shape mismatch".into(),
+            ));
+        }
+        self.ensure_groups(total_num_groups)?;
+        for (row, group) in group_indices.iter().copied().enumerate() {
+            if lists.is_null(row) {
+                continue;
+            }
+            let start = lists.value_offsets()[row] as usize;
+            if lists.value_length(row) as usize != self.width() {
+                return Err(DataFusionError::Execution(
+                    "hist grouped state width mismatch".into(),
+                ));
+            }
+            for offset in 0..self.width() {
+                if values.is_null(start + offset) {
+                    return Err(DataFusionError::Execution(
+                        "hist grouped counts must be defined".into(),
+                    ));
+                }
+                let dst = group * self.width() + offset;
+                self.counts[dst] = self.counts[dst].wrapping_add(values.value(start + offset));
+            }
+        }
+        Ok(())
+    }
+
+    fn convert_to_state(
+        &self,
+        values: &[ArrayRef],
+        opt_filter: Option<&BooleanArray>,
+    ) -> DfResult<Vec<ArrayRef>> {
+        let [input] = values else {
+            return Err(DataFusionError::Execution("hist expects one input".into()));
+        };
+        if opt_filter.is_some_and(|filter| filter.len() != input.len())
+            || !numeric(input.data_type())
+        {
+            return Err(DataFusionError::Execution(
+                "hist converter input shape/type mismatch".into(),
+            ));
+        }
+        let state_len = input
+            .len()
+            .checked_mul(self.width())
+            .ok_or_else(|| DataFusionError::Execution("hist grouped state size overflow".into()))?;
+        if state_len > i32::MAX as usize {
+            return Err(DataFusionError::Execution(
+                "hist grouped state exceeds Arrow's offset limit".into(),
+            ));
+        }
+        let cast = arrow_cast::cast(input, &DataType::Float64)?;
+        let cast = cast.as_any().downcast_ref::<Float64Array>().unwrap();
+        let mut counts = vec![0; state_len];
+        for row in 0..cast.len() {
+            if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row))
+                || cast.is_null(row)
+            {
+                continue;
+            }
+            if let Some(index) = histogram_bin(&self.config, cast.value(row)) {
+                counts[row * self.width() + index] = 1;
+            }
+        }
+        Ok(vec![list_array(
+            Arc::new(Int64Array::from(counts)),
+            self.width(),
+        )?])
     }
 }
 
