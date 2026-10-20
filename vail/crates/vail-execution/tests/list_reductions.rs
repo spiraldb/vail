@@ -108,6 +108,15 @@ fn reduce_legacy_call_stats(
         .into_array(lists.len())?)
 }
 
+fn tagged_call_type() -> DataType {
+    let logical = Type::Primitive(PrimitiveType::Call);
+    vail_ordering::tag_type(
+        logical.to_arrow().unwrap(),
+        &serde_json::to_value(&logical).unwrap(),
+    )
+    .unwrap()
+}
+
 #[test]
 fn correlation_list_reduction_batches_rows_and_keeps_empty_and_null_semantics() {
     let fields = vec![
@@ -188,7 +197,7 @@ fn call_stats_list_reduction_batches_variable_initializers_in_outer_order() {
             true,
         )),
     ];
-    let call_type = DataType::Struct(call_fields.clone().into());
+    let call_type = tagged_call_type();
     let item_fields = vec![
         Arc::new(Field::new("__vail_genomic_call", call_type.clone(), true)),
         Arc::new(Field::new("__vail_genomic_alleles", DataType::Int32, true)),
@@ -311,7 +320,7 @@ fn legacy_genomic_call_stats_alias_uses_batched_call_list_reducer() {
         vail_execution::calls::Call::new(&[1, 1], false).unwrap(),
     ];
     let call_values = Arc::new(StructArray::new(
-        match vail_execution::calls::storage_type() {
+        match tagged_call_type() {
             DataType::Struct(fields) => fields,
             _ => unreachable!(),
         },
