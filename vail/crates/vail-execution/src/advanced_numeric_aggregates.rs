@@ -3,17 +3,17 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Float64Array, Int64Array, ListArray, StructArray,
-    new_empty_array,
+    new_empty_array, Array, ArrayRef, BooleanArray, Float64Array, Int64Array, ListArray,
+    StructArray,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field, FieldRef};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{
-    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
     expr_fn::create_udaf,
     function::{AccumulatorArgs, StateFieldsArgs},
     utils::format_state_name,
+    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
 };
 use kll_rs::KllDoubleSketch;
 use nalgebra::{DMatrix, DVector};
@@ -876,8 +876,9 @@ impl AggregateUDFImpl for CorrelationUdf {
         .collect())
     }
 
-    fn accumulator(&self, args: AccumulatorArgs) -> DfResult<Box<dyn Accumulator>> {
-        let mut inner = native_correlation().create_groups_accumulator(args)?;
+    fn accumulator(&self, _args: AccumulatorArgs) -> DfResult<Box<dyn Accumulator>> {
+        let mut inner =
+            datafusion_functions_aggregate::correlation::CorrelationGroupsAccumulator::new();
         // Keep the native group state at one row even before the first update,
         // so scalar and grouped partial states have the same six-field layout.
         inner.update_batch(
@@ -910,7 +911,7 @@ impl AggregateUDFImpl for CorrelationUdf {
     }
 }
 struct CorrAccumulator {
-    inner: Box<dyn GroupsAccumulator>,
+    inner: datafusion_functions_aggregate::correlation::CorrelationGroupsAccumulator,
     pair_count: u64,
 }
 
@@ -1056,12 +1057,12 @@ impl Accumulator for CorrAccumulator {
             .pair_count
             .checked_add(pair_count)
             .ok_or_else(|| DataFusionError::Execution("corr pair count exceeds uint64".into()))?;
-        update_single_group_in_chunks(self.inner.as_mut(), &pairs)?;
+        update_single_group_in_chunks(&mut self.inner, &pairs)?;
         self.pair_count = next_count;
         Ok(())
     }
     fn evaluate(&mut self) -> DfResult<ScalarValue> {
-        let state = scalar_state_arrays(self.inner.as_mut())?;
+        let state = scalar_state_arrays(&mut self.inner)?;
         let value = self.inner.evaluate(EmitTo::First(1));
         let restore = self.inner.merge_batch(&state, &[0], 1);
         let value = value?;
@@ -1088,7 +1089,7 @@ impl Accumulator for CorrAccumulator {
         self.inner.size() + std::mem::size_of_val(&self.pair_count)
     }
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
-        scalar_state(self.inner.as_mut())
+        scalar_state(&mut self.inner)
     }
     fn merge_batch(&mut self, v: &[ArrayRef]) -> DfResult<()> {
         let counts = v
@@ -1109,7 +1110,7 @@ impl Accumulator for CorrAccumulator {
             .pair_count
             .checked_add(merged_count)
             .ok_or_else(|| DataFusionError::Execution("corr pair count exceeds uint64".into()))?;
-        merge_single_group_in_chunks(self.inner.as_mut(), v)?;
+        merge_single_group_in_chunks(&mut self.inner, v)?;
         self.pair_count = next_count;
         Ok(())
     }
