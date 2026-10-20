@@ -46,6 +46,7 @@ pub(crate) fn arity(function: &str) -> Option<usize> {
             | "stddev_pop"
             | "count_where"
             | "fraction"
+            | "linreg"
             | "any"
             | "all"
             | "call_stats"
@@ -55,7 +56,7 @@ pub(crate) fn arity(function: &str) -> Option<usize> {
         return None;
     }
     Some(
-        if matches!(function, "call_stats" | "take" | "take_ordered") {
+        if matches!(function, "call_stats" | "take" | "take_ordered" | "linreg") {
             2
         } else {
             1
@@ -95,7 +96,35 @@ fn element_type(args: &[DataType], function: &str) -> Result<DataType> {
     if matches!(function, "take" | "take_ordered") && args[1] != DataType::Int64 {
         return Err(plan_datafusion_err!("take initializer requires int64"));
     }
+    if function == "linreg" && args[1] != DataType::Int64 {
+        return Err(plan_datafusion_err!("linreg nested_dim requires int64"));
+    }
     Ok(field.data_type().clone())
+}
+
+fn configured_linreg(
+    input: &DataType,
+    nested_dim: usize,
+) -> Result<Arc<datafusion_expr::AggregateUDF>> {
+    let DataType::Struct(fields) = input else {
+        return Err(plan_datafusion_err!("linreg list input requires a struct"));
+    };
+    let x = fields
+        .iter()
+        .find(|field| field.name() == "x")
+        .ok_or_else(|| plan_datafusion_err!("linreg list input requires x predictors"))?;
+    let DataType::Struct(predictors) = x.data_type() else {
+        return Err(plan_datafusion_err!(
+            "linreg list input requires struct predictors"
+        ));
+    };
+    let n_predictors = predictors.len();
+    let options = serde_json::json!({
+        "nested_dim": nested_dim,
+        "n_predictors": n_predictors,
+    });
+    crate::reducer::configured_udaf("linreg", Some(input), &options)
+        .map_err(|error| plan_datafusion_err!("{error}"))
 }
 
 fn configured(
@@ -152,7 +181,11 @@ impl ScalarUDFImpl for ListAggregate {
     }
     fn return_type(&self, args: &[DataType]) -> Result<DataType> {
         let input = element_type(args, &self.function)?;
-        configured(&self.function, &input, 0)?.return_type(&[input])
+        if self.function == "linreg" {
+            configured_linreg(&input, 0)?.return_type(&[input])
+        } else {
+            configured(&self.function, &input, 0)?.return_type(&[input])
+        }
     }
     fn invoke_with_args(&self, args: ScalarFunctionArgs) -> Result<ColumnarValue> {
         let scalar = args
@@ -177,6 +210,9 @@ impl ScalarUDFImpl for ListAggregate {
             .as_any()
             .downcast_ref::<ListArray>()
             .ok_or_else(|| exec_datafusion_err!("list reducer requires Arrow lists"))?;
+        if self.function == "linreg" {
+            return invoke_linreg_lists(lists, &arrays[1], rows, scalar);
+        }
         if let Some(result) = direct::reduce(lists, &self.function)? {
             return if scalar {
                 Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
@@ -271,5 +307,116 @@ impl ScalarUDFImpl for ListAggregate {
         } else {
             Ok(ColumnarValue::Array(result))
         }
+    }
+}
+
+fn invoke_linreg_lists(
+    lists: &ListArray,
+    nested_values: &ArrayRef,
+    rows: usize,
+    scalar: bool,
+) -> Result<ColumnarValue> {
+    let nested_values = nested_values
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .ok_or_else(|| exec_datafusion_err!("linreg nested_dim must be int64"))?;
+    if nested_values.len() != rows {
+        return Err(exec_datafusion_err!("linreg nested_dim length mismatch"));
+    }
+    let nested_dim = if rows == 0 {
+        0
+    } else {
+        if nested_values.is_null(0) || nested_values.value(0) < 0 {
+            return Err(exec_datafusion_err!(
+                "linreg nested_dim requires a defined nonnegative integer"
+            ));
+        }
+        let nested = nested_values.value(0);
+        if (0..rows).any(|row| nested_values.is_null(row) || nested_values.value(row) != nested) {
+            return Err(exec_datafusion_err!(
+                "linreg nested_dim must be constant across a list batch"
+            ));
+        }
+        usize::try_from(nested)
+            .map_err(|_| exec_datafusion_err!("linreg nested_dim exceeds addressable memory"))?
+    };
+    let input_type = lists.values().data_type().clone();
+    let udf = configured_linreg(&input_type, nested_dim)?;
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "element",
+        input_type.clone(),
+        true,
+    )]));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("element", 0))])
+        .schema(schema)
+        .alias("list_linreg")
+        .build()?;
+    if !aggregate.groups_accumulator_supported() {
+        return Err(exec_datafusion_err!(
+            "linreg list reduction requires a native grouped accumulator"
+        ));
+    }
+    let mut grouped = aggregate.create_groups_accumulator()?;
+    let offsets = lists.value_offsets();
+    if lists.null_count() == 0 {
+        let child_start = offsets.first().copied().unwrap_or(0) as usize;
+        let child_end = offsets.last().copied().unwrap_or(0) as usize;
+        let mut owners = Vec::with_capacity(child_end - child_start);
+        for row in 0..rows {
+            let start = offsets[row] as usize;
+            let end = offsets[row + 1] as usize;
+            owners.extend(std::iter::repeat_n(row, end - start));
+        }
+        if owners.len() != child_end - child_start {
+            return Err(exec_datafusion_err!(
+                "linreg list offsets do not cover the child array"
+            ));
+        }
+        grouped.update_batch(
+            &[lists.values().slice(child_start, child_end - child_start)],
+            &owners,
+            None,
+            rows,
+        )?;
+    } else {
+        let mut updated = false;
+        for row in 0..rows {
+            if lists.is_null(row) {
+                continue;
+            }
+            let start = offsets[row] as usize;
+            let end = offsets[row + 1] as usize;
+            if start == end {
+                continue;
+            }
+            let owners = vec![row; end - start];
+            grouped.update_batch(
+                &[lists.values().slice(start, end - start)],
+                &owners,
+                None,
+                rows,
+            )?;
+            updated = true;
+        }
+        if !updated {
+            grouped.update_batch(&[lists.values().slice(0, 0)], &[], None, rows)?;
+        }
+    }
+    let output = grouped.evaluate(datafusion_expr::EmitTo::All)?;
+    let output = output
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .ok_or_else(|| exec_datafusion_err!("linreg must return struct results"))?;
+    let result: ArrayRef = Arc::new(StructArray::new(
+        output.fields().clone(),
+        output.columns().to_vec(),
+        lists.nulls().cloned(),
+    ));
+    if scalar {
+        Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+            &result, 0,
+        )?))
+    } else {
+        Ok(ColumnarValue::Array(result))
     }
 }
