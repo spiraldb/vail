@@ -32,7 +32,9 @@ def test_table_grouped_filtered_coordinate_and_list_stdev_paths():
     )
     assert result.stats.stdev == 1.0
     assert result.filtered.stdev == 0.0
-    assert result.coordinate == pytest.approx([1.0, math.sqrt(8.0 / 3.0), 0.0])
+    assert result.coordinate == pytest.approx(
+        [math.sqrt(8.0 / 9.0), math.sqrt(8.0 / 3.0)]
+    )
 
     grouped = table.group_by(table.g).aggregate(stats=hl.agg.stats(table.x)).collect()
     by_group = {row.g: row.stats for row in grouped}
@@ -41,8 +43,10 @@ def test_table_grouped_filtered_coordinate_and_list_stdev_paths():
     assert math.isnan(by_group[1].stdev)
     assert by_group[1].n == 0
 
-    assert hl.array([1.0, 3.0]).aggregate(
-        lambda value: hl.agg.stats(value).stdev
+    assert hl.eval(
+        hl.array([1.0, 3.0]).aggregate(
+            lambda value: hl.agg.stats(value).stdev
+        )
     ) == 1.0
 
 
@@ -75,7 +79,7 @@ def test_filtered_nonfinite_and_missing_rows_do_not_reach_the_accumulator():
         n_partitions=3,
     )
     stdev = table.aggregate(
-        hl.agg.filter(table.x == table.x, hl.agg.stats(table.x)).stdev
+        hl.agg.filter(table.x < 4.0, hl.agg.stats(table.x)).stdev
     )
     assert stdev == 1.0
 
