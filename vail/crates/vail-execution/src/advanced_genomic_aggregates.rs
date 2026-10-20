@@ -376,7 +376,7 @@ impl CallStatsGroups {
             .as_any()
             .downcast_ref::<Int64Array>()
             .ok_or_else(|| bad(format!("call_stats {label} state must contain int64")))?;
-        let offset = list.value_offset(row) as usize;
+        let offset = list.value_offsets()[row] as usize;
         for (i, value) in into.iter_mut().enumerate() {
             let source = offset + i;
             if values.is_null(source) {
