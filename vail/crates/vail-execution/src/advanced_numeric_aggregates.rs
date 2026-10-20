@@ -183,7 +183,7 @@ fn histogram(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, E
     });
     Ok(crate::kernel_identity::aggregate_named_with_groups(
         &udf_name,
-        (udf_name, t.clone(), output.clone()),
+        (udf_name.clone(), t.clone(), output.clone()),
         vec![t.clone()],
         output,
         vec![state],
@@ -473,7 +473,9 @@ impl GroupsAccumulator for HistGroupsAccumulator {
     }
 
     fn evaluate(&mut self, emit_to: EmitTo) -> DfResult<ArrayRef> {
-        histogram_groups_output(&self.config, self.take_counts(emit_to)?)
+        let config = Arc::clone(&self.config);
+        let counts = self.take_counts(emit_to)?;
+        histogram_groups_output(&config, counts)
     }
 
     fn size(&self) -> usize {
@@ -481,10 +483,9 @@ impl GroupsAccumulator for HistGroupsAccumulator {
     }
 
     fn state(&mut self, emit_to: EmitTo) -> DfResult<Vec<ArrayRef>> {
-        Ok(vec![list_array(
-            Arc::new(Int64Array::from(self.take_counts(emit_to)?)),
-            self.width(),
-        )?])
+        let width = self.width();
+        let counts = self.take_counts(emit_to)?;
+        Ok(vec![list_array(Arc::new(Int64Array::from(counts)), width)?])
     }
 
     fn merge_batch(
