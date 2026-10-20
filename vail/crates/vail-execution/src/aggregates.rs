@@ -5,7 +5,7 @@ use arrow_array::{
 };
 use arrow_schema::DataType;
 use datafusion_common::{DataFusionError, Result, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF};
+use datafusion_expr::{Accumulator, AggregateUDF, EmitTo, GroupsAccumulator};
 use std::sync::Arc;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -171,10 +171,9 @@ impl Accumulator for Reducer {
                         .integer
                         .wrapping_add(arrow_arith::aggregate::sum(values).unwrap_or(0));
                 } else {
-                    self.integer = values
-                        .iter()
-                        .flatten()
-                        .fold(self.integer, i64::wrapping_mul);
+                    self.integer = self
+                        .integer
+                        .wrapping_mul(arrow_arith::aggregate::product(values).unwrap_or(1));
                 }
                 self.count = self
                     .count
@@ -189,10 +188,7 @@ impl Accumulator for Reducer {
                         .flatten()
                         .fold(self.float, |sum, value| sum + value);
                 } else {
-                    self.float = values
-                        .iter()
-                        .flatten()
-                        .fold(self.float, |product, value| product * value);
+                    self.float *= arrow_arith::aggregate::product(values).unwrap_or(1.0);
                 }
                 self.count = self
                     .count
@@ -301,6 +297,9 @@ pub fn aggregate_udf(
     function: &str,
     input: Option<&DataType>,
 ) -> std::result::Result<Arc<AggregateUDF>, ExprError> {
+    if function == "product" {
+        return product_udf(input);
+    }
     if matches!(function, "mean" | "stddev_pop") {
         return crate::moments::udf(function, input);
     }
@@ -389,4 +388,292 @@ pub fn aggregate_udf(
         state,
         Arc::new(move |_| Ok(Box::new(Reducer::new(kind, input.clone())))),
     ))
+}
+
+fn product_udf(input: Option<&DataType>) -> std::result::Result<Arc<AggregateUDF>, ExprError> {
+    let input = input
+        .ok_or_else(|| ExprError::Invalid("product requires input".into()))?
+        .clone();
+    if !matches!(
+        input,
+        DataType::Int32 | DataType::Int64 | DataType::Float32 | DataType::Float64
+    ) {
+        return Err(ExprError::Invalid("product requires numeric input".into()));
+    }
+    let output = if matches!(input, DataType::Int32 | DataType::Int64) {
+        DataType::Int64
+    } else {
+        DataType::Float64
+    };
+    let group_input = input.clone();
+    let group_output = output.clone();
+    Ok(crate::kernel_identity::aggregate_named_with_groups(
+        "product",
+        ("product".to_owned(), input.clone()),
+        vec![input.clone()],
+        output.clone(),
+        vec![DataType::Int64, output.clone()],
+        Arc::new(move |_| Ok(Box::new(Reducer::new(Kind::Product, input.clone())))),
+        Some(Arc::new(move || {
+            Ok(Box::new(ProductGroups::new(
+                group_input.clone(),
+                group_output.clone(),
+            )))
+        })),
+    ))
+}
+
+/// Contiguous per-group product state. The count column remains in the wire
+/// state for compatibility with existing partial aggregate plans.
+struct ProductGroups {
+    input: DataType,
+    output: DataType,
+    integer: Option<Vec<i64>>,
+    float: Option<Vec<f64>>,
+    count: Vec<i64>,
+}
+impl ProductGroups {
+    fn new(input: DataType, output: DataType) -> Self {
+        let integral = output == DataType::Int64;
+        Self {
+            input,
+            output,
+            integer: integral.then(Vec::new),
+            float: (!integral).then(Vec::new),
+            count: Vec::new(),
+        }
+    }
+    fn ensure(&mut self, total: usize) {
+        if let Some(values) = &mut self.integer {
+            values.resize(total, 1);
+        }
+        if let Some(values) = &mut self.float {
+            values.resize(total, 1.);
+        }
+        self.count.resize(total, 0);
+    }
+    fn emit<T>(values: &mut Vec<T>, to: EmitTo) -> Vec<T> {
+        to.take_needed(values)
+    }
+    fn update_values(
+        &mut self,
+        array: &ArrayRef,
+        indices: &[usize],
+        filter: Option<&BooleanArray>,
+    ) -> Result<()> {
+        if self.output == DataType::Int64 {
+            let integer = self
+                .integer
+                .as_mut()
+                .expect("integer output has integer state");
+            macro_rules! multiply_rows {
+                ($values:expr) => {
+                    for (row, value) in $values.iter().enumerate() {
+                        if filter.is_none_or(|f| f.is_valid(row) && f.value(row)) {
+                            if let Some(v) = value {
+                                let i = indices[row];
+                                integer[i] = integer[i].wrapping_mul(i64::from(v));
+                                self.count[i] = self.count[i].wrapping_add(1);
+                            }
+                        }
+                    }
+                };
+            }
+            match &self.input {
+                DataType::Int32 => {
+                    multiply_rows!(array.as_any().downcast_ref::<Int32Array>().unwrap())
+                }
+                DataType::Int64 => {
+                    multiply_rows!(array.as_any().downcast_ref::<Int64Array>().unwrap())
+                }
+                _ => unreachable!(),
+            }
+        } else {
+            let float = self.float.as_mut().expect("float output has float state");
+            let cast = arrow_cast::cast(array, &DataType::Float64)?;
+            let values = cast.as_any().downcast_ref::<Float64Array>().unwrap();
+            for (row, value) in values.iter().enumerate() {
+                if filter.is_none_or(|f| f.is_valid(row) && f.value(row)) {
+                    if let Some(v) = value {
+                        let i = indices[row];
+                        float[i] *= v;
+                        self.count[i] = self.count[i].wrapping_add(1);
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+    fn emit_state(&mut self, to: EmitTo) -> Result<Vec<ArrayRef>> {
+        let count = Self::emit(&mut self.count, to);
+        let values = if self.output == DataType::Int64 {
+            Arc::new(Int64Array::from(Self::emit(
+                self.integer.as_mut().unwrap(),
+                to,
+            ))) as ArrayRef
+        } else {
+            Arc::new(Float64Array::from(Self::emit(
+                self.float.as_mut().unwrap(),
+                to,
+            ))) as ArrayRef
+        };
+        Ok(vec![Arc::new(Int64Array::from(count)), values])
+    }
+}
+impl GroupsAccumulator for ProductGroups {
+    fn update_batch(
+        &mut self,
+        values: &[ArrayRef],
+        indices: &[usize],
+        filter: Option<&BooleanArray>,
+        total: usize,
+    ) -> Result<()> {
+        let [input] = values else {
+            return Err(DataFusionError::Execution(
+                "product requires one input".into(),
+            ));
+        };
+        if input.len() != indices.len()
+            || filter.is_some_and(|f| f.len() != indices.len())
+            || input.data_type() != &self.input
+            || indices.iter().any(|i| *i >= total)
+        {
+            return Err(DataFusionError::Execution(
+                "product grouping shape/type mismatch".into(),
+            ));
+        }
+        self.ensure(total);
+        self.update_values(input, indices, filter)
+    }
+    fn evaluate(&mut self, to: EmitTo) -> Result<ArrayRef> {
+        let vals = if self.output == DataType::Int64 {
+            Arc::new(Int64Array::from(Self::emit(
+                self.integer.as_mut().unwrap(),
+                to,
+            ))) as ArrayRef
+        } else {
+            Arc::new(Float64Array::from(Self::emit(
+                self.float.as_mut().unwrap(),
+                to,
+            ))) as ArrayRef
+        };
+        let _ = Self::emit(&mut self.count, to);
+        Ok(vals)
+    }
+    fn state(&mut self, to: EmitTo) -> Result<Vec<ArrayRef>> {
+        self.emit_state(to)
+    }
+    fn merge_batch(&mut self, states: &[ArrayRef], indices: &[usize], total: usize) -> Result<()> {
+        if states.len() != 2
+            || states[0].len() != indices.len()
+            || states[1].len() != indices.len()
+            || indices.iter().any(|i| *i >= total)
+        {
+            return Err(DataFusionError::Execution(
+                "product state shape mismatch".into(),
+            ));
+        }
+        self.ensure(total);
+        let counts = states[0]
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("product count state must be int64".into())
+            })?;
+        if self.output == DataType::Int64 {
+            let vals = states[1]
+                .as_any()
+                .downcast_ref::<Int64Array>()
+                .ok_or_else(|| {
+                    DataFusionError::Execution("product value state must be int64".into())
+                })?;
+            for (r, i) in indices.iter().enumerate() {
+                {
+                    let v = vals.value(r);
+                    let integer = self.integer.as_mut().unwrap();
+                    integer[*i] = integer[*i].wrapping_mul(v);
+                }
+                self.count[*i] = self.count[*i].wrapping_add(counts.value(r));
+            }
+        } else {
+            let vals = states[1]
+                .as_any()
+                .downcast_ref::<Float64Array>()
+                .ok_or_else(|| {
+                    DataFusionError::Execution("product value state must be float64".into())
+                })?;
+            for (r, i) in indices.iter().enumerate() {
+                self.float.as_mut().unwrap()[*i] *= vals.value(r);
+                self.count[*i] = self.count[*i].wrapping_add(counts.value(r));
+            }
+        }
+        Ok(())
+    }
+    fn convert_to_state(
+        &self,
+        values: &[ArrayRef],
+        filter: Option<&BooleanArray>,
+    ) -> Result<Vec<ArrayRef>> {
+        let [input] = values else {
+            return Err(DataFusionError::Execution(
+                "product requires one input".into(),
+            ));
+        };
+        let rows = input.len();
+        if input.data_type() != &self.input || filter.is_some_and(|f| f.len() != rows) {
+            return Err(DataFusionError::Execution(
+                "product grouping shape/type mismatch".into(),
+            ));
+        }
+        let selected = |row: usize| filter.is_none_or(|f| f.is_valid(row) && f.value(row));
+        let counts =
+            Int64Array::from_iter_values((0..rows).map(|row| if selected(row) { 1 } else { 0 }));
+        let products = if self.output == DataType::Int64 {
+            let values = match &self.input {
+                DataType::Int32 => input
+                    .as_any()
+                    .downcast_ref::<Int32Array>()
+                    .unwrap()
+                    .iter()
+                    .enumerate()
+                    .map(|(row, value)| {
+                        if selected(row) {
+                            i64::from(value.unwrap_or(1))
+                        } else {
+                            1
+                        }
+                    })
+                    .collect::<Vec<_>>(),
+                DataType::Int64 => input
+                    .as_any()
+                    .downcast_ref::<Int64Array>()
+                    .unwrap()
+                    .iter()
+                    .enumerate()
+                    .map(|(row, value)| if selected(row) { value.unwrap_or(1) } else { 1 })
+                    .collect::<Vec<_>>(),
+                _ => unreachable!(),
+            };
+            Arc::new(Int64Array::from_iter_values(values)) as ArrayRef
+        } else {
+            let cast = arrow_cast::cast(input, &DataType::Float64)?;
+            let values = cast.as_any().downcast_ref::<Float64Array>().unwrap();
+            Arc::new(Float64Array::from_iter_values(
+                values.iter().enumerate().map(|(row, value)| {
+                    if selected(row) {
+                        value.unwrap_or(1.)
+                    } else {
+                        1.
+                    }
+                }),
+            )) as ArrayRef
+        };
+        Ok(vec![Arc::new(counts), products])
+    }
+    fn size(&self) -> usize {
+        std::mem::size_of_val(self)
+            + self.integer.as_ref().map_or(0, |v| v.capacity() * 8)
+            + self.float.as_ref().map_or(0, |v| v.capacity() * 8)
+            + self.count.capacity() * 8
+    }
 }

@@ -7,8 +7,8 @@ use arrow_schema::{DataType, Field, FieldRef};
 use datafusion_common::Result;
 use datafusion_expr::{
     Accumulator, AccumulatorFactoryFunction, AggregateUDF, AggregateUDFImpl, ColumnarValue,
-    ScalarFunctionArgs, ScalarFunctionImplementation, ScalarUDF, ScalarUDFImpl, Signature,
-    Volatility,
+    GroupsAccumulator, ScalarFunctionArgs, ScalarFunctionImplementation, ScalarUDF, ScalarUDFImpl,
+    Signature, Volatility,
     function::{AccumulatorArgs, StateFieldsArgs},
 };
 use std::{
@@ -113,6 +113,7 @@ struct Aggregate<K> {
     output: DataType,
     fields: Vec<FieldRef>,
     factory: AccumulatorFactoryFunction,
+    groups_factory: Option<Arc<dyn Fn() -> Result<Box<dyn GroupsAccumulator>> + Send + Sync>>,
 }
 impl<K: fmt::Debug> fmt::Debug for Aggregate<K> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -156,6 +157,16 @@ impl<K: fmt::Debug + Eq + Hash + Send + Sync + 'static> AggregateUDFImpl for Agg
     fn state_fields(&self, _: StateFieldsArgs) -> Result<Vec<FieldRef>> {
         Ok(self.fields.clone())
     }
+    fn groups_accumulator_supported(&self, _: AccumulatorArgs) -> bool {
+        self.groups_factory.is_some()
+    }
+    fn create_groups_accumulator(&self, _: AccumulatorArgs) -> Result<Box<dyn GroupsAccumulator>> {
+        self.groups_factory.as_ref().ok_or_else(|| {
+            datafusion_common::DataFusionError::NotImplemented(
+                "groups accumulator is not supported".into(),
+            )
+        })?()
+    }
 }
 pub(crate) fn aggregate<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>(
     label: &str,
@@ -176,6 +187,17 @@ pub(crate) fn aggregate_named<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>
     states: Vec<DataType>,
     factory: AccumulatorFactoryFunction,
 ) -> Arc<AggregateUDF> {
+    aggregate_named_with_groups(label, key, inputs, output, states, factory, None)
+}
+pub(crate) fn aggregate_named_with_groups<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>(
+    label: &str,
+    key: K,
+    inputs: Vec<DataType>,
+    output: DataType,
+    states: Vec<DataType>,
+    factory: AccumulatorFactoryFunction,
+    groups_factory: Option<Arc<dyn Fn() -> Result<Box<dyn GroupsAccumulator>> + Send + Sync>>,
+) -> Arc<AggregateUDF> {
     let signature = Signature::exact(inputs, Volatility::Immutable);
     let fields = states
         .into_iter()
@@ -190,5 +212,6 @@ pub(crate) fn aggregate_named<K: fmt::Debug + Eq + Hash + Send + Sync + 'static>
         output,
         fields,
         factory,
+        groups_factory,
     }))
 }
