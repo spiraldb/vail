@@ -358,7 +358,7 @@ fn invoke_linreg_lists(
     }
     let mut grouped = aggregate.create_groups_accumulator()?;
     let offsets = lists.value_offsets();
-    if lists.nulls().is_none() {
+    if lists.null_count() == 0 {
         let child_start = offsets.first().copied().unwrap_or(0) as usize;
         let child_end = offsets.last().copied().unwrap_or(0) as usize;
         let mut owners = Vec::with_capacity(child_end - child_start);

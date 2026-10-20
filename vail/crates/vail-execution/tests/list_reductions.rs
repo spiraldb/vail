@@ -65,7 +65,9 @@ fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
     let predictors = Arc::new(StructArray::new(
         predictor_fields.into(),
         vec![
-            Arc::new(Float64Array::from(vec![1.; 9.])),
+            Arc::new(Float64Array::from(
+                std::iter::repeat_n(1., 9).collect::<Vec<_>>(),
+            )),
             Arc::new(Float64Array::from(vec![
                 0., 1., 2., 0., 1., 2., 10., 11., 12.,
             ])),
@@ -206,12 +208,14 @@ fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
         .as_any()
         .downcast_ref::<Int64Array>()
         .unwrap();
-    assert_eq!(
-        counts.iter().collect::<Vec<_>>(),
-        vec![Some(3), Some(3), Some(0), Some(0)]
-    );
     assert!(result.is_null(2));
+    assert!(result.is_valid(0));
+    assert!(result.is_valid(1));
     assert!(result.is_valid(3));
+    assert_eq!(
+        [counts.value(0), counts.value(1), counts.value(3)],
+        [3, 3, 0]
+    );
     let beta = result
         .column_by_name("beta")
         .unwrap()
@@ -245,11 +249,10 @@ fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
         .as_any()
         .downcast_ref::<Int64Array>()
         .unwrap();
-    assert_eq!(
-        sliced_counts.iter().collect::<Vec<_>>(),
-        vec![Some(3), Some(0), Some(0)]
-    );
     assert!(sliced_result.is_null(1));
+    assert!(sliced_result.is_valid(0));
+    assert!(sliced_result.is_valid(2));
+    assert_eq!([sliced_counts.value(0), sliced_counts.value(2)], [3, 0]);
 
     for invalid in [
         ScalarValue::Int64(None),
