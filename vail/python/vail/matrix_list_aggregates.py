@@ -359,15 +359,36 @@ def reduce_list(
             from .types import tstruct, tdict
             _ensure_key_supported(keys.dtype.element_type)
             body = node.get("body")
-            reducer = body.get("function") if isinstance(body, dict) else None
             fused_reducers = {
                 "count", "count_where", "sum", "product", "min", "max",
                 "mean", "stddev_pop", "fraction", "any", "all",
             }
-            if isinstance(body, dict) and body.get("op") == "aggregate" and reducer in fused_reducers:
-                aggregate_options = body.get("options") or {}
+            aggregate_nodes = []
+            has_nested_aggregation = False
+
+            def find_aggregates(value):
+                nonlocal has_nested_aggregation
+                if isinstance(value, list):
+                    for child in value:
+                        find_aggregates(child)
+                    return
+                if not isinstance(value, dict):
+                    return
+                op = value.get("op")
+                if op == "aggregate":
+                    aggregate_nodes.append(value)
+                elif isinstance(op, str) and op.startswith("agg_"):
+                    has_nested_aggregation = True
+                for child in value.values():
+                    find_aggregates(child)
+
+            find_aggregates(body)
+            aggregate = aggregate_nodes[0] if len(aggregate_nodes) == 1 else None
+            reducer = aggregate.get("function") if aggregate is not None else None
+            if aggregate is not None and not has_nested_aggregation and reducer in fused_reducers:
+                aggregate_options = aggregate.get("options") or {}
                 value_type = type_from_wire(aggregate_options["__vail_result_type"])
-                values = keys if reducer == "count" else mapped(items, body["value"])
+                values = keys if reducer == "count" else mapped(items, aggregate["value"])
                 grouped_type = tarray(tstruct(
                     key=keys.dtype.element_type,
                     value=value_type,
@@ -377,9 +398,33 @@ def reduce_list(
                     [keys, values],
                     grouped_type,
                 )
+                if body is aggregate:
+                    return _cast(
+                        groups,
+                        tdict(keys.dtype.element_type, value_type),
+                    ).to_ir()
+
+                def project(record):
+                    bound[record.to_ir()["name"]] = record.dtype
+
+                    def substitute(value):
+                        if value is aggregate:
+                            return record.value.to_ir()
+                        if isinstance(value, list):
+                            return [substitute(child) for child in value]
+                        if isinstance(value, dict):
+                            return {key: substitute(child) for key, child in value.items()}
+                        return value
+
+                    projected = substitute(body)
+                    value = typed(raw(walk(projected, items, fixed)))
+                    return struct(key=record.key, value=value)
+
+                projected_groups = groups.map(project)
+                projected_type = projected_groups.dtype.element_type
                 return _cast(
-                    groups,
-                    tdict(keys.dtype.element_type, value_type),
+                    projected_groups,
+                    tdict(projected_type["key"], projected_type["value"]),
                 ).to_ir()
             pairs = items.map(lambda ctx: struct(
                 key=raw(bind(node["key"], ctx), keys.dtype.element_type), value=ctx,

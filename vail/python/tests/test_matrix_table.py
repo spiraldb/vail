@@ -1045,13 +1045,16 @@ def test_group_by_reductions_use_fused_per_list_groups():
     )
     rows = m.annotate_rows(
         means=hl.agg.group_by(m.col_idx % 2, hl.agg.mean(m.x)),
+        shifted=hl.agg.group_by(m.col_idx % 2, hl.agg.mean(m.x) + 2),
         counts=hl.agg.group_by(m.col_idx % 2, hl.agg.count()),
         positive=hl.agg.group_by(m.col_idx % 2, hl.agg.count_where(m.x > 0)),
     ).rows().collect()
     assert rows[0].means[0] == 1.0 and math.isnan(rows[0].means[1])
+    assert rows[0].shifted[0] == 3.0 and math.isnan(rows[0].shifted[1])
     assert rows[0].counts == {0: 2, 1: 1}
     assert rows[0].positive == {0: 1, 1: 0}
     assert rows[1].means[0] == 11.0 and math.isnan(rows[1].means[1])
+    assert rows[1].shifted[0] == 13.0 and math.isnan(rows[1].shifted[1])
     assert rows[1].counts == {0: 2, 1: 1}
     assert rows[1].positive == {0: 2, 1: 0}
 
