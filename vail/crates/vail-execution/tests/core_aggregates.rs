@@ -421,6 +421,47 @@ fn native_mean_partial_state_and_grouped_filter_merge() {
     assert!(values.value(1).is_nan());
     assert!(values.value(2).is_nan());
 }
+
+#[test]
+fn native_mean_keeps_sum_overflow_semantics_across_partial_merge() {
+    let input = Field::new("value", arrow_schema::DataType::Float64, true);
+    let schema = Arc::new(Schema::new(vec![input.clone()]));
+    let udf = vail_execution::aggregates::aggregate_udf("mean", Some(input.data_type())).unwrap();
+    let args = AccumulatorArgs {
+        return_field: Arc::new(Field::new("mean", arrow_schema::DataType::Float64, true)),
+        schema: &schema,
+        name: "mean",
+        is_distinct: false,
+        exprs: &[],
+        expr_fields: &[input.clone().into()],
+        ignore_nulls: true,
+        order_bys: &[],
+        is_reversed: false,
+    };
+
+    let mut partials = Vec::new();
+    for _ in 0..2 {
+        let mut partial = udf.accumulator(args.clone()).unwrap();
+        partial
+            .update_batch(&[Arc::new(Float64Array::from(vec![Some(1e308)]))])
+            .unwrap();
+        partials.push(partial.state().unwrap());
+    }
+    let states = (0..partials[0].len())
+        .map(|field| {
+            datafusion_common::ScalarValue::iter_to_array(
+                partials.iter().map(|state| state[field].clone()),
+            )
+            .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let mut merged = udf.accumulator(args).unwrap();
+    merged.merge_batch(&states).unwrap();
+    let datafusion_common::ScalarValue::Float64(Some(value)) = merged.evaluate().unwrap() else {
+        panic!("mean finalizer should return a defined float64");
+    };
+    assert!(value.is_infinite() && value.is_sign_positive());
+}
 #[tokio::test]
 async fn integer_sum_wraps_across_nullable_sliced_batches() {
     let input: ArrayRef = Arc::new(Int64Array::from(vec![

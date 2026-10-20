@@ -1,6 +1,6 @@
 //! Hail-compatible numeric mean built on DataFusion's native AVG state.
 use crate::expressions::ExprError;
-use arrow_array::{Array, ArrayRef, Float64Array};
+use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array};
 use arrow_schema::{DataType, Field, FieldRef};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::{
@@ -89,9 +89,9 @@ impl GroupsAccumulator for MeanGroupsAccumulator {
         if values.null_count() == 0 {
             return Ok(result);
         }
-        Ok(Arc::new(Float64Array::from_iter(
-            values.iter().map(|value| Some(value.unwrap_or(f64::NAN))),
-        )))
+        let missing = BooleanArray::new(values.is_null().clone(), None);
+        let nan = Float64Array::new_scalar(f64::NAN);
+        Ok(arrow_select::zip::zip(&missing, &nan, values)?)
     }
     fn state(&mut self, emit_to: EmitTo) -> Result<Vec<ArrayRef>> {
         self.inner.state(emit_to)

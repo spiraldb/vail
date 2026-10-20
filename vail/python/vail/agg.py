@@ -74,6 +74,8 @@ def max(expr):
 
 def mean(expr):
     value = as_expr(expr)
+    if value.dtype == tbool:
+        value = cast(value, tfloat64)
     if value.dtype not in (tint32, tint64, tfloat32, tfloat64):
         raise TypeError("mean requires a numeric expression")
     return _aggregate("mean", value, tfloat64)

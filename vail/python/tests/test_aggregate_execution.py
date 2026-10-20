@@ -40,16 +40,28 @@ def test_mean_uses_native_state_for_group_scan_and_array_aggregation():
     )
     assert array_means == [2.0, 30.0]
 
+    boolean_table = hl.Table.parallelize(
+        [{"x": True}, {"x": False}, {"x": None}],
+        schema=hl.tstruct(x=hl.tbool),
+        n_partitions=2,
+    )
+    assert boolean_table.aggregate(hl.agg.mean(boolean_table.x)) == 0.5
+
 
 def test_mean_preserves_matrix_entry_coordinate_groups():
     matrix = hl.range_matrix_table(2, 3, 2)
     matrix = matrix.annotate_entries(value=hl.int32(matrix.row_idx + matrix.col_idx))
     entries = matrix.entries()
-    grouped = entries.group_by(row=entries._row_idx).aggregate(
+    grouped = entries.group_by(row=entries.row_idx).aggregate(
         value=hl.agg.mean(entries.value)
     ).collect()
     values = {row.row: row.value for row in grouped}
     assert values == {0: 1.0, 1: 2.0}
+
+    row_means = matrix.annotate_rows(value=hl.agg.mean(matrix.value)).rows().collect()
+    col_means = matrix.annotate_cols(value=hl.agg.mean(matrix.value)).cols().collect()
+    assert [row.value for row in row_means] == [1.0, 2.0]
+    assert [column.value for column in col_means] == [0.5, 1.5, 2.5]
 
 
 def test_collect_uses_ordered_stream_across_files(tmp_path):
