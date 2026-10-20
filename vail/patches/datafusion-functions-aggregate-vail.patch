@@ -1,0 +1,82 @@
+--- a/src/min_max.rs
++++ b/src/min_max.rs
+@@ -115,7 +115,10 @@
+ ///
+ /// [`ArrowPrimitiveType`]: arrow::datatypes::ArrowPrimitiveType
+ macro_rules! primitive_max_accumulator {
+-    ($DATA_TYPE:ident, $NATIVE:ident, $PRIMTYPE:ident) => {{
++    ($DATA_TYPE:ident, $NATIVE:ident, $PRIMTYPE:ident) => {
++        primitive_max_accumulator!($DATA_TYPE, $NATIVE, $PRIMTYPE, $NATIVE::MIN)
++    };
++    ($DATA_TYPE:ident, $NATIVE:ident, $PRIMTYPE:ident, $START:expr) => {{
+         Ok(Box::new(
+             PrimitiveGroupsAccumulator::<$PRIMTYPE, _>::new($DATA_TYPE, |cur, new| {
+                 match (new).partial_cmp(cur) {
+@@ -126,8 +129,8 @@
+                     _ => {}
+                 }
+             })
+-            // Initialize each accumulator to $NATIVE::MIN
+-            .with_starting_value($NATIVE::MIN),
++            // Initialize each accumulator to its type's maximum identity.
++            .with_starting_value($START),
+         ))
+     }};
+ }
+@@ -138,7 +141,10 @@
+ ///
+ /// [`ArrowPrimitiveType`]: arrow::datatypes::ArrowPrimitiveType
+ macro_rules! primitive_min_accumulator {
+-    ($DATA_TYPE:ident, $NATIVE:ident, $PRIMTYPE:ident) => {{
++    ($DATA_TYPE:ident, $NATIVE:ident, $PRIMTYPE:ident) => {
++        primitive_min_accumulator!($DATA_TYPE, $NATIVE, $PRIMTYPE, $NATIVE::MAX)
++    };
++    ($DATA_TYPE:ident, $NATIVE:ident, $PRIMTYPE:ident, $START:expr) => {{
+         Ok(Box::new(
+             PrimitiveGroupsAccumulator::<$PRIMTYPE, _>::new(&$DATA_TYPE, |cur, new| {
+                 match (new).partial_cmp(cur) {
+@@ -149,8 +155,8 @@
+                     _ => {}
+                 }
+             })
+-            // Initialize each accumulator to $NATIVE::MAX
+-            .with_starting_value($NATIVE::MAX),
++            // Initialize each accumulator to its type's minimum identity.
++            .with_starting_value($START),
+         ))
+     }};
+ }
+@@ -272,13 +278,13 @@
+             UInt32 => primitive_max_accumulator!(data_type, u32, UInt32Type),
+             UInt64 => primitive_max_accumulator!(data_type, u64, UInt64Type),
+             Float16 => {
+-                primitive_max_accumulator!(data_type, f16, Float16Type)
++                primitive_max_accumulator!(data_type, f16, Float16Type, f16::NEG_INFINITY)
+             }
+             Float32 => {
+-                primitive_max_accumulator!(data_type, f32, Float32Type)
++                primitive_max_accumulator!(data_type, f32, Float32Type, f32::NEG_INFINITY)
+             }
+             Float64 => {
+-                primitive_max_accumulator!(data_type, f64, Float64Type)
++                primitive_max_accumulator!(data_type, f64, Float64Type, f64::NEG_INFINITY)
+             }
+             Date32 => primitive_max_accumulator!(data_type, i32, Date32Type),
+             Date64 => primitive_max_accumulator!(data_type, i64, Date64Type),
+@@ -566,13 +572,13 @@
+             UInt32 => primitive_min_accumulator!(data_type, u32, UInt32Type),
+             UInt64 => primitive_min_accumulator!(data_type, u64, UInt64Type),
+             Float16 => {
+-                primitive_min_accumulator!(data_type, f16, Float16Type)
++                primitive_min_accumulator!(data_type, f16, Float16Type, f16::INFINITY)
+             }
+             Float32 => {
+-                primitive_min_accumulator!(data_type, f32, Float32Type)
++                primitive_min_accumulator!(data_type, f32, Float32Type, f32::INFINITY)
+             }
+             Float64 => {
+-                primitive_min_accumulator!(data_type, f64, Float64Type)
++                primitive_min_accumulator!(data_type, f64, Float64Type, f64::INFINITY)
+             }
+             Date32 => primitive_min_accumulator!(data_type, i32, Date32Type),
+             Date64 => primitive_min_accumulator!(data_type, i64, Date64Type),
