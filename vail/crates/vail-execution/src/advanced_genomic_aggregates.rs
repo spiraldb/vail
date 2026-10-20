@@ -303,6 +303,7 @@ impl CallStatsGroups {
     fn ensure(&mut self, total: usize) -> DfResult<()> {
         let cells = total
             .checked_mul(self.n_alleles)
+            .filter(|cells| *cells <= i32::MAX as usize)
             .ok_or_else(|| bad("call_stats grouped state size overflow"))?;
         self.allele_number.resize(total, 0);
         self.allele_counts.resize(cells, 0);
@@ -418,12 +419,6 @@ impl GroupsAccumulator for CallStatsGroups {
         }
         if indices.iter().any(|&index| index >= total) {
             return Err(bad("call_stats group index exceeds state"));
-        }
-        let max_groups = (i32::MAX as usize) / self.n_alleles.max(1);
-        if total > max_groups {
-            return Err(bad(
-                "call_stats grouped output exceeds Arrow list offset limit",
-            ));
         }
         self.ensure(total)?;
         let packed = input
