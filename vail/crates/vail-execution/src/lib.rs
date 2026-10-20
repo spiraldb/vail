@@ -39,7 +39,6 @@ pub mod expressions;
 mod kernel_identity;
 pub mod logical_expr;
 mod matrix_arrays;
-mod moments;
 mod native_bool;
 mod native_mean;
 mod native_stddev;
