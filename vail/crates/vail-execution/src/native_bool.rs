@@ -121,6 +121,7 @@ impl AggregateUDFImpl for TotalBoolUdf {
                 .native()
                 .inner()
                 .create_groups_accumulator(args)?,
+            identity: self.operation.identity(),
         }))
     }
 }
@@ -158,6 +159,7 @@ impl Accumulator for TotalBoolAccumulator {
 
 struct TotalBoolGroupsAccumulator {
     inner: Box<dyn GroupsAccumulator>,
+    identity: bool,
 }
 
 impl std::fmt::Debug for TotalBoolGroupsAccumulator {
@@ -189,10 +191,22 @@ impl GroupsAccumulator for TotalBoolGroupsAccumulator {
                     "native Boolean aggregate returned non-Boolean groups".into(),
                 )
             })?;
-        // Native AND/OR group accumulators store their operation identity under
-        // null validity bits for groups with no non-null input. Making those
-        // values valid implements Hail's total-result identity.
-        Ok(Arc::new(BooleanArray::new(values.values().clone(), None)))
+        if values.null_count() == 0 {
+            return Ok(Arc::new(values.clone()));
+        }
+        let validity = values
+            .nulls()
+            .expect("a positive null count has a validity buffer")
+            .inner();
+        // Give null slots an explicit identity with bitmap operations. This
+        // avoids relying on the hidden payload under the native null bitmap.
+        let normalized = if self.identity {
+            let missing = !validity;
+            values.values() | &missing
+        } else {
+            values.values() & validity
+        };
+        Ok(Arc::new(BooleanArray::new(normalized, None)))
     }
 
     fn state(&mut self, emit_to: EmitTo) -> Result<Vec<ArrayRef>> {
