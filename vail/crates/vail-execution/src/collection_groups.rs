@@ -609,16 +609,29 @@ fn configured_group_aggregate(function: &str, input: &DataType) -> Result<Arc<Ag
 }
 
 struct GroupSegment {
+    chunks: Vec<GroupSegmentChunk>,
+}
+
+struct GroupSegmentChunk {
     keys: ArrayRef,
-    owners: Vec<u32>,
+    owners: ArrayRef,
+}
+
+struct SelectedSpan {
+    row: usize,
+    key: (usize, usize),
+    value: Option<(usize, usize)>,
+}
+
+fn values_data_type(input: ListInput<'_>) -> DataType {
+    input.array.values().data_type().clone()
 }
 
 fn selected_spans(
     keys: ListInput<'_>,
     values: Option<ListInput<'_>>,
     row_count: usize,
-    include_owners: bool,
-) -> Result<(Vec<(usize, usize)>, Option<Vec<(usize, usize)>>, Vec<u32>)> {
+) -> Result<Vec<SelectedSpan>> {
     let inputs = std::iter::once(keys).chain(values).collect::<Vec<_>>();
     if inputs
         .iter()
@@ -630,9 +643,7 @@ fn selected_spans(
         .iter()
         .map(|input| input.array.value_offsets())
         .collect::<Vec<_>>();
-    let mut key_spans = Vec::new();
-    let mut value_spans = values.map(|_| Vec::new());
-    let mut owners = Vec::new();
+    let mut selected = Vec::new();
     for row in 0..row_count {
         let key_row = if keys.scalar { 0 } else { row };
         let valid = !keys.array.is_null(key_row);
@@ -655,72 +666,55 @@ fn selected_spans(
             if offsets[1][value_row + 1] - offsets[1][value_row] != end - start {
                 return exec_err!("group key/value list lengths differ");
             }
-            value_spans.as_mut().unwrap().push((
+        }
+        let value = values.map(|value_input| {
+            let value_row = if value_input.scalar { 0 } else { row };
+            (
                 offsets[1][value_row] as usize,
                 offsets[1][value_row + 1] as usize,
-            ));
-        }
-        key_spans.push((start as usize, end as usize));
-        let owner = if include_owners {
-            Some(u32::try_from(row).map_err(|_| {
-                datafusion_common::exec_datafusion_err!(
-                    "collection owner count exceeds Arrow index capacity"
-                )
-            })?)
-        } else {
-            None
-        };
-        for offset in 0..(end - start) as usize {
-            if include_owners {
-                owners.push(owner.unwrap());
-            }
-        }
+            )
+        });
+        selected.push(SelectedSpan {
+            row,
+            key: (start as usize, end as usize),
+            value,
+        });
     }
-    Ok((key_spans, value_spans, owners))
-}
-
-fn flatten_spans(values: &ArrayRef, spans: &[(usize, usize)]) -> Result<ArrayRef> {
-    let spans = spans
-        .iter()
-        .copied()
-        .filter(|(start, end)| start != end)
-        .collect::<Vec<_>>();
-    if spans.is_empty() {
-        return Ok(values.slice(0, 0));
-    }
-    if spans.windows(2).all(|pair| pair[0].1 == pair[1].0) {
-        let start = spans[0].0;
-        let end = spans.last().unwrap().1;
-        return Ok(values.slice(start, end - start));
-    }
-    let chunks = spans
-        .iter()
-        .map(|(start, end)| values.slice(*start, end - start))
-        .collect::<Vec<_>>();
-    Ok(arrow_select::concat::concat(
-        &chunks
-            .iter()
-            .map(|chunk| chunk.as_ref())
-            .collect::<Vec<_>>(),
-    )?)
+    Ok(selected)
 }
 
 fn flatten_segment(keys: ListInput<'_>, row_count: usize) -> Result<GroupSegment> {
-    let (key_spans, _, owners) = selected_spans(keys, None, row_count, true)?;
-    let key_data = flatten_spans(keys.array.values(), &key_spans)?;
-    Ok(GroupSegment {
-        keys: key_data,
-        owners,
-    })
+    let spans = selected_spans(keys, None, row_count)?;
+    let mut chunks = Vec::with_capacity(spans.len());
+    for span in spans {
+        let (start, end) = span.key;
+        if start == end {
+            continue;
+        }
+        let owner = u32::try_from(span.row).map_err(|_| {
+            datafusion_common::exec_datafusion_err!(
+                "collection owner count exceeds Arrow index capacity"
+            )
+        })?;
+        chunks.push(GroupSegmentChunk {
+            keys: keys.array.values().slice(start, end - start),
+            owners: Arc::new(UInt32Array::from(vec![owner; end - start])),
+        });
+    }
+    Ok(GroupSegment { chunks })
 }
 
 fn flatten_values(
     keys: ListInput<'_>,
     values: ListInput<'_>,
     row_count: usize,
-) -> Result<ArrayRef> {
-    let (_, value_spans, _) = selected_spans(keys, Some(values), row_count, false)?;
-    flatten_spans(values.array.values(), value_spans.as_ref().unwrap())
+) -> Result<Vec<ArrayRef>> {
+    Ok(selected_spans(keys, Some(values), row_count)?
+        .into_iter()
+        .filter_map(|span| span.value)
+        .filter(|(start, end)| start != end)
+        .map(|(start, end)| values.array.values().slice(start, end - start))
+        .collect())
 }
 
 fn grouped_aggregate(
@@ -757,55 +751,47 @@ fn grouped_aggregate(
         spec_values.push(data);
     }
 
-    let mut owners = Vec::new();
-    let mut segment_starts = Vec::with_capacity(segments.len());
-    let mut key_arrays = Vec::with_capacity(segments.len());
-    for segment in &segments {
-        segment_starts.push(owners.len());
-        owners.extend_from_slice(&segment.owners);
-        key_arrays.push(segment.keys.clone());
-    }
-    let key_data = if key_arrays.len() == 1 {
-        key_arrays[0].clone()
-    } else {
-        arrow_select::concat::concat(
-            &key_arrays
-                .iter()
-                .map(|array| array.as_ref())
-                .collect::<Vec<_>>(),
-        )?
-    };
-    let owner_array: ArrayRef = Arc::new(UInt32Array::from(owners));
+    let key_type = segments
+        .iter()
+        .flat_map(|segment| segment.chunks.iter())
+        .next()
+        .map(|chunk| chunk.keys.data_type().clone())
+        .unwrap_or_else(|| keys.array.values().data_type().clone());
     let grouping_schema = Arc::new(Schema::new(vec![
         Field::new("owner", DataType::UInt32, false),
-        Field::new("key", key_data.data_type().clone(), true),
+        Field::new("key", key_type, true),
     ]));
     let mut grouping = new_group_values(grouping_schema, &GroupOrdering::None)?;
-    let mut group_ids = Vec::new();
-    grouping.intern(&[owner_array.clone(), key_data], &mut group_ids)?;
+    let mut segment_ids = Vec::with_capacity(segments.len());
+    for segment in &segments {
+        let mut chunks = Vec::with_capacity(segment.chunks.len());
+        for chunk in &segment.chunks {
+            let mut group_ids = Vec::new();
+            grouping.intern(&[chunk.owners.clone(), chunk.keys.clone()], &mut group_ids)?;
+            chunks.push(group_ids);
+        }
+        segment_ids.push(chunks);
+    }
     let group_count = grouping.len();
 
     let mut aggregates = Vec::with_capacity(specs.len());
     for (index, (function, _, _, _)) in specs.iter().enumerate() {
         let segment = spec_segments[index];
-        let start = segment_starts[segment];
-        let end = start + segments[segment].owners.len();
-        let ids = &group_ids[start..end];
-        let data = if *function == "count" {
-            owner_array.slice(start, end - start)
+        let input_type = if *function == "count" {
+            DataType::UInt32
         } else {
-            spec_values[index].as_ref().unwrap().clone()
+            values_data_type(specs[index].3.unwrap())
         };
         let aggregate_udf = if *function == "count" || *function == "count_where" {
             datafusion_functions_aggregate::count::count_udaf()
         } else {
-            configured_group_aggregate(function, data.data_type())?
+            configured_group_aggregate(function, &input_type)?
         };
         let aggregate =
             AggregateExprBuilder::new(aggregate_udf, vec![Arc::new(Column::new("value", 0))])
                 .schema(Arc::new(Schema::new(vec![Field::new(
                     "value",
-                    data.data_type().clone(),
+                    input_type.clone(),
                     true,
                 )])))
                 .alias("group_aggregate")
@@ -814,18 +800,32 @@ fn grouped_aggregate(
             return exec_err!("group aggregate {function} has no native grouped accumulator");
         }
         let mut accumulator = aggregate.create_groups_accumulator()?;
-        let predicate = if *function == "count_where" {
-            Some(
-                data.as_any()
-                    .downcast_ref::<arrow_array::BooleanArray>()
-                    .ok_or_else(|| {
-                        datafusion_common::exec_datafusion_err!("count_where values must be bool")
-                    })?,
-            )
-        } else {
-            None
-        };
-        accumulator.update_batch(std::slice::from_ref(&data), ids, predicate, group_count)?;
+        for (chunk_index, chunk) in segments[segment].chunks.iter().enumerate() {
+            let data = if *function == "count" {
+                chunk.owners.clone()
+            } else {
+                spec_values[index].as_ref().unwrap()[chunk_index].clone()
+            };
+            let predicate = if *function == "count_where" {
+                Some(
+                    data.as_any()
+                        .downcast_ref::<arrow_array::BooleanArray>()
+                        .ok_or_else(|| {
+                            datafusion_common::exec_datafusion_err!(
+                                "count_where values must be bool"
+                            )
+                        })?,
+                )
+            } else {
+                None
+            };
+            accumulator.update_batch(
+                std::slice::from_ref(&data),
+                &segment_ids[segment][chunk_index],
+                predicate,
+                group_count,
+            )?;
+        }
         aggregates.push(accumulator.evaluate(EmitTo::All)?);
     }
 
