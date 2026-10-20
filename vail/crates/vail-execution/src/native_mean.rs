@@ -89,7 +89,12 @@ impl GroupsAccumulator for MeanGroupsAccumulator {
         if values.null_count() == 0 {
             return Ok(result);
         }
-        let missing = BooleanArray::new(values.is_null().clone(), None);
+        let valid = values
+            .nulls()
+            .expect("null count is nonzero when building a missing mask")
+            .inner()
+            .clone();
+        let missing = BooleanArray::new(!valid, None);
         let nan = Float64Array::new_scalar(f64::NAN);
         Ok(arrow_select::zip::zip(&missing, &nan, values)?)
     }
