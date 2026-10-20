@@ -5,7 +5,7 @@ use std::sync::Arc;
 use arrow_array::{
     Array, ArrayRef, Float64Array, Int64Array, ListArray, StructArray, new_empty_array,
 };
-use arrow_buffer::OffsetBuffer;
+use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
@@ -1047,17 +1047,34 @@ fn linreg(t: &DataType, o: &serde_json::Value) -> Result<Arc<AggregateUDF>, Expr
         DataType::Boolean,
     ];
     let result = linreg_type();
-    let factory: datafusion_expr::AccumulatorFactoryFunction =
-        Arc::new(move |_| Ok(Box::new(LinregAccumulator::new(p, nested, weighted))));
+    let factory: datafusion_expr::AccumulatorFactoryFunction = Arc::new(move |_| {
+        Ok(Box::new(LinregAccumulator::new(p, nested, weighted)) as Box<dyn Accumulator>)
+    });
+    let groups_factory = Arc::new(move || {
+        Ok(Box::new(LinregGroupsAccumulator::new(p, nested, weighted))
+            as Box<dyn GroupsAccumulator>)
+    });
     let udaf_name = configured_udaf_name("linreg", t, o);
-    Ok(Arc::new(create_udaf(
+    let grouped_input = t.clone();
+    let groups_supported = Arc::new(
+        move |args: &datafusion_expr::function::AccumulatorArgs<'_>| {
+            !args.is_distinct
+                && args.order_bys.is_empty()
+                && !args.is_reversed
+                && args.expr_fields.len() == 1
+                && args.expr_fields[0].data_type() == &grouped_input
+        },
+    );
+    Ok(crate::kernel_identity::aggregate_named_with_groups(
         &udaf_name,
+        (udaf_name.clone(), t.clone(), result.clone()),
         vec![t.clone()],
-        Arc::new(result),
-        Volatility::Immutable,
+        result,
+        state,
         factory,
-        Arc::new(state),
-    )))
+        Some(groups_factory),
+        Some(groups_supported),
+    ))
 }
 fn linreg_type() -> DataType {
     let f = Arc::new(Field::new("item", DataType::Float64, true));
@@ -1114,193 +1131,242 @@ impl LinregAccumulator {
         }
     }
     fn append_work(&mut self) {
-        let d = self.p + 1;
-        for j in 0..d {
-            let a = self.qr[j * d + j];
-            let b = self.work[j];
-            if b == 0. {
-                continue;
-            }
-            let norm = a.hypot(b);
-            if !norm.is_finite() {
-                self.invalid_numeric = true;
-                return;
-            }
-            let c = a / norm;
-            let sine = b / norm;
-            self.qr[j * d + j] = norm;
-            for k in j + 1..d {
-                let old = self.qr[j * d + k];
-                let value = self.work[k];
-                self.qr[j * d + k] = c * old + sine * value;
-                self.work[k] = c * value - sine * old;
-            }
-        }
+        append_linreg_work(
+            self.p,
+            &mut self.qr,
+            &mut self.work,
+            &mut self.invalid_numeric,
+        );
     }
     fn accumulate_observation(&mut self, x: &[f64], y: f64, weight: f64) {
-        // Hail's n counts defined rows even when their numeric values make the fit invalid.
-        self.n += 1;
-        if weight < 0.0 || !weight.is_finite() || !y.is_finite() || x.iter().any(|v| !v.is_finite())
-        {
-            self.invalid_numeric = true;
-            return;
-        }
-        if !self.origin_set && x[0] != 0.0 {
-            for j in 1..self.p {
-                let origin = x[j] / x[0];
-                self.origins[j] = if origin.is_finite() { origin } else { 0.0 };
-            }
-            let origin = y / x[0];
-            self.origins[self.p] = if origin.is_finite() { origin } else { 0.0 };
-            self.origin_set = true;
-        }
-        let scale = weight.sqrt();
-        self.work[0] = scale * x[0];
-        for j in 1..self.p {
-            self.work[j] = scale * (-self.origins[j]).mul_add(x[0], x[j]);
-        }
-        self.work[self.p] = scale * (-self.origins[self.p]).mul_add(x[0], y);
-        if self.work.iter().any(|value| !value.is_finite()) {
-            self.invalid_numeric = true;
-            return;
-        }
-        self.append_work();
+        accumulate_linreg_observation(
+            self.p,
+            &mut self.n,
+            &mut self.qr,
+            &mut self.work,
+            &mut self.origins,
+            &mut self.origin_set,
+            &mut self.invalid_numeric,
+            x,
+            y,
+            weight,
+        );
     }
     fn result(&self) -> DfResult<ScalarValue> {
-        let DataType::Struct(fields) = linreg_type() else {
-            unreachable!()
-        };
-        let missing = || {
-            fields
-                .iter()
-                .take(9)
-                .map(|f| ScalarValue::try_from(f.data_type()).unwrap_or(ScalarValue::Null))
-                .collect::<Vec<_>>()
-        };
-        let list = |numbers: Vec<f64>| -> ScalarValue {
-            let values: ArrayRef = Arc::new(Float64Array::from(numbers));
-            ScalarValue::List(Arc::new(ListArray::new(
-                Arc::new(Field::new("item", DataType::Float64, true)),
-                OffsetBuffer::from_lengths([values.len()]),
-                values,
-                None,
-            )))
-        };
-        let mut values = missing();
-        if self.n as usize > self.p {
-            if self.invalid_numeric {
-                let nan = || vec![f64::NAN; self.p];
-                values = vec![
-                    list(nan()),
-                    list(nan()),
-                    list(nan()),
-                    list(nan()),
-                    ScalarValue::Float64(Some(f64::NAN)),
-                    ScalarValue::Float64(Some(f64::NAN)),
-                    ScalarValue::Float64(Some(f64::NAN)),
-                    ScalarValue::Float64(Some(f64::NAN)),
-                    ScalarValue::Float64(Some(f64::NAN)),
-                ];
-            } else {
-                let d = self.p + 1;
-                let r = DMatrix::from_fn(self.p, self.p, |i, j| self.qr[i * d + j]);
-                // Compare each diagonal to its own column norm, rather than
-                // the magnitude of unrelated translated/scaled predictors.
-                let full_rank = (0..self.p).all(|j| {
-                    let norm = (0..=j).map(|i| r[(i, j)]).fold(0f64, f64::hypot);
-                    r[(j, j)].abs() > f64::EPSILON * self.p as f64 * norm
-                });
-                if full_rank {
-                    let xy = DVector::from_iterator(
-                        self.p,
-                        (0..self.p).map(|i| self.qr[i * d + self.p]),
-                    );
-                    if let Some(mut beta) = r.solve_upper_triangular(&xy) {
-                        let residual = self.qr[self.p * d + self.p];
-                        let df = (self.n as usize - self.p) as f64;
-                        let sigma = residual / df.sqrt();
-                        beta[0] += self.origins[self.p];
-                        for j in 1..self.p {
-                            beta[0] = (-self.origins[j]).mul_add(beta[j], beta[0]);
-                        }
-                        let transpose = r.transpose();
-                        let mut se = Vec::with_capacity(self.p);
-                        for i in 0..self.p {
-                            let mut basis = DVector::zeros(self.p);
-                            basis[i] = 1.;
-                            if i == 0 {
-                                for j in 1..self.p {
-                                    basis[j] = -self.origins[j];
-                                }
-                            }
-                            let Some(column) = transpose.solve_lower_triangular(&basis) else {
-                                return Err(DataFusionError::Execution(
-                                    "linreg triangular covariance solve failed".into(),
-                                ));
-                            };
-                            se.push(
-                                column
-                                    .iter()
-                                    .map(|value| sigma * value)
-                                    .fold(0f64, f64::hypot),
-                            );
-                        }
-                        let t = (0..self.p).map(|i| beta[i] / se[i]).collect::<Vec<_>>();
-                        let student = StudentsT::new(0., 1., df).ok();
-                        let pvals = t
-                            .iter()
-                            .map(|x| {
-                                if x.is_nan() {
-                                    f64::NAN
-                                } else {
-                                    student
-                                        .as_ref()
-                                        .map(|dist| 2. * dist.sf(x.abs()))
-                                        .unwrap_or(f64::NAN)
-                                }
-                            })
-                            .collect::<Vec<_>>();
-                        let response = |i| {
-                            if i == 0 {
-                                self.origins[self.p].mul_add(self.qr[0], self.qr[self.p])
-                            } else {
-                                self.qr[i * d + self.p]
-                            }
-                        };
-                        let null_residual =
-                            (self.nested..=self.p).map(response).fold(0f64, f64::hypot);
-                        let explained = (self.nested..self.p).map(response).fold(0f64, f64::hypot);
-                        let d0 = (self.p - self.nested) as f64;
-                        let ratio = residual / null_residual;
-                        let r2 = 1. - ratio * ratio;
-                        let adjusted = 1. - (1. - r2) * (self.n as f64 - self.nested as f64) / df;
-                        let explained_ratio = explained / residual;
-                        let f = explained_ratio * explained_ratio * df / d0;
-                        let model_p = if f.is_nan() {
-                            f64::NAN
-                        } else {
-                            FisherSnedecor::new(d0, df)
-                                .map(|dist| dist.sf(f))
-                                .unwrap_or(f64::NAN)
-                        };
-                        values = vec![
-                            list(beta.iter().copied().collect()),
-                            list(se),
-                            list(t),
-                            list(pvals),
-                            ScalarValue::Float64(Some(sigma)),
-                            ScalarValue::Float64(Some(r2)),
-                            ScalarValue::Float64(Some(adjusted)),
-                            ScalarValue::Float64(Some(f)),
-                            ScalarValue::Float64(Some(model_p)),
-                        ];
+        linreg_result(
+            self.p,
+            self.nested,
+            self.n,
+            &self.qr,
+            &self.origins,
+            self.invalid_numeric,
+        )
+    }
+}
+
+fn append_linreg_work(p: usize, qr: &mut [f64], work: &mut [f64], invalid_numeric: &mut bool) {
+    let d = p + 1;
+    for j in 0..d {
+        let a = qr[j * d + j];
+        let b = work[j];
+        if b == 0. {
+            continue;
+        }
+        let norm = a.hypot(b);
+        if !norm.is_finite() {
+            *invalid_numeric = true;
+            return;
+        }
+        let c = a / norm;
+        let sine = b / norm;
+        qr[j * d + j] = norm;
+        for k in j + 1..d {
+            let old = qr[j * d + k];
+            let value = work[k];
+            qr[j * d + k] = c * old + sine * value;
+            work[k] = c * value - sine * old;
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+fn accumulate_linreg_observation(
+    p: usize,
+    n: &mut i64,
+    qr: &mut [f64],
+    work: &mut [f64],
+    origins: &mut [f64],
+    origin_set: &mut bool,
+    invalid_numeric: &mut bool,
+    x: &[f64],
+    y: f64,
+    weight: f64,
+) {
+    // Hail's n counts defined rows even when their numeric values make the fit invalid.
+    *n += 1;
+    if weight < 0.0 || !weight.is_finite() || !y.is_finite() || x.iter().any(|v| !v.is_finite()) {
+        *invalid_numeric = true;
+        return;
+    }
+    if !*origin_set && x[0] != 0.0 {
+        for j in 1..p {
+            let origin = x[j] / x[0];
+            origins[j] = if origin.is_finite() { origin } else { 0.0 };
+        }
+        let origin = y / x[0];
+        origins[p] = if origin.is_finite() { origin } else { 0.0 };
+        *origin_set = true;
+    }
+    let scale = weight.sqrt();
+    work[0] = scale * x[0];
+    for j in 1..p {
+        work[j] = scale * (-origins[j]).mul_add(x[0], x[j]);
+    }
+    work[p] = scale * (-origins[p]).mul_add(x[0], y);
+    if work.iter().any(|value| !value.is_finite()) {
+        *invalid_numeric = true;
+        return;
+    }
+    append_linreg_work(p, qr, work, invalid_numeric);
+}
+
+fn linreg_result(
+    p: usize,
+    nested: usize,
+    n: i64,
+    qr: &[f64],
+    origins: &[f64],
+    invalid_numeric: bool,
+) -> DfResult<ScalarValue> {
+    let DataType::Struct(fields) = linreg_type() else {
+        unreachable!()
+    };
+    let missing = || {
+        fields
+            .iter()
+            .take(9)
+            .map(|f| ScalarValue::try_from(f.data_type()).unwrap_or(ScalarValue::Null))
+            .collect::<Vec<_>>()
+    };
+    let list = |numbers: Vec<f64>| -> ScalarValue {
+        let values: ArrayRef = Arc::new(Float64Array::from(numbers));
+        ScalarValue::List(Arc::new(ListArray::new(
+            Arc::new(Field::new("item", DataType::Float64, true)),
+            OffsetBuffer::from_lengths([values.len()]),
+            values,
+            None,
+        )))
+    };
+    let mut values = missing();
+    if n as usize > p {
+        if invalid_numeric {
+            let nan = || vec![f64::NAN; p];
+            values = vec![
+                list(nan()),
+                list(nan()),
+                list(nan()),
+                list(nan()),
+                ScalarValue::Float64(Some(f64::NAN)),
+                ScalarValue::Float64(Some(f64::NAN)),
+                ScalarValue::Float64(Some(f64::NAN)),
+                ScalarValue::Float64(Some(f64::NAN)),
+                ScalarValue::Float64(Some(f64::NAN)),
+            ];
+        } else {
+            let d = p + 1;
+            let r = DMatrix::from_fn(p, p, |i, j| qr[i * d + j]);
+            // Compare each diagonal to its own column norm, rather than
+            // the magnitude of unrelated translated/scaled predictors.
+            let full_rank = (0..p).all(|j| {
+                let norm = (0..=j).map(|i| r[(i, j)]).fold(0f64, f64::hypot);
+                r[(j, j)].abs() > f64::EPSILON * p as f64 * norm
+            });
+            if full_rank {
+                let xy = DVector::from_iterator(p, (0..p).map(|i| qr[i * d + p]));
+                if let Some(mut beta) = r.solve_upper_triangular(&xy) {
+                    let residual = qr[p * d + p];
+                    let df = (n as usize - p) as f64;
+                    let sigma = residual / df.sqrt();
+                    beta[0] += origins[p];
+                    for j in 1..p {
+                        beta[0] = (-origins[j]).mul_add(beta[j], beta[0]);
                     }
+                    let transpose = r.transpose();
+                    let mut se = Vec::with_capacity(p);
+                    for i in 0..p {
+                        let mut basis = DVector::zeros(p);
+                        basis[i] = 1.;
+                        if i == 0 {
+                            for j in 1..p {
+                                basis[j] = -origins[j];
+                            }
+                        }
+                        let Some(column) = transpose.solve_lower_triangular(&basis) else {
+                            return Err(DataFusionError::Execution(
+                                "linreg triangular covariance solve failed".into(),
+                            ));
+                        };
+                        se.push(
+                            column
+                                .iter()
+                                .map(|value| sigma * value)
+                                .fold(0f64, f64::hypot),
+                        );
+                    }
+                    let t = (0..p).map(|i| beta[i] / se[i]).collect::<Vec<_>>();
+                    let student = StudentsT::new(0., 1., df).ok();
+                    let pvals = t
+                        .iter()
+                        .map(|x| {
+                            if x.is_nan() {
+                                f64::NAN
+                            } else {
+                                student
+                                    .as_ref()
+                                    .map(|dist| 2. * dist.sf(x.abs()))
+                                    .unwrap_or(f64::NAN)
+                            }
+                        })
+                        .collect::<Vec<_>>();
+                    let response = |i| {
+                        if i == 0 {
+                            origins[p].mul_add(qr[0], qr[p])
+                        } else {
+                            qr[i * d + p]
+                        }
+                    };
+                    let null_residual = (nested..=p).map(response).fold(0f64, f64::hypot);
+                    let explained = (nested..p).map(response).fold(0f64, f64::hypot);
+                    let d0 = (p - nested) as f64;
+                    let ratio = residual / null_residual;
+                    let r2 = 1. - ratio * ratio;
+                    let adjusted = 1. - (1. - r2) * (n as f64 - nested as f64) / df;
+                    let explained_ratio = explained / residual;
+                    let f = explained_ratio * explained_ratio * df / d0;
+                    let model_p = if f.is_nan() {
+                        f64::NAN
+                    } else {
+                        FisherSnedecor::new(d0, df)
+                            .map(|dist| dist.sf(f))
+                            .unwrap_or(f64::NAN)
+                    };
+                    values = vec![
+                        list(beta.iter().copied().collect()),
+                        list(se),
+                        list(t),
+                        list(pvals),
+                        ScalarValue::Float64(Some(sigma)),
+                        ScalarValue::Float64(Some(r2)),
+                        ScalarValue::Float64(Some(adjusted)),
+                        ScalarValue::Float64(Some(f)),
+                        ScalarValue::Float64(Some(model_p)),
+                    ];
                 }
             }
         }
-        values.push(ScalarValue::Int64(Some(self.n)));
-        struct_scalar(fields.to_vec(), values)
     }
+    values.push(ScalarValue::Int64(Some(n)));
+    struct_scalar(fields.to_vec(), values)
 }
 impl Accumulator for LinregAccumulator {
     fn update_batch(&mut self, values: &[ArrayRef]) -> DfResult<()> {
@@ -1541,5 +1607,463 @@ impl Accumulator for LinregAccumulator {
             }
         }
         Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct LinregGroupsAccumulator {
+    p: usize,
+    nested: usize,
+    weighted: bool,
+    n: Vec<i64>,
+    // One contiguous upper-triangular QR state per group, with shared scratch.
+    qr: Vec<f64>,
+    origins: Vec<f64>,
+    origin_set: Vec<bool>,
+    invalid_numeric: Vec<bool>,
+    work: Vec<f64>,
+    predictor_scratch: Vec<f64>,
+}
+
+fn take_linreg_groups<T>(values: &mut Vec<T>, count: usize, width: usize, all: bool) -> Vec<T> {
+    if all {
+        std::mem::take(values)
+    } else {
+        values.drain(0..count * width).collect()
+    }
+}
+
+impl LinregGroupsAccumulator {
+    fn new(p: usize, nested: usize, weighted: bool) -> Self {
+        Self {
+            p,
+            nested,
+            weighted,
+            n: Vec::new(),
+            qr: Vec::new(),
+            origins: Vec::new(),
+            origin_set: Vec::new(),
+            invalid_numeric: Vec::new(),
+            work: vec![0.; p + 1],
+            predictor_scratch: vec![0.; p],
+        }
+    }
+
+    fn dimension(&self) -> usize {
+        self.p + 1
+    }
+
+    fn qr_width(&self) -> usize {
+        self.dimension() * self.dimension()
+    }
+
+    fn ensure_groups(&mut self, groups: usize) -> DfResult<()> {
+        let qr_len = groups
+            .checked_mul(self.qr_width())
+            .ok_or_else(|| DataFusionError::Execution("linreg state size overflow".into()))?;
+        let origins_len = groups
+            .checked_mul(self.dimension())
+            .ok_or_else(|| DataFusionError::Execution("linreg state size overflow".into()))?;
+        if qr_len > i32::MAX as usize || origins_len > i32::MAX as usize {
+            return Err(DataFusionError::Execution(
+                "linreg grouped state exceeds Arrow's offset limit".into(),
+            ));
+        }
+        if groups > self.n.len() {
+            self.n.resize(groups, 0);
+            self.qr.resize(qr_len, 0.);
+            self.origins.resize(origins_len, 0.);
+            self.origin_set.resize(groups, false);
+            self.invalid_numeric.resize(groups, false);
+        }
+        Ok(())
+    }
+
+    fn take_state(
+        &mut self,
+        emit_to: EmitTo,
+    ) -> DfResult<(Vec<i64>, Vec<f64>, Vec<f64>, Vec<bool>, Vec<bool>)> {
+        let groups = self.n.len();
+        let emitted = match emit_to {
+            EmitTo::All => groups,
+            EmitTo::First(n) if n <= groups => n,
+            EmitTo::First(_) => {
+                return Err(DataFusionError::Execution(
+                    "linreg emitted group count exceeds accumulator state".into(),
+                ));
+            }
+        };
+        let all = matches!(emit_to, EmitTo::All);
+        let qr_width = self.qr_width();
+        let dimension = self.dimension();
+        Ok((
+            take_linreg_groups(&mut self.n, emitted, 1, all),
+            take_linreg_groups(&mut self.qr, emitted, qr_width, all),
+            take_linreg_groups(&mut self.origins, emitted, dimension, all),
+            take_linreg_groups(&mut self.origin_set, emitted, 1, all),
+            take_linreg_groups(&mut self.invalid_numeric, emitted, 1, all),
+        ))
+    }
+}
+
+fn linreg_state_list(
+    values: Vec<f64>,
+    width: usize,
+    validity: Option<Vec<bool>>,
+) -> DfResult<ArrayRef> {
+    if width == 0 || values.len() % width != 0 || values.len() > i32::MAX as usize {
+        return Err(DataFusionError::Execution(
+            "linreg list state has invalid width or Arrow offsets".into(),
+        ));
+    }
+    let groups = values.len() / width;
+    let nulls = validity
+        .filter(|valid| valid.iter().any(|valid| !valid))
+        .map(NullBuffer::from);
+    Ok(Arc::new(ListArray::new(
+        Arc::new(Field::new("item", DataType::Float64, true)),
+        OffsetBuffer::from_lengths(vec![width; groups]),
+        Arc::new(Float64Array::from(values)),
+        nulls,
+    )))
+}
+
+impl GroupsAccumulator for LinregGroupsAccumulator {
+    fn update_batch(
+        &mut self,
+        values: &[ArrayRef],
+        group_indices: &[usize],
+        opt_filter: Option<&BooleanArray>,
+        total_num_groups: usize,
+    ) -> DfResult<()> {
+        let [input] = values else {
+            return Err(DataFusionError::Execution(
+                "linreg expects one struct input".into(),
+            ));
+        };
+        if input.len() != group_indices.len()
+            || opt_filter.is_some_and(|filter| filter.len() != input.len())
+            || group_indices.iter().any(|group| *group >= total_num_groups)
+        {
+            return Err(DataFusionError::Execution(
+                "linreg grouping shape mismatch".into(),
+            ));
+        }
+        self.ensure_groups(total_num_groups)?;
+        let rows = input
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| DataFusionError::Execution("linreg expects struct values".into()))?;
+        let columns = rows.columns();
+        if columns.len() != if self.weighted { 3 } else { 2 } {
+            return Err(DataFusionError::Execution(
+                "linreg input struct fields differ from its configured weight mode".into(),
+            ));
+        }
+        let ys = columns[0]
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| DataFusionError::Execution("linreg y must be float64".into()))?;
+        let predictors = columns[1].as_ref();
+        let lists = predictors.as_any().downcast_ref::<ListArray>();
+        let scalar = predictors.as_any().downcast_ref::<Float64Array>();
+        let predictor_columns = predictors
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .map(|xs| {
+                if xs.columns().len() != self.p {
+                    return Err(DataFusionError::Execution(format!(
+                        "linreg predictor struct has {} fields, expected {}",
+                        xs.columns().len(),
+                        self.p
+                    )));
+                }
+                xs.columns()
+                    .iter()
+                    .map(|column| {
+                        column
+                            .as_any()
+                            .downcast_ref::<Float64Array>()
+                            .ok_or_else(|| {
+                                DataFusionError::Execution(
+                                    "linreg predictors must be float64".into(),
+                                )
+                            })
+                    })
+                    .collect::<DfResult<Vec<_>>>()
+            })
+            .transpose()?;
+        let children = lists
+            .map(|list| {
+                list.values()
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Execution("linreg predictors must be float64".into())
+                    })
+            })
+            .transpose()?;
+        let weights = if self.weighted {
+            Some(
+                columns[2]
+                    .as_any()
+                    .downcast_ref::<Float64Array>()
+                    .ok_or_else(|| {
+                        DataFusionError::Execution("linreg weight must be float64".into())
+                    })?,
+            )
+        } else {
+            None
+        };
+        for (row, group) in group_indices.iter().copied().enumerate() {
+            if opt_filter.is_some_and(|filter| !filter.is_valid(row) || !filter.value(row))
+                || rows.is_null(row)
+                || ys.is_null(row)
+                || predictors.is_null(row)
+                || weights.is_some_and(|weight| weight.is_null(row))
+            {
+                continue;
+            }
+            let x: &[f64] = if let Some(xs) = &predictor_columns {
+                if xs.iter().any(|column| column.is_null(row)) {
+                    continue;
+                }
+                for (slot, column) in self.predictor_scratch.iter_mut().zip(xs) {
+                    *slot = column.value(row);
+                }
+                &self.predictor_scratch
+            } else if let (Some(list), Some(values)) = (lists, children) {
+                let offsets = list.value_offsets();
+                let start = offsets[row] as usize;
+                let end = offsets[row + 1] as usize;
+                if end - start != self.p || (start..end).any(|index| values.is_null(index)) {
+                    continue;
+                }
+                &values.values()[start..end]
+            } else if let Some(values) = scalar {
+                if self.p != 1 {
+                    return Err(DataFusionError::Execution(
+                        "linreg scalar predictor requires exactly one predictor".into(),
+                    ));
+                }
+                std::slice::from_ref(&values.values()[row])
+            } else {
+                return Err(DataFusionError::Execution(
+                    "linreg x has unsupported predictor representation".into(),
+                ));
+            };
+            let qr_width = self.qr_width();
+            let origins_width = self.dimension();
+            let qr_start = group * qr_width;
+            let origins_start = group * origins_width;
+            accumulate_linreg_observation(
+                self.p,
+                &mut self.n[group],
+                &mut self.qr[qr_start..qr_start + qr_width],
+                &mut self.work,
+                &mut self.origins[origins_start..origins_start + origins_width],
+                &mut self.origin_set[group],
+                &mut self.invalid_numeric[group],
+                x,
+                ys.value(row),
+                weights.map_or(1.0, |w| w.value(row)),
+            );
+        }
+        Ok(())
+    }
+
+    fn evaluate(&mut self, emit_to: EmitTo) -> DfResult<ArrayRef> {
+        let (counts, qr, origins, _origin_set, invalid) = self.take_state(emit_to)?;
+        let groups = counts.len();
+        if groups == 0 {
+            return Ok(new_empty_array(&linreg_type()));
+        }
+        let d = self.dimension();
+        let qr_width = self.qr_width();
+        let mut results = Vec::with_capacity(groups);
+        for group in 0..groups {
+            let origin_start = group * d;
+            let qr_start = group * qr_width;
+            results.push(linreg_result(
+                self.p,
+                self.nested,
+                counts[group],
+                &qr[qr_start..qr_start + qr_width],
+                &origins[origin_start..origin_start + d],
+                invalid[group],
+            )?);
+        }
+        ScalarValue::iter_to_array(results)
+    }
+
+    fn size(&self) -> usize {
+        std::mem::size_of_val(self)
+            + self.n.capacity() * std::mem::size_of::<i64>()
+            + (self.qr.capacity() + self.origins.capacity() + self.work.capacity())
+                * std::mem::size_of::<f64>()
+            + (self.origin_set.capacity() + self.invalid_numeric.capacity())
+                * std::mem::size_of::<bool>()
+            + self.predictor_scratch.capacity() * std::mem::size_of::<f64>()
+    }
+
+    fn state(&mut self, emit_to: EmitTo) -> DfResult<Vec<ArrayRef>> {
+        let (counts, qr, origins, origin_set, invalid) = self.take_state(emit_to)?;
+        let qr = linreg_state_list(qr, self.qr_width(), None)?;
+        let origins = linreg_state_list(origins, self.dimension(), Some(origin_set))?;
+        Ok(vec![
+            Arc::new(Int64Array::from(counts)),
+            qr,
+            origins,
+            Arc::new(BooleanArray::from(invalid)),
+        ])
+    }
+
+    fn merge_batch(
+        &mut self,
+        states: &[ArrayRef],
+        group_indices: &[usize],
+        total_num_groups: usize,
+    ) -> DfResult<()> {
+        let [counts, qr, origins, invalid] = states else {
+            return Err(DataFusionError::Execution(
+                "linreg grouped state shape mismatch".into(),
+            ));
+        };
+        let counts = counts
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .ok_or_else(|| DataFusionError::Execution("linreg count state must be int64".into()))?;
+        let qr = qr
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| DataFusionError::Execution("linreg QR state must be list".into()))?;
+        let qr_values = qr
+            .values()
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| DataFusionError::Execution("linreg QR values must be float64".into()))?;
+        let origins = origins
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .ok_or_else(|| DataFusionError::Execution("linreg origin state must be list".into()))?;
+        let origin_values = origins
+            .values()
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| DataFusionError::Execution("linreg origins must be float64".into()))?;
+        let invalid = invalid
+            .as_any()
+            .downcast_ref::<BooleanArray>()
+            .ok_or_else(|| {
+                DataFusionError::Execution("linreg invalid state must be bool".into())
+            })?;
+        if counts.len() != group_indices.len()
+            || qr.len() != group_indices.len()
+            || origins.len() != group_indices.len()
+            || invalid.len() != group_indices.len()
+            || group_indices.iter().any(|group| *group >= total_num_groups)
+        {
+            return Err(DataFusionError::Execution(
+                "linreg grouped state row count mismatch".into(),
+            ));
+        }
+        self.ensure_groups(total_num_groups)?;
+        let d = self.dimension();
+        let qr_width = self.qr_width();
+        for (row, group) in group_indices.iter().copied().enumerate() {
+            if counts.is_null(row) {
+                continue;
+            }
+            if qr.is_null(row) || invalid.is_null(row) || qr.value_length(row) as usize != qr_width
+            {
+                return Err(DataFusionError::Execution(
+                    "linreg grouped QR state dimensions differ".into(),
+                ));
+            }
+            let qr_start = qr.value_offsets()[row] as usize;
+            if (qr_start..qr_start + qr_width).any(|index| qr_values.is_null(index)) {
+                return Err(DataFusionError::Execution(
+                    "linreg grouped QR state must be defined".into(),
+                ));
+            }
+            let partial_origins = if origins.is_null(row) {
+                None
+            } else {
+                if origins.value_length(row) as usize != d {
+                    return Err(DataFusionError::Execution(
+                        "linreg grouped origin state dimensions differ".into(),
+                    ));
+                }
+                let start = origins.value_offsets()[row] as usize;
+                if (start..start + d).any(|index| {
+                    origin_values.is_null(index) || !origin_values.value(index).is_finite()
+                }) {
+                    return Err(DataFusionError::Execution(
+                        "linreg grouped origin state values differ".into(),
+                    ));
+                }
+                Some(&origin_values.values()[start..start + d])
+            };
+            if counts.value(row) < 0 {
+                return Err(DataFusionError::Execution(
+                    "linreg grouped count state must be nonnegative".into(),
+                ));
+            }
+            let origins_start = group * d;
+            if !self.origin_set[group] {
+                if let Some(partial) = partial_origins {
+                    self.origins[origins_start..origins_start + d].copy_from_slice(partial);
+                    self.origin_set[group] = true;
+                }
+            }
+            self.n[group] += counts.value(row);
+            self.invalid_numeric[group] |= invalid.value(row);
+            let qr_start_out = group * qr_width;
+            for i in 0..d {
+                self.work.fill(0.);
+                self.work[i..d].copy_from_slice(
+                    &qr_values.values()[qr_start + i * d + i..qr_start + (i + 1) * d],
+                );
+                if self.work[0] != 0. {
+                    for j in 1..d {
+                        let delta = partial_origins.map_or(0., |origin| origin[j])
+                            - self.origins[origins_start + j];
+                        self.work[j] = delta.mul_add(self.work[0], self.work[j]);
+                    }
+                }
+                if self.work.iter().any(|value| !value.is_finite()) {
+                    self.invalid_numeric[group] = true;
+                    continue;
+                }
+                append_linreg_work(
+                    self.p,
+                    &mut self.qr[qr_start_out..qr_start_out + qr_width],
+                    &mut self.work,
+                    &mut self.invalid_numeric[group],
+                );
+            }
+        }
+        Ok(())
+    }
+
+    fn convert_to_state(
+        &self,
+        values: &[ArrayRef],
+        opt_filter: Option<&BooleanArray>,
+    ) -> DfResult<Vec<ArrayRef>> {
+        let [input] = values else {
+            return Err(DataFusionError::Execution(
+                "linreg expects one struct input".into(),
+            ));
+        };
+        if opt_filter.is_some_and(|filter| filter.len() != input.len()) {
+            return Err(DataFusionError::Execution(
+                "linreg converter filter length mismatch".into(),
+            ));
+        }
+        let mut groups = Self::new(self.p, self.nested, self.weighted);
+        let group_indices = (0..input.len()).collect::<Vec<_>>();
+        groups.update_batch(values, &group_indices, opt_filter, input.len())?;
+        groups.state(EmitTo::All)
     }
 }
