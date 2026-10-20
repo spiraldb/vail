@@ -75,6 +75,33 @@ def test_numeric_empty_and_degenerate_execution():
     assert math.isnan(constant.aggregate(hl.agg.corr(constant.x, constant.y)))
 
 
+def test_grouped_corr_uses_native_groups_with_hail_empty_and_degenerate_results():
+    import math
+
+    table = hl.Table.parallelize(
+        [
+            {"g": 0, "x": 1.0, "y": 2.0},
+            {"g": 0, "x": 2.0, "y": 4.0},
+            {"g": 1, "x": 1.0, "y": 2.0},
+            {"g": 2, "x": None, "y": 2.0},
+            {"g": 2, "x": 3.0, "y": None},
+            {"g": 3, "x": 2.0, "y": 4.0},
+            {"g": 3, "x": 2.0, "y": 8.0},
+            {"g": 4, "x": math.nan, "y": 1.0},
+            {"g": 4, "x": 2.0, "y": 3.0},
+        ],
+        schema=hl.tstruct(g=hl.tint32, x=hl.tfloat64, y=hl.tfloat64),
+        n_partitions=4,
+    )
+    grouped = table.group_by(table.g).aggregate(corr=hl.agg.corr(table.x, table.y)).collect()
+    by_group = {row.g: row.corr for row in grouped}
+    assert by_group[0] == 1.0
+    assert math.isnan(by_group[1])
+    assert by_group[2] is None
+    assert math.isnan(by_group[3])
+    assert math.isnan(by_group[4])
+
+
 def test_hist_right_endpoint_and_nan():
     import math
     t = hl.Table.parallelize([{"x": -1.}, {"x": 0.}, {"x": 2.},
