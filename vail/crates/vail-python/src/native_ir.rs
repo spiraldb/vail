@@ -1242,6 +1242,9 @@ impl NativeExpr {
     fn same_node_as(&self, other: &Self) -> bool {
         Arc::ptr_eq(&self.inner, &other.inner)
     }
+    fn node_identity(&self) -> usize {
+        Arc::as_ptr(&self.inner) as usize
+    }
     fn view<'py>(&self, py: Python<'py>) -> PyResult<Bound<'py, PyDict>> {
         let d = PyDict::new(py);
         match self.inner.as_ref() {

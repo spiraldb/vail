@@ -1100,6 +1100,16 @@ def test_group_by_reductions_use_fused_per_list_groups():
     assert cols[2].sums == {0: 2, 1: 12}
     assert cols[2].counts == {0: 1, 1: 1}
 
+    shared = hl.agg.sum(m.x)
+    repeated = shared
+    for _ in range(12):
+        repeated = repeated + repeated
+    payload = hl.literal(list(range(2048)))
+    shared_dag = m.annotate_rows(
+        groups=hl.agg.group_by(m.col_idx % 2, repeated + hl.len(payload))
+    ).rows().collect()[0].groups
+    assert shared_dag == {0: 12 * (2**12) + 2048, 1: 2048}
+
     # Identical aggregate IR under distinct filters must retain its occurrence
     # scope, and a filtered value must not be evaluated for excluded entries.
     signed = hl.range_matrix_table(1, 3)
@@ -1132,6 +1142,27 @@ def test_group_by_reductions_use_fused_per_list_groups():
                 hl.agg.filter(signed.x > 0, hl.agg.sum(signed.x)),
             )
         ).rows().collect()
+
+
+def test_filtered_matrix_entries_preserve_grouped_reducer_context():
+    m = hl.range_matrix_table(1, 4, 2)
+    m = m.annotate_entries(x=m.col_idx + 1).filter_entries(m.col_idx != 1)
+    result = m.annotate_rows(
+        counts=hl.agg.group_by(m.col_idx % 2, hl.agg.count()),
+        fractions=hl.agg.group_by(
+            m.col_idx % 2,
+            hl.agg.fraction(m.x > 3),
+        ),
+        sums=hl.agg.group_by(m.col_idx % 2, hl.agg.sum(m.x)),
+        empty_sums=hl.agg.group_by(
+            m.col_idx % 2,
+            hl.agg.filter(m.x < 0, hl.agg.sum(m.x)),
+        ),
+    ).rows().collect()[0]
+    assert result.counts == {0: 2, 1: 1}
+    assert result.fractions == {0: 0.0, 1: 1.0}
+    assert result.sums == {0: 4, 1: 4}
+    assert result.empty_sums == {0: 0, 1: 0}
 
 
 def test_column_lookups_inside_entries_preserve_values_and_missingness():

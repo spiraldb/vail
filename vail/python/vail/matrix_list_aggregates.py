@@ -366,13 +366,15 @@ def reduce_list(
             aggregate_nodes = []
             has_unsupported_aggregation = False
 
+            def node_identity(value):
+                identity = getattr(value, "node_identity", None)
+                return identity() if identity is not None else id(value)
+
             def same_node(left, right):
-                if left is right:
-                    return True
-                try:
-                    return left == right
-                except (TypeError, ValueError):
-                    return False
+                return node_identity(left) == node_identity(right)
+
+            visited_aggregates = {}
+            visited_nodes = []
 
             def find_aggregates(value, filters=()):
                 nonlocal has_unsupported_aggregation
@@ -383,6 +385,13 @@ def reduce_list(
                 if not isinstance(value, IR_NODE_TYPES):
                     return
                 op = value.get("op")
+                if op == "literal":
+                    return
+                visit_key = (node_identity(value), tuple(map(node_identity, filters)))
+                if visit_key in visited_aggregates:
+                    return
+                visited_aggregates[visit_key] = True
+                visited_nodes.append(value)
                 if op == "agg_filter":
                     find_aggregates(value["body"], filters + (value["predicate"],))
                     return
@@ -493,26 +502,36 @@ def reduce_list(
                         )
                         for index, (aggregate, filters) in enumerate(supported_aggregates)
                     ]
+                    aggregate_replacements = {
+                        (node_identity(aggregate), tuple(map(node_identity, filters))): replacement
+                        for aggregate, filters, replacement in aggregate_fields
+                    }
 
                     def substitute(value, filters=()):
-                        if isinstance(value, IR_NODE_TYPES):
-                            for aggregate, aggregate_filters, replacement in aggregate_fields:
-                                if same_node(value, aggregate) and len(filters) == len(aggregate_filters) and all(
-                                    same_node(left, right)
-                                    for left, right in zip(filters, aggregate_filters)
-                                ):
-                                    return replacement
+                        if isinstance(value, IR_NODE_TYPES) and value.get("op") == "literal":
+                            return value
+                        key = (node_identity(value), tuple(map(node_identity, filters)))
+                        if key in rewrite_memo:
+                            return rewrite_memo[key]
+                        if isinstance(value, IR_NODE_TYPES) and key in aggregate_replacements:
+                            return aggregate_replacements[key]
                         if isinstance(value, IR_NODE_TYPES) and value.get("op") == "agg_filter":
-                            return substitute(value["body"], filters + (value["predicate"],))
-                        if isinstance(value, list):
-                            return [substitute(child, filters) for child in value]
-                        if isinstance(value, IR_NODE_TYPES):
-                            return {
+                            result = substitute(value["body"], filters + (value["predicate"],))
+                        elif isinstance(value, list):
+                            result = [substitute(child, filters) for child in value]
+                        elif isinstance(value, IR_NODE_TYPES):
+                            result = {
                                 key: substitute(child, filters)
                                 for key, child in value.items()
                             }
-                        return value
+                        else:
+                            return value
+                        rewrite_memo[key] = result
+                        rewrite_nodes.append(value)
+                        return result
 
+                    rewrite_memo = {}
+                    rewrite_nodes = []
                     projected = substitute(body)
                     value = typed(raw(walk(projected, items, fixed)))
                     return struct(key=record.key, value=value)
