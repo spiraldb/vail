@@ -47,6 +47,66 @@ async fn execute(
         .clone())
 }
 #[tokio::test]
+async fn ordinary_grouped_product_uses_native_groups_accumulator() {
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("group", arrow_schema::DataType::Int32, false),
+        Field::new("value", arrow_schema::DataType::Int32, true),
+    ]));
+    let batch = RecordBatch::try_new(
+        schema.clone(),
+        vec![
+            Arc::new(Int32Array::from(vec![1, 2, 1, 2])),
+            Arc::new(Int32Array::from(vec![Some(2), Some(3), Some(4), Some(5)])),
+        ],
+    )
+    .unwrap();
+    let source = MemorySourceConfig::try_new_exec(&[vec![batch]], schema.clone(), None).unwrap();
+    let udf =
+        vail_execution::aggregates::aggregate_udf("product", Some(&arrow_schema::DataType::Int32))
+            .unwrap();
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("value", 1))])
+        .schema(schema.clone())
+        .alias("product")
+        .build()
+        .unwrap();
+    // This is the capability decision used by DataFusion's grouped hash stream;
+    // with default aggregate options, false would select GroupsAccumulatorAdapter.
+    assert!(aggregate.groups_accumulator_supported());
+    let plan = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Single,
+            PhysicalGroupBy::new_single(vec![(
+                Arc::new(Column::new("group", 0)),
+                "group".to_owned(),
+            )]),
+            vec![Arc::new(aggregate)],
+            vec![None],
+            source.clone(),
+            source.schema(),
+        )
+        .unwrap(),
+    );
+    let batches = collect(plan, Arc::new(TaskContext::default()))
+        .await
+        .unwrap();
+    let result = &batches[0];
+    let groups = result
+        .column(0)
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    let products = result
+        .column(1)
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .unwrap();
+    let mut rows = (0..result.num_rows())
+        .map(|row| (groups.value(row), products.value(row)))
+        .collect::<Vec<_>>();
+    rows.sort_unstable();
+    assert_eq!(rows, vec![(1, 8), (2, 15)]);
+}
+#[tokio::test]
 async fn stable_moments_accept_sliced_nullable_batches() {
     let input: ArrayRef = Arc::new(Float64Array::from(vec![
         Some(999.),

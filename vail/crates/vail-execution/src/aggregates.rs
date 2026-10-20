@@ -426,7 +426,6 @@ fn product_udf(input: Option<&DataType>) -> std::result::Result<Arc<AggregateUDF
                 !args.is_distinct
                     && args.order_bys.is_empty()
                     && !args.is_reversed
-                    && args.ignore_nulls
                     && args.expr_fields.len() == 1
                     && args.expr_fields[0].data_type() == &support_input
             },
