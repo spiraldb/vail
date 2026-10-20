@@ -1,10 +1,10 @@
 //! Primitive list reductions through the public expression boundary.
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
-    RecordBatch,
+    RecordBatch, StructArray,
 };
 use arrow_schema::{DataType, Schema};
-use datafusion_common::Result;
+use datafusion_common::{Result, ScalarValue};
 use std::sync::Arc;
 use vail_execution::expressions::{Expr, PrimitiveType, Type, lower};
 
@@ -46,6 +46,166 @@ fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRef>> {
             .evaluate(&batch)?
             .into_array(lists.len())?,
     ))
+}
+
+#[test]
+fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
+    let predictor_fields = vec![
+        Arc::new(arrow_schema::Field::new("x0", DataType::Float64, true)),
+        Arc::new(arrow_schema::Field::new("x1", DataType::Float64, true)),
+    ];
+    let child_fields = vec![
+        Arc::new(arrow_schema::Field::new("y", DataType::Float64, true)),
+        Arc::new(arrow_schema::Field::new(
+            "x",
+            DataType::Struct(predictor_fields.clone().into()),
+            true,
+        )),
+    ];
+    let predictors = Arc::new(StructArray::new(
+        predictor_fields.into(),
+        vec![
+            Arc::new(Float64Array::from(vec![1.; 9.])),
+            Arc::new(Float64Array::from(vec![
+                0., 1., 2., 0., 1., 2., 10., 11., 12.,
+            ])),
+        ],
+        None,
+    ));
+    let child = Arc::new(StructArray::new(
+        child_fields.clone().into(),
+        vec![
+            Arc::new(Float64Array::from(vec![
+                1., 3., 5., -2., -5., -8., 500., 503., 506.,
+            ])),
+            predictors,
+        ],
+        None,
+    ));
+    let lists = ListArray::new(
+        Arc::new(arrow_schema::Field::new(
+            "item",
+            child.data_type().clone(),
+            true,
+        )),
+        OffsetBuffer::from_lengths([3, 3, 3, 0]),
+        child,
+        Some(NullBuffer::from(vec![true, true, false, true])),
+    );
+    let output_type = DataType::Struct(
+        vec![
+            Arc::new(arrow_schema::Field::new(
+                "beta",
+                DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    DataType::Float64,
+                    true,
+                ))),
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "standard_error",
+                DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    DataType::Float64,
+                    true,
+                ))),
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "t_stat",
+                DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    DataType::Float64,
+                    true,
+                ))),
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "p_value",
+                DataType::List(Arc::new(arrow_schema::Field::new(
+                    "item",
+                    DataType::Float64,
+                    true,
+                ))),
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "multiple_standard_error",
+                DataType::Float64,
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "multiple_r_squared",
+                DataType::Float64,
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new(
+                "adjusted_r_squared",
+                DataType::Float64,
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new("f_stat", DataType::Float64, true)),
+            Arc::new(arrow_schema::Field::new(
+                "multiple_p_value",
+                DataType::Float64,
+                true,
+            )),
+            Arc::new(arrow_schema::Field::new("n", DataType::Int64, true)),
+        ]
+        .into(),
+    );
+    let list_type = DataType::List(Arc::new(arrow_schema::Field::new(
+        "item",
+        lists.value_type(),
+        true,
+    )));
+    let schema = Arc::new(Schema::new(vec![arrow_schema::Field::new(
+        "values", list_type, true,
+    )]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(lists.clone())]).unwrap();
+    let expr = Expr::NestedFunction {
+        function: "__vail_list_reduce_linreg".into(),
+        args: vec![
+            Expr::Column {
+                name: "values".into(),
+            },
+            Expr::RuntimeLiteral {
+                value: ScalarValue::Int64(Some(1)),
+            },
+        ],
+        dtype: Type::from_arrow(&output_type).unwrap(),
+    };
+    let result = lower(&expr, &schema)
+        .unwrap()
+        .evaluate(&batch)
+        .unwrap()
+        .into_array(lists.len())
+        .unwrap();
+    let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+    assert_eq!(result.null_count(), 1);
+    let counts = result
+        .column_by_name("n")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int64Array>()
+        .unwrap();
+    assert_eq!(
+        counts.iter().collect::<Vec<_>>(),
+        vec![Some(3), Some(3), None, Some(0)]
+    );
+    let beta = result
+        .column_by_name("beta")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    for (row, intercept, slope) in [(0, 1., 2.), (1, -2., -3.)] {
+        let values = beta.value(row);
+        let values = values.as_any().downcast_ref::<Float64Array>().unwrap();
+        assert!((values.value(0) - intercept).abs() < 1e-12);
+        assert!((values.value(1) - slope).abs() < 1e-12);
+    }
 }
 
 use arrow_array::types::{Float32Type, Int32Type, Int64Type};
