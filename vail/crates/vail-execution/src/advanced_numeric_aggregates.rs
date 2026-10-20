@@ -914,6 +914,15 @@ struct CorrAccumulator {
     pair_count: u64,
 }
 
+impl std::fmt::Debug for CorrAccumulator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("CorrAccumulator")
+            .field("native_state_size", &self.inner.size())
+            .field("pair_count", &self.pair_count)
+            .finish()
+    }
+}
+
 const SINGLE_GROUP_CHUNK: usize = 256;
 const SINGLE_GROUP_IDS: [usize; SINGLE_GROUP_CHUNK] = [0; SINGLE_GROUP_CHUNK];
 
