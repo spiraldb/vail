@@ -58,9 +58,14 @@ impl Accumulator for MeanAccumulator {
     }
 }
 
-#[derive(Debug)]
 struct MeanGroupsAccumulator {
     inner: Box<dyn GroupsAccumulator>,
+}
+impl std::fmt::Debug for MeanGroupsAccumulator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MeanGroupsAccumulator")
+            .finish_non_exhaustive()
+    }
 }
 
 impl GroupsAccumulator for MeanGroupsAccumulator {
@@ -92,8 +97,7 @@ impl GroupsAccumulator for MeanGroupsAccumulator {
         let valid = values
             .nulls()
             .expect("null count is nonzero when building a missing mask")
-            .inner()
-            .clone();
+            .inner();
         let missing = BooleanArray::new(!valid, None);
         let nan = Float64Array::new_scalar(f64::NAN);
         Ok(arrow_select::zip::zip(&missing, &nan, values)?)
