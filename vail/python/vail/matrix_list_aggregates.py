@@ -476,7 +476,7 @@ def reduce_list(
                                 record.value[f"__agg_{index}"] if multiple else record.value
                             ).to_ir(),
                         )
-                        for index, (aggregate, _) in enumerate(supported_aggregates)
+                        for index, (aggregate, filters) in enumerate(supported_aggregates)
                     ]
 
                     def substitute(value, filters=()):

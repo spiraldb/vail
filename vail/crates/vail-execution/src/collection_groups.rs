@@ -707,7 +707,7 @@ fn grouped_aggregate(
         } else {
             None
         };
-        accumulator.update_batch(&[data], ids, predicate, group_count)?;
+        accumulator.update_batch(std::slice::from_ref(&data), ids, predicate, group_count)?;
         aggregates.push(accumulator.evaluate(EmitTo::All)?);
     }
 
