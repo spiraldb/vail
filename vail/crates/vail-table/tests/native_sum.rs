@@ -18,7 +18,10 @@ fn coordinate_sum(result_type: Option<Type>) -> Expr {
         parameter: "item".into(),
         body: Arc::new(Expr::Aggregate {
             function: "sum".into(),
-            value: Some(Arc::new(column("item"))),
+            value: Some(Arc::new(Expr::LambdaVariable {
+                name: "item".into(),
+                dtype: None,
+            })),
             options: json!({}),
             result_type,
             init: vec![],
