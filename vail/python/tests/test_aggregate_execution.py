@@ -58,10 +58,10 @@ def test_mean_preserves_matrix_entry_coordinate_groups():
     values = {row.row: row.value for row in grouped}
     assert values == {0: 1.0, 1: 2.0}
 
-    row_means = matrix.annotate_rows(value=hl.agg.mean(matrix.value)).rows().collect()
-    col_means = matrix.annotate_cols(value=hl.agg.mean(matrix.value)).cols().collect()
-    assert [row.value for row in row_means] == [1.0, 2.0]
-    assert [column.value for column in col_means] == [0.5, 1.5, 2.5]
+    row_means = matrix.annotate_rows(mean_value=hl.agg.mean(matrix.value)).rows().collect()
+    col_means = matrix.annotate_cols(mean_value=hl.agg.mean(matrix.value)).cols().collect()
+    assert [row.mean_value for row in row_means] == [1.0, 2.0]
+    assert [column.mean_value for column in col_means] == [0.5, 1.5, 2.5]
 
 
 def test_collect_uses_ordered_stream_across_files(tmp_path):
