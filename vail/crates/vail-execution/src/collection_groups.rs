@@ -7,13 +7,10 @@ use arrow_schema::{DataType, Field, Schema, SortOptions};
 use arrow_select::take::take;
 use datafusion_common::{Result, exec_err, plan_err};
 use datafusion_expr::{
-    AggregateUDF, ColumnarValue, EmitTo, GroupsAccumulator, ScalarFunctionArgs, ScalarUDF,
-    ScalarUDFImpl, Signature, Volatility,
+    AggregateUDF, ColumnarValue, EmitTo, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
+    Volatility,
 };
-use datafusion_physical_expr::{
-    aggregate::{AggregateExprBuilder, AggregateFunctionExpr},
-    expressions::Column,
-};
+use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Column};
 use datafusion_physical_plan::aggregates::{group_values::new_group_values, order::GroupOrdering};
 use std::sync::Arc;
 
@@ -87,7 +84,7 @@ fn list_struct_field(parent: &ListArray, name: &str) -> Result<ListArray> {
         .clone();
     Ok(ListArray::try_new(
         field,
-        parent.value_offsets().clone(),
+        parent.offsets().clone(),
         values,
         parent.nulls().cloned(),
     )?)
@@ -242,7 +239,7 @@ impl ScalarUDFImpl for CollectionGroups {
                     Some(
                         fields
                             .iter()
-                            .find(|field| field.name() == name)
+                            .find(|field| field.name() == &name)
                             .ok_or_else(|| {
                                 datafusion_common::plan_datafusion_err!(
                                     "filtered group aggregate requires {name}"
@@ -866,10 +863,10 @@ fn grouped_aggregate(
         None,
     )?;
     let sorted_keys = take(emitted[1].as_ref(), &order, None)?;
-    let sorted_aggregates = aggregates
-        .iter()
-        .map(|aggregate| take(aggregate.as_ref(), &order, None))
-        .collect::<Result<Vec<_>>>()?;
+    let mut sorted_aggregates = Vec::with_capacity(aggregates.len());
+    for aggregate in &aggregates {
+        sorted_aggregates.push(take(aggregate.as_ref(), &order, None)?);
+    }
     let DataType::List(item) = output_type else {
         unreachable!()
     };
