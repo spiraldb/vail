@@ -108,6 +108,7 @@ pub(crate) fn udf(
     ))
 }
 
+#[derive(Debug)]
 struct FractionAccumulator {
     total: Box<dyn Accumulator>,
     true_count: Box<dyn Accumulator>,

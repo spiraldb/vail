@@ -180,7 +180,7 @@ async fn fraction_list_reducer_keeps_missing_and_empty_lists_null() {
             .as_any()
             .downcast_ref::<Float64Array>()
             .unwrap();
-        result.extend((0..batch.num_rows()).map(|row| (ids.value(row), fractions.value(row))));
+        result.extend(ids.values().iter().copied().zip(fractions.iter()));
     }
     result.sort_by_key(|(id, _)| *id);
     assert_eq!(
