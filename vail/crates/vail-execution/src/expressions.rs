@@ -1694,6 +1694,15 @@ impl Expr {
                     }
                     return Ok(dtype.clone());
                 }
+                if function.starts_with("__vail_collection_group_aggregate_") {
+                    let result = udf.return_type(&args)?;
+                    if !same_collection_storage(&result, &dtype.to_arrow()?) {
+                        return Err(ExprError::Invalid(format!(
+                            "{function} result type mismatch"
+                        )));
+                    }
+                    return Ok(dtype.clone());
+                }
                 let matrix_function = matches!(
                     function.as_str(),
                     "__vail_dict_lookup"
