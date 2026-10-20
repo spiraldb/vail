@@ -145,6 +145,31 @@ def test_downsample_missing_label_is_missing():
     assert all(point[2] is None for point in points)
 
 
+def test_grouped_downsample_uses_bounded_state_per_group():
+    rows = [
+        {"group": group, "x": x, "y": x, "label": f"{group}:{x}"}
+        for group, base in (("a", 0), ("b", 100))
+        for x in range(base, base + 20)
+    ]
+    table = hl.Table.parallelize(
+        rows,
+        schema=hl.tstruct(group=hl.tstr, x=hl.tint32, y=hl.tint32, label=hl.tstr),
+        n_partitions=5,
+    )
+    grouped = table.group_by("group").aggregate(
+        points=hl.agg.downsample(table.x, table.y, table.label, n_divisions=4)
+    ).collect()
+    assert {row.group for row in grouped} == {"a", "b"}
+    for row in grouped:
+        assert 1 <= len(row.points) <= 16
+        assert all(
+            (row.group == "a" and 0 <= x < 20)
+            or (row.group == "b" and 100 <= x < 120)
+            for x, y, label in row.points
+        )
+        assert all(x == y and label == [f"{row.group}:{x}"] for x, y, label in row.points)
+
+
 def test_downsample_rebin_preserves_labels_at_bounds_and_partition_merge():
     import math
 

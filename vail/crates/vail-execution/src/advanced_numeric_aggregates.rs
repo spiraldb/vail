@@ -1,5 +1,6 @@
 //! Bounded and statistical Hail-style numeric aggregates.
 use std::collections::BTreeMap;
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
 use arrow_array::{
@@ -8,7 +9,11 @@ use arrow_array::{
 use arrow_buffer::OffsetBuffer;
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use datafusion_expr::{
+    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
+    expr_fn::create_udaf,
+    function::{AccumulatorArgs, StateFieldsArgs},
+};
 use kll_rs::KllDoubleSketch;
 use nalgebra::{DMatrix, DVector};
 use statrs::distribution::{ContinuousCDF, FisherSnedecor, StudentsT};
@@ -677,7 +682,10 @@ fn downsample(
     {
         return Err(invalid("downsample requires numeric x and y fields"));
     }
-    if fields.len() == 3 && !matches!(fields[2].data_type(), DataType::List(_) | DataType::Utf8) {
+    if fields.len() == 3
+        && !matches!(fields[2].data_type(), DataType::Utf8)
+        && !matches!(fields[2].data_type(), DataType::List(item) if item.data_type() == &DataType::Utf8)
+    {
         return Err(invalid("downsample label must be string or array<string>"));
     }
     let divisions = options["n_divisions"]
@@ -690,10 +698,10 @@ fn downsample(
     let factory: datafusion_expr::AccumulatorFactoryFunction =
         Arc::new(move |_| Ok(Box::new(DownsampleAccumulator::new(divisions))));
     let udaf_name = configured_udaf_name("downsample", input, options);
-    Ok(Arc::new(create_udaf(
+    let native = Arc::new(create_udaf(
         &udaf_name,
         vec![input.clone()],
-        Arc::new(output),
+        Arc::new(output.clone()),
         Volatility::Immutable,
         factory,
         Arc::new(vec![
@@ -703,7 +711,89 @@ fn downsample(
             DataType::Float64,
             DataType::Float64,
         ]),
-    )))
+    ));
+    Ok(Arc::new(AggregateUDF::from(DownsampleUdf {
+        name: udaf_name,
+        input_type: input.clone(),
+        output_type: output,
+        signature: Signature::exact(vec![input.clone()], Volatility::Immutable),
+        native,
+        divisions,
+    })))
+}
+
+#[derive(Debug)]
+struct DownsampleUdf {
+    name: String,
+    input_type: DataType,
+    output_type: DataType,
+    signature: Signature,
+    native: Arc<AggregateUDF>,
+    divisions: usize,
+}
+impl PartialEq for DownsampleUdf {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.input_type == other.input_type
+            && self.output_type == other.output_type
+            && self.divisions == other.divisions
+    }
+}
+impl Eq for DownsampleUdf {}
+impl Hash for DownsampleUdf {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+        self.input_type.hash(state);
+        self.output_type.hash(state);
+        self.divisions.hash(state);
+    }
+}
+impl AggregateUDFImpl for DownsampleUdf {
+    fn name(&self) -> &str {
+        &self.name
+    }
+    fn signature(&self) -> &Signature {
+        &self.signature
+    }
+    fn return_type(&self, args: &[DataType]) -> DfResult<DataType> {
+        if args != [self.input_type.clone()] {
+            return Err(DataFusionError::Plan(
+                "downsample input type mismatch".into(),
+            ));
+        }
+        Ok(self.output_type.clone())
+    }
+    fn is_nullable(&self) -> bool {
+        self.native.is_nullable()
+    }
+    fn accumulator(&self, args: AccumulatorArgs) -> DfResult<Box<dyn Accumulator>> {
+        self.native.inner().accumulator(args)
+    }
+    fn state_fields(&self, args: StateFieldsArgs) -> DfResult<Vec<arrow_schema::FieldRef>> {
+        self.native.inner().state_fields(args)
+    }
+    fn groups_accumulator_supported(&self, args: AccumulatorArgs) -> bool {
+        !args.is_distinct
+            && args.order_bys.is_empty()
+            && !args.is_reversed
+            && args.expr_fields.len() == 1
+            && args.expr_fields[0].data_type() == &self.input_type
+            && args.return_field.data_type() == &self.output_type
+    }
+    fn create_groups_accumulator(
+        &self,
+        args: AccumulatorArgs,
+    ) -> DfResult<Box<dyn GroupsAccumulator>> {
+        if !self.groups_accumulator_supported(args) {
+            return Err(DataFusionError::NotImplemented(
+                "downsample grouped accumulator does not support these arguments".into(),
+            ));
+        }
+        Ok(Box::new(DownsampleGroups {
+            divisions: self.divisions,
+            groups: Vec::new(),
+        }))
+    }
 }
 #[derive(Debug)]
 struct DownsampleAccumulator {
@@ -1001,6 +1091,214 @@ impl Accumulator for DownsampleAccumulator {
                     ScalarValue::try_from_array(tuples.column(2), i)
                 })?;
             }
+        }
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+struct DownsampleGroups {
+    divisions: usize,
+    groups: Vec<DownsampleAccumulator>,
+}
+impl DownsampleGroups {
+    fn ensure(&mut self, total: usize) {
+        self.groups
+            .resize_with(total, || DownsampleAccumulator::new(self.divisions));
+    }
+    fn emitted(&mut self, to: EmitTo) -> DfResult<Vec<DownsampleAccumulator>> {
+        let count = match to {
+            EmitTo::All => self.groups.len(),
+            EmitTo::First(count) => count,
+        };
+        if count > self.groups.len() {
+            return Err(DataFusionError::Execution(
+                "downsample emitted groups exceed state".into(),
+            ));
+        }
+        if count == self.groups.len() {
+            Ok(std::mem::take(&mut self.groups))
+        } else {
+            Ok(self.groups.drain(..count).collect())
+        }
+    }
+    fn row_label(labels: Option<&ArrayRef>, row: usize) -> DfResult<ScalarValue> {
+        let Some(labels) = labels else {
+            return DownsampleAccumulator::empty_label();
+        };
+        if labels.is_null(row) {
+            return DownsampleAccumulator::empty_label();
+        }
+        if labels.data_type() == &DataType::Utf8 {
+            let labels = labels
+                .as_any()
+                .downcast_ref::<arrow_array::StringArray>()
+                .ok_or_else(|| {
+                    DataFusionError::Execution("downsample label must be utf8".into())
+                })?;
+            Ok(numeric_list(Arc::new(arrow_array::StringArray::from(
+                vec![labels.value(row)],
+            ))))
+        } else {
+            ScalarValue::try_from_array(labels, row)
+        }
+    }
+    fn state_arrays(groups: &mut [DownsampleAccumulator], state: bool) -> DfResult<Vec<ArrayRef>> {
+        if groups.is_empty() {
+            let fields = if state {
+                vec![
+                    downsample_type(),
+                    DataType::Float64,
+                    DataType::Float64,
+                    DataType::Float64,
+                    DataType::Float64,
+                ]
+            } else {
+                vec![downsample_type()]
+            };
+            return Ok(fields.into_iter().map(|ty| new_empty_array(&ty)).collect());
+        }
+        let width = if state { 5 } else { 1 };
+        let mut columns = (0..width)
+            .map(|_| Vec::with_capacity(groups.len()))
+            .collect::<Vec<_>>();
+        for group in groups {
+            let values = if state {
+                group.state()?
+            } else {
+                vec![group.evaluate()?]
+            };
+            for (column, value) in columns.iter_mut().zip(values) {
+                column.push(value);
+            }
+        }
+        columns
+            .into_iter()
+            .map(ScalarValue::iter_to_array)
+            .collect()
+    }
+    fn update_inner(
+        &mut self,
+        values: &[ArrayRef],
+        indices: Option<&[usize]>,
+        filter: Option<&arrow_array::BooleanArray>,
+        total: usize,
+    ) -> DfResult<()> {
+        let [input] = values else {
+            return Err(DataFusionError::Execution(
+                "downsample requires one input".into(),
+            ));
+        };
+        let rows = input.len();
+        if indices.is_some_and(|indices| indices.len() != rows)
+            || filter.is_some_and(|filter| filter.len() != rows)
+        {
+            return Err(DataFusionError::Execution(
+                "downsample grouped row counts differ".into(),
+            ));
+        }
+        if indices.is_some_and(|indices| indices.iter().any(|&index| index >= total)) {
+            return Err(DataFusionError::Execution(
+                "downsample group index exceeds state".into(),
+            ));
+        }
+        self.ensure(total);
+        let packed = input
+            .as_any()
+            .downcast_ref::<StructArray>()
+            .ok_or_else(|| DataFusionError::Execution("downsample expects struct values".into()))?;
+        if packed.num_columns() < 2 || packed.num_columns() > 3 {
+            return Err(DataFusionError::Execution(
+                "downsample packed fields mismatch".into(),
+            ));
+        }
+        let x = arrow_cast::cast(packed.column(0), &DataType::Float64)?;
+        let y = arrow_cast::cast(packed.column(1), &DataType::Float64)?;
+        let xs = x.as_any().downcast_ref::<Float64Array>().unwrap();
+        let ys = y.as_any().downcast_ref::<Float64Array>().unwrap();
+        let labels = packed.columns().get(2);
+        for row in 0..rows {
+            if filter.is_some_and(|f| f.is_null(row) || !f.value(row))
+                || packed.is_null(row)
+                || xs.is_null(row)
+                || ys.is_null(row)
+            {
+                continue;
+            }
+            let (x, y) = (xs.value(row), ys.value(row));
+            if !x.is_finite() || !y.is_finite() {
+                continue;
+            }
+            let group = indices.map_or(row, |indices| indices[row]);
+            self.groups[group].insert_lazy(x, y, || Self::row_label(labels, row))?;
+        }
+        Ok(())
+    }
+}
+impl GroupsAccumulator for DownsampleGroups {
+    fn convert_to_state(
+        &self,
+        values: &[ArrayRef],
+        filter: Option<&arrow_array::BooleanArray>,
+    ) -> DfResult<Vec<ArrayRef>> {
+        let rows = values.first().map_or(0, |value| value.len());
+        let mut groups = Self {
+            divisions: self.divisions,
+            groups: Vec::new(),
+        };
+        groups.update_inner(values, None, filter, rows)?;
+        Self::state_arrays(&mut groups.groups, true)
+    }
+    fn update_batch(
+        &mut self,
+        values: &[ArrayRef],
+        group_indices: &[usize],
+        filter: Option<&arrow_array::BooleanArray>,
+        total_num_groups: usize,
+    ) -> DfResult<()> {
+        self.update_inner(values, Some(group_indices), filter, total_num_groups)
+    }
+    fn evaluate(&mut self, emit_to: EmitTo) -> DfResult<ArrayRef> {
+        let mut groups = self.emitted(emit_to)?;
+        Self::state_arrays(&mut groups, false).map(|mut arrays| arrays.remove(0))
+    }
+    fn size(&self) -> usize {
+        self.groups.iter().map(|group| group.size()).sum()
+    }
+    fn state(&mut self, emit_to: EmitTo) -> DfResult<Vec<ArrayRef>> {
+        let mut groups = self.emitted(emit_to)?;
+        Self::state_arrays(&mut groups, true)
+    }
+    fn merge_batch(
+        &mut self,
+        states: &[ArrayRef],
+        group_indices: &[usize],
+        total_num_groups: usize,
+    ) -> DfResult<()> {
+        if states.len() != 5
+            || states
+                .first()
+                .is_none_or(|state| state.len() != group_indices.len())
+            || states
+                .iter()
+                .any(|state| state.len() != group_indices.len())
+        {
+            return Err(DataFusionError::Execution(
+                "downsample grouped state rows differ".into(),
+            ));
+        }
+        if group_indices.iter().any(|&index| index >= total_num_groups) {
+            return Err(DataFusionError::Execution(
+                "downsample group index exceeds state".into(),
+            ));
+        }
+        self.ensure(total_num_groups);
+        for (row, &group) in group_indices.iter().enumerate() {
+            let one_row = states
+                .iter()
+                .map(|state| state.slice(row, 1))
+                .collect::<Vec<_>>();
+            self.groups[group].merge_batch(&one_row)?;
         }
         Ok(())
     }

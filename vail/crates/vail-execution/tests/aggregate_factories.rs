@@ -1,6 +1,7 @@
 //! Checked public aggregate construction contracts.
 use arrow_array::{
-    Array, BooleanArray, Float32Array, Int32Array, ListArray, StructArray, UInt8Array, UInt16Array,
+    Array, BooleanArray, Float32Array, Float64Array, Int32Array, ListArray, StringArray,
+    StructArray, UInt8Array, UInt16Array,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field, Schema};
@@ -474,4 +475,70 @@ fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
             .update_batch(&[Arc::new(malformed)], &[0], None, 1)
             .is_err()
     );
+}
+
+#[test]
+fn grouped_downsample_roundtrips_bounded_group_states() {
+    use datafusion_expr::GroupsAccumulator;
+    let input_type = DataType::Struct(
+        vec![
+            Arc::new(Field::new("x", DataType::Float64, true)),
+            Arc::new(Field::new("y", DataType::Float64, true)),
+            Arc::new(Field::new("label", DataType::Utf8, true)),
+        ]
+        .into(),
+    );
+    let udf = vail_execution::advanced_numeric_aggregates::make_udaf(
+        "downsample",
+        &input_type,
+        &serde_json::json!({"n_divisions": 4}),
+    )
+    .unwrap()
+    .unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "packed",
+        input_type.clone(),
+        true,
+    )]));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("packed", 0))])
+        .schema(schema)
+        .alias("points")
+        .build()
+        .unwrap();
+    assert!(aggregate.groups_accumulator_supported());
+    let values: arrow_array::ArrayRef = Arc::new(StructArray::new(
+        match &input_type {
+            DataType::Struct(fields) => fields.clone(),
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(Float64Array::from(vec![0., 1., 100., 101.])),
+            Arc::new(Float64Array::from(vec![0., 1., 100., 101.])),
+            Arc::new(StringArray::from(vec!["a0", "a1", "b0", "b1"])),
+        ],
+        None,
+    ));
+    let mut grouped = aggregate.create_groups_accumulator().unwrap();
+    grouped
+        .update_batch(&[values], &[0, 0, 1, 1], None, 2)
+        .unwrap();
+    let states = grouped.state(EmitTo::All).unwrap();
+    let mut merged = aggregate.create_groups_accumulator().unwrap();
+    merged.merge_batch(&states, &[1, 0], 2).unwrap();
+    let result = merged.evaluate(EmitTo::All).unwrap();
+    let result = result.as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(result.len(), 2);
+    assert!((1..=2).contains(&result.value_length(0)));
+    assert!((1..=2).contains(&result.value_length(1)));
+    let points = result
+        .values()
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    let labels = points
+        .column(2)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(labels.len(), points.len());
 }
