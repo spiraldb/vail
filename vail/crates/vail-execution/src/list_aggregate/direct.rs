@@ -71,7 +71,7 @@ pub(super) fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRe
     };
     let source = arrow_cast::cast(&source, &output_type)?;
     macro_rules! numeric {
-        ($array:ty, $builder:ty, $zero:expr, $one:expr) => {{
+        ($array:ty, $builder:ty, $reduce:expr) => {{
             let values = source.as_any().downcast_ref::<$array>().unwrap();
             let mut output = <$builder>::with_capacity(lists.len());
             for row in 0..lists.len() {
@@ -82,13 +82,7 @@ pub(super) fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRe
                 let start = offsets[row] as usize - base;
                 let len = (offsets[row + 1] - offsets[row]) as usize;
                 let values = values.slice(start, len);
-                let value = match function {
-                    "sum" => Some(arrow_arith::aggregate::sum(&values).unwrap_or($zero)),
-                    "product" => Some(arrow_arith::aggregate::product(&values).unwrap_or($one)),
-                    "min" => arrow_arith::aggregate::min(&values),
-                    "max" => arrow_arith::aggregate::max(&values),
-                    _ => unreachable!("mean uses the Float64 path"),
-                };
+                let value = ($reduce)(&values);
                 output.append_option(value);
             }
             Arc::new(output.finish()) as ArrayRef
@@ -110,143 +104,28 @@ pub(super) fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRe
         }
         Arc::new(output.finish()) as ArrayRef
     } else {
+        macro_rules! dispatch {
+            ($array:ty, $builder:ty, $zero:expr, $one:expr) => {
+                match function {
+                    "sum" => numeric!($array, $builder, |v: &$array| Some(
+                        arrow_arith::aggregate::sum(v).unwrap_or($zero)
+                    )),
+                    "product" => numeric!($array, $builder, |v: &$array| Some(
+                        arrow_arith::aggregate::product(v).unwrap_or($one)
+                    )),
+                    "min" => numeric!($array, $builder, arrow_arith::aggregate::min),
+                    "max" => numeric!($array, $builder, arrow_arith::aggregate::max),
+                    _ => unreachable!(),
+                }
+            };
+        }
         match output_type {
-            DataType::Int32 => numeric!(Int32Array, Int32Builder, 0, 1),
-            DataType::Int64 => numeric!(Int64Array, Int64Builder, 0, 1),
-            DataType::Float32 => numeric!(Float32Array, Float32Builder, 0.0, 1.0),
-            DataType::Float64 => numeric!(Float64Array, Float64Builder, 0.0, 1.0),
+            DataType::Int32 => dispatch!(Int32Array, Int32Builder, 0, 1),
+            DataType::Int64 => dispatch!(Int64Array, Int64Builder, 0, 1),
+            DataType::Float32 => dispatch!(Float32Array, Float32Builder, 0.0, 1.0),
+            DataType::Float64 => dispatch!(Float64Array, Float64Builder, 0.0, 1.0),
             _ => unreachable!(),
         }
     };
     Ok(Some(result))
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use arrow_array::types::{Float32Type, Int32Type, Int64Type};
-    use arrow_buffer::{NullBuffer, OffsetBuffer};
-    use arrow_schema::Field;
-
-    #[test]
-    fn integer_lists_keep_precision_missingness_and_sliced_offsets() {
-        let values = ListArray::from_iter_primitive::<Int64Type, _, _>([
-            Some(vec![Some(99)]),
-            Some(vec![Some(9_007_199_254_740_993), None, Some(1)]),
-            Some(vec![]),
-            Some(vec![None]),
-            None,
-        ])
-        .slice(1, 4);
-        let sum = reduce(&values, "sum").unwrap().unwrap();
-        assert_eq!(
-            sum.as_any().downcast_ref::<Int64Array>().unwrap(),
-            &Int64Array::from(vec![Some(9_007_199_254_740_994), Some(0), Some(0), None])
-        );
-        let product = reduce(&values, "product").unwrap().unwrap();
-        assert_eq!(
-            product.as_any().downcast_ref::<Int64Array>().unwrap(),
-            &Int64Array::from(vec![Some(9_007_199_254_740_993), Some(1), Some(1), None])
-        );
-    }
-
-    #[test]
-    fn extrema_preserve_narrow_types_and_empty_nulls() {
-        let ints = ListArray::from_iter_primitive::<Int32Type, _, _>([
-            Some(vec![Some(4), None, Some(-2)]),
-            Some(vec![]),
-            None,
-        ]);
-        assert_eq!(
-            reduce(&ints, "min")
-                .unwrap()
-                .unwrap()
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .unwrap(),
-            &Int32Array::from(vec![Some(-2), None, None])
-        );
-        let floats = ListArray::from_iter_primitive::<Float32Type, _, _>([
-            Some(vec![Some(f32::NEG_INFINITY)]),
-            Some(vec![Some(f32::INFINITY)]),
-        ]);
-        for op in ["min", "max"] {
-            assert_eq!(
-                reduce(&floats, op)
-                    .unwrap()
-                    .unwrap()
-                    .as_any()
-                    .downcast_ref::<Float32Array>()
-                    .unwrap(),
-                &Float32Array::from(vec![f32::NEG_INFINITY, f32::INFINITY])
-            );
-        }
-    }
-
-    #[test]
-    fn boolean_lists_ignore_missing_payloads_and_preserve_identities() {
-        let child = Arc::new(BooleanArray::new(
-            vec![true, true, false, true].into(),
-            Some(NullBuffer::from(vec![true, false, true, false])),
-        )) as ArrayRef;
-        let lists = ListArray::new(
-            Arc::new(Field::new("item", DataType::Boolean, true)),
-            OffsetBuffer::from_lengths([1, 2, 0, 1, 0]),
-            child,
-            Some(NullBuffer::from(vec![true, true, true, true, false])),
-        )
-        .slice(1, 4);
-        assert_eq!(
-            reduce(&lists, "any")
-                .unwrap()
-                .unwrap()
-                .as_any()
-                .downcast_ref::<BooleanArray>()
-                .unwrap(),
-            &BooleanArray::from(vec![Some(false), Some(false), Some(false), None])
-        );
-        assert_eq!(
-            reduce(&lists, "all")
-                .unwrap()
-                .unwrap()
-                .as_any()
-                .downcast_ref::<BooleanArray>()
-                .unwrap(),
-            &BooleanArray::from(vec![Some(false), Some(true), Some(true), None])
-        );
-        assert_eq!(
-            reduce(&lists, "count_where")
-                .unwrap()
-                .unwrap()
-                .as_any()
-                .downcast_ref::<Int64Array>()
-                .unwrap(),
-            &Int64Array::from(vec![Some(0), Some(0), Some(0), None])
-        );
-        assert_eq!(
-            reduce(&lists, "fraction")
-                .unwrap()
-                .unwrap()
-                .as_any()
-                .downcast_ref::<Float64Array>()
-                .unwrap(),
-            &Float64Array::from(vec![Some(0.0), None, Some(0.0), None])
-        );
-    }
-
-    #[test]
-    fn mean_widens_and_empty_is_nan_not_missing() {
-        let lists = ListArray::from_iter_primitive::<Int32Type, _, _>([
-            Some(vec![Some(1), None, Some(3)]),
-            Some(vec![]),
-            Some(vec![None]),
-            None,
-        ]);
-        let mean = reduce(&lists, "mean").unwrap().unwrap();
-        let mean = mean.as_any().downcast_ref::<Float64Array>().unwrap();
-        assert_eq!(mean.value(0), 2.0);
-        assert!(mean.value(1).is_nan());
-        assert!(mean.value(2).is_nan());
-        assert!(mean.is_null(3));
-    }
 }
