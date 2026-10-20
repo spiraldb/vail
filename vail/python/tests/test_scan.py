@@ -44,6 +44,17 @@ def test_scan_array_aggregate_count_where_with_null_and_filter_values():
         lambda value: hl.scan.count_where(value), table.a)).prefix.collect()
     assert result == [None, [1, 0], [1, 1], [1, 1], [2, 1]]
 
+    empty = hl.Table.parallelize(
+        [{"a": []}, {"a": []}], schema=hl.tstruct(a=hl.tarray(hl.tbool)), n_partitions=2)
+    assert empty.annotate(prefix=hl.scan.array_agg(
+        lambda value: hl.scan.count_where(value), empty.a)).prefix.collect() == [None, []]
+
+    missing = hl.Table.parallelize(
+        [{"a": [None, None]}, {"a": [None, None]}],
+        schema=hl.tstruct(a=hl.tarray(hl.tbool)), n_partitions=2)
+    assert missing.annotate(prefix=hl.scan.array_agg(
+        lambda value: hl.scan.count_where(value), missing.a)).prefix.collect() == [None, [0, 0]]
+
 
 def test_scan_sum_vectorized_finish_preserves_nulls_overflow_and_empty_partitions():
     schema = hl.tstruct(i=hl.tint64, x=hl.tfloat64)

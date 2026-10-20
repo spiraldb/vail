@@ -262,15 +262,3 @@ impl ScalarUDFImpl for ListAggregate {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn count_where_list_requires_boolean_elements() {
-        let list = |element| DataType::List(Arc::new(Field::new_list_field(element, true)));
-        assert!(element_type(&[list(DataType::Boolean)], "count_where").is_ok());
-        assert!(element_type(&[list(DataType::Int32)], "count_where").is_err());
-    }
-}

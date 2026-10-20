@@ -280,8 +280,11 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                         dtype: Some(Type::Primitive(PrimitiveType::Bool)),
                     };
                     let normalized = Expr::IfElse {
-                        condition: Arc::new(item.clone()),
-                        consequent: Arc::new(item),
+                        condition: Arc::new(item),
+                        consequent: Arc::new(Expr::Literal {
+                            dtype: Type::Primitive(PrimitiveType::Bool),
+                            value: serde_json::Value::Bool(true),
+                        }),
                         alternate: Arc::new(Expr::Literal {
                             dtype: Type::Primitive(PrimitiveType::Bool),
                             value: serde_json::Value::Null,
@@ -295,8 +298,11 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                 } else {
                     let predicate = argument.clone();
                     argument = Expr::IfElse {
-                        condition: Arc::new(predicate.clone()),
-                        consequent: Arc::new(predicate),
+                        condition: Arc::new(predicate),
+                        consequent: Arc::new(Expr::Literal {
+                            dtype: Type::Primitive(PrimitiveType::Bool),
+                            value: serde_json::Value::Bool(true),
+                        }),
                         alternate: Arc::new(Expr::Literal {
                             dtype: Type::Primitive(PrimitiveType::Bool),
                             value: serde_json::Value::Null,

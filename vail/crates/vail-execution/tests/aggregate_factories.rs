@@ -4,7 +4,7 @@ use datafusion_common::ScalarValue;
 use std::sync::Arc;
 use vail_execution::{
     array_aggregate::coordinate_udaf,
-    expressions::Expr,
+    expressions::{Expr, PrimitiveType, Type},
     fold_aggregate::{FoldProgram, fold_udaf},
 };
 
@@ -92,5 +92,29 @@ fn count_where_scan_factory_requires_boolean_elements_and_supported_options() {
             &serde_json::json!({"unexpected": true}),
         )
         .is_err()
+    );
+}
+
+#[test]
+fn count_where_list_expression_typing_rejects_non_boolean_elements() {
+    let expression = |element| Expr::NestedFunction {
+        function: "__vail_list_reduce_count_where".into(),
+        args: vec![Expr::Literal {
+            dtype: Type::Array {
+                array: Box::new(element),
+            },
+            value: serde_json::json!([]),
+        }],
+        dtype: Type::Primitive(PrimitiveType::Int64),
+    };
+    assert!(
+        expression(Type::Primitive(PrimitiveType::Bool))
+            .dtype(&Schema::empty())
+            .is_ok()
+    );
+    assert!(
+        expression(Type::Primitive(PrimitiveType::Int32))
+            .dtype(&Schema::empty())
+            .is_err()
     );
 }

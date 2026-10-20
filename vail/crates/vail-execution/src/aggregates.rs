@@ -291,6 +291,12 @@ impl Accumulator for Reducer {
         Ok(())
     }
 }
+/// Construct one of the low-level scalar aggregate UDAFs.
+///
+/// `count_where` is intentionally not a UDAF here: it must be lowered as
+/// native COUNT over a false-to-null Boolean predicate, which requires the
+/// logical argument expression. Vail's relational, list and scan adapters
+/// perform that lowering at their respective call sites.
 pub fn aggregate_udf(
     function: &str,
     input: Option<&DataType>,
@@ -299,6 +305,11 @@ pub fn aggregate_udf(
         return crate::moments::udf(function, input);
     }
     let (kind, input, output, state) = match function {
+        "count_where" => {
+            return Err(ExprError::Invalid(
+                "count_where must be lowered as native COUNT over a false-to-null predicate".into(),
+            ));
+        }
         "count" => (
             Kind::Count,
             DataType::Int64,
