@@ -358,6 +358,29 @@ def reduce_list(
             from .collections import _function, _cast, _ensure_key_supported
             from .types import tstruct, tdict
             _ensure_key_supported(keys.dtype.element_type)
+            body = node.get("body")
+            reducer = body.get("function") if isinstance(body, dict) else None
+            fused_reducers = {
+                "count", "count_where", "sum", "product", "min", "max",
+                "mean", "stddev_pop", "fraction", "any", "all",
+            }
+            if isinstance(body, dict) and body.get("op") == "aggregate" and reducer in fused_reducers:
+                aggregate_options = body.get("options") or {}
+                value_type = type_from_wire(aggregate_options["__vail_result_type"])
+                values = keys if reducer == "count" else mapped(items, body["value"])
+                grouped_type = tarray(tstruct(
+                    key=keys.dtype.element_type,
+                    value=value_type,
+                ))
+                groups = _function(
+                    "__vail_collection_group_aggregate_" + reducer,
+                    [keys, values],
+                    grouped_type,
+                )
+                return _cast(
+                    groups,
+                    tdict(keys.dtype.element_type, value_type),
+                ).to_ir()
             pairs = items.map(lambda ctx: struct(
                 key=raw(bind(node["key"], ctx), keys.dtype.element_type), value=ctx,
             ))

@@ -1036,6 +1036,37 @@ def test_direct_list_reducers_nested_aggregators_and_missing_values():
     assert result[0].grouped == {0: 12, 1: 0}
 
 
+def test_group_by_reductions_use_fused_per_list_groups():
+    import math
+
+    m = hl.range_matrix_table(2, 3, 2)
+    m = m.annotate_entries(
+        x=hl.if_else(m.col_idx == 1, hl.missing(hl.tint32), m.row_idx * 10 + m.col_idx)
+    )
+    rows = m.annotate_rows(
+        means=hl.agg.group_by(m.col_idx % 2, hl.agg.mean(m.x)),
+        counts=hl.agg.group_by(m.col_idx % 2, hl.agg.count()),
+        positive=hl.agg.group_by(m.col_idx % 2, hl.agg.count_where(m.x > 0)),
+    ).rows().collect()
+    assert rows[0].means[0] == 1.0 and math.isnan(rows[0].means[1])
+    assert rows[0].counts == {0: 2, 1: 1}
+    assert rows[0].positive == {0: 1, 1: 0}
+    assert rows[1].means[0] == 11.0 and math.isnan(rows[1].means[1])
+    assert rows[1].counts == {0: 2, 1: 1}
+    assert rows[1].positive == {0: 2, 1: 0}
+
+    cols = m.annotate_cols(
+        sums=hl.agg.group_by(m.row_idx % 2, hl.agg.sum(m.x)),
+        counts=hl.agg.group_by(m.row_idx % 2, hl.agg.count()),
+    ).cols().collect()
+    assert cols[0].sums == {0: 0, 1: 10}
+    assert cols[0].counts == {0: 1, 1: 1}
+    assert cols[1].sums == {0: 0, 1: 0}
+    assert cols[1].counts == {0: 1, 1: 1}
+    assert cols[2].sums == {0: 2, 1: 12}
+    assert cols[2].counts == {0: 1, 1: 1}
+
+
 def test_column_lookups_inside_entries_preserve_values_and_missingness():
     target = hl.range_table(2)
     target = target.annotate(value=target.idx + 100)
