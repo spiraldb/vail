@@ -1,18 +1,20 @@
 //! Run shared aggregate kernels over each row's Arrow list, without unnesting.
 //!
-//! Primitive reductions use Arrow segmented kernels; regression uses a batched
-//! native grouped kernel. Other reducers borrow each list's child buffers and
-//! use the shared aggregate adapter, including its empty-list identity.
+//! Primitive reductions use Arrow segmented kernels; correlation, call stats,
+//! and regression use grouped accumulators. Other reducers borrow each list's
+//! child buffers and use the shared aggregate adapter, including empty identities.
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int32Array, Int64Array, ListArray, StructArray, new_empty_array,
+    new_empty_array, new_null_array, Array, ArrayRef, BooleanArray, Int32Array, Int64Array,
+    ListArray, StructArray,
 };
 use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, Schema};
-use datafusion_common::{Result, ScalarValue, exec_datafusion_err, plan_datafusion_err};
+use datafusion_common::{exec_datafusion_err, plan_datafusion_err, Result, ScalarValue};
 use datafusion_expr::{
-    ColumnarValue, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature, Volatility,
+    ColumnarValue, GroupsAccumulator, ScalarFunctionArgs, ScalarUDF, ScalarUDFImpl, Signature,
+    Volatility,
 };
 use datafusion_physical_expr::{
     aggregate::{AggregateExprBuilder, AggregateFunctionExpr},
@@ -22,6 +24,7 @@ use datafusion_physical_expr::{
 mod direct;
 
 const PREFIX: &str = "__vail_list_reduce_";
+const GROUP_INDEX_CHUNK: usize = 256;
 
 #[derive(Debug, PartialEq, Eq, Hash)]
 struct ListAggregate {
@@ -172,6 +175,125 @@ fn kernel(
     ))
 }
 
+fn update_grouped_lists(
+    groups: &mut dyn GroupsAccumulator,
+    lists: &ListArray,
+    row_indices: impl Iterator<Item = usize>,
+    total_groups: usize,
+    input_type: &DataType,
+) -> Result<()> {
+    let empty = new_empty_array(input_type);
+    groups.update_batch(&[empty], &[], None, total_groups)?;
+    let mut indices = vec![0; GROUP_INDEX_CHUNK];
+    for (group, row) in row_indices.enumerate() {
+        if lists.is_null(row) {
+            continue;
+        }
+        let values = lists.value(row);
+        let mut offset = 0;
+        while offset < values.len() {
+            let len = (values.len() - offset).min(indices.len());
+            indices[..len].fill(group);
+            groups.update_batch(
+                &[values.slice(offset, len)],
+                &indices[..len],
+                None,
+                total_groups,
+            )?;
+            offset += len;
+        }
+    }
+    Ok(())
+}
+
+fn grouped_corr_lists(lists: &ListArray, input_type: &DataType) -> Result<ArrayRef> {
+    let rows = lists.len();
+    if rows == 0 {
+        return Ok(new_empty_array(&DataType::Float64));
+    }
+    let aggregate = kernel("corr", input_type, 0)?;
+    if !aggregate.groups_accumulator_supported() {
+        return Err(exec_datafusion_err!(
+            "corr list reducer requires grouped accumulator support"
+        ));
+    }
+    let mut groups = aggregate.create_groups_accumulator()?;
+    update_grouped_lists(groups.as_mut(), lists, 0..rows, rows, input_type)?;
+    Ok(groups.evaluate(datafusion_expr::EmitTo::All)?)
+}
+
+fn initializer_n(initializers: &dyn Array, row: usize) -> Result<usize> {
+    let value = match initializers.data_type() {
+        DataType::Int32 => initializers
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .value(row) as i64,
+        DataType::Int64 => initializers
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap()
+            .value(row),
+        _ => return Err(exec_datafusion_err!("invalid reducer initializer type")),
+    };
+    if initializers.is_null(row) || value < 0 {
+        return Err(exec_datafusion_err!(
+            "call_stats allele count requires a defined nonnegative initializer"
+        ));
+    }
+    usize::try_from(value)
+        .map_err(|_| exec_datafusion_err!("reducer initializer exceeds addressable memory"))
+}
+
+fn grouped_call_stats_lists(
+    lists: &ListArray,
+    initializers: &dyn Array,
+    input_type: &DataType,
+    output_type: &DataType,
+) -> Result<ArrayRef> {
+    let mut buckets = std::collections::BTreeMap::<usize, Vec<usize>>::new();
+    let mut selected = (0..lists.len()).map(|row| (0, row)).collect::<Vec<_>>();
+    let mut bucket_results = vec![new_null_array(output_type, lists.len())];
+    for row in 0..lists.len() {
+        // Validate initializer values even for null lists, matching the scalar fallback.
+        let n = initializer_n(initializers, row)?;
+        if !lists.is_null(row) {
+            buckets.entry(n).or_default().push(row);
+        }
+    }
+    for (n, rows) in buckets {
+        let aggregate = kernel("call_stats", input_type, n)?;
+        if !aggregate.groups_accumulator_supported() {
+            return Err(exec_datafusion_err!(
+                "call_stats list reducer requires grouped accumulator support"
+            ));
+        }
+        let mut groups = aggregate.create_groups_accumulator()?;
+        update_grouped_lists(
+            groups.as_mut(),
+            lists,
+            rows.iter().copied(),
+            rows.len(),
+            input_type,
+        )?;
+        let batch = groups.evaluate(datafusion_expr::EmitTo::All)?;
+        let array_index = bucket_results.len();
+        bucket_results.push(batch);
+        for (group, row) in rows.into_iter().enumerate() {
+            selected[row] = (array_index, group);
+        }
+    }
+    if selected.is_empty() {
+        Ok(new_empty_array(output_type))
+    } else {
+        let arrays = bucket_results
+            .iter()
+            .map(|array| array.as_ref() as &dyn Array)
+            .collect::<Vec<_>>();
+        Ok(arrow_select::interleave::interleave(&arrays, &selected)?)
+    }
+}
+
 impl ScalarUDFImpl for ListAggregate {
     fn name(&self) -> &str {
         &self.name
@@ -225,6 +347,30 @@ impl ScalarUDFImpl for ListAggregate {
         let initializers = arrays.get(1);
         let output_type =
             configured(&self.function, &input_type, 0)?.return_type(&[input_type.clone()])?;
+        if self.function == "corr" {
+            let result = grouped_corr_lists(lists, &input_type)?;
+            return if scalar {
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                    &result, 0,
+                )?))
+            } else {
+                Ok(ColumnarValue::Array(result))
+            };
+        }
+        if self.function == "call_stats" {
+            let initializer = initializers.ok_or_else(|| {
+                exec_datafusion_err!("call_stats requires an allele-count initializer")
+            })?;
+            let result =
+                grouped_call_stats_lists(lists, initializer.as_ref(), &input_type, &output_type)?;
+            return if scalar {
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                    &result, 0,
+                )?))
+            } else {
+                Ok(ColumnarValue::Array(result))
+            };
+        }
         // Reuse consecutive configurations with bounded adapter memory. A new
         // accumulator still owns each row's counts and empty identity.
         let mut previous_kernel: Option<(usize, Arc<AggregateFunctionExpr>)> = None;

@@ -1,9 +1,10 @@
 //! Primitive list reductions through the public expression boundary.
 use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
-    RecordBatch, StructArray,
+    RecordBatch, StructArray, UInt16Array, UInt8Array,
 };
-use arrow_schema::{DataType, Schema};
+use arrow_buffer::{NullBuffer, OffsetBuffer};
+use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{Result, ScalarValue};
 use std::sync::Arc;
 use vail_execution::expressions::{Expr, PrimitiveType, Type, lower};
@@ -46,6 +47,207 @@ fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRef>> {
             .evaluate(&batch)?
             .into_array(lists.len())?,
     ))
+}
+
+fn reduce_struct_lists(
+    lists: &ListArray,
+    function: &str,
+    initializers: Option<ArrayRef>,
+    output_type: DataType,
+) -> Result<ArrayRef> {
+    let mut fields = vec![Field::new("values", lists.data_type().clone(), true)];
+    let mut columns = vec![Arc::new(lists.clone()) as ArrayRef];
+    let mut args = vec![Expr::Column {
+        name: "values".into(),
+    }];
+    if let Some(initializers) = initializers {
+        fields.push(Field::new("initializer", DataType::Int32, true));
+        columns.push(initializers);
+        args.push(Expr::Column {
+            name: "initializer".into(),
+        });
+    }
+    let schema = Arc::new(Schema::new(fields));
+    let batch = RecordBatch::try_new(schema.clone(), columns)?;
+    let expr = Expr::NestedFunction {
+        function: format!("__vail_list_reduce_{function}"),
+        args,
+        dtype: Type::from_arrow(&output_type).unwrap(),
+    };
+    Ok(lower(&expr, &schema)
+        .unwrap()
+        .evaluate(&batch)?
+        .into_array(lists.len())?)
+}
+
+#[test]
+fn correlation_list_reduction_batches_rows_and_keeps_empty_and_null_semantics() {
+    let fields = vec![
+        Arc::new(Field::new("x", DataType::Float64, true)),
+        Arc::new(Field::new("y", DataType::Float64, true)),
+    ];
+    let item_type = DataType::Struct(fields.clone().into());
+    let child = Arc::new(StructArray::new(
+        fields.into(),
+        vec![
+            Arc::new(Float64Array::from(vec![0., 1., 2., 8., 99., 100., 5., 6.])),
+            Arc::new(Float64Array::from(vec![0., 2., 4., 4., 88., 99., 7., 7.])),
+        ],
+        None,
+    ));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", item_type, true)),
+        OffsetBuffer::from_lengths([1, 2, 1, 0, 2, 2]),
+        child,
+        Some(NullBuffer::from(vec![true, true, true, true, false, true])),
+    )
+    .slice(1, 5);
+    let result = reduce_struct_lists(&lists, "corr", None, DataType::Float64).unwrap();
+    let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert_eq!(result.value(0), 1.0);
+    assert!(result.value(1).is_nan());
+    assert!(result.is_null(2));
+    assert!(result.is_null(3));
+    assert!(result.value(4).is_nan());
+}
+
+#[test]
+fn call_stats_list_reduction_batches_variable_initializers_in_outer_order() {
+    let call_fields = vec![
+        Arc::new(Field::new(
+            vail_execution::calls::FIRST,
+            DataType::UInt16,
+            true,
+        )),
+        Arc::new(Field::new(
+            vail_execution::calls::SECOND,
+            DataType::UInt16,
+            true,
+        )),
+        Arc::new(Field::new(
+            vail_execution::calls::PLOIDY,
+            DataType::UInt8,
+            true,
+        )),
+        Arc::new(Field::new(
+            vail_execution::calls::PHASED,
+            DataType::Boolean,
+            true,
+        )),
+    ];
+    let call_type = DataType::Struct(call_fields.clone().into());
+    let item_fields = vec![
+        Arc::new(Field::new("__vail_genomic_call", call_type.clone(), true)),
+        Arc::new(Field::new("__vail_genomic_alleles", DataType::Int32, true)),
+    ];
+    let item_type = DataType::Struct(item_fields.clone().into());
+    let calls = [
+        vail_execution::calls::Call::new(&[2, 2], false).unwrap(),
+        vail_execution::calls::Call::new(&[0, 1], false).unwrap(),
+        vail_execution::calls::Call::new(&[1, 1], false).unwrap(),
+        vail_execution::calls::Call::new(&[2, 2], false).unwrap(),
+    ];
+    let calls = Arc::new(StructArray::new(
+        call_fields.into(),
+        vec![
+            Arc::new(UInt16Array::from(
+                calls
+                    .iter()
+                    .copied()
+                    .map(|call| call.first())
+                    .collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt16Array::from(
+                calls
+                    .iter()
+                    .copied()
+                    .map(|call| call.second())
+                    .collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt8Array::from(
+                calls
+                    .iter()
+                    .copied()
+                    .map(|call| call.ploidy())
+                    .collect::<Vec<_>>(),
+            )),
+            Arc::new(BooleanArray::from(
+                calls
+                    .iter()
+                    .copied()
+                    .map(|call| call.phased())
+                    .collect::<Vec<_>>(),
+            )),
+        ],
+        None,
+    ));
+    let child = Arc::new(StructArray::new(
+        item_fields.into(),
+        vec![calls, Arc::new(Int32Array::from(vec![3, 2, 2, 3]))],
+        None,
+    ));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", item_type, true)),
+        OffsetBuffer::from_lengths([1, 2, 1, 0, 0]),
+        child,
+        Some(NullBuffer::from(vec![true, true, true, true, false])),
+    )
+    .slice(1, 4);
+    let output = DataType::Struct(
+        vec![
+            Arc::new(Field::new(
+                "AC",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+            Arc::new(Field::new(
+                "AF",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Float64, true))),
+                true,
+            )),
+            Arc::new(Field::new("AN", DataType::Int32, true)),
+            Arc::new(Field::new(
+                "homozygote_count",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+        ]
+        .into(),
+    );
+    let result = reduce_struct_lists(
+        &lists,
+        "call_stats",
+        Some(Arc::new(Int32Array::from(vec![2, 3, 2, 3]))),
+        output,
+    )
+    .unwrap();
+    let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+    let an = result
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!([an.value(0), an.value(1), an.value(2)], [4, 2, 0]);
+    assert!(result.is_null(3));
+    let ac = result
+        .column_by_name("AC")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    assert_eq!(
+        ac.value(0).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![1, 3])
+    );
+    assert_eq!(
+        ac.value(1).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![0, 0, 2])
+    );
+    assert_eq!(
+        ac.value(2).as_any().downcast_ref::<Int32Array>().unwrap(),
+        &Int32Array::from(vec![0, 0])
+    );
 }
 
 #[test]
