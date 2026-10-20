@@ -811,6 +811,26 @@ fn moments_reject_missing_and_nonnumeric_input_types() {
 }
 
 #[test]
+fn population_stdev_retains_numeric_constructor_contract() {
+    for input in [
+        DataType::Int32,
+        DataType::Int64,
+        DataType::Float32,
+        DataType::Float64,
+    ] {
+        let udf = vail_execution::aggregates::aggregate_udf("stddev_pop", Some(&input)).unwrap();
+        assert_eq!(
+            udf.return_type(&[input.clone()]).unwrap(),
+            DataType::Float64
+        );
+        assert_eq!(
+            udf.signature().type_signature,
+            datafusion_expr::TypeSignature::Exact(vec![input])
+        );
+    }
+}
+
+#[test]
 fn grouped_product_filters_merges_emits_and_keeps_empty_groups_at_one() {
     let input = Field::new("value", arrow_schema::DataType::Int32, true);
     let schema = Arc::new(Schema::new(vec![input.clone()]));

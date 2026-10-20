@@ -68,6 +68,18 @@ def test_single_nonfinite_population_stdev_is_nan(value):
     assert math.isnan(table.aggregate(hl.agg.stats(table.x)).stdev)
 
 
+def test_filtered_nonfinite_and_missing_rows_do_not_reach_the_accumulator():
+    table = hl.Table.parallelize(
+        [{"x": 1.0}, {"x": None}, {"x": math.nan}, {"x": 3.0}],
+        schema=hl.tstruct(x=hl.tfloat64),
+        n_partitions=3,
+    )
+    stdev = table.aggregate(
+        hl.agg.filter(table.x == table.x, hl.agg.stats(table.x)).stdev
+    )
+    assert stdev == 1.0
+
+
 def test_matrix_row_and_column_annotations_use_population_stdev():
     matrix = hl.range_matrix_table(2, 3, n_partitions=2)
     matrix = matrix.annotate_entries(x=hl.float64(matrix.row_idx + matrix.col_idx))
