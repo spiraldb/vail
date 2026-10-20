@@ -1,9 +1,11 @@
 //! Primitive segmented reductions using Arrow batch kernels and one output builder.
 use std::sync::Arc;
 
+use arrow_array::builder::{
+    BooleanBuilder, Float32Builder, Float64Builder, Int32Builder, Int64Builder,
+};
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, BooleanBuilder, Float32Array, Float32Builder, Float64Array,
-    Float64Builder, Int32Array, Int32Builder, Int64Array, Int64Builder, ListArray,
+    Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
 };
 use arrow_schema::DataType;
 use datafusion_common::{Result, exec_datafusion_err};
