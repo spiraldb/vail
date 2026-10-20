@@ -1,6 +1,7 @@
 //! Checked public aggregate construction contracts.
 use arrow_array::{
-    Array, BooleanArray, Float32Array, Int32Array, ListArray, StructArray, UInt8Array, UInt16Array,
+    Array, BooleanArray, Float32Array, Float64Array, Int32Array, ListArray, StringArray,
+    StructArray, UInt8Array, UInt16Array,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field, Schema};
@@ -396,10 +397,37 @@ fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
     let ac = ac.as_any().downcast_ref::<Int32Array>().unwrap();
     assert_eq!(ac.values(), &[1, 2]);
 
-    // Emitting partial state drains the groups. Replay it before checking final output.
-    let mut replay = aggregate.create_groups_accumulator().unwrap();
-    replay.merge_batch(&group_state, &[0, 1], 2).unwrap();
-    let evaluated = replay.evaluate(EmitTo::All).unwrap();
+    let mut scalar_source = aggregate.create_accumulator().unwrap();
+    scalar_source.update_batch(&[packed.clone()]).unwrap();
+    let scalar_state = scalar_source.state().unwrap();
+    let scalar_state = scalar_state
+        .iter()
+        .map(|value| value.to_array_of_size(1).unwrap())
+        .collect::<Vec<_>>();
+    let mut grouped_from_scalar = aggregate.create_groups_accumulator().unwrap();
+    grouped_from_scalar
+        .merge_batch(&scalar_state, &[0], 1)
+        .unwrap();
+    let from_scalar = grouped_from_scalar.evaluate(EmitTo::All).unwrap();
+    let from_scalar = from_scalar.as_any().downcast_ref::<StructArray>().unwrap();
+    assert_eq!(
+        from_scalar
+            .column_by_name("AN")
+            .unwrap()
+            .as_any()
+            .downcast_ref::<Int32Array>()
+            .unwrap()
+            .value(0),
+        3
+    );
+
+    // `state(EmitTo::All)` drains the original groups. Evaluate a fresh
+    // accumulator after merging that state to verify grouped state roundtrips.
+    let mut evaluated_groups = aggregate.create_groups_accumulator().unwrap();
+    evaluated_groups
+        .merge_batch(&group_state, &[0, 1], 2)
+        .unwrap();
+    let evaluated = evaluated_groups.evaluate(EmitTo::All).unwrap();
     let evaluated = evaluated.as_any().downcast_ref::<StructArray>().unwrap();
     let an = evaluated
         .column_by_name("AN")
@@ -476,4 +504,204 @@ fn grouped_call_stats_uses_current_call_fields_and_roundtrips_group_state() {
             .update_batch(&[Arc::new(malformed)], &[0], None, 1)
             .is_err()
     );
+}
+
+#[test]
+fn grouped_downsample_roundtrips_bounded_group_states() {
+    use datafusion_expr::GroupsAccumulator;
+    let input_type = DataType::Struct(
+        vec![
+            Arc::new(Field::new("x", DataType::Float64, true)),
+            Arc::new(Field::new("y", DataType::Float64, true)),
+            Arc::new(Field::new("label", DataType::Utf8, true)),
+        ]
+        .into(),
+    );
+    let udf = vail_execution::advanced_numeric_aggregates::make_udaf(
+        "downsample",
+        &input_type,
+        &serde_json::json!({"n_divisions": 4}),
+    )
+    .unwrap()
+    .unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "packed",
+        input_type.clone(),
+        true,
+    )]));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("packed", 0))])
+        .schema(schema)
+        .alias("points")
+        .build()
+        .unwrap();
+    assert!(aggregate.groups_accumulator_supported());
+    let values: arrow_array::ArrayRef = Arc::new(StructArray::new(
+        match &input_type {
+            DataType::Struct(fields) => fields.clone(),
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(Float64Array::from(vec![
+                Some(0.),
+                Some(1.),
+                Some(100.),
+                None,
+            ])),
+            Arc::new(Float64Array::from(vec![0., 1., 100., 101.])),
+            Arc::new(StringArray::from(vec!["a0", "a1", "b0", "b1"])),
+        ],
+        None,
+    ));
+    let mut grouped = aggregate.create_groups_accumulator().unwrap();
+    grouped
+        .update_batch(&[values.clone()], &[0, 0, 1, 1], None, 2)
+        .unwrap();
+    let states = grouped.state(EmitTo::All).unwrap();
+    let mut merged = aggregate.create_groups_accumulator().unwrap();
+    merged.merge_batch(&states, &[1, 0], 2).unwrap();
+    let result = merged.evaluate(EmitTo::All).unwrap();
+    let result = result.as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(result.len(), 2);
+    assert!((1..=16).contains(&result.value_length(0)));
+    assert!((1..=2).contains(&result.value_length(1)));
+    for group in 0..result.len() {
+        let points = result.value(group);
+        let points = points.as_any().downcast_ref::<StructArray>().unwrap();
+        let xs = points
+            .column(0)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap();
+        let ys = points
+            .column(1)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap();
+        let labels = points
+            .column(2)
+            .as_any()
+            .downcast_ref::<ListArray>()
+            .unwrap();
+        for row in 0..points.len() {
+            let label = labels.value(row);
+            let label = label.as_any().downcast_ref::<StringArray>().unwrap();
+            assert_eq!(label.len(), 1);
+            let source_x = match label.value(0) {
+                "a0" => 0.0,
+                "a1" => 1.0,
+                "b0" => 100.0,
+                "b1" => 101.0,
+                label => panic!("unexpected downsample label {label}"),
+            };
+            assert_eq!(xs.value(row), source_x);
+            assert_eq!(ys.value(row), source_x);
+        }
+    }
+
+    // Direct state conversion emits one bounded state per row, honoring null
+    // filters and null coordinates without building a per-row accumulator.
+    let filter = BooleanArray::from(vec![Some(true), Some(false), Some(true), None]);
+    let converted = grouped
+        .convert_to_state(&[values.clone()], Some(&filter))
+        .unwrap();
+    let converted_points = converted[0].as_any().downcast_ref::<ListArray>().unwrap();
+    assert_eq!(converted_points.len(), 4);
+    assert_eq!(converted_points.value_length(0), 1);
+    assert_eq!(converted_points.value_length(1), 0);
+    assert_eq!(converted_points.value_length(2), 1);
+    assert_eq!(converted_points.value_length(3), 0);
+    let converted_first = converted_points.value(0);
+    let converted_first = converted_first
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    assert_eq!(
+        converted_first
+            .column(0)
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap()
+            .value(0),
+        0.0
+    );
+    let converted_label = converted_first
+        .column(2)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap()
+        .value(0);
+    assert_eq!(
+        converted_label
+            .as_any()
+            .downcast_ref::<StringArray>()
+            .unwrap()
+            .value(0),
+        "a0"
+    );
+
+    // Identity conversion wraps UTF-8 labels in one-element lists while
+    // reusing the source string values buffer.
+    let converted_all = grouped.convert_to_state(&[values.clone()], None).unwrap();
+    let converted_all_points = converted_all[0]
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    let converted_all_row = converted_all_points.value(0);
+    let converted_all_row = converted_all_row
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap();
+    let converted_all_labels = converted_all_row
+        .column(2)
+        .as_any()
+        .downcast_ref::<ListArray>()
+        .unwrap();
+    let converted_all_values = converted_all_labels
+        .values()
+        .as_any()
+        .downcast_ref::<StringArray>()
+        .unwrap();
+    let source_labels = values
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap()
+        .column(2)
+        .as_any()
+        .downcast_ref::<StringArray>()
+        .unwrap();
+    assert_eq!(
+        converted_all_values.values().as_ptr(),
+        source_labels.values().as_ptr()
+    );
+
+    let mut partial = aggregate.create_groups_accumulator().unwrap();
+    partial
+        .update_batch(&[values.clone()], &[0, 0, 1, 1], Some(&filter), 2)
+        .unwrap();
+    assert_eq!(partial.evaluate(EmitTo::First(1)).unwrap().len(), 1);
+    assert_eq!(partial.evaluate(EmitTo::All).unwrap().len(), 1);
+    let mut empty = aggregate.create_groups_accumulator().unwrap();
+    assert_eq!(empty.evaluate(EmitTo::All).unwrap().len(), 0);
+
+    let xs = (0..40).map(|x| x as f64).collect::<Vec<_>>();
+    let labels = (0..40).map(|x| format!("p{x}")).collect::<Vec<_>>();
+    let many: arrow_array::ArrayRef = Arc::new(StructArray::new(
+        match &input_type {
+            DataType::Struct(fields) => fields.clone(),
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(Float64Array::from(xs.clone())),
+            Arc::new(Float64Array::from(xs)),
+            Arc::new(StringArray::from(labels)),
+        ],
+        None,
+    ));
+    let mut bounded = aggregate.create_groups_accumulator().unwrap();
+    bounded
+        .update_batch(&[many], &vec![0; 40], None, 1)
+        .unwrap();
+    let bounded = bounded.evaluate(EmitTo::All).unwrap();
+    let bounded = bounded.as_any().downcast_ref::<ListArray>().unwrap();
+    assert!(bounded.value_length(0) <= 16);
 }
