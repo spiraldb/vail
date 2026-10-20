@@ -1305,10 +1305,6 @@ impl DownsampleGroups {
                 right.push(None);
                 bottom.push(None);
                 top.push(None);
-                if !reuse_labels {
-                    label_lengths.push(0);
-                    label_validity.push(false);
-                }
                 continue;
             }
             let (x, y) = (xs.value(row), ys.value(row));
