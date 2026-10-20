@@ -13,6 +13,7 @@ use datafusion_expr::{
     Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
     expr_fn::create_udaf,
     function::{AccumulatorArgs, StateFieldsArgs},
+    utils::format_state_name,
 };
 use kll_rs::KllDoubleSketch;
 use nalgebra::{DMatrix, DVector};
@@ -856,12 +857,41 @@ impl AggregateUDFImpl for CorrelationUdf {
     }
 
     fn state_fields(&self, args: StateFieldsArgs) -> DfResult<Vec<FieldRef>> {
-        native_correlation().inner().state_fields(args)
+        Ok([
+            ("count", DataType::UInt64),
+            ("sum_x", DataType::Float64),
+            ("sum_y", DataType::Float64),
+            ("sum_xy", DataType::Float64),
+            ("sum_xx", DataType::Float64),
+            ("sum_yy", DataType::Float64),
+        ]
+        .into_iter()
+        .map(|(name, data_type)| {
+            Arc::new(Field::new(
+                format_state_name(args.name, name),
+                data_type,
+                true,
+            ))
+        })
+        .collect())
     }
 
-    fn accumulator(&self, _args: AccumulatorArgs) -> DfResult<Box<dyn Accumulator>> {
+    fn accumulator(&self, args: AccumulatorArgs) -> DfResult<Box<dyn Accumulator>> {
+        let mut inner = native_correlation().create_groups_accumulator(args)?;
+        // Keep the native group state at one row even before the first update,
+        // so scalar and grouped partial states have the same six-field layout.
+        inner.update_batch(
+            &[
+                Arc::new(Float64Array::new_null(0)),
+                Arc::new(Float64Array::new_null(0)),
+            ],
+            &[],
+            None,
+            1,
+        )?;
         Ok(Box::new(CorrAccumulator {
-            inner: datafusion_functions_aggregate::correlation::CorrelationAccumulator::try_new()?,
+            inner,
+            pair_count: 0,
         }))
     }
 
@@ -879,9 +909,99 @@ impl AggregateUDFImpl for CorrelationUdf {
         }))
     }
 }
-#[derive(Debug)]
 struct CorrAccumulator {
-    inner: datafusion_functions_aggregate::correlation::CorrelationAccumulator,
+    inner: Box<dyn GroupsAccumulator>,
+    pair_count: u64,
+}
+
+const SINGLE_GROUP_CHUNK: usize = 256;
+const SINGLE_GROUP_IDS: [usize; SINGLE_GROUP_CHUNK] = [0; SINGLE_GROUP_CHUNK];
+
+fn update_single_group_in_chunks(
+    inner: &mut dyn GroupsAccumulator,
+    values: &[ArrayRef],
+) -> DfResult<()> {
+    let [x, y] = values else {
+        return Err(DataFusionError::Execution(
+            "corr expects two numeric arrays".into(),
+        ));
+    };
+    if x.len() != y.len() {
+        return Err(DataFusionError::Execution(
+            "corr input lengths differ".into(),
+        ));
+    }
+    for start in (0..x.len()).step_by(SINGLE_GROUP_CHUNK) {
+        let len = (x.len() - start).min(SINGLE_GROUP_CHUNK);
+        let chunk = [x.slice(start, len), y.slice(start, len)];
+        inner.update_batch(&chunk, &SINGLE_GROUP_IDS[..len], None, 1)?;
+    }
+    Ok(())
+}
+
+fn merge_single_group_in_chunks(
+    inner: &mut dyn GroupsAccumulator,
+    states: &[ArrayRef],
+) -> DfResult<()> {
+    if states.len() != 6 {
+        return Err(DataFusionError::Execution(
+            "corr state expects six columns".into(),
+        ));
+    }
+    let len = states[0].len();
+    if states.iter().any(|state| state.len() != len) {
+        return Err(DataFusionError::Execution(
+            "corr state column lengths differ".into(),
+        ));
+    }
+    let counts = states[0]
+        .as_any()
+        .downcast_ref::<arrow_array::UInt64Array>()
+        .ok_or_else(|| DataFusionError::Execution("corr count state must be uint64".into()))?;
+    if counts.null_count() != 0 {
+        return Err(DataFusionError::Execution(
+            "corr count state cannot contain nulls".into(),
+        ));
+    }
+    if states
+        .iter()
+        .skip(1)
+        .any(|state| state.data_type() != &DataType::Float64 || state.null_count() != 0)
+    {
+        return Err(DataFusionError::Execution(
+            "corr sum state columns must be non-null float64".into(),
+        ));
+    }
+    for start in (0..len).step_by(SINGLE_GROUP_CHUNK) {
+        let n = (len - start).min(SINGLE_GROUP_CHUNK);
+        let chunk = states
+            .iter()
+            .map(|state| state.slice(start, n))
+            .collect::<Vec<_>>();
+        inner.merge_batch(&chunk, &SINGLE_GROUP_IDS[..n], 1)?;
+    }
+    Ok(())
+}
+
+fn scalar_state_arrays(inner: &mut dyn GroupsAccumulator) -> DfResult<Vec<ArrayRef>> {
+    let state = inner.state(EmitTo::First(1))?;
+    if state.len() != 6 || state.iter().any(|array| array.len() != 1) {
+        return Err(DataFusionError::Execution(
+            "corr scalar state must contain one six-field group".into(),
+        ));
+    }
+    // GroupsAccumulator::state emits by draining. Restore the single group so
+    // repeated state() calls and a later evaluate() preserve scalar semantics.
+    inner.merge_batch(&state, &[0], 1)?;
+    Ok(state)
+}
+
+fn scalar_state(inner: &mut dyn GroupsAccumulator) -> DfResult<Vec<ScalarValue>> {
+    let state = scalar_state_arrays(inner)?;
+    state
+        .iter()
+        .map(|array| ScalarValue::try_from_array(array.as_ref(), 0))
+        .collect()
 }
 
 fn corr_pair(values: &[ArrayRef]) -> DfResult<Vec<ArrayRef>> {
@@ -914,45 +1034,75 @@ fn corr_pair(values: &[ArrayRef]) -> DfResult<Vec<ArrayRef>> {
 
 impl Accumulator for CorrAccumulator {
     fn update_batch(&mut self, v: &[ArrayRef]) -> DfResult<()> {
-        self.inner.update_batch(&corr_pair(v)?)
+        let pairs = corr_pair(v)?;
+        let [x, y] = pairs.as_slice() else {
+            unreachable!("corr_pair always returns two arrays")
+        };
+        let x = x.as_any().downcast_ref::<Float64Array>().unwrap();
+        let y = y.as_any().downcast_ref::<Float64Array>().unwrap();
+        let pair_count = (0..x.len())
+            .filter(|&row| x.is_valid(row) && y.is_valid(row))
+            .count() as u64;
+        let next_count = self
+            .pair_count
+            .checked_add(pair_count)
+            .ok_or_else(|| DataFusionError::Execution("corr pair count exceeds uint64".into()))?;
+        update_single_group_in_chunks(self.inner.as_mut(), &pairs)?;
+        self.pair_count = next_count;
+        Ok(())
     }
     fn evaluate(&mut self) -> DfResult<ScalarValue> {
-        let state = self.inner.state()?;
-        let n = match state.first() {
-            Some(ScalarValue::UInt64(Some(n))) => *n,
-            _ => {
-                return Err(DataFusionError::Execution(
-                    "corr count state must be uint64".into(),
-                ));
-            }
-        };
-        if n == 0 {
+        let state = scalar_state_arrays(self.inner.as_mut())?;
+        let value = self.inner.evaluate(EmitTo::First(1));
+        let restore = self.inner.merge_batch(&state, &[0], 1);
+        let value = value?;
+        restore?;
+        let value = value
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .ok_or_else(|| DataFusionError::Execution("corr result must be float64".into()))?;
+        if value.len() != 1 {
+            return Err(DataFusionError::Execution(
+                "corr scalar result must contain one group".into(),
+            ));
+        }
+        if self.pair_count == 0 {
             return Ok(ScalarValue::Float64(None));
         }
-        let m2_x = match state.get(2) {
-            Some(ScalarValue::Float64(Some(x))) => *x,
-            _ => 0.0,
-        };
-        let m2_y = match state.get(4) {
-            Some(ScalarValue::Float64(Some(y))) => *y,
-            _ => 0.0,
-        };
-        if n < 2 || m2_x == 0.0 || m2_y == 0.0 {
-            return Ok(ScalarValue::Float64(Some(f64::NAN)));
-        }
-        match self.inner.evaluate()? {
-            ScalarValue::Float64(None) => Ok(ScalarValue::Float64(Some(f64::NAN))),
-            value => Ok(value),
+        if value.is_null(0) {
+            Ok(ScalarValue::Float64(Some(f64::NAN)))
+        } else {
+            Ok(ScalarValue::Float64(Some(value.value(0))))
         }
     }
     fn size(&self) -> usize {
-        self.inner.size()
+        self.inner.size() + std::mem::size_of_val(&self.pair_count)
     }
     fn state(&mut self) -> DfResult<Vec<ScalarValue>> {
-        self.inner.state()
+        scalar_state(self.inner.as_mut())
     }
     fn merge_batch(&mut self, v: &[ArrayRef]) -> DfResult<()> {
-        self.inner.merge_batch(v)
+        let counts = v
+            .first()
+            .and_then(|state| state.as_any().downcast_ref::<arrow_array::UInt64Array>())
+            .ok_or_else(|| DataFusionError::Execution("corr count state must be uint64".into()))?;
+        if counts.null_count() != 0 || v.iter().any(|state| state.len() != counts.len()) {
+            return Err(DataFusionError::Execution(
+                "corr state columns must have equal lengths and defined counts".into(),
+            ));
+        }
+        let merged_count = counts.values().iter().try_fold(0_u64, |total, count| {
+            total
+                .checked_add(*count)
+                .ok_or_else(|| DataFusionError::Execution("corr pair count exceeds uint64".into()))
+        })?;
+        let next_count = self
+            .pair_count
+            .checked_add(merged_count)
+            .ok_or_else(|| DataFusionError::Execution("corr pair count exceeds uint64".into()))?;
+        merge_single_group_in_chunks(self.inner.as_mut(), v)?;
+        self.pair_count = next_count;
+        Ok(())
     }
 }
 

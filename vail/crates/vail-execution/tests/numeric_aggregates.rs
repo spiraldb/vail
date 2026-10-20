@@ -2,10 +2,14 @@
 use arrow_array::types::Float64Type;
 use arrow_array::{Array, ArrayRef, Float64Array, Int64Array, ListArray, RecordBatch, StructArray};
 use arrow_buffer::NullBuffer;
-use arrow_schema::{Field, Schema};
+use arrow_schema::{DataType, Field, Schema};
+use datafusion_common::ScalarValue;
 use datafusion_datasource::memory::MemorySourceConfig;
 use datafusion_execution::TaskContext;
-use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Column};
+use datafusion_expr::{Accumulator, EmitTo, function::AccumulatorArgs};
+use datafusion_physical_expr::{
+    PhysicalExpr, aggregate::AggregateExprBuilder, expressions::Column,
+};
 use datafusion_physical_plan::{
     aggregates::{AggregateExec, AggregateMode, PhysicalGroupBy},
     execution_plan::{ExecutionPlan, collect},
@@ -81,6 +85,107 @@ async fn correlation_ignores_hidden_children_under_sliced_null_records() {
             < 1e-12
     );
 }
+
+#[test]
+fn correlation_scalar_and_grouped_partial_states_cross_merge() {
+    let input_type = DataType::Struct(
+        vec![
+            Arc::new(Field::new("x", DataType::Float64, true)),
+            Arc::new(Field::new("y", DataType::Float64, true)),
+        ]
+        .into(),
+    );
+    let schema = Arc::new(Schema::new(vec![Field::new("packed", input_type, true)]));
+    let packed_field = Arc::new(schema.field(0).clone());
+    let exprs: Vec<Arc<dyn PhysicalExpr>> = vec![Arc::new(Column::new("packed", 0))];
+    let expr_fields = [packed_field];
+    let args = AccumulatorArgs {
+        return_field: Arc::new(Field::new("corr", DataType::Float64, true)),
+        schema: schema.as_ref(),
+        ignore_nulls: true,
+        order_bys: &[],
+        is_reversed: false,
+        name: "corr",
+        is_distinct: false,
+        exprs: &exprs,
+        expr_fields: &expr_fields,
+    };
+    let udf = vail_execution::advanced_numeric_aggregates::make_udaf(
+        "corr",
+        schema.field(0).data_type(),
+        &serde_json::json!({}),
+    )
+    .unwrap()
+    .unwrap();
+    let records = packed(
+        &["x", "y"],
+        vec![
+            Arc::new(Float64Array::from(vec![1., 2., 3., 4.])),
+            Arc::new(Float64Array::from(vec![3., 5., 7., 9.])),
+        ],
+        vec![true; 4],
+    );
+    let x = records
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap()
+        .column(0)
+        .clone();
+    let y = records
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap()
+        .column(1)
+        .clone();
+
+    // Scalar partial state must merge into the public grouped accumulator.
+    let mut scalar_partial = udf.accumulator(args.clone()).unwrap();
+    scalar_partial.update_batch(&[records.clone()]).unwrap();
+    let scalar_state = scalar_partial
+        .state()
+        .unwrap()
+        .into_iter()
+        .map(|state| ScalarValue::iter_to_array([state]).unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        scalar_state
+            .iter()
+            .map(|state| state.data_type().clone())
+            .collect::<Vec<_>>(),
+        vec![
+            DataType::UInt64,
+            DataType::Float64,
+            DataType::Float64,
+            DataType::Float64,
+            DataType::Float64,
+            DataType::Float64,
+        ]
+    );
+    let mut grouped_final = udf.create_groups_accumulator(args.clone()).unwrap();
+    grouped_final.merge_batch(&scalar_state, &[0], 1).unwrap();
+    let grouped_result = grouped_final.evaluate(EmitTo::All).unwrap();
+    let grouped_result = grouped_result
+        .as_any()
+        .downcast_ref::<Float64Array>()
+        .unwrap();
+    assert_eq!(grouped_result.len(), 1);
+    assert_eq!(grouped_result.value(0), 1.0);
+
+    // Grouped partial states for two partitions must merge into the scalar
+    // accumulator, preserving the same raw-sum native state layout.
+    let mut grouped_partial = udf.create_groups_accumulator(args.clone()).unwrap();
+    grouped_partial
+        .update_batch(&[x, y], &[0, 0, 1, 1], None, 2)
+        .unwrap();
+    let grouped_state = grouped_partial.state(EmitTo::All).unwrap();
+    let mut scalar_final = udf.accumulator(args).unwrap();
+    scalar_final.merge_batch(&grouped_state).unwrap();
+    assert_eq!(
+        scalar_final.evaluate().unwrap(),
+        ScalarValue::Float64(Some(1.0))
+    );
+}
+
 #[tokio::test]
 async fn regression_ignores_hidden_observations_under_null_records() {
     let xs: ArrayRef = Arc::new(ListArray::from_iter_primitive::<Float64Type, _, _>(vec![
