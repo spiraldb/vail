@@ -260,9 +260,6 @@ enum Kind {
     Count,
     Sum,
     Product,
-    /// Compatibility path for direct Rust callers of `aggregate_udf`.
-    /// Vail's planners lower count_where to native COUNT instead.
-    CountWhere,
 }
 #[derive(Debug)]
 struct Reducer {
@@ -292,14 +289,6 @@ impl Reducer {
             ScalarValue::Float64(Some(self.float))
         }
     }
-    fn boolean(input: &ArrayRef) -> Result<&BooleanArray> {
-        input
-            .as_any()
-            .downcast_ref::<BooleanArray>()
-            .ok_or_else(|| {
-                DataFusionError::Execution("Boolean aggregate requires Boolean input".into())
-            })
-    }
     fn counts(input: &ArrayRef) -> Result<&Int64Array> {
         input.as_any().downcast_ref::<Int64Array>().ok_or_else(|| {
             DataFusionError::Execution("aggregate count state requires int64".into())
@@ -322,11 +311,6 @@ impl Accumulator for Reducer {
                 self.count = self
                     .count
                     .wrapping_add((input.len() - input.null_count()) as i64)
-            }
-            Kind::CountWhere => {
-                self.count = self
-                    .count
-                    .wrapping_add(Self::boolean(input)?.true_count() as i64)
             }
             Kind::Sum | Kind::Product if self.integral() => {
                 let cast = arrow_cast::cast(input, &DataType::Int64)?;
@@ -364,7 +348,7 @@ impl Accumulator for Reducer {
     }
     fn evaluate(&mut self) -> Result<ScalarValue> {
         Ok(match self.kind {
-            Kind::Count | Kind::CountWhere => ScalarValue::Int64(Some(self.count)),
+            Kind::Count => ScalarValue::Int64(Some(self.count)),
             _ => self.value(),
         })
     }
@@ -373,7 +357,7 @@ impl Accumulator for Reducer {
     }
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
         Ok(match self.kind {
-            Kind::Count | Kind::CountWhere => vec![ScalarValue::Int64(Some(self.count))],
+            Kind::Count => vec![ScalarValue::Int64(Some(self.count))],
             Kind::Sum | Kind::Product => vec![ScalarValue::Int64(Some(self.count)), self.value()],
         })
     }
@@ -389,7 +373,7 @@ impl Accumulator for Reducer {
             ));
         }
         match self.kind {
-            Kind::Count | Kind::CountWhere => {
+            Kind::Count => {
                 self.count = self.count.wrapping_add(
                     arrow_arith::aggregate::sum(Self::counts(&states[0])?).unwrap_or(0),
                 )
@@ -445,6 +429,9 @@ pub fn aggregate_udf(
     function: &str,
     input: Option<&DataType>,
 ) -> std::result::Result<Arc<AggregateUDF>, ExprError> {
+    if function == "count_where" {
+        return crate::native_count_where::udf(input);
+    }
     if function == "fraction" {
         return crate::fraction::udf(input);
     }
@@ -499,22 +486,6 @@ pub fn aggregate_udf(
             DataType::Int64,
             vec![DataType::Int64],
         ),
-        "count_where" => {
-            if input.is_some_and(|ty| ty != &DataType::Boolean) {
-                return Err(ExprError::Invalid(format!(
-                    "{function} requires Boolean input"
-                )));
-            }
-            match function {
-                "count_where" => (
-                    Kind::CountWhere,
-                    DataType::Boolean,
-                    DataType::Int64,
-                    vec![DataType::Int64],
-                ),
-                _ => unreachable!("Boolean aggregate name is handled above"),
-            }
-        }
         "sum" | "product" => {
             let input =
                 input.ok_or_else(|| ExprError::Invalid(format!("{function} requires input")))?;
