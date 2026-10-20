@@ -1,6 +1,6 @@
 //! Scalar entry points for the exact test used by the call aggregator.
 use arrow_array::{
-    Array, ArrayRef, BooleanArray, Int32Array, StructArray,
+    Array, ArrayRef, BooleanArray, Int64Array, StructArray,
     builder::{Float64Builder, ListBuilder},
 };
 use arrow_buffer::NullBuffer;
@@ -30,12 +30,12 @@ pub(crate) fn udf(both: bool) -> Arc<ScalarUDF> {
             "vail_hardy_weinberg_counts"
         },
         if both {
-            vec![DataType::Int32; 3]
+            vec![DataType::Int64; 3]
         } else {
             vec![
-                DataType::Int32,
-                DataType::Int32,
-                DataType::Int32,
+                DataType::Int64,
+                DataType::Int64,
+                DataType::Int64,
                 DataType::Boolean,
             ]
         },
@@ -45,7 +45,7 @@ pub(crate) fn udf(both: bool) -> Arc<ScalarUDF> {
             let arrays = ColumnarValue::values_to_arrays(values)?;
             let counts = arrays[..3]
                 .iter()
-                .map(|a| a.as_any().downcast_ref::<Int32Array>().unwrap())
+                .map(|a| a.as_any().downcast_ref::<Int64Array>().unwrap())
                 .collect::<Vec<_>>();
             let modes = if both {
                 None
@@ -77,9 +77,9 @@ pub(crate) fn udf(both: bool) -> Arc<ScalarUDF> {
                     ));
                 }
                 let (freq, p, excess) = crate::advanced_genomic_aggregates::hwe_both(
-                    counts[0].value(row) as i64,
-                    counts[1].value(row) as i64,
-                    counts[2].value(row) as i64,
+                    counts[0].value(row),
+                    counts[1].value(row),
+                    counts[2].value(row),
                 );
                 if both {
                     frequency.append_value(freq);

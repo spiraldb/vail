@@ -4714,12 +4714,12 @@ pub(crate) fn string_function(
     Ok(match name {
         "hwe_both_counts" => (
             crate::hwe_counts::udf(true),
-            vec![int32.clone(); 3],
+            vec![int64.clone(); 3],
             Type::from_arrow(&crate::hwe_counts::result_type(true))?,
         ),
         "hardy_weinberg_counts" => (
             crate::hwe_counts::udf(false),
-            vec![int32.clone(), int32.clone(), int32, boolean],
+            vec![int64.clone(), int64.clone(), int64, boolean],
             Type::Array {
                 array: Box::new(Type::Primitive(PrimitiveType::Float64)),
             },

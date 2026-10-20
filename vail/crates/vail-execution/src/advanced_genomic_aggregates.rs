@@ -4,11 +4,15 @@ use crate::aggregate_identity::configured_udaf_name;
 use crate::expressions::ExprError;
 use arrow_array::{
     Array, ArrayRef, Float32Array, Float64Array, Int32Array, Int64Array, ListArray, StructArray,
+    builder::{Float64Builder, Int32Builder, ListBuilder},
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use datafusion_expr::{
+    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
+    expr_fn::create_udaf, function::{AccumulatorArgs, StateFieldsArgs},
+};
 use std::sync::Arc;
 
 fn bad(s: impl Into<String>) -> DataFusionError {
@@ -180,16 +184,257 @@ pub fn make_udaf(
     };
     let ty = input_type.clone();
     let udaf_name = configured_udaf_name(function, input_type, options);
+    let grouped_output = output.clone();
     let factory: datafusion_expr::AccumulatorFactoryFunction =
         Arc::new(move |_| Ok(Box::new(GenomicAccumulator::new(kind, ty.clone()))));
-    Ok(Some(Arc::new(create_udaf(
+    let native = Arc::new(create_udaf(
         &udaf_name,
         vec![input_type.clone()],
         Arc::new(output),
         Volatility::Immutable,
         factory,
         Arc::new(state),
-    ))))
+    ));
+    if let Kind::CallStats(n_alleles) = kind {
+        Ok(Some(Arc::new(AggregateUDF::from(CallStatsUdf {
+            name: udaf_name,
+            input_type: input_type.clone(),
+            output_type: grouped_output,
+            signature: Signature::exact(vec![input_type.clone()], Volatility::Immutable),
+            native,
+            n_alleles,
+        }))))
+    } else {
+        Ok(Some(native))
+    }
+}
+
+/// The scalar call_stats accumulator is retained for list/scan contexts; this
+/// adapter adds a flat, per-group allele counter for relational group-bys.
+#[derive(Debug)]
+struct CallStatsUdf {
+    name: String,
+    input_type: DataType,
+    output_type: DataType,
+    signature: Signature,
+    native: Arc<AggregateUDF>,
+    n_alleles: usize,
+}
+impl AggregateUDFImpl for CallStatsUdf {
+    fn name(&self) -> &str { &self.name }
+    fn signature(&self) -> &Signature { &self.signature }
+    fn return_type(&self, args: &[DataType]) -> DfResult<DataType> {
+        if args != [self.input_type.clone()] {
+            return Err(DataFusionError::Plan("call_stats input type mismatch".into()));
+        }
+        Ok(self.output_type.clone())
+    }
+    fn is_nullable(&self) -> bool { self.native.is_nullable() }
+    fn accumulator(&self, args: AccumulatorArgs) -> DfResult<Box<dyn Accumulator>> {
+        self.native.inner().accumulator(args)
+    }
+    fn state_fields(&self, args: StateFieldsArgs) -> DfResult<Vec<arrow_schema::FieldRef>> {
+        self.native.inner().state_fields(args)
+    }
+    fn groups_accumulator_supported(&self, args: AccumulatorArgs) -> bool {
+        !args.is_distinct
+            && args.order_bys.is_empty()
+            && !args.is_reversed
+            && args.expr_fields.len() == 1
+            && args.expr_fields[0].data_type() == &self.input_type
+            && args.return_field.data_type() == &self.output_type
+    }
+    fn create_groups_accumulator(&self, args: AccumulatorArgs) -> DfResult<Box<dyn GroupsAccumulator>> {
+        if !self.groups_accumulator_supported(args) {
+            return Err(DataFusionError::NotImplemented(
+                "call_stats grouped accumulator does not support these arguments".into(),
+            ));
+        }
+        Ok(Box::new(CallStatsGroups::new(self.n_alleles)))
+    }
+}
+
+#[derive(Debug)]
+struct CallStatsGroups {
+    n_alleles: usize,
+    allele_number: Vec<i64>,
+    allele_counts: Vec<i64>,
+    homozygote_counts: Vec<i64>,
+}
+impl CallStatsGroups {
+    fn new(n_alleles: usize) -> Self {
+        Self { n_alleles, allele_number: Vec::new(), allele_counts: Vec::new(), homozygote_counts: Vec::new() }
+    }
+    fn ensure(&mut self, total: usize) -> DfResult<()> {
+        let cells = total.checked_mul(self.n_alleles)
+            .ok_or_else(|| bad("call_stats grouped state size overflow"))?;
+        self.allele_number.resize(total, 0);
+        self.allele_counts.resize(cells, 0);
+        self.homozygote_counts.resize(cells, 0);
+        Ok(())
+    }
+    fn group(&self, index: usize) -> DfResult<usize> {
+        if index >= self.allele_number.len() {
+            return Err(bad("call_stats group index exceeds state"));
+        }
+        index.checked_mul(self.n_alleles)
+            .ok_or_else(|| bad("call_stats group state offset overflow"))
+    }
+    fn enabled(filter: Option<&arrow_array::BooleanArray>, row: usize) -> bool {
+        filter.is_none_or(|f| f.is_valid(row) && f.value(row))
+    }
+    fn take_prefix<T: Copy + Default>(values: &mut Vec<T>, count: usize) -> DfResult<Vec<T>> {
+        if count > values.len() { return Err(bad("call_stats emitted groups exceed state")); }
+        Ok(values.drain(..count).collect())
+    }
+    fn emit(&mut self, to: EmitTo) -> DfResult<(Vec<i64>, Vec<i64>, Vec<i64>)> {
+        let groups = match to { EmitTo::All => self.allele_number.len(), EmitTo::First(n) => n };
+        let cells = groups.checked_mul(self.n_alleles)
+            .ok_or_else(|| bad("call_stats grouped state size overflow"))?;
+        let allele_number = Self::take_prefix(&mut self.allele_number, groups)?;
+        let allele_counts = Self::take_prefix(&mut self.allele_counts, cells)?;
+        let homozygote_counts = Self::take_prefix(&mut self.homozygote_counts, cells)?;
+        Ok((allele_number, allele_counts, homozygote_counts))
+    }
+    fn list_i64(values: Vec<i64>, rows: usize, width: usize) -> ArrayRef {
+        Arc::new(ListArray::new(
+            field("item", DataType::Int64),
+            OffsetBuffer::from_lengths(std::iter::repeat_n(width, rows)),
+            Arc::new(Int64Array::from(values)),
+            None,
+        ))
+    }
+    fn merge_list(list: &ListArray, row: usize, width: usize, into: &mut [i64], label: &str) -> DfResult<()> {
+        if list.is_null(row) || list.value_length(row) as usize != width || into.len() != width {
+            return Err(bad(format!("call_stats {label} state has wrong allele count")));
+        }
+        let values = list.values().as_any().downcast_ref::<Int64Array>()
+            .ok_or_else(|| bad(format!("call_stats {label} state must contain int64")))?;
+        let offset = list.value_offset(row) as usize;
+        for (i, value) in into.iter_mut().enumerate() {
+            let source = offset + i;
+            if values.is_null(source) { return Err(bad("call_stats grouped state must be defined")); }
+            *value = value.checked_add(values.value(source))
+                .ok_or_else(|| bad("call_stats grouped state overflow"))?;
+        }
+        Ok(())
+    }
+}
+impl GroupsAccumulator for CallStatsGroups {
+    fn convert_to_state(&self, values: &[ArrayRef], filter: Option<&arrow_array::BooleanArray>) -> DfResult<Vec<ArrayRef>> {
+        let rows = values.first().map_or(0, |a| a.len());
+        let indices = (0..rows).collect::<Vec<_>>();
+        let mut groups = Self::new(self.n_alleles);
+        groups.update_batch(values, &indices, filter, rows)?;
+        groups.state(EmitTo::All)
+    }
+    fn update_batch(&mut self, values: &[ArrayRef], indices: &[usize], filter: Option<&arrow_array::BooleanArray>, total: usize) -> DfResult<()> {
+        let [input] = values else { return Err(bad("call_stats requires one input")); };
+        if input.len() != indices.len() || filter.is_some_and(|f| f.len() != indices.len()) {
+            return Err(bad("call_stats grouped row counts differ"));
+        }
+        self.ensure(total)?;
+        let packed = input.as_any().downcast_ref::<StructArray>().ok_or_else(|| bad("call_stats requires packed struct"))?;
+        let calls = packed_col(packed, "__vail_genomic_call")?.as_any().downcast_ref::<StructArray>().ok_or_else(|| bad("call_stats requires Call"))?;
+        let words = calls.column_by_name("__vail_call_word").ok_or_else(|| bad("Call missing packed word"))?.as_any().downcast_ref::<Int32Array>().ok_or_else(|| bad("Call word must be int32"))?;
+        let allele_counts = packed_col(packed, "__vail_genomic_alleles")?;
+        let word_type = words.data_type();
+        if word_type != &DataType::Int32 { return Err(bad("Call word must be int32")); }
+        for row in 0..packed.len() {
+            if !Self::enabled(filter, row) || packed.is_null(row) { continue; }
+            let n = match allele_counts.data_type() {
+                DataType::Int32 => {
+                    let a = allele_counts.as_any().downcast_ref::<Int32Array>().unwrap();
+                    if a.is_null(row) { continue; }
+                    a.value(row) as usize
+                }
+                DataType::List(_) => {
+                    let a = allele_counts.as_any().downcast_ref::<ListArray>().unwrap();
+                    if a.is_null(row) { continue; }
+                    a.value_length(row) as usize
+                }
+                _ => return Err(bad("invalid call_stats allele count type")),
+            };
+            if n > i32::MAX as usize { return Err(bad("call_stats allele count exceeds int32")); }
+            if n != self.n_alleles { return Err(bad("call_stats allele count differs from initializer")); }
+            if calls.is_null(row) { continue; }
+            if words.is_null(row) { return Err(bad("present Call has missing word")); }
+            let decoded = vail_ordering::call::decode(words.value(row)).map_err(bad)?;
+            let offset = self.group(indices[row])?;
+            for &allele in decoded.alleles() {
+                let allele = allele as usize;
+                if allele >= n { return Err(bad("call_stats allele index out of range")); }
+                let count = &mut self.allele_counts[offset + allele];
+                *count = count.checked_add(1).ok_or_else(|| bad("call_stats count overflow"))?;
+                self.allele_number[indices[row]] = self.allele_number[indices[row]].checked_add(1)
+                    .ok_or_else(|| bad("call_stats AN overflow"))?;
+            }
+            if decoded.alleles().len() == 2 && decoded.alleles()[0] == decoded.alleles()[1] {
+                let allele = decoded.alleles()[0] as usize;
+                let count = &mut self.homozygote_counts[offset + allele];
+                *count = count.checked_add(1).ok_or_else(|| bad("call_stats homozygote count overflow"))?;
+            }
+        }
+        Ok(())
+    }
+    fn evaluate(&mut self, to: EmitTo) -> DfResult<ArrayRef> {
+        let (an, ac, hom) = self.emit(to)?;
+        let rows = an.len();
+        let mut ac_list = ListBuilder::new(Int32Builder::new());
+        let mut af_list = ListBuilder::new(Float64Builder::new());
+        let mut hom_list = ListBuilder::new(Int32Builder::new());
+        for row in 0..rows {
+            let start = row * self.n_alleles;
+            for value in &ac[start..start + self.n_alleles] {
+                ac_list.values().append_value(i32::try_from(*value).map_err(|_| bad("call_stats AC overflow"))?);
+            }
+            ac_list.append(true);
+            for value in &hom[start..start + self.n_alleles] {
+                hom_list.values().append_value(i32::try_from(*value).map_err(|_| bad("call_stats homozygote count overflow"))?);
+            }
+            hom_list.append(true);
+            if an[row] == 0 { af_list.append(false); }
+            else {
+                for value in &ac[start..start + self.n_alleles] { af_list.values().append_value(*value as f64 / an[row] as f64); }
+                af_list.append(true);
+            }
+        }
+        let output = struct_type(vec![
+            ("AC", list_type(DataType::Int32)), ("AF", list_type(DataType::Float64)),
+            ("AN", DataType::Int32), ("homozygote_count", list_type(DataType::Int32)),
+        ]);
+        let fields = match output { DataType::Struct(fields) => fields, _ => unreachable!() };
+        let an = an.into_iter().map(|value| i32::try_from(value).map_err(|_| bad("call_stats AN overflow"))).collect::<DfResult<Vec<_>>>()?;
+        Ok(Arc::new(StructArray::try_new(fields, vec![
+            Arc::new(ac_list.finish()), Arc::new(af_list.finish()), Arc::new(Int32Array::from(an)), Arc::new(hom_list.finish()),
+        ], None)?))
+    }
+    fn size(&self) -> usize {
+        std::mem::size_of::<Self>() + self.allele_number.capacity() * 8
+            + (self.allele_counts.capacity() + self.homozygote_counts.capacity()) * 8
+    }
+    fn state(&mut self, to: EmitTo) -> DfResult<Vec<ArrayRef>> {
+        let (an, ac, hom) = self.emit(to)?;
+        let rows = an.len();
+        Ok(vec![Arc::new(Int64Array::from(an)), Self::list_i64(ac, rows, self.n_alleles), Self::list_i64(hom, rows, self.n_alleles)])
+    }
+    fn merge_batch(&mut self, states: &[ArrayRef], indices: &[usize], total: usize) -> DfResult<()> {
+        let [an, ac, hom] = states else { return Err(bad("call_stats state shape mismatch")); };
+        if an.len() != indices.len() || ac.len() != indices.len() || hom.len() != indices.len() { return Err(bad("call_stats grouped state rows differ")); }
+        let an = an.as_any().downcast_ref::<Int64Array>().ok_or_else(|| bad("call_stats AN state must be int64"))?;
+        let ac = ac.as_any().downcast_ref::<ListArray>().ok_or_else(|| bad("call_stats AC state must be a list"))?;
+        let hom = hom.as_any().downcast_ref::<ListArray>().ok_or_else(|| bad("call_stats homozygote state must be a list"))?;
+        self.ensure(total)?;
+        for row in 0..indices.len() {
+            let group = indices[row];
+            let offset = self.group(group)?;
+            if an.is_null(row) { return Err(bad("call_stats AN state must be defined")); }
+            self.allele_number[group] = self.allele_number[group].checked_add(an.value(row)).ok_or_else(|| bad("call_stats AN state overflow"))?;
+            Self::merge_list(ac, row, self.n_alleles, &mut self.allele_counts[offset..offset + self.n_alleles], "AC")?;
+            Self::merge_list(hom, row, self.n_alleles, &mut self.homozygote_counts[offset..offset + self.n_alleles], "homozygote")?;
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

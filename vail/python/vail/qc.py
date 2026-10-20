@@ -146,7 +146,7 @@ def hardy_weinberg_test(n_hom_ref, n_het, n_hom_var, one_sided=False):
     import vail as hl
     from .expressions import Expression, _merge_sources
 
-    args = [hl.int32(n_hom_ref), hl.int32(n_het), hl.int32(n_hom_var), hl.bool(one_sided)]
+    args = [hl.int64(n_hom_ref), hl.int64(n_het), hl.int64(n_hom_var), hl.bool(one_sided)]
     source = None
     for arg in args:
         source = _merge_sources(source, arg.source)
@@ -161,7 +161,7 @@ def _hwe_both(n_hom_ref, n_het, n_hom_var):
     """Share the exact-test distribution when QC needs both tail modes."""
     import vail as hl
     from .expressions import Expression, _merge_sources
-    args = [hl.int32(n) for n in (n_hom_ref, n_het, n_hom_var)]
+    args = [hl.int64(n) for n in (n_hom_ref, n_het, n_hom_var)]
     source = None
     for arg in args:
         source = _merge_sources(source, arg.source)
