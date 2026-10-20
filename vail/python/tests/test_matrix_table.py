@@ -1043,20 +1043,34 @@ def test_group_by_reductions_use_fused_per_list_groups():
     m = m.annotate_entries(
         x=hl.if_else(m.col_idx == 1, hl.missing(hl.tint32), m.row_idx * 10 + m.col_idx)
     )
-    rows = m.annotate_rows(
+    annotated_rows = m.annotate_rows(
         means=hl.agg.group_by(m.col_idx % 2, hl.agg.mean(m.x)),
         shifted=hl.agg.group_by(m.col_idx % 2, hl.agg.mean(m.x) + 2),
         counts=hl.agg.group_by(m.col_idx % 2, hl.agg.count()),
         positive=hl.agg.group_by(m.col_idx % 2, hl.agg.count_where(m.x > 0)),
-    ).rows().collect()
+        filtered=hl.agg.group_by(m.col_idx % 2, hl.agg.filter(m.x > 0, hl.agg.count())),
+        summary=hl.agg.group_by(
+            m.col_idx % 2,
+            hl.struct(total=hl.agg.sum(m.x), count=hl.agg.count()),
+        ),
+    )
+    rows = annotated_rows.rows().collect()
+    plan = repr(annotated_rows._mir.core._native.ir())
+    assert "__vail_collection_group_aggregate_multi__" in plan
     assert rows[0].means[0] == 1.0 and math.isnan(rows[0].means[1])
     assert rows[0].shifted[0] == 3.0 and math.isnan(rows[0].shifted[1])
     assert rows[0].counts == {0: 2, 1: 1}
     assert rows[0].positive == {0: 1, 1: 0}
+    assert rows[0].filtered == {0: 1, 1: 0}
+    assert rows[0].summary[0].total == 2 and rows[0].summary[0].count == 2
+    assert rows[0].summary[1].total == 0 and rows[0].summary[1].count == 1
     assert rows[1].means[0] == 11.0 and math.isnan(rows[1].means[1])
     assert rows[1].shifted[0] == 13.0 and math.isnan(rows[1].shifted[1])
     assert rows[1].counts == {0: 2, 1: 1}
     assert rows[1].positive == {0: 2, 1: 0}
+    assert rows[1].filtered == {0: 2, 1: 0}
+    assert rows[1].summary[0].total == 22 and rows[1].summary[0].count == 2
+    assert rows[1].summary[1].total == 0 and rows[1].summary[1].count == 1
 
     cols = m.annotate_cols(
         sums=hl.agg.group_by(m.row_idx % 2, hl.agg.sum(m.x)),

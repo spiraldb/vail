@@ -364,55 +364,106 @@ def reduce_list(
                 "mean", "stddev_pop", "fraction", "any", "all",
             }
             aggregate_nodes = []
-            has_nested_aggregation = False
+            has_unsupported_aggregation = False
 
-            def find_aggregates(value):
-                nonlocal has_nested_aggregation
+            def same_node(left, right):
+                if left is right:
+                    return True
+                try:
+                    return left == right
+                except (TypeError, ValueError):
+                    return False
+
+            def find_aggregates(value, filters=()):
+                nonlocal has_unsupported_aggregation
                 if isinstance(value, list):
                     for child in value:
-                        find_aggregates(child)
+                        find_aggregates(child, filters)
                     return
-                if not isinstance(value, dict):
+                if not isinstance(value, IR_NODE_TYPES):
                     return
                 op = value.get("op")
+                if op == "agg_filter":
+                    find_aggregates(value["body"], filters + (value["predicate"],))
+                    return
                 if op == "aggregate":
-                    aggregate_nodes.append(value)
+                    aggregate_nodes.append((value, filters))
+                    return
                 elif isinstance(op, str) and op.startswith("agg_"):
-                    has_nested_aggregation = True
+                    has_unsupported_aggregation = True
                 for child in value.values():
-                    find_aggregates(child)
+                    find_aggregates(child, filters)
 
             find_aggregates(body)
-            aggregate = aggregate_nodes[0] if len(aggregate_nodes) == 1 else None
-            reducer = aggregate.get("function") if aggregate is not None else None
-            if aggregate is not None and not has_nested_aggregation and reducer in fused_reducers:
-                aggregate_options = aggregate.get("options") or {}
-                value_type = type_from_wire(aggregate_options["__vail_result_type"])
-                values = keys if reducer == "count" else mapped(items, aggregate["value"])
-                grouped_type = tarray(tstruct(
-                    key=keys.dtype.element_type,
-                    value=value_type,
-                ))
+            supported_aggregates = [
+                (aggregate, filters)
+                for aggregate, filters in aggregate_nodes
+                if aggregate.get("function") in fused_reducers and len(filters) <= 1
+            ]
+            if (
+                supported_aggregates
+                and len(supported_aggregates) == len(aggregate_nodes)
+                and not has_unsupported_aggregation
+            ):
+                functions = []
+                arguments = [keys]
+                output_fields = {}
+                for index, (aggregate, filters) in enumerate(supported_aggregates):
+                    reducer = aggregate["function"]
+                    functions.append(reducer + ("_filtered" if filters else ""))
+                    if reducer != "count":
+                        arguments.append(mapped(items, aggregate["value"]))
+                    if filters:
+                        arguments.append(mapped(items, filters[0]))
+                    aggregate_options = aggregate.get("options") or {}
+                    output_fields[f"__agg_{index}"] = type_from_wire(
+                        aggregate_options["__vail_result_type"]
+                    )
+                multiple = len(supported_aggregates) > 1
+                if multiple:
+                    result_value_type = tstruct(**output_fields)
+                    function_name = (
+                        "__vail_collection_group_aggregate_multi__" + "__".join(functions)
+                    )
+                else:
+                    result_value_type = next(iter(output_fields.values()))
+                    function_name = "__vail_collection_group_aggregate_" + functions[0]
+                grouped_type = tarray(
+                    tstruct(key=keys.dtype.element_type, value=result_value_type)
+                )
                 groups = _function(
-                    "__vail_collection_group_aggregate_" + reducer,
-                    [keys, values],
+                    function_name,
+                    arguments,
                     grouped_type,
                 )
-                if body is aggregate:
+                if len(supported_aggregates) == 1 and same_node(body, supported_aggregates[0][0]):
                     return _cast(
                         groups,
-                        tdict(keys.dtype.element_type, value_type),
+                        tdict(keys.dtype.element_type, result_value_type),
                     ).to_ir()
 
                 def project(record):
                     bound[record.to_ir()["name"]] = record.dtype
+                    aggregate_fields = [
+                        (
+                            aggregate,
+                            (
+                                record.value[f"__agg_{index}"] if multiple else record.value
+                            ).to_ir(),
+                        )
+                        for index, (aggregate, _) in enumerate(supported_aggregates)
+                    ]
 
                     def substitute(value):
-                        if value is aggregate:
-                            return record.value.to_ir()
+                        if isinstance(value, IR_NODE_TYPES):
+                            for aggregate, replacement in aggregate_fields:
+                                if same_node(value, aggregate):
+                                    return replacement
+                        if isinstance(value, IR_NODE_TYPES) and value.get("op") == "agg_filter":
+                            return substitute(value["body"])
                         if isinstance(value, list):
                             return [substitute(child) for child in value]
-                        if isinstance(value, dict):
+                        if isinstance(value, IR_NODE_TYPES):
                             return {key: substitute(child) for key, child in value.items()}
                         return value
 
