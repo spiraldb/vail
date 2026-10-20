@@ -459,7 +459,7 @@ fn native_mean_partial_state_and_grouped_filter_merge() {
         .update_batch(&[values], &[0, 0, 1, 1], Some(&filter), 3)
         .unwrap();
     let partial = grouped.state(EmitTo::All).unwrap();
-    let mut merged = udf.create_groups_accumulator(args).unwrap();
+    let mut merged = udf.create_groups_accumulator(args.clone()).unwrap();
     merged.merge_batch(&partial, &[0, 1, 2], 3).unwrap();
     let result = merged.evaluate(EmitTo::All).unwrap();
     let values = result.as_any().downcast_ref::<Float64Array>().unwrap();
@@ -538,7 +538,7 @@ fn linreg_uses_native_grouped_accumulator_with_filtered_partial_state() {
         .update_batch(&[values.clone()], &[0, 0, 0, 1], Some(&filter), 3)
         .unwrap();
     let state = grouped.state(EmitTo::First(2)).unwrap();
-    let mut merged = udf.create_groups_accumulator(args).unwrap();
+    let mut merged = udf.create_groups_accumulator(args.clone()).unwrap();
     merged.merge_batch(&state, &[0, 1], 3).unwrap();
     let rest = grouped.state(EmitTo::All).unwrap();
     merged.merge_batch(&rest, &[0], 3).unwrap();
