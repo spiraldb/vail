@@ -358,6 +358,23 @@ fn legacy_genomic_call_stats_alias_uses_batched_call_list_reducer() {
         ]
         .into(),
     );
+    let contiguous_slice = lists.slice(1, 1);
+    let contiguous_result = reduce_legacy_call_stats(
+        &contiguous_slice,
+        Arc::new(Int32Array::from(vec![3])),
+        output.clone(),
+    )
+    .unwrap();
+    let contiguous_an = contiguous_result
+        .as_any()
+        .downcast_ref::<StructArray>()
+        .unwrap()
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!(contiguous_an.value(0), 2);
     let result =
         reduce_legacy_call_stats(&lists, Arc::new(Int32Array::from(vec![2, 3, 2])), output)
             .unwrap();

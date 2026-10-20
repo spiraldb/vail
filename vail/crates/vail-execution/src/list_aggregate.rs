@@ -203,10 +203,18 @@ fn pack_legacy_call_lists(lists: &ListArray, initializers: &dyn Array) -> Result
         ));
     }
 
-    let offsets = lists.value_offsets();
     let mut lengths = Vec::with_capacity(lists.len());
     let mut call_indices = Vec::new();
     let mut allele_counts = Vec::new();
+    let offsets = lists.value_offsets();
+    let gather = (0..lists.len()).any(|row| lists.is_null(row) && offsets[row] != offsets[row + 1]);
+    let child_start = offsets.first().copied().unwrap_or(0) as usize;
+    let child_end = offsets.last().copied().unwrap_or(0) as usize;
+    if child_start > child_end || child_end > calls.len() {
+        return Err(exec_datafusion_err!(
+            "call_stats list offsets exceed child values"
+        ));
+    }
     for row in 0..lists.len() {
         let n = i32::try_from(initializer_n(initializers, row)?)
             .map_err(|_| exec_datafusion_err!("call_stats allele count exceeds int32"))?;
@@ -224,15 +232,21 @@ fn pack_legacy_call_lists(lists: &ListArray, initializers: &dyn Array) -> Result
         }
         lengths.push(end - start);
         for index in start..end {
-            call_indices.push(
-                u32::try_from(index)
-                    .map_err(|_| exec_datafusion_err!("call_stats child offset exceeds uint32"))?,
-            );
+            if gather {
+                call_indices.push(
+                    u32::try_from(index).map_err(|_| {
+                        exec_datafusion_err!("call_stats child offset exceeds uint32")
+                    })?,
+                );
+            }
             allele_counts.push(n);
         }
     }
-    let selected_calls =
-        arrow_select::take::take(calls.as_ref(), &UInt32Array::from(call_indices), None)?;
+    let selected_calls = if gather {
+        arrow_select::take::take(calls.as_ref(), &UInt32Array::from(call_indices), None)?
+    } else {
+        calls.slice(child_start, child_end - child_start)
+    };
     let packed_type = packed_call_stats_input(call_type);
     let packed_fields = match &packed_type {
         DataType::Struct(fields) => fields.clone(),
@@ -471,10 +485,8 @@ impl ScalarUDFImpl for ListAggregate {
             };
         }
         if self.function == "stddev_pop" {
-            let valid_rows = (0..rows)
-                .filter(|&row| !lists.is_null(row))
-                .collect::<Vec<_>>();
-            if valid_rows.is_empty() {
+            let valid_count = (0..rows).filter(|&row| !lists.is_null(row)).count();
+            if valid_count == 0 {
                 let result = new_null_array(&output_type, rows);
                 return if scalar {
                     Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
@@ -494,19 +506,30 @@ impl ScalarUDFImpl for ListAggregate {
             update_grouped_lists(
                 groups.as_mut(),
                 lists,
-                valid_rows.iter().copied(),
-                valid_rows.len(),
+                (0..rows).filter(|&row| !lists.is_null(row)),
+                valid_count,
                 &input_type,
             )?;
             let batch = groups.evaluate(datafusion_expr::EmitTo::All)?;
-            let nulls = new_null_array(&output_type, rows);
+            if valid_count == rows {
+                return if scalar {
+                    Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                        &batch, 0,
+                    )?))
+                } else {
+                    Ok(ColumnarValue::Array(batch))
+                };
+            }
+            let nulls = new_null_array(&output_type, 1);
+            let mut group = 0;
             let mapping = (0..rows)
                 .map(|row| {
                     if lists.is_null(row) {
                         (0, 0)
                     } else {
-                        let group = valid_rows.partition_point(|&valid| valid < row);
-                        (1, group)
+                        let current = group;
+                        group += 1;
+                        (1, current)
                     }
                 })
                 .collect::<Vec<_>>();
