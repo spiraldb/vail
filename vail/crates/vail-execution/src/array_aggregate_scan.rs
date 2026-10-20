@@ -5,8 +5,7 @@ use crate::expressions::ExprError;
 use arrow_array::{Array, BooleanArray, ListArray, new_empty_array};
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field};
-use arrow_select::concat::concat;
-use datafusion_common::{DataFusionError, Result};
+use datafusion_common::{DataFusionError, Result, ScalarValue};
 use datafusion_expr::{ColumnarValue, ScalarUDF, Signature, Volatility};
 use std::sync::Arc;
 
@@ -115,7 +114,7 @@ fn scan_lists(
         let mut accumulator = accumulator()?;
         lengths.push(input.len());
         for index in 0..input.len() {
-            outputs.push(accumulator.evaluate()?.to_array_of_size(1)?);
+            outputs.push(accumulator.evaluate()?);
             let count_selected = !count_where
                 || (input.data_type() == &DataType::Boolean
                     && input
@@ -130,7 +129,7 @@ fn scan_lists(
     let flat = if outputs.is_empty() {
         new_empty_array(output_element)
     } else {
-        concat(&outputs.iter().map(|a| a.as_ref()).collect::<Vec<_>>())?
+        ScalarValue::iter_to_array(outputs)?
     };
     let field = Arc::new(Field::new_list_field(output_element.clone(), true));
     Ok(Arc::new(ListArray::try_new(

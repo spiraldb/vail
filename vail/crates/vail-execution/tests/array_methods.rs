@@ -247,3 +247,88 @@ fn ndarray_constructor_checks_numeric_input_and_declared_rank() {
         assert_eq!(lower(&expression, &schema).is_ok(), valid);
     }
 }
+
+#[test]
+fn list_scan_builds_primitive_and_collection_prefixes_with_masks() {
+    use arrow_array::{Int64Array, types::Int64Type};
+    use arrow_schema::DataType;
+    use vail_execution::expressions::{PrimitiveType, Type};
+    let values = Arc::new(
+        ListArray::from_iter_primitive::<Int64Type, _, _>([
+            Some(vec![Some(99)]),
+            Some(vec![Some(2), None, Some(4), Some(8)]),
+            Some(vec![]),
+            None,
+        ])
+        .slice(1, 3),
+    );
+    let predicates = Arc::new(ListArray::new(
+        Arc::new(Field::new_list_field(DataType::Boolean, true)),
+        OffsetBuffer::from_lengths([4, 0, 0]),
+        Arc::new(BooleanArray::from(vec![
+            Some(true),
+            Some(true),
+            None,
+            Some(true),
+        ])),
+        Some(NullBuffer::from(vec![true, true, false])),
+    ));
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("values", values.data_type().clone(), true),
+        Field::new("predicate", predicates.data_type().clone(), true),
+    ]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![values, predicates]).unwrap();
+    let integer = Type::Primitive(PrimitiveType::Int64);
+    for function in ["sum", "collect"] {
+        let element = if function == "collect" {
+            Type::Array {
+                array: Box::new(integer.clone()),
+            }
+        } else {
+            integer.clone()
+        };
+        let expr = Expr::ArrayAggregateScan {
+            function: function.into(),
+            value: column("values"),
+            predicate: column("predicate"),
+            options: serde_json::Value::Null,
+            dtype: Type::Array {
+                array: Box::new(element),
+            },
+        };
+        let result = lower(&expr, &schema)
+            .unwrap()
+            .evaluate(&batch)
+            .unwrap()
+            .into_array(3)
+            .unwrap();
+        let lists = result.as_any().downcast_ref::<ListArray>().unwrap();
+        assert_eq!(lists.value(1).len(), 0);
+        assert!(lists.is_null(2));
+        let prefixes = lists.value(0);
+        if function == "sum" {
+            assert_eq!(
+                prefixes.as_any().downcast_ref::<Int64Array>().unwrap(),
+                &Int64Array::from(vec![0, 2, 2, 2])
+            );
+        } else {
+            let prefixes = prefixes.as_any().downcast_ref::<ListArray>().unwrap();
+            let expected = [
+                vec![],
+                vec![Some(2)],
+                vec![Some(2), None],
+                vec![Some(2), None],
+            ];
+            for (row, expected) in expected.into_iter().enumerate() {
+                assert_eq!(
+                    prefixes
+                        .value(row)
+                        .as_any()
+                        .downcast_ref::<Int64Array>()
+                        .unwrap(),
+                    &Int64Array::from(expected)
+                );
+            }
+        }
+    }
+}
