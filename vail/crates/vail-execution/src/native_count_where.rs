@@ -127,20 +127,11 @@ impl GroupsAccumulator for TrueCountGroups {
     fn state(&mut self, emit: EmitTo) -> Result<Vec<ArrayRef>> {
         self.inner.state(emit)
     }
-    fn merge_batch(
-        &mut self,
-        states: &[ArrayRef],
-        groups: &[usize],
-        filter: Option<&BooleanArray>,
-        n: usize,
-    ) -> Result<()> {
-        self.inner.merge_batch(states, groups, filter, n)
+    fn merge_batch(&mut self, states: &[ArrayRef], groups: &[usize], n: usize) -> Result<()> {
+        self.inner.merge_batch(states, groups, n)
     }
     fn size(&self) -> usize {
         std::mem::size_of_val(self) + self.inner.size()
-    }
-    fn supports_convert_to_state(&self) -> bool {
-        self.inner.supports_convert_to_state()
     }
     fn convert_to_state(
         &self,

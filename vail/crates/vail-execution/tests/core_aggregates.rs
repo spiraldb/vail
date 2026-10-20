@@ -1469,7 +1469,7 @@ fn direct_count_where_native_groups_masks_hidden_nulls_and_merges_states() {
         .convert_to_state(&[input.clone()], Some(&filter))
         .unwrap();
     let mut merged = aggregate.create_groups_accumulator().unwrap();
-    merged.merge_batch(&state, &[0, 0, 1, 2], None, 3).unwrap();
+    merged.merge_batch(&state, &[0, 0, 1, 2], 3).unwrap();
     assert_eq!(
         merged
             .evaluate(EmitTo::All)
