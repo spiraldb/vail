@@ -83,8 +83,13 @@ async fn coordinate_boolean_sum_uses_int64_empty_identity() {
     )]));
     let lists = Arc::new(ListArray::new(
         Arc::new(Field::new_list_field(DataType::Boolean, true)),
-        OffsetBuffer::from_lengths([1, 2]),
-        Arc::new(BooleanArray::from(vec![Some(true), Some(false), None])),
+        OffsetBuffer::from_lengths([2, 2]),
+        Arc::new(BooleanArray::from(vec![
+            Some(true),
+            None,
+            Some(false),
+            None,
+        ])),
         None,
     ));
     let batch = RecordBatch::try_new(schema, vec![lists]).unwrap();
@@ -106,6 +111,7 @@ async fn coordinate_boolean_sum_uses_int64_empty_identity() {
             .downcast_ref::<Int64Array>()
             .unwrap()
             .values(),
-        &[1]
+        &[1, 0],
+        "the missing-only coordinate has a typed zero identity"
     );
 }

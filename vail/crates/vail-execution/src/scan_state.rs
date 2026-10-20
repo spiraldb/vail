@@ -1,6 +1,8 @@
 //! Parallel scans expose and combine existing DataFusion accumulator states.
 //! These adapters do not implement aggregate algorithms.
-use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Int64Array, StructArray};
+use arrow_array::{
+    Array, ArrayRef, BooleanArray, Datum, Float64Array, Int64Array, Scalar, StructArray,
+};
 use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, FieldRef, Fields, Schema};
 use datafusion_common::{DataFusionError, Result, ScalarValue};
