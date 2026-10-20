@@ -1721,3 +1721,61 @@ fn all_rejects_non_boolean_declared_type_and_keeps_boolean_signature() {
         datafusion_common::ScalarValue::Boolean(Some(true))
     );
 }
+
+#[test]
+fn direct_count_where_native_groups_masks_hidden_nulls_and_merges_states() {
+    use arrow_buffer::NullBuffer;
+    let udf =
+        vail_execution::aggregates::aggregate_udf("count_where", Some(&DataType::Boolean)).unwrap();
+    let schema = Arc::new(Schema::new(vec![Field::new(
+        "value",
+        DataType::Boolean,
+        true,
+    )]));
+    let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("value", 0))])
+        .schema(schema)
+        .alias("true_count")
+        .build()
+        .unwrap();
+    let input = Arc::new(
+        BooleanArray::new(
+            vec![false, true, true, false, true].into(),
+            Some(NullBuffer::from(vec![true, true, false, true, true])),
+        )
+        .slice(1, 4),
+    ) as ArrayRef;
+    let filter = BooleanArray::from(vec![Some(true), Some(true), None, Some(false)]);
+    let mut groups = aggregate.create_groups_accumulator().unwrap();
+    groups
+        .update_batch(&[input.clone()], &[0, 0, 1, 2], Some(&filter), 3)
+        .unwrap();
+    let first = groups.evaluate(EmitTo::First(1)).unwrap();
+    assert_eq!(
+        first.as_any().downcast_ref::<Int64Array>().unwrap(),
+        &Int64Array::from(vec![1])
+    );
+    let state = groups.state(EmitTo::All).unwrap();
+    let mut scalar = aggregate.create_accumulator().unwrap();
+    scalar.merge_batch(&state).unwrap();
+    assert_eq!(scalar.evaluate().unwrap(), ScalarValue::Int64(Some(0)));
+    let state = groups
+        .convert_to_state(&[input.clone()], Some(&filter))
+        .unwrap();
+    let mut merged = aggregate.create_groups_accumulator().unwrap();
+    merged.merge_batch(&state, &[0, 0, 1, 2], 3).unwrap();
+    assert_eq!(
+        merged
+            .evaluate(EmitTo::All)
+            .unwrap()
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap(),
+        &Int64Array::from(vec![1, 0, 0])
+    );
+    let mut scalar = aggregate.create_accumulator().unwrap();
+    scalar.update_batch(&[input.clone()]).unwrap();
+    assert_eq!(scalar.evaluate().unwrap(), ScalarValue::Int64(Some(2)));
+    assert!(scalar.supports_retract_batch());
+    scalar.retract_batch(&[input.slice(0, 1)]).unwrap();
+    assert_eq!(scalar.evaluate().unwrap(), ScalarValue::Int64(Some(1)));
+}
