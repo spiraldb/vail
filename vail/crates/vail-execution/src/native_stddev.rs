@@ -46,6 +46,18 @@ fn nonfinite_count(values: &Float64Array) -> Result<u64> {
     .map_err(|_| DataFusionError::Execution("stddev_pop nonfinite count exceeds uint64".into()))
 }
 
+fn mask_nonfinite(values: &[ArrayRef]) -> Vec<ArrayRef> {
+    let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
+    if input.iter().flatten().all(|value| value.is_finite()) {
+        return values.to_vec();
+    }
+    vec![Arc::new(Float64Array::from_iter(
+        input
+            .iter()
+            .map(|value| value.filter(|value| value.is_finite())),
+    ))]
+}
+
 fn state_flag(states: &[ArrayRef]) -> Result<&UInt64Array> {
     states
         .get(3)
@@ -124,7 +136,7 @@ impl Accumulator for NativeStddevAccumulator {
             .ok_or_else(|| {
                 DataFusionError::Execution("stddev_pop nonfinite count exceeds uint64".into())
             })?;
-        self.inner.update_batch(&values)
+        self.inner.update_batch(&mask_nonfinite(&values))
     }
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
@@ -166,7 +178,7 @@ impl Accumulator for NativeStddevAccumulator {
         let values = cast_values(values)?;
         let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
         let nonfinite = nonfinite_count(input)?;
-        self.inner.retract_batch(&values)?;
+        self.inner.retract_batch(&mask_nonfinite(&values))?;
         self.nonfinite_count = self.nonfinite_count.saturating_sub(nonfinite);
         Ok(())
     }
@@ -213,18 +225,18 @@ impl GroupsAccumulator for NativeStddevGroups {
             }
         }
         self.inner
-            .update_batch(&casted, groups, filter, total_groups)
+            .update_batch(&mask_nonfinite(&casted), groups, filter, total_groups)
     }
 
     fn evaluate(&mut self, emit_to: EmitTo) -> Result<ArrayRef> {
         let values = self.inner.evaluate(emit_to)?;
-        let nonfinite = self.emit_nonfinite(values.len(), emit_to)?;
-        let values = values.as_any().downcast_ref::<Float64Array>().unwrap();
-        if values.null_count() == 0 && nonfinite.iter().all(|&count| count == 0) {
-            return Ok(Arc::new(values.clone()));
+        let native_values = values.as_any().downcast_ref::<Float64Array>().unwrap();
+        let nonfinite = self.emit_nonfinite(native_values.len(), emit_to)?;
+        if native_values.null_count() == 0 && nonfinite.iter().all(|&count| count == 0) {
+            return Ok(values);
         }
         Ok(Arc::new(Float64Array::from_iter_values(
-            values.iter().zip(nonfinite).map(|(value, count)| {
+            native_values.iter().zip(nonfinite).map(|(value, count)| {
                 if count != 0 {
                     f64::NAN
                 } else {
@@ -237,7 +249,7 @@ impl GroupsAccumulator for NativeStddevGroups {
     fn state(&mut self, emit_to: EmitTo) -> Result<Vec<ArrayRef>> {
         let mut states = self.inner.state(emit_to)?;
         let count = states.first().map_or(0, |array| array.len());
-        states.push(Arc::new(UInt64Array::from_iter_values(
+        states.push(Arc::new(UInt64Array::from(
             self.emit_nonfinite(count, emit_to)?,
         )));
         Ok(states)
@@ -278,7 +290,9 @@ impl GroupsAccumulator for NativeStddevGroups {
         filter: Option<&arrow_array::BooleanArray>,
     ) -> Result<Vec<ArrayRef>> {
         let casted = cast_values(values)?;
-        let mut states = self.inner.convert_to_state(&casted, filter)?;
+        let mut states = self
+            .inner
+            .convert_to_state(&mask_nonfinite(&casted), filter)?;
         let input = casted[0].as_any().downcast_ref::<Float64Array>().unwrap();
         let nonfinite = input.iter().enumerate().map(|(row, value)| {
             u64::from(filter_passes(filter, row) && value.is_some_and(|value| !value.is_finite()))
@@ -299,9 +313,11 @@ impl NativeStddevGroups {
                 "stddev_pop group state is shorter than emitted output".into(),
             ));
         }
-        let values: Vec<_> = self.nonfinite.drain(..count).collect();
-        if matches!(emit_to, EmitTo::All) {
-            self.nonfinite.clear();
+        let values = emit_to.take_needed(&mut self.nonfinite);
+        if values.len() != count {
+            return Err(DataFusionError::Execution(
+                "stddev_pop emitted group count does not match native output".into(),
+            ));
         }
         Ok(values)
     }

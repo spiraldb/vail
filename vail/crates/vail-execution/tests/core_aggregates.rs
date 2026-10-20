@@ -342,6 +342,29 @@ async fn population_stdev_maps_empty_and_nonfinite_results_to_nan() {
     }
 }
 
+#[test]
+fn population_stdev_retracts_nonfinite_values_without_poisoning_native_state() {
+    let schema = Schema::new(vec![Field::new("value", DataType::Float64, true)]);
+    let udf =
+        vail_execution::aggregates::aggregate_udf("stddev_pop", Some(&DataType::Float64)).unwrap();
+    let mut accumulator = min_accumulator(&udf, &schema);
+    assert!(accumulator.supports_retract_batch());
+
+    let input: ArrayRef = Arc::new(Float64Array::from(vec![
+        Some(f64::INFINITY),
+        Some(1.0),
+        Some(2.0),
+    ]));
+    accumulator.update_batch(&[input]).unwrap();
+    let retract: ArrayRef = Arc::new(Float64Array::from(vec![Some(f64::INFINITY)]));
+    accumulator.retract_batch(&[retract]).unwrap();
+
+    assert_eq!(
+        accumulator.evaluate().unwrap(),
+        ScalarValue::Float64(Some(0.5))
+    );
+}
+
 #[tokio::test]
 async fn native_mean_casts_numeric_inputs_and_preserves_empty_nan() {
     for (input, expected) in [
