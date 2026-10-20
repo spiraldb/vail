@@ -203,43 +203,50 @@ fn sum_and_product_keep_integer_wrapping_semantics() {
 #[test]
 fn float_extrema_match_native_datafusion_on_nan_signed_zero_and_infinities() {
     use datafusion_physical_expr::{aggregate::AggregateExprBuilder, expressions::Column};
-    let values = Arc::new(Float64Array::from(vec![
-        Some(f64::NAN),
-        Some(-0.0),
-        None,
-        Some(0.0),
-        Some(f64::INFINITY),
-        Some(f64::NEG_INFINITY),
-    ])) as ArrayRef;
-    let lists = ListArray::new(
-        Arc::new(Field::new("item", DataType::Float64, true)),
-        OffsetBuffer::from_lengths([values.len()]),
-        values.clone(),
-        None,
-    );
-    for function in ["min", "max"] {
-        let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Float64, true)]));
-        let udf = if function == "min" {
-            datafusion_functions_aggregate::min_max::min_udaf()
-        } else {
-            datafusion_functions_aggregate::min_max::max_udaf()
-        };
-        let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("x", 0))])
-            .schema(schema)
-            .alias("native")
-            .build()
-            .unwrap();
-        let mut accumulator = aggregate.create_accumulator().unwrap();
-        accumulator.update_batch(&[values.clone()]).unwrap();
-        let native = accumulator.evaluate().unwrap();
-        let direct = reduce(&lists, function).unwrap().unwrap();
-        let actual = datafusion_common::ScalarValue::try_from_array(&direct, 0).unwrap();
-        match (native, actual) {
-            (
-                datafusion_common::ScalarValue::Float64(Some(a)),
-                datafusion_common::ScalarValue::Float64(Some(b)),
-            ) => assert_eq!(a.to_bits(), b.to_bits()),
-            other => panic!("unexpected extrema {other:?}"),
+    for values in [
+        vec![
+            Some(f64::NAN),
+            Some(-0.0),
+            None,
+            Some(0.0),
+            Some(f64::INFINITY),
+            Some(f64::NEG_INFINITY),
+        ],
+        vec![Some(-0.0), Some(0.0)],
+        vec![Some(0.0), Some(-0.0)],
+        vec![Some(f64::NAN)],
+    ] {
+        let values = Arc::new(Float64Array::from(values)) as ArrayRef;
+        let lists = ListArray::new(
+            Arc::new(Field::new("item", DataType::Float64, true)),
+            OffsetBuffer::from_lengths([values.len()]),
+            values.clone(),
+            None,
+        );
+        for function in ["min", "max"] {
+            let schema = Arc::new(Schema::new(vec![Field::new("x", DataType::Float64, true)]));
+            let udf = if function == "min" {
+                datafusion_functions_aggregate::min_max::min_udaf()
+            } else {
+                datafusion_functions_aggregate::min_max::max_udaf()
+            };
+            let aggregate = AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("x", 0))])
+                .schema(schema)
+                .alias("native")
+                .build()
+                .unwrap();
+            let mut accumulator = aggregate.create_accumulator().unwrap();
+            accumulator.update_batch(&[values.clone()]).unwrap();
+            let native = accumulator.evaluate().unwrap();
+            let direct = reduce(&lists, function).unwrap().unwrap();
+            let actual = datafusion_common::ScalarValue::try_from_array(&direct, 0).unwrap();
+            match (native, actual) {
+                (
+                    datafusion_common::ScalarValue::Float64(Some(a)),
+                    datafusion_common::ScalarValue::Float64(Some(b)),
+                ) => assert_eq!(a.to_bits(), b.to_bits()),
+                other => panic!("unexpected extrema {other:?}"),
+            }
         }
     }
 }
