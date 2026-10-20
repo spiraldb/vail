@@ -259,7 +259,7 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                 }
                 return Ok(Built::identity(udf, Expr::Struct { fields }, packed_type));
             }
-            let argument = value.as_deref().cloned().unwrap_or(Expr::Literal {
+            let mut argument = value.as_deref().cloned().unwrap_or(Expr::Literal {
                 dtype: Type::Primitive(PrimitiveType::Int64),
                 value: serde_json::json!(1),
             });
@@ -272,6 +272,38 @@ fn node(expr: &Expr, context: &Context<'_>) -> Result<Built> {
                 .get("__vail_exploded")
                 .and_then(serde_json::Value::as_bool)
                 == Some(true);
+            if function == "count_where" {
+                if exploded {
+                    let parameter = symbol();
+                    let item = Expr::LambdaVariable {
+                        name: parameter.clone(),
+                        dtype: Some(Type::Primitive(PrimitiveType::Bool)),
+                    };
+                    let normalized = Expr::IfElse {
+                        condition: Arc::new(item.clone()),
+                        consequent: Arc::new(item),
+                        alternate: Arc::new(Expr::Literal {
+                            dtype: Type::Primitive(PrimitiveType::Bool),
+                            value: serde_json::Value::Null,
+                        }),
+                    };
+                    argument = Expr::ArrayMap {
+                        value: Arc::new(argument),
+                        parameter,
+                        body: Arc::new(normalized),
+                    };
+                } else {
+                    let predicate = argument.clone();
+                    argument = Expr::IfElse {
+                        condition: Arc::new(predicate.clone()),
+                        consequent: Arc::new(predicate),
+                        alternate: Arc::new(Expr::Literal {
+                            dtype: Type::Primitive(PrimitiveType::Bool),
+                            value: serde_json::Value::Null,
+                        }),
+                    };
+                }
+            }
             let mut input = context.dtype(&argument)?.to_arrow()?;
             if exploded {
                 let DataType::List(element) = &input else {

@@ -644,7 +644,7 @@ fn lower_scans(
                 value: value.as_deref().cloned(),
                 options: serde_json::Value::Object(options),
             };
-            let logical_value = match value {
+            let mut logical_value = match value {
                 Some(value) => vail_execution::logical_expr::lower_logical_with_bindings(
                     value,
                     input.schema(),
@@ -661,6 +661,15 @@ fn lower_scans(
                 ),
                 None => None,
             };
+            if function == "count_where" {
+                if dtype != Some(DataType::Boolean) {
+                    return Err(TableError::Invalid(
+                        "count_where requires Boolean input".into(),
+                    ));
+                }
+                logical_value = datafusion_functions::core::nullif()
+                    .call(vec![logical_value, datafusion_expr::lit(false)]);
+            }
             let udf = crate::logical_aggregation::factory(&reducer, dtype.as_ref())?;
             let mut window = WindowFunction::new(
                 WindowFunctionDefinition::AggregateUDF(udf),

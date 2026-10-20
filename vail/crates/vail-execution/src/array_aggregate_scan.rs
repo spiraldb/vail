@@ -21,6 +21,25 @@ pub fn make_udf(
         ));
     };
     let count_where = function == "count_where";
+    if count_where {
+        if element.data_type() != &DataType::Boolean {
+            return Err(ExprError::Invalid(
+                "count_where requires Boolean input".into(),
+            ));
+        }
+        let mut contract_options = options
+            .as_object()
+            .cloned()
+            .ok_or_else(|| ExprError::Invalid("aggregate options must be an object".into()))?;
+        contract_options.remove("__vail_result_type");
+        let input_type = crate::expressions::Type::from_arrow(element.data_type())?;
+        crate::aggregate_contract::result_type(
+            function,
+            Some(&input_type),
+            &serde_json::Value::Object(contract_options),
+            &[],
+        )?;
+    }
     let aggregate = if count_where {
         datafusion_functions_aggregate::count::count_udaf()
     } else {

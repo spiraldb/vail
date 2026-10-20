@@ -107,7 +107,16 @@ pub(crate) fn factory(reducer: &Reducer, dtype: Option<&DataType>) -> Result<Arc
         &reducer.options,
         &[],
     )?;
-    let udf = factory_inner(reducer, dtype)?;
+    let udf = if reducer.function == "count_where" {
+        if dtype != Some(&DataType::Boolean) {
+            return Err(TableError::Invalid(
+                "count_where requires Boolean input".into(),
+            ));
+        }
+        datafusion_functions_aggregate::count::count_udaf()
+    } else {
+        factory_inner(reducer, dtype)?
+    };
     let arguments = dtype.into_iter().cloned().collect::<Vec<_>>();
     let actual = vail_execution::expressions::Type::from_arrow(&udf.return_type(&arguments)?)?;
     if actual != expected {

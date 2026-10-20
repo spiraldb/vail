@@ -38,9 +38,13 @@ class AggregateTests(unittest.TestCase):
             hl.agg.explode(lambda x: hl.agg.sum(x), set_table.xs)), 6)
 
     def test_count_where_uses_native_grouped_count_semantics(self):
-        grouped = self.table.group_by(k=self.table.x % 2).aggregate(
-            n=hl.agg.count_where(self.table.keep))
-        assert {row.k: row.n for row in grouped.collect()} == {1: 1, 0: 0, None: 1}
+        table = hl.Table.parallelize(
+            [{"k": "mixed", "b": True}, {"k": "mixed", "b": False},
+             {"k": "mixed", "b": None}, {"k": "empty", "b": None},
+             {"k": "empty", "b": False}],
+            schema=hl.tstruct(k=hl.tstr, b=hl.tbool), n_partitions=3)
+        grouped = table.group_by(k=table.k).aggregate(n=hl.agg.count_where(table.b))
+        assert {row.k: row.n for row in grouped.collect()} == {"mixed": 1, "empty": 0}
 
     def test_reducers_on_empty_and_all_missing_tables(self):
         for table, expected_count, expected_values, expected_fraction in (
