@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 use arrow_array::{
     new_empty_array, new_null_array, Array, ArrayRef, BooleanArray, Int32Array, Int64Array,
-    ListArray, StructArray,
+    ListArray, StructArray, UInt32Array,
 };
 use arrow_buffer::NullBuffer;
 use arrow_schema::{DataType, Field, Schema};
@@ -153,6 +153,105 @@ fn configured(
     };
     crate::reducer::configured_udaf(function, Some(input), &options)
         .map_err(|error| plan_datafusion_err!("{error}"))
+}
+
+fn packed_call_stats_input(call_type: &DataType) -> DataType {
+    DataType::Struct(
+        vec![
+            Arc::new(Field::new("__vail_genomic_call", call_type.clone(), true)),
+            Arc::new(Field::new("__vail_genomic_alleles", DataType::Int32, true)),
+        ]
+        .into(),
+    )
+}
+
+pub(crate) fn legacy_call_stats() -> std::result::Result<
+    (
+        Arc<datafusion_expr::ScalarUDF>,
+        Vec<crate::expressions::Type>,
+        crate::expressions::Type,
+    ),
+    crate::expressions::ExprError,
+> {
+    use crate::expressions::{ExprError, PrimitiveType, Type};
+
+    let calls = Type::Array {
+        array: Box::new(Type::Primitive(PrimitiveType::Call)),
+    };
+    let function = udf("__vail_list_reduce_call_stats").expect("registered call_stats reducer");
+    let result_type = function
+        .return_type(&[calls.to_arrow()?, DataType::Int32])
+        .map_err(|error| ExprError::Invalid(error.to_string()))?;
+    Ok((
+        function,
+        vec![calls, Type::Primitive(PrimitiveType::Int32)],
+        Type::from_arrow(&result_type)?,
+    ))
+}
+
+fn pack_legacy_call_lists(lists: &ListArray, initializers: &dyn Array) -> Result<ListArray> {
+    let calls = lists.values();
+    let call_type = calls.data_type();
+    if !vail_ordering::same_layout(call_type, &crate::calls::storage_type()) {
+        return Err(plan_datafusion_err!(
+            "call_stats list input requires Call values"
+        ));
+    }
+    if initializers.len() != lists.len() || initializers.data_type() != &DataType::Int32 {
+        return Err(plan_datafusion_err!(
+            "call_stats list initializer length or type mismatch"
+        ));
+    }
+
+    let offsets = lists.value_offsets();
+    let mut lengths = Vec::with_capacity(lists.len());
+    let mut call_indices = Vec::new();
+    let mut allele_counts = Vec::new();
+    for row in 0..lists.len() {
+        let n = i32::try_from(initializer_n(initializers, row)?)
+            .map_err(|_| exec_datafusion_err!("call_stats allele count exceeds int32"))?;
+        if lists.is_null(row) {
+            // The legacy adapter treated a missing call array as an empty array.
+            lengths.push(0);
+            continue;
+        }
+        let start = offsets[row] as usize;
+        let end = offsets[row + 1] as usize;
+        if end > calls.len() || start > end {
+            return Err(exec_datafusion_err!(
+                "call_stats list offsets exceed child values"
+            ));
+        }
+        lengths.push(end - start);
+        for index in start..end {
+            call_indices.push(
+                u32::try_from(index)
+                    .map_err(|_| exec_datafusion_err!("call_stats child offset exceeds uint32"))?,
+            );
+            allele_counts.push(n);
+        }
+    }
+    let selected_calls =
+        arrow_select::take::take(calls.as_ref(), &UInt32Array::from(call_indices), None)?;
+    let packed_type = packed_call_stats_input(call_type);
+    let packed_fields = match &packed_type {
+        DataType::Struct(fields) => fields.clone(),
+        _ => unreachable!(),
+    };
+    let packed = Arc::new(StructArray::new(
+        packed_fields,
+        vec![
+            selected_calls.clone(),
+            Arc::new(Int32Array::from(allele_counts)),
+        ],
+        selected_calls.nulls().cloned(),
+    ));
+    Ok(ListArray::new(
+        Arc::new(Field::new("item", packed_type, true)),
+        arrow_buffer::OffsetBuffer::from_lengths(lengths),
+        packed,
+        None,
+    ))
 }
 
 fn kernel(
@@ -303,6 +402,13 @@ impl ScalarUDFImpl for ListAggregate {
     }
     fn return_type(&self, args: &[DataType]) -> Result<DataType> {
         let input = element_type(args, &self.function)?;
+        let input = if self.function == "call_stats"
+            && vail_ordering::same_layout(&input, &crate::calls::storage_type())
+        {
+            packed_call_stats_input(&input)
+        } else {
+            input
+        };
         if self.function == "linreg" {
             configured_linreg(&input, 0)?.return_type(&[input])
         } else {
@@ -345,10 +451,67 @@ impl ScalarUDFImpl for ListAggregate {
             };
         }
         let initializers = arrays.get(1);
-        let output_type =
-            configured(&self.function, &input_type, 0)?.return_type(&[input_type.clone()])?;
+        let output_input_type = if self.function == "call_stats"
+            && vail_ordering::same_layout(&input_type, &crate::calls::storage_type())
+        {
+            packed_call_stats_input(&input_type)
+        } else {
+            input_type.clone()
+        };
+        let output_type = configured(&self.function, &output_input_type, 0)?
+            .return_type(&[output_input_type.clone()])?;
         if self.function == "corr" {
             let result = grouped_corr_lists(lists, &input_type)?;
+            return if scalar {
+                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                    &result, 0,
+                )?))
+            } else {
+                Ok(ColumnarValue::Array(result))
+            };
+        }
+        if self.function == "stddev_pop" {
+            let valid_rows = (0..rows)
+                .filter(|&row| !lists.is_null(row))
+                .collect::<Vec<_>>();
+            if valid_rows.is_empty() {
+                let result = new_null_array(&output_type, rows);
+                return if scalar {
+                    Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
+                        &result, 0,
+                    )?))
+                } else {
+                    Ok(ColumnarValue::Array(result))
+                };
+            }
+            let aggregate = kernel("stddev_pop", &input_type, 0)?;
+            if !aggregate.groups_accumulator_supported() {
+                return Err(exec_datafusion_err!(
+                    "stddev_pop list reducer requires grouped accumulator support"
+                ));
+            }
+            let mut groups = aggregate.create_groups_accumulator()?;
+            update_grouped_lists(
+                groups.as_mut(),
+                lists,
+                valid_rows.iter().copied(),
+                valid_rows.len(),
+                &input_type,
+            )?;
+            let batch = groups.evaluate(datafusion_expr::EmitTo::All)?;
+            let nulls = new_null_array(&output_type, rows);
+            let mapping = (0..rows)
+                .map(|row| {
+                    if lists.is_null(row) {
+                        (0, 0)
+                    } else {
+                        let group = valid_rows.partition_point(|&valid| valid < row);
+                        (1, group)
+                    }
+                })
+                .collect::<Vec<_>>();
+            let arrays = [nulls.as_ref(), batch.as_ref()];
+            let result = arrow_select::interleave::interleave(&arrays, &mapping)?;
             return if scalar {
                 Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
                     &result, 0,
@@ -361,8 +524,17 @@ impl ScalarUDFImpl for ListAggregate {
             let initializer = initializers.ok_or_else(|| {
                 exec_datafusion_err!("call_stats requires an allele-count initializer")
             })?;
+            let (lists, input_type) =
+                if vail_ordering::same_layout(&input_type, &crate::calls::storage_type()) {
+                    (
+                        pack_legacy_call_lists(lists, initializer.as_ref())?,
+                        output_input_type,
+                    )
+                } else {
+                    (lists.clone(), input_type)
+                };
             let result =
-                grouped_call_stats_lists(lists, initializer.as_ref(), &input_type, &output_type)?;
+                grouped_call_stats_lists(&lists, initializer.as_ref(), &input_type, &output_type)?;
             return if scalar {
                 Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
                     &result, 0,
@@ -503,51 +675,7 @@ fn invoke_linreg_lists(
         ));
     }
     let mut grouped = aggregate.create_groups_accumulator()?;
-    let offsets = lists.value_offsets();
-    if lists.null_count() == 0 {
-        let child_start = offsets.first().copied().unwrap_or(0) as usize;
-        let child_end = offsets.last().copied().unwrap_or(0) as usize;
-        let mut owners = Vec::with_capacity(child_end - child_start);
-        for row in 0..rows {
-            let start = offsets[row] as usize;
-            let end = offsets[row + 1] as usize;
-            owners.extend(std::iter::repeat_n(row, end - start));
-        }
-        if owners.len() != child_end - child_start {
-            return Err(exec_datafusion_err!(
-                "linreg list offsets do not cover the child array"
-            ));
-        }
-        grouped.update_batch(
-            &[lists.values().slice(child_start, child_end - child_start)],
-            &owners,
-            None,
-            rows,
-        )?;
-    } else {
-        let mut updated = false;
-        for row in 0..rows {
-            if lists.is_null(row) {
-                continue;
-            }
-            let start = offsets[row] as usize;
-            let end = offsets[row + 1] as usize;
-            if start == end {
-                continue;
-            }
-            let owners = vec![row; end - start];
-            grouped.update_batch(
-                &[lists.values().slice(start, end - start)],
-                &owners,
-                None,
-                rows,
-            )?;
-            updated = true;
-        }
-        if !updated {
-            grouped.update_batch(&[lists.values().slice(0, 0)], &[], None, rows)?;
-        }
-    }
+    update_grouped_lists(grouped.as_mut(), lists, 0..rows, rows, &input_type)?;
     let output = grouped.evaluate(datafusion_expr::EmitTo::All)?;
     let output = output
         .as_any()

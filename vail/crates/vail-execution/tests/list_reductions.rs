@@ -7,7 +7,7 @@ use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{Result, ScalarValue};
 use std::sync::Arc;
-use vail_execution::expressions::{Expr, PrimitiveType, Type, lower};
+use vail_execution::expressions::{lower, Expr, PrimitiveType, Type};
 
 fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRef>> {
     let input = match lists.value_type() {
@@ -21,7 +21,7 @@ fn reduce(lists: &ListArray, function: &str) -> Result<Option<ArrayRef>> {
     let output = match function {
         "any" | "all" => PrimitiveType::Bool,
         "count_where" => PrimitiveType::Int64,
-        "mean" | "fraction" => PrimitiveType::Float64,
+        "mean" | "fraction" | "stddev_pop" => PrimitiveType::Float64,
         "sum" | "product" => match input {
             PrimitiveType::Int32 | PrimitiveType::Int64 => PrimitiveType::Int64,
             _ => PrimitiveType::Float64,
@@ -80,6 +80,34 @@ fn reduce_struct_lists(
         .into_array(lists.len())?)
 }
 
+fn reduce_legacy_call_stats(
+    lists: &ListArray,
+    initializers: ArrayRef,
+    output_type: DataType,
+) -> Result<ArrayRef> {
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("calls", lists.data_type().clone(), true),
+        Field::new("n_alleles", DataType::Int32, true),
+    ]));
+    let batch = RecordBatch::try_new(schema.clone(), vec![Arc::new(lists.clone()), initializers])?;
+    let expression = Expr::NestedFunction {
+        function: "genomic_list_call_stats".into(),
+        args: vec![
+            Expr::Column {
+                name: "calls".into(),
+            },
+            Expr::Column {
+                name: "n_alleles".into(),
+            },
+        ],
+        dtype: Type::from_arrow(&output_type).unwrap(),
+    };
+    Ok(lower(&expression, &schema)
+        .unwrap()
+        .evaluate(&batch)?
+        .into_array(lists.len())?)
+}
+
 #[test]
 fn correlation_list_reduction_batches_rows_and_keeps_empty_and_null_semantics() {
     let fields = vec![
@@ -109,6 +137,31 @@ fn correlation_list_reduction_batches_rows_and_keeps_empty_and_null_semantics() 
     assert!(result.is_null(2));
     assert!(result.is_null(3));
     assert!(result.value(4).is_nan());
+}
+
+#[test]
+fn stddev_pop_list_reduction_batches_segments_and_preserves_null_outer_lists() {
+    let child = Arc::new(Float64Array::from(vec![
+        Some(999.0),
+        Some(1.0),
+        Some(3.0),
+        Some(9.0),
+        Some(7.0),
+        Some(99.0),
+    ]));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", DataType::Float64, true)),
+        OffsetBuffer::from_lengths([1, 2, 0, 2, 1]),
+        child,
+        Some(NullBuffer::from(vec![true, true, true, false, true])),
+    )
+    .slice(1, 4);
+    let result = reduce(&lists, "stddev_pop").unwrap().unwrap();
+    let result = result.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert_eq!(result.value(0), 1.0);
+    assert!(result.value(1).is_nan());
+    assert!(result.is_null(2));
+    assert_eq!(result.value(3), 0.0);
 }
 
 #[test]
@@ -248,6 +301,74 @@ fn call_stats_list_reduction_batches_variable_initializers_in_outer_order() {
         ac.value(2).as_any().downcast_ref::<Int32Array>().unwrap(),
         &Int32Array::from(vec![0, 0])
     );
+}
+
+#[test]
+fn legacy_genomic_call_stats_alias_uses_batched_call_list_reducer() {
+    let calls = [
+        vail_execution::calls::Call::new(&[0, 1], false).unwrap(),
+        vail_execution::calls::Call::new(&[2, 2], false).unwrap(),
+        vail_execution::calls::Call::new(&[1, 1], false).unwrap(),
+    ];
+    let call_values = Arc::new(StructArray::new(
+        match vail_execution::calls::storage_type() {
+            DataType::Struct(fields) => fields,
+            _ => unreachable!(),
+        },
+        vec![
+            Arc::new(UInt16Array::from(
+                calls.iter().map(|call| call.first()).collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt16Array::from(
+                calls.iter().map(|call| call.second()).collect::<Vec<_>>(),
+            )),
+            Arc::new(UInt8Array::from(
+                calls.iter().map(|call| call.ploidy()).collect::<Vec<_>>(),
+            )),
+            Arc::new(BooleanArray::from(
+                calls.iter().map(|call| call.phased()).collect::<Vec<_>>(),
+            )),
+        ],
+        None,
+    ));
+    let lists = ListArray::new(
+        Arc::new(Field::new("item", call_values.data_type().clone(), true)),
+        OffsetBuffer::from_lengths([1, 1, 1]),
+        call_values,
+        Some(NullBuffer::from(vec![true, true, false])),
+    );
+    let output = DataType::Struct(
+        vec![
+            Arc::new(Field::new(
+                "AC",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+            Arc::new(Field::new(
+                "AF",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Float64, true))),
+                true,
+            )),
+            Arc::new(Field::new("AN", DataType::Int32, true)),
+            Arc::new(Field::new(
+                "homozygote_count",
+                DataType::List(Arc::new(Field::new_list_field(DataType::Int32, true))),
+                true,
+            )),
+        ]
+        .into(),
+    );
+    let result =
+        reduce_legacy_call_stats(&lists, Arc::new(Int32Array::from(vec![2, 3, 2])), output)
+            .unwrap();
+    let result = result.as_any().downcast_ref::<StructArray>().unwrap();
+    let an = result
+        .column_by_name("AN")
+        .unwrap()
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    assert_eq!([an.value(0), an.value(1), an.value(2)], [2, 2, 0]);
 }
 
 #[test]
@@ -461,25 +582,21 @@ fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
         ScalarValue::Int64(Some(-1)),
         ScalarValue::Int64(Some(3)),
     ] {
-        assert!(
-            evaluate(
-                &lists,
-                Expr::RuntimeLiteral { value: invalid },
-                Arc::new(Int64Array::from(vec![1; lists.len()])),
-            )
-            .is_err()
-        );
-    }
-    assert!(
-        evaluate(
+        assert!(evaluate(
             &lists,
-            Expr::Column {
-                name: "nested".into(),
-            },
-            Arc::new(Int64Array::from(vec![1, 2, 1, 1])),
+            Expr::RuntimeLiteral { value: invalid },
+            Arc::new(Int64Array::from(vec![1; lists.len()])),
         )
-        .is_err()
-    );
+        .is_err());
+    }
+    assert!(evaluate(
+        &lists,
+        Expr::Column {
+            name: "nested".into(),
+        },
+        Arc::new(Int64Array::from(vec![1, 2, 1, 1])),
+    )
+    .is_err());
 }
 
 use arrow_array::types::{Float32Type, Int32Type, Int64Type};

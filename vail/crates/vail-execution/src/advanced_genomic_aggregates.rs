@@ -3,16 +3,16 @@
 use crate::aggregate_identity::configured_udaf_name;
 use crate::expressions::ExprError;
 use arrow_array::{
-    Array, ArrayRef, Float32Array, Float64Array, Int32Array, Int64Array, ListArray, StructArray,
     builder::{Float64Builder, Int32Builder, ListBuilder},
+    Array, ArrayRef, Float32Array, Float64Array, Int32Array, Int64Array, ListArray, StructArray,
 };
 use arrow_buffer::OffsetBuffer;
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
 use datafusion_expr::{
-    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
     expr_fn::create_udaf,
     function::{AccumulatorArgs, StateFieldsArgs},
+    Accumulator, AggregateUDF, AggregateUDFImpl, EmitTo, GroupsAccumulator, Signature, Volatility,
 };
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
@@ -1360,96 +1360,5 @@ pub(crate) fn list_call_stats() -> Result<
     ),
     ExprError,
 > {
-    use crate::expressions::{PrimitiveType, Type};
-    use datafusion_expr::{ColumnarValue, expr_fn::create_udf};
-    let call = Type::Primitive(PrimitiveType::Call);
-    let integer = Type::Primitive(PrimitiveType::Int32);
-    let calls = Type::Array {
-        array: Box::new(call.clone()),
-    };
-    let input_type = struct_type(vec![
-        ("__vail_genomic_call", call.to_arrow()?),
-        ("__vail_genomic_alleles", DataType::Int32),
-    ]);
-    let output = struct_type(vec![
-        ("AC", list_type(DataType::Int32)),
-        ("AF", list_type(DataType::Float64)),
-        ("AN", DataType::Int32),
-        ("homozygote_count", list_type(DataType::Int32)),
-    ]);
-    let result_type = Type::from_arrow(&output)?;
-    let output_empty = output.clone();
-    let udf = create_udf(
-        "vail_list_call_stats",
-        vec![calls.to_arrow()?, DataType::Int32],
-        output,
-        Volatility::Immutable,
-        Arc::new(move |values| {
-            let rows = values
-                .iter()
-                .find_map(|v| {
-                    if let ColumnarValue::Array(a) = v {
-                        Some(a.len())
-                    } else {
-                        None
-                    }
-                })
-                .unwrap_or(1);
-            let inputs = values
-                .iter()
-                .map(|v| match v {
-                    ColumnarValue::Array(a) => Ok(a.clone()),
-                    ColumnarValue::Scalar(s) => s.to_array(),
-                })
-                .collect::<DfResult<Vec<_>>>()?;
-            let arrays = inputs[0]
-                .as_any()
-                .downcast_ref::<ListArray>()
-                .ok_or_else(|| bad("list call_stats requires Call array"))?;
-            let counts = inputs[1]
-                .as_any()
-                .downcast_ref::<Int32Array>()
-                .ok_or_else(|| bad("list call_stats requires int32 allele count"))?;
-            let row_at = |arg: usize, row: usize| {
-                if matches!(values[arg], ColumnarValue::Scalar(_)) {
-                    0
-                } else {
-                    row
-                }
-            };
-            let mut results = Vec::with_capacity(rows);
-            for row in 0..rows {
-                let cr = row_at(1, row);
-                if counts.is_null(cr) || counts.value(cr) < 0 {
-                    return Err(bad(
-                        "call_stats requires a defined nonnegative allele count",
-                    ));
-                }
-                let n = counts.value(cr) as usize;
-                let ar = row_at(0, row);
-                let calls = if arrays.is_null(ar) {
-                    arrow_array::new_empty_array(&arrays.value_type())
-                } else {
-                    arrays.value(ar)
-                };
-                let mut accumulator =
-                    GenomicAccumulator::new(Kind::CallStats(n), input_type.clone());
-                accumulator.update_fixed_calls(&calls, n)?;
-                results.push(accumulator.result()?);
-            }
-            let result = if results.is_empty() {
-                arrow_array::new_empty_array(&output_empty)
-            } else {
-                ScalarValue::iter_to_array(results)?
-            };
-            if values.iter().all(|v| matches!(v, ColumnarValue::Scalar(_))) {
-                Ok(ColumnarValue::Scalar(ScalarValue::try_from_array(
-                    &result, 0,
-                )?))
-            } else {
-                Ok(ColumnarValue::Array(result))
-            }
-        }),
-    );
-    Ok((Arc::new(udf), vec![calls, integer], result_type))
+    crate::list_aggregate::legacy_call_stats()
 }
