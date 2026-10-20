@@ -35,9 +35,7 @@ fn nan_for_empty(value: ScalarValue) -> ScalarValue {
     }
 }
 
-fn nonfinite_input(values: &[ArrayRef]) -> Result<u64> {
-    let values = cast_values(values)?;
-    let values = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
+fn nonfinite_count(values: &Float64Array) -> Result<u64> {
     u64::try_from(
         values
             .iter()
@@ -118,13 +116,15 @@ struct NativeStddevAccumulator {
 
 impl Accumulator for NativeStddevAccumulator {
     fn update_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
+        let values = cast_values(values)?;
+        let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
         self.nonfinite_count = self
             .nonfinite_count
-            .checked_add(nonfinite_input(values)?)
+            .checked_add(nonfinite_count(input)?)
             .ok_or_else(|| {
                 DataFusionError::Execution("stddev_pop nonfinite count exceeds uint64".into())
             })?;
-        self.inner.update_batch(&cast_values(values)?)
+        self.inner.update_batch(&values)
     }
 
     fn evaluate(&mut self) -> Result<ScalarValue> {
@@ -149,7 +149,7 @@ impl Accumulator for NativeStddevAccumulator {
         let merged_nonfinite = nonfinite
             .iter()
             .flatten()
-            .try_fold(0u64, |total, value| total.checked_add(*value))
+            .try_fold(0u64, |total, value| total.checked_add(value))
             .ok_or_else(|| {
                 DataFusionError::Execution("stddev_pop nonfinite count exceeds uint64".into())
             })?;
@@ -163,8 +163,10 @@ impl Accumulator for NativeStddevAccumulator {
     }
 
     fn retract_batch(&mut self, values: &[ArrayRef]) -> Result<()> {
-        let nonfinite = nonfinite_input(values)?;
-        self.inner.retract_batch(&cast_values(values)?)?;
+        let values = cast_values(values)?;
+        let input = values[0].as_any().downcast_ref::<Float64Array>().unwrap();
+        let nonfinite = nonfinite_count(input)?;
+        self.inner.retract_batch(&values)?;
         self.nonfinite_count = self.nonfinite_count.saturating_sub(nonfinite);
         Ok(())
     }
@@ -174,7 +176,6 @@ impl Accumulator for NativeStddevAccumulator {
     }
 }
 
-#[derive(Debug)]
 struct NativeStddevGroups {
     inner: Box<dyn GroupsAccumulator>,
     nonfinite: Vec<u64>,
@@ -219,6 +220,9 @@ impl GroupsAccumulator for NativeStddevGroups {
         let values = self.inner.evaluate(emit_to)?;
         let nonfinite = self.emit_nonfinite(values.len(), emit_to)?;
         let values = values.as_any().downcast_ref::<Float64Array>().unwrap();
+        if values.null_count() == 0 && nonfinite.iter().all(|&count| count == 0) {
+            return Ok(Arc::new(values.clone()));
+        }
         Ok(Arc::new(Float64Array::from_iter_values(
             values.iter().zip(nonfinite).map(|(value, count)| {
                 if count != 0 {
