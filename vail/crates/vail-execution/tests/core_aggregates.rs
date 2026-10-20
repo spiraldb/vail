@@ -710,16 +710,16 @@ async fn ordinary_grouped_max_uses_native_groups_accumulator_across_batches() {
     let first = RecordBatch::try_new(
         schema.clone(),
         vec![
-            Arc::new(Int32Array::from(vec![99, 1, 2, 3])).slice(1, 3),
-            Arc::new(Int32Array::from(vec![Some(99), Some(1), None, None])).slice(1, 3),
+            Arc::new(Int32Array::from(vec![99, 1, 2, 3]).slice(1, 3)),
+            Arc::new(Int32Array::from(vec![Some(99), Some(1), None, None]).slice(1, 3)),
         ],
     )
     .unwrap();
     let second = RecordBatch::try_new(
         schema.clone(),
         vec![
-            Arc::new(Int32Array::from(vec![99, 1, 2, 3])).slice(1, 3),
-            Arc::new(Int32Array::from(vec![Some(99), Some(7), Some(4), None])).slice(1, 3),
+            Arc::new(Int32Array::from(vec![99, 1, 2, 3]).slice(1, 3)),
+            Arc::new(Int32Array::from(vec![Some(99), Some(7), Some(4), None]).slice(1, 3)),
         ],
     )
     .unwrap();
