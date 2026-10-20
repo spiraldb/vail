@@ -3,12 +3,15 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use arrow_array::{
-    Array, ArrayRef, Float64Array, Int64Array, ListArray, StructArray, new_empty_array,
+    Array, ArrayRef, BooleanArray, Float64Array, Int64Array, ListArray, StructArray,
+    new_empty_array,
 };
 use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field};
 use datafusion_common::{DataFusionError, Result as DfResult, ScalarValue};
-use datafusion_expr::{Accumulator, AggregateUDF, Volatility, expr_fn::create_udaf};
+use datafusion_expr::{
+    Accumulator, AggregateUDF, EmitTo, GroupsAccumulator, Volatility, expr_fn::create_udaf,
+};
 use kll_rs::KllDoubleSketch;
 use nalgebra::{DMatrix, DVector};
 use statrs::distribution::{ContinuousCDF, FisherSnedecor, StudentsT};
