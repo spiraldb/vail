@@ -865,3 +865,161 @@ fn native_min_merges_multiple_partitions_for_each_group() {
         .unwrap();
     assert_eq!(other_group.evaluate().unwrap(), ScalarValue::Int64(Some(7)));
 }
+
+#[tokio::test]
+async fn all_uses_native_bool_and_with_hail_empty_identity() {
+    let native = datafusion_functions_aggregate::bool_and_or::bool_and_udaf();
+    let hail =
+        vail_execution::aggregates::aggregate_udf("all", Some(&arrow_schema::DataType::Boolean))
+            .unwrap();
+    let cases = [
+        BooleanArray::from(Vec::<Option<bool>>::new()),
+        BooleanArray::from(vec![None, None]),
+        BooleanArray::from(vec![Some(true), None]),
+        BooleanArray::from(vec![Some(true), Some(true), None]),
+        BooleanArray::from(vec![Some(true), Some(false), None]),
+    ];
+    for (index, input) in cases.into_iter().enumerate() {
+        let input: ArrayRef = Arc::new(input);
+        let native_result = execute(native.clone(), vec![input.clone()]).await.unwrap();
+        let native_result = native_result
+            .as_any()
+            .downcast_ref::<BooleanArray>()
+            .unwrap();
+        let result = execute(hail.clone(), vec![input]).await.unwrap();
+        let result = result.as_any().downcast_ref::<BooleanArray>().unwrap();
+        if index <= 1 {
+            // DataFusion retains SQL's null for empty and all-null BOOL_AND;
+            // Hail's `all` applies the true identity to those cases.
+            assert!(native_result.is_null(0));
+            assert_eq!(result.iter().collect::<Vec<_>>(), vec![Some(true)]);
+        } else {
+            assert_eq!(
+                native_result.iter().collect::<Vec<_>>(),
+                result.iter().collect::<Vec<_>>()
+            );
+        }
+    }
+}
+
+#[tokio::test]
+async fn all_grouped_native_accumulator_filters_and_merges_partial_state() {
+    use arrow_schema::DataType;
+
+    let schema = Arc::new(Schema::new(vec![
+        Field::new("group", DataType::Int32, false),
+        Field::new("value", DataType::Boolean, true),
+        Field::new("keep", DataType::Boolean, false),
+    ]));
+    let partitions = vec![
+        RecordBatch::try_new(
+            schema.clone(),
+            vec![
+                Arc::new(Int32Array::from(vec![1, 2, 3, 4])),
+                Arc::new(BooleanArray::from(vec![
+                    Some(true),
+                    None,
+                    Some(false),
+                    Some(false),
+                ])),
+                Arc::new(BooleanArray::from(vec![true, true, true, false])),
+            ],
+        )
+        .unwrap(),
+        RecordBatch::try_new(
+            schema.clone(),
+            vec![
+                Arc::new(Int32Array::from(vec![1, 2, 3, 4])),
+                Arc::new(BooleanArray::from(vec![None, None, None, Some(false)])),
+                Arc::new(BooleanArray::from(vec![true, true, true, false])),
+            ],
+        )
+        .unwrap(),
+    ];
+    let source = MemorySourceConfig::try_new_exec(
+        &[vec![partitions[0].clone()], vec![partitions[1].clone()]],
+        schema.clone(),
+        None,
+    )
+    .unwrap();
+    let udf = vail_execution::aggregates::aggregate_udf("all", Some(&DataType::Boolean)).unwrap();
+    let aggregate = Arc::new(
+        AggregateExprBuilder::new(udf, vec![Arc::new(Column::new("value", 1))])
+            .schema(schema.clone())
+            .alias("all")
+            .build()
+            .unwrap(),
+    );
+    assert!(aggregate.groups_accumulator_supported());
+    let group_by = PhysicalGroupBy::new_single(vec![(
+        Arc::new(Column::new("group", 0)),
+        "group".to_owned(),
+    )]);
+    let partial = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Partial,
+            group_by.clone(),
+            vec![aggregate.clone()],
+            vec![Some(Arc::new(Column::new("keep", 2)))],
+            source,
+            schema.clone(),
+        )
+        .unwrap(),
+    );
+    let merged_input = Arc::new(CoalescePartitionsExec::new(partial));
+    let final_aggregate = Arc::new(
+        AggregateExec::try_new(
+            AggregateMode::Final,
+            group_by.as_final(),
+            vec![aggregate],
+            vec![None],
+            merged_input,
+            schema,
+        )
+        .unwrap(),
+    );
+    let batches = collect(final_aggregate, Arc::new(TaskContext::default()))
+        .await
+        .unwrap();
+    let result = &batches[0];
+    let groups = result
+        .column(0)
+        .as_any()
+        .downcast_ref::<Int32Array>()
+        .unwrap();
+    let values = result
+        .column(1)
+        .as_any()
+        .downcast_ref::<BooleanArray>()
+        .unwrap();
+    let mut rows = (0..result.num_rows())
+        .map(|row| {
+            assert!(!values.is_null(row));
+            (groups.value(row), values.value(row))
+        })
+        .collect::<Vec<_>>();
+    rows.sort_unstable();
+    // Group 2 has only missing inputs; group 4 has all values filtered out.
+    assert_eq!(rows, vec![(1, true), (2, true), (3, false), (4, true)]);
+}
+
+#[test]
+fn all_rejects_non_boolean_declared_type_and_keeps_boolean_signature() {
+    use arrow_schema::DataType;
+    use datafusion_expr::TypeSignature;
+
+    assert!(vail_execution::aggregates::aggregate_udf("all", Some(&DataType::Int32)).is_err());
+    let udf = vail_execution::aggregates::aggregate_udf("all", None).unwrap();
+    assert_eq!(
+        udf.return_type(&[DataType::Boolean]).unwrap(),
+        DataType::Boolean
+    );
+    assert_eq!(
+        udf.signature().type_signature,
+        TypeSignature::Exact(vec![DataType::Boolean])
+    );
+    assert_eq!(
+        udf.default_value(&DataType::Boolean).unwrap(),
+        datafusion_common::ScalarValue::Boolean(Some(true))
+    );
+}
