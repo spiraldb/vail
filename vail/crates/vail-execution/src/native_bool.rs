@@ -144,7 +144,7 @@ impl Accumulator for TotalBoolAccumulator {
     }
 
     fn size(&self) -> usize {
-        self.inner.size()
+        std::mem::size_of_val(self) + self.inner.size()
     }
 
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
@@ -218,6 +218,6 @@ impl GroupsAccumulator for TotalBoolGroupsAccumulator {
     }
 
     fn size(&self) -> usize {
-        self.inner.size()
+        std::mem::size_of_val(self) + self.inner.size()
     }
 }
