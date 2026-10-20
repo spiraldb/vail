@@ -3,7 +3,8 @@ use arrow_array::{
     Array, ArrayRef, BooleanArray, Float32Array, Float64Array, Int32Array, Int64Array, ListArray,
     RecordBatch, StructArray, UInt16Array, UInt8Array,
 };
-
+use arrow_array::types::{Float32Type, Int32Type, Int64Type};
+use arrow_buffer::{NullBuffer, OffsetBuffer};
 use arrow_schema::{DataType, Field, Schema};
 use datafusion_common::{Result, ScalarValue};
 use std::sync::Arc;
@@ -482,8 +483,6 @@ fn linreg_list_reduction_uses_one_grouped_batch_and_preserves_null_lists() {
     );
 }
 
-use arrow_array::types::{Float32Type, Int32Type, Int64Type};
-use arrow_buffer::{NullBuffer, OffsetBuffer};
 
 #[test]
 fn integer_lists_keep_precision_missingness_and_sliced_offsets() {

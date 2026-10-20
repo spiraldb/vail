@@ -640,7 +640,10 @@ fn grouped_downsample_roundtrips_bounded_group_states() {
 
     // Identity conversion wraps UTF-8 labels in one-element lists while
     // reusing the source string values buffer.
-    let converted_all = grouped.convert_to_state(&[values.clone()], None).unwrap();
+    // The fourth source point has missing x, so use the fully retained prefix
+    // to exercise identity conversion rather than its legitimate gather path.
+    let identity_values = values.slice(0, 3);
+    let converted_all = grouped.convert_to_state(&[identity_values], None).unwrap();
     let converted_all_points = converted_all[0]
         .as_any()
         .downcast_ref::<ListArray>()
