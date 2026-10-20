@@ -284,7 +284,10 @@ pub fn aggregate_udf(
     if function == "product" {
         return product_udf(input);
     }
-    if matches!(function, "mean" | "stddev_pop") {
+    if function == "mean" {
+        return crate::native_mean::udf(input);
+    }
+    if function == "stddev_pop" {
         return crate::moments::udf(function, input);
     }
     if function == "all" {

@@ -1,6 +1,7 @@
 """Execution boundaries and relational plans for whole-table aggregation."""
 
 import pytest
+import math
 import vail as hl
 
 
@@ -10,6 +11,45 @@ def test_common_reducers_return_consistent_large_partitioned_results():
     query = hl.struct(n=hl.agg.count(), total=hl.agg.sum(t.idx),
                       smallest=hl.agg.min(t.idx), largest=hl.agg.max(t.idx))
     assert t.aggregate(query) == hl.Struct(n=n, total=n*(n-1)//2, smallest=0, largest=n-1)
+
+
+def test_mean_uses_native_state_for_group_scan_and_array_aggregation():
+    table = hl.Table.parallelize(
+        [
+            {"group": "a", "x": 1, "xs": [1, 10]},
+            {"group": "a", "x": 3, "xs": [3, 30]},
+            {"group": "b", "x": None, "xs": [None, 50]},
+        ],
+        schema=hl.tstruct(group=hl.tstr, x=hl.tint32, xs=hl.tarray(hl.tint32)),
+        n_partitions=3,
+    )
+    assert table.aggregate(hl.agg.mean(table.x)) == 2.0
+
+    grouped = table.group_by(group=table.group).aggregate(value=hl.agg.mean(table.x)).collect()
+    values = {row.group: row.value for row in grouped}
+    assert values["a"] == 2.0
+    assert math.isnan(values["b"])
+
+    scanned = table.annotate(prefix=hl.scan.mean(table.x)).prefix.collect()
+    assert math.isnan(scanned[0])
+    assert scanned[1] == 1.0
+    assert scanned[2] == 2.0
+
+    array_means = table.aggregate(
+        hl.agg.array_agg(lambda value: hl.agg.mean(value), table.xs)
+    )
+    assert array_means == [2.0, 30.0]
+
+
+def test_mean_preserves_matrix_entry_coordinate_groups():
+    matrix = hl.range_matrix_table(2, 3, 2)
+    matrix = matrix.annotate_entries(value=hl.int32(matrix.row_idx + matrix.col_idx))
+    entries = matrix.entries()
+    grouped = entries.group_by(row=entries._row_idx).aggregate(
+        value=hl.agg.mean(entries.value)
+    ).collect()
+    values = {row.row: row.value for row in grouped}
+    assert values == {0: 1.0, 1: 2.0}
 
 
 def test_collect_uses_ordered_stream_across_files(tmp_path):

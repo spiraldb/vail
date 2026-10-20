@@ -41,6 +41,7 @@ pub mod logical_expr;
 mod matrix_arrays;
 mod moments;
 mod native_bool;
+mod native_mean;
 mod ndarray;
 mod numeric_lists;
 pub mod reference;

@@ -320,6 +320,107 @@ async fn stable_moments_accept_sliced_nullable_batches() {
         assert_eq!(actual, expected);
     }
 }
+
+#[tokio::test]
+async fn native_mean_casts_numeric_inputs_and_preserves_empty_nan() {
+    for (input, expected) in [
+        (
+            Arc::new(Int32Array::from(vec![Some(1), None, Some(4)])) as ArrayRef,
+            2.5,
+        ),
+        (
+            Arc::new(Int64Array::from(vec![Some(-2), Some(3)])) as ArrayRef,
+            0.5,
+        ),
+        (
+            Arc::new(Float32Array::from(vec![Some(1.25), None, Some(2.75)])) as ArrayRef,
+            2.0,
+        ),
+    ] {
+        let udf =
+            vail_execution::aggregates::aggregate_udf("mean", Some(input.data_type())).unwrap();
+        let result = execute(udf, vec![input]).await.unwrap();
+        let values = result.as_any().downcast_ref::<Float64Array>().unwrap();
+        assert_eq!(values.value(0), expected);
+    }
+
+    let empty: ArrayRef = Arc::new(Float64Array::from(Vec::<Option<f64>>::new()));
+    let udf = vail_execution::aggregates::aggregate_udf("mean", Some(empty.data_type())).unwrap();
+    let result = execute(udf, vec![empty]).await.unwrap();
+    assert!(
+        result
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap()
+            .value(0)
+            .is_nan()
+    );
+
+    let missing: ArrayRef = Arc::new(Float64Array::from(vec![None, None]));
+    let udf = vail_execution::aggregates::aggregate_udf("mean", Some(missing.data_type())).unwrap();
+    let result = execute(udf, vec![missing]).await.unwrap();
+    assert!(
+        result
+            .as_any()
+            .downcast_ref::<Float64Array>()
+            .unwrap()
+            .value(0)
+            .is_nan()
+    );
+}
+
+#[test]
+fn native_mean_partial_state_and_grouped_filter_merge() {
+    let input = Field::new("value", arrow_schema::DataType::Int32, true);
+    let schema = Arc::new(Schema::new(vec![input.clone()]));
+    let udf = vail_execution::aggregates::aggregate_udf("mean", Some(input.data_type())).unwrap();
+    let args = AccumulatorArgs {
+        return_field: Arc::new(Field::new("mean", arrow_schema::DataType::Float64, true)),
+        schema: &schema,
+        name: "mean",
+        is_distinct: false,
+        exprs: &[],
+        expr_fields: &[input.clone().into()],
+        ignore_nulls: true,
+        order_bys: &[],
+        is_reversed: false,
+    };
+
+    let mut partial = udf.accumulator(args.clone()).unwrap();
+    partial
+        .update_batch(&[Arc::new(Int32Array::from(vec![Some(2), None, Some(6)]))])
+        .unwrap();
+    let state = partial.state().unwrap();
+    assert_eq!(state.len(), 2);
+    let states = state
+        .into_iter()
+        .map(|value| datafusion_common::ScalarValue::iter_to_array(vec![value]).unwrap())
+        .collect::<Vec<_>>();
+    let mut final_accumulator = udf.accumulator(args.clone()).unwrap();
+    final_accumulator.merge_batch(&states).unwrap();
+    let datafusion_common::ScalarValue::Float64(Some(value)) =
+        final_accumulator.evaluate().unwrap()
+    else {
+        panic!("mean finalizer should return a defined float64");
+    };
+    assert_eq!(value, 4.0);
+
+    assert!(udf.groups_accumulator_supported(args.clone()));
+    let mut grouped = udf.create_groups_accumulator(args.clone()).unwrap();
+    let values: ArrayRef = Arc::new(Int32Array::from(vec![Some(2), Some(6), None, Some(9)]));
+    let filter = BooleanArray::from(vec![true, true, true, false]);
+    grouped
+        .update_batch(&[values], &[0, 0, 1, 1], Some(&filter), 3)
+        .unwrap();
+    let partial = grouped.state(EmitTo::All).unwrap();
+    let mut merged = udf.create_groups_accumulator(args).unwrap();
+    merged.merge_batch(&partial, &[0, 1, 2], 3).unwrap();
+    let result = merged.evaluate(EmitTo::All).unwrap();
+    let values = result.as_any().downcast_ref::<Float64Array>().unwrap();
+    assert_eq!(values.value(0), 4.0);
+    assert!(values.value(1).is_nan());
+    assert!(values.value(2).is_nan());
+}
 #[tokio::test]
 async fn integer_sum_wraps_across_nullable_sliced_batches() {
     let input: ArrayRef = Arc::new(Int64Array::from(vec![
