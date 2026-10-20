@@ -15,6 +15,9 @@ enum Kind {
     Product,
     Min,
     Max,
+    /// Compatibility path for direct Rust callers of `aggregate_udf`.
+    /// Vail's planners lower count_where to native COUNT instead.
+    CountWhere,
     Fraction,
     Any,
     All,
@@ -145,6 +148,11 @@ impl Accumulator for Reducer {
                     .count
                     .wrapping_add((input.len() - input.null_count()) as i64)
             }
+            Kind::CountWhere => {
+                self.count = self
+                    .count
+                    .wrapping_add(Self::boolean(input)?.true_count() as i64)
+            }
             Kind::Fraction => {
                 self.count = self.count.wrapping_add(input.len() as i64);
                 self.integer = self
@@ -197,7 +205,7 @@ impl Accumulator for Reducer {
     }
     fn evaluate(&mut self) -> Result<ScalarValue> {
         Ok(match self.kind {
-            Kind::Count => ScalarValue::Int64(Some(self.count)),
+            Kind::Count | Kind::CountWhere => ScalarValue::Int64(Some(self.count)),
             Kind::Fraction => ScalarValue::Float64(
                 (self.count != 0).then(|| self.integer as f64 / self.count as f64),
             ),
@@ -212,7 +220,7 @@ impl Accumulator for Reducer {
     }
     fn state(&mut self) -> Result<Vec<ScalarValue>> {
         Ok(match self.kind {
-            Kind::Count => vec![ScalarValue::Int64(Some(self.count))],
+            Kind::Count | Kind::CountWhere => vec![ScalarValue::Int64(Some(self.count))],
             Kind::Fraction => vec![
                 ScalarValue::Int64(Some(self.count)),
                 ScalarValue::Int64(Some(self.integer)),
@@ -234,7 +242,7 @@ impl Accumulator for Reducer {
             ));
         }
         match self.kind {
-            Kind::Count => {
+            Kind::Count | Kind::CountWhere => {
                 self.count = self.count.wrapping_add(
                     arrow_arith::aggregate::sum(Self::counts(&states[0])?).unwrap_or(0),
                 )
@@ -293,10 +301,9 @@ impl Accumulator for Reducer {
 }
 /// Construct one of the low-level scalar aggregate UDAFs.
 ///
-/// `count_where` is intentionally not a UDAF here: it must be lowered as
-/// native COUNT over a false-to-null Boolean predicate, which requires the
-/// logical argument expression. Vail's relational, list and scan adapters
-/// perform that lowering at their respective call sites.
+/// Vail's planners lower `count_where` to native COUNT over a false-to-null
+/// Boolean predicate. The legacy direct-factory route remains available for
+/// Rust callers that explicitly construct this low-level UDAF.
 pub fn aggregate_udf(
     function: &str,
     input: Option<&DataType>,
@@ -305,24 +312,25 @@ pub fn aggregate_udf(
         return crate::moments::udf(function, input);
     }
     let (kind, input, output, state) = match function {
-        "count_where" => {
-            return Err(ExprError::Invalid(
-                "count_where must be lowered as native COUNT over a false-to-null predicate".into(),
-            ));
-        }
         "count" => (
             Kind::Count,
             DataType::Int64,
             DataType::Int64,
             vec![DataType::Int64],
         ),
-        "fraction" | "any" | "all" => {
+        "count_where" | "fraction" | "any" | "all" => {
             if input.is_some_and(|ty| ty != &DataType::Boolean) {
                 return Err(ExprError::Invalid(format!(
                     "{function} requires Boolean input"
                 )));
             }
             match function {
+                "count_where" => (
+                    Kind::CountWhere,
+                    DataType::Boolean,
+                    DataType::Int64,
+                    vec![DataType::Int64],
+                ),
                 "fraction" => (
                     Kind::Fraction,
                     DataType::Boolean,

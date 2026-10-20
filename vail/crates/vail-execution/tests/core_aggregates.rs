@@ -1,5 +1,5 @@
 //! Public numeric UDAFs executed on sliced and nullable Arrow batches.
-use arrow_array::{Array, ArrayRef, Float64Array, Int64Array, RecordBatch};
+use arrow_array::{Array, ArrayRef, BooleanArray, Float64Array, Int64Array, RecordBatch};
 use arrow_schema::{Field, Schema};
 use datafusion_common::DataFusionError;
 use datafusion_datasource::memory::MemorySourceConfig;
@@ -87,6 +87,34 @@ async fn integer_sum_wraps_across_nullable_sliced_batches() {
         i64::MIN
     );
 }
+
+#[tokio::test]
+async fn direct_count_where_factory_remains_compatible() {
+    // Vail planner routes use native COUNT; this covers the legacy public Rust factory.
+    let udf = vail_execution::aggregates::aggregate_udf(
+        "count_where",
+        Some(&arrow_schema::DataType::Boolean),
+    )
+    .unwrap();
+    let input: ArrayRef = Arc::new(BooleanArray::from(vec![
+        Some(true),
+        Some(false),
+        None,
+        Some(true),
+    ]));
+    let result = execute(udf, vec![input.slice(0, 2), input.slice(2, 2)])
+        .await
+        .unwrap();
+    assert_eq!(
+        result
+            .as_any()
+            .downcast_ref::<Int64Array>()
+            .unwrap()
+            .value(0),
+        2
+    );
+}
+
 #[test]
 fn moments_reject_missing_and_nonnumeric_input_types() {
     for name in ["mean", "stddev_pop"] {
